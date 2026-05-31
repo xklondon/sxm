@@ -1,0 +1,65 @@
+.banker-setup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgb(0 0 0 / 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.banker-setup-panel {
+  width: 100%;
+  max-width: 22rem;
+  background: #1a2e24;
+  border: 1px solid rgb(255 255 255 / 0.15);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  color: var(--color-cream, #f5f0e6);
+}
+
+.banker-setup-panel__title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.banker-setup-panel__sub {
+  margin: 0 0 0.75rem;
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+.banker-setup-panel__option {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  margin-bottom: 0.45rem;
+  cursor: pointer;
+}
+
+.banker-setup-panel__select,
+.banker-setup-panel__input {
+  flex: 1 1 100%;
+  font: inherit;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgb(255 255 255 / 0.2);
+  background: rgb(0 0 0 / 0.25);
+  color: inherit;
+}
+
+.banker-setup-panel__confirm {
+  width: 100%;
+  margin-top: 0.65rem;
+  font: inherit;
+  padding: 0.45rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-gold, #f0d060);
+  color: #1a1a1a;
+  font-weight: 700;
+  cursor: pointer;
+}

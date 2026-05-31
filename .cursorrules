@@ -1,0 +1,71 @@
+# SXMCARDS — Cursor Rules
+
+## Product identity
+
+SXM Casino / SXMCARDS: casual online + local card table app for friends.
+Virtual chips only — NOT real-money gambling.
+
+## Hard prohibitions
+
+- No payment processing, wallets, deposits, cash-out, or real-money language.
+- Do not rewrite blackjack engine logic unless explicitly requested — use existing `*OnState` functions via server action layer.
+- **Never write real secrets into `.env.example`.**
+- **Never overwrite `.env` automatically** — no placeholders, no "helpful" resets during audits/checks.
+- **Never use the Write/edit tool on `.env`** unless the user explicitly asks to edit specific keys.
+
+## Environment file rules (strict)
+
+| File | Policy |
+|------|--------|
+| `.env` | User-owned secrets. Read-only for scripts. Gitignored. |
+| `.env.example` | Placeholders only (`you@gmail.com`, `generate-a-long-random-secret`). Scrub real values if found. |
+| `.env.local.generated` | Optional non-secret patches from tooling — never secrets |
+
+Scripts that need env changes must:
+1. Print instructions for missing keys (`printEnvSetupInstructions` in `scripts/envGuard.ts`)
+2. Or write `.env.local.generated` via `writeEnvLocalGenerated()`
+3. Only call `writeEnvWithGuard()` with `--write-env`, preserving `SMTP_PASS`, `SESSION_SECRET`, `SMTP_USER`
+
+Import `assertEnvReadOnlyScript()` at the top of audit/dev scripts.
+
+## Local dev topology
+
+- **Public URL:** `http://192.168.0.56:5173` (Vite — phone/LAN browser)
+- **Internal API:** `127.0.0.1:3017+` (proxied via Vite `/api`, `/socket.io`, `/health`)
+- **Port 3001:** reserved for other apps — do not use for SXM API
+- **Run:** `npm run dev` (orchestrator in `scripts/dev.mts`)
+- **Audit:** `npm run check:auth` (read-only)
+
+Aligned env keys (same LAN host, no localhost in links):
+- `PUBLIC_ORIGIN`, `CORS_ORIGIN`, `VITE_API_URL`, `VITE_TABLE_HOST`
+
+## Architecture
+
+- **Engine:** pure TypeScript in `src/engine/` — deterministic, no React
+- **UI:** `src/components/`, `src/screens/`
+- **Server:** `server/src/` — Express + Socket.IO, applies engine actions with authority checks
+- **Online mode:** `VITE_ONLINE_MODE=true` — magic-link auth, multiplayer tables, WebSocket sync
+- **Offline mode:** `VITE_ONLINE_MODE=false` — single-browser local play still works
+
+## Multiplayer / auth (when online)
+
+- Tables: create/join via invite link after login
+- State mutations through `POST /api/tables/:id/actions` only
+- Authority: box owner, phase, stale turn checks in `server/src/tables/authority.ts`
+- Magic links use `PUBLIC_ORIGIN` — must match LAN URL in dev
+
+## Gameplay and AI
+
+- Ledger is source of truth for balances
+- AI assists explanations only — never decides live outcomes
+
+## Development discipline
+
+- Minimal diffs; no broad refactors
+- Staged implementation; don't overbuild
+- Tests only when they cover real behavior
+- Run `npm run build`, `npm run lint`, `npm run test` after substantive changes
+
+## Preferred vocabulary
+
+Use: chips, ledger, table balance, friends, buy-in, settlement, round.

@@ -1,0 +1,212 @@
+.chip-stack {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  min-height: 2rem;
+}
+
+.chip-stack--empty {
+  opacity: 0.45;
+}
+
+.chip-stack__empty-label {
+  font-size: 0.75rem;
+}
+
+.chip-stack__pile {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.15rem;
+  flex-wrap: wrap;
+}
+
+.chip-stack__more {
+  font-size: 0.65rem;
+  opacity: 0.75;
+  align-self: center;
+}
+
+.chip-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border: 2px dashed rgb(255 255 255 / 0.55);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.25);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.chip-stack--bet .chip-token {
+  transform: translateY(calc(var(--chip-offset, 0) * -2px));
+}
+
+.chip-token--1 {
+  background: linear-gradient(145deg, #e8e8e8, #b8b8b8);
+  color: #222;
+}
+
+.chip-token--2 {
+  background: linear-gradient(145deg, #5b9bd5, #2e6da4);
+}
+
+.chip-token--5 {
+  background: linear-gradient(145deg, #e74c3c, #c0392b);
+}
+
+.chip-token--10 {
+  background: linear-gradient(145deg, #2ecc71, #27ae60);
+}
+
+.chip-token--50 {
+  background: linear-gradient(145deg, #9b59b6, #6c3483);
+  border-color: rgb(255 215 0 / 0.55);
+  color: #fff;
+  font-size: 0.55rem;
+}
+
+.chip-token--btn {
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  transition: transform 0.1s ease;
+}
+
+.chip-token--btn:hover:not(:disabled) {
+  transform: scale(1.08);
+}
+
+.chip-token--btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.chip-tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: var(--ds-color-surface);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-md);
+}
+
+.chip-tray__label {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ds-tracking-wide);
+  color: var(--ds-color-text-muted);
+}
+
+.chip-tray__chips {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.chip-tray__hint {
+  font-size: 0.6rem;
+  opacity: 0.55;
+  flex: 1 1 100%;
+}
+
+.compact-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.compact-balance__icons {
+  position: relative;
+  display: inline-flex;
+  width: 1.35rem;
+  height: 1.1rem;
+}
+
+.chip-token--mini {
+  width: 1.05rem;
+  height: 1.05rem;
+  font-size: 0;
+  border-width: 1px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+.chip-token--mini-offset {
+  left: 0.35rem;
+  bottom: 0.15rem;
+}
+
+.compact-balance__amount,
+.bet-chip-stack__amount {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-color-gold);
+  line-height: 1;
+}
+
+.stake-chips {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 1.35rem;
+}
+
+.stake-chips--bet {
+  min-height: 2.35rem;
+}
+
+.stake-chips--bet .chip-token {
+  width: 2.35rem;
+  height: 2.35rem;
+  font-size: 0.78rem;
+  border-width: 2px;
+}
+
+.stake-chips__chip {
+  margin-left: calc(var(--chip-layer, 0) * -0.45rem);
+}
+
+.stake-chips__chip:first-child {
+  margin-left: 0;
+}
+
+.stake-chips__chip--top {
+  position: relative;
+}
+
+.stake-chips__remove {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.35rem;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.75);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.stake-chips__remove:hover {
+  background: rgb(180 40 40 / 0.95);
+}
+
+@media (min-width: 480px) {
+  .chip-tray__hint {
+    flex: 0 1 auto;
+  }
+}

@@ -1,0 +1,464 @@
+.table-screen {
+  min-height: 100dvh;
+  padding: 1rem;
+  background: var(--color-felt-dark);
+}
+
+.table-screen__toast {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  background: rgb(20 60 45 / 0.95);
+  color: var(--color-cream);
+  border: 1px solid rgb(255 255 255 / 0.15);
+  z-index: 60;
+  font-size: 0.9rem;
+}
+
+.table-screen__view-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+.table-screen__view-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.table-screen__seat-select {
+  font: inherit;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  background: rgb(0 0 0 / 0.25);
+  color: var(--color-cream);
+  min-width: 10rem;
+}
+
+.table-screen--casino {
+  padding: 0.5rem;
+  max-width: none;
+}
+
+.table-screen__header--compact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  max-width: none;
+}
+
+.table-screen__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.table-screen__header-actions button {
+  font-size: 0.72rem;
+  padding: 0.3rem 0.5rem;
+}
+
+.table-screen__leave {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.65rem;
+}
+
+.table-screen__join-bar {
+  display: flex;
+  gap: 0.35rem;
+  max-width: 1100px;
+  margin: 0 auto 0.5rem;
+  flex-wrap: wrap;
+}
+
+.table-screen__join-input {
+  font: inherit;
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  background: rgb(0 0 0 / 0.25);
+  color: var(--color-cream);
+  flex: 1;
+  min-width: 8rem;
+}
+
+.table-screen__layout--wide {
+  max-width: none;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .table-screen__layout--wide {
+    grid-template-columns: 1fr 280px;
+  }
+
+  .table-screen__layout--wide.table-screen__layout--full {
+    grid-template-columns: 1fr;
+  }
+}
+
+.table-felt--casino {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  min-height: auto;
+  position: relative;
+}
+
+.table-screen__game-select select {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.55rem;
+}
+
+.table-screen__header-start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.table-screen__game-select {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.table-screen__game-select-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgb(255 255 255 / 0.55);
+}
+
+.table-screen__game-select select {
+  font: inherit;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  background: rgb(0 0 0 / 0.25);
+  color: var(--color-cream);
+  min-width: 9rem;
+}
+
+.table-felt--surface {
+  background:
+    radial-gradient(ellipse 130% 90% at 50% 15%, rgb(255 255 255 / 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at center, #1a6b4f 0%, #0f4a35 50%, #0a3224 100%);
+  border: 3px solid #2d8a62;
+  border-radius: 50% / 14%;
+  min-height: min(70dvh, 36rem);
+  padding: 1.25rem 0.85rem 1rem;
+  box-shadow:
+    inset 0 0 50px rgb(0 0 0 / 0.4),
+    0 10px 28px rgb(0 0 0 / 0.35);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.table-felt__choose-game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  min-height: 16rem;
+}
+
+.table-felt__choose-game-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-cream);
+}
+
+.table-felt__choose-game-sub {
+  margin: 0 0 1.25rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+  max-width: 18rem;
+}
+
+.table-felt__choose-game-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+}
+
+.table-felt__choose-game-btns button {
+  min-width: 8rem;
+}
+
+.table-screen__game-bar {
+  max-width: 1100px;
+  margin: 0 auto 0.75rem;
+}
+
+.table-felt--blackjack {
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 20%, rgb(255 255 255 / 0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at center, #1a6b4f 0%, #0f4a35 55%, #0a3224 100%);
+  border: 3px solid #2d8a62;
+  border-radius: 50% / 18%;
+  padding: 1.5rem 1rem 1.25rem;
+  min-height: auto;
+  box-shadow:
+    inset 0 0 40px rgb(0 0 0 / 0.35),
+    0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+.table-felt__deck-area--compact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+}
+
+.table-screen__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+.table-screen__eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.table-screen__title {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--color-cream);
+}
+
+.table-screen__layout {
+  display: grid;
+  gap: 1rem;
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+@media (min-width: 768px) {
+  .table-screen__layout {
+    grid-template-columns: 1fr 340px;
+    align-items: start;
+  }
+}
+
+.table-felt {
+  background: radial-gradient(ellipse at center, var(--color-felt) 0%, #134a38 100%);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  min-height: 20rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.table-felt__deck-area {
+  text-align: center;
+  padding: 1rem;
+}
+
+.table-felt__deck-stack {
+  position: relative;
+  width: 3rem;
+  height: 4.25rem;
+  margin: 0 auto 0.5rem;
+}
+
+.table-felt__deck-card {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.2);
+}
+
+.table-felt__deck-card--offset {
+  transform: translate(4px, -4px);
+  opacity: 0.85;
+}
+
+.table-felt__deck-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+  color: rgb(255 255 255 / 0.85);
+  font-weight: 600;
+}
+
+.table-felt__deck-meta {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: rgb(255 255 255 / 0.65);
+}
+
+.table-felt__seed-row {
+  margin-bottom: 0.75rem;
+}
+
+.table-felt__seed-input {
+  font: inherit;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 0.2);
+  color: var(--color-cream);
+  width: min(100%, 14rem);
+}
+
+.table-felt__seed-input::placeholder {
+  color: rgb(255 255 255 / 0.45);
+}
+
+.table-felt__deck-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.table-felt__last-dealt {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.table-felt__last-dealt-label {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgb(255 255 255 / 0.6);
+}
+
+.table-felt__history {
+  padding: 0 0.5rem;
+}
+
+.table-felt__history-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgb(255 255 255 / 0.6);
+}
+
+.table-felt__history-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+}
+
+.table-felt__players {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.table-felt__player {
+  background: rgb(255 255 255 / 0.12);
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: var(--color-cream);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.table-felt__player--bank {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 1px var(--color-gold);
+}
+
+.table-felt__player-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.table-felt__player-meta {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.table-felt__bank-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table-felt__balance {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+.table-felt__actions {
+  margin-top: auto;
+  padding: 1rem;
+  background: rgb(0 0 0 / 0.15);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.table-felt__actions-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgb(255 255 255 / 0.6);
+}
+
+.table-felt__actions-placeholder {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgb(255 255 255 / 0.75);
+}
+
+.table-screen__sidebar {
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .table-screen {
+    padding: 1.5rem;
+  }
+}

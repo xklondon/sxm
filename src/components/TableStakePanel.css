@@ -1,0 +1,87 @@
+.table-stake-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.55);
+  border-radius: inherit;
+  padding: 1rem;
+}
+
+.table-stake-panel {
+  background: #1a3d2e;
+  border: 2px solid rgb(255 255 255 / 0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  max-width: 22rem;
+  width: 100%;
+  color: var(--color-cream);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
+}
+
+.table-stake-panel__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+}
+
+.table-stake-panel__sub {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.table-stake-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.8rem;
+}
+
+.table-stake-panel__input {
+  font: inherit;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  background: rgb(0 0 0 / 0.25);
+  color: var(--color-cream);
+}
+
+.table-stake-panel__input--short {
+  width: 6rem;
+}
+
+.table-stake-panel__confirm {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.table-stake-panel__hint {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+
+.table-stake-panel__banker {
+  border: 1px solid rgb(255 255 255 / 0.15);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  margin: 0 0 0.85rem;
+  font-size: 0.8rem;
+}
+
+.table-stake-panel__banker legend {
+  padding: 0 0.25rem;
+  font-weight: 600;
+}
+
+.table-stake-panel__option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+  cursor: pointer;
+}

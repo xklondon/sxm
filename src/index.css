@@ -1,0 +1,93 @@
+@import './styles/tokens.css';
+@import './styles/design-system.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--ds-font-body);
+  line-height: 1.5;
+  font-weight: var(--ds-weight-normal);
+  color: var(--ds-color-text);
+  background: radial-gradient(ellipse at top, var(--ds-color-felt-mid) 0%, var(--ds-color-felt-dark) 55%, var(--ds-color-navy) 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+.online-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  background: rgb(0 0 0 / 0.35);
+  border-bottom: 1px solid var(--ds-color-border-subtle);
+}
+
+.online-bar__ok {
+  color: var(--ds-color-success);
+}
+
+.online-bar__warn {
+  color: var(--ds-color-gold);
+}
+
+.online-bar .secondary {
+  margin-left: auto;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--ds-radius-md);
+  padding: 0.65rem 1.25rem;
+  background: linear-gradient(180deg, var(--ds-color-gold) 0%, var(--ds-color-gold-dim) 100%);
+  color: var(--ds-color-navy);
+  font-weight: var(--ds-weight-semibold);
+  transition: filter var(--ds-duration-fast) ease, transform var(--ds-duration-fast) ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: rgb(255 255 255 / 0.08);
+  color: var(--ds-color-text);
+  border: 1px solid var(--ds-color-border-subtle);
+}
+
+input,
+select {
+  font: inherit;
+  font-family: var(--ds-font-body);
+  color: var(--ds-color-text);
+  background: rgb(0 0 0 / 0.35);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-sm);
+}
+
+select {
+  padding: 0.4rem 0.5rem;
+}

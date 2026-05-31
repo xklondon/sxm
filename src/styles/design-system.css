@@ -1,0 +1,319 @@
+/**
+ * SXMCards design system — reusable UI patterns.
+ * Import after tokens.css. Components may use ds-* classes or CSS variables.
+ */
+
+/* ── Base typography ── */
+.ds-font-heading {
+  font-family: var(--ds-font-heading);
+}
+
+.ds-font-mono {
+  font-family: var(--ds-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.ds-label {
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ds-tracking-wide);
+  color: var(--ds-color-text-muted);
+}
+
+.ds-value {
+  font-family: var(--ds-font-mono);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-color-text);
+}
+
+/* ── Panels ── */
+.ds-panel {
+  background: var(--ds-color-surface);
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-panel);
+  backdrop-filter: blur(8px);
+}
+
+.ds-panel--compact {
+  padding: var(--ds-space-2) var(--ds-space-3);
+}
+
+.ds-panel--elevated {
+  background: var(--ds-color-surface-elevated);
+  box-shadow: var(--ds-shadow-lg);
+}
+
+.ds-panel--gold-border {
+  border-color: rgb(251 191 36 / 0.35);
+}
+
+/* ── Buttons ── */
+.ds-btn {
+  font-family: var(--ds-font-heading);
+  font-weight: var(--ds-weight-bold);
+  font-size: var(--ds-text-sm);
+  letter-spacing: var(--ds-tracking-wide);
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--ds-radius-md);
+  cursor: pointer;
+  transition:
+    transform var(--ds-duration-fast) var(--ds-ease-out),
+    box-shadow var(--ds-duration-normal) var(--ds-ease-out),
+    filter var(--ds-duration-fast) ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ds-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.ds-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ds-btn--primary {
+  background: linear-gradient(180deg, var(--ds-color-gold) 0%, var(--ds-color-gold-dim) 100%);
+  color: var(--ds-color-navy);
+  box-shadow: var(--ds-shadow-sm), inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+
+.ds-btn--primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow: var(--ds-glow-gold);
+}
+
+.ds-btn--secondary {
+  background: rgb(255 255 255 / 0.08);
+  color: var(--ds-color-text);
+  border: 1px solid var(--ds-color-border-subtle);
+}
+
+.ds-btn--secondary:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.14);
+  border-color: var(--ds-color-border);
+}
+
+.ds-btn--ghost {
+  background: transparent;
+  color: var(--ds-color-text-muted);
+  border: 1px solid transparent;
+}
+
+.ds-btn--ghost:hover:not(:disabled) {
+  color: var(--ds-color-text);
+  border-color: var(--ds-color-border-subtle);
+}
+
+.ds-btn--vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  padding: var(--ds-space-4) var(--ds-space-2);
+  min-height: 5.5rem;
+  border-radius: var(--ds-radius-lg);
+}
+
+.ds-btn--stand {
+  background: rgb(255 255 255 / 0.1);
+  color: var(--ds-color-text);
+  border: 1px solid var(--ds-color-border-subtle);
+}
+
+.ds-btn--hit {
+  background: linear-gradient(180deg, var(--ds-color-gold) 0%, var(--ds-color-gold-dim) 100%);
+  color: var(--ds-color-navy);
+}
+
+.ds-btn--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border-radius: var(--ds-radius-md);
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid var(--ds-color-border-subtle);
+  color: var(--ds-color-text);
+  font-size: var(--ds-text-base);
+}
+
+.ds-btn--icon:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.12);
+  border-color: var(--ds-color-border);
+}
+
+/* ── Betting circles ── */
+.ds-bet-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 4.5rem;
+  min-height: 4.5rem;
+  border-radius: var(--ds-radius-full);
+  border: 1px dashed var(--ds-color-border-subtle);
+  background: rgb(0 0 0 / 0.2);
+  transition:
+    border-color var(--ds-duration-normal) ease,
+    box-shadow var(--ds-duration-normal) ease;
+}
+
+.ds-bet-circle--owned {
+  border-style: solid;
+  border-color: rgb(148 163 184 / 0.3);
+}
+
+.ds-bet-circle--active {
+  border-color: var(--ds-color-gold);
+  box-shadow: var(--ds-glow-gold);
+}
+
+.ds-bet-circle--turn {
+  border-color: var(--ds-color-success);
+  box-shadow: var(--ds-glow-success);
+}
+
+/* ── Chips ── */
+.ds-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--ds-radius-full);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  border: 2px solid rgb(255 255 255 / 0.45);
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.4),
+    inset 0 1px 0 rgb(255 255 255 / 0.3);
+  color: #fff;
+  flex-shrink: 0;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.ds-chip--1 { background: linear-gradient(145deg, #e8e8e8, #b8b8b8); color: #222; }
+.ds-chip--2 { background: linear-gradient(145deg, #5b9bd5, #2e6da4); }
+.ds-chip--5 { background: linear-gradient(145deg, #e74c3c, #c0392b); }
+.ds-chip--10 { background: linear-gradient(145deg, #2ecc71, #27ae60); }
+
+.ds-chip-tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: var(--ds-color-surface);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-md);
+}
+
+/* ── Playing cards (premium) ── */
+.ds-card {
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-md);
+  transition: transform var(--ds-duration-normal) var(--ds-ease-out);
+}
+
+.ds-card--hero {
+  box-shadow:
+    var(--ds-shadow-lg),
+    0 0 24px rgb(251 191 36 / 0.12);
+}
+
+.ds-card--glow {
+  filter: drop-shadow(0 0 12px rgb(251 191 36 / 0.2));
+}
+
+/* ── Status badge ── */
+.ds-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-1) var(--ds-space-3);
+  border-radius: var(--ds-radius-full);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  background: rgb(0 0 0 / 0.4);
+  border: 1px solid var(--ds-color-border);
+  color: var(--ds-color-gold);
+}
+
+.ds-badge--total {
+  font-size: var(--ds-text-xl);
+  padding: var(--ds-space-2) var(--ds-space-4);
+  box-shadow: var(--ds-glow-gold);
+}
+
+/* ── Modals ── */
+.ds-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ds-z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-4);
+  background: var(--ds-color-overlay);
+  backdrop-filter: blur(4px);
+}
+
+.ds-modal-panel {
+  width: min(100%, 22rem);
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: var(--ds-color-surface-elevated);
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-xl);
+  box-shadow: var(--ds-shadow-lg);
+  color: var(--ds-color-text);
+}
+
+/* ── App shell (Card View) ── */
+.ds-app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: var(--ds-color-navy);
+  border-bottom: 1px solid var(--ds-color-border-subtle);
+}
+
+.ds-app-brand {
+  font-family: var(--ds-font-heading);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: var(--ds-tracking-wider);
+  color: var(--ds-color-gold);
+  margin: 0;
+}
+
+.ds-app-actions {
+  display: flex;
+  gap: var(--ds-space-2);
+}
+
+/* ── Animations ── */
+@keyframes ds-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ds-pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(251 191 36 / 0.4); }
+  50% { box-shadow: 0 0 0 6px rgb(251 191 36 / 0); }
+}
+
+.ds-animate-in {
+  animation: ds-fade-in var(--ds-duration-normal) var(--ds-ease-out);
+}
+
+.ds-animate-pulse {
+  animation: ds-pulse-gold 2s ease-in-out infinite;
+}

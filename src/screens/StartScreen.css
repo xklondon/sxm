@@ -1,0 +1,61 @@
+.start-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 1.5rem;
+  background: radial-gradient(ellipse at center, var(--color-felt) 0%, var(--color-felt-dark) 70%);
+}
+
+.start-screen__card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem 1.75rem;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.start-screen__eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.start-screen__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  color: var(--color-felt-dark);
+}
+
+.start-screen__subtitle {
+  margin: 0 0 1.75rem;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}
+
+.start-screen__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.start-screen__actions button {
+  width: 100%;
+}
+
+.start-screen__note {
+  margin: 1.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+@media (min-width: 480px) {
+  .start-screen__card {
+    padding: 2.5rem 2rem;
+  }
+}

@@ -1,0 +1,206 @@
+.playing-card {
+  position: relative;
+  width: 3.75rem;
+  height: 5.25rem;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--ds-shadow-sm);
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: transform var(--ds-duration-normal) var(--ds-ease-out), box-shadow var(--ds-duration-normal) ease;
+}
+
+.playing-card.bj-phone-card--hero,
+.playing-card.ds-card--hero {
+  box-shadow: var(--ds-shadow-lg), 0 0 20px rgb(251 191 36 / 0.15);
+}
+
+.playing-card--compact {
+  width: 2.85rem;
+  height: 4rem;
+  border-radius: 5px;
+}
+
+.playing-card--red {
+  color: #dc2626;
+}
+
+.playing-card--black {
+  color: #0f172a;
+}
+
+.playing-card__corner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  z-index: 2;
+}
+
+.playing-card__corner--tl {
+  top: 0.2rem;
+  left: 0.25rem;
+}
+
+.playing-card__corner--br {
+  bottom: 0.2rem;
+  right: 0.25rem;
+  transform: rotate(180deg);
+}
+
+.playing-card__rank {
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-family: var(--ds-font-mono);
+}
+
+.playing-card--compact .playing-card__rank {
+  font-size: 0.6rem;
+}
+
+.playing-card__suit-sm {
+  font-size: 0.62rem;
+  margin-top: 0.05rem;
+}
+
+.playing-card--compact .playing-card__suit-sm {
+  font-size: 0.52rem;
+}
+
+.playing-card__center {
+  position: absolute;
+  inset: 0.55rem 0.35rem 0.55rem;
+}
+
+.playing-card__pips {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.playing-card__pip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 0.55rem;
+  line-height: 1;
+}
+
+.playing-card--compact .playing-card__pip {
+  font-size: 0.45rem;
+}
+
+.playing-card__pip--invert {
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+
+.playing-card__face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 0.1rem;
+}
+
+.playing-card__face-rank {
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.playing-card--compact .playing-card__face-rank {
+  font-size: 1.1rem;
+}
+
+.playing-card__face-suit {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.playing-card--compact .playing-card__face-suit {
+  font-size: 0.9rem;
+}
+
+.playing-card__face--ace .playing-card__face-rank {
+  font-size: 1.6rem;
+}
+
+.playing-card--back {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+  border-color: #334155;
+}
+
+.playing-card--back::after {
+  content: '♠';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: rgb(255 255 255 / 0.35);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Phase 5 animation hooks */
+.deal-anim--slide {
+  animation: deal-slide-in 0.25s ease-out;
+}
+
+.deal-anim--flip {
+  animation: deal-flip-in 0.3s ease-out;
+}
+
+.deal-anim--fast {
+  animation: deal-slide-in 0.12s ease-out;
+}
+
+.deal-anim--slow {
+  animation: deal-slide-in 0.5s ease-out;
+}
+
+.deal-anim--mix {
+  animation: deal-slide-in 0.25s ease-out;
+}
+
+@keyframes deal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes deal-flip-in {
+  from {
+    opacity: 0;
+    transform: rotateY(90deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .playing-card {
+    width: 3.1rem;
+    height: 4.35rem;
+  }
+}

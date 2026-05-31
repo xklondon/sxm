@@ -1,0 +1,782 @@
+import type { GameState } from '../../types';
+import type { BlackjackFlowSettings } from './flowSettings';
+import { dealDelayMsForPreset, normalizeFlowSettings } from './flowSettings';
+import { lockProtocolOnState, getBlackjackProtocolForState } from './protocolState';
+import {
+  createBlackjackRound,
+  doubleDownBlackjackPlayer,
+  hitBlackjackPlayer,
+  placeBlackjackBet,
+  resetBlackjackRound,
+  resolveBlackjackRound,
+  splitBlackjackPlayer,
+  standBlackjackPlayer,
+  applyBlackjackToGameState,
+} from './round';
+import {
+  beginInitialDeal,
+  dealNextInitialCard,
+} from './initialDeal';
+import {
+  takeInsuranceBet,
+  declineInsurance,
+  closeInsuranceOffer,
+  allInsuranceResolved,
+} from './insurance';
+import { drawSingleBankCard, enterBankingIfComplete } from './bankTurn';
+import { activePlayerIdFromRound, getVirtualBlackjackAction, isVirtualPlayer } from './virtual';
+import { parseBlackjackHandKey, blackjackHandKey } from './handKeys';
+import { log } from '../../utils/logger';
+import { isDevEnv } from '../../utils/isDevEnv';
+import {
+  syncConfirmedBetsToRound,
+  getEligibleDealBoxes,
+  getBlackjackProtocolPhase,
+  getStakeForBox,
+  getActiveHandKeysForDeal,
+  logConfirmedBetsBeforeCards,
+  logConfirmBet,
+  logDealPlan,
+  logDealSanity,
+  ensureBettingRoundHands,
+} from './protocol';
+import {
+  getTableMinimumBet,
+} from './dealEligibility';
+import {
+  hasAnyStakes,
+} from './stakes';
+import { bankrollContextFromState } from '../session/bankroll';
+import { applyTableGameEndIfNeeded } from '../session/tableGameEnd';
+import { syncCallersForDeal } from '../session/playerAssignment';
+import { settleBustHandOnState } from './bustSettlement';
+import { shuffleGameDeck } from '../deck';
+import { resolveNaturalsAfterInitialDeal, resolvePendingNaturalsAfterDealerPeek } from './naturalBlackjack';
+import { getCallerPersonIdForBox } from '../session/playerAssignment';
+import { autoStandThreshold, getPlayFlowForPerson } from './playFlow';
+import { cardsFromIds } from './hand';
+import { getBlackjackHandValue } from './hand';
+
+function requireBlackjackState(state: GameState): GameState & { deck: NonNullable<GameState['deck']> } {
+  if (state.session.gameType !== 'blackjack') {
+    throw new Error('Not a Blackjack game');
+  }
+  if (!state.deck) {
+    throw new Error('Shuffle the deck before playing Blackjack');
+  }
+  return state as GameState & { deck: NonNullable<GameState['deck']> };
+}
+
+function requireActiveHandKey(state: GameState): string {
+  if (!state.blackjack?.activeHandKey) {
+    throw new Error('No active hand');
+  }
+  return state.blackjack.activeHandKey;
+}
+
+function logPhase(state: GameState, detail?: string): void {
+  const status = state.blackjack?.status ?? 'none';
+  log.info(`Phase: ${status}${detail ? ` — ${detail}` : ''}`);
+}
+
+function applyHit(state: GameState, handKey: string): GameState {
+  const s = requireBlackjackState(state);
+  if (!s.blackjack) {
+    throw new Error('No active Blackjack round');
+  }
+  const beforeHitCards = [...(s.blackjack.playerHands[handKey]?.cardIds ?? [])].filter(Boolean);
+  const result = hitBlackjackPlayer(
+    s.session,
+    s.players,
+    s.deck,
+    s.blackjack,
+    handKey,
+  );
+  const afterHitCards = [...(result.round.playerHands[handKey]?.cardIds ?? [])].filter(Boolean);
+  const drawnCard = afterHitCards.length > beforeHitCards.length ? afterHitCards[afterHitCards.length - 1] : null;
+  log.info('Player action: hit', {
+    handKey,
+    activeHandKey: result.round.activeHandKey,
+    beforeHitCards,
+    drawnCard,
+    afterHitCards,
+  });
+  if (isDevEnv()) {
+    console.log('[SXMCards] hit', {
+      activeHandKey: handKey,
+      beforeHitCards,
+      drawnCard,
+      afterHitCards,
+    });
+  }
+  let next = applyBlackjackToGameState(s, result);
+  const bustedHand = next.blackjack?.playerHands[handKey];
+  if (bustedHand?.actionStatus === 'busted') {
+    next = settleBustHandOnState(next, handKey);
+  }
+  return next;
+}
+
+function applyStand(state: GameState, handKey: string): GameState {
+  const s = requireBlackjackState(state);
+  if (!s.blackjack) {
+    throw new Error('No active Blackjack round');
+  }
+  const beforeStayActiveHandKey = s.blackjack.activeHandKey;
+  const result = standBlackjackPlayer(s.session, s.players, s.blackjack, handKey);
+  const afterStayNextActiveHandKey = result.round.activeHandKey;
+  const nextPhase = result.round.status;
+  log.info('Player action: stand', {
+    handKey,
+    beforeStayActiveHandKey,
+    afterStayNextActiveHandKey,
+    nextPhase,
+  });
+  if (isDevEnv()) {
+    console.log('[SXMCards] stay', {
+      beforeStayActiveHandKey,
+      afterStayNextActiveHandKey,
+      nextPhase,
+    });
+  }
+  return applyBlackjackToGameState(s, { ...result, deck: s.deck });
+}
+
+function applyDouble(state: GameState, handKey: string): GameState {
+  const s = requireBlackjackState(state);
+  if (!s.blackjack) {
+    throw new Error('No active Blackjack round');
+  }
+  const result = doubleDownBlackjackPlayer(
+    s.session,
+    s.players,
+    s.ledger,
+    s.deck,
+    s.blackjack,
+    handKey,
+    bankrollContextFromState(s),
+    s.blackjackSettings,
+    getBlackjackProtocolForState(s),
+  );
+  log.info('Player action: double', { handKey });
+  let next = applyBlackjackToGameState(s, result);
+  const bustedHand = next.blackjack?.playerHands[handKey];
+  if (bustedHand?.actionStatus === 'busted') {
+    next = settleBustHandOnState(next, handKey);
+  }
+  return next;
+}
+
+function applySplit(state: GameState, handKey: string): GameState {
+  const s = requireBlackjackState(state);
+  if (!s.blackjack) {
+    throw new Error('No active Blackjack round');
+  }
+  const result = splitBlackjackPlayer(
+    s.session,
+    s.players,
+    s.ledger,
+    s.deck,
+    s.blackjack,
+    handKey,
+    bankrollContextFromState(s),
+    s.blackjackSettings,
+    getBlackjackProtocolForState(s),
+  );
+  log.info('Player action: split', { handKey });
+  return applyBlackjackToGameState(s, result);
+}
+
+export function startBlackjackRound(state: GameState): GameState {
+  const s = requireBlackjackState(state);
+  const created = createBlackjackRound(s.session, s.players, s.deck);
+  log.info('Blackjack round started');
+  return {
+    ...s,
+    ...created,
+    blackjack: created.round,
+  };
+}
+
+export function placeBlackjackBetOnState(
+  state: GameState,
+  playerId: string,
+  amount: number,
+): GameState {
+  let s = requireBlackjackState(state);
+
+  if (!s.blackjack || s.blackjack.status === 'resolved') {
+    if (s.blackjack?.status === 'resolved') {
+      s = requireBlackjackState(newBlackjackRoundOnState(s));
+    } else {
+      s = requireBlackjackState(startBlackjackRound(s));
+    }
+  }
+
+  const round = ensureBettingRoundHands(s.blackjack!, s.session);
+  const result = placeBlackjackBet(
+    s.session,
+    s.players,
+    s.ledger,
+    round,
+    playerId,
+    amount,
+    bankrollContextFromState(s),
+    { ...s.blackjackSettings, minBet: getTableMinimumBet(s) },
+  );
+  log.info('Bet confirmed', { playerId, amount, roundBet: result.round.playerHands[blackjackHandKey(playerId, 0)]?.currentBet });
+  const next = { ...s, ...result, blackjack: result.round };
+  logConfirmBet(next, playerId, amount);
+  return next;
+}
+
+export function prepareDealState(state: GameState): GameState {
+  log.info('Deal function called', { phase: getBlackjackProtocolPhase(state) });
+
+  let s = syncConfirmedBetsToRound(state);
+
+  if (!s.deck) {
+    throw new Error('Shuffle the shoe first.');
+  }
+
+  if (!s.blackjack || s.blackjack.status === 'resolved') {
+    if (s.blackjack?.status === 'resolved') {
+      s = newBlackjackRoundOnState(s);
+    } else if (!s.blackjack) {
+      s = startBlackjackRound(s);
+    }
+    s = syncConfirmedBetsToRound(s);
+  }
+
+  const active = getEligibleDealBoxes(s);
+  log.info('Confirmed betting boxes', {
+    boxes: active,
+    minBet: getTableMinimumBet(s),
+    stakes: active.map((id) => ({ id, stake: getStakeForBox(s, id) })),
+  });
+  log.info('Active boxes for round', { active });
+
+  if (active.length === 0) {
+    log.info('Deal blocked: no eligible bets on hands');
+    throw new Error(
+      hasAnyStakes(s)
+        ? 'Place at least minimum bet to deal.'
+        : 'Place bets first.',
+    );
+  }
+
+  return requireBlackjackState(s);
+}
+
+export function dealCardsFromState(state: GameState): GameState {
+  logDealSanity(state);
+  logConfirmedBetsBeforeCards(state);
+  const prepared = prepareDealState(state);
+  const plan = getActiveHandKeysForDeal(prepared);
+  logDealPlan(plan);
+  log.info('Cards deal starting', { mode: prepared.blackjackFlowSettings.initialDealMode, plan });
+
+  let result: GameState;
+  const dealMode = prepared.blackjackFlowSettings.initialDealMode;
+  if (dealMode === 'instant') {
+    let next = dealInitialBlackjackOnState(prepared);
+    log.info('First card dealt (instant complete)');
+    next = processVirtualTurns(syncBankPhaseOnState(next));
+    logPhase(next, 'deal complete');
+    result = lockProtocolOnState(next);
+  } else {
+    result = lockProtocolOnState(beginInitialDealOnState(prepared));
+    log.info(`Initial deal begun (${dealMode} mode)`);
+  }
+  logDealSanity(state, { dealResult: 'ok' });
+  return result;
+}
+
+export function applyBoxStakesToRound(state: GameState): GameState {
+  if (!state.deck) {
+    throw new Error('Shuffle the shoe first.');
+  }
+  if (!hasAnyStakes(state)) {
+    throw new Error('Place bets first.');
+  }
+
+  let s: GameState = state;
+
+  if (!s.blackjack || s.blackjack.status === 'resolved') {
+    if (s.blackjack?.status === 'resolved') {
+      s = newBlackjackRoundOnState(s);
+    } else {
+      s = startBlackjackRound(s);
+    }
+  }
+
+  for (const boxId of getEligibleDealBoxes(s)) {
+    const amount = getStakeForBox(s, boxId);
+    if (amount > 0) {
+      s = placeBlackjackBetOnState(s, boxId, amount);
+    }
+  }
+
+  const eligible = getEligibleDealBoxes(s);
+  s = syncCallersForDeal(s, eligible);
+
+  log.info('Bets locked', {
+    boxes: eligible,
+    stakes: eligible.map((id) => ({ id, stake: getStakeForBox(s, id) })),
+  });
+
+  return {
+    ...s,
+    tableMeta: { ...s.tableMeta, bettingLocked: true },
+  };
+}
+
+export function shuffleToStartOnState(state: GameState): GameState {
+  if (state.tableMeta.bettingLocked) {
+    throw new Error('Finish the current round before shuffling.');
+  }
+  const s = shuffleGameDeck(state);
+  return {
+    ...s,
+    tableMeta: { ...s.tableMeta, shoeStarted: true },
+  };
+}
+
+/** @deprecated Use shuffleToStartOnState — shuffle only, does not lock bets. */
+export function lockBetsAndShuffleOnState(state: GameState): GameState {
+  return shuffleToStartOnState(state);
+}
+
+export function dealCardsButtonOnState(state: GameState): GameState {
+  if (state.tableMeta.bettingLocked) {
+    return dealCardsFromState(state);
+  }
+  const locked = applyBoxStakesToRound(state);
+  return dealCardsFromState(locked);
+}
+
+export function lockBetsAndStartRoundOnState(state: GameState): GameState {
+  if (state.tableMeta.bettingLocked) {
+    throw new Error('Bets already locked.');
+  }
+  if (!state.deck) {
+    throw new Error('Shuffle the shoe first.');
+  }
+  if (!hasAnyStakes(state)) {
+    throw new Error('Place bets first.');
+  }
+  return applyBoxStakesToRound(state);
+}
+
+export function shuffleFreshShoeOnState(state: GameState): GameState {
+  if (state.tableMeta.bettingLocked) {
+    throw new Error('Finish the current round before shuffling.');
+  }
+  return shuffleGameDeck(state);
+}
+
+export function beginInitialDealOnState(state: GameState): GameState {
+  const s = prepareDealState(state);
+  if (!s.blackjack) {
+    throw new Error('Start a Blackjack round first');
+  }
+  const handKeys = getActiveHandKeysForDeal(s);
+  const result = beginInitialDeal(s.session, s.players, s.deck!, s.blackjack, handKeys, s.blackjackSettings);
+  log.info('Initial deal started');
+  logPhase({ ...s, blackjack: result.round });
+  return { ...s, ...result, blackjack: result.round };
+}
+
+export function dealNextInitialCardOnState(state: GameState): GameState {
+  const s = requireBlackjackState(state);
+  if (!s.blackjack) {
+    throw new Error('No active Blackjack round');
+  }
+  const result = dealNextInitialCard(s.session, s.players, s.deck, s.blackjack, s.blackjackSettings);
+  log.info('Card dealt (initial)', {
+    target: result.step.type === 'box' ? result.step.handKey : 'bank',
+    cardId: result.cardId,
+  });
+  let next: GameState = {
+    ...s,
+    session: result.session,
+    players: result.players,
+    deck: result.deck,
+    blackjack: result.round,
+  };
+  if (result.complete) {
+    logPhase(next, 'initial deal complete');
+    next = resolveNaturalsAfterInitialDeal(next);
+    next = processVirtualTurns(syncBankPhaseOnState(next));
+  }
+  return next;
+}
+
+export function dealInitialBlackjackOnState(state: GameState): GameState {
+  const s = prepareDealState(state);
+  if (!s.blackjack) {
+    throw new Error('Start a Blackjack round first');
+  }
+  const handKeys = getActiveHandKeysForDeal(s);
+  let current = beginInitialDeal(s.session, s.players, s.deck!, s.blackjack, handKeys, s.blackjackSettings);
+  let guard = 0;
+  while (current.round.status === 'initial-deal' && guard < 50) {
+    guard += 1;
+    const next = dealNextInitialCard(current.session, current.players, current.deck, current.round, s.blackjackSettings);
+    if (guard === 1) {
+      log.info('First card dealt', { cardId: next.cardId, target: next.step.type });
+    }
+    current = {
+      session: next.session,
+      players: next.players,
+      deck: next.deck,
+      round: next.round,
+    };
+  }
+  let next: GameState = { ...s, ...current, blackjack: current.round };
+  next = resolveNaturalsAfterInitialDeal(next);
+  return processVirtualTurns(syncBankPhaseOnState(next));
+}
+
+export function syncBankPhaseOnState(state: GameState): GameState {
+  if (!state.blackjack || !state.deck) {
+    return state;
+  }
+  if (state.blackjack.status === 'banking') {
+    return state;
+  }
+  if (state.blackjack.status !== 'bank-turn') {
+    return state;
+  }
+  const round = enterBankingIfComplete(
+    state.blackjack,
+    state.deck,
+    state.blackjackSettings,
+    getBlackjackProtocolForState(state),
+    state.session,
+  );
+  if (round.status !== state.blackjack.status) {
+    logPhase({ ...state, blackjack: round }, 'bank stands');
+  }
+  return { ...state, blackjack: round };
+}
+
+export function drawBankCardOnState(state: GameState): GameState {
+  const s = requireBlackjackState(state);
+  if (!s.blackjack) {
+    throw new Error('No active Blackjack round');
+  }
+  const result = drawSingleBankCard(
+    s.session,
+    s.players,
+    s.deck,
+    s.blackjack,
+    s.blackjackSettings,
+    getBlackjackProtocolForState(s),
+  );
+  if (result.cardId) {
+    log.info('Bank draw', { cardId: result.cardId });
+  } else {
+    log.info('Bank stands');
+  }
+  const next: GameState = {
+    ...s,
+    session: result.session,
+    players: result.players,
+    deck: result.deck,
+    blackjack: result.round,
+  };
+  if (result.complete) {
+    logPhase(next, 'bank turn complete');
+  }
+  return next;
+}
+
+export function completeBankingOnState(state: GameState): GameState {
+  const s = requireBlackjackState(state);
+  if (!s.blackjack) {
+    throw new Error('No active Blackjack round');
+  }
+  if (s.blackjack.status !== 'banking') {
+    throw new Error('Not in banking phase');
+  }
+  const resolved = resolveBlackjackRound(
+    s.session,
+    s.players,
+    s.ledger,
+    s.deck,
+    s.blackjack,
+    s.blackjackSettings,
+    bankrollContextFromState(s),
+  );
+  log.info('roundComplete', {
+    roundNumber: s.session.currentRound,
+    outcomes: resolved.round.outcomes,
+    resultMessages: resolved.round.resultMessages,
+  });
+  logPhase({ ...s, blackjack: resolved.round });
+  let next: GameState = {
+    ...s,
+    session: resolved.session,
+    players: resolved.players,
+    ledger: resolved.ledger,
+    blackjack: resolved.round,
+    tableMeta: {
+      ...s.tableMeta,
+      awaitingNextRound: true,
+      bettingLocked: true,
+    },
+  };
+  next = applyTableGameEndIfNeeded(next);
+  if (next.tableMeta.gameStatus === 'ended') {
+    next = {
+      ...next,
+      tableMeta: {
+        ...next.tableMeta,
+        awaitingNextRound: false,
+      },
+    };
+  }
+  return next;
+}
+
+export function ensureBlackjackRoundSettled(state: GameState): GameState {
+  const round = state.blackjack;
+  if (!round || round.isSettled) {
+    return state;
+  }
+  if (round.status === 'banking' || round.status === 'bank-turn') {
+    return completeBankingOnState(state);
+  }
+  return state;
+}
+
+export function startNextRoundOnState(state: GameState): GameState {
+  if (state.tableMeta.gameStatus === 'ended') {
+    throw new Error('Table game has ended — no further rounds.');
+  }
+  if (!state.tableMeta.awaitingNextRound) {
+    throw new Error('No completed round awaiting Next Round.');
+  }
+  if (!state.deck) {
+    throw new Error('Shoe required to continue.');
+  }
+  const settled = ensureBlackjackRoundSettled(state);
+  log.info('nextRoundClicked', {
+    previousRound: settled.session.currentRound,
+    shoeStarted: settled.tableMeta.shoeStarted,
+    wasSettled: settled.blackjack?.isSettled ?? false,
+  });
+  const reset = resetBlackjackRound(settled.session, settled.players, settled.deck);
+  return {
+    ...settled,
+    session: reset.session,
+    players: reset.players,
+    deck: reset.deck,
+    blackjack: reset.round,
+    tableMeta: {
+      ...settled.tableMeta,
+      boxStakes: {},
+      bettingLocked: false,
+      awaitingNextRound: false,
+    },
+  };
+}
+
+export function takeInsuranceOnState(state: GameState, playerId: string): GameState {
+  const s = requireBlackjackState(state);
+  if (!s.blackjack) {
+    throw new Error('No active Blackjack round');
+  }
+  const result = takeInsuranceBet(
+    s.session,
+    s.players,
+    s.ledger,
+    s.blackjack,
+    playerId,
+    bankrollContextFromState(s),
+    getBlackjackProtocolForState(s),
+  );
+  let next: GameState = { ...s, session: result.session, ledger: result.ledger, blackjack: result.round };
+  if (allInsuranceResolved(next.session, result.round, getBlackjackProtocolForState(next))) {
+    const closed = closeInsuranceOffer(next.session, next.players, result.round);
+    next = { ...next, players: closed.players, blackjack: closed.round };
+    next = resolvePendingNaturalsAfterDealerPeek(next);
+  }
+  return next;
+}
+
+export function declineInsuranceOnState(state: GameState, playerId: string): GameState {
+  const s = requireBlackjackState(state);
+  if (!s.blackjack) {
+    throw new Error('No active Blackjack round');
+  }
+  const round = declineInsurance(s.blackjack, playerId);
+  let next: GameState = { ...s, blackjack: round };
+  if (allInsuranceResolved(next.session, round, getBlackjackProtocolForState(next))) {
+    const closed = closeInsuranceOffer(next.session, next.players, round);
+    next = { ...next, players: closed.players, blackjack: closed.round };
+    next = resolvePendingNaturalsAfterDealerPeek(next);
+  }
+  return next;
+}
+
+export function hitBlackjackOnState(state: GameState, handKey?: string): GameState {
+  const key = handKey ?? requireActiveHandKey(state);
+  return afterPlayerAction(applyHit(state, key));
+}
+
+export function standBlackjackOnState(state: GameState, handKey?: string): GameState {
+  const key = handKey ?? requireActiveHandKey(state);
+  return afterPlayerAction(applyStand(state, key));
+}
+
+export function doubleDownBlackjackOnState(state: GameState, handKey?: string): GameState {
+  const key = handKey ?? requireActiveHandKey(state);
+  return afterPlayerAction(applyDouble(state, key));
+}
+
+export function splitBlackjackOnState(state: GameState, handKey?: string): GameState {
+  const key = handKey ?? requireActiveHandKey(state);
+  return afterPlayerAction(applySplit(state, key));
+}
+
+export { takeEvenMoneyOnState, waitForBlackjackPayoutOnState } from './naturalBlackjack';
+
+export function newBlackjackRoundOnState(state: GameState): GameState {
+  const s = requireBlackjackState(state);
+  const result = resetBlackjackRound(s.session, s.players, s.deck);
+  log.info('New betting round');
+  return {
+    ...s,
+    session: result.session,
+    players: result.players,
+    deck: result.deck,
+    blackjack: result.round,
+  };
+}
+
+export function updateBlackjackFlowSettings(
+  state: GameState,
+  patch: Partial<BlackjackFlowSettings>,
+): GameState {
+  const merged = normalizeFlowSettings({ ...state.blackjackFlowSettings, ...patch });
+  if (patch.dealSpeedPreset) {
+    merged.autoDealDelayMs = dealDelayMsForPreset(patch.dealSpeedPreset);
+  }
+  if (merged.bankDrawMinDelayMs == null) {
+    merged.bankDrawMinDelayMs = 2000;
+  }
+  if (merged.bankDrawMaxDelayMs == null) {
+    merged.bankDrawMaxDelayMs = 5000;
+  }
+  if (merged.bankStandPauseMs == null) {
+    merged.bankStandPauseMs = 1500;
+  }
+  if (merged.bankingDisplayMs == null) {
+    merged.bankingDisplayMs = 1500;
+  }
+  return {
+    ...state,
+    blackjackFlowSettings: merged,
+  };
+}
+
+/** Auto-stand for human callers when play-flow threshold is met. */
+export function processPlayFlowAutoStands(state: GameState): GameState {
+  if (!state.blackjack || !state.deck || state.blackjack.status !== 'player-turns') {
+    return state;
+  }
+
+  let next = state;
+  let guard = 0;
+
+  while (next.blackjack?.status === 'player-turns' && next.blackjack.activeHandKey && guard < 30) {
+    guard += 1;
+    const handKey = next.blackjack.activeHandKey!;
+    const hand = next.blackjack.playerHands[handKey];
+    if (!hand || hand.actionStatus !== 'acting' || hand.naturalSettled) {
+      break;
+    }
+    if (next.blackjack.evenMoneyOfferHandKey) {
+      break;
+    }
+
+    const cards = cardsFromIds(next.deck!, hand.cardIds.filter(Boolean));
+    const { value, isBlackjack } = getBlackjackHandValue(cards);
+    if (isBlackjack) {
+      break;
+    }
+
+    const { playerId } = parseBlackjackHandKey(handKey);
+    if (isVirtualPlayer(next.players, playerId)) {
+      break;
+    }
+
+    const callerId = getCallerPersonIdForBox(next, playerId);
+    if (!callerId) {
+      break;
+    }
+
+    const threshold = autoStandThreshold(getPlayFlowForPerson(next, callerId));
+    if (threshold === null) {
+      break;
+    }
+
+    if (value > 21 || value < threshold) {
+      break;
+    }
+
+    next = applyStand(next, handKey);
+  }
+
+  return next;
+}
+
+function afterPlayerAction(state: GameState): GameState {
+  return syncBankPhaseOnState(processPlayFlowAutoStands(processVirtualTurns(state)));
+}
+
+/** Auto-play virtual players deterministically until a real player acts or round advances. */
+export function processVirtualTurns(state: GameState): GameState {
+  if (!state.blackjack || !state.deck || state.session.gameType !== 'blackjack') {
+    return state;
+  }
+
+  let next = state;
+  let guard = 0;
+
+  while (
+    next.blackjack?.status === 'player-turns' &&
+    next.blackjack.activeHandKey &&
+    guard < 30
+  ) {
+    guard += 1;
+    const handKey = next.blackjack.activeHandKey!;
+    const { playerId } = parseBlackjackHandKey(handKey);
+    if (!isVirtualPlayer(next.players, playerId)) {
+      break;
+    }
+    if (!next.deck) {
+      break;
+    }
+    const action = getVirtualBlackjackAction(next.blackjack, handKey, next.deck);
+
+    if (action === 'hit') {
+      next = applyHit(next, handKey);
+    } else {
+      next = applyStand(next, handKey);
+    }
+  }
+
+  return syncBankPhaseOnState(next);
+}
+
+export function advanceBlackjackProtocol(state: GameState): GameState {
+  if (state.blackjack?.status === 'resolved') {
+    return newBlackjackRoundOnState(state);
+  }
+  return state;
+}
+
+export { activePlayerIdFromRound };

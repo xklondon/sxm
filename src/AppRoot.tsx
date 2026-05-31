@@ -1,0 +1,205 @@
+import { useEffect, useState } from 'react';
+import App from './App';
+import { JoinTableCurtain } from './components/JoinTableCurtain';
+import { LoginScreen } from './screens/LoginScreen';
+import {
+  fetchInvitePreview,
+  fetchMe,
+  isSessionCheckConnectivityError,
+  type AuthUser,
+} from './api/client';
+import { isPublicAuthPath, shouldShowGlobalSessionLoading } from './auth/authBoot';
+import { isOnlineModeEnabled, apiPath } from './api/config';
+import { getStoredOnlineTableId } from './hooks/useOnlineMultiplayer';
+import { rememberPendingTable } from './session/pendingTable';
+import { parseJoinTableParams } from './engine/table/invites';
+
+const PENDING_JOIN_KEY = 'sxmcards:pending-join';
+
+export function savePendingJoin(search: string): void {
+  sessionStorage.setItem(PENDING_JOIN_KEY, search);
+}
+
+export function getPendingJoin(): string | null {
+  return sessionStorage.getItem(PENDING_JOIN_KEY);
+}
+
+export function consumePendingJoin(): string | null {
+  const value = sessionStorage.getItem(PENDING_JOIN_KEY);
+  if (value) {
+    sessionStorage.removeItem(PENDING_JOIN_KEY);
+  }
+  return value;
+}
+
+function inviteTokenFromSearch(search: string): string | null {
+  const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+  return params.get('token') ?? parseJoinTableParams(search)?.token ?? null;
+}
+
+export function AppRoot() {
+  const onlineMode = isOnlineModeEnabled();
+  const [authLoading, setAuthLoading] = useState(onlineMode);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [sessionWarning, setSessionWarning] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState<string | null>(null);
+  const [inviteTableName, setInviteTableName] = useState<string | null>(null);
+  const pathname = window.location.pathname;
+  const isLoginPath = pathname === '/login' || pathname.endsWith('/login');
+  const isJoinPath = pathname === '/join-table' || pathname.endsWith('/join-table');
+  const isPublicPath = isPublicAuthPath(pathname);
+  const loginError = new URLSearchParams(window.location.search).get('error');
+  const loginParams = new URLSearchParams(window.location.search);
+  const inviteAcceptToken = loginParams.get('token');
+  const pendingSearch = isJoinPath ? window.location.search : getPendingJoin() ?? '';
+
+  useEffect(() => {
+    if (!onlineMode) {
+      return;
+    }
+    setSessionWarning(null);
+    fetchMe()
+      .then(setUser)
+      .catch((err) => {
+        setUser(null);
+        if (!isPublicAuthPath(pathname) && isSessionCheckConnectivityError(err)) {
+          setSessionWarning('Could not reach the server. You can still request a magic link.');
+        }
+      })
+      .finally(() => setAuthLoading(false));
+  }, [onlineMode]);
+
+  useEffect(() => {
+    if (!onlineMode) {
+      return;
+    }
+    const token = inviteTokenFromSearch(pendingSearch);
+    if (!token) {
+      return;
+    }
+    fetchInvitePreview(token)
+      .then((preview) => {
+        setInviteEmail(preview.invitedEmail);
+        setInviteTableName(preview.tableName);
+      })
+      .catch(() => {
+        /* preview optional */
+      });
+  }, [onlineMode, pendingSearch]);
+
+  useEffect(() => {
+    if (!onlineMode || authLoading) {
+      return;
+    }
+    const token =
+      inviteAcceptToken ?? inviteTokenFromSearch(pendingSearch) ?? inviteTokenFromSearch(window.location.search);
+    if (!token) {
+      return;
+    }
+    if (isJoinPath || isLoginPath) {
+      window.location.assign(apiPath(`/api/tables/invites/accept?token=${encodeURIComponent(token)}`));
+    }
+  }, [onlineMode, authLoading, isJoinPath, isLoginPath, inviteAcceptToken, pendingSearch]);
+
+  useEffect(() => {
+    if (!onlineMode || authLoading || !user || isJoinPath) {
+      return;
+    }
+    const pending = getPendingJoin();
+    if (pending) {
+      window.location.assign(`/join-table${pending.startsWith('?') ? pending : `?${pending}`}`);
+    }
+  }, [onlineMode, authLoading, user, isJoinPath]);
+
+  useEffect(() => {
+    if (!onlineMode || authLoading || !user || !isLoginPath) {
+      return;
+    }
+    if (!getPendingJoin()) {
+      window.location.replace('/');
+    }
+  }, [onlineMode, authLoading, user, isLoginPath]);
+
+  useEffect(() => {
+    if (!onlineMode || authLoading) {
+      return;
+    }
+    if (!user && !isPublicPath) {
+      window.location.replace('/login');
+    }
+  }, [onlineMode, authLoading, user, isPublicPath]);
+
+  if (shouldShowGlobalSessionLoading(pathname, authLoading, onlineMode)) {
+    return (
+      <main className="login-screen">
+        <p>Loading session…</p>
+      </main>
+    );
+  }
+
+  if (onlineMode && isLoginPath) {
+    if (user) {
+      return null;
+    }
+    if (inviteAcceptToken || inviteTokenFromSearch(window.location.search)) {
+      return (
+        <main className="login-screen">
+          <p>Accepting invite…</p>
+        </main>
+      );
+    }
+    return (
+      <LoginScreen
+        error={loginError}
+        sessionWarning={sessionWarning}
+        checkingSession={authLoading}
+        invitedEmail={inviteEmail}
+        inviteTableName={inviteTableName}
+      />
+    );
+  }
+
+  if (onlineMode && isJoinPath) {
+    const joinToken = inviteTokenFromSearch(window.location.search);
+    if (joinToken) {
+      return (
+        <main className="login-screen">
+          <p>Accepting invite…</p>
+        </main>
+      );
+    }
+    if (!user) {
+      savePendingJoin(window.location.search);
+      return (
+        <LoginScreen
+          error="Sign in to join this table."
+          sessionWarning={sessionWarning}
+          checkingSession={authLoading}
+          invitedEmail={inviteEmail}
+          inviteTableName={inviteTableName}
+        />
+      );
+    }
+    return (
+      <JoinTableCurtain
+        user={user}
+        onJoined={(tableId) => {
+          window.history.replaceState({}, '', '/');
+          window.location.assign(`/?table=${encodeURIComponent(tableId)}`);
+        }}
+      />
+    );
+  }
+
+  if (onlineMode && !user) {
+    return null;
+  }
+
+  const tableFromUrl = new URLSearchParams(window.location.search).get('table');
+  if (tableFromUrl) {
+    rememberPendingTable(tableFromUrl);
+  }
+  const onlineTableId = tableFromUrl ?? getStoredOnlineTableId();
+
+  return <App user={user} onlineMode={onlineMode} onlineTableId={onlineTableId} />;
+}

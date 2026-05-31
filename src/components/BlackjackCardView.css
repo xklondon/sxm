@@ -1,0 +1,1463 @@
+/* Card View — Tinder-style mobile (Phase 14) */
+
+
+
+.bj-phone-view {
+
+  display: flex;
+
+  flex-direction: column;
+
+  width: 100%;
+
+  height: 100%;
+
+  min-height: 0;
+
+  flex: 1;
+
+  overflow: hidden;
+
+  color: var(--ds-color-text);
+
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, rgb(251 191 36 / 0.06) 0%, transparent 55%),
+    linear-gradient(180deg, var(--ds-color-felt-dark) 0%, var(--ds-color-felt) 42%, var(--ds-color-felt-mid) 100%);
+
+}
+
+
+
+.bj-phone-view__app-bar {
+
+  flex: 0 0 auto;
+
+  padding: var(--ds-space-1) var(--ds-space-2);
+
+  min-height: 2rem;
+
+}
+
+
+
+.bj-phone-view__app-bar .ds-app-brand {
+
+  font-size: 0.65rem;
+
+}
+
+
+
+.bj-phone-view__app-bar .ds-btn--icon {
+
+  width: 1.75rem;
+
+  height: 1.75rem;
+
+  font-size: 0.7rem;
+
+}
+
+
+
+.bj-phone-view__table-btn {
+
+  font-size: 0.65rem;
+
+}
+
+.bj-phone-view__header-balance {
+  font-family: var(--ds-font-mono);
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-color-gold);
+  margin-right: 0.15rem;
+}
+
+.bj-phone-view__card-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 0.15rem 0.35rem;
+  border-bottom: 1px solid var(--ds-color-border-subtle);
+}
+
+.bj-phone-view__hero-label {
+  font-size: 0.52rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-color-gold);
+}
+
+.bj-phone-view__mini-hand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+  padding: 0.25rem 0.3rem;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--ds-color-border-subtle);
+  background: rgb(0 0 0 / 0.22);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  min-width: 3.6rem;
+  max-width: 4.5rem;
+}
+
+.bj-phone-view__mini-hand-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  width: 100%;
+}
+
+.bj-phone-view__mini-hand-box {
+  font-size: 0.42rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-color-gold);
+}
+
+.bj-phone-view__mini-hand-name {
+  font-size: 0.48rem;
+  font-weight: var(--ds-weight-bold);
+}
+
+.bj-phone-view__mini-hand-cards {
+  display: flex;
+  gap: 0.05rem;
+  transform: scale(0.55);
+  transform-origin: center;
+  min-height: 1.6rem;
+}
+
+.bj-phone-view__mini-card {
+  flex: 0 0 auto;
+}
+
+.bj-phone-view__mini-hand-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.15rem;
+  font-size: 0.42rem;
+  font-family: var(--ds-font-mono);
+  color: var(--ds-color-text-muted);
+}
+
+.bj-phone-view__mini-hand-status--playing {
+  color: var(--ds-color-success);
+}
+
+.bj-phone-view__mini-hand-status--bust {
+  color: var(--ds-color-danger);
+}
+
+.bj-phone-view__mini-hand-status--blackjack {
+  color: var(--ds-color-gold);
+}
+
+.bj-phone-view__mini-row {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.35rem;
+}
+
+.bj-casino__felt-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+}
+
+.bj-phone-view__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.bj-phone-view__side-panel {
+  flex: 0 0 auto;
+  width: 5.5rem;
+  padding: 0.35rem 0.4rem;
+  background: rgb(0 0 0 / 0.22);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-md);
+  font-size: 0.5rem;
+  align-self: flex-start;
+}
+
+.bj-phone-view__side-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-color-gold);
+}
+
+.bj-phone-view__side-dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.bj-phone-view__side-dl div {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.05rem;
+}
+
+.bj-phone-view__side-dl dt {
+  margin: 0;
+  color: var(--ds-color-text-muted);
+  font-size: 0.48rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.bj-phone-view__side-dl dd {
+  margin: 0;
+  color: var(--ds-color-text);
+  font-weight: var(--ds-weight-semibold);
+  line-height: 1.2;
+}
+
+.bj-phone-view__side-link {
+  margin-top: 0.3rem;
+  font: inherit;
+  font-size: 0.48rem;
+  color: var(--ds-color-gold);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.bj-phone-view__top-area {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.35rem 0.25rem;
+  border-bottom: 1px solid var(--ds-color-border-subtle);
+}
+
+.bj-phone-view__dealer-cards {
+  display: flex;
+  justify-content: center;
+  gap: 0.15rem;
+  transform: scale(0.72);
+  transform-origin: center top;
+  min-height: 2.5rem;
+}
+
+.bj-phone-view__dealer-rule {
+  margin: 0;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-color-text-muted);
+}
+
+.bj-phone-view__phase-msg {
+  margin: 0;
+  text-align: center;
+  font-family: var(--ds-font-mono);
+  font-size: 0.58rem;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-color-success);
+  line-height: 1.25;
+}
+
+.bj-phone-view__phase-msg--game-over {
+  white-space: pre-line;
+  color: var(--ds-color-gold);
+}
+
+.bj-phone-view__active-box {
+  margin: 0;
+  font-size: 0.52rem;
+  color: var(--ds-color-gold);
+  letter-spacing: 0.06em;
+}
+
+.bj-phone-view__playing-for {
+  margin: 0;
+  font-size: 0.5rem;
+  color: var(--ds-color-text-muted);
+}
+
+.bj-phone-view__playing-for strong {
+  color: var(--ds-color-gold);
+  font-weight: var(--ds-weight-bold);
+}
+
+.bj-phone-view__betting-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.35rem;
+}
+
+.bj-phone-view__bet-secondary-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.bj-phone-view__bet-chip-wrap--main {
+  width: min(100%, 11rem);
+}
+
+.bj-phone-view__bet-chip-wrap--small {
+  width: 3.2rem;
+}
+
+.bj-phone-view__bet-chip--hero {
+  min-height: 7.5rem;
+  padding: 0.5rem 0.35rem 0.65rem;
+  border-width: 2px;
+  box-shadow: 0 0 12px rgb(251 191 36 / 0.15);
+}
+
+.bj-phone-view__bet-chip--mini {
+  min-height: 3.4rem;
+  padding: 0.25rem 0.15rem 0.35rem;
+}
+
+.bj-phone-view__bet-box-label {
+  font-size: 0.52rem;
+  color: var(--ds-color-gold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bj-phone-view__bet-box-label--mini {
+  font-size: 0.42rem;
+}
+
+.bj-phone-view__box-status-row {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.25rem 0.35rem;
+}
+
+.bj-phone-view__box-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.2rem 0.35rem;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid var(--ds-color-border-subtle);
+  background: rgb(0 0 0 / 0.2);
+  color: var(--ds-color-text-muted);
+  font: inherit;
+  cursor: pointer;
+  min-width: 2.6rem;
+}
+
+.bj-phone-view__box-pill--active {
+  border-color: var(--ds-color-gold);
+  color: var(--ds-color-gold);
+  box-shadow: 0 0 8px var(--ds-color-gold-glow);
+}
+
+.bj-phone-view__box-pill--open {
+  border-style: dashed;
+}
+
+.bj-phone-view__box-pill-avatar {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 0.12);
+  font-size: 0.55rem;
+  font-weight: var(--ds-weight-bold);
+}
+
+.bj-phone-view__box-pill-label {
+  font-size: 0.42rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bj-phone-view__cards--stitched .bj-phone-view__card-wrap {
+  margin-left: -1.8rem;
+}
+
+.bj-phone-view__cards--stitched .bj-phone-view__card-wrap:first-child {
+  margin-left: 0;
+}
+
+.bj-phone-view__wager-badge {
+  margin-top: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px dashed var(--ds-color-border);
+  border-radius: var(--ds-radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.bj-phone-view__wager-label {
+  font-size: 0.45rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-color-text-muted);
+}
+
+.bj-phone-view__wager-amount {
+  font-size: 0.72rem;
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-color-gold);
+}
+
+.bj-phone-view__settle-results {
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.58rem;
+}
+
+@media (max-width: 520px) {
+  .bj-phone-view__layout {
+    flex-direction: column;
+  }
+
+  .bj-phone-view__side-panel {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.25rem;
+    align-self: stretch;
+  }
+
+  .bj-phone-view__side-title {
+    grid-column: 1 / -1;
+  }
+
+  .bj-phone-view__side-link {
+    grid-column: 1 / -1;
+  }
+}
+
+
+
+/* Compact top info */
+
+.bj-phone-view__game-header {
+
+  flex: 0 0 auto;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 0.3rem 0.45rem;
+
+  padding: 0.1rem var(--ds-space-2);
+
+  font-family: var(--ds-font-mono);
+
+  font-size: 0.52rem;
+
+  color: var(--ds-color-text-muted);
+
+  border-bottom: 1px solid var(--ds-color-border-subtle);
+
+}
+
+
+
+.bj-phone-view__game {
+
+  font-weight: var(--ds-weight-extrabold);
+
+  color: var(--ds-color-gold);
+
+  letter-spacing: 0.06em;
+
+}
+
+
+
+.bj-phone-view__game-line {
+
+  white-space: nowrap;
+
+}
+
+
+
+.bj-phone-view__turn-line {
+
+  flex: 0 0 auto;
+
+  margin: 0;
+
+  padding: 0.15rem var(--ds-space-2);
+
+  text-align: center;
+
+  font-family: var(--ds-font-mono);
+
+  font-size: 0.58rem;
+
+  font-weight: var(--ds-weight-semibold);
+
+  color: var(--ds-color-gold);
+
+  line-height: 1.2;
+
+}
+
+
+
+.bj-phone-view__center-status {
+
+  flex: 0 0 auto;
+
+  margin: 0;
+
+  padding: 0.15rem var(--ds-space-2);
+
+  text-align: center;
+
+  font-family: var(--ds-font-mono);
+
+  font-size: 0.58rem;
+
+  font-weight: var(--ds-weight-semibold);
+
+  color: var(--ds-color-success);
+
+  line-height: 1.2;
+
+}
+
+.bj-phone-view__center-status--game-over {
+  white-space: pre-line;
+  line-height: 1.35;
+}
+
+.bj-phone-view__mini-hand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin-bottom: 0.2rem;
+}
+
+.bj-phone-view__mini-cards {
+  display: flex;
+  gap: 0.1rem;
+  transform: scale(0.55);
+  transform-origin: center top;
+}
+
+.bj-phone-view__mini-meta {
+  margin: 0;
+  font-size: 0.52rem;
+  opacity: 0.85;
+}
+
+.bj-phone-view__tray-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  width: 100%;
+}
+
+.bj-phone-view__tray-hint {
+  margin: 0;
+  font-size: 0.52rem;
+  color: #fca5a5;
+  text-align: center;
+}
+
+.bj-phone-view__bet-clear {
+  font-size: 0.48rem;
+  margin-left: 0.1rem;
+}
+
+
+
+/* Play area — cards flanked by vertical Stay / Hit */
+
+.bj-phone-view__play-area {
+
+  flex: 1 1 auto;
+
+  display: flex;
+
+  align-items: stretch;
+
+  min-height: 0;
+
+  width: 100%;
+
+}
+
+
+
+.bj-phone-view__play-area--controls {
+
+  gap: 0.15rem;
+
+  padding: 0 0.1rem;
+
+}
+
+
+
+.bj-phone-view__side-btn {
+
+  flex: 0 0 2.65rem;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  align-self: stretch;
+
+  min-height: 0;
+
+  padding: 0.35rem 0.2rem;
+
+  border-radius: var(--ds-radius-md);
+
+  font: inherit;
+
+  font-size: 0.62rem;
+
+  font-weight: var(--ds-weight-extrabold);
+
+  letter-spacing: 0.06em;
+
+  text-transform: uppercase;
+
+  writing-mode: vertical-lr;
+
+  text-orientation: mixed;
+
+  opacity: 0.45;
+
+  transition: opacity 0.12s ease, box-shadow 0.12s ease;
+
+}
+
+
+
+.bj-phone-view__side-btn--live {
+
+  opacity: 1;
+
+}
+
+
+
+.bj-phone-view__side-btn--live:not(:disabled) {
+
+  box-shadow: var(--ds-glow-gold);
+
+}
+
+
+
+.bj-phone-view__side-btn--stay:not(:disabled).bj-phone-view__side-btn--live {
+
+  box-shadow: 0 0 12px rgb(110 231 183 / 0.45);
+
+}
+
+
+
+.bj-phone-view__side-label {
+
+  display: block;
+
+  transform: rotate(180deg);
+
+}
+
+
+
+.bj-phone-view__stage {
+
+  flex: 1 1 auto;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 0;
+
+  min-width: 0;
+
+  padding: 0.1rem;
+
+  touch-action: none;
+
+  overflow: hidden;
+
+}
+
+
+
+.bj-phone-view__hand,
+
+.bj-phone-view__bank-hero {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  width: 100%;
+
+}
+
+
+
+.bj-phone-view__cards--fan {
+
+  display: flex;
+
+  justify-content: center;
+
+  perspective: 600px;
+
+}
+
+
+
+.bj-phone-view__card-wrap {
+
+  margin-left: calc(var(--card-i, 0) * -1.35rem);
+
+  transform: rotate(calc((var(--card-i, 0) - 0.5) * 5deg));
+
+}
+
+
+
+.bj-phone-view__card-wrap:first-child {
+
+  margin-left: 0;
+
+}
+
+
+
+.bj-phone-view__cards .playing-card.bj-phone-card--hero {
+
+  width: min(42vw, 7.5rem);
+
+  min-height: min(58vw, 11rem);
+
+  font-size: 1.35rem;
+
+}
+
+
+
+.bj-phone-view__cards--bank .playing-card.bj-phone-card--bank {
+
+  width: min(34vw, 6rem);
+
+  min-height: min(48vw, 8.5rem);
+
+  font-size: 1rem;
+
+}
+
+
+
+.bj-phone-view__total {
+
+  margin-top: 0.45rem;
+
+  font-size: 1.35rem;
+
+  font-weight: var(--ds-weight-extrabold);
+
+  padding: 0.2rem 0.85rem;
+
+}
+
+.bj-phone-view__hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  margin-bottom: 0.2rem;
+}
+
+.bj-phone-view__total--hero {
+  margin-top: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  min-height: 2.75rem;
+  padding: 0.4rem 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ds-color-gold);
+  border-radius: var(--ds-radius-full);
+  box-shadow: 0 0 10px rgb(251 191 36 / 0.2);
+}
+
+.bj-phone-view__extras--hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  margin-top: 0;
+}
+
+.bj-phone-view__action-btn--tappable {
+  min-height: 44px;
+  min-width: 3.5rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.75rem;
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: 0.04em;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-color-border);
+  background: rgb(0 0 0 / 0.35);
+  color: var(--ds-color-text);
+}
+
+.bj-phone-view__action-btn--tappable:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.bj-phone-view__action-btn--tappable:disabled {
+  opacity: 0.42;
+  color: var(--ds-color-text-muted);
+  border-color: var(--ds-color-border-subtle);
+  cursor: not-allowed;
+}
+
+
+
+.bj-phone-view__extras {
+
+  display: flex;
+
+  gap: 0.25rem;
+
+  margin-top: 0.25rem;
+
+}
+
+
+
+.bj-phone-view__extra-btn {
+
+  font: inherit;
+
+  font-size: 0.48rem;
+
+  padding: 0.15rem 0.35rem;
+
+  border-radius: var(--ds-radius-sm);
+
+  border: 1px solid var(--ds-color-border-subtle);
+
+  background: rgb(0 0 0 / 0.25);
+
+  color: var(--ds-color-text-muted);
+
+  cursor: pointer;
+
+}
+
+
+
+.bj-phone-view__extra-btn:disabled {
+
+  opacity: 0.35;
+
+}
+
+
+
+.bj-phone-view__phase-msg {
+
+  text-align: center;
+  white-space: pre-line;
+
+  font-size: 0.68rem;
+
+  padding: 0.25rem;
+
+  margin: 0;
+
+}
+
+
+
+.bj-phone-view__result-line {
+
+  font-size: 0.58rem;
+
+  margin: 0.08rem 0;
+
+}
+
+
+
+.bj-phone-view__swipe-hint,
+
+.bj-phone-view__aid {
+
+  font-size: 0.58rem;
+
+  margin: 0.1rem 0 0;
+
+  text-align: center;
+
+}
+
+
+
+/* Tiny other-boxes strip during play */
+
+.bj-phone-view__play-strip {
+
+  flex: 0 0 auto;
+
+  padding: 0.1rem var(--ds-space-2) 0.15rem;
+
+  background: rgb(0 0 0 / 0.2);
+
+  border-top: 1px solid var(--ds-color-border-subtle);
+
+}
+
+
+
+.bj-phone-view__mini-row {
+
+  display: flex;
+
+  flex-wrap: nowrap;
+
+  gap: 0.2rem;
+
+  overflow-x: auto;
+
+  justify-content: center;
+
+  scrollbar-width: none;
+
+}
+
+
+
+.bj-phone-view__mini-row::-webkit-scrollbar {
+
+  display: none;
+
+}
+
+
+
+.bj-phone-view__mini-tile {
+
+  flex: 0 0 auto;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  min-width: 1.5rem;
+
+  padding: 0.06rem 0.2rem;
+
+  border-radius: var(--ds-radius-sm);
+
+  border: 1px solid var(--ds-color-border-subtle);
+
+  background: rgb(0 0 0 / 0.2);
+
+  color: var(--ds-color-text-muted);
+
+  font: inherit;
+
+  font-size: 0.42rem;
+
+  cursor: pointer;
+
+}
+
+
+
+.bj-phone-view__mini-tile--turn {
+
+  border-color: var(--ds-color-success);
+
+  color: var(--ds-color-success);
+
+}
+
+
+
+.bj-phone-view__mini-label {
+
+  font-weight: var(--ds-weight-bold);
+
+  line-height: 1;
+
+}
+
+
+
+.bj-phone-view__mini-total {
+
+  font-family: var(--ds-font-mono);
+
+  font-size: 0.4rem;
+
+  opacity: 0.8;
+
+}
+
+
+
+/* Betting footer — only when not in play */
+
+.bj-phone-view__bottom {
+
+  flex: 0 0 auto;
+
+  padding: 0.15rem var(--ds-space-2) 0.25rem;
+
+  background: rgb(0 0 0 / 0.35);
+
+  border-top: 1px solid var(--ds-color-border-subtle);
+
+}
+
+
+
+.bj-phone-view__tray {
+
+  margin-bottom: 0.12rem;
+
+}
+
+
+
+.bj-phone-view__tray .chip-tray {
+
+  padding: 0.12rem 0.25rem;
+
+  gap: 0.2rem;
+
+}
+
+
+
+.bj-phone-view__tray .chip-token {
+
+  width: 1.15rem;
+
+  height: 1.15rem;
+
+}
+
+
+
+.bj-phone-view__bet-row {
+
+  display: flex;
+
+  flex-wrap: nowrap;
+
+  gap: 0.2rem;
+
+  overflow-x: auto;
+
+  justify-content: flex-start;
+
+  scrollbar-width: none;
+
+}
+
+
+
+.bj-phone-view__bet-row::-webkit-scrollbar {
+
+  display: none;
+
+}
+
+
+
+.bj-phone-view__bet-chip-wrap {
+
+  flex: 0 0 auto;
+
+}
+
+
+
+.bj-phone-view__bet-chip {
+
+  position: relative;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  width: 2rem;
+
+  min-height: 1.65rem;
+
+  border-radius: var(--ds-radius-sm);
+
+  border: 1px dashed var(--ds-color-border-subtle);
+
+  background: rgb(0 0 0 / 0.2);
+
+}
+
+
+
+.bj-phone-view__bet-chip--owned {
+
+  border-style: solid;
+
+}
+
+
+
+.bj-phone-view__bet-chip--sel {
+
+  border-color: var(--ds-color-gold);
+
+}
+
+
+
+.bj-phone-view__bet-chip-btn {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  width: 100%;
+
+  border: none;
+
+  background: transparent;
+
+  color: inherit;
+
+  font: inherit;
+
+  font-size: 0.48rem;
+
+  font-weight: var(--ds-weight-bold);
+
+  padding: 0.1rem;
+
+  cursor: pointer;
+
+}
+
+
+
+.bj-phone-view__bet-chip-x {
+
+  position: absolute;
+
+  top: -0.12rem;
+
+  right: -0.12rem;
+
+  width: 0.7rem;
+
+  height: 0.7rem;
+
+  padding: 0;
+
+  font-size: 0.48rem;
+
+  line-height: 1;
+
+  border-radius: 50%;
+
+  background: rgb(0 0 0 / 0.6);
+
+  color: var(--ds-color-danger);
+
+  border: none;
+
+}
+
+
+
+.bj-phone-view__bet-stake {
+
+  position: absolute;
+
+  top: 50%;
+
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  z-index: 2;
+
+  font-family: var(--ds-font-mono);
+
+  font-size: 0.62rem;
+
+  font-weight: 700;
+
+  color: var(--ds-color-gold);
+
+  text-shadow: 0 0 4px rgb(0 0 0 / 0.85);
+
+  pointer-events: none;
+
+}
+
+
+
+
+.bj-phone-view__personal-ledger {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 0.2rem var(--ds-space-2) 0;
+}
+
+.bj-phone-view__phase-actions {
+  flex: 0 0 auto;
+  padding: 0.25rem var(--ds-space-2);
+  text-align: center;
+}
+
+.bj-phone-view__phase-actions-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.62rem;
+  color: var(--ds-color-gold);
+}
+
+.bj-phone-view__phase-actions--wait {
+  font-size: 0.58rem;
+  color: var(--ds-color-text-muted);
+}
+
+.bj-phone-view__ins-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.bj-phone-view__ins-label {
+  font-size: 0.55rem;
+  width: 100%;
+}
+
+.bj-phone-view__ins-btn {
+  font-size: 0.58rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.bj-phone-view__bet-chip .stake-chips__chip--top {
+  z-index: 2;
+}
+
+.bj-phone-view__bet-chip .stake-chips {
+
+  transform: scale(0.6);
+
+  margin-top: -0.08rem;
+
+}
+
+
+
+.bj-phone-view__deal-row {
+
+  display: flex;
+
+  gap: 0.25rem;
+
+  margin-top: 0.15rem;
+
+}
+
+
+
+.bj-phone-view__deal-btn {
+
+  flex: 1;
+
+  padding: 0.28rem;
+
+  font-size: 0.58rem;
+
+}
+
+
+
+.bj-phone-view__shuffle {
+
+  padding: 0.28rem 0.4rem;
+
+  font-size: 0.52rem;
+
+}
+
+
+
+.bj-phone-view__timer {
+
+  width: 100%;
+
+  margin-top: 0.12rem;
+
+  font-size: 0.52rem;
+
+  padding: 0.2rem;
+
+}
+
+
+
+@media (min-width: 400px) {
+
+  .bj-phone-view__side-btn {
+
+    flex-basis: 3rem;
+
+    font-size: 0.68rem;
+
+  }
+
+
+
+  .bj-phone-view__cards .playing-card.bj-phone-card--hero {
+
+    width: min(38vw, 8rem);
+
+    min-height: min(52vw, 11.5rem);
+
+  }
+
+}
+
+/* ── Betting pulse — derived from state, survives WebSocket updates ── */
+@keyframes bj-bet-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(251 191 36 / 0.45); }
+  50% { box-shadow: 0 0 0 6px rgb(251 191 36 / 0); }
+}
+
+.bj-phone-view__bet-chip--pulse {
+  animation: bj-bet-pulse 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bj-phone-view__bet-chip--pulse {
+    animation: none;
+    box-shadow: 0 0 0 2px rgb(251 191 36 / 0.4);
+  }
+}
+
+/* Box value hidden on mobile Card View — mobile layout unchanged. */
+.bj-phone-view__box-value {
+  display: none;
+}
+
+/* ── Desktop Card View only — box value prominence + active highlight ── */
+@media (min-width: 641px) {
+  .bj-phone-view__box-value {
+    display: block;
+    order: -1;
+    font-family: var(--ds-font-mono);
+    font-size: 1.6rem;
+    font-weight: var(--ds-weight-extrabold);
+    line-height: 1;
+    color: var(--ds-color-text);
+  }
+
+  .bj-phone-view__box-value--bust {
+    font-size: 1.25rem;
+    color: var(--ds-color-danger);
+  }
+
+  /* Value dominates over box number and player name. */
+  .bj-phone-view__mini-hand-box {
+    font-size: 0.5rem;
+  }
+
+  .bj-phone-view__mini-hand-name {
+    font-size: 0.6rem;
+  }
+
+  .bj-phone-view__mini-hand--active {
+    border-color: var(--ds-color-gold);
+    background: rgb(251 191 36 / 0.16);
+    box-shadow:
+      0 0 0 1px var(--ds-color-gold),
+      0 0 14px var(--ds-color-gold-glow);
+  }
+}
+
+

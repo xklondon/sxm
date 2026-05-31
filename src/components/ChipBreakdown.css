@@ -1,0 +1,16 @@
+.chip-breakdown {
+  display: block;
+  font-family: var(--ds-font-mono);
+  font-size: 0.5rem;
+  line-height: 1.35;
+  color: rgb(255 255 255 / 0.72);
+  margin-top: 0.15rem;
+}
+
+.chip-breakdown--compact {
+  font-size: 0.48rem;
+}
+
+.chip-breakdown--empty {
+  opacity: 0.55;
+}

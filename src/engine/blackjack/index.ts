@@ -1,0 +1,264 @@
+export {
+  createBlackjackRound,
+  dealInitialBlackjackCards,
+  doubleDownBlackjackPlayer,
+  getBlackjackHandStatus,
+  getBlackjackHandValue,
+  hitBlackjackPlayer,
+  placeBlackjackBet,
+  playDealerHand,
+  resolveBlackjackRound,
+  resetBlackjackRound,
+  splitBlackjackPlayer,
+  standBlackjackPlayer,
+  applyBlackjackToGameState,
+  runDealerAndResolveIfNeeded,
+} from './round';
+
+export {
+  startBlackjackRound,
+  placeBlackjackBetOnState,
+  beginInitialDealOnState,
+  dealNextInitialCardOnState,
+  dealInitialBlackjackOnState,
+  dealCardsFromState,
+  dealCardsButtonOnState,
+  prepareDealState,
+  shuffleToStartOnState,
+  lockBetsAndShuffleOnState,
+  lockBetsAndStartRoundOnState,
+  shuffleFreshShoeOnState,
+  applyBoxStakesToRound,
+  drawBankCardOnState,
+  completeBankingOnState,
+  ensureBlackjackRoundSettled,
+  startNextRoundOnState,
+  syncBankPhaseOnState,
+  hitBlackjackOnState,
+  standBlackjackOnState,
+  doubleDownBlackjackOnState,
+  splitBlackjackOnState,
+  takeInsuranceOnState,
+  declineInsuranceOnState,
+  newBlackjackRoundOnState,
+  updateBlackjackFlowSettings,
+  processVirtualTurns,
+  processPlayFlowAutoStands,
+  activePlayerIdFromRound,
+  advanceBlackjackProtocol,
+} from './gameState';
+
+export {
+  canPlaceBlackjackBet,
+  canDealInitialBlackjack,
+  canHitBlackjack,
+  canStandBlackjack,
+  canDoubleBlackjack,
+  canSplitBlackjack,
+  canDoubleBlackjackForState,
+  canSplitBlackjackForState,
+  canDrawBankCard,
+  canCompleteBanking,
+  canDealNextInitialCard,
+  runBlackjackEngineChecks,
+} from './validation';
+
+export {
+  DEFAULT_BLACKJACK_SETTINGS,
+  mergeBlackjackSettings,
+} from './settings';
+export type { BlackjackSettings } from './settings';
+
+export { createBlackjackShoe, shuffleBlackjackShoe, getShoeDeckCount } from './shoe';
+
+export { cardsFromIds } from './hand';
+export { getBettingPlayerIds, hasAnyConfirmedBets, allBetsPlaced, getBoxSlotNumber } from './helpers';
+export { blackjackHandKey, parseBlackjackHandKey, listHandKeysForPlayer, countSplitsForPlayer } from './handKeys';
+export { orderedHandKeys } from './helpers';
+
+export { BLACKJACK_UX, dealDelaysForPace } from './uxSettings';
+export type { BlackjackDealPace } from './uxSettings';
+export { buildInitialDealSequence } from './dealSequence';
+export type { DealRevealTarget } from './dealSequence';
+
+export {
+  DEFAULT_BLACKJACK_FLOW_SETTINGS,
+  CARD_TIMER_PRESETS,
+  DEAL_SPEED_MS,
+  dealDelayMsForPreset,
+  randomBankDrawDelayMs,
+} from './flowSettings';
+export type { BlackjackFlowSettings, DealMode, AdviceCostMode, DealSpeedPreset } from './flowSettings';
+
+export {
+  getStakeForBox,
+  getStakeBetValidationMessage,
+  getStakeChipsForBox,
+  getBoxesWithStakes,
+  hasAnyStakes,
+  isBettingOpen,
+  addChipToBoxStake,
+  clearBoxStake,
+  removeLastChipFromBoxStake,
+  confirmBoxStake,
+  unlockBettingForNextRound,
+} from './stakes';
+export type { StakeChipValue } from './stakes';
+
+export {
+  getEligibleDealBoxes,
+  getDealBlockReason,
+  getTableMinimumBet,
+  hasEligibleDealBoxes,
+  isStakeBelowMinimum,
+  canChangeMinimumBet,
+  setTableMinimumBet,
+  logDealCardsAudit,
+} from './dealEligibility';
+
+export {
+  getBlackjackProtocolPhase,
+  getAllowedBlackjackActionsForPhase,
+  canStartCards,
+  canDealCards,
+  getBoxesWithConfirmedBets,
+  getActiveBettingBoxes,
+  getConfirmedBetForBox,
+  hasAnyConfirmedBetsFromState,
+  getCardsBlockReason,
+  getProtocolTableMessage,
+  getCenterStatusMessage,
+  getBankFinalMessage,
+  getActiveHandKeysForDeal,
+  syncConfirmedBetsToRound,
+  logPendingBet,
+  logConfirmBet,
+  logConfirmedBetsBeforeCards,
+  logDealPlan,
+  logDealSanity,
+  logDealDiagnostics,
+  getOccupiedBoxPlayerIds,
+} from './protocol';
+export type { BlackjackProtocolPhase, BlackjackProtocolAction } from './protocol';
+export type { InitialDealStep } from './initialDeal';
+export { drawSingleBankCard, bankNeedsAnotherCard, ensureDealerHoleCardDealt } from './bankTurn';
+export { getBoxComment, getBankLabel } from './boxComments';
+export { getAidAdvice, getStructuredAidAdvice } from './advice';
+export type { AidAdviceResult, AidStructuredAdvice } from './advice';
+export {
+  LAS_VEGAS_BLACKJACK_RULES,
+  INSURANCE_PAYOUT_RATIO,
+  runBlackjackRulesAudit,
+  isLasVegasDefaultSettings,
+  insuranceBetMax,
+  insuranceWinPayout,
+} from './rules';
+export type { RuleAuditResult } from './rules';
+
+export {
+  getActiveBlackjackProtocol,
+  getBlackjackProtocolById,
+  getBlackjackProtocolOrDefault,
+  listBlackjackProtocolPresets,
+  protocolToBlackjackSettings,
+  isSettingsMatchingProtocol,
+  getProtocolDisplayRules,
+  applyProtocolToStateFields,
+  LAS_VEGAS_PROTOCOL,
+  EUROPEAN_SHOE_PROTOCOL,
+  CLASSIC_HOME_PROTOCOL,
+  ACTIVE_BLACKJACK_PROTOCOL,
+  DEFAULT_BLACKJACK_PROTOCOL_ID,
+  BLACKJACK_PROTOCOL_PRESETS,
+} from './protocols';
+export type {
+  AidRecommendedAction,
+  AidProfile,
+  BlackjackProtocol,
+  DealingRules,
+  ProtocolDisplayRule,
+} from './protocols';
+
+export {
+  getBlackjackProtocolForState,
+  setBlackjackProtocolOnState,
+  lockProtocolOnState,
+  getVisibleDealerCardIds,
+  listAllBlackjackProtocolsForSelector,
+} from './protocolState';
+
+export { getProtocolMessage } from './protocolMessages';
+export { formatRoundResultSummary, buildRoundResultSummary } from './roundResultSummary';
+export { shouldDealerDraw, evaluateDealerDraw } from './dealerDraw';
+
+export {
+  migrateInitialDealMode,
+  isStepwiseInitialDeal,
+  isNaturalInitialDeal,
+  clampNaturalDealDelayMs,
+  DEFAULT_NATURAL_DEAL_DELAY_MS,
+} from './dealing/dealingModes';
+export type { InitialDealMode } from './dealing/dealingModes';
+export { buildNaturalDealSequence } from './dealing/naturalDealSequence';
+
+export { normalizeFlowSettings } from './flowSettings';
+
+export {
+  PLAY_FLOW_OPTIONS,
+  getPlayFlowForPerson,
+  setPersonPlayFlow,
+  autoStandThreshold,
+  shouldAutoStandHandValue,
+  formatInsufficientChipsMessage,
+  isInsufficientChipsMessage,
+} from './playFlow';
+
+export {
+  takeEvenMoneyOnState,
+  waitForBlackjackPayoutOnState,
+  resolvePendingNaturalsAfterDealerPeek,
+} from './naturalBlackjack';
+
+export {
+  shouldSkipBankDraw,
+  applySkipBankIfNeeded,
+  allPlayerHandsEliminated,
+  ALL_PLAYERS_BUST_MESSAGE,
+} from './roundFlow';
+
+export {
+  canDoubleUnderProtocol,
+  canSplitUnderProtocol,
+  canHitUnderProtocol,
+  canStandUnderProtocol,
+  getAllowedActionsForHand,
+  getBlackjackPayout,
+  getInsuranceRules,
+  getDealerPeekPolicy,
+  getDealerDrawDecision,
+  isBetValidUnderProtocol,
+  formatMinBetMultipleMessage,
+  shouldOfferEvenMoney,
+  shouldPayNaturalImmediately,
+  buildActiveRulesHandContext,
+} from './protocols/activeRules';
+
+export { BUST_MESSAGE, settleBustHandOnState } from './bustSettlement';
+
+export {
+  reasonAidAdvice,
+  formatAidStructuredAdvice,
+  lookupBasicStrategyAction,
+  BLACKJACK_INTEL,
+} from './aid';
+
+export {
+  runBlackjackSanitySuite,
+  runProtocolSanityChecks,
+  runDealingSanityChecks,
+  runBankrollSanityChecks,
+  runGameplaySanityChecks,
+  runSettlementSanityChecks,
+  formatSanityFailures,
+} from './sanity';
+export type { SanityCheckResult, SanitySuiteResult } from './sanity';

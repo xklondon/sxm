@@ -1,0 +1,311 @@
+import type { GameState } from '../../types';
+import type { BoxSlotState } from '../../types/table';
+import { log } from '../../utils/logger';
+import { addPlayer, mergeSessionUpdate } from './session';
+import { listPersonBankrollOwnerIds } from './bankroll';
+import { MAX_TABLE_BOXES } from '../../types/table';
+
+function slotByNumber(state: GameState, slotNumber: number): BoxSlotState | undefined {
+  return state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
+}
+
+/** Ordered person bankroll ids — owner first, then others. */
+export function getEffectivePlayerOrder(state: GameState): string[] {
+  const known = listPersonBankrollOwnerIds(state);
+  const ownerId = state.tableMeta.ownerPersonId;
+  const saved = state.tableMeta.playerOrder ?? [];
+  const order: string[] = [];
+
+  for (const id of saved) {
+    if (known.includes(id) && !order.includes(id)) {
+      order.push(id);
+    }
+  }
+  if (ownerId && known.includes(ownerId) && !order.includes(ownerId)) {
+    order.unshift(ownerId);
+  }
+  for (const id of known) {
+    if (!order.includes(id)) {
+      order.push(id);
+    }
+  }
+  return order;
+}
+
+export function computeAssignedBoxByPersonId(playerOrder: string[]): Record<string, number> {
+  const map: Record<string, number> = {};
+  playerOrder.forEach((personId, index) => {
+    if (index < MAX_TABLE_BOXES) {
+      map[personId] = index + 1;
+    }
+  });
+  return map;
+}
+
+export function getAssignedSlotForPerson(state: GameState, personId: string): number | null {
+  return state.tableMeta.assignedBoxByPersonId?.[personId] ?? null;
+}
+
+export function getNativeAssignedPersonForSlot(state: GameState, slotNumber: number): string | null {
+  const slot = slotByNumber(state, slotNumber);
+  return slot?.nativeAssignedPersonId ?? null;
+}
+
+function findSlotByBoxPlayerId(state: GameState, boxPlayerId: string): BoxSlotState | undefined {
+  return state.tableMeta.boxSlots.find((s) => s.playerId === boxPlayerId);
+}
+
+/** Ensure a box position exists at slot for person — no chip allocation. */
+export function ensureBoxPositionForPerson(
+  state: GameState,
+  slotNumber: number,
+  personId: string,
+): GameState {
+  if (slotNumber < 1 || slotNumber > MAX_TABLE_BOXES) {
+    return state;
+  }
+  const slot = slotByNumber(state, slotNumber);
+  if (!slot) {
+    return state;
+  }
+
+  let next = state;
+
+  if (slot.playerId) {
+    const boxSlots = next.tableMeta.boxSlots.map((s) =>
+      s.slotNumber === slotNumber
+        ? { ...s, nativeAssignedPersonId: personId, bankrollOwnerId: s.bankrollOwnerId ?? personId }
+        : s,
+    );
+    return { ...next, tableMeta: { ...next.tableMeta, boxSlots } };
+  }
+
+  const person = next.players[personId];
+  if (!person) {
+    return state;
+  }
+  const controller = person.controllerName?.trim() || person.displayName;
+
+  const boxSpl = addPlayer(next.session, next.players, next.ledger, {
+    displayName: `Box ${slotNumber}`,
+    controllerName: controller,
+    role: 'box',
+    bankrollOwnerId: personId,
+    startingChips: 0,
+  });
+  next = mergeSessionUpdate(next, boxSpl);
+  const boxPlayerId = boxSpl.session.playerIds[boxSpl.session.playerIds.length - 1]!;
+
+  const boxSlots = next.tableMeta.boxSlots.map((s) =>
+    s.slotNumber === slotNumber
+      ? {
+          ...s,
+          playerId: boxPlayerId,
+          bankrollOwnerId: personId,
+          nativeAssignedPersonId: personId,
+        }
+      : s,
+  );
+
+  log.info('nativeBoxPositionEnsured', { slotNumber, personId, boxPlayerId });
+
+  return {
+    ...next,
+    session: {
+      ...next.session,
+      boxSlotNumbers: {
+        ...next.session.boxSlotNumbers,
+        [boxPlayerId]: slotNumber,
+      },
+    },
+    tableMeta: { ...next.tableMeta, boxSlots },
+  };
+}
+
+/** Sync player order, assigned boxes, and native box positions. */
+export function syncPlayerOrderAndAssignments(state: GameState): GameState {
+  const playerOrder = getEffectivePlayerOrder(state);
+  const assignedBoxByPersonId = computeAssignedBoxByPersonId(playerOrder);
+
+  let next: GameState = {
+    ...state,
+    tableMeta: {
+      ...state.tableMeta,
+      playerOrder,
+      assignedBoxByPersonId,
+    },
+  };
+
+  for (const personId of playerOrder) {
+    const slotNumber = assignedBoxByPersonId[personId];
+    if (slotNumber) {
+      next = ensureBoxPositionForPerson(next, slotNumber, personId);
+    }
+  }
+
+  return next;
+}
+
+export function movePlayerInOrder(
+  state: GameState,
+  personId: string,
+  direction: 'up' | 'down',
+): GameState {
+  const order = getEffectivePlayerOrder(state);
+  const index = order.indexOf(personId);
+  if (index < 0) {
+    return state;
+  }
+  const swapIndex = direction === 'up' ? index - 1 : index + 1;
+  if (swapIndex < 0 || swapIndex >= order.length) {
+    return state;
+  }
+
+  const oldSlot = index + 1;
+  const newSlot = swapIndex + 1;
+  const otherPersonId = order[swapIndex]!;
+
+  const oldBoxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === oldSlot)?.playerId;
+  const otherBoxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === newSlot)?.playerId;
+
+  const nextOrder = [...order];
+  nextOrder[index] = otherPersonId;
+  nextOrder[swapIndex] = personId;
+
+  let next: GameState = {
+    ...state,
+    tableMeta: {
+      ...state.tableMeta,
+      playerOrder: nextOrder,
+      assignedBoxByPersonId: computeAssignedBoxByPersonId(nextOrder),
+    },
+  };
+
+  if (oldBoxId && otherBoxId) {
+    const oldStake = state.tableMeta.boxStakes[oldBoxId];
+    const otherStake = state.tableMeta.boxStakes[otherBoxId];
+    const nextStakes = { ...state.tableMeta.boxStakes };
+    if (oldStake) {
+      nextStakes[otherBoxId] = oldStake;
+    } else {
+      delete nextStakes[otherBoxId];
+    }
+    if (otherStake) {
+      nextStakes[oldBoxId] = otherStake;
+    } else {
+      delete nextStakes[oldBoxId];
+    }
+    next = { ...next, tableMeta: { ...next.tableMeta, boxStakes: nextStakes } };
+  }
+
+  next = syncPlayerOrderAndAssignments(next);
+
+  log.info('playerOrderChanged', {
+    personId,
+    direction,
+    playerOrder: next.tableMeta.playerOrder,
+    assignedBoxByPersonId: next.tableMeta.assignedBoxByPersonId,
+  });
+
+  return next;
+}
+
+export function getCallerPersonIdForBox(state: GameState, boxPlayerId: string): string | null {
+  const slot = findSlotByBoxPlayerId(state, boxPlayerId);
+  if (slot?.callerPersonId) {
+    return slot.callerPersonId;
+  }
+  if (slot?.nativeAssignedPersonId) {
+    return slot.nativeAssignedPersonId;
+  }
+  const stake = state.tableMeta.boxStakes[boxPlayerId];
+  if (stake?.callerPersonId) {
+    return stake.callerPersonId;
+  }
+  if (slot?.bankrollOwnerId) {
+    return slot.bankrollOwnerId;
+  }
+  return null;
+}
+
+export function isCallerForBox(
+  state: GameState,
+  boxPlayerId: string,
+  personId: string,
+): boolean {
+  const caller = getCallerPersonIdForBox(state, boxPlayerId);
+  return caller !== null && caller === personId;
+}
+
+/** Single player at table may call every box they stake. */
+export function isSinglePlayerTable(state: GameState): boolean {
+  return getEffectivePlayerOrder(state).length <= 1;
+}
+
+export function canControllerCallBox(
+  state: GameState,
+  boxPlayerId: string,
+  controllerPersonId: string,
+): boolean {
+  if (isSinglePlayerTable(state)) {
+    return true;
+  }
+  return isCallerForBox(state, boxPlayerId, controllerPersonId);
+}
+
+export function resolveControllerPersonId(
+  state: GameState,
+  controllerName: string,
+): string | null {
+  const trimmed = controllerName.trim();
+  if (!trimmed) {
+    return null;
+  }
+  if (state.tableMeta.ownerPersonId) {
+    const owner = state.players[state.tableMeta.ownerPersonId];
+    const ownerLabel = owner?.controllerName?.trim() || owner?.displayName;
+    if (ownerLabel?.toLowerCase() === trimmed.toLowerCase()) {
+      return state.tableMeta.ownerPersonId;
+    }
+  }
+  for (const id of listPersonBankrollOwnerIds(state)) {
+    const p = state.players[id];
+    const label = p?.controllerName?.trim() || p?.displayName;
+    if (label?.toLowerCase() === trimmed.toLowerCase()) {
+      return id;
+    }
+  }
+  return null;
+}
+
+/** Lock caller on each eligible box when bets lock for deal. */
+export function syncCallersForDeal(state: GameState, boxPlayerIds: string[]): GameState {
+  const boxSlots = state.tableMeta.boxSlots.map((slot) => {
+    if (!slot.playerId || !boxPlayerIds.includes(slot.playerId)) {
+      return slot;
+    }
+    const caller =
+      slot.nativeAssignedPersonId ??
+      state.tableMeta.boxStakes[slot.playerId]?.callerPersonId ??
+      slot.bankrollOwnerId;
+    return caller ? { ...slot, callerPersonId: caller } : slot;
+  });
+  return { ...state, tableMeta: { ...state.tableMeta, boxSlots } };
+}
+
+export function getCallerInitials(state: GameState, boxPlayerId: string): string {
+  const callerId = getCallerPersonIdForBox(state, boxPlayerId);
+  if (!callerId) {
+    return '';
+  }
+  const person = state.players[callerId];
+  const name = person?.controllerName?.trim() || person?.displayName || '';
+  const parts = name.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return '?';
+  }
+  if (parts.length === 1) {
+    return parts[0]!.slice(0, 2).toUpperCase();
+  }
+  return `${parts[0]![0] ?? ''}${parts[parts.length - 1]![0] ?? ''}`.toUpperCase();
+}

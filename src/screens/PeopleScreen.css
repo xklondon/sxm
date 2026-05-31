@@ -1,0 +1,63 @@
+.people-screen {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.people-screen__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.people-screen__header h1 {
+  margin: 0;
+}
+
+.people-screen__error {
+  color: #c0392b;
+}
+
+.people-screen__dev-link {
+  word-break: break-all;
+  font-size: 0.85rem;
+}
+
+.people-screen__add {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+
+.people-screen__add label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.people-screen__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.people-screen__table th,
+.people-screen__table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.5rem;
+  vertical-align: top;
+}
+
+.people-screen__perms {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.people-screen__perms label {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}

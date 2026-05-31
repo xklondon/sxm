@@ -1,0 +1,105 @@
+import { defineBlackjackProtocol } from './defineProtocol';
+import { MAX_SPLITS_PER_BOX } from './lasVegasProtocol';
+
+/** Casual home-table rules — fewer decks, even-money naturals, no insurance. */
+export const CLASSIC_HOME_PROTOCOL = defineBlackjackProtocol({
+  protocolId: 'classic-home',
+  displayName: 'Classic Home Table',
+  shortDescription: 'Simple casual rules for friends — even-money blackjack, no insurance.',
+  shoe: {
+    deckCount: 2,
+    minDecks: 1,
+    maxDecks: 4,
+    reshuffleWhenEmpty: true,
+  },
+  dealer: {
+    standsOnSoft17: true,
+    hitBelow: 17,
+    standAtOrAbove: 17,
+    peekOnAce: false,
+    peekOnTen: false,
+    description: 'Dealer stands on soft 17. Friendly home-table pace.',
+  },
+  dealerDrawRule: 'Stand on soft 17; no insurance; relaxed split limits.',
+  payouts: {
+    blackjackMultiplier: 1,
+    blackjackLabel: '1:1',
+    winPays: '1:1 — stake returned plus equal winnings',
+    pushPays: 'Original stake returned',
+    bustLoses: 'Stake lost when hand exceeds 21',
+  },
+  double: {
+    allowed: true,
+    firstTwoCardsOnly: true,
+    oneCardOnly: true,
+    allowedAfterSplit: true,
+    allowedHardTotals: [9, 10, 11],
+    description: 'Double on hard 9, 10, or 11 only; one card afterward; double after split allowed.',
+  },
+  split: {
+    allowed: true,
+    sameRankOnly: true,
+    maxSplitsPerRound: MAX_SPLITS_PER_BOX,
+    resplitAces: true,
+    hitSplitAces: true,
+    doubleAfterSplit: true,
+    description: 'Split matching ranks; repeat splits up to cap; double after split allowed.',
+  },
+  insurance: {
+    offered: false,
+    maxHalfOfMainBet: true,
+    payoutRatio: 2,
+    payoutLabel: '2:1',
+    description: 'Insurance not used at home tables.',
+  },
+  surrender: {
+    allowed: false,
+    lateSurrender: false,
+    earlySurrender: false,
+    description: 'Surrender not offered.',
+  },
+  resolution: {
+    compareAfterDealerCompletes: true,
+    naturalBeatsNonNatural: true,
+    splitHandsResolvedIndependently: true,
+    description: 'Compare totals after dealer finishes.',
+  },
+  dealingRules: {
+    showDealerHoleCardDuringPlay: true,
+    holeCardDealtLast: false,
+    description: 'Hole card visible after initial deal — casual home-table style.',
+  },
+  phaseActions: {
+    byPhase: {
+      betting: [],
+      dealing: [],
+      insurance: [],
+      player: ['hit', 'stand', 'double', 'split'],
+      bank: [],
+      banking: [],
+      'round-complete': [],
+    },
+  },
+  supportedActions: ['hit', 'stand', 'double', 'split'],
+  aidProfile: {
+    id: 'classic-home',
+    label: 'Classic home table',
+    description: 'Simplified advice — even-money naturals, no insurance, conservative splits.',
+    insuranceBias: 'neutral',
+  },
+  defaultMinBet: 1,
+  defaultMaxBet: 200,
+  extensions: {
+    wildCards: { enabled: false, description: 'Standard 52-card ranks only.' },
+    sideBets: [],
+    alteredPayouts: {},
+  },
+  displayRules: [
+    { id: 'shoe', label: 'Shoe', value: '2 decks (1–4)' },
+    { id: 'dealer-s17', label: 'Dealer', value: 'Stands on soft 17' },
+    { id: 'bj-pay', label: 'Blackjack', value: 'Pays 1:1 (even money)' },
+    { id: 'double', label: 'Double', value: 'Hard 9, 10, 11 only; after split OK' },
+    { id: 'split', label: 'Split', value: 'Same rank; repeat splits' },
+    { id: 'insurance', label: 'Insurance', value: 'Not offered' },
+  ],
+});

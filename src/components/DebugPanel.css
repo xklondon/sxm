@@ -1,0 +1,43 @@
+.debug-panel {
+  margin: var(--ds-space-3) 0 0;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px dashed var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-color-text-muted);
+}
+
+.debug-panel__title {
+  margin: 0 0 var(--ds-space-2);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  text-transform: uppercase;
+  color: var(--ds-color-gold);
+}
+
+.debug-panel__grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--ds-space-1) var(--ds-space-2);
+  margin: 0;
+}
+
+.debug-panel__grid dt {
+  font-family: var(--ds-font-mono);
+}
+
+.debug-panel__grid dd {
+  margin: 0;
+}
+
+.debug-panel__accounts,
+.debug-panel__stakes {
+  margin-top: var(--ds-space-2);
+}
+
+.debug-panel__stakes pre {
+  margin: var(--ds-space-1) 0 0;
+  overflow: auto;
+  max-height: 8rem;
+  font-size: var(--ds-text-xs);
+}

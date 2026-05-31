@@ -1,0 +1,116 @@
+.host-server {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.55);
+  padding: 1rem;
+}
+
+.host-server__panel {
+  width: min(100%, 22rem);
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: var(--ds-color-surface, #1a1408);
+  border: 1px solid var(--ds-color-border, rgb(255 255 255 / 0.15));
+  border-radius: var(--ds-radius-lg, 0.85rem);
+  padding: 1rem;
+  color: var(--ds-color-text);
+}
+
+.host-server__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.host-server__header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.host-server__close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.host-server__error {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  color: var(--ds-color-danger, #fca5a5);
+}
+
+.host-server__info {
+  margin: 0 0 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.host-server__info div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.host-server__info dt {
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-color-text-muted);
+}
+
+.host-server__info dd {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: var(--ds-weight-semibold, 600);
+}
+
+.host-server__address {
+  font-family: var(--ds-font-mono);
+  color: var(--ds-color-gold);
+  word-break: break-all;
+}
+
+.host-server__status {
+  color: var(--ds-color-success, #6ee7b7);
+  text-transform: capitalize;
+}
+
+.host-server__qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 0;
+}
+
+.host-server__qr img {
+  width: 200px;
+  height: 200px;
+  background: #fff;
+  border-radius: var(--ds-radius-md, 0.5rem);
+  padding: 0.4rem;
+}
+
+.host-server__qr-caption {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--ds-color-text-muted);
+  text-align: center;
+  word-break: break-all;
+}
+
+.host-server__note {
+  margin: 0.25rem 0 0;
+  font-size: 0.7rem;
+  color: var(--ds-color-text-muted);
+  text-align: center;
+}

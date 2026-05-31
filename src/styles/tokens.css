@@ -1,0 +1,101 @@
+/**
+ * SXMCards design tokens — Stitch-inspired luxury casino system.
+ * Reference: /reference-ui/stitch-export (when present)
+ */
+
+:root {
+  /* ── Brand colors ── */
+  --ds-color-primary: #064e3b;
+  --ds-color-primary-light: #0a6b52;
+  --ds-color-primary-dark: #043528;
+  --ds-color-gold: #fbbf24;
+  --ds-color-gold-dim: #d4a017;
+  --ds-color-gold-glow: rgb(251 191 36 / 0.35);
+  --ds-color-navy: #111827;
+  --ds-color-navy-light: #1f2937;
+  --ds-color-neutral: #94a3b8;
+  --ds-color-text: #e5e7eb;
+  --ds-color-text-muted: #94a3b8;
+  --ds-color-danger: #fca5a5;
+  --ds-color-success: #a7f3d0;
+  --ds-color-felt: #064e3b;
+  --ds-color-felt-mid: #0a5c44;
+  --ds-color-felt-dark: #043528;
+  --ds-color-rail: #2a1a0e;
+  --ds-color-surface: rgb(17 24 39 / 0.92);
+  --ds-color-surface-elevated: rgb(31 41 55 / 0.95);
+  --ds-color-border: rgb(251 191 36 / 0.22);
+  --ds-color-border-subtle: rgb(148 163 184 / 0.15);
+  --ds-color-overlay: rgb(0 0 0 / 0.45);
+
+  /* Legacy aliases (bridge existing components) */
+  --color-felt: var(--ds-color-felt);
+  --color-felt-dark: var(--ds-color-felt-dark);
+  --color-gold: var(--ds-color-gold);
+  --color-cream: var(--ds-color-text);
+  --color-ink: var(--ds-color-navy);
+  --color-muted: var(--ds-color-text-muted);
+  --color-surface: var(--ds-color-surface);
+  --color-border: var(--ds-color-border-subtle);
+
+  /* ── Typography ── */
+  --ds-font-heading: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ds-font-body: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ds-font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+
+  --ds-text-xs: 0.625rem;
+  --ds-text-sm: 0.75rem;
+  --ds-text-base: 0.875rem;
+  --ds-text-lg: 1rem;
+  --ds-text-xl: 1.25rem;
+  --ds-text-2xl: 1.5rem;
+  --ds-text-3xl: 2rem;
+
+  --ds-weight-normal: 400;
+  --ds-weight-medium: 500;
+  --ds-weight-semibold: 600;
+  --ds-weight-bold: 700;
+  --ds-weight-extrabold: 800;
+
+  --ds-tracking-tight: -0.01em;
+  --ds-tracking-wide: 0.08em;
+  --ds-tracking-wider: 0.14em;
+
+  /* ── Spacing ── */
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-5: 1.25rem;
+  --ds-space-6: 1.5rem;
+  --ds-space-8: 2rem;
+
+  /* ── Radii ── */
+  --ds-radius-sm: 6px;
+  --ds-radius-md: 10px;
+  --ds-radius-lg: 14px;
+  --ds-radius-xl: 20px;
+  --ds-radius-full: 9999px;
+  --radius: var(--ds-radius-lg);
+
+  /* ── Shadows & glows ── */
+  --ds-shadow-sm: 0 2px 8px rgb(0 0 0 / 0.25);
+  --ds-shadow-md: 0 4px 20px rgb(0 0 0 / 0.35);
+  --ds-shadow-lg: 0 8px 32px rgb(0 0 0 / 0.45);
+  --ds-shadow-panel: 0 4px 24px rgb(0 0 0 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.06);
+  --ds-glow-gold: 0 0 20px var(--ds-color-gold-glow);
+  --ds-glow-success: 0 0 16px rgb(167 243 208 / 0.25);
+  --shadow: var(--ds-shadow-md);
+
+  /* ── Transitions ── */
+  --ds-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ds-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ds-duration-fast: 120ms;
+  --ds-duration-normal: 220ms;
+  --ds-duration-slow: 380ms;
+
+  /* ── Z-index ── */
+  --ds-z-base: 1;
+  --ds-z-elevated: 10;
+  --ds-z-modal: 100;
+}
