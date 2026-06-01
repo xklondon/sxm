@@ -1,0 +1,56 @@
+/**
+ * Mobile-only modal sizing (≤720px — matches useIsMobileViewport).
+ * Desktop modal rules in component CSS / design-system.css are unchanged.
+ */
+@media (max-width: 720px) {
+  .invite-modal-overlay,
+  .local-profile,
+  .bj-flow-settings,
+  .banker-setup-overlay,
+  .table-stake-overlay,
+  .ds-modal-backdrop,
+  .admin-panel-overlay,
+  .custom-protocol-overlay {
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0.5rem;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+
+  .invite-modal,
+  .local-profile__panel,
+  .bj-flow-settings__panel,
+  .banker-setup-panel,
+  .table-stake-panel,
+  .ds-modal-panel,
+  .custom-protocol-modal {
+    width: min(calc(100vw - 1rem), 22rem);
+    max-height: min(90dvh, calc(100dvh - 2rem));
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: max(var(--ds-space-3, 0.75rem), env(safe-area-inset-bottom, 0px));
+  }
+
+  .bj-flow-settings__panel,
+  .invite-modal {
+    margin-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .invite-modal__actions,
+  .invite-modal__share {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    padding-top: 0.35rem;
+    background: linear-gradient(
+      180deg,
+      rgb(26 61 46 / 0) 0%,
+      rgb(26 61 46 / 0.92) 35%,
+      rgb(26 61 46 / 1) 100%
+    );
+  }
+}

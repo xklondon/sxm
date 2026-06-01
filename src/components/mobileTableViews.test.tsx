@@ -264,11 +264,14 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     expect(arcBoxOrder(mobile).length).toBeGreaterThan(0);
   });
 
-  it('felt scroller CSS includes horizontal edge gutters for end boxes', () => {
+  it('felt scroller CSS includes mobile-arc-safe contract (horizontal scroll, edge gutters)', () => {
     const css = mobileFullTableCss();
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*padding:\s*0\s+0\.55rem/);
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*padding:\s*0\s+0\.85rem/);
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__rail[\s\S]*overflow:\s*visible/);
+    expect(css).toContain('contract: mobile-arc-safe');
+    expect(css).toMatch(
+      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*auto[\s\S]*overflow-y:\s*visible/,
+    );
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*padding:\s*0\s+1\.35rem/);
+    expect(css).toMatch(/\.bj-view-full-mobile[\s\S]*overflow-x:\s*hidden/);
   });
 
   it('falls back only on ultra-narrow widths (< 360px)', () => {
