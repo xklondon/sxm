@@ -1425,8 +1425,30 @@
   display: none;
 }
 
-/* ── Desktop Card View only — box value prominence + active highlight ── */
-@media (min-width: 641px) {
+/* Active box highlight — canonical in BOTH mobile and desktop Card View. */
+.bj-phone-view__mini-hand--active {
+  border-color: var(--ds-color-gold);
+  background: rgb(251 191 36 / 0.16);
+  box-shadow:
+    0 0 0 1px var(--ds-color-gold),
+    0 0 14px var(--ds-color-gold-glow);
+}
+
+/* Desktop Card View betting — ordered horizontal row, uniform boxes, no hero placeholder. */
+.bj-phone-view__betting-stage--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.bj-phone-view__betting-stage--row .bj-phone-view__bet-chip-wrap--small {
+  width: 5rem;
+}
+
+/* ── Desktop Card View only (>=721px, matches MOBILE_MAX_WIDTH=720) ── */
+@media (min-width: 721px) {
   .bj-phone-view__box-value {
     display: block;
     order: -1;
@@ -1449,14 +1471,6 @@
 
   .bj-phone-view__mini-hand-name {
     font-size: 0.6rem;
-  }
-
-  .bj-phone-view__mini-hand--active {
-    border-color: var(--ds-color-gold);
-    background: rgb(251 191 36 / 0.16);
-    box-shadow:
-      0 0 0 1px var(--ds-color-gold),
-      0 0 14px var(--ds-color-gold-glow);
   }
 }
 

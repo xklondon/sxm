@@ -73,6 +73,11 @@ import { getPlayerInitials, loadProfile, type PlayFlowAutoStand } from '../stora
 import { isOnlineModeEnabled } from '../api/config';
 import { useIsMobileViewport, shouldShowMobileFullTableFallback } from '../hooks/useIsMobileViewport';
 import { FullTableMobileFallback } from './FullTableMobileFallback';
+import {
+  getDeviceView,
+  getViewRootClass,
+  resolveInitialViewMode,
+} from './tableViewContract';
 import './BlackjackPanel.css';
 
 const MAX_BOXES = MAX_TABLE_BOXES;
@@ -140,11 +145,18 @@ export function BlackjackPanel({
   } = useBlackjackTableFlow(gameState, onGameStateChange, onlineDispatch, onlineActionInFlight);
 
   const isMobileViewport = useIsMobileViewport();
+  // View mode is CLIENT-LOCAL: it must never be sourced from server-replaced
+  // gameState, or every table:update would flip Card View back to Full Table.
+  const [localViewMode, setLocalViewMode] = useState<TableViewMode>(() =>
+    resolveInitialViewMode(isMobileViewport, tableViewMode),
+  );
   const round = blackjack;
   const hasDeck = deck !== null;
   const deckCount = deck ? getShoeDeckCount(deck) : blackjackSettings.numberOfDecks;
   const remaining = deck ? getRemainingCardCount(deck) : 0;
-  const viewMode = tableViewMode;
+  const viewMode = localViewMode;
+  const deviceView = getDeviceView(isMobileViewport);
+  const viewRootClass = getViewRootClass(deviceView, viewMode);
   const effectiveBoxId = gameState.selectedSeatId ?? defaultBlackjackSeatId(gameState);
   const flowSettings = gameState.blackjackFlowSettings;
   const profile = loadProfile();
@@ -212,6 +224,9 @@ export function BlackjackPanel({
   }
 
   function setViewMode(mode: TableViewMode) {
+    setLocalViewMode(mode);
+    // Mirror into gameState for offline persistence only; online broadcasts
+    // never carry it back because the panel reads from localViewMode.
     run((s) => ({ ...s, tableViewMode: mode }));
   }
 
@@ -803,7 +818,13 @@ export function BlackjackPanel({
       : null;
 
   return (
-    <div className="bj-casino" aria-label="Blackjack table">
+    <div
+      className={`bj-casino ${viewRootClass}`}
+      aria-label="Blackjack table"
+      data-view-mode={viewMode}
+      data-device-view={deviceView}
+      data-phase={protocolPhase}
+    >
       {tableMeta.showBankerSetup && tableMeta.agreement && (
         <BankerSetupPanel gameState={gameState} onConfirm={onGameStateChange} />
       )}
@@ -999,6 +1020,7 @@ export function BlackjackPanel({
 
                 <BlackjackCardView
                   gameState={gameState}
+                  isMobile={isMobileViewport}
                   focusBoxId={focusBoxId ?? undefined}
                   activeBoxId={activeBoxId}
                   showHoleHidden={showHoleHidden}

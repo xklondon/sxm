@@ -59,6 +59,23 @@ Aligned env keys (same LAN host, no localhost in links):
 - Ledger is source of truth for balances
 - AI assists explanations only — never decides live outcomes
 
+## View / layout invariants (blackjack table)
+
+- View-specific CSS MUST be scoped under a view root class (`tableViewContract.ts`):
+  `bj-view-full-desktop`, `bj-view-card-desktop`, `bj-view-full-mobile`, `bj-view-card-mobile`.
+  Avoid bare `.bj-casino__felt …` / `.bj-center-status …` selectors that leak across views.
+- Device boundary is a single source of truth: `MOBILE_MAX_WIDTH` (720) in `useIsMobileViewport`.
+  JS detection and CSS media queries must agree on it.
+- **View mode is client-local** — store/read it in the panel, never source it from
+  server-replaced `gameState`, or `table:update` will flip Card View back to Full Table.
+- **Mobile Full Table is fallback only** — replace the whole felt subtree with the
+  "best on a larger screen" fallback; never `display:none` an empty felt.
+- **Mobile Card View is canonical** — stitched cards, ordered boxes, active box highlighted,
+  "This Table" as a horizontal bar below (no right side column), no horizontal page scroll.
+- **Desktop Full Table is the reference** — must not be affected by Card View CSS.
+- **Desktop Card View** — ordered box row in betting (no center placeholder), active hero in play.
+- Debug attributes on the table root: `data-view-mode`, `data-device-view`, `data-phase`.
+
 ## Development discipline
 
 - Minimal diffs; no broad refactors

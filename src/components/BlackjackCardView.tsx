@@ -65,10 +65,14 @@ import {
   BOX_CARD_VALUE_BUST,
 } from "./cardViewBox";
 
+import { getCardViewBettingLayout } from "./tableViewContract";
+
 import "./BlackjackCardView.css";
 
 interface BlackjackCardViewProps {
   gameState: GameState;
+  /** Drives desktop vs mobile betting layout; defaults to mobile-canonical. */
+  isMobile?: boolean;
   focusBoxId?: string;
   activeBoxId: string | null;
   showHoleHidden: boolean;
@@ -101,6 +105,7 @@ const SWIPE_THRESHOLD = 48;
 
 export function BlackjackCardView({
   gameState,
+  isMobile = true,
   focusBoxId,
   activeBoxId,
   showHoleHidden,
@@ -677,6 +682,16 @@ export function BlackjackCardView({
   }
 
   function renderBettingStage() {
+    // Desktop Card View: one ordered horizontal row (Box 1, Box 2, …), no
+    // large center placeholder. Mobile keeps the canonical hero + secondary.
+    if (getCardViewBettingLayout(isMobile) === "ordered-row") {
+      return (
+        <div className="bj-phone-view__betting-stage bj-phone-view__betting-stage--row">
+          {slots.map((s) => renderBetBox(s.slotNumber, s.playerId, "small"))}
+        </div>
+      );
+    }
+
     const mainSlot =
       (heroBoxId ? slots.find((s) => s.playerId === heroBoxId) : null) ??
       slots.find((s) => s.playerId) ??

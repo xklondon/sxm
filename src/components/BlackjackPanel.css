@@ -1120,3 +1120,80 @@
     width: 4rem;
   }
 }
+
+/* ============================================================
+   VIEW CONTRACT — scoped corrective rules (see tableViewContract.ts).
+   View-specific styling lives under the four bj-view-* roots so it
+   cannot leak between Full Table and Card View / desktop and mobile.
+   ============================================================ */
+
+/* Desktop Full Table + Card View: status/comment/result in a top-left corner box. */
+.bj-view-full-desktop .bj-center-status,
+.bj-view-card-desktop .bj-center-status {
+  order: -1;
+  align-self: flex-start;
+  text-align: left;
+  max-width: 18rem;
+  margin: 0 0 0.45rem;
+  padding: 0.3rem 0.6rem;
+  background: rgb(0 0 0 / 0.3);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--ds-radius-md);
+}
+
+/* Mobile Card View: stack the felt so "This Table" is a horizontal bar below
+   the card area (no right side column) and the page never scrolls sideways. */
+.bj-view-card-mobile {
+  overflow-x: hidden;
+}
+
+.bj-view-card-mobile .bj-casino__felt--with-account {
+  flex-direction: column;
+}
+
+/* Compact, centered status/result strip on phones. */
+.bj-view-card-mobile .bj-center-status {
+  margin: 0.15rem auto 0.25rem;
+  padding: 0.2rem 0.5rem;
+  max-width: 100%;
+  font-size: 0.62rem;
+}
+
+/* "This Table" becomes a horizontal, compact, swipeable bar below the cards —
+   never a right side panel column. Rows scroll sideways inside the bar only. */
+.bj-view-card-mobile .bj-accounts-panel {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0.35rem;
+  padding: 0.4rem 0.5rem;
+  scrollbar-width: none;
+}
+
+.bj-view-card-mobile .bj-accounts-panel::-webkit-scrollbar {
+  display: none;
+}
+
+.bj-view-card-mobile .bj-accounts-panel__title {
+  flex: 0 0 auto;
+  align-self: center;
+  margin: 0 0.25rem 0 0;
+  writing-mode: horizontal-tb;
+}
+
+.bj-view-card-mobile .bj-accounts-panel__list {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 0.3rem;
+}
+
+.bj-view-card-mobile .bj-accounts-panel__row {
+  flex: 0 0 auto;
+  min-width: 8rem;
+}

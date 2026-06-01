@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 
-/** Widths at or below this are treated as mobile (phone) layouts. */
-export const MOBILE_MAX_WIDTH = 640;
+/**
+ * Single source of truth for the device boundary. Widths at or below this are
+ * treated as mobile (phone) layouts. 720 matches the existing accounts-panel /
+ * accounts-button breakpoint so JS and CSS agree on one device class.
+ */
+export const MOBILE_MAX_WIDTH = 720;
 
 export function isMobileViewportWidth(width: number): boolean {
   return width <= MOBILE_MAX_WIDTH;
