@@ -4,7 +4,7 @@ import type { GameState } from '../types';
 
 import { fetchMe, sendTableAction, type AuthUser } from '../api/client';
 
-import { getApiBaseUrl, isOnlineModeEnabled } from '../api/config';
+import { getSocketBaseUrl, isOnlineModeEnabled } from '../api/config';
 
 import { io, type Socket } from 'socket.io-client';
 
@@ -128,7 +128,7 @@ export function useOnlineTable(
 
     }
 
-    const socket: Socket = io(getApiBaseUrl(), { withCredentials: true });
+    const socket: Socket = io(getSocketBaseUrl(), { withCredentials: true });
 
     socket.on('connect', () => {
 

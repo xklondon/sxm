@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { resolveApiBaseUrl } from './config';
+import {
+  clientConfigHasStaleLanIp,
+  formatClientConfig,
+  resolveApiBaseUrl,
+  type ClientConfigSnapshot,
+} from './config';
 
 describe('resolveApiBaseUrl', () => {
   it('uses page origin when LAN VITE_API_URL differs from localhost (proxied dev)', () => {
@@ -39,5 +44,60 @@ describe('resolveApiBaseUrl', () => {
     });
     expect(result.proxied).toBe(false);
     expect(result.baseUrl).toBe('https://play.example.com');
+  });
+
+  it('host mode (production build, blank VITE_API_URL) uses the page origin', () => {
+    const result = resolveApiBaseUrl({
+      isDev: false,
+      pageOrigin: 'http://192.168.1.42:5173',
+      configuredApiUrl: '',
+    });
+    expect(result.proxied).toBe(false);
+    expect(result.baseUrl).toBe('http://192.168.1.42:5173');
+  });
+
+  it('host mode falls back to page origin even on loopback', () => {
+    const result = resolveApiBaseUrl({
+      isDev: false,
+      pageOrigin: 'http://127.0.0.1:5173',
+      configuredApiUrl: undefined,
+    });
+    expect(result.baseUrl).toBe('http://127.0.0.1:5173');
+  });
+});
+
+describe('client config snapshot helpers', () => {
+  const hostSnapshot: ClientConfigSnapshot = {
+    href: 'http://192.168.1.42:5173/',
+    origin: 'http://192.168.1.42:5173',
+    apiBase: 'http://192.168.1.42:5173',
+    socketBase: 'http://192.168.1.42:5173',
+    mode: 'production',
+    dev: false,
+    prod: true,
+    viteApiUrl: '',
+    viteTableHost: '',
+    onlineMode: true,
+  };
+
+  it('host config has no stale baked LAN IP (origin-derived is fine)', () => {
+    // apiBase equals the page origin, and VITE_* are blank → not a stale build.
+    expect(clientConfigHasStaleLanIp({ ...hostSnapshot, apiBase: hostSnapshot.origin, viteApiUrl: '', viteTableHost: '' })).toBe(false);
+  });
+
+  it('flags a stale baked VITE_API_URL with a LAN IP', () => {
+    expect(
+      clientConfigHasStaleLanIp({ ...hostSnapshot, viteApiUrl: 'http://10.191.204.176:5173' }),
+    ).toBe(true);
+  });
+
+  it('formats the config with all required fields', () => {
+    const text = formatClientConfig(hostSnapshot);
+    expect(text).toContain('location.origin = http://192.168.1.42:5173');
+    expect(text).toContain('apiBase         = http://192.168.1.42:5173');
+    expect(text).toContain('socketBase      = http://192.168.1.42:5173');
+    expect(text).toContain('import.meta.env.PROD = true');
+    expect(text).toContain('VITE_API_URL    = (blank)');
+    expect(text).toContain('onlineMode      = true');
   });
 });

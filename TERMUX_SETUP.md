@@ -181,6 +181,7 @@ npm run host   # or just tap the "SXM Cards" widget
 | Players can't connect | Confirm they're on the **same** Wi-Fi/hotspot. Some "guest" Wi-Fi networks block device-to-device traffic — use a hotspot instead. |
 | App opens but stays blank / "loading" after an IP change | Old IP baked into the build. Remove IP lines from `.env`, then `rm -rf dist && npm run build` once. Restart the widget. |
 | Blank / green screen right after a rebuild | The browser cached the old `index.html` pointing at an old asset name. Stale assets now return **404** (not HTML), and `index.html` is sent `no-store`, so a plain refresh usually fixes it. If not, clear the site's data, or load `http://<ip>:5173/?fresh=1`. |
+| Blank / green screen that a refresh doesn't fix | Open the diagnostics: **`http://<ip>:5173/debug/client-config`** (no login needed). `apiBase`/`socketBase` should equal the page origin and `VITE_API_URL`/`VITE_TABLE_HOST` should be `(blank)`. If the boot stalls >5s an overlay lists which boot stage was reached; any JS error renders visible text instead of green. |
 | QR doesn't render | Your terminal font may not support block glyphs; type the printed `Address:` manually. |
 | Widget does nothing / `curl not found` | `pkg install curl`. The launcher needs curl to detect/query the server. |
 | Browser doesn't open | Install **Termux:API** (`pkg install termux-api`); otherwise open the printed URL manually. |
@@ -197,6 +198,15 @@ npm run host   # or just tap the "SXM Cards" widget
   `index.html` is `no-store`. Missing/old assets return **404** (never the SPA
   shell), so a stale cache fails loudly with a refresh hint instead of a blank
   screen.
+- Boot diagnostics are always on: visit `/debug/client-config` to see the live
+  `apiBase`/`socketBase`/env, a >5s stall shows a "Still loading…" overlay with
+  the last boot stage, and any uncaught/render error paints visible text over
+  the green felt instead of a silent blank screen.
+- Desktop dev and Termux host share one **single-origin** model: the SPA, `/api`,
+  and `/socket.io` all live on the page origin (Vite proxies them in dev; Express
+  serves them directly in host mode). The client derives `apiBase`/`socketBase`
+  from `window.location.origin` whenever `VITE_API_URL` is blank — so there are
+  no baked LAN IPs and `.env` never needs a current IP.
 - The host serves the built SPA **and** API **and** Socket.IO on one port
   (`5173`), bound to `0.0.0.0`, so any device on the LAN can reach it.
 - The launcher logs to `~/sxm-host.log` (outside the repo — nothing secret is

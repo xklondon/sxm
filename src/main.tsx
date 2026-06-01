@@ -4,6 +4,11 @@ import { runDeckEngineChecks } from './engine/deck';
 import { runBlackjackSanitySuite } from './engine/blackjack';
 import { runHoldemEngineChecks, runHandEvaluatorChecks } from './engine/holdem';
 import { AppRoot } from './AppRoot';
+import { BootErrorBoundary } from './debug/BootErrorBoundary';
+import { BOOT_STAGES, installBootDiagnostics, markBootStage } from './debug/bootDiagnostics';
+
+installBootDiagnostics();
+markBootStage(BOOT_STAGES.bundle);
 
 if (import.meta.env.DEV) {
   const deckChecks = runDeckEngineChecks();
@@ -24,8 +29,12 @@ if (import.meta.env.DEV) {
   }
 }
 
+markBootStage(BOOT_STAGES.reactEntry);
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AppRoot />
+    <BootErrorBoundary>
+      <AppRoot />
+    </BootErrorBoundary>
   </StrictMode>,
 );

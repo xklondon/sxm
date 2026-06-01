@@ -13,23 +13,39 @@ import { isOnlineModeEnabled, apiPath } from './api/config';
 import { getStoredOnlineTableId } from './hooks/useOnlineMultiplayer';
 import { rememberPendingTable } from './session/pendingTable';
 import { parseJoinTableParams } from './engine/table/invites';
+import { BOOT_STAGES, markBootStage, markBootSucceeded } from './debug/bootDiagnostics';
+import { ClientConfigScreen, isClientConfigPath } from './debug/ClientConfigScreen';
 
 const PENDING_JOIN_KEY = 'sxmcards:pending-join';
 
+// Storage can throw on locked-down mobile browsers (privacy mode) — never let
+// that crash the render and leave a blank/green screen.
 export function savePendingJoin(search: string): void {
-  sessionStorage.setItem(PENDING_JOIN_KEY, search);
+  try {
+    sessionStorage.setItem(PENDING_JOIN_KEY, search);
+  } catch {
+    /* storage unavailable */
+  }
 }
 
 export function getPendingJoin(): string | null {
-  return sessionStorage.getItem(PENDING_JOIN_KEY);
+  try {
+    return sessionStorage.getItem(PENDING_JOIN_KEY);
+  } catch {
+    return null;
+  }
 }
 
 export function consumePendingJoin(): string | null {
-  const value = sessionStorage.getItem(PENDING_JOIN_KEY);
-  if (value) {
-    sessionStorage.removeItem(PENDING_JOIN_KEY);
+  try {
+    const value = sessionStorage.getItem(PENDING_JOIN_KEY);
+    if (value) {
+      sessionStorage.removeItem(PENDING_JOIN_KEY);
+    }
+    return value;
+  } catch {
+    return null;
   }
-  return value;
 }
 
 function inviteTokenFromSearch(search: string): string | null {
@@ -38,8 +54,14 @@ function inviteTokenFromSearch(search: string): string | null {
 }
 
 export function AppRoot() {
+  markBootStage(BOOT_STAGES.appRoot);
   const onlineMode = isOnlineModeEnabled();
   const [authLoading, setAuthLoading] = useState(onlineMode);
+
+  useEffect(() => {
+    // React has mounted AppRoot — the bundle booted. Clear the stall overlay.
+    markBootSucceeded();
+  }, []);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [sessionWarning, setSessionWarning] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState<string | null>(null);
@@ -66,7 +88,10 @@ export function AppRoot() {
           setSessionWarning('Could not reach the server. You can still request a magic link.');
         }
       })
-      .finally(() => setAuthLoading(false));
+      .finally(() => {
+        markBootStage(BOOT_STAGES.authMe);
+        setAuthLoading(false);
+      });
   }, [onlineMode]);
 
   useEffect(() => {
@@ -128,6 +153,10 @@ export function AppRoot() {
       window.location.replace('/login');
     }
   }, [onlineMode, authLoading, user, isPublicPath]);
+
+  if (isClientConfigPath(pathname)) {
+    return <ClientConfigScreen />;
+  }
 
   if (shouldShowGlobalSessionLoading(pathname, authLoading, onlineMode)) {
     return (
@@ -192,7 +221,13 @@ export function AppRoot() {
   }
 
   if (onlineMode && !user) {
-    return null;
+    // Unauthenticated on a protected route: a redirect effect is sending us to
+    // /login. Show visible text (not null) so we never flash a blank/green screen.
+    return (
+      <main className="login-screen">
+        <p>Redirecting to sign in…</p>
+      </main>
+    );
   }
 
   const tableFromUrl = new URLSearchParams(window.location.search).get('table');

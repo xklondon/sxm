@@ -65,6 +65,80 @@ export function getApiBaseUrl(): string {
   return configured?.replace(/\/$/, '') ?? '';
 }
 
+/**
+ * Socket.IO base. Same single-origin rule as the REST API: same page origin in
+ * host/production, the proxied page origin in dev. Never a baked LAN IP.
+ */
+export function getSocketBaseUrl(): string {
+  return getApiBaseUrl();
+}
+
+export interface ClientConfigSnapshot {
+  href: string;
+  origin: string;
+  apiBase: string;
+  socketBase: string;
+  mode: string;
+  dev: boolean;
+  prod: boolean;
+  viteApiUrl: string;
+  viteTableHost: string;
+  onlineMode: boolean;
+}
+
+/** Live client URL/config snapshot for the boot debug page + diagnostics. */
+export function getClientConfigSnapshot(): ClientConfigSnapshot {
+  const hasWindow = typeof window !== 'undefined';
+  return {
+    href: hasWindow ? window.location.href : '',
+    origin: hasWindow ? window.location.origin : '',
+    apiBase: getApiBaseUrl(),
+    socketBase: getSocketBaseUrl(),
+    mode: import.meta.env.MODE,
+    dev: Boolean(import.meta.env.DEV),
+    prod: Boolean(import.meta.env.PROD),
+    viteApiUrl: (import.meta.env.VITE_API_URL as string | undefined) ?? '',
+    viteTableHost: (import.meta.env.VITE_TABLE_HOST as string | undefined) ?? '',
+    onlineMode: isOnlineModeEnabled(),
+  };
+}
+
+/** Human-readable client config (used by the /debug/client-config page). */
+export function formatClientConfig(c: ClientConfigSnapshot): string {
+  return [
+    `location.href   = ${c.href}`,
+    `location.origin = ${c.origin}`,
+    `apiBase         = ${c.apiBase}`,
+    `socketBase      = ${c.socketBase}`,
+    `import.meta.env.MODE = ${c.mode}`,
+    `import.meta.env.DEV  = ${c.dev}`,
+    `import.meta.env.PROD = ${c.prod}`,
+    `VITE_API_URL    = ${c.viteApiUrl || '(blank)'}`,
+    `VITE_TABLE_HOST = ${c.viteTableHost || '(blank)'}`,
+    `onlineMode      = ${c.onlineMode}`,
+  ].join('\n');
+}
+
+const LAN_IP_RE = /\b(?:10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)\d/;
+
+function stripSlash(s: string): string {
+  return s.replace(/\/$/, '');
+}
+
+/**
+ * True if a baked absolute origin leaked into the client (the host bug). An
+ * origin-derived apiBase that EQUALS the page origin is healthy even on a LAN IP
+ * — staleness means a non-blank VITE_* LAN IP, or apiBase pointing off-origin.
+ */
+export function clientConfigHasStaleLanIp(c: ClientConfigSnapshot): boolean {
+  const bakedViteLanIp =
+    (Boolean(c.viteApiUrl) && LAN_IP_RE.test(c.viteApiUrl)) ||
+    (Boolean(c.viteTableHost) && LAN_IP_RE.test(c.viteTableHost));
+  const apiOffOrigin =
+    Boolean(c.apiBase) && Boolean(c.origin) && stripSlash(c.apiBase) !== stripSlash(c.origin);
+  return bakedViteLanIp || apiOffOrigin;
+}
+
 /** Relative `/api/...` path in proxied dev mode; absolute URL otherwise. */
 export function apiPath(path: string): string {
   const normalized = path.startsWith('/') ? path : `/${path}`;
