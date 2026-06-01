@@ -11,7 +11,7 @@ export class AuthService {
     private readonly people: PeopleService,
   ) {}
 
-  async requestMagicLink(email: string): Promise<{ ok: true; devLink?: string }> {
+  async requestMagicLink(email: string, rememberMe = true): Promise<{ ok: true; devLink?: string }> {
     const normalized = email.trim().toLowerCase();
     if (!normalized.includes('@')) {
       throw new Error('Valid email required');
@@ -38,7 +38,8 @@ export class AuthService {
     this.store.createMagicLink(normalized, token, expiresAt);
     this.store.setLastMagicLinkRequestAt(normalized, new Date().toISOString());
 
-    const verifyUrl = `${getEffectivePublicOrigin().replace(/\/$/, '')}/api/auth/verify?token=${encodeURIComponent(token)}`;
+    const rememberParam = rememberMe ? 'remember=1' : 'remember=0';
+    const verifyUrl = `${getEffectivePublicOrigin().replace(/\/$/, '')}/api/auth/verify?token=${encodeURIComponent(token)}&${rememberParam}`;
     await sendMagicLinkEmail(normalized, verifyUrl);
 
     if (!config.isProduction) {
@@ -51,7 +52,7 @@ export class AuthService {
     };
   }
 
-  verifyMagicLink(token: string): string {
+  verifyMagicLink(token: string, options?: { persistent?: boolean }): string {
     const link = this.store.getMagicLink(token);
     if (!link) {
       throw new Error('Invalid or unknown token');
@@ -66,6 +67,7 @@ export class AuthService {
     this.store.markMagicLinkUsed(token);
     const user = this.store.createUser(link.email, link.email.split('@')[0]!);
     this.people.ensurePersonOnLogin(link.email, user.id);
-    return createSessionToken({ userId: user.id, email: user.email });
+    const persistent = options?.persistent !== false;
+    return createSessionToken({ userId: user.id, email: user.email, persistent });
   }
 }

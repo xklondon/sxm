@@ -88,10 +88,13 @@ export async function fetchMe(): Promise<AuthUser | null> {
   return data.user;
 }
 
-export async function requestMagicLink(email: string): Promise<{ devLink?: string }> {
+export async function requestMagicLink(
+  email: string,
+  rememberMe = true,
+): Promise<{ devLink?: string }> {
   const res = await apiFetch('/api/auth/request-magic-link', {
     method: 'POST',
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, rememberMe }),
   });
   const data = await res.json();
   if (!res.ok) {

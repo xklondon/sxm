@@ -58,6 +58,15 @@
   color: inherit;
 }
 
+.login-screen__remember {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
 .login-screen__error {
   color: var(--ds-color-danger);
   font-size: 0.75rem;

@@ -3,10 +3,11 @@ import type { AuthService } from '../auth/service.js';
 import {
   clearSessionCookie,
   requireAuth,
+  refreshSessionCookie,
   setSessionCookie,
   type AuthedRequest,
 } from '../auth/middleware.js';
-import { getEffectivePublicOrigin } from '../config.js';
+import { parseRememberQuery, resolveRequestOrigin } from '../auth/cookies.js';
 
 import type { PeopleService } from '../people/service.js';
 
@@ -16,7 +17,8 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
   router.post('/request-magic-link', async (req, res) => {
     try {
       const email = String(req.body?.email ?? '');
-      const result = await auth.requestMagicLink(email);
+      const rememberMe = req.body?.rememberMe !== false;
+      const result = await auth.requestMagicLink(email, rememberMe);
       res.json(result);
     } catch (err) {
       res.status(400).json({ error: err instanceof Error ? err.message : 'Request failed' });
@@ -24,14 +26,16 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
   });
 
   router.get('/verify', (req, res) => {
+    const origin = resolveRequestOrigin(req);
     try {
       const token = String(req.query.token ?? '');
-      const sessionToken = auth.verifyMagicLink(token);
-      setSessionCookie(res, sessionToken);
-      res.redirect(`${getEffectivePublicOrigin().replace(/\/$/, '')}/?login=ok`);
+      const persistent = parseRememberQuery(req.query.remember);
+      const sessionToken = auth.verifyMagicLink(token, { persistent });
+      setSessionCookie(res, sessionToken, { persistent, req });
+      res.redirect(`${origin}/?login=ok`);
     } catch (err) {
       res.redirect(
-        `${getEffectivePublicOrigin().replace(/\/$/, '')}/login?error=${encodeURIComponent(err instanceof Error ? err.message : 'verify failed')}`,
+        `${origin}/login?error=${encodeURIComponent(err instanceof Error ? err.message : 'verify failed')}`,
       );
     }
   });
@@ -39,6 +43,7 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
   router.get('/me', requireAuth, (req: AuthedRequest, res) => {
     try {
       const user = people.getAuthProfile(req.auth!.userId);
+      refreshSessionCookie(res, req.auth!, req);
       res.json({ user });
     } catch (err) {
       res.status(404).json({ error: err instanceof Error ? err.message : 'Not found' });

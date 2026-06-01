@@ -4,6 +4,8 @@ import { config } from '../config.js';
 export interface SessionPayload {
   userId: string;
   email: string;
+  /** When false, cookie is a browser session cookie (no Max-Age). Omitted = persistent. */
+  persistent?: boolean;
 }
 
 function sign(data: string): string {

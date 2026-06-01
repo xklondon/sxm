@@ -177,6 +177,7 @@ npm run host   # or just tap the "SXM Cards" widget
 |---|---|
 | `No build found at dist/` | Run `npm run build` first. |
 | `Server did not become ready … already in use` | Another process holds port 5173. Stop it, or set `HOST_PORT=8080 npm run host`. |
+| Must magic-link login every visit on phone | Use **one** join URL consistently (the printed `Address:` / QR). `http://127.0.0.1:5173` and `http://10.x.x.x:5173` are different origins — cookies do not cross. Check **Remember me** when signing in; host mode keeps the session cookie on HTTP (no `Secure` flag). |
 | Phone says no LAN IP | Connect to Wi-Fi or enable the hotspot, then re-run. |
 | Players can't connect | Confirm they're on the **same** Wi-Fi/hotspot. Some "guest" Wi-Fi networks block device-to-device traffic — use a hotspot instead. |
 | App opens but stays blank / "loading" after an IP change | Old IP baked into the build. Remove IP lines from `.env`, then `rm -rf dist && npm run build` once. Restart the widget. |
@@ -214,3 +215,7 @@ npm run host   # or just tap the "SXM Cards" widget
   lock with `termux-wake-unlock` when you're done hosting.
 - Cloud deployment is unaffected — production still uses `PUBLIC_ORIGIN` and
   `NODE_ENV=production` (see `DEPLOYMENT.md`).
+- **Sign-in URL:** Always open the same address you used to request the magic link
+  (QR / printed `Address:`). Loopback (`127.0.0.1`) and LAN IP (`10.x.x.x`) store
+  separate cookies. Enable **Remember me** for a persistent session until
+  `SESSION_MAX_AGE_MS` expires.

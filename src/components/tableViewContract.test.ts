@@ -6,6 +6,8 @@ import {
   preserveClientViewMode,
   resolveInitialViewMode,
   showStatusCornerBox,
+  sortBoxSlotsForCardViewDisplay,
+  sortBoxSlotsForTableVisualOrder,
 } from './tableViewContract';
 import { shouldShowMobileFullTableFallback } from '../hooks/useIsMobileViewport';
 import {
@@ -78,5 +80,24 @@ describe('status corner box does not alter Card View status on mobile', () => {
   it('corner box is desktop-only; mobile keeps its own status layout', () => {
     expect(showStatusCornerBox('desktop')).toBe(true);
     expect(showStatusCornerBox('mobile')).toBe(false);
+  });
+});
+
+describe('box visual order', () => {
+  const slots = [1, 2, 3, 4, 5, 6, 7].map((slotNumber) => ({ slotNumber }));
+
+  it('table visual order places Box 1 on the right (descending slot numbers)', () => {
+    expect(sortBoxSlotsForTableVisualOrder(slots).map((s) => s.slotNumber)).toEqual([
+      7, 6, 5, 4, 3, 2, 1,
+    ]);
+  });
+
+  it('mobile Card View matches table order; desktop Card View stays ascending', () => {
+    expect(sortBoxSlotsForCardViewDisplay(slots, 'mobile').map((s) => s.slotNumber)).toEqual([
+      7, 6, 5, 4, 3, 2, 1,
+    ]);
+    expect(sortBoxSlotsForCardViewDisplay(slots, 'desktop').map((s) => s.slotNumber)).toEqual([
+      1, 2, 3, 4, 5, 6, 7,
+    ]);
   });
 });

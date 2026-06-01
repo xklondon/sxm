@@ -89,12 +89,14 @@ describe('public auth endpoints', () => {
     expect(res.status).toBe(200);
   });
 
-  it('/api/auth/me succeeds with valid session', async () => {
+  it('GET /api/auth/me succeeds with valid session', async () => {
     const { app, store } = await createTestApp();
     const user = store.createUser('root@example.com', 'Root');
-    const cookie = `${process.env.SESSION_COOKIE_NAME ?? 'sxmcards_session'}=${createSessionToken({ userId: user.id, email: user.email })}`;
+    const cookie = `${process.env.SESSION_COOKIE_NAME ?? 'sxmcards_session'}=${createSessionToken({ userId: user.id, email: user.email, persistent: true })}`;
     const res = await request(app).get('/api/auth/me').set('Cookie', cookie);
     expect(res.status).toBe(200);
     expect(res.body.user.email).toBe('root@example.com');
+    const setCookie = res.headers['set-cookie']?.[0] ?? '';
+    expect(setCookie).toContain('Max-Age=');
   });
 });

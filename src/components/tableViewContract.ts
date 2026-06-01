@@ -46,6 +46,24 @@ export function preserveClientViewMode(localMode: TableViewMode): TableViewMode 
   return localMode;
 }
 
+/** Full Table visual order: Box 1 on the right (descending slot numbers). */
+export function sortBoxSlotsForTableVisualOrder<T extends { slotNumber: number }>(
+  slots: readonly T[],
+): T[] {
+  return [...slots].sort((a, b) => b.slotNumber - a.slotNumber);
+}
+
+/** Card View box row: mobile matches table orientation; desktop keeps ascending DOM order. */
+export function sortBoxSlotsForCardViewDisplay<T extends { slotNumber: number }>(
+  slots: readonly T[],
+  device: DeviceView,
+): T[] {
+  if (device === 'mobile') {
+    return sortBoxSlotsForTableVisualOrder(slots);
+  }
+  return [...slots].sort((a, b) => a.slotNumber - b.slotNumber);
+}
+
 /** Desktop status corner styling is CSS-only (`.bj-view-*-desktop .bj-center-status`). */
 export function showStatusCornerBox(device: DeviceView): boolean {
   return device === 'desktop';

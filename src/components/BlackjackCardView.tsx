@@ -52,6 +52,8 @@ import {
   showStitchedPlayerCards,
 } from "./blackjackViewPhase";
 
+import { sortBoxSlotsForCardViewDisplay, type DeviceView } from "./tableViewContract";
+
 import { insuranceBetMax } from "../engine/blackjack";
 
 import { isOnlineModeEnabled } from "../api/config";
@@ -74,6 +76,7 @@ import "./BlackjackCardView.css";
 interface BlackjackCardViewProps {
   gameState: GameState;
   /** Drives desktop vs mobile betting layout; defaults to mobile-canonical. */
+  deviceView?: DeviceView;
   focusBoxId?: string;
   activeBoxId: string | null;
   showHoleHidden: boolean;
@@ -106,6 +109,7 @@ const SWIPE_THRESHOLD = 48;
 
 export function BlackjackCardView({
   gameState,
+  deviceView = "mobile",
   focusBoxId,
   activeBoxId,
   showHoleHidden,
@@ -202,9 +206,7 @@ export function BlackjackCardView({
 
   const { value } = getBlackjackHandValue(cards);
 
-  const slots = [...gameState.tableMeta.boxSlots].sort(
-    (a, b) => a.slotNumber - b.slotNumber,
-  );
+  const slots = sortBoxSlotsForCardViewDisplay(gameState.tableMeta.boxSlots, deviceView);
 
   const selectedId = gameState.selectedSeatId ?? heroBoxId;
 

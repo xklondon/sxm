@@ -1,6 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import { config } from '../config.js';
-import { verifySessionToken, type SessionPayload } from './tokens.js';
+import { verifySessionToken, createSessionToken, type SessionPayload } from './tokens.js';
+import {
+  buildClearSessionCookieHeader,
+  buildSessionCookieHeader,
+  type SessionCookieOptions,
+} from './cookies.js';
 
 export interface AuthedRequest extends Request {
   auth?: SessionPayload;
@@ -19,19 +24,22 @@ export function readSessionToken(req: Request): string | null {
   return null;
 }
 
-export function setSessionCookie(res: Response, token: string): void {
-  const secure = config.isProduction ? '; Secure' : '';
-  res.setHeader(
-    'Set-Cookie',
-    `${config.sessionCookieName}=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=${Math.floor(config.sessionMaxAgeMs / 1000)}${secure}`,
-  );
+export function setSessionCookie(res: Response, token: string, options: SessionCookieOptions = {}): void {
+  res.setHeader('Set-Cookie', buildSessionCookieHeader(token, options));
+}
+
+export function refreshSessionCookie(res: Response, payload: SessionPayload, req?: Request): void {
+  const persistent = payload.persistent !== false;
+  const token = createSessionToken({
+    userId: payload.userId,
+    email: payload.email,
+    persistent,
+  });
+  setSessionCookie(res, token, { persistent, req });
 }
 
 export function clearSessionCookie(res: Response): void {
-  res.setHeader(
-    'Set-Cookie',
-    `${config.sessionCookieName}=; HttpOnly; Path=/; Max-Age=0`,
-  );
+  res.setHeader('Set-Cookie', buildClearSessionCookieHeader());
 }
 
 export function requireAuth(req: AuthedRequest, res: Response, next: NextFunction): void {

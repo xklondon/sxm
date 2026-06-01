@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { GameState, TableViewMode } from '../types';
@@ -111,6 +113,17 @@ function bettingState(): GameState {
 
 function arcBoxOrder(html: string): string[] {
   return [...html.matchAll(/class="bj-arc__box-label">Box (\d)/g)].map((m) => m[1]!);
+}
+
+function cardViewMiniBoxOrder(html: string): string[] {
+  if (!html.includes('bj-phone-view__mini-row')) {
+    return [];
+  }
+  return [...html.matchAll(/class="bj-phone-view__mini-hand-box">Box (\d)/g)].map((m) => m[1]!);
+}
+
+function mobileFullTableCss(): string {
+  return readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 }
 
 /** Canonical section markers — mobile and desktop must both include the same set. */
@@ -251,6 +264,13 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     expect(arcBoxOrder(mobile).length).toBeGreaterThan(0);
   });
 
+  it('felt scroller CSS includes horizontal edge gutters for end boxes', () => {
+    const css = mobileFullTableCss();
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*padding:\s*0\s+0\.55rem/);
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*padding:\s*0\s+0\.85rem/);
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__rail[\s\S]*overflow:\s*visible/);
+  });
+
   it('falls back only on ultra-narrow widths (< 360px)', () => {
     const html = renderPanelAt(320, withView(playingState(), 'full'));
     expect(html).toContain('bj-mobile-fallback');
@@ -291,12 +311,29 @@ describe('mobile Card View structure', () => {
     expect(html).toContain('BUST');
     expect(html).toContain('bj-phone-view__mini-hand--active');
     expect(html).toContain('Join');
-    const box1Idx = html.indexOf('Box 1');
-    const box2Idx = html.indexOf('Box 2', box1Idx + 1);
-    const box3Idx = html.indexOf('Box 3', box2Idx + 1);
-    expect(box1Idx).toBeGreaterThan(-1);
-    expect(box2Idx).toBeGreaterThan(box1Idx);
-    expect(box3Idx).toBeGreaterThan(box2Idx);
+    const order = cardViewMiniBoxOrder(html);
+    expect(order.length).toBeGreaterThanOrEqual(3);
+    expect(order[0]).toBe('7');
+    expect(order[order.length - 1]).toBe('1');
+  });
+
+  it('mobile Card View mini row uses table visual order; occupied boxes match Full Table arc', () => {
+    const state = withView(playingState(), 'card');
+    const card = renderPanelAt(390, state);
+    const full = renderPanelAt(390, withView(playingState(), 'full'));
+    const cardOrder = cardViewMiniBoxOrder(card);
+    const arcOrder = arcBoxOrder(full);
+    expect(cardOrder[0]).toBe('7');
+    expect(cardOrder[cardOrder.length - 1]).toBe('1');
+    expect(cardOrder.filter((n) => arcOrder.includes(n))).toEqual(arcOrder);
+  });
+
+  it('desktop Card View keeps ascending box order unchanged', () => {
+    const state = withView(playingState(), 'card');
+    const desktop = renderPanelAt(1280, state);
+    const order = cardViewMiniBoxOrder(desktop);
+    expect(order[0]).toBe('1');
+    expect(order[order.length - 1]).toBe('7');
   });
 
   it('highlights the active box as the live hero with its controls', () => {

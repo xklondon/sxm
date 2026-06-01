@@ -18,6 +18,7 @@ export function LoginScreen({
   inviteTableName = null,
 }: LoginScreenProps) {
   const [email, setEmail] = useState(invitedEmail ?? '');
+  const [rememberMe, setRememberMe] = useState(true);
   const [devLink, setDevLink] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(initialError ?? null);
@@ -31,7 +32,7 @@ export function LoginScreen({
     setMessage(null);
     setDevLink(null);
     try {
-      const result = await requestMagicLink(email);
+      const result = await requestMagicLink(email, rememberMe);
       if (isDev) {
         setMessage('Magic link sent. Check your email.');
       } else {
@@ -73,6 +74,14 @@ export function LoginScreen({
               autoComplete="email"
               readOnly={Boolean(invitedEmail)}
             />
+          </label>
+          <label className="login-screen__remember">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            Remember me on this device
           </label>
           {error && <p className="login-screen__error">{error}</p>}
           {message && <p className="login-screen__msg">{message}</p>}
