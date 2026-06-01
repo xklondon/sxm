@@ -100,9 +100,10 @@ Aligned env keys (same LAN host, no localhost in links):
   (`getActionableHandForView`, `getBlackjackRoundPhase`, `allowsBettingActions`), box
   ordering, round summary, BUST presentation, and This Table data. Only CSS/layout
   wrappers differ. No mobile-only gameplay branch or duplicate logic.
-- **Mobile Full Table is the real (compressed) felt** — same subtree as desktop, scoped
-  under `.bj-view-full-mobile`. The "Use Card View" fallback appears ONLY on ultra-narrow
-  widths (`ULTRA_NARROW_MAX_WIDTH`, < 360px); normal phones render the actual table.
+- **Mobile Full Table is the real (compressed) felt** — same subtree and arc positions
+  as desktop, scoped under `.bj-view-full-mobile`. This Table is a stacked card below
+  the felt (not a horizontal bar). The "Use Card View" fallback appears ONLY on
+  ultra-narrow widths (`ULTRA_NARROW_MAX_WIDTH`, < 360px).
 - **Mobile Card View is canonical** — stitched cards, ordered boxes, active box highlighted,
   "This Table" as a horizontal bar below (no right side column), no horizontal page scroll.
 - **Desktop Full Table is the reference** — must not be affected by Card View CSS.

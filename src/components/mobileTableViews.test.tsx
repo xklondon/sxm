@@ -254,6 +254,13 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     expect(html).toContain('bj-mobile-fallback');
     expect(html).toContain('Use Card View');
   });
+
+  it('includes full-width Assign chips and Invite actions in This Table markup', () => {
+    const html = renderPanelAt(390, withView(bettingState(), 'full'));
+    expect(html).toContain('bj-accounts-panel__assign');
+    expect(html).toContain('Assign chips');
+    expect(html).toContain('bj-accounts-panel__play-flow');
+  });
 });
 
 describe('mobile Card View structure', () => {

@@ -1153,11 +1153,9 @@
   font-size: 0.62rem;
 }
 
-/* "This Table" becomes a horizontal, compact, swipeable bar below the cards/felt
-   on BOTH mobile views — never a right side panel column. Rows scroll sideways
-   inside the bar only (the page itself never scrolls sideways). */
-.bj-view-card-mobile .bj-accounts-panel,
-.bj-view-full-mobile .bj-accounts-panel {
+/* "This Table" horizontal swipeable bar — Card View mobile only.
+   Full Table mobile uses a stacked card (desktop sidebar layout, full width). */
+.bj-view-card-mobile .bj-accounts-panel {
   flex: 0 0 auto;
   width: 100%;
   max-width: none;
@@ -1172,66 +1170,64 @@
   scrollbar-width: none;
 }
 
-.bj-view-card-mobile .bj-accounts-panel::-webkit-scrollbar,
-.bj-view-full-mobile .bj-accounts-panel::-webkit-scrollbar {
+.bj-view-card-mobile .bj-accounts-panel::-webkit-scrollbar {
   display: none;
 }
 
-.bj-view-card-mobile .bj-accounts-panel__title,
-.bj-view-full-mobile .bj-accounts-panel__title {
+.bj-view-card-mobile .bj-accounts-panel__title {
   flex: 0 0 auto;
   align-self: center;
   margin: 0 0.25rem 0 0;
   writing-mode: horizontal-tb;
 }
 
-.bj-view-card-mobile .bj-accounts-panel__list,
-.bj-view-full-mobile .bj-accounts-panel__list {
+.bj-view-card-mobile .bj-accounts-panel__list {
   flex-direction: row;
   flex-wrap: nowrap;
   gap: 0.3rem;
 }
 
-.bj-view-card-mobile .bj-accounts-panel__row,
-.bj-view-full-mobile .bj-accounts-panel__row {
+.bj-view-card-mobile .bj-accounts-panel__row {
   flex: 0 0 auto;
   min-width: 8rem;
 }
 
 /* ============================================================
-   MOBILE FULL TABLE — compressed clone of Desktop Full Table.
-   Same felt subtree (dealer, status/summary, arc/boxes, chip tray,
-   actions, This Table) — only the layout/scale is mobile-optimized.
-   Scoped to .bj-view-full-mobile so desktop is never affected.
+   MOBILE FULL TABLE — scaled desktop felt (same arc positions/order).
+   Scoped to .bj-view-full-mobile; Card View mobile is unchanged.
    ============================================================ */
 .bj-view-full-mobile {
   overflow-x: hidden; /* page never scrolls sideways */
 }
 
-/* Stack: Dealer → Status → Felt/Boxes → Actions/Chips, then This Table bar. */
+/* Stack felt column then This Table card below (not beside). */
 .bj-view-full-mobile .bj-casino__felt--with-account {
   flex-direction: column;
   align-items: stretch;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .bj-view-full-mobile .bj-casino__rail {
-  padding: 0.4rem;
-  border-radius: 1rem;
+  padding: 0.35rem;
 }
 
+/* Same elliptical felt as desktop — scaled down, not a flat rectangle. */
 .bj-view-full-mobile .bj-casino__felt {
-  border-radius: 0.85rem;
-  min-height: 0;
-  padding: 0.5rem 0.4rem 0.7rem;
+  border-radius: 50% / 20%;
+  min-height: min(44dvh, 20rem);
+  padding: 0.45rem 0.35rem 0.6rem;
 }
 
+/* Horizontal scroll lives inside the felt main area only. */
 .bj-view-full-mobile .bj-casino__felt-main {
   width: 100%;
   min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
-/* Compact, centered status/result strip (matches desktop's logical slot). */
 .bj-view-full-mobile .bj-center-status {
   margin: 0.15rem auto 0.35rem;
   padding: 0.2rem 0.5rem;
@@ -1239,24 +1235,65 @@
   font-size: 0.66rem;
 }
 
-/* Boxes stay upright and scaled down so all boxes fit and wrap (no rotation,
-   no page-wide horizontal scroll). Boxes remain the canonical hand display. */
+/* Preserve desktop arc curve: keep per-slot rotation, no wrapping grid. */
 .bj-view-full-mobile .bj-arc {
-  gap: 0.25rem 0.3rem;
-  padding: 0 0.1rem;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: flex-end;
+  width: max-content;
+  min-width: 100%;
+  gap: 0.15rem 0.2rem;
+  padding: 0 0.2rem 0.35rem;
 }
 
 .bj-view-full-mobile .bj-arc__slot {
-  transform: none;
-  width: 3.7rem;
+  width: 3.35rem;
+  flex-shrink: 0;
+  /* rotation comes from --arc-rot inline style (same as desktop) */
 }
 
 .bj-view-full-mobile .bj-arc__total-lg {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
 }
 
-/* Chip tray stays reachable and full-width within the stacked felt. */
 .bj-view-full-mobile .bj-casino__tray-wrap {
+  width: 100%;
+}
+
+/* This Table — compact stacked card below the felt (desktop sidebar layout). */
+.bj-view-full-mobile .bj-accounts-panel {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: none;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  overflow-x: visible;
+  overflow-y: visible;
+  padding: 0.55rem 0.65rem;
+}
+
+.bj-view-full-mobile .bj-accounts-panel__title {
+  flex: none;
+  align-self: stretch;
+  margin: 0 0 0.45rem;
+  text-align: center;
+}
+
+.bj-view-full-mobile .bj-accounts-panel__list {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+}
+
+.bj-view-full-mobile .bj-accounts-panel__row {
+  flex: none;
+  min-width: 0;
+  width: 100%;
+}
+
+.bj-view-full-mobile .bj-accounts-panel__assign,
+.bj-view-full-mobile .bj-accounts-panel__invite {
   width: 100%;
 }
 
