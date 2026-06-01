@@ -5,6 +5,7 @@ import { tableAfterStartPlaying, boxPlayerId } from './sanity/fixtures';
 import { claimBoxSlot } from '../session/boxOps';
 import { resolveControllerPersonId } from '../session';
 import { addChipToBoxStake } from './stakes';
+import { createBlackjackShoe, shuffleBlackjackShoe } from './shoe';
 import {
   shuffleToStartOnState,
   dealCardsButtonOnState,
@@ -77,7 +78,11 @@ function readyToDeal(): GameState {
     const box = boxPlayerId(s, slot)!;
     s = addChipToBoxStake(s, box, 50, personId);
   }
-  return shuffleToStartOnState(s);
+  // shuffleToStartOnState reshuffles with unseeded Math.random; pin a seeded
+  // shoe afterwards so the full-round walk is deterministic (no flaky natural /
+  // even-money hand that the stand loop cannot resolve).
+  const started = shuffleToStartOnState(s);
+  return { ...started, deck: shuffleBlackjackShoe(createBlackjackShoe(6), 'parity-deal-seed') };
 }
 
 describe('online/offline blackjack action parity', () => {

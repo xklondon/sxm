@@ -7,7 +7,8 @@ import type { TableViewMode } from '../types';
  * leaking between Full Table and Card View on desktop and mobile:
  *   - bj-view-full-desktop  (reference full table)
  *   - bj-view-card-desktop  (ordered box row + active hero)
- *   - bj-view-full-mobile   (fallback only — no felt subtree)
+ *   - bj-view-full-mobile   (same felt subtree as desktop, mobile-optimized CSS;
+ *                            the fallback only appears below 360px)
  *   - bj-view-card-mobile   (canonical mobile play view)
  *
  * View mode is CLIENT-LOCAL. Server/WebSocket state updates must never flip it.
@@ -22,15 +23,19 @@ export function getViewRootClass(device: DeviceView, viewMode: TableViewMode): s
   return `bj-view-${viewMode}-${device}`;
 }
 
-/** Card View is the default on mobile; desktop keeps the persisted choice (or full). */
+/**
+ * An explicit persisted choice is honored on every device (so a phone user who
+ * selected Full Table stays in mobile Full Table). With no persisted choice,
+ * mobile defaults to Card View and desktop to Full Table.
+ */
 export function resolveInitialViewMode(
   isMobile: boolean,
   persisted?: TableViewMode | null,
 ): TableViewMode {
-  if (isMobile) {
-    return 'card';
+  if (persisted === 'full' || persisted === 'card') {
+    return persisted;
   }
-  return persisted ?? 'full';
+  return isMobile ? 'card' : 'full';
 }
 
 /**

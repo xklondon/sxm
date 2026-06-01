@@ -32,11 +32,11 @@ describe('view roots (no leak between views)', () => {
   });
 });
 
-describe('mobile Full Table is fallback-only', () => {
-  it('shows fallback only for mobile + full', () => {
-    expect(shouldShowMobileFullTableFallback(true, 'full')).toBe(true);
+describe('Full Table fallback is ultra-narrow only', () => {
+  it('shows the fallback only for ultra-narrow + full (never normal phones)', () => {
+    expect(shouldShowMobileFullTableFallback(true, 'full')).toBe(true); // < 360px + full
     expect(shouldShowMobileFullTableFallback(true, 'card')).toBe(false);
-    expect(shouldShowMobileFullTableFallback(false, 'full')).toBe(false);
+    expect(shouldShowMobileFullTableFallback(false, 'full')).toBe(false); // normal phone full → real table
   });
 });
 
@@ -53,11 +53,11 @@ describe('view mode is client-local (no flip on server update)', () => {
     expect(preserveClientViewMode('full')).toBe('full');
   });
 
-  it('defaults to Card View on mobile and keeps persisted choice on desktop', () => {
-    expect(resolveInitialViewMode(true, 'full')).toBe('card');
-    expect(resolveInitialViewMode(true, null)).toBe('card');
+  it('honors a persisted choice on any device; defaults by device otherwise', () => {
+    expect(resolveInitialViewMode(true, 'full')).toBe('full'); // phone keeps an explicit Full Table choice
+    expect(resolveInitialViewMode(true, null)).toBe('card'); // mobile default
     expect(resolveInitialViewMode(false, 'card')).toBe('card');
-    expect(resolveInitialViewMode(false, null)).toBe('full');
+    expect(resolveInitialViewMode(false, null)).toBe('full'); // desktop default
   });
 });
 

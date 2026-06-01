@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   isMobileViewportWidth,
+  isUltraNarrowViewportWidth,
   shouldShowMobileFullTableFallback,
   MOBILE_MAX_WIDTH,
+  ULTRA_NARROW_MAX_WIDTH,
 } from './useIsMobileViewport';
 
 describe('isMobileViewportWidth', () => {
@@ -17,17 +19,26 @@ describe('isMobileViewportWidth', () => {
   });
 });
 
+describe('isUltraNarrowViewportWidth', () => {
+  it('only flags screens narrower than a normal phone (< 360px)', () => {
+    expect(isUltraNarrowViewportWidth(320)).toBe(true);
+    expect(isUltraNarrowViewportWidth(ULTRA_NARROW_MAX_WIDTH)).toBe(true);
+    expect(isUltraNarrowViewportWidth(360)).toBe(false); // normal phone
+    expect(isUltraNarrowViewportWidth(390)).toBe(false);
+  });
+});
+
 describe('shouldShowMobileFullTableFallback', () => {
-  it('shows fallback only on mobile Full Table', () => {
+  it('shows the fallback only on ultra-narrow Full Table', () => {
     expect(shouldShowMobileFullTableFallback(true, 'full')).toBe(true);
   });
 
-  it('never shows fallback for Card View (mobile Card View untouched)', () => {
+  it('never shows fallback for Card View', () => {
     expect(shouldShowMobileFullTableFallback(true, 'card')).toBe(false);
     expect(shouldShowMobileFullTableFallback(false, 'card')).toBe(false);
   });
 
-  it('never shows fallback on desktop Full Table (desktop untouched)', () => {
+  it('renders the real Full Table on normal phone widths (no fallback)', () => {
     expect(shouldShowMobileFullTableFallback(false, 'full')).toBe(false);
   });
 });

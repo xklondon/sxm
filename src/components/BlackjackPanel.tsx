@@ -74,7 +74,11 @@ import { getActionableHandForView } from './blackjackViewPhase';
 import { MAX_TABLE_BOXES } from '../types/table';
 import { getPlayerInitials, loadProfile, type PlayFlowAutoStand } from '../storage/profileStorage';
 import { isOnlineModeEnabled } from '../api/config';
-import { useIsMobileViewport, shouldShowMobileFullTableFallback } from '../hooks/useIsMobileViewport';
+import {
+  useIsMobileViewport,
+  useIsUltraNarrowViewport,
+  shouldShowMobileFullTableFallback,
+} from '../hooks/useIsMobileViewport';
 import { FullTableMobileFallback } from './FullTableMobileFallback';
 import {
   getDeviceView,
@@ -148,6 +152,9 @@ export function BlackjackPanel({
   } = useBlackjackTableFlow(gameState, onGameStateChange, onlineDispatch, onlineActionInFlight);
 
   const isMobileViewport = useIsMobileViewport();
+  // Full Table felt only degrades to the "Use Card View" hint on ultra-narrow
+  // screens (< 360px). All normal phone widths render the real Full Table.
+  const isUltraNarrowViewport = useIsUltraNarrowViewport();
   // View mode is CLIENT-LOCAL: it must never be sourced from server-replaced
   // gameState, or every table:update would flip Card View back to Full Table.
   const [localViewMode, setLocalViewMode] = useState<TableViewMode>(() =>
@@ -867,7 +874,7 @@ export function BlackjackPanel({
         onSave={onGameStateChange}
       />
 
-      {shouldShowMobileFullTableFallback(isMobileViewport, viewMode) ? (
+      {shouldShowMobileFullTableFallback(isUltraNarrowViewport, viewMode) ? (
         <FullTableMobileFallback onSwitchToCardView={() => setViewMode('card')} />
       ) : (
       <div className="bj-casino__rail">

@@ -3,12 +3,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { FullTableMobileFallback } from './FullTableMobileFallback';
 
 describe('FullTableMobileFallback', () => {
-  it('renders the larger-screen hint and a switch-to-card-view action', () => {
+  it('renders the too-narrow hint and a Use Card View action', () => {
     const html = renderToStaticMarkup(
       <FullTableMobileFallback onSwitchToCardView={() => {}} />,
     );
-    expect(html).toContain('Full Table is best on a larger screen.');
-    expect(html).toContain('Switch to Card View');
+    expect(html).toContain('too narrow for Full Table');
+    expect(html).toContain('Use Card View');
   });
 
   it('renders no felt container (no empty green table)', () => {
