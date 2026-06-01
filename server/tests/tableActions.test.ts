@@ -37,6 +37,59 @@ describe('table deal flow', () => {
     expect(Object.keys(dealt.state.blackjack?.playerHands ?? {}).length).toBeGreaterThan(0);
   });
 
+  it('online round settles server-side and nextRound resets stakes', () => {
+    const host = seedHostUser(store);
+    const table = tables.createTable(host.id, 'Host');
+    const boxId = Object.keys(table.state.players).find(
+      (id) => table.state.players[id]?.role === 'box',
+    )!;
+
+    let v = table.version;
+    v = tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, v).version;
+    v = tables.applyAction(table.id, host.id, 'shuffleToStart', {}, v).version;
+    let res = tables.applyAction(table.id, host.id, 'dealCards', {}, v);
+    v = res.version;
+
+    let guard = 0;
+    while (res.state.blackjack?.status === 'player-turns' && guard < 12) {
+      guard += 1;
+      res = tables.applyAction(table.id, host.id, 'stand', {}, v);
+      v = res.version;
+    }
+
+    // Bank turn + settlement resolved server-side — no client-local bank draw.
+    expect(res.state.blackjack?.status).toBe('resolved');
+    expect(res.state.tableMeta.awaitingNextRound).toBe(true);
+
+    const next = tables.applyAction(table.id, host.id, 'nextRound', {}, v);
+    expect(next.state.tableMeta.awaitingNextRound).toBe(false);
+    expect(next.state.tableMeta.bettingLocked).toBe(false);
+    expect(next.state.tableMeta.boxStakes).toEqual({});
+  });
+
+  it('non-host cannot advance to next round', () => {
+    const host = seedHostUser(store);
+    const table = tables.createTable(host.id, 'Host');
+    const guest = store.createUser('guest@example.com', 'Guest');
+    store.addMember({
+      tableId: table.id,
+      userId: guest.id,
+      personId: 'guest-person',
+      role: 'player',
+      joinedAt: new Date().toISOString(),
+    });
+    // Force an awaiting-next-round state.
+    const awaiting = {
+      ...table.state,
+      tableMeta: { ...table.state.tableMeta, awaitingNextRound: true },
+    } as typeof table.state;
+    store.updateTable(table.id, awaiting, table.version);
+
+    expect(() =>
+      tables.applyAction(table.id, guest.id, 'nextRound', {}),
+    ).toThrow(/host/i);
+  });
+
   it('unauthorized player cannot deal', () => {
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');

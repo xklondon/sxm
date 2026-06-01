@@ -146,8 +146,8 @@ export function runGameplayUxSanityChecks(): SanitySuiteResult {
   const bustHand = bustState.blackjack?.playerHands[handKey];
   results.push(
     check(
-      'bust retracts cards and marks settled',
-      bustHand?.cardIds.length === 0 && bustHand?.bustSettled === true,
+      'bust keeps cards visible and marks settled',
+      (bustHand?.cardIds.length ?? 0) > 0 && bustHand?.bustSettled === true,
     ),
   );
   results.push(
@@ -157,12 +157,19 @@ export function runGameplayUxSanityChecks(): SanitySuiteResult {
     ),
   );
 
+  const endBase = tableWithClaimedBox(1);
+  const endBankId = endBase.session.bankPlayerId!;
+  // Personal ledger applies to human-vs-human games only, so use a human banker.
   const endState = {
-    ...tableWithClaimedBox(1),
+    ...endBase,
+    players: {
+      ...endBase.players,
+      [endBankId]: { ...endBase.players[endBankId]!, playerType: 'real' as const },
+    },
     tableMeta: {
-      ...tableWithClaimedBox(1).tableMeta,
+      ...endBase.tableMeta,
       gameStatus: 'ended' as const,
-      winnerId: tableWithClaimedBox(1).session.bankPlayerId,
+      winnerId: endBankId,
       agreement: {
         stakeDescription: '$5',
         defaultChips: 500,

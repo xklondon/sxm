@@ -65,9 +65,12 @@ import { getTableWagerDisplay } from '../engine/session/wagerDisplay';
 import {
   addGameToPersonalLedger,
   hasPersonalLedgerEntryForTable,
+  isBotBankGame,
 } from '../engine/scoreLedger/scoreLedger';
+import { buildRoundResultSummary } from '../engine/blackjack';
 import { canUserAssignChips } from '../engine/table/adminControls';
 import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
+import { getActionableHandForView } from './blackjackViewPhase';
 import { MAX_TABLE_BOXES } from '../types/table';
 import { getPlayerInitials, loadProfile, type PlayFlowAutoStand } from '../storage/profileStorage';
 import { isOnlineModeEnabled } from '../api/config';
@@ -188,6 +191,14 @@ export function BlackjackPanel({
   const playingFor = getTableWagerDisplay(gameState);
   const displaySlots = [...tableMeta.boxSlots].sort((a, b) => b.slotNumber - a.slotNumber);
   const bankerReady = isBankerReady(gameState);
+  // Personal (score) ledger is human-vs-human only — never for a Bot Bank game.
+  const showPersonalLedgerOffer = gameEnded && !isBotBankGame(gameState);
+  // Consolidated end-of-round summary, shown once (in the dealer block, above
+  // the Next Round button). Per-box result chips are intentionally not repeated.
+  const roundSummaryLines =
+    awaitingNextRound && !gameEnded ? buildRoundResultSummary(gameState) : [];
+  const showRoundSummary = roundSummaryLines.length > 0;
+  const centerText = gameEnded ? gameOverMessage : showRoundSummary ? '' : centerStatus;
 
   function handleAddToPersonalLedger() {
     setError(null);
@@ -540,8 +551,11 @@ export function BlackjackPanel({
       );
     }
 
-    const canHit = canHitBlackjack(round, turnHandKey);
-    const canStand = canStandBlackjack(round, turnHandKey);
+    // Canonical gate: controls enabled only when this viewer may act on the
+    // server-authoritative active hand. Shared with Card View.
+    const actionable = getActionableHandForView(gameState, controllerPersonId, isOnlineModeEnabled());
+    const canHit = Boolean(actionable) && canHitBlackjack(round, turnHandKey);
+    const canStand = Boolean(actionable) && canStandBlackjack(round, turnHandKey);
 
     function handleTableAid() {
       if (!deck || !round) {
@@ -560,7 +574,7 @@ export function BlackjackPanel({
             type="button"
             className="ds-btn ds-btn--stand bj-table-actions__btn"
             disabled={!canStand}
-            onClick={() => run((s) => standBlackjackOnState(s, turnHandKey), { type: 'stand', payload: { handKey: turnHandKey } })}
+            onClick={() => run((s) => standBlackjackOnState(s, turnHandKey), { type: 'stand', payload: {} })}
           >
             Stay
           </button>
@@ -568,7 +582,7 @@ export function BlackjackPanel({
             type="button"
             className="ds-btn ds-btn--hit bj-table-actions__btn"
             disabled={!canHit}
-            onClick={() => run((s) => hitBlackjackOnState(s, turnHandKey), { type: 'hit', payload: { handKey: turnHandKey } })}
+            onClick={() => run((s) => hitBlackjackOnState(s, turnHandKey), { type: 'hit', payload: {} })}
           >
             Hit
           </button>
@@ -576,8 +590,8 @@ export function BlackjackPanel({
             <button
               type="button"
               className="ds-btn ds-btn--secondary bj-table-actions__btn bj-table-actions__btn--sm"
-              disabled={!deck || !canDoubleBlackjackForState(gameState, turnHandKey)}
-              onClick={() => run((s) => doubleDownBlackjackOnState(s, turnHandKey), { type: 'double', payload: { handKey: turnHandKey } })}
+              disabled={!actionable || !deck || !canDoubleBlackjackForState(gameState, turnHandKey)}
+              onClick={() => run((s) => doubleDownBlackjackOnState(s, turnHandKey), { type: 'double', payload: {} })}
             >
               2×
             </button>
@@ -586,8 +600,8 @@ export function BlackjackPanel({
             <button
               type="button"
               className="ds-btn ds-btn--secondary bj-table-actions__btn bj-table-actions__btn--sm"
-              disabled={!canSplitBlackjackForState(gameState, turnHandKey)}
-              onClick={() => run((s) => splitBlackjackOnState(s, turnHandKey), { type: 'split', payload: { handKey: turnHandKey } })}
+              disabled={!actionable || !canSplitBlackjackForState(gameState, turnHandKey)}
+              onClick={() => run((s) => splitBlackjackOnState(s, turnHandKey), { type: 'split', payload: {} })}
             >
               Split
             </button>
@@ -663,30 +677,6 @@ export function BlackjackPanel({
     );
   }
 
-  function renderActiveMiniHand() {
-    if (protocolPhase !== 'player' || !round?.activeHandKey || !deck) {
-      return null;
-    }
-    const handKey = round.activeHandKey;
-    const hand = round.playerHands[handKey];
-    const visibleIds = (hand?.cardIds ?? []).filter(Boolean);
-    if (!hand || visibleIds.length === 0) {
-      return null;
-    }
-    const cards = cardsFromIds(deck, visibleIds);
-    const { value } = getBlackjackHandValue(cards);
-    return (
-      <div className="bj-center-mini-hand" aria-label={`Active hand total ${value}, stake ${hand.currentBet}`}>
-        <div className="bj-center-mini-hand__cards">
-          {visibleIds.map((id, index) => renderCard(id, false, true, `mini-${handKey}-${index}`))}
-        </div>
-        <p className="bj-center-mini-hand__meta">
-          {value} · stake {hand.currentBet}
-        </p>
-      </div>
-    );
-  }
-
   function renderWaitingForTurn() {
     if (protocolPhase !== 'player' || round?.activeHandKey) {
       return null;
@@ -735,14 +725,14 @@ export function BlackjackPanel({
               }
               const cards = deck ? cardsFromIds(deck, cardIds) : [];
               const { value } = getBlackjackHandValue(cards);
-              const result = round?.resultMessages[handKey];
+              const isBusted = hand?.actionStatus === 'busted';
               return (
                 <div key={handKey} className="bj-arc__hand">
+                  {isBusted && <span className="bj-arc__bust" aria-label="Busted">BUST</span>}
                   <span className="bj-arc__total-lg">{value}</span>
                   <div className="bj-cards-fan">
                     {cardIds.map((id, index) => renderCard(id, false, true, `${handKey}-${index}`))}
                   </div>
-                  {result && <span className="bj-arc__result">{result}</span>}
                 </div>
               );
             })}
@@ -896,6 +886,7 @@ export function BlackjackPanel({
                 awaitingNextRound={awaitingNextRound}
                 gameEnded={gameEnded}
                 gameOverMessage={gameOverMessage}
+                roundSummaryLines={roundSummaryLines}
                 onNextRound={handleNextRound}
                 dealerCards={dealerCardNodes}
                 protocolPhase={protocolPhase}
@@ -915,10 +906,12 @@ export function BlackjackPanel({
                 bankDrawManual={flowSettings.bankDrawMode === 'manual'}
               />
 
-              <p className={`bj-center-status${gameEnded ? ' bj-center-status--game-over' : ''}`} aria-live="polite">
-                {gameEnded ? gameOverMessage : centerStatus}
-              </p>
-              {gameEnded && (
+              {centerText && (
+                <p className={`bj-center-status${gameEnded ? ' bj-center-status--game-over' : ''}`} aria-live="polite">
+                  {centerText}
+                </p>
+              )}
+              {showPersonalLedgerOffer && (
                 <div className="bj-personal-ledger-offer">
                   <button
                     type="button"
@@ -930,8 +923,6 @@ export function BlackjackPanel({
                   </button>
                 </div>
               )}
-
-              {renderActiveMiniHand()}
 
               {renderInsuranceActions()}
               {renderTablePlayerActions()}
@@ -983,6 +974,7 @@ export function BlackjackPanel({
                   awaitingNextRound={awaitingNextRound}
                   gameEnded={gameEnded}
                   gameOverMessage={gameOverMessage}
+                  roundSummaryLines={roundSummaryLines}
                   onNextRound={handleNextRound}
                   dealerCards={dealerCardNodes}
                   protocolPhase={protocolPhase}
@@ -1002,10 +994,12 @@ export function BlackjackPanel({
                   bankDrawManual={flowSettings.bankDrawMode === 'manual'}
                 />
 
-                <p className={`bj-center-status${gameEnded ? ' bj-center-status--game-over' : ''}`} aria-live="polite">
-                  {gameEnded ? gameOverMessage : centerStatus}
-                </p>
-                {gameEnded && (
+                {centerText && (
+                  <p className={`bj-center-status${gameEnded ? ' bj-center-status--game-over' : ''}`} aria-live="polite">
+                    {centerText}
+                  </p>
+                )}
+                {showPersonalLedgerOffer && (
                   <div className="bj-personal-ledger-offer">
                     <button
                       type="button"
@@ -1034,10 +1028,10 @@ export function BlackjackPanel({
                   onClearStake={clearBoxStakeOnBox}
                   onRemoveLastChip={removeLastChipFromBox}
                   onSlotChipDrop={handleSlotChipDrop}
-                  onStay={(hk) => run((s) => standBlackjackOnState(s, hk), { type: 'stand', payload: { handKey: hk } })}
-                  onCard={(hk) => run((s) => hitBlackjackOnState(s, hk), { type: 'hit', payload: { handKey: hk } })}
-                  onDouble={(hk) => run((s) => doubleDownBlackjackOnState(s, hk), { type: 'double', payload: { handKey: hk } })}
-                  onSplit={(hk) => run((s) => splitBlackjackOnState(s, hk), { type: 'split', payload: { handKey: hk } })}
+                  onStay={(hk) => run((s) => standBlackjackOnState(s, hk), { type: 'stand', payload: {} })}
+                  onCard={(hk) => run((s) => hitBlackjackOnState(s, hk), { type: 'hit', payload: {} })}
+                  onDouble={(hk) => run((s) => doubleDownBlackjackOnState(s, hk), { type: 'double', payload: {} })}
+                  onSplit={(hk) => run((s) => splitBlackjackOnState(s, hk), { type: 'split', payload: {} })}
                   onTakeEvenMoney={(hk) => run((s) => takeEvenMoneyOnState(s, hk), { type: 'takeEvenMoney', payload: { handKey: hk } })}
                   onWaitForBlackjackPayout={(hk) => run((s) => waitForBlackjackPayoutOnState(s, hk), { type: 'waitFor3to2', payload: { handKey: hk } })}
                   onTakeInsurance={(pid) => run((s) => takeInsuranceOnState(s, pid), { type: 'takeInsurance', payload: { playerId: pid } })}

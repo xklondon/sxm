@@ -19,6 +19,16 @@ const stages: string[] = [];
 let booted = false;
 let stallTimer: ReturnType<typeof setTimeout> | null = null;
 
+/**
+ * Dev-only engine sanity suites must NEVER run in a served/host build — they
+ * mutate owner-only table state and can throw during boot. Gate on MODE (which
+ * is reliably 'production' in host builds) rather than the DEV flag, which can
+ * be odd in some host builds.
+ */
+export function shouldRunDevChecks(env: { mode?: string; dev?: boolean }): boolean {
+  return Boolean(env.dev) && env.mode !== 'production';
+}
+
 export function recordBootStage(stage: string, list: string[] = stages): string[] {
   if (!list.includes(stage)) {
     list.push(stage);

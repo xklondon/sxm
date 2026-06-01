@@ -1,12 +1,36 @@
 import type { GameState } from '../types';
 import type { BlackjackRound } from '../types/blackjack';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
+import { getBlackjackProtocolPhase } from '../engine/blackjack/protocol';
+import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
 import { getInsuranceEligiblePlayerIds } from '../engine/blackjack/protocols/activeRules';
 import { getBlackjackProtocolForState } from '../engine/blackjack/protocolState';
-import { canControllerCallBox, resolveControllerPersonId } from '../engine/session';
+import { canControllerCallBox, getCallerPersonIdForBox, resolveControllerPersonId } from '../engine/session';
+import { isTableGameActive } from '../engine/session/tableGameEnd';
 
 export function isBettingPhase(phase: BlackjackProtocolPhase): boolean {
   return phase === 'betting';
+}
+
+/**
+ * Canonical round phase — the single source every view/selector must read.
+ * Online and offline derive phase from the same engine state, so this never
+ * branches on transport.
+ */
+export function getBlackjackRoundPhase(state: GameState): BlackjackProtocolPhase {
+  return getBlackjackProtocolPhase(state);
+}
+
+/**
+ * Canonical "betting is open" predicate shared by the flow hook and all views.
+ * No view may decide betting eligibility independently.
+ */
+export function allowsBettingActions(state: GameState): boolean {
+  return (
+    isTableGameActive(state) &&
+    !state.tableMeta.bettingLocked &&
+    getBlackjackRoundPhase(state) === 'betting'
+  );
 }
 
 export function isInsurancePhase(phase: BlackjackProtocolPhase): boolean {
@@ -107,6 +131,57 @@ export function showStitchedActionControls(
   round: BlackjackRound | null | undefined,
 ): boolean {
   return showPlayerActionControls(phase, round);
+}
+
+export interface ActionableHandForView {
+  /** Server-authoritative active hand key. */
+  handKey: string;
+  /** Box (player) id owning the active hand. */
+  boxId: string;
+}
+
+/**
+ * Canonical "can this viewer act right now?" selector shared by Full Table and
+ * Card View. Returns the hand the viewer may act on, or null. It keys strictly
+ * off `state.blackjack.activeHandKey` (server-authoritative online), so action
+ * controls can never be enabled for a non-active or non-owned hand. A hand that
+ * has auto-stood/stood/busted/blackjacked is never actionable, so an 18+
+ * auto-stand hand never exposes HIT/STAY.
+ *
+ * `onlineMode` is accepted for call-site clarity; the selector itself is mode
+ * agnostic because online actions carry no render-time handKey and the server
+ * resolves against this same activeHandKey.
+ */
+export function getActionableHandForView(
+  state: GameState,
+  personId: string | null,
+  onlineMode: boolean,
+): ActionableHandForView | null {
+  void onlineMode;
+  const round = state.blackjack;
+  if (!round || getBlackjackProtocolPhase(state) !== 'player') {
+    return null;
+  }
+  if (round.evenMoneyOfferHandKey) {
+    return null;
+  }
+  const handKey = round.activeHandKey;
+  if (!handKey) {
+    return null;
+  }
+  const hand = round.playerHands[handKey];
+  if (!hand || hand.actionStatus !== 'acting') {
+    return null;
+  }
+  if (!personId) {
+    return null;
+  }
+  const { playerId } = parseBlackjackHandKey(handKey);
+  const caller = getCallerPersonIdForBox(state, playerId);
+  if (caller !== personId || !canControllerCallBox(state, playerId, personId)) {
+    return null;
+  }
+  return { handKey, boxId: playerId };
 }
 
 export type CardViewBoxStatus =

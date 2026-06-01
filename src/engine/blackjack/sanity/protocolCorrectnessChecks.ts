@@ -131,8 +131,8 @@ export function runProtocolCorrectnessSanityChecks(): SanitySuiteResult {
   const bustHand = bustState.blackjack?.playerHands[handKey];
   results.push(
     check(
-      'bust retracts cards after hit',
-      bustHand?.actionStatus === 'busted' && (bustHand?.cardIds.length ?? 1) === 0,
+      'bust keeps cards visible after hit',
+      bustHand?.actionStatus === 'busted' && (bustHand?.cardIds.length ?? 0) >= 3,
     ),
   );
   results.push(check('bust message set', bustState.blackjack?.resultMessages[handKey] === BUST_MESSAGE));
@@ -298,12 +298,19 @@ export function runProtocolCorrectnessSanityChecks(): SanitySuiteResult {
     } as Storage;
   }
   saveScoreLedgerEntries([]);
+  const endBase = confirmTableAgreement(tableWithClaimedBox(1), '$5', 500, 500);
+  const endBankId = endBase.session.bankPlayerId!;
+  // Human-vs-human game so the personal (score) ledger applies.
   const endState = {
-    ...confirmTableAgreement(tableWithClaimedBox(1), '$5', 500, 500),
+    ...endBase,
+    players: {
+      ...endBase.players,
+      [endBankId]: { ...endBase.players[endBankId]!, playerType: 'real' as const },
+    },
     tableMeta: {
-      ...confirmTableAgreement(tableWithClaimedBox(1), '$5', 500, 500).tableMeta,
+      ...endBase.tableMeta,
       gameStatus: 'ended' as const,
-      winnerId: confirmTableAgreement(tableWithClaimedBox(1), '$5', 500, 500).session.bankPlayerId,
+      winnerId: endBankId,
       endedAt: new Date().toISOString(),
     },
   };

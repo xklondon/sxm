@@ -178,12 +178,19 @@ export function runCardViewPhaseChecks(): SanitySuiteResult {
     } as Storage;
   }
   saveScoreLedgerEntries([]);
+  const endBase = confirmTableAgreement(tableWithClaimedBox(1), '$5', 500, 500);
+  const endBankId = endBase.session.bankPlayerId!;
+  // Human-vs-human game so the personal (score) ledger applies.
   const endState: GameState = {
-    ...confirmTableAgreement(tableWithClaimedBox(1), '$5', 500, 500),
+    ...endBase,
+    players: {
+      ...endBase.players,
+      [endBankId]: { ...endBase.players[endBankId]!, playerType: 'real' },
+    },
     tableMeta: {
-      ...confirmTableAgreement(tableWithClaimedBox(1), '$5', 500, 500).tableMeta,
+      ...endBase.tableMeta,
       gameStatus: 'ended',
-      winnerId: confirmTableAgreement(tableWithClaimedBox(1), '$5', 500, 500).session.bankPlayerId,
+      winnerId: endBankId,
       endedAt: new Date().toISOString(),
     },
   };

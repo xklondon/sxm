@@ -150,7 +150,7 @@ describe('SXMCards multiplayer API', () => {
 
 
 
-  it('stale turn action rejected', () => {
+  it('ignores client-sent handKey and resolves on the authoritative active hand', () => {
 
     const host = seedHostUser(store, 'host@example.com');
 
@@ -166,6 +166,8 @@ describe('SXMCards multiplayer API', () => {
 
         status: 'player-turns',
 
+        // Active hand belongs to a box the host does not own/call.
+
         activeHandKey: 'box-a:0',
 
         playerHands: {
@@ -174,7 +176,7 @@ describe('SXMCards multiplayer API', () => {
 
             cardIds: ['c1', 'c2'],
 
-            actionStatus: 'active',
+            actionStatus: 'acting',
 
             stakeAmount: 10,
 
@@ -208,11 +210,41 @@ describe('SXMCards multiplayer API', () => {
 
 
 
+    // A foreign payload.handKey must be ignored: authority keys off the
+
+    // authoritative active hand, so this is rejected by box ownership — never
+
+    // with a render-time "stale turn" error.
+
     expect(() =>
 
       tables.applyAction(table.id, host.id, 'hit', { handKey: 'box-b:0' }),
 
-    ).toThrow(/Stale turn/i);
+    ).toThrow(/Not box owner/i);
+
+
+
+    expect(() =>
+
+      tables.applyAction(table.id, host.id, 'hit', { handKey: 'box-b:0' }),
+
+    ).not.toThrow(/Stale turn/i);
+
+  });
+
+
+
+  it('stale table version rejected', () => {
+
+    const host = seedHostUser(store, 'host@example.com');
+
+    const table = tables.createTable(host.id, 'Host');
+
+    expect(() =>
+
+      tables.applyAction(table.id, host.id, 'placeBet', { slotNumber: 1, amount: 10 }, 9999),
+
+    ).toThrow(/Stale table version/i);
 
   });
 

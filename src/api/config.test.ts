@@ -3,6 +3,7 @@ import {
   clientConfigHasStaleLanIp,
   formatClientConfig,
   resolveApiBaseUrl,
+  resolveOnlineModeEnabled,
   type ClientConfigSnapshot,
 } from './config';
 
@@ -89,6 +90,23 @@ describe('client config snapshot helpers', () => {
     expect(
       clientConfigHasStaleLanIp({ ...hostSnapshot, viteApiUrl: 'http://10.191.204.176:5173' }),
     ).toBe(true);
+  });
+
+  it('host/production build is online-capable even without a VITE_ONLINE_MODE flag', () => {
+    expect(resolveOnlineModeEnabled({ mode: 'production' })).toBe(true);
+    expect(resolveOnlineModeEnabled({ prod: true })).toBe(true);
+    // The reported odd host build: MODE=production but DEV true / PROD false.
+    expect(resolveOnlineModeEnabled({ mode: 'production', prod: false })).toBe(true);
+  });
+
+  it('respects an explicit VITE_ONLINE_MODE flag in any build', () => {
+    expect(resolveOnlineModeEnabled({ viteOnlineMode: 'true', mode: 'development' })).toBe(true);
+    expect(resolveOnlineModeEnabled({ viteOnlineMode: 'false', mode: 'production' })).toBe(false);
+  });
+
+  it('defaults dev (non-production) without a flag to offline', () => {
+    expect(resolveOnlineModeEnabled({ mode: 'development' })).toBe(false);
+    expect(resolveOnlineModeEnabled({})).toBe(false);
   });
 
   it('formats the config with all required fields', () => {

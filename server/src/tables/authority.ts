@@ -72,6 +72,16 @@ export function assertActionAuthorized(state: GameState, ctx: ActionContext): vo
       assertHandCaller(state, ctx, state.blackjack.evenMoneyOfferHandKey);
       return;
 
+    case 'nextRound':
+      // Round lifecycle is host-driven (same as shuffle/deal). The engine
+      // re-validates awaitingNextRound and resets stakes/bets identically to
+      // offline `startNextRoundOnState`.
+      if (!state.tableMeta.awaitingNextRound) {
+        throw new Error('No completed round awaiting Next Round');
+      }
+      assertTableHost(state, ctx.personId);
+      return;
+
     case 'addGameToPersonalLedger':
       if (state.tableMeta.gameStatus !== 'ended') {
         throw new Error('Game must end before personal ledger');
@@ -234,16 +244,11 @@ function assertPlayerAction(
     throw new Error('No active hand');
   }
 
-  const handKey =
-    (ctx.payload.handKey as string | undefined) ??
-    (ctx.action === 'hit' || ctx.action === 'stand' || ctx.action === 'double' || ctx.action === 'split'
-      ? round.activeHandKey
-      : undefined);
-
-  if (!handKey || handKey !== round.activeHandKey) {
-    throw new Error('Stale turn — not active hand');
-  }
-
+  // Normal player actions (hit/stand/double/split) always resolve against the
+  // server-authoritative active hand. Any client-sent payload.handKey is
+  // ignored to eliminate render-time "stale turn" drift after auto-stand /
+  // multi-box advances. Box ownership is enforced on the active hand.
+  const handKey = round.activeHandKey;
   const { playerId } = parseBlackjackHandKey(handKey);
   const caller = getCallerPersonIdForBox(state, playerId);
   if (caller !== ctx.personId) {

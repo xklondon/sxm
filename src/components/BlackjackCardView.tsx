@@ -36,6 +36,7 @@ import {
 import {
   canCallEvenMoneyForHand,
   formatCardViewBoxStatus,
+  getActionableHandForView,
   getCardViewBoxStatus,
   getCardViewHeroBoxId,
   getCardViewHeroHandKey,
@@ -52,6 +53,8 @@ import {
 } from "./blackjackViewPhase";
 
 import { insuranceBetMax } from "../engine/blackjack";
+
+import { isOnlineModeEnabled } from "../api/config";
 
 import { StakeChips, type ChipValue } from "./ChipStack";
 
@@ -178,12 +181,17 @@ export function BlackjackCardView({
       ? round.playerHands[heroHandKey]
       : undefined;
 
+  // Canonical gate shared with Full Table: the hero box is actionable only when
+  // it owns the server-authoritative active hand and the viewer may call it.
+  const actionable = getActionableHandForView(
+    gameState,
+    controllerPersonId,
+    isOnlineModeEnabled(),
+  );
   const isActiveTurn =
-    isPlayerPhase &&
-    turnHandKey !== null &&
+    actionable !== null &&
     heroBoxId !== null &&
-    turnBoxId === heroBoxId &&
-    isCaller;
+    actionable.boxId === heroBoxId;
 
   const activeSlotNum = turnBoxId
     ? session.boxSlotNumbers?.[turnBoxId]
@@ -874,8 +882,15 @@ export function BlackjackCardView({
       return null;
     }
 
+    const heroBusted = hand?.actionStatus === 'busted';
+
     return (
       <div className="bj-phone-view__hand">
+        {heroBusted && (
+          <span className="bj-phone-view__bust-label" aria-label="Busted">
+            BUST
+          </span>
+        )}
         <div className="bj-phone-view__hero-actions">
           <div className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero">
             Total {value}

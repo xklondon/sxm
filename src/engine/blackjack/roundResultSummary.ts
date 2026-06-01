@@ -24,7 +24,7 @@ function outcomeLine(
 
   switch (outcome) {
     case 'loss':
-      return `${boxLabel}: ${playerTotal} loses — bank takes ${bet}.`;
+      return `${boxLabel}: ${playerTotal} loses — bank wins ${bet}.`;
     case 'win':
       return `${boxLabel}: ${playerTotal} wins — ${who} wins ${bet}.`;
     case 'blackjack-win': {
@@ -49,7 +49,7 @@ export function buildRoundResultSummary(state: GameState): string[] {
   const lines: string[] = [];
   const dealerCards = cardsFromIds(state.deck, round.dealerCardIds.filter(Boolean));
   const dealerVal = getBlackjackHandValue(dealerCards);
-  lines.push(`Bank has ${dealerVal.value}.`);
+  lines.push(`Bank ${dealerVal.value}.`);
 
   for (const handKey of orderedHandKeys(state.session, round)) {
     const hand = round.playerHands[handKey];

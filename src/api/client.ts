@@ -150,6 +150,15 @@ export async function sendTableAction(
   return data as { state: import('../types').GameState; version: number };
 }
 
+export async function fetchTable(tableId: string) {
+  const res = await apiFetch(`/api/tables/${tableId}`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error ?? 'Could not load table');
+  }
+  return data as { tableId: string; version: number; state: import('../types').GameState };
+}
+
 export async function invitePersonToTable(
   tableId: string,
   email: string,

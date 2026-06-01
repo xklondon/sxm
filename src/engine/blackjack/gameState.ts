@@ -540,6 +540,33 @@ export function completeBankingOnState(state: GameState): GameState {
   return next;
 }
 
+/**
+ * Server-authoritative play-out of an auto bank turn + settlement. Offline keeps
+ * the timed, card-by-card bank-draw animation (driven by a client effect);
+ * online resolves the bank in the same action that ended player turns so every
+ * client receives one identical settled state and never mutates bank/settlement
+ * locally. The resulting state is byte-for-byte equivalent to the offline
+ * animation's final frame (same engine functions, same order).
+ */
+export function resolveBankTurnAuto(state: GameState): GameState {
+  if (!state.blackjack || !state.deck) {
+    return state;
+  }
+  if (state.blackjackFlowSettings.bankDrawMode !== 'auto') {
+    return state;
+  }
+  let s = state;
+  let guard = 0;
+  while (s.blackjack?.status === 'bank-turn' && guard < 60) {
+    guard += 1;
+    s = drawBankCardOnState(s);
+  }
+  if (s.blackjack?.status === 'banking') {
+    s = completeBankingOnState(s);
+  }
+  return s;
+}
+
 export function ensureBlackjackRoundSettled(state: GameState): GameState {
   const round = state.blackjack;
   if (!round || round.isSettled) {

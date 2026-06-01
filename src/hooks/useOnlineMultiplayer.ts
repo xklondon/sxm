@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { GameState } from '../types';
 
-import { fetchMe, sendTableAction, type AuthUser } from '../api/client';
+import { fetchMe, fetchTable, sendTableAction, type AuthUser } from '../api/client';
 
 import { getSocketBaseUrl, isOnlineModeEnabled } from '../api/config';
 
@@ -197,6 +197,38 @@ export function useOnlineTable(
       onGameStateChangeRef.current(result.state);
 
       return result;
+
+    } catch (err) {
+
+      // Stale rejection (stale version or stale turn): refetch the table once so
+      // the UI follows the authoritative activeHandKey, then surface a soft retry
+      // message instead of a permanent stale error.
+
+      const message = err instanceof Error ? err.message : '';
+
+      if (/stale/i.test(message)) {
+
+        try {
+
+          const refreshed = await fetchTable(tableId);
+
+          versionRef.current = refreshed.version;
+
+          setVersion(refreshed.version);
+
+          onGameStateChangeRef.current(refreshed.state);
+
+        } catch {
+
+          // Ignore refetch failure; fall through to the retry message.
+
+        }
+
+        throw new Error('Table refreshed — try again');
+
+      }
+
+      throw err;
 
     } finally {
 

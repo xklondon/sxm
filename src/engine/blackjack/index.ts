@@ -32,6 +32,7 @@ export {
   drawBankCardOnState,
   completeBankingOnState,
   ensureBlackjackRoundSettled,
+  resolveBankTurnAuto,
   startNextRoundOnState,
   syncBankPhaseOnState,
   hitBlackjackOnState,
@@ -218,6 +219,20 @@ export {
   waitForBlackjackPayoutOnState,
   resolvePendingNaturalsAfterDealerPeek,
 } from './naturalBlackjack';
+
+export {
+  BLACKJACK_GAMEPLAY_ACTIONS,
+  isBlackjackGameplayAction,
+  applyBlackjackActionToState,
+} from './applyBlackjackAction';
+export type { BlackjackGameplayAction, BlackjackActorContext } from './applyBlackjackAction';
+
+export {
+  ONLINE_PLAYER_TURN_ACTIONS,
+  isOnlinePlayerTurnAction,
+  playerTurnActionPayload,
+} from './onlinePlayerActions';
+export type { OnlinePlayerTurnAction } from './onlinePlayerActions';
 
 export {
   shouldSkipBankDraw,

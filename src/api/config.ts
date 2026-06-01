@@ -148,6 +148,27 @@ export function apiPath(path: string): string {
   return `${getApiBaseUrl()}${normalized}`;
 }
 
+/**
+ * Online-mode resolver. A served host/production build is single-origin and
+ * always online-capable, so it defaults to online unless VITE_ONLINE_MODE is
+ * explicitly 'false'. Keys off MODE (reliable) — not DEV/PROD, which can be odd
+ * in some host builds. Dev keeps its explicit VITE_ONLINE_MODE flag.
+ */
+export function resolveOnlineModeEnabled(env: {
+  viteOnlineMode?: string;
+  mode?: string;
+  prod?: boolean;
+}): boolean {
+  const flag = env.viteOnlineMode?.trim().toLowerCase();
+  if (flag === 'false') return false;
+  if (flag === 'true') return true;
+  return env.mode === 'production' || Boolean(env.prod);
+}
+
 export function isOnlineModeEnabled(): boolean {
-  return import.meta.env.VITE_ONLINE_MODE === 'true';
+  return resolveOnlineModeEnabled({
+    viteOnlineMode: import.meta.env.VITE_ONLINE_MODE as string | undefined,
+    mode: import.meta.env.MODE,
+    prod: Boolean(import.meta.env.PROD),
+  });
 }

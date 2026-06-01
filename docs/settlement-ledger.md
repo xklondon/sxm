@@ -71,15 +71,17 @@ The Play Ledger modal lists round, person, box, action, amount, and balance afte
 
 ## Round result summary
 
-After settlement, center status shows lines like:
+After settlement, the dealer block shows a per-box summary (above the Next Round
+action) like:
 
 ```
-Bank has 20.
-Box 1: 19 loses — bank takes 5.
+Bank 20.
+Box 1: 19 loses — bank wins 5.
 Box 2: 21 wins — K wins 10.
 ```
 
-Generated from `buildRoundResultSummary(state)` — not hard-coded.
+Generated from `buildRoundResultSummary(state)` — not hard-coded. Shown once
+(dealer block); per-box result chips are not repeated elsewhere.
 
 ## Game end condition (Phase 29)
 

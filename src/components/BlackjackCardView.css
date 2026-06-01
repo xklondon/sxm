@@ -833,6 +833,20 @@
   margin-bottom: 0.2rem;
 }
 
+.bj-phone-view__bust-label {
+  align-self: center;
+  font-family: var(--ds-font-mono);
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--ds-color-danger, #c0392b);
+  border-radius: 0.35rem;
+  padding: 0.1rem 0.7rem;
+  margin-bottom: 0.3rem;
+}
+
 .bj-phone-view__total--hero {
   margin-top: 0;
   font-size: 1.05rem;

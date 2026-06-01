@@ -8,17 +8,9 @@ import {
   removeLastChipFromBoxStake,
 } from '../../../src/engine/blackjack/stakes.js';
 import {
-  dealCardsButtonOnState,
-  shuffleToStartOnState,
-  hitBlackjackOnState,
-  standBlackjackOnState,
-  doubleDownBlackjackOnState,
-  splitBlackjackOnState,
-  takeInsuranceOnState,
-  declineInsuranceOnState,
-  takeEvenMoneyOnState,
-  waitForBlackjackPayoutOnState,
-} from '../../../src/engine/blackjack/gameState.js';
+  applyBlackjackActionToState,
+  isBlackjackGameplayAction,
+} from '../../../src/engine/blackjack/applyBlackjackAction.js';
 import { addGameToPersonalLedger } from '../../../src/engine/scoreLedger/scoreLedger.js';
 import type { TableActionType } from './actions.js';
 
@@ -83,30 +75,23 @@ export function applyTableAction(
       if (!boxId) throw new Error('boxId required');
       return clearBoxStake(state, boxId);
     }
-    case 'shuffleToStart':
-      return shuffleToStartOnState(state);
-    case 'dealCards':
-      return dealCardsButtonOnState(state);
-    case 'hit':
-      return hitBlackjackOnState(state, payload.handKey as string);
-    case 'stand':
-      return standBlackjackOnState(state, payload.handKey as string);
-    case 'double':
-      return doubleDownBlackjackOnState(state, payload.handKey as string);
-    case 'split':
-      return splitBlackjackOnState(state, payload.handKey as string);
-    case 'takeInsurance':
-      return takeInsuranceOnState(state, payload.playerId as string);
-    case 'declineInsurance':
-      return declineInsuranceOnState(state, payload.playerId as string);
-    case 'takeEvenMoney':
-      return takeEvenMoneyOnState(state, payload.handKey as string);
-    case 'waitFor3to2':
-      return waitForBlackjackPayoutOnState(state, payload.handKey as string);
     case 'addGameToPersonalLedger':
       addGameToPersonalLedger(state);
       return state;
     default:
+      // All blackjack gameplay actions (shuffle/deal/hit/stand/double/split/
+      // insurance/even-money/nextRound) go through the single canonical engine
+      // reducer shared with offline play. Player-turn actions ignore any
+      // client-sent handKey and resolve on the authoritative active hand;
+      // `resolveBankAuto` plays out the auto bank turn + settlement server-side
+      // so online never mutates bank/settlement locally.
+      if (isBlackjackGameplayAction(action)) {
+        return applyBlackjackActionToState(state, action, {
+          personId,
+          payload,
+          resolveBankAuto: true,
+        });
+      }
       throw new Error(`Action not applied on state: ${action}`);
   }
 }

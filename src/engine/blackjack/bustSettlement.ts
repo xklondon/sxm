@@ -7,7 +7,12 @@ import { log } from '../../utils/logger';
 
 export const BUST_MESSAGE = 'BUST, my friend.';
 
-/** Immediate bust settlement — bank receives bet once; cards retracted from display. */
+/**
+ * Immediate bust settlement — bank receives the bet once. The busted hand's
+ * cards are LEFT IN PLACE (not retracted) so the player can see what they
+ * busted on; the hand stays visible with a BUST label until settlement/next
+ * round. Only the ledger/outcome state advances here.
+ */
 export function settleBustHandOnState(state: GameState, handKey: string): GameState {
   const round = state.blackjack;
   if (!round) {
@@ -61,7 +66,6 @@ export function settleBustHandOnState(state: GameState, handKey: string): GameSt
     ...round.playerHands,
     [handKey]: {
       ...hand,
-      cardIds: [],
       bustSettled: true,
     },
   };

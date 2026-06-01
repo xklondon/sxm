@@ -13,6 +13,8 @@ interface DealerBlockProps {
   gameEnded: boolean;
   /** Shown in center status by parent — not duplicated in dealer block. */
   gameOverMessage?: string;
+  /** Consolidated per-box round summary, shown above the Next Round action. */
+  roundSummaryLines?: string[];
   onNextRound: () => void;
   dealerCards: React.ReactNode;
   protocolPhase: BlackjackProtocolPhase;
@@ -42,6 +44,7 @@ export function DealerBlock({
   onChangeMinBet,
   awaitingNextRound,
   gameEnded,
+  roundSummaryLines,
   onNextRound,
   dealerCards,
   protocolPhase,
@@ -152,6 +155,16 @@ export function DealerBlock({
         <button type="button" className="dealer-block__action secondary" onClick={onChangeMinBet}>
           Change min bet
         </button>
+      )}
+
+      {roundSummaryLines && roundSummaryLines.length > 0 && (
+        <div className="dealer-block__summary" aria-live="polite">
+          {roundSummaryLines.map((line, i) => (
+            <p key={i} className="dealer-block__summary-line">
+              {line}
+            </p>
+          ))}
+        </div>
       )}
 
       <div className="dealer-block__actions">{renderBettingActions()}</div>

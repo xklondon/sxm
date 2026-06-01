@@ -16,6 +16,7 @@ export const TABLE_ACTIONS = [
   'declineInsurance',
   'takeEvenMoney',
   'waitFor3to2',
+  'nextRound',
   'addGameToPersonalLedger',
 ] as const;
 

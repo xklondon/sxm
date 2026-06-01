@@ -71,6 +71,23 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
     return none;
   }
 
+  // Bank bankruptcy ends the game outright (bot bank or human banker). Checked
+  // before single-holder so the message reads "Bank is bust", not a player win.
+  if (bankId) {
+    const bank = holders.find((h) => h.id === bankId);
+    if (bank && bank.ledger <= 0) {
+      const topPerson = [...holders]
+        .filter((h) => h.id !== bankId)
+        .sort((a, b) => b.ledger - a.ledger)[0];
+      return {
+        ended: true,
+        winnerId: topPerson && topPerson.ledger > 0 ? topPerson.id : null,
+        winnerLabel: 'Bank is bust',
+        reason: 'bank-bust',
+      };
+    }
+  }
+
   const withChips = holders.filter((h) => h.ledger > 0);
   if (withChips.length === 1) {
     const winner = withChips[0]!;

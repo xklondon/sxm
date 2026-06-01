@@ -29,9 +29,9 @@ import type { CardTimerPreset } from '../engine/blackjack/flowSettings';
 import { isNaturalInitialDeal, isStepwiseInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import {
   getGameOverMessage,
-  isTableGameActive,
   recordWagerResultPlaceholder,
 } from '../engine/session/tableGameEnd';
+import { allowsBettingActions } from './blackjackViewPhase';
 import { log } from '../utils/logger';
 
 function sleep(ms: number): Promise<void> {
@@ -63,11 +63,7 @@ export function useBlackjackTableFlow(
   const centerStatus = bankUiMessage ?? baseCenterStatus;
   const gameEnded = tableMeta.gameStatus === 'ended';
   const gameOverMessage = getGameOverMessage(gameState);
-  const bettingOpen =
-    !gameEnded &&
-    isTableGameActive(gameState) &&
-    protocolPhase === 'betting' &&
-    !tableMeta.bettingLocked;
+  const bettingOpen = !gameEnded && allowsBettingActions(gameState);
   const awaitingNextRound = tableMeta.awaitingNextRound;
   const canDeal =
     protocolPhase === 'betting' &&
@@ -156,12 +152,19 @@ export function useBlackjackTableFlow(
 
   const handleNextRound = useCallback(() => {
     setFlowError(null);
+    if (onlineDispatch) {
+      // Server-authoritative: advance the round server-side; do not mutate locally.
+      void onlineDispatch('nextRound', {}).catch((err) => {
+        setFlowError(err instanceof Error ? err.message : 'Cannot start next round');
+      });
+      return;
+    }
     try {
       onGameStateChange(startNextRoundOnState(gameStateRef.current));
     } catch (err) {
       setFlowError(err instanceof Error ? err.message : 'Cannot start next round');
     }
-  }, [onGameStateChange]);
+  }, [onGameStateChange, onlineDispatch]);
 
   const handleShuffleToStart = useCallback(() => {
     if (actionPending || onlineActionInFlight) {
@@ -226,6 +229,11 @@ export function useBlackjackTableFlow(
 
   /** Natural dealing — auto-advance one card at a time with configurable delay. */
   useEffect(() => {
+    // Online deals are server-driven (single dealCards action); never pace deals locally.
+    if (onlineDispatch) {
+      naturalDealingRef.current = false;
+      return;
+    }
     if (!isNaturalInitialDeal(flow.initialDealMode)) {
       naturalDealingRef.current = false;
       return;
@@ -258,10 +266,17 @@ export function useBlackjackTableFlow(
       }
       naturalDealingRef.current = false;
     })();
-  }, [round?.status, flow.initialDealMode, onGameStateChange]);
+  }, [round?.status, flow.initialDealMode, onGameStateChange, onlineDispatch]);
 
   /** Auto bank draw: random 2–5s between cards; pause before banking/payout. */
   useEffect(() => {
+    // Online resolves the bank turn + settlement server-side inside the action
+    // that ends player turns; never draw the bank or settle locally online.
+    if (onlineDispatch) {
+      bankPacingRef.current = 'idle';
+      setBankUiMessage(null);
+      return;
+    }
     const status = round?.status;
     if (flow.bankDrawMode !== 'auto') {
       if (status !== 'bank-turn' && status !== 'banking') {
@@ -310,10 +325,15 @@ export function useBlackjackTableFlow(
 
       bankPacingRef.current = 'idle';
     })();
-  }, [round?.status, flow.bankDrawMode, onGameStateChange]);
+  }, [round?.status, flow.bankDrawMode, onGameStateChange, onlineDispatch]);
 
   /** Manual bank: show final bank state before payout. */
   useEffect(() => {
+    // Online never settles locally; server resolves banking.
+    if (onlineDispatch) {
+      manualBankingRef.current = false;
+      return;
+    }
     if (flow.bankDrawMode === 'auto') {
       manualBankingRef.current = false;
       return;
@@ -345,10 +365,16 @@ export function useBlackjackTableFlow(
     }, pause);
 
     return () => window.clearTimeout(timer);
-  }, [round?.status, flow.bankDrawMode, onGameStateChange]);
+  }, [round?.status, flow.bankDrawMode, onGameStateChange, onlineDispatch]);
 
   /** Auto-stand when caller play-flow threshold is already met (e.g. after deal or turn advance). */
   useEffect(() => {
+    // Online mode is server-authoritative: auto-stand runs on the server (deal +
+    // afterPlayerAction). Never mutate state locally here or the client's
+    // activeHandKey drifts ahead of the server and triggers stale-turn rejects.
+    if (onlineDispatch) {
+      return;
+    }
     if (round?.status !== 'player-turns' || !round.activeHandKey) {
       return;
     }
@@ -365,7 +391,7 @@ export function useBlackjackTableFlow(
     if (afterKey !== beforeKey || afterStatus !== beforeStatus) {
       onGameStateChange(next);
     }
-  }, [round?.status, round?.activeHandKey, round?.playerHands, tableMeta.personPlayFlow, onGameStateChange]);
+  }, [round?.status, round?.activeHandKey, round?.playerHands, tableMeta.personPlayFlow, onGameStateChange, onlineDispatch]);
 
   return {
     tableMessage,

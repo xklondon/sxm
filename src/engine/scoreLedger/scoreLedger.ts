@@ -2,8 +2,23 @@ import type { GameState } from '../../types';
 import type { ScoreLedgerEntry } from '../../types/scoreLedger';
 import { generateId } from '../utils/id';
 import { appendScoreLedgerEntry, loadScoreLedgerEntries } from '../../storage/scoreLedgerStorage';
-import { listPersonBankrollOwnerIds } from '../session/bankroll';
+import {
+  getLedgerBalanceForBankrollOwner,
+  listPersonBankrollOwnerIds,
+} from '../session/bankroll';
 import { log } from '../../utils/logger';
+
+/** True when the bank seat is a bot (virtual) — i.e. not a human-vs-human game. */
+export function isBotBankGame(state: GameState): boolean {
+  const bankId = state.session.bankPlayerId;
+  const bank = bankId ? state.players[bankId] : null;
+  return bank?.playerType === 'virtual';
+}
+
+/** Personal (score) ledger only applies to human-vs-human games, not Bot Bank. */
+export function canAddGameToPersonalLedger(state: GameState): boolean {
+  return state.tableMeta.gameStatus === 'ended' && !isBotBankGame(state);
+}
 
 function bankShortName(state: GameState, bankId: string): string {
   const bank = state.players[bankId];
@@ -33,9 +48,10 @@ export function buildGameOverSummary(state: GameState): {
   const winnerId = state.tableMeta.winnerId;
   const bankId = state.session.bankPlayerId;
   const wager = state.tableMeta.agreement?.stakeDescription?.trim() || 'the agreed wager';
+  const bankIsBust = Boolean(bankId && getLedgerBalanceForBankrollOwner(state, bankId) <= 0);
 
   if (!winnerId) {
-    return { message: 'Game over.', entry: null };
+    return { message: bankIsBust ? 'GAME OVER\nBank is bust.' : 'Game over.', entry: null };
   }
 
   const winnerIsBank = Boolean(bankId && winnerId === bankId);
@@ -62,7 +78,9 @@ export function buildGameOverSummary(state: GameState): {
   }
 
   const owedDescription = `${loserName} owes ${winnerName}: ${wager}`;
-  const message = `${winnerName} won!!\n${loserName} owes you: ${wager}`;
+  const message = bankIsBust
+    ? 'GAME OVER\nBank is bust.'
+    : `${winnerName} won!!\n${loserName} owes you: ${wager}`;
 
   const playersInvolved = [
     ...new Set([
@@ -98,6 +116,10 @@ export function recordScoreLedgerForGameEnd(state: GameState): ScoreLedgerEntry 
 export function addGameToPersonalLedger(state: GameState): ScoreLedgerEntry | null {
   if (state.tableMeta.gameStatus !== 'ended') {
     throw new Error('Game must be fully completed before adding to personal ledger');
+  }
+  // Bot Bank games are solo practice — nothing to settle person-to-person.
+  if (isBotBankGame(state)) {
+    return null;
   }
   const { entry } = buildGameOverSummary(state);
   if (!entry) {

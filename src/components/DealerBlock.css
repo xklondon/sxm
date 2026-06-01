@@ -42,6 +42,29 @@
   min-height: 3.5rem;
 }
 
+.dealer-block__summary {
+  margin: 0.35rem 0 0;
+  padding: 0.4rem 0.6rem;
+  width: 100%;
+  max-width: 22rem;
+  background: rgb(0 0 0 / 0.32);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: var(--ds-radius-sm);
+  text-align: left;
+}
+
+.dealer-block__summary-line {
+  margin: 0;
+  font-family: var(--ds-font-mono);
+  font-size: 0.62rem;
+  line-height: 1.5;
+  color: var(--ds-color-gold);
+}
+
+.dealer-block__summary-line:first-child {
+  font-weight: 700;
+}
+
 .dealer-block__actions {
   margin-top: 0.35rem;
 }

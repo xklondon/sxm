@@ -54,6 +54,33 @@ Aligned env keys (same LAN host, no localhost in links):
 - Authority: box owner, phase, stale turn checks in `server/src/tables/authority.ts`
 - Magic links use `PUBLIC_ORIGIN` — must match LAN URL in dev
 
+## Online/offline parity (gameplay)
+
+- **Same rules everywhere.** Online (server-authoritative) and offline (local) MUST
+  produce identical game state: phases, eligibility, auto-stand, bust handling,
+  dealer/bank draw, settlement, payouts, next-round resets, and gameplay ledger.
+  They may differ ONLY in transport/storage (HTTP + Socket.IO vs local) and in
+  rendering/animation pacing (e.g. offline animates the bank draw card-by-card;
+  online resolves it server-side in one action — final state is identical).
+- **One canonical action path.** All blackjack gameplay actions route through
+  `applyBlackjackActionToState(state, action, ctx)` (`src/engine/blackjack/applyBlackjackAction.ts`),
+  used by the server action layer (`server/src/tables/applyAction.ts`). Offline
+  uses the same underlying `*OnState` engine functions. Don't add a second code
+  path for online vs offline gameplay.
+- **No render-time `handKey` for online player actions.** hit/stand/double/split
+  send `{}` online (use `playerTurnActionPayload`); the server resolves on
+  `state.blackjack.activeHandKey` and ignores any client-sent handKey.
+- **No local gameplay mutation online.** When `onlineDispatch` is present, do NOT
+  call `onGameStateChange` for gameplay, run `processPlayFlowAutoStands`, draw the
+  bank, settle, or start the next round locally. Dispatch a server action instead.
+  Local-only client effects (auto-stand, bank draw, natural deal, next round) must
+  early-return when `onlineDispatch` is set.
+- **Action eligibility from shared selectors only.** Views must derive controls
+  from `getActionableHandForView`, `getBlackjackRoundPhase`, and
+  `allowsBettingActions` (`src/components/blackjackViewPhase.ts`). No view (Full
+  Table / Card View, desktop / mobile) decides eligibility independently. A box may
+  become actionable only if it matches the server `activeHandKey`.
+
 ## Gameplay and AI
 
 - Ledger is source of truth for balances
