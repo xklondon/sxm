@@ -29,7 +29,7 @@ import { buildGameOverSummary, addGameToPersonalLedger } from '../../scoreLedger
 import { loadScoreLedgerEntries, saveScoreLedgerEntries } from '../../../storage/scoreLedgerStorage';
 import { createBlackjackPlayerHand } from '../../../types/blackjack';
 import { claimBoxSlot } from '../../session/boxOps';
-import { getTableInviteOrigin } from '../../../utils/tableHost';
+import { resolveTableInviteOrigin } from '../../../utils/tableHost';
 import { check, type SanitySuiteResult } from './types';
 import { actingRound, boxPlayerId, findCardId, tableWithClaimedBox } from './fixtures';
 import type { BlackjackRound } from '../../../types/blackjack';
@@ -317,12 +317,14 @@ export function runProtocolCorrectnessSanityChecks(): SanitySuiteResult {
     ),
   );
 
-  const prevHost = import.meta.env.VITE_TABLE_HOST;
-  import.meta.env.VITE_TABLE_HOST = '192.168.0.56:5137';
+  // Pure resolver — never mutate import.meta.env (a read-only constant in prod;
+  // assigning to it compiles to `undefined = …` and crashes strict engines).
   results.push(
-    check('invite origin uses LAN host not localhost', getTableInviteOrigin() === 'http://192.168.0.56:5137'),
+    check(
+      'invite origin uses LAN host not localhost',
+      resolveTableInviteOrigin('192.168.0.56:5137', null) === 'http://192.168.0.56:5137',
+    ),
   );
-  import.meta.env.VITE_TABLE_HOST = prevHost;
 
   return { passed: results.every((r) => r.passed), results };
 }
