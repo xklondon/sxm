@@ -84,8 +84,37 @@ export function createApp() {
 
   if (config.serveStatic) {
     const distDir = path.resolve(fileURLToPath(import.meta.url), '../../../dist');
-    app.use(express.static(distDir));
-    app.get(/^(?!\/api|\/health|\/socket\.io).*/, (_req, res) => {
+
+    // Hashed assets are content-addressed → cache hard. index.html must never
+    // cache, so a rebuilt client always loads the new hashed asset names.
+    app.use(
+      express.static(distDir, {
+        index: false,
+        setHeaders: (res, filePath) => {
+          if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          } else if (filePath.endsWith('index.html')) {
+            res.setHeader('Cache-Control', 'no-store, must-revalidate');
+          }
+        },
+      }),
+    );
+
+    // A request that reaches here under /assets means the file does NOT exist
+    // (e.g. an old hashed asset after a rebuild). Never fall back to the SPA
+    // shell — returning HTML for a .js request white/green-screens the app.
+    app.use('/assets', (_req, res) => {
+      res.status(404).type('text/plain').send('Not found');
+    });
+
+    // SPA fallback for app routes only. Real file requests (anything with an
+    // extension) 404 instead of returning index.html.
+    app.get(/^(?!\/api|\/health|\/socket\.io).*/, (req, res) => {
+      if (path.extname(req.path)) {
+        res.status(404).type('text/plain').send('Not found');
+        return;
+      }
+      res.setHeader('Cache-Control', 'no-store, must-revalidate');
       res.sendFile(path.join(distDir, 'index.html'));
     });
   }

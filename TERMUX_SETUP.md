@@ -180,6 +180,7 @@ npm run host   # or just tap the "SXM Cards" widget
 | Phone says no LAN IP | Connect to Wi-Fi or enable the hotspot, then re-run. |
 | Players can't connect | Confirm they're on the **same** Wi-Fi/hotspot. Some "guest" Wi-Fi networks block device-to-device traffic — use a hotspot instead. |
 | App opens but stays blank / "loading" after an IP change | Old IP baked into the build. Remove IP lines from `.env`, then `rm -rf dist && npm run build` once. Restart the widget. |
+| Blank / green screen right after a rebuild | The browser cached the old `index.html` pointing at an old asset name. Stale assets now return **404** (not HTML), and `index.html` is sent `no-store`, so a plain refresh usually fixes it. If not, clear the site's data, or load `http://<ip>:5173/?fresh=1`. |
 | QR doesn't render | Your terminal font may not support block glyphs; type the printed `Address:` manually. |
 | Widget does nothing / `curl not found` | `pkg install curl`. The launcher needs curl to detect/query the server. |
 | Browser doesn't open | Install **Termux:API** (`pkg install termux-api`); otherwise open the printed URL manually. |
@@ -192,6 +193,10 @@ npm run host   # or just tap the "SXM Cards" widget
 - Host mode (`SXM_HOST_MODE=true`) always derives the join address from the
   **detected IP**, overriding any stale `PUBLIC_ORIGIN`/`CORS_ORIGIN` in `.env`,
   and writes the current address to `.sxm-host-runtime.json` (gitignored).
+- The host serves hashed assets under `/assets/*` as cacheable + immutable, but
+  `index.html` is `no-store`. Missing/old assets return **404** (never the SPA
+  shell), so a stale cache fails loudly with a refresh hint instead of a blank
+  screen.
 - The host serves the built SPA **and** API **and** Socket.IO on one port
   (`5173`), bound to `0.0.0.0`, so any device on the LAN can reach it.
 - The launcher logs to `~/sxm-host.log` (outside the repo — nothing secret is

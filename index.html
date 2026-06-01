@@ -12,6 +12,28 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // If the app bundle fails to load (e.g. a stale cached asset name after a
+      // rebuild, now served as 404), show a visible hint instead of a blank screen.
+      window.addEventListener(
+        'error',
+        function (e) {
+          var t = e && e.target;
+          if (t && t.tagName === 'SCRIPT') {
+            var root = document.getElementById('root');
+            if (root && !root.hasChildNodes()) {
+              root.innerHTML =
+                '<div style="font-family:sans-serif;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:24px;text-align:center;color:#f4f4f4;background:#0b3d2e">' +
+                '<h2 style="margin:0">App update detected</h2>' +
+                "<p style=\"margin:0;opacity:.85\">Refresh the page, or clear this site's cache.</p>" +
+                '<button onclick="location.reload()" style="padding:10px 20px;font-size:16px;border-radius:8px;border:0;background:#f5c518;color:#1a1a1a;cursor:pointer">Refresh</button>' +
+                '</div>';
+            }
+          }
+        },
+        true,
+      );
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
