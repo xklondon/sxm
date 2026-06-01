@@ -7,10 +7,8 @@ import { addChipToBoxStake } from '../engine/blackjack/stakes';
 import type { GameState } from '../types';
 
 /**
- * Mobile Card View render contract. We render the canonical stitched-card view
- * (BlackjackCardView) with isMobile so we assert the actual markup phones get:
- * a phone-view root, betting boxes that pulse, an ordered box label, the hero,
- * and crucially NO side-panel column inside the play area.
+ * Mobile Card View render contract — same canonical markup as desktop Card View;
+ * viewport differences are CSS-only (applied by the panel view root class).
  */
 
 const noop = () => {};
@@ -77,7 +75,6 @@ function renderBettingCardView(state: GameState, boxId: string): string {
   return renderToStaticMarkup(
     <BlackjackCardView
       gameState={state}
-      isMobile
       focusBoxId={boxId}
       activeBoxId={null}
       showHoleHidden={false}
@@ -108,10 +105,11 @@ describe('mobile Card View render contract', () => {
     expect(html).toContain('Full Table');
   });
 
-  it('renders the active/selected box as the betting hero with an ordered label', () => {
+  it('uses the same ordered betting row markup as desktop (no hero-only branch)', () => {
     const { state, boxId } = bettingTableWithBox();
     const html = renderBettingCardView(state, boxId);
-    expect(html).toContain('bj-phone-view__bet-chip--hero');
+    expect(html).toContain('bj-phone-view__betting-stage--row');
+    expect(html).not.toContain('bj-phone-view__bet-secondary-row');
     expect(html).toContain('Box 1');
   });
 
@@ -132,7 +130,6 @@ describe('mobile Card View render contract', () => {
     const html = renderToStaticMarkup(
       <BlackjackCardView
         gameState={state}
-        isMobile
         focusBoxId={boxId}
         activeBoxId={null}
         showHoleHidden={false}

@@ -1259,3 +1259,17 @@
 .bj-view-full-mobile .bj-casino__tray-wrap {
   width: 100%;
 }
+
+/* Mobile Card View betting — same ordered-row markup as desktop; tighter wrap. */
+.bj-view-card-mobile .bj-phone-view__betting-stage--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.25rem;
+}
+
+.bj-view-card-mobile .bj-phone-view__betting-stage--row .bj-phone-view__bet-chip-wrap--small {
+  width: 4.5rem;
+}

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   cardViewShowsSidePanelColumn,
-  getCardViewBettingLayout,
   getDeviceView,
   getViewRootClass,
   preserveClientViewMode,
@@ -61,12 +60,7 @@ describe('view mode is client-local (no flip on server update)', () => {
   });
 });
 
-describe('betting Card View — desktop ordered row, no center placeholder', () => {
-  it('uses an ordered row on desktop and hero+secondary on mobile', () => {
-    expect(getCardViewBettingLayout(false)).toBe('ordered-row');
-    expect(getCardViewBettingLayout(true)).toBe('hero-secondary');
-  });
-
+describe('betting Card View — same ordered row on every viewport', () => {
   it('owned betting boxes pulse from current state', () => {
     expect(getBetBoxPulseClassName(true, true)).not.toBe('');
     expect(getBetBoxPulseClassName(false, true)).toBe('');

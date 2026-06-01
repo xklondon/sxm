@@ -113,6 +113,99 @@ function arcBoxOrder(html: string): string[] {
   return [...html.matchAll(/class="bj-arc__box-label">Box (\d)/g)].map((m) => m[1]!);
 }
 
+/** Canonical section markers — mobile and desktop must both include the same set. */
+const FULL_TABLE_SECTIONS = [
+  'dealer-block',
+  'bj-casino__felt',
+  'bj-arc',
+  'bj-accounts-panel',
+] as const;
+
+const FULL_TABLE_PLAYING_SECTIONS = [
+  ...FULL_TABLE_SECTIONS,
+  'bj-center-status',
+  'bj-table-actions',
+  'bj-arc__slot--turn',
+] as const;
+
+const FULL_TABLE_BETTING_SECTIONS = [
+  ...FULL_TABLE_SECTIONS,
+  'bj-casino__tray',
+] as const;
+
+const CARD_VIEW_SECTIONS = [
+  'dealer-block',
+  'bj-phone-view',
+  'bj-accounts-panel',
+] as const;
+
+const CARD_VIEW_PLAYING_SECTIONS = [
+  ...CARD_VIEW_SECTIONS,
+  'bj-center-status',
+  'bj-phone-view__play-area',
+  'bj-phone-view__side-btn--live',
+  'bj-phone-view__mini-row',
+] as const;
+
+const CARD_VIEW_BETTING_SECTIONS = [
+  ...CARD_VIEW_SECTIONS,
+  'bj-phone-view__betting-stage--row',
+  'bj-casino__tray',
+] as const;
+
+function sectionPresence(html: string, marker: string): boolean {
+  return html.includes(marker);
+}
+
+function assertSameSections(mobileHtml: string, desktopHtml: string, markers: readonly string[]) {
+  for (const marker of markers) {
+    expect(sectionPresence(mobileHtml, marker)).toBe(true);
+    expect(sectionPresence(desktopHtml, marker)).toBe(true);
+    expect(sectionPresence(mobileHtml, marker)).toBe(sectionPresence(desktopHtml, marker));
+  }
+}
+
+describe('mobile vs desktop — same canonical Full Table sections', () => {
+  it('playing round: dealer, status, arc/boxes, actions, This Table', () => {
+    const state = withView(playingState(), 'full');
+    const mobile = renderPanelAt(390, state);
+    const desktop = renderPanelAt(1280, state);
+    assertSameSections(mobile, desktop, FULL_TABLE_PLAYING_SECTIONS);
+    expect(mobile).not.toContain('bj-mobile-fallback');
+    expect(desktop).not.toContain('bj-mobile-fallback');
+  });
+
+  it('betting round: dealer, felt, arc, chip tray, This Table', () => {
+    const state = withView(bettingState(), 'full');
+    const mobile = renderPanelAt(390, state);
+    const desktop = renderPanelAt(1280, state);
+    assertSameSections(mobile, desktop, FULL_TABLE_BETTING_SECTIONS);
+  });
+
+  it('same arc box ids/order on mobile and desktop', () => {
+    const state = withView(playingState(), 'full');
+    expect(arcBoxOrder(renderPanelAt(390, state))).toEqual(arcBoxOrder(renderPanelAt(1280, state)));
+  });
+});
+
+describe('mobile vs desktop — same canonical Card View sections', () => {
+  it('playing round: dealer, status, hero/play-area, mini row, This Table', () => {
+    const state = withView(playingState(), 'card');
+    const mobile = renderPanelAt(390, state);
+    const desktop = renderPanelAt(1280, state);
+    assertSameSections(mobile, desktop, CARD_VIEW_PLAYING_SECTIONS);
+  });
+
+  it('betting round: dealer, ordered betting row, This Table', () => {
+    const state = withView(bettingState(), 'card');
+    const mobile = renderPanelAt(390, state);
+    const desktop = renderPanelAt(1280, state);
+    assertSameSections(mobile, desktop, CARD_VIEW_BETTING_SECTIONS);
+    expect(mobile).not.toContain('bj-phone-view__bet-secondary-row');
+    expect(desktop).not.toContain('bj-phone-view__bet-secondary-row');
+  });
+});
+
 describe('mobile Full Table renders the real table (not a fallback)', () => {
   it('renders the felt/arc/boxes and never the fallback on a normal phone', () => {
     const html = renderPanelAt(390, withView(playingState(), 'full'));

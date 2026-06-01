@@ -1021,7 +1021,6 @@ export function BlackjackPanel({
 
                 <BlackjackCardView
                   gameState={gameState}
-                  isMobile={isMobileViewport}
                   focusBoxId={focusBoxId ?? undefined}
                   activeBoxId={activeBoxId}
                   showHoleHidden={showHoleHidden}

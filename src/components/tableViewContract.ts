@@ -46,21 +46,12 @@ export function preserveClientViewMode(localMode: TableViewMode): TableViewMode 
   return localMode;
 }
 
-/**
- * Desktop Card View betting: a single ordered horizontal row of boxes
- * (Box 1, Box 2, …) with no large center placeholder.
- * Mobile Card View betting keeps its canonical hero + secondary layout.
- */
-export function getCardViewBettingLayout(isMobile: boolean): 'ordered-row' | 'hero-secondary' {
-  return isMobile ? 'hero-secondary' : 'ordered-row';
-}
-
-/** Desktop views show the top-left status corner box; mobile keeps its own status line. */
+/** Desktop status corner styling is CSS-only (`.bj-view-*-desktop .bj-center-status`). */
 export function showStatusCornerBox(device: DeviceView): boolean {
   return device === 'desktop';
 }
 
-/** Only desktop renders "This Table" as a right side panel column; mobile is a bar below. */
+/** This Table side column vs horizontal bar is CSS-only (view root classes). */
 export function cardViewShowsSidePanelColumn(device: DeviceView): boolean {
   return device === 'desktop';
 }
