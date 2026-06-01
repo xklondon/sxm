@@ -1135,8 +1135,7 @@
   border-radius: var(--ds-radius-md);
 }
 
-/* Mobile Card View: stack the felt so "This Table" is a horizontal bar below
-   the card area (no right side column) and the page never scrolls sideways. */
+/* Mobile Card View: stack felt column; page never scrolls sideways. */
 .bj-view-card-mobile {
   overflow-x: hidden;
 }
@@ -1153,43 +1152,47 @@
   font-size: 0.62rem;
 }
 
-/* "This Table" horizontal swipeable bar — Card View mobile only.
-   Full Table mobile uses a stacked card (desktop sidebar layout, full width). */
-.bj-view-card-mobile .bj-accounts-panel {
+/* Mobile This Table — stacked card below felt (same for Full Table + Card View). */
+.bj-view-card-mobile .bj-accounts-panel,
+.bj-view-full-mobile .bj-accounts-panel {
   flex: 0 0 auto;
   width: 100%;
   max-width: none;
-  max-height: none;
-  overflow-x: auto;
-  overflow-y: hidden;
-  flex-direction: row;
+  flex-direction: column;
   flex-wrap: nowrap;
   align-items: stretch;
-  gap: 0.35rem;
-  padding: 0.4rem 0.5rem;
-  scrollbar-width: none;
+  overflow-x: visible;
+  overflow-y: visible;
+  padding: 0.55rem 0.65rem;
 }
 
-.bj-view-card-mobile .bj-accounts-panel::-webkit-scrollbar {
-  display: none;
+.bj-view-card-mobile .bj-accounts-panel__title,
+.bj-view-full-mobile .bj-accounts-panel__title {
+  flex: none;
+  align-self: stretch;
+  margin: 0 0 0.45rem;
+  text-align: center;
 }
 
-.bj-view-card-mobile .bj-accounts-panel__title {
-  flex: 0 0 auto;
-  align-self: center;
-  margin: 0 0.25rem 0 0;
-  writing-mode: horizontal-tb;
-}
-
-.bj-view-card-mobile .bj-accounts-panel__list {
-  flex-direction: row;
+.bj-view-card-mobile .bj-accounts-panel__list,
+.bj-view-full-mobile .bj-accounts-panel__list {
+  flex-direction: column;
   flex-wrap: nowrap;
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
 
-.bj-view-card-mobile .bj-accounts-panel__row {
-  flex: 0 0 auto;
-  min-width: 8rem;
+.bj-view-card-mobile .bj-accounts-panel__row,
+.bj-view-full-mobile .bj-accounts-panel__row {
+  flex: none;
+  min-width: 0;
+  width: 100%;
+}
+
+.bj-view-card-mobile .bj-accounts-panel__assign,
+.bj-view-card-mobile .bj-accounts-panel__invite,
+.bj-view-full-mobile .bj-accounts-panel__assign,
+.bj-view-full-mobile .bj-accounts-panel__invite {
+  width: 100%;
 }
 
 /* ============================================================
@@ -1208,14 +1211,18 @@
 }
 
 .bj-view-full-mobile .bj-casino__rail {
-  padding: 0.35rem;
+  padding: 0.35rem 0.45rem 0.55rem;
+  /* Preserve desktop elliptical rail — avoid brown rectangular side bands. */
+  border-radius: 50% / 22%;
+  overflow: hidden;
 }
 
-/* Same elliptical felt as desktop — scaled down, not a flat rectangle. */
 .bj-view-full-mobile .bj-casino__felt {
   border-radius: 50% / 20%;
   min-height: min(44dvh, 20rem);
   padding: 0.45rem 0.35rem 0.6rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Horizontal scroll lives inside the felt main area only. */
@@ -1277,43 +1284,6 @@
   width: 100%;
 }
 
-/* This Table — compact stacked card below the felt (desktop sidebar layout). */
-.bj-view-full-mobile .bj-accounts-panel {
-  flex: 0 0 auto;
-  width: 100%;
-  max-width: none;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  align-items: stretch;
-  overflow-x: visible;
-  overflow-y: visible;
-  padding: 0.55rem 0.65rem;
-}
-
-.bj-view-full-mobile .bj-accounts-panel__title {
-  flex: none;
-  align-self: stretch;
-  margin: 0 0 0.45rem;
-  text-align: center;
-}
-
-.bj-view-full-mobile .bj-accounts-panel__list {
-  flex-direction: column;
-  flex-wrap: nowrap;
-  gap: 0.35rem;
-}
-
-.bj-view-full-mobile .bj-accounts-panel__row {
-  flex: none;
-  min-width: 0;
-  width: 100%;
-}
-
-.bj-view-full-mobile .bj-accounts-panel__assign,
-.bj-view-full-mobile .bj-accounts-panel__invite {
-  width: 100%;
-}
-
 /* Mobile Card View betting — one ordered row, internal horizontal scroll, room for hero below. */
 .bj-view-card-mobile .bj-phone-view__betting-stage--row {
   flex: 0 0 auto;
@@ -1333,4 +1303,59 @@
 .bj-view-card-mobile .bj-phone-view__betting-stage--row .bj-phone-view__bet-chip-wrap--small {
   flex: 0 0 auto;
   width: 3.75rem;
+}
+
+/* Card View mini row — all boxes in order, scroll inside row, values visible. */
+.bj-view-card-mobile .bj-phone-view__mini-row {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.2rem 0.35rem 0.25rem;
+  scrollbar-width: thin;
+}
+
+.bj-view-card-mobile .bj-phone-view__mini-hand {
+  flex: 0 0 auto;
+  min-width: 3.2rem;
+  max-width: 3.65rem;
+}
+
+.bj-view-card-mobile .bj-phone-view__box-value {
+  display: block;
+  order: -1;
+  font-family: var(--ds-font-mono);
+  font-size: 0.95rem;
+  font-weight: var(--ds-weight-extrabold);
+  line-height: 1;
+  color: var(--ds-color-text);
+}
+
+.bj-view-card-mobile .bj-phone-view__box-value--bust {
+  font-size: 0.72rem;
+  color: var(--ds-color-danger);
+}
+
+.bj-view-card-mobile .bj-phone-view__mini-hand-box {
+  font-size: 0.4rem;
+}
+
+.bj-view-card-mobile .bj-phone-view__mini-hand-name {
+  font-size: 0.44rem;
+}
+
+/* Keep elliptical full-table felt on narrow phones (override generic flatten rules). */
+@media (max-width: 480px) {
+  .bj-view-full-mobile .bj-casino__rail {
+    border-radius: 50% / 22%;
+  }
+
+  .bj-view-full-mobile .bj-casino__felt {
+    border-radius: 50% / 20%;
+    min-height: min(40dvh, 18rem);
+  }
+
+  .bj-view-full-mobile .bj-arc__slot {
+    width: 2.85rem;
+  }
 }

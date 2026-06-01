@@ -696,15 +696,29 @@ export function BlackjackCardView({
     );
   }
 
+  function renderMiniEmptySlot(slotNumber: number) {
+    return (
+      <button
+        key={`mini-empty-${slotNumber}`}
+        type="button"
+        className="bj-phone-view__mini-hand bj-phone-view__mini-hand--empty"
+        onClick={() => onClaimSlot(slotNumber)}
+        aria-label={`Join box ${slotNumber}`}
+      >
+        <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
+        <span className="bj-phone-view__mini-hand-name">Join</span>
+      </button>
+    );
+  }
+
   function renderMiniBoxesRow() {
-    const joined = slots.filter((s) => s.playerId);
-    const mini = joined.filter((s) => s.playerId !== heroBoxId);
-    if (mini.length === 0) {
-      return null;
-    }
     return (
       <div className="bj-phone-view__mini-row">
-        {mini.map((s) => renderMiniHandBox(s.slotNumber, s.playerId!))}
+        {slots.map((s) =>
+          s.playerId
+            ? renderMiniHandBox(s.slotNumber, s.playerId)
+            : renderMiniEmptySlot(s.slotNumber),
+        )}
       </div>
     );
   }

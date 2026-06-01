@@ -1434,7 +1434,7 @@
   }
 }
 
-/* Box value hidden on mobile Card View — mobile layout unchanged. */
+/* Box value label — desktop Card View shows via min-width media; mobile Card View via .bj-view-card-mobile in BlackjackPanel.css. */
 .bj-phone-view__box-value {
   display: none;
 }

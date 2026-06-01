@@ -212,7 +212,9 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     expect(html).toContain('bj-view-full-mobile');
     expect(html).not.toContain('bj-mobile-fallback');
     expect(html).toContain('bj-casino__felt');
+    expect(html).toContain('bj-casino__rail');
     expect(html).toContain('bj-arc');
+    expect(html).not.toContain('bj-phone-view__betting-stage');
     expect(html).toContain('class="bj-arc__box-label">Box');
   });
 
@@ -273,11 +275,33 @@ describe('mobile Card View structure', () => {
     expect(html).not.toContain('bj-mobile-fallback');
   });
 
+  it('uses stacked This Table layout (same markers as mobile Full Table)', () => {
+    const card = renderPanelAt(390, withView(playingState(), 'card'));
+    const full = renderPanelAt(390, withView(playingState(), 'full'));
+    expect(card).toContain('bj-accounts-panel__section');
+    expect(card).toContain('bj-accounts-panel__list');
+    expect(full).toContain('bj-accounts-panel__section');
+    expect(full).toContain('bj-accounts-panel__list');
+  });
+
+  it('mini row includes all slots in order with BUST, active highlight, and join boxes', () => {
+    const html = renderPanelAt(390, withView(playingState(), 'card'));
+    expect(html).toContain('bj-phone-view__mini-row');
+    expect(html).toContain('bj-phone-view__box-value--bust');
+    expect(html).toContain('BUST');
+    expect(html).toContain('bj-phone-view__mini-hand--active');
+    expect(html).toContain('Join');
+    const box1Idx = html.indexOf('Box 1');
+    const box2Idx = html.indexOf('Box 2', box1Idx + 1);
+    const box3Idx = html.indexOf('Box 3', box2Idx + 1);
+    expect(box1Idx).toBeGreaterThan(-1);
+    expect(box2Idx).toBeGreaterThan(box1Idx);
+    expect(box3Idx).toBeGreaterThan(box2Idx);
+  });
+
   it('highlights the active box as the live hero with its controls', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    // The active box becomes the hero; its action controls go "live".
     expect(html).toContain('bj-phone-view__side-btn--live');
-    // Non-active boxes appear in the ordered mini row.
     expect(html).toContain('bj-phone-view__mini-row');
   });
 });
