@@ -30,12 +30,54 @@ npm ci
 
 # 5. Create your .env (copy the example, then edit values)
 cp .env.example .env
-#   Leave PUBLIC_ORIGIN / CORS_ORIGIN as-is — `npm run host` overrides them
-#   with your detected LAN IP automatically. Set a strong SESSION_SECRET.
+#   IMPORTANT: keep .env free of LAN IPs. Host mode auto-detects your current IP
+#   every launch and ignores PUBLIC_ORIGIN / CORS_ORIGIN / VITE_API_URL /
+#   VITE_TABLE_HOST. Set a strong SESSION_SECRET and your SMTP/email values.
 
 # 6. Build the app once
 npm run build
 ```
+
+### Keep IPs out of `.env`
+
+Your phone's IP changes whenever you switch hotspot/Wi-Fi. **Do not** pin IPs in
+`.env` — host mode detects the current IP on every launch. A clean Termux `.env`
+should contain only **stable** config:
+
+```sh
+# --- Stable config only (no IPs!) ---
+SESSION_SECRET=generate-a-long-random-secret
+ROOT_USER_EMAIL=you@gmail.com
+INVITE_ONLY_MODE=true
+VITE_ONLINE_MODE=true
+
+# --- Email / SMTP (optional, for magic-link invites) ---
+EMAIL_INVITES=true
+VITE_EMAIL_INVITES=true
+EMAIL_FROM=you@gmail.com
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=you@gmail.com
+SMTP_PASS=your-gmail-app-password
+```
+
+Host mode (`npm run host` / the widget) sets these automatically each run, so you
+never edit them by hand:
+
+```
+PUBLIC_ORIGIN=http://<detected-ip>:<port>
+CORS_ORIGIN=http://<detected-ip>:<port>
+VITE_API_URL=         # blank → client uses the page origin (current IP)
+VITE_TABLE_HOST=      # blank → invite links use the page origin
+SXM_SERVE_STATIC=true
+SXM_HOST_MODE=true
+API_HOST=0.0.0.0
+PORT=<host-port>
+```
+
+> If you previously baked a LAN IP into `.env`, remove those lines and rebuild
+> **once** so the bundle stops targeting the old IP:
+> `rm -rf dist && npm run build`. After that, IP changes need no rebuild.
 
 > Tip: keep the phone awake while hosting — `pkg install termux-services` or
 > Android's "stay awake" developer setting helps. To prevent Termux being
@@ -64,6 +106,13 @@ QR:
 Players scan the QR (or type the address) to join. The same address and a live
 player count + QR are also available in-app under **Settings → Host Server**.
 
+### When your IP changes (new hotspot / Wi-Fi)
+
+Nothing to edit. Just **stop the server (Ctrl-C) and run `npm run host` again**,
+or **re-tap the "SXM Cards" widget**. Host mode re-detects the IP, rewrites the
+join address, and prints a fresh QR. The current address is also written to
+`.sxm-host-runtime.json` (gitignored) for tooling.
+
 ## One-tap launcher (Termux:Widget)
 
 Add a home-screen button that starts the host, keeps the phone awake, and opens
@@ -73,11 +122,12 @@ The launcher script lives in the repo at `scripts/android/start-sxm-host.sh`. It
 
 1. opens the existing server if one is already running (no duplicate hosts);
 2. `cd ~/sxm`, warns if the working tree is dirty (but continues);
-3. runs `npm run build` if `dist/index.html` is missing;
+3. runs an IP-agnostic `npm run build` if `dist/index.html` is missing;
 4. takes a `termux-wake-lock` (if available) to keep the phone awake;
 5. starts `npm run host`, logging to `~/sxm-host.log`;
-6. reads the LAN URL from `/api/host/status` and prints the server info + QR;
-7. opens the browser with `termux-open-url http://<ip>:5173`.
+6. reads the effective LAN URL from `/api/host/status` (never from `.env`) and
+   prints the server info + QR;
+7. opens the browser at that detected join address with `termux-open-url`.
 
 ### Set it up
 
@@ -129,6 +179,7 @@ npm run host   # or just tap the "SXM Cards" widget
 | `Server did not become ready … already in use` | Another process holds port 5173. Stop it, or set `HOST_PORT=8080 npm run host`. |
 | Phone says no LAN IP | Connect to Wi-Fi or enable the hotspot, then re-run. |
 | Players can't connect | Confirm they're on the **same** Wi-Fi/hotspot. Some "guest" Wi-Fi networks block device-to-device traffic — use a hotspot instead. |
+| App opens but stays blank / "loading" after an IP change | Old IP baked into the build. Remove IP lines from `.env`, then `rm -rf dist && npm run build` once. Restart the widget. |
 | QR doesn't render | Your terminal font may not support block glyphs; type the printed `Address:` manually. |
 | Widget does nothing / `curl not found` | `pkg install curl`. The launcher needs curl to detect/query the server. |
 | Browser doesn't open | Install **Termux:API** (`pkg install termux-api`); otherwise open the printed URL manually. |
@@ -138,6 +189,9 @@ npm run host   # or just tap the "SXM Cards" widget
 ## Notes
 
 - `npm run host` and the launcher never write your `.env` (read-only, like `npm run dev`).
+- Host mode (`SXM_HOST_MODE=true`) always derives the join address from the
+  **detected IP**, overriding any stale `PUBLIC_ORIGIN`/`CORS_ORIGIN` in `.env`,
+  and writes the current address to `.sxm-host-runtime.json` (gitignored).
 - The host serves the built SPA **and** API **and** Socket.IO on one port
   (`5173`), bound to `0.0.0.0`, so any device on the LAN can reach it.
 - The launcher logs to `~/sxm-host.log` (outside the repo — nothing secret is

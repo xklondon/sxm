@@ -26,6 +26,7 @@ function envInt(key: string, fallback: number): number {
 
 const DEFAULT_PUBLIC_ORIGIN = 'http://localhost:5173';
 const vitePort = envInt('VITE_PORT', 5173);
+const hostMode = envBool('SXM_HOST_MODE');
 
 const configuredPublicOrigin = env(
   'PUBLIC_ORIGIN',
@@ -38,7 +39,19 @@ const effectiveResult = resolveEffectivePublicOrigin({
   publicOrigin: configuredPublicOrigin,
   vitePort,
   detectedLanIp: env('SXM_DETECTED_LAN_IP') || undefined,
+  hostMode,
 });
+
+if (
+  hostMode &&
+  effectiveResult.hostModeOverride &&
+  configuredPublicOrigin.replace(/\/$/, '') !== effectiveResult.effective
+) {
+  // eslint-disable-next-line no-console
+  console.log(
+    `[SXM HOST] ignoring .env PUBLIC_ORIGIN=${configuredPublicOrigin} because host mode detected ${effectiveResult.effective}`,
+  );
+}
 
 export const config = {
   nodeEnv: env('NODE_ENV', 'development'),
@@ -56,8 +69,10 @@ export const config = {
   magicLinkTtlMs: envInt('MAGIC_LINK_TTL_MS', 15 * 60 * 1000),
   magicLinkResendCooldownMs: envInt('MAGIC_LINK_RESEND_COOLDOWN_MS', 60 * 1000),
   isProduction: env('NODE_ENV') === 'production',
+  /** Termux/`npm run host`: follow detected IP, ignore stale .env PUBLIC_ORIGIN/CORS_ORIGIN. */
+  hostMode,
   /** Serve the built SPA from the API server (production, or Termux host mode). */
-  serveStatic: envBool('SXM_SERVE_STATIC') || env('NODE_ENV') === 'production',
+  serveStatic: envBool('SXM_SERVE_STATIC') || hostMode || env('NODE_ENV') === 'production',
   emailInvitesEnabled: envBool('VITE_EMAIL_INVITES') || envBool('EMAIL_INVITES'),
   smtp: {
     host: env('SMTP_HOST'),
@@ -80,6 +95,20 @@ export function getEffectivePublicOrigin(): string {
 }
 
 export function getCorsOrigins(): string[] {
+  // Host mode: never trust a stale .env CORS_ORIGIN — the phone IP changes.
+  // Allow the detected-IP origin plus loopback (for the host's own banner fetch).
+  if (config.hostMode) {
+    const origins = new Set<string>();
+    origins.add(getEffectivePublicOrigin());
+    origins.add(`http://localhost:${vitePort}`);
+    origins.add(`http://127.0.0.1:${vitePort}`);
+    const lanIp = env('SXM_DETECTED_LAN_IP') || detectLanIPv4();
+    if (lanIp) {
+      origins.add(`http://${lanIp}:${vitePort}`);
+    }
+    return [...origins];
+  }
+
   const raw = env('CORS_ORIGIN', configuredPublicOrigin);
   const fromEnv = parseCorsOrigins(raw);
   if (config.isProduction) {

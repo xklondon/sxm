@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { pickLanIPv4 } from '../src/origin.js';
+import { pickLanIPv4, resolveEffectivePublicOrigin } from '../src/origin.js';
 import {
+  buildHostRuntimeInfo,
   DEFAULT_HOST_PORT,
   getHostPort,
   getJoinAddress,
@@ -82,6 +83,67 @@ describe('getJoinAddress', () => {
     const addr = getJoinAddress({ ip: '10.0.0.9', port: 5173 });
     expect(addr).toContain('10.0.0.9');
     expect(addr).not.toContain('192.168.0.56');
+  });
+});
+
+describe('host mode public origin override', () => {
+  const stale = 'http://10.191.204.176:5173';
+
+  it('ignores a stale .env PUBLIC_ORIGIN and uses the detected IP', () => {
+    const result = resolveEffectivePublicOrigin({
+      nodeEnv: 'development',
+      devPublicOrigin: '',
+      publicOrigin: stale,
+      vitePort: 5173,
+      detectedLanIp: '192.168.1.42',
+      hostMode: true,
+    });
+    expect(result.effective).toBe('http://192.168.1.42:5173');
+    expect(result.hostModeOverride).toBe(true);
+  });
+
+  it('overrides even when .env looks production-valid', () => {
+    const result = resolveEffectivePublicOrigin({
+      nodeEnv: 'production',
+      devPublicOrigin: '',
+      publicOrigin: 'https://old.example.com',
+      vitePort: 5173,
+      detectedLanIp: '10.0.0.9',
+      hostMode: true,
+    });
+    expect(result.effective).toBe('http://10.0.0.9:5173');
+    expect(result.hostModeOverride).toBe(true);
+  });
+
+  it('does not override when host mode is off (normal dev behavior)', () => {
+    const result = resolveEffectivePublicOrigin({
+      nodeEnv: 'development',
+      devPublicOrigin: '',
+      publicOrigin: stale,
+      vitePort: 5173,
+      detectedLanIp: '192.168.1.42',
+      hostMode: false,
+    });
+    expect(result.effective).toBe(stale);
+    expect(result.hostModeOverride).toBe(false);
+  });
+});
+
+describe('buildHostRuntimeInfo (.sxm-host-runtime.json shape)', () => {
+  it('builds joinAddress from the detected IP + port', () => {
+    const info = buildHostRuntimeInfo({ ip: '192.168.1.42', port: 5173 });
+    expect(info.joinAddress).toBe('http://192.168.1.42:5173');
+    expect(info.ip).toBe('192.168.1.42');
+    expect(info.port).toBe(5173);
+    expect(typeof info.startedAt).toBe('string');
+    expect(Number.isNaN(Date.parse(info.startedAt))).toBe(false);
+  });
+
+  it('uses localhost join address when offline (ip null)', () => {
+    const info = buildHostRuntimeInfo({ ip: null, port: 5173, startedAt: '2026-01-01T00:00:00.000Z' });
+    expect(info.joinAddress).toBe('http://localhost:5173');
+    expect(info.ip).toBeNull();
+    expect(info.startedAt).toBe('2026-01-01T00:00:00.000Z');
   });
 });
 

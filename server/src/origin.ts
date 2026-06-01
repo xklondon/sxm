@@ -65,23 +65,39 @@ export function resolveEffectivePublicOrigin(params: {
   publicOrigin: string;
   vitePort: number;
   detectedLanIp?: string;
-}): { effective: string; autoApplied: boolean } {
+  /** Termux/`npm run host`: always follow the detected IP, ignore stale .env. */
+  hostMode?: boolean;
+}): { effective: string; autoApplied: boolean; hostModeOverride: boolean } {
   const configured = params.publicOrigin.trim().replace(/\/$/, '') || `http://localhost:${params.vitePort}`;
   const isProduction = params.nodeEnv === 'production';
   const devAuto = params.devPublicOrigin.trim().toLowerCase() === 'auto';
 
+  // Host mode wins over everything: the phone's IP changes between hotspots, so
+  // a stale PUBLIC_ORIGIN in .env must never win. Derive from the detected IP.
+  if (params.hostMode) {
+    const ip = params.detectedLanIp?.trim() || detectLanIPv4();
+    if (ip) {
+      return {
+        effective: `http://${ip}:${params.vitePort}`,
+        autoApplied: true,
+        hostModeOverride: true,
+      };
+    }
+    return { effective: configured, autoApplied: false, hostModeOverride: false };
+  }
+
   if (isProduction && devAuto) {
-    return { effective: configured, autoApplied: false };
+    return { effective: configured, autoApplied: false, hostModeOverride: false };
   }
 
   if (!isProduction && devAuto) {
     const ip = params.detectedLanIp?.trim() || detectLanIPv4();
     if (ip) {
-      return { effective: `http://${ip}:${params.vitePort}`, autoApplied: true };
+      return { effective: `http://${ip}:${params.vitePort}`, autoApplied: true, hostModeOverride: false };
     }
   }
 
-  return { effective: configured, autoApplied: false };
+  return { effective: configured, autoApplied: false, hostModeOverride: false };
 }
 
 export function originHostMismatchWarning(params: {

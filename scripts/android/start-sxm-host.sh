@@ -73,10 +73,12 @@ if have git && [ -d .git ]; then
   fi
 fi
 
-# 4. Build the SPA once if there is no build yet.
+# 4. Build the SPA once if there is no build yet. Build IP-agnostic: blank the
+#    VITE_* origin vars so the bundle uses the page origin (current IP) and keeps
+#    working after the phone's hotspot/Wi-Fi IP changes — no rebuild needed.
 if [ ! -f dist/index.html ]; then
   log "No build found — running 'npm run build' (first launch can take a while)…"
-  if ! npm run build >>"$LOG" 2>&1; then
+  if ! VITE_API_URL= VITE_TABLE_HOST= npm run build >>"$LOG" 2>&1; then
     log "Build failed. See $LOG"
     exit 1
   fi

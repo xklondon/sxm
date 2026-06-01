@@ -6,12 +6,12 @@
  * READ-ONLY: never writes .env (see scripts/envGuard.ts).
  */
 import { spawn, type ChildProcess } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import '../server/src/loadEnv.js';
 import {
+  buildHostRuntimeInfo,
   getHostPort,
-  getJoinAddress,
   getLocalHostAddress,
   renderQrTerminal,
 } from '../server/src/host.js';
@@ -21,12 +21,22 @@ assertEnvReadOnlyScript('host');
 
 const port = getHostPort();
 const ip = getLocalHostAddress();
-const joinAddress = getJoinAddress({ ip, port });
+const runtime = buildHostRuntimeInfo({ ip, port });
+const joinAddress = runtime.joinAddress;
 
 const distIndex = path.resolve(process.cwd(), 'dist', 'index.html');
 if (!existsSync(distIndex)) {
   console.error('[SXM] No build found at dist/. Run `npm run build` first, then `npm run host`.');
   process.exit(1);
+}
+
+// Stale IPs in .env must never win in host mode — the phone IP changes between
+// hotspots. Force every IP-bound var from the freshly detected address.
+const stalePublicOrigin = process.env.PUBLIC_ORIGIN?.trim();
+if (stalePublicOrigin && stalePublicOrigin !== joinAddress) {
+  console.log(
+    `[SXM HOST] ignoring .env PUBLIC_ORIGIN=${stalePublicOrigin} because host mode detected ${joinAddress}`,
+  );
 }
 
 const sharedEnv: NodeJS.ProcessEnv = {
@@ -36,10 +46,25 @@ const sharedEnv: NodeJS.ProcessEnv = {
   VITE_PORT: String(port),
   API_HOST: '0.0.0.0',
   SXM_SERVE_STATIC: 'true',
+  SXM_HOST_MODE: 'true',
   SXM_DETECTED_LAN_IP: ip ?? '',
   PUBLIC_ORIGIN: joinAddress,
-  CORS_ORIGIN: process.env.CORS_ORIGIN?.trim() || joinAddress,
+  CORS_ORIGIN: joinAddress,
+  // The served bundle is same-origin: blank these so the client uses the page
+  // origin (current IP) instead of any stale baked-in absolute URL.
+  VITE_API_URL: '',
+  VITE_TABLE_HOST: '',
 };
+
+// Safe-to-overwrite runtime breadcrumb (gitignored) — not .env.
+try {
+  writeFileSync(
+    path.resolve(process.cwd(), '.sxm-host-runtime.json'),
+    `${JSON.stringify(runtime, null, 2)}\n`,
+  );
+} catch (err) {
+  console.warn('[SXM] Could not write .sxm-host-runtime.json', err);
+}
 
 async function printBanner(): Promise<void> {
   const status = await fetchStatus();

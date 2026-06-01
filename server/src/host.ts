@@ -37,6 +37,31 @@ export function getJoinAddress(options: JoinAddressOptions = {}): string {
   return `http://${resolvedIp ?? 'localhost'}:${port}`;
 }
 
+export interface HostRuntimeInfo {
+  joinAddress: string;
+  ip: string | null;
+  port: number;
+  startedAt: string;
+}
+
+/**
+ * Shape written to `.sxm-host-runtime.json` each run (safe to overwrite,
+ * gitignored). Lets tooling/widgets read the current join address without .env.
+ */
+export function buildHostRuntimeInfo(params: {
+  ip: string | null;
+  port: number;
+  startedAt?: string;
+}): HostRuntimeInfo {
+  const joinAddress = getJoinAddress({ ip: params.ip, port: params.port });
+  return {
+    joinAddress,
+    ip: params.ip ?? null,
+    port: params.port,
+    startedAt: params.startedAt ?? new Date().toISOString(),
+  };
+}
+
 /** Terminal-renderable QR code for a join address (lightweight `qrcode`). */
 export function renderQrTerminal(text: string): Promise<string> {
   return QRCode.toString(text, { type: 'terminal', small: true });
