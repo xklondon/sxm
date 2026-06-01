@@ -384,3 +384,37 @@ describe('invite accept flow', () => {
     expect(joinUrl).toContain('/api/tables/invites/accept?token=');
   });
 });
+
+describe('placeBet target resolution (server)', () => {
+  let store: ReturnType<typeof createMemoryStore>;
+  let tables: TableService;
+
+  beforeEach(() => {
+    store = createMemoryStore();
+    const people = new PeopleService(store);
+    tables = new TableService(store, people);
+  });
+
+  it('rejects placeBet with unknown boxId (Box not found regression)', () => {
+    const host = seedHostUser(store);
+    const table = tables.createTable(host.id, 'Host');
+    expect(() =>
+      tables.applyAction(table.id, host.id, 'placeBet', { boxId: 'nonexistent-box-id', amount: 10 }, table.version),
+    ).toThrow(/Box not found/);
+  });
+
+  it('accepts placeBet on empty slot via slotNumber and materializes the box', () => {
+    const host = seedHostUser(store);
+    const table = tables.createTable(host.id, 'Host');
+    const result = tables.applyAction(
+      table.id,
+      host.id,
+      'placeBet',
+      { slotNumber: 1, amount: 10 },
+      table.version,
+    );
+    const slot = result.state.tableMeta.boxSlots.find((s) => s.slotNumber === 1);
+    expect(slot?.playerId).toBeTruthy();
+    expect(result.state.tableMeta.boxStakes[slot!.playerId!]?.amount).toBe(10);
+  });
+});

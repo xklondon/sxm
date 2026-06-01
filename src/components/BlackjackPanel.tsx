@@ -68,6 +68,14 @@ import {
   isBotBankGame,
 } from '../engine/scoreLedger/scoreLedger';
 import { buildRoundResultSummary } from '../engine/blackjack';
+import {
+  formatPlaceBetError,
+  getChipPlacementTarget,
+  getChipPlacementTargetFromBoxId,
+  placeBetPayloadFromTarget,
+  resolveChipTrayBetTarget,
+  type PlaceBetTarget,
+} from '../engine/blackjack/chipPlacement';
 import { canUserAssignChips } from '../engine/table/adminControls';
 import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
 import { getActionableHandForView } from './blackjackViewPhase';
@@ -130,6 +138,8 @@ export function BlackjackPanel({
   const [minBetOpen, setMinBetOpen] = useState(false);
   const [accountsCollapsed, setAccountsCollapsed] = useState(false);
   const [tableAidTip, setTableAidTip] = useState<string | null>(null);
+  /** Last chip-tray / box-tap target — shared across Full Table and Card View. */
+  const lastBetTargetRef = useRef<PlaceBetTarget | null>(null);
 
   const {
     centerStatus,
@@ -248,18 +258,75 @@ export function BlackjackPanel({
     run((s) => ({ ...s, tableViewMode: mode }));
   }
 
+  function rememberBetTarget(target: PlaceBetTarget) {
+    lastBetTargetRef.current = target;
+  }
+
+  function placeBetAtTarget(target: PlaceBetTarget, amount: ChipValue) {
+    rememberBetTarget(target);
+    const payload = placeBetPayloadFromTarget(target, amount);
+    const betContext = { viewMode, phase: protocolPhase };
+
+    if (onlineDispatch) {
+      setError(null);
+      void onlineDispatch('placeBet', payload).catch((err) => {
+        setError(formatPlaceBetError(err, target, betContext));
+      });
+      return;
+    }
+
+    setError(null);
+    try {
+      let state = gameStateRef.current;
+      if (target.kind === 'slot') {
+        const slot = state.tableMeta.boxSlots.find((s) => s.slotNumber === target.slotNumber);
+        if (!slot?.playerId) {
+          state = claimBoxSlot(state, target.slotNumber);
+        }
+        const boxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === target.slotNumber)
+          ?.playerId;
+        if (!boxId) {
+          throw new Error('Could not claim box');
+        }
+        const personId = resolveControllerPersonId(state, controllerName);
+        onGameStateChange(addChipToBoxStake(state, boxId, amount, personId ?? undefined));
+        rememberBetTarget({ kind: 'box', boxId });
+        return;
+      }
+      const personId = resolveControllerPersonId(state, controllerName);
+      onGameStateChange(
+        addChipToBoxStake(state, target.boxId, amount, personId ?? undefined),
+      );
+    } catch (err) {
+      setError(formatPlaceBetError(err, target, betContext));
+    }
+  }
+
   function selectBox(boxId: string) {
     run((s) => ({ ...s, selectedSeatId: boxId }));
+    try {
+      rememberBetTarget(
+        getChipPlacementTargetFromBoxId(
+          gameStateRef.current,
+          boxId,
+          Boolean(onlineDispatch),
+        ),
+      );
+    } catch {
+      const slotNum = gameStateRef.current.session.boxSlotNumbers?.[boxId];
+      if (slotNum != null) {
+        rememberBetTarget(getChipPlacementTarget(gameStateRef.current, { slotNumber: slotNum }));
+      }
+    }
   }
 
   function addChipToBox(boxId: string, amount: ChipValue) {
-    run(
-      (s) => {
-        const personId = resolveControllerPersonId(s, controllerName);
-        return addChipToBoxStake(s, boxId, amount, personId ?? undefined);
-      },
-      { type: 'placeBet', payload: { boxId, amount } },
+    const target = getChipPlacementTargetFromBoxId(
+      gameStateRef.current,
+      boxId,
+      Boolean(onlineDispatch),
     );
+    placeBetAtTarget(target, amount);
   }
 
   function clearBoxStakeOnBox(boxId: string) {
@@ -301,34 +368,8 @@ export function BlackjackPanel({
       return;
     }
 
-    if (boxId) {
-      addChipToBox(boxId, value);
-      return;
-    }
-
-    if (onlineDispatch) {
-      run(() => gameStateRef.current, { type: 'placeBet', payload: { slotNumber, amount: value } });
-      return;
-    }
-
-    setError(null);
-    try {
-      const profile = loadProfile();
-      const name = profile.name.trim() || gameStateRef.current.tableMeta.controllerName;
-      const claimed = claimBoxSlot(
-        { ...gameStateRef.current, tableMeta: { ...gameStateRef.current.tableMeta, controllerName: name } },
-        slotNumber,
-      );
-      const newBoxId = claimed.selectedSeatId;
-      if (newBoxId) {
-        const personId = resolveControllerPersonId(claimed, name);
-        onGameStateChange(addChipToBoxStake(claimed, newBoxId, value, personId ?? undefined));
-      } else {
-        onGameStateChange(claimed);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not claim box');
-    }
+    const target = getChipPlacementTarget(gameStateRef.current, { slotNumber, boxId });
+    placeBetAtTarget(target, value);
   }
 
   function handleBetZoneDrop(boxId: string, slotNumber: number, e: React.DragEvent) {
@@ -344,6 +385,17 @@ export function BlackjackPanel({
       selectBox(slot.playerId);
       return;
     }
+
+    rememberBetTarget({ kind: 'slot', slotNumber });
+
+    if (onlineDispatch) {
+      setError(null);
+      void onlineDispatch('assignBox', { slotNumber }).catch((err) => {
+        setError(err instanceof Error ? err.message : 'Could not claim box');
+      });
+      return;
+    }
+
     setError(null);
     try {
       const name = controllerName;
@@ -352,6 +404,10 @@ export function BlackjackPanel({
         slotNumber,
       );
       onGameStateChange(claimed);
+      const boxId = claimed.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber)?.playerId;
+      if (boxId) {
+        rememberBetTarget({ kind: 'box', boxId });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not claim box');
     }
@@ -362,11 +418,17 @@ export function BlackjackPanel({
   }
 
   function handleChipTrayClick(value: ChipValue) {
-    if (!effectiveBoxId) {
+    const target = resolveChipTrayBetTarget(
+      gameStateRef.current,
+      controllerName,
+      lastBetTargetRef.current,
+      Boolean(onlineDispatch),
+    );
+    if (!target) {
       setError('Tap a box to bet');
       return;
     }
-    addChipToBox(effectiveBoxId, value);
+    placeBetAtTarget(target, value);
   }
 
   function renderCard(cardId: string, faceDown = false, compact = true, reactKey?: string) {
