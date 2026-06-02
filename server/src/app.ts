@@ -27,6 +27,9 @@ export function createApp() {
   const tables = new TableService(store, people);
 
   const app = express();
+  if (config.isProduction) {
+    app.set('trust proxy', 1);
+  }
   const httpServer = createServer(app);
   const io = new SocketServer(httpServer, {
     cors: { origin: getCorsOrigins(), credentials: true },

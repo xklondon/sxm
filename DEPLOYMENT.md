@@ -26,8 +26,10 @@ npm run build:all
 Production start:
 
 ```bash
-NODE_ENV=production PUBLIC_ORIGIN=https://your-domain.example npm run start:server
+NODE_ENV=production PUBLIC_ORIGIN=https://your-domain.example npm run start:prod
 ```
+
+**Railway:** see [RAILWAY_DEPLOY.md](./RAILWAY_DEPLOY.md) for build/start commands, env vars, and smoke checklist.
 
 The server serves `dist/` when `NODE_ENV=production`.
 
@@ -51,7 +53,7 @@ Configure App Runner / load balancer health checks against `/health`.
 | `SMTP_HOST`, `EMAIL_FROM` | yes | Magic links + email invites |
 | `ROOT_USER_EMAIL` | yes | Bootstrap admin; always allowed to sign in |
 | `INVITE_ONLY_MODE` | optional | Default `true` — reject unknown emails at magic-link request |
-| `PORT` | optional | Default `3001` |
+| `PORT` | optional | Set by Railway/App Runner; defaults to `3017` locally if unset |
 
 Frontend build-time (if separate Amplify build):
 
