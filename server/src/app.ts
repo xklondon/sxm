@@ -87,32 +87,42 @@ export function createApp() {
 
   if (config.serveStatic) {
     const distDir = path.resolve(fileURLToPath(import.meta.url), '../../../dist');
+    const assetsDir = path.join(distDir, 'assets');
 
-    // Hashed assets are content-addressed → cache hard. index.html must never
-    // cache, so a rebuilt client always loads the new hashed asset names.
+    // 1. Hashed build assets only — never fall through to SPA index.html.
+    app.use(
+      '/assets',
+      express.static(assetsDir, {
+        index: false,
+        setHeaders: (res) => {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        },
+      }),
+    );
+
+    // 2. Missing /assets/* → plain 404 (stale hashed names after redeploy).
+    app.use('/assets', (_req, res) => {
+      res.status(404).type('text/plain').send('Asset not found');
+    });
+
+    // 3. Other dist root files (favicon.svg, etc.) — not index.html (index: false).
     app.use(
       express.static(distDir, {
         index: false,
         setHeaders: (res, filePath) => {
-          if (filePath.includes(`${path.sep}assets${path.sep}`)) {
-            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-          } else if (filePath.endsWith('index.html')) {
+          if (filePath.endsWith('index.html')) {
             res.setHeader('Cache-Control', 'no-store, must-revalidate');
           }
         },
       }),
     );
 
-    // A request that reaches here under /assets means the file does NOT exist
-    // (e.g. an old hashed asset after a rebuild). Never fall back to the SPA
-    // shell — returning HTML for a .js request white/green-screens the app.
-    app.use('/assets', (_req, res) => {
-      res.status(404).type('text/plain').send('Not found');
-    });
-
-    // SPA fallback for app routes only. Real file requests (anything with an
-    // extension) 404 instead of returning index.html.
-    app.get(/^(?!\/api|\/health|\/socket\.io).*/, (req, res) => {
+    // 4. SPA fallback: extensionless app routes only; never HTML for asset paths.
+    app.use((req, res) => {
+      if (req.path.startsWith('/assets')) {
+        res.status(404).type('text/plain').send('Asset not found');
+        return;
+      }
       if (path.extname(req.path)) {
         res.status(404).type('text/plain').send('Not found');
         return;
