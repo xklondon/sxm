@@ -17,10 +17,28 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: apiTarget,
           changeOrigin: true,
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq, req) => {
+              const host = req.headers.host;
+              if (host) {
+                proxyReq.setHeader('X-Forwarded-Host', host);
+              }
+              const proto = req.headers['x-forwarded-proto'];
+              proxyReq.setHeader('X-Forwarded-Proto', typeof proto === 'string' ? proto : 'http');
+            });
+          },
         },
         '/socket.io': {
           target: apiTarget,
           ws: true,
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq, req) => {
+              const host = req.headers.host;
+              if (host) {
+                proxyReq.setHeader('X-Forwarded-Host', host);
+              }
+            });
+          },
         },
         '/health': {
           target: apiTarget,

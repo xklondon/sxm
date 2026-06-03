@@ -40,7 +40,7 @@ import {
   getCardViewBoxStatus,
   getCardViewHeroBoxId,
   getCardViewHeroHandKey,
-  getMyPendingInsurancePlayerIds,
+  getInsuranceActionsForController,
   isBankPhase,
   isBettingPhase,
   isDealingPhase,
@@ -53,8 +53,6 @@ import {
 } from "./blackjackViewPhase";
 
 import { sortBoxSlotsForCardViewDisplay, type DeviceView } from "./tableViewContract";
-
-import { insuranceBetMax } from "../engine/blackjack";
 
 import { isOnlineModeEnabled } from "../api/config";
 
@@ -730,9 +728,9 @@ export function BlackjackCardView({
       return null;
     }
 
-    const myPending = getMyPendingInsurancePlayerIds(gameState, round, controllerLabel);
+    const actions = getInsuranceActionsForController(gameState, round, controllerLabel);
 
-    if (myPending.length === 0) {
+    if (actions.length === 0) {
       return (
         <p className="bj-phone-view__phase-actions bj-phone-view__phase-actions--wait">
           Dealer shows Ace — waiting for insurance decisions…
@@ -743,32 +741,29 @@ export function BlackjackCardView({
     return (
       <div className="bj-phone-view__phase-actions bj-phone-view__phase-actions--insurance" aria-live="polite">
         <p className="bj-phone-view__phase-actions-label">Dealer shows Ace — insurance pays 2:1</p>
-        {myPending.map((pid) => {
-          const hand = round.playerHands[`${pid}:0`];
-          const maxIns = hand ? insuranceBetMax(hand.currentBet) : 0;
-          const slotNum = session.boxSlotNumbers?.[pid];
-          return (
-            <div key={pid} className="bj-phone-view__ins-row">
-              <span className="bj-phone-view__ins-label">
-                Box {slotNum ?? "?"} — up to {maxIns}c
-              </span>
-              <button
-                type="button"
-                className="ds-btn ds-btn--secondary bj-phone-view__ins-btn"
-                onClick={() => onTakeInsurance?.(pid)}
-              >
-                Insure {maxIns}
-              </button>
-              <button
-                type="button"
-                className="ds-btn ds-btn--ghost bj-phone-view__ins-btn"
-                onClick={() => onDeclineInsurance?.(pid)}
-              >
-                No thanks
-              </button>
-            </div>
-          );
-        })}
+        {actions.map(({ playerId, maxBet, canAfford, slotNumber }) => (
+          <div key={playerId} className="bj-phone-view__ins-row">
+            <span className="bj-phone-view__ins-label">
+              Box {slotNumber ?? "?"} — up to {maxBet}c
+              {!canAfford && " (not enough chips)"}
+            </span>
+            <button
+              type="button"
+              className="ds-btn ds-btn--secondary bj-phone-view__ins-btn"
+              disabled={!canAfford}
+              onClick={() => onTakeInsurance?.(playerId)}
+            >
+              Insure {maxBet}
+            </button>
+            <button
+              type="button"
+              className="ds-btn ds-btn--ghost bj-phone-view__ins-btn"
+              onClick={() => onDeclineInsurance?.(playerId)}
+            >
+              No thanks
+            </button>
+          </div>
+        ))}
       </div>
     );
   }
@@ -898,7 +893,7 @@ export function BlackjackCardView({
                 <button
                   type="button"
                   className="bj-phone-view__extra-btn bj-phone-view__action-btn--tappable"
-                  disabled={!canDoubleBlackjackForState(gameState, turnHandKey)}
+                  disabled={!isActiveTurn || !turnHandKey || !canDoubleBlackjackForState(gameState, turnHandKey)}
                   onClick={() => onDouble(turnHandKey)}
                 >
                   2×
@@ -909,7 +904,7 @@ export function BlackjackCardView({
                 <button
                   type="button"
                   className="bj-phone-view__extra-btn bj-phone-view__action-btn--tappable"
-                  disabled={!canSplitBlackjackForState(gameState, turnHandKey)}
+                  disabled={!isActiveTurn || !turnHandKey || !canSplitBlackjackForState(gameState, turnHandKey)}
                   onClick={() => onSplit(turnHandKey)}
                 >
                   Split

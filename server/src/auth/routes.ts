@@ -80,7 +80,7 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
       const persistent = parseRememberQuery(req.query.remember);
       const sessionToken = auth.verifyMagicLink(token, { persistent });
       setSessionCookie(res, sessionToken, { persistent, req });
-      res.redirect(`${origin}/?login=ok`);
+      res.redirect(`${origin}/?newTable=1`);
     } catch (err) {
       res.redirect(
         `${origin}/login?error=${encodeURIComponent(err instanceof Error ? err.message : 'verify failed')}`,

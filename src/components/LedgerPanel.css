@@ -1,3 +1,11 @@
+.bj-table-wide-panel .ledger-panel--modal .ledger-panel__scroll {
+  max-height: none;
+}
+
+.bj-table-wide-panel .ledger-panel__table {
+  font-size: 0.72rem;
+}
+
 .ledger-panel--modal {
   background: transparent;
   border: none;

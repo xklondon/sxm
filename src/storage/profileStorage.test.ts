@@ -25,6 +25,16 @@ describe('profileStorage online setup', () => {
     });
   });
 
+  it('returns default profile when localStorage is unavailable', () => {
+    vi.stubGlobal('localStorage', undefined as unknown as Storage);
+    expect(loadProfile()).toEqual({
+      name: '',
+      email: '',
+      initials: '?',
+      playFlow: 'auto-18',
+    });
+  });
+
   it('syncs auth email and only requires display name online', () => {
     saveProfile(buildProfile('', '', 'manual'));
     expect(needsLocalProfileSetup(true, 'guest@example.com')).toBe(true);

@@ -11,6 +11,7 @@ import {
   syncPlayerBetsFromRound,
 } from './helpers';
 import type { BlackjackSettings } from './settings';
+import type { BlackjackProtocol } from './protocols/types';
 import { activateInsuranceOfferIfNeeded, shouldOfferInsurance } from './insurance';
 import { findNextActingHand } from './virtual';
 
@@ -96,6 +97,7 @@ function finalizeAfterInitialDeal(
   deck: Deck,
   round: BlackjackRound,
   settings?: BlackjackSettings,
+  protocol?: BlackjackProtocol,
 ): {
   session: GameSession;
   players: Record<string, Player>;
@@ -132,17 +134,19 @@ function finalizeAfterInitialDeal(
     });
 
   const insuranceOffer =
-    settings && shouldOfferInsurance(nextRound, deck, settings);
+    settings && shouldOfferInsurance(nextRound, deck, settings, protocol);
 
   if (insuranceOffer) {
-    nextRound = activateInsuranceOfferIfNeeded(nextRound, deck, settings!);
+    nextRound = activateInsuranceOfferIfNeeded(nextRound, deck, settings!, session, protocol);
   }
+
+  const insurancePending = Boolean(nextRound.insuranceOfferPending);
 
   nextRound = syncActivePlayerId({
     ...nextRound,
-    activeHandKey: insuranceOffer ? null : firstActingHand,
-    status: allInstant && !insuranceOffer ? 'bank-turn' : 'player-turns',
-    dealerHoleHidden: insuranceOffer ? true : !allInstant,
+    activeHandKey: insurancePending ? null : firstActingHand,
+    status: allInstant && !insurancePending ? 'bank-turn' : 'player-turns',
+    dealerHoleHidden: insurancePending ? true : !allInstant,
   });
 
   return {
@@ -159,6 +163,7 @@ export function dealNextInitialCard(
   deck: Deck,
   round: BlackjackRound,
   settings?: BlackjackSettings,
+  protocol?: BlackjackProtocol,
 ): {
   session: GameSession;
   players: Record<string, Player>;
@@ -218,7 +223,7 @@ export function dealNextInitialCard(
     const finalized = finalizeAfterInitialDeal(session, players, draw.deck, {
       ...nextRound,
       initialDealStepIndex: undefined,
-    }, settings);
+    }, settings, protocol);
     return {
       ...finalized,
       step,
@@ -245,6 +250,7 @@ export function dealInitialBlackjackCardsFast(
   deck: Deck,
   round: BlackjackRound,
   settings?: BlackjackSettings,
+  protocol?: BlackjackProtocol,
 ): {
   session: GameSession;
   players: Record<string, Player>;
@@ -255,7 +261,7 @@ export function dealInitialBlackjackCardsFast(
   let guard = 0;
   while (state.round.status === 'initial-deal' && guard < 50) {
     guard += 1;
-    const next = dealNextInitialCard(state.session, state.players, state.deck, state.round, settings);
+    const next = dealNextInitialCard(state.session, state.players, state.deck, state.round, settings, protocol);
     state = {
       session: next.session,
       players: next.players,

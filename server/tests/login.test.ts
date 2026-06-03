@@ -52,7 +52,7 @@ describe('public auth endpoints', () => {
   it('GET /api/auth/verify creates session cookie', async () => {
     const { app, auth } = await createTestApp();
     const { devLink } = await auth.requestMagicLink('root@example.com');
-    const token = new URL(devLink!).searchParams.get('token')!;
+    const token = new URL(devLink!, 'http://localhost:5173').searchParams.get('token')!;
     const res = await request(app)
       .get(`/api/auth/verify?token=${encodeURIComponent(token)}`)
       .redirects(0);

@@ -71,9 +71,9 @@ export function AppRoot() {
   const isLoginPath = pathname === '/login' || pathname.endsWith('/login');
   const isJoinPath = pathname === '/join-table' || pathname.endsWith('/join-table');
   const isPublicPath = isPublicAuthPath(pathname);
-  const loginError = new URLSearchParams(window.location.search).get('error');
-  const loginOk = new URLSearchParams(window.location.search).get('login') === 'ok';
   const loginParams = new URLSearchParams(window.location.search);
+  const loginError = loginParams.get('error');
+  const loginOk = loginParams.get('login') === 'ok';
   const inviteAcceptToken = loginParams.get('token');
   const pendingSearch = isJoinPath ? window.location.search : getPendingJoin() ?? '';
 
@@ -146,6 +146,13 @@ export function AppRoot() {
       window.location.replace('/');
     }
   }, [onlineMode, authLoading, user, isLoginPath]);
+
+  useEffect(() => {
+    if (!onlineMode || authLoading || !loginOk) {
+      return;
+    }
+    window.location.replace('/?newTable=1');
+  }, [onlineMode, authLoading, loginOk]);
 
   useEffect(() => {
     if (!onlineMode || authLoading) {
@@ -236,9 +243,6 @@ export function AppRoot() {
   }
 
   const tableFromUrl = new URLSearchParams(window.location.search).get('table');
-  if (loginOk && onlineMode && user) {
-    return <MagicLinkResultScreen success />;
-  }
   if (tableFromUrl) {
     rememberPendingTable(tableFromUrl);
   }

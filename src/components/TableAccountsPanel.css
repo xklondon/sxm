@@ -153,6 +153,13 @@
   padding: 0.28rem 0.4rem;
 }
 
+.bj-accounts-panel__save {
+  width: 100%;
+  margin-top: 0.35rem;
+  font-size: 0.54rem;
+  padding: 0.28rem 0.4rem;
+}
+
 .bj-accounts-panel__section {
   margin-bottom: 0.45rem;
 }
@@ -203,10 +210,6 @@
 }
 
 @media (max-width: 720px) {
-  .bj-accounts-panel--collapsed {
-    display: none;
-  }
-
   .bj-accounts-panel {
     flex: 0 0 auto;
     width: 100%;

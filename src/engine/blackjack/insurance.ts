@@ -49,9 +49,18 @@ export function activateInsuranceOfferIfNeeded(
   round: BlackjackRound,
   deck: Deck,
   settings: BlackjackSettings,
+  session?: GameSession,
+  protocol?: BlackjackProtocol,
 ): BlackjackRound {
-  if (!shouldOfferInsurance(round, deck, settings)) {
+  const resolvedProtocol = protocol ?? getBlackjackProtocolOrDefault();
+  if (!shouldOfferInsurance(round, deck, settings, resolvedProtocol)) {
     return { ...round, insuranceOfferPending: false };
+  }
+  if (session) {
+    const eligible = getInsuranceEligiblePlayerIds(session, round, resolvedProtocol);
+    if (eligible.length === 0) {
+      return { ...round, insuranceOfferPending: false };
+    }
   }
   return {
     ...round,
@@ -175,6 +184,65 @@ export function closeInsuranceOffer(
     players: syncPlayerBetsFromRound(players, nextRound),
     round: nextRound,
   };
+}
+
+/** Close insurance when all eligible boxes decided (or none eligible). Returns closed=true when advanced. */
+export function advanceInsurancePhaseIfComplete(
+  session: GameSession,
+  players: Record<string, Player>,
+  round: BlackjackRound,
+  protocol?: BlackjackProtocol,
+): {
+  session: GameSession;
+  players: Record<string, Player>;
+  round: BlackjackRound;
+  closed: boolean;
+} {
+  if (!round.insuranceOfferPending) {
+    return { session, players, round, closed: false };
+  }
+  const resolvedProtocol = protocol ?? getBlackjackProtocolOrDefault();
+  if (!allInsuranceDecisionsResolved(session, round, resolvedProtocol)) {
+    return { session, players, round, closed: false };
+  }
+  const closed = closeInsuranceOffer(session, players, round);
+  return { ...closed, closed: true };
+}
+
+export function getInsuranceOfferForPlayer(
+  session: GameSession,
+  _players: Record<string, Player>,
+  ledger: Ledger,
+  round: BlackjackRound,
+  playerId: string,
+  bankrollCtx: BankrollContext,
+  protocol?: BlackjackProtocol,
+): {
+  handKey: string;
+  maxBet: number;
+  canAfford: boolean;
+} | null {
+  if (!round.insuranceOfferPending) {
+    return null;
+  }
+  const resolvedProtocol = protocol ?? getBlackjackProtocolOrDefault();
+  const handKey = handKeysWithConfirmedBets(session, round).find(
+    (hk) => parseBlackjackHandKey(hk).playerId === playerId,
+  );
+  if (!handKey) {
+    return null;
+  }
+  const hand = round.playerHands[handKey];
+  if (!hand || !isHandEligibleForInsuranceOffer(resolvedProtocol, hand)) {
+    return null;
+  }
+  const maxBet = insuranceBetMax(hand.currentBet);
+  if (maxBet <= 0) {
+    return null;
+  }
+  const bankrollOwnerId = resolveBankrollOwnerId(bankrollCtx, playerId);
+  const balance = derivePlayerBalanceFromLedger(bankrollOwnerId, ledger);
+  return { handKey, maxBet, canAfford: balance >= maxBet };
 }
 
 /** Pay or lose insurance bets when dealer blackjack is known. */

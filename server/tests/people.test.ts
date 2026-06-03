@@ -37,7 +37,7 @@ describe('people access control', () => {
   it('root person auto-created on first login', async () => {
     const { auth, store } = await setupServices('root@example.com');
     const { devLink } = await auth.requestMagicLink('root@example.com');
-    const token = new URL(devLink!).searchParams.get('token')!;
+    const token = new URL(devLink!, 'http://localhost:5173').searchParams.get('token')!;
     auth.verifyMagicLink(token);
     const person = store.getPersonByEmail('root@example.com');
     expect(person).toBeTruthy();

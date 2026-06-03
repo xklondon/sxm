@@ -22,6 +22,7 @@ import {
   declineInsurance,
   closeInsuranceOffer,
   allInsuranceResolved,
+  advanceInsurancePhaseIfComplete,
 } from './insurance';
 import { drawSingleBankCard, enterBankingIfComplete } from './bankTurn';
 import { activePlayerIdFromRound, getVirtualBlackjackAction, isVirtualPlayer } from './virtual';
@@ -392,7 +393,14 @@ export function dealNextInitialCardOnState(state: GameState): GameState {
   if (!s.blackjack) {
     throw new Error('No active Blackjack round');
   }
-  const result = dealNextInitialCard(s.session, s.players, s.deck, s.blackjack, s.blackjackSettings);
+  const result = dealNextInitialCard(
+    s.session,
+    s.players,
+    s.deck,
+    s.blackjack,
+    s.blackjackSettings,
+    getBlackjackProtocolForState(s),
+  );
   log.info('Card dealt (initial)', {
     target: result.step.type === 'box' ? result.step.handKey : 'bank',
     cardId: result.cardId,
@@ -407,6 +415,7 @@ export function dealNextInitialCardOnState(state: GameState): GameState {
   if (result.complete) {
     logPhase(next, 'initial deal complete');
     next = resolveNaturalsAfterInitialDeal(next);
+    next = applyInsuranceAdvanceOnState(next);
     next = processVirtualTurns(syncBankPhaseOnState(next));
   }
   return next;
@@ -418,11 +427,19 @@ export function dealInitialBlackjackOnState(state: GameState): GameState {
     throw new Error('Start a Blackjack round first');
   }
   const handKeys = getActiveHandKeysForDeal(s);
+  const protocol = getBlackjackProtocolForState(s);
   let current = beginInitialDeal(s.session, s.players, s.deck!, s.blackjack, handKeys, s.blackjackSettings);
   let guard = 0;
   while (current.round.status === 'initial-deal' && guard < 50) {
     guard += 1;
-    const next = dealNextInitialCard(current.session, current.players, current.deck, current.round, s.blackjackSettings);
+    const next = dealNextInitialCard(
+      current.session,
+      current.players,
+      current.deck,
+      current.round,
+      s.blackjackSettings,
+      protocol,
+    );
     if (guard === 1) {
       log.info('First card dealt', { cardId: next.cardId, target: next.step.type });
     }
@@ -435,7 +452,22 @@ export function dealInitialBlackjackOnState(state: GameState): GameState {
   }
   let next: GameState = { ...s, ...current, blackjack: current.round };
   next = resolveNaturalsAfterInitialDeal(next);
+  next = applyInsuranceAdvanceOnState(next);
   return processVirtualTurns(syncBankPhaseOnState(next));
+}
+
+export function applyInsuranceAdvanceOnState(state: GameState): GameState {
+  const round = state.blackjack;
+  if (!round?.insuranceOfferPending) {
+    return state;
+  }
+  const protocol = getBlackjackProtocolForState(state);
+  const advanced = advanceInsurancePhaseIfComplete(state.session, state.players, round, protocol);
+  if (!advanced.closed) {
+    return state;
+  }
+  let next: GameState = { ...state, players: advanced.players, blackjack: advanced.round };
+  return resolvePendingNaturalsAfterDealerPeek(next);
 }
 
 export function syncBankPhaseOnState(state: GameState): GameState {

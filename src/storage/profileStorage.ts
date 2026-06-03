@@ -40,6 +40,9 @@ export function buildProfile(
 }
 
 export function loadProfile(): LocalProfile {
+  if (typeof localStorage === 'undefined') {
+    return defaultProfile();
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {

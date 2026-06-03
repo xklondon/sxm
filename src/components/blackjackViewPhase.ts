@@ -5,7 +5,14 @@ import { getBlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
 import { getInsuranceEligiblePlayerIds } from '../engine/blackjack/protocols/activeRules';
 import { getBlackjackProtocolForState } from '../engine/blackjack/protocolState';
-import { canControllerCallBox, getCallerPersonIdForBox, resolveControllerPersonId } from '../engine/session';
+import { getInsuranceOfferForPlayer } from '../engine/blackjack/insurance';
+import { bankrollContextFromState } from '../engine/session/bankroll';
+import {
+  canControllerCallBox,
+  getCallerPersonIdForBox,
+  isSinglePlayerTable,
+  resolveControllerPersonId,
+} from '../engine/session';
 import { isTableGameActive } from '../engine/session/tableGameEnd';
 
 export function isBettingPhase(phase: BlackjackProtocolPhase): boolean {
@@ -347,8 +354,48 @@ export function getMyPendingInsurancePlayerIds(
   round: BlackjackRound,
   controllerName: string,
 ): string[] {
-  const pending = getPendingInsurancePlayerIds(state, round);
-  return pending.filter((playerId) => state.players[playerId]?.controllerName === controllerName);
+  return getPendingInsurancePlayerIds(state, round).filter((playerId) =>
+    canCallBoxForPlayer(state, playerId, controllerName),
+  );
+}
+
+export interface InsuranceActionView {
+  playerId: string;
+  maxBet: number;
+  canAfford: boolean;
+  slotNumber: number | undefined;
+}
+
+/** Insurance buttons for boxes the local controller may act on. */
+export function getInsuranceActionsForController(
+  state: GameState,
+  round: BlackjackRound,
+  controllerName: string,
+): InsuranceActionView[] {
+  const protocol = getBlackjackProtocolForState(state);
+  const ctx = bankrollContextFromState(state);
+  return getMyPendingInsurancePlayerIds(state, round, controllerName).flatMap((playerId) => {
+    const offer = getInsuranceOfferForPlayer(
+      state.session,
+      state.players,
+      state.ledger,
+      round,
+      playerId,
+      ctx,
+      protocol,
+    );
+    if (!offer) {
+      return [];
+    }
+    return [
+      {
+        playerId,
+        maxBet: offer.maxBet,
+        canAfford: offer.canAfford,
+        slotNumber: state.session.boxSlotNumbers?.[playerId],
+      },
+    ];
+  });
 }
 
 export function canCallEvenMoneyForHand(
@@ -369,7 +416,10 @@ export function canCallBoxForPlayer(
   boxPlayerId: string,
   controllerName: string,
 ): boolean {
-  const controllerPersonId = resolveControllerPersonId(state, controllerName);
+  let controllerPersonId = resolveControllerPersonId(state, controllerName);
+  if (controllerPersonId === null && isSinglePlayerTable(state) && state.tableMeta.ownerPersonId) {
+    controllerPersonId = state.tableMeta.ownerPersonId;
+  }
   return (
     controllerPersonId !== null &&
     canControllerCallBox(state, boxPlayerId, controllerPersonId)

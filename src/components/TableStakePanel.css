@@ -14,11 +14,46 @@
   background: #1a3d2e;
   border: 2px solid rgb(255 255 255 / 0.2);
   border-radius: 12px;
-  padding: 1.25rem;
-  max-width: 22rem;
+  padding: 1.25rem 1.5rem;
+  max-width: min(56rem, 92vw);
   width: 100%;
+  max-height: min(88dvh, 40rem);
+  overflow-y: auto;
   color: var(--color-cream);
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
+}
+
+.table-stake-panel__header {
+  margin-bottom: 1rem;
+}
+
+.table-stake-panel__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .table-stake-panel__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.5rem;
+    align-items: start;
+  }
+}
+
+.table-stake-panel__col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.table-stake-panel__protocol-rules {
+  margin: 0.35rem 0 0;
+  padding-left: 1rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  opacity: 0.85;
 }
 
 .table-stake-panel__title {
@@ -55,7 +90,7 @@
 
 .table-stake-panel__confirm {
   width: 100%;
-  margin-top: 0.25rem;
+  margin-top: 1rem;
 }
 
 .table-stake-panel__advanced {

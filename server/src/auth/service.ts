@@ -40,7 +40,8 @@ export class AuthService {
     this.store.setLastMagicLinkRequestAt(normalized, new Date().toISOString());
 
     const rememberParam = rememberMe ? 'remember=1' : 'remember=0';
-    const verifyUrl = `${getEffectivePublicOrigin().replace(/\/$/, '')}/api/auth/verify?token=${encodeURIComponent(token)}&${rememberParam}`;
+    const verifyPath = `/api/auth/verify?token=${encodeURIComponent(token)}&${rememberParam}`;
+    const verifyUrl = `${getEffectivePublicOrigin().replace(/\/$/, '')}${verifyPath}`;
     // eslint-disable-next-line no-console
     console.log(
       `[SXM][auth] magic-link token created recipient=${sanitizeEmail(normalized)} verifyHost=${new URL(verifyUrl).host}`,
@@ -60,7 +61,7 @@ export class AuthService {
 
     return {
       ok: true,
-      devLink: config.isProduction ? undefined : verifyUrl,
+      devLink: config.isProduction ? undefined : verifyPath,
     };
   }
 

@@ -1,39 +1,21 @@
 import type { GameState } from '../types';
 import type { ScoreLedgerEntry } from '../types/scoreLedger';
-import { loadScoreLedgerEntries } from '../storage/scoreLedgerStorage';
+import { loadScoreLedgerDisplayEntries } from '../storage/scoreLedgerStorage';
 import { LedgerPanel } from './LedgerPanel';
 import './InviteModal.css';
 
-interface PlayLedgerModalProps {
+interface PlayLedgerPanelProps {
   gameState: GameState;
-  open: boolean;
-  onClose: () => void;
 }
 
-export function PlayLedgerModal({ gameState, open, onClose }: PlayLedgerModalProps) {
-  if (!open) {
-    return null;
-  }
-
+export function PlayLedgerPanel({ gameState }: PlayLedgerPanelProps) {
   return (
-    <div className="invite-modal-overlay" role="presentation" onClick={onClose}>
-      <div
-        className="invite-modal invite-modal--ledger"
-        role="dialog"
-        aria-labelledby="play-ledger-title"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="invite-modal__header">
-          <h2 id="play-ledger-title" className="invite-modal__title">Play Ledger</h2>
-          <button type="button" className="invite-modal__close secondary" onClick={onClose} aria-label="Close">
-            ×
-          </button>
-        </div>
-        <p className="invite-modal__sub">
-          Chip and table action history for this game — bets, wins, losses, and adjustments.
-        </p>
-        <LedgerPanel gameState={gameState} variant="play" />
-      </div>
+    <div className="bj-table-slide-panel__content">
+      <h3 className="bj-table-slide-panel__title">Play Ledger</h3>
+      <p className="bj-table-slide-panel__sub">
+        Chip and table action history for this game — bets, wins, losses, and adjustments.
+      </p>
+      <LedgerPanel gameState={gameState} variant="play" />
     </div>
   );
 }
@@ -41,6 +23,8 @@ export function PlayLedgerModal({ gameState, open, onClose }: PlayLedgerModalPro
 interface ScoreLedgerModalProps {
   open: boolean;
   onClose: () => void;
+  activeTableId?: string | null;
+  gameStatus?: GameState['tableMeta']['gameStatus'];
 }
 
 function statusLabel(status: ScoreLedgerEntry['status']): string {
@@ -56,8 +40,10 @@ function statusLabel(status: ScoreLedgerEntry['status']): string {
   }
 }
 
-export function ScoreLedgerModal({ open, onClose }: ScoreLedgerModalProps) {
-  const entries = open ? loadScoreLedgerEntries() : [];
+export function ScoreLedgerModal({ open, onClose, activeTableId, gameStatus }: ScoreLedgerModalProps) {
+  const entries = open
+    ? loadScoreLedgerDisplayEntries({ activeTableId, gameStatus })
+    : [];
 
   if (!open) {
     return null;

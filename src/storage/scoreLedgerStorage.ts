@@ -1,7 +1,20 @@
+import type { GameState } from '../types';
 import type { ScoreLedgerEntry } from '../types/scoreLedger';
 import { log } from '../utils/logger';
 
 const STORAGE_KEY = 'sxmcards:score-ledger:v1';
+
+/** Display-only filter: hide score rows for a table while its game is still in progress. */
+export function loadScoreLedgerDisplayEntries(options?: {
+  activeTableId?: string | null;
+  gameStatus?: GameState['tableMeta']['gameStatus'];
+}): ScoreLedgerEntry[] {
+  const entries = loadScoreLedgerEntries();
+  if (!options?.activeTableId || options.gameStatus === 'ended' || !options.gameStatus) {
+    return entries;
+  }
+  return entries.filter((entry) => entry.tableId !== options.activeTableId);
+}
 
 export function loadScoreLedgerEntries(): ScoreLedgerEntry[] {
   try {

@@ -38,6 +38,7 @@ interface BlackjackFlowSettingsMenuProps {
   onGameStateChange: (state: GameState) => void;
   open: boolean;
   onClose: () => void;
+  embedded?: boolean;
 }
 
 function persistAndApply(
@@ -81,6 +82,7 @@ export function BlackjackFlowSettingsMenu({
   onGameStateChange,
   open,
   onClose,
+  embedded = false,
 }: BlackjackFlowSettingsMenuProps) {
   const s = gameState.blackjackFlowSettings;
   const protocol = getBlackjackProtocolForState(gameState);
@@ -107,15 +109,16 @@ export function BlackjackFlowSettingsMenu({
     return null;
   }
 
-  return (
-    <div className="bj-flow-settings" role="dialog" aria-label="Table settings">
-      <div className="bj-flow-settings__panel">
-        <header className="bj-flow-settings__header">
-          <h3>Table settings</h3>
+  const settingsBody = (
+    <>
+      <header className="bj-flow-settings__header">
+        <h3>Table settings</h3>
+        {!embedded && (
           <button type="button" className="bj-flow-settings__close" onClick={onClose} aria-label="Close">
             ×
           </button>
-        </header>
+        )}
+      </header>
 
         <section className="bj-flow-settings__protocol" aria-label="Active protocol">
           <p className="bj-flow-settings__protocol-name">{protocol.displayName}</p>
@@ -407,7 +410,11 @@ export function BlackjackFlowSettingsMenu({
         {debugOpen && <DebugPanel gameState={gameState} />}
 
         <p className="bj-flow-settings__note">Settings save automatically to this device.</p>
-      </div>
+    </>
+  );
+
+  const nestedModals = (
+    <>
       <CustomProtocolBuilder
         gameState={gameState}
         onGameStateChange={onGameStateChange}
@@ -415,6 +422,26 @@ export function BlackjackFlowSettingsMenu({
         onClose={() => setCustomBuilderOpen(false)}
       />
       <HostServerPanel open={hostServerOpen} onClose={() => setHostServerOpen(false)} />
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <>
+        <div className="bj-flow-settings bj-flow-settings--embedded" aria-label="Table settings">
+          <div className="bj-flow-settings__panel">{settingsBody}</div>
+        </div>
+        {nestedModals}
+      </>
+    );
+  }
+
+  return (
+    <div className="bj-flow-settings" role="dialog" aria-label="Table settings">
+      <div className="bj-flow-settings__panel">
+        {settingsBody}
+      </div>
+      {nestedModals}
     </div>
   );
 }

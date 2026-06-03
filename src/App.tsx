@@ -249,7 +249,12 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
           onSaved={() => setProfileOpen(false)}
         />
       )}
-      <ScoreLedgerModal open={scoreLedgerOpen} onClose={() => setScoreLedgerOpen(false)} />
+      <ScoreLedgerModal
+        open={scoreLedgerOpen}
+        onClose={() => setScoreLedgerOpen(false)}
+        activeTableId={gameState?.session.id ?? activeTableId}
+        gameStatus={gameState?.tableMeta.gameStatus}
+      />
       {showPersonalNav && (
         <header className="personal-nav">
           <div className="personal-nav__identity">

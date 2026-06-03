@@ -17,10 +17,10 @@ interface TableAccountsPanelProps {
   showAssignButton?: boolean;
   onAssignChips?: () => void;
   onInvite?: () => void;
+  onSaveTable?: () => void;
   onMovePlayer?: (personId: string, direction: 'up' | 'down') => void;
   onPlayFlowChange?: (personId: string, playFlow: PlayFlowAutoStand) => void;
   showPlayerOrderControls?: boolean;
-  collapsed?: boolean;
 }
 
 function statusLabel(status: TablePersonStatus): string {
@@ -43,10 +43,10 @@ export function TableAccountsPanel({
   showAssignButton = false,
   onAssignChips,
   onInvite,
+  onSaveTable,
   onMovePlayer,
   onPlayFlowChange,
   showPlayerOrderControls = false,
-  collapsed = false,
 }: TableAccountsPanelProps) {
   const bank = buildTableBankRow(gameState);
   const people = buildTablePeopleRows(gameState);
@@ -57,13 +57,7 @@ export function TableAccountsPanel({
   }, [gameState]);
 
   return (
-    <aside
-      className={[
-        'bj-accounts-panel',
-        collapsed ? 'bj-accounts-panel--collapsed' : '',
-      ].filter(Boolean).join(' ')}
-      aria-label="This Table"
-    >
+    <aside className="bj-accounts-panel" aria-label="This Table">
       <h3 className="bj-accounts-panel__title">This Table</h3>
 
       {!bank && people.length === 0 ? (
@@ -192,6 +186,12 @@ export function TableAccountsPanel({
       {onInvite && (
         <button type="button" className="bj-accounts-panel__invite secondary" onClick={onInvite}>
           Invite to table
+        </button>
+      )}
+
+      {onSaveTable && (
+        <button type="button" className="bj-accounts-panel__save secondary" onClick={onSaveTable}>
+          Save and close table
         </button>
       )}
     </aside>

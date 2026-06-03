@@ -175,6 +175,10 @@ export function resolveNaturalsAfterInitialDeal(state: GameState): GameState {
     return { ...state, session, ledger, blackjack: nextRound };
   }
 
+  if (nextRound.insuranceOfferPending) {
+    return { ...state, session, ledger, blackjack: nextRound };
+  }
+
   const firstActing = findNextActingHand(session, nextRound);
   nextRound = {
     ...nextRound,

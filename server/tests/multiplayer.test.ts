@@ -50,7 +50,7 @@ describe('SXMCards multiplayer API', () => {
 
     expect(devLink).toBeTruthy();
 
-    const token = new URL(devLink!).searchParams.get('token')!;
+    const token = new URL(devLink!, 'http://localhost:5173').searchParams.get('token')!;
 
     const session = auth.verifyMagicLink(token);
 
@@ -65,7 +65,7 @@ describe('SXMCards multiplayer API', () => {
   it('expired/used token rejected', async () => {
     seedPerson(store, { email: 'a@example.com', role: 'player', status: 'invited' });
     const { devLink } = await auth.requestMagicLink('a@example.com');
-    const token = new URL(devLink!).searchParams.get('token')!;
+    const token = new URL(devLink!, 'http://localhost:5173').searchParams.get('token')!;
 
     auth.verifyMagicLink(token);
 

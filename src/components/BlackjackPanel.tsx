@@ -48,14 +48,13 @@ import { BlackjackCardView } from './BlackjackCardView';
 import { BankerSetupPanel } from './BankerSetupPanel';
 import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
 import { LocalProfileSetup } from './LocalProfileSetup';
-import { PlayLedgerModal } from './LedgerModals';
+import { PlayLedgerPanel } from './LedgerModals';
 import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
 import { TableAccountsPanel } from './TableAccountsPanel';
 import {
   takeInsuranceOnState,
   declineInsuranceOnState,
-  insuranceBetMax,
   takeEvenMoneyOnState,
   waitForBlackjackPayoutOnState,
   getStakeBetValidationMessage,
@@ -84,7 +83,7 @@ import {
   setBlackjackProtocolOnState,
   updateBlackjackFlowSettings,
 } from '../engine/blackjack';
-import { getActionableHandForView } from './blackjackViewPhase';
+import { getActionableHandForView, getInsuranceActionsForController } from './blackjackViewPhase';
 import { MAX_TABLE_BOXES } from '../types/table';
 import { getPlayerInitials, loadProfile, type PlayFlowAutoStand } from '../storage/profileStorage';
 import { isOnlineModeEnabled } from '../api/config';
@@ -138,17 +137,15 @@ export function BlackjackPanel({
 
   const [error, setError] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [activeTablePanel, setActiveTablePanel] = useState<'thisTable' | 'playLedger' | 'settings'>('thisTable');
   const [profileOpenInternal, setProfileOpenInternal] = useState(
     () => !isOnlineModeEnabled() && !loadProfile().name.trim(),
   );
   const profileOpen = profileOpenProp ?? profileOpenInternal;
   const setProfileOpen = onProfileOpenChange ?? setProfileOpenInternal;
-  const [playLedgerOpen, setPlayLedgerOpen] = useState(false);
   const [personalLedgerAdded, setPersonalLedgerAdded] = useState(false);
   const [assignChipsOpen, setAssignChipsOpen] = useState(false);
   const [minBetOpen, setMinBetOpen] = useState(false);
-  const [accountsCollapsed, setAccountsCollapsed] = useState(false);
   const [tableAidTip, setTableAidTip] = useState<string | null>(null);
   /** Last chip-tray / box-tap target — shared across Full Table and Card View. */
   const lastBetTargetRef = useRef<PlaceBetTarget | null>(null);
@@ -774,21 +771,9 @@ export function BlackjackPanel({
       return null;
     }
 
-    const pendingPlayerIds = session.playerIds.filter((pid) => {
-      const hand = round.playerHands[blackjackHandKey(pid, 0)];
-      if (!hand || hand.currentBet <= 0) {
-        return false;
-      }
-      const declined = round.insuranceDeclined?.[pid];
-      const insBet = round.insuranceBets?.[pid] ?? 0;
-      return !declined && insBet <= 0;
-    });
+    const actions = getInsuranceActionsForController(gameState, round, controllerName);
 
-    const myPending = pendingPlayerIds.filter(
-      (pid) => players[pid]?.controllerName === controllerName,
-    );
-
-    if (myPending.length === 0) {
+    if (actions.length === 0) {
       return (
         <p className="bj-table-actions bj-table-actions--wait">
           Dealer shows Ace — waiting for insurance decisions…
@@ -799,32 +784,29 @@ export function BlackjackPanel({
     return (
       <div className="bj-table-actions bj-table-actions--insurance" aria-live="polite">
         <p className="bj-table-actions__label">Dealer shows Ace — insurance pays 2:1</p>
-        {myPending.map((pid) => {
-          const hand = round.playerHands[blackjackHandKey(pid, 0)];
-          const maxIns = hand ? insuranceBetMax(hand.currentBet) : 0;
-          const slotNum = session.boxSlotNumbers?.[pid];
-          return (
-            <div key={pid} className="bj-table-actions__ins-row">
-              <span className="bj-table-actions__ins-label">
-                Box {slotNum ?? '?'} — up to {maxIns}c
-              </span>
-              <button
-                type="button"
-                className="ds-btn ds-btn--secondary bj-table-actions__btn bj-table-actions__btn--sm"
-                onClick={() => run((s) => takeInsuranceOnState(s, pid), { type: 'takeInsurance', payload: { playerId: pid } })}
-              >
-                Insure {maxIns}
-              </button>
-              <button
-                type="button"
-                className="ds-btn ds-btn--ghost bj-table-actions__btn bj-table-actions__btn--sm"
-                onClick={() => run((s) => declineInsuranceOnState(s, pid), { type: 'declineInsurance', payload: { playerId: pid } })}
-              >
-                No thanks
-              </button>
-            </div>
-          );
-        })}
+        {actions.map(({ playerId, maxBet, canAfford, slotNumber }) => (
+          <div key={playerId} className="bj-table-actions__ins-row">
+            <span className="bj-table-actions__ins-label">
+              Box {slotNumber ?? '?'} — up to {maxBet}c
+              {!canAfford && ' (not enough chips)'}
+            </span>
+            <button
+              type="button"
+              className="ds-btn ds-btn--secondary bj-table-actions__btn bj-table-actions__btn--sm"
+              disabled={!canAfford}
+              onClick={() => run((s) => takeInsuranceOnState(s, playerId), { type: 'takeInsurance', payload: { playerId } })}
+            >
+              Insure {maxBet}
+            </button>
+            <button
+              type="button"
+              className="ds-btn ds-btn--ghost bj-table-actions__btn bj-table-actions__btn--sm"
+              onClick={() => run((s) => declineInsuranceOnState(s, playerId), { type: 'declineInsurance', payload: { playerId } })}
+            >
+              No thanks
+            </button>
+          </div>
+        ))}
       </div>
     );
   }
@@ -979,18 +961,44 @@ export function BlackjackPanel({
         <div className="bj-casino__table-nav">
           <button
             type="button"
-            className={!accountsCollapsed ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-            onClick={() => setAccountsCollapsed((v) => !v)}
+            className={activeTablePanel === 'thisTable' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+            onClick={() => setActiveTablePanel('thisTable')}
           >
             This Table
           </button>
-          <button type="button" className="bj-casino__nav-btn" onClick={() => setPlayLedgerOpen(true)}>Play Ledger</button>
-          <button type="button" className="bj-casino__nav-btn" onClick={() => setSettingsOpen(true)}>Settings</button>
-          {onSaveTable && (
-            <button type="button" className="bj-casino__nav-btn" onClick={onSaveTable}>Save Table</button>
-          )}
+          <button
+            type="button"
+            className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+            onClick={() => setActiveTablePanel('playLedger')}
+          >
+            Play Ledger
+          </button>
+          <button
+            type="button"
+            className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+            onClick={() => setActiveTablePanel('settings')}
+          >
+            Settings
+          </button>
         </div>
       </div>
+
+      {activeTablePanel === 'playLedger' && (
+        <div className="bj-table-wide-panel">
+          <PlayLedgerPanel gameState={gameState} />
+        </div>
+      )}
+      {activeTablePanel === 'settings' && (
+        <div className="bj-table-wide-panel bj-table-wide-panel--settings">
+          <BlackjackFlowSettingsMenu
+            embedded
+            gameState={gameState}
+            onGameStateChange={onGameStateChange}
+            open
+            onClose={() => setActiveTablePanel('thisTable')}
+          />
+        </div>
+      )}
 
       <LocalProfileSetup
         open={profileOpen}
@@ -1003,8 +1011,6 @@ export function BlackjackPanel({
           }
         }}
       />
-      <BlackjackFlowSettingsMenu gameState={gameState} onGameStateChange={onGameStateChange} open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      <PlayLedgerModal gameState={gameState} open={playLedgerOpen} onClose={() => setPlayLedgerOpen(false)} />
       <AssignChipsModal
         gameState={gameState}
         open={assignChipsOpen}
@@ -1022,7 +1028,11 @@ export function BlackjackPanel({
         <FullTableMobileFallback onSwitchToCardView={() => setViewMode('card')} />
       ) : (
       <div className="bj-casino__rail">
-        <div className={`bj-casino__felt bj-casino__felt--with-account${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}>
+        <div
+          className={`bj-casino__felt${
+            activeTablePanel === 'thisTable' ? ' bj-casino__felt--with-account' : ''
+          }${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}
+        >
           {viewMode === 'full' && (
             <>
               <div className="bj-casino__felt-main">
@@ -1070,16 +1080,18 @@ export function BlackjackPanel({
                 </div>
               )}
               </div>
-              <TableAccountsPanel
-                gameState={gameState}
-                showAssignButton={canAssignChips}
-                onAssignChips={() => setAssignChipsOpen(true)}
-                onInvite={onInviteTable}
-                showPlayerOrderControls={tableOwner && bettingOpen}
-                onMovePlayer={handleMovePlayer}
-                onPlayFlowChange={handlePlayFlowChange}
-                collapsed={accountsCollapsed}
-              />
+              {activeTablePanel === 'thisTable' && (
+                <TableAccountsPanel
+                  gameState={gameState}
+                  showAssignButton={canAssignChips}
+                  onAssignChips={() => setAssignChipsOpen(true)}
+                  onInvite={onInviteTable}
+                  onSaveTable={onSaveTable}
+                  showPlayerOrderControls={tableOwner && bettingOpen}
+                  onMovePlayer={handleMovePlayer}
+                  onPlayFlowChange={handlePlayFlowChange}
+                />
+              )}
             </>
           )}
 
@@ -1145,16 +1157,18 @@ export function BlackjackPanel({
                   </div>
                 )}
               </div>
-              <TableAccountsPanel
-                gameState={gameState}
-                showAssignButton={canAssignChips}
-                onAssignChips={() => setAssignChipsOpen(true)}
-                onInvite={onInviteTable}
-                showPlayerOrderControls={tableOwner && bettingOpen}
-                onMovePlayer={handleMovePlayer}
-                onPlayFlowChange={handlePlayFlowChange}
-                collapsed={accountsCollapsed}
-              />
+              {activeTablePanel === 'thisTable' && (
+                <TableAccountsPanel
+                  gameState={gameState}
+                  showAssignButton={canAssignChips}
+                  onAssignChips={() => setAssignChipsOpen(true)}
+                  onInvite={onInviteTable}
+                  onSaveTable={onSaveTable}
+                  showPlayerOrderControls={tableOwner && bettingOpen}
+                  onMovePlayer={handleMovePlayer}
+                  onPlayFlowChange={handlePlayFlowChange}
+                />
+              )}
             </>
           )}
         </div>

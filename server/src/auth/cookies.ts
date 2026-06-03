@@ -39,7 +39,10 @@ export function buildClearSessionCookieHeader(): string {
 
 /** Keep redirects on the origin the user actually used (127.0.0.1 vs LAN IP). */
 export function resolveRequestOrigin(req: Request): string {
-  const host = req.get('host');
+  const forwardedHost = req.headers['x-forwarded-host'];
+  const host =
+    (typeof forwardedHost === 'string' ? forwardedHost.split(',')[0]!.trim() : null) ||
+    req.get('host');
   if (!host) {
     return getEffectivePublicOrigin().replace(/\/$/, '');
   }
