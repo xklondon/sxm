@@ -6,7 +6,13 @@ import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Server as SocketServer } from 'socket.io';
-import { config, assertProductionOrigin, getCorsOrigins, getEffectivePublicOrigin } from './config.js';
+import {
+  config,
+  assertProductionOrigin,
+  getCorsOrigins,
+  getEffectivePublicOrigin,
+  isCorsOriginAllowed,
+} from './config.js';
 import { getJoinAddress, renderQrDataUrl } from './host.js';
 import { createMemoryStore } from './store/memoryStore.js';
 import { AuthService } from './auth/service.js';
@@ -16,6 +22,7 @@ import { createPeopleRouter } from './people/routes.js';
 import { TableService } from './tables/service.js';
 import { createTableRouter } from './tables/routes.js';
 import { createDevRouter } from './dev/routes.js';
+import { createEmailDebugRouter } from './debug/emailRoutes.js';
 import { verifySessionToken } from './auth/tokens.js';
 import { readSessionToken } from './auth/middleware.js';
 
@@ -35,15 +42,19 @@ export function createApp() {
     cors: { origin: getCorsOrigins(), credentials: true },
   });
 
+  const corsOrigins = getCorsOrigins();
   app.use(
     cors({
       origin(origin, callback) {
-        const allowed = getCorsOrigins();
-        if (!origin || allowed.includes(origin.replace(/\/$/, ''))) {
+        if (isCorsOriginAllowed(origin, corsOrigins)) {
           callback(null, true);
           return;
         }
-        callback(new Error(`CORS blocked origin: ${origin}`));
+        if (config.isProduction) {
+          // eslint-disable-next-line no-console
+          console.warn(`[SXM] CORS blocked origin: ${origin ?? '(none)'}`);
+        }
+        callback(null, false);
       },
       credentials: true,
     }),
@@ -77,6 +88,7 @@ export function createApp() {
     });
   });
 
+  app.use('/api/debug', createEmailDebugRouter());
   app.use('/api/auth', createAuthRouter(auth, people));
   app.use('/api/people', createPeopleRouter(people, auth));
   app.use('/api/tables', createTableRouter(tables, io));

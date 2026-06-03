@@ -1,21 +1,17 @@
-import nodemailer from 'nodemailer';
-import { config, isSmtpConfigured } from '../config.js';
+import { config } from '../config.js';
+import { isSmtpConfigured } from '../config.js';
+import { sanitizeEmail, sendMailWithLogging } from './smtp.js';
 
 export async function sendMagicLinkEmail(to: string, verifyUrl: string): Promise<void> {
   if (!isSmtpConfigured()) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[SXM][email] sendMagicLinkEmail skipped: SMTP not configured (recipient=${sanitizeEmail(to)})`,
+    );
     return;
   }
 
-  const transport = nodemailer.createTransport({
-    host: config.smtp.host,
-    port: config.smtp.port,
-    secure: config.smtp.port === 465,
-    auth: config.smtp.user
-      ? { user: config.smtp.user, pass: config.smtp.pass }
-      : undefined,
-  });
-
-  await transport.sendMail({
+  await sendMailWithLogging('magic-link', {
     from: config.smtp.from,
     to,
     subject: 'Sign in to SXMCARDS',
@@ -34,16 +30,7 @@ export async function sendTableInviteEmail(params: {
     return;
   }
 
-  const transport = nodemailer.createTransport({
-    host: config.smtp.host,
-    port: config.smtp.port,
-    secure: config.smtp.port === 465,
-    auth: config.smtp.user
-      ? { user: config.smtp.user, pass: config.smtp.pass }
-      : undefined,
-  });
-
-  await transport.sendMail({
+  await sendMailWithLogging('table-invite', {
     from: config.smtp.from,
     to: params.to,
     subject: 'You have been invited to an SXM Casino table',

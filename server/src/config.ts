@@ -1,8 +1,12 @@
 import {
   detectLanIPv4,
+  isCorsOriginAllowed,
+  normalizeOrigin,
   parseCorsOrigins,
   resolveEffectivePublicOrigin,
 } from './origin.js';
+
+export { isCorsOriginAllowed };
 
 function env(key: string, fallback = ''): string {
   return process.env[key]?.trim() ?? fallback;
@@ -28,9 +32,8 @@ const DEFAULT_PUBLIC_ORIGIN = 'http://localhost:5173';
 const vitePort = envInt('VITE_PORT', 5173);
 const hostMode = envBool('SXM_HOST_MODE');
 
-const configuredPublicOrigin = env(
-  'PUBLIC_ORIGIN',
-  env('VITE_TABLE_HOST', DEFAULT_PUBLIC_ORIGIN),
+const configuredPublicOrigin = normalizeOrigin(
+  env('PUBLIC_ORIGIN', env('VITE_TABLE_HOST', DEFAULT_PUBLIC_ORIGIN)) || DEFAULT_PUBLIC_ORIGIN,
 );
 
 const effectiveResult = resolveEffectivePublicOrigin({
@@ -59,8 +62,8 @@ export const config = {
   port: envInt('PORT', envInt('API_PORT', 3017)),
   host: env('API_HOST', env('NODE_ENV') === 'production' ? '0.0.0.0' : '127.0.0.1'),
   /** Value from .env (may differ from effective origin in dev). */
-  publicOrigin: configuredPublicOrigin.replace(/\/$/, ''),
-  effectivePublicOrigin: effectiveResult.effective,
+  publicOrigin: configuredPublicOrigin,
+  effectivePublicOrigin: normalizeOrigin(effectiveResult.effective),
   devPublicOriginAuto: effectiveResult.autoApplied,
   vitePort,
   sessionSecret: env('SESSION_SECRET', 'dev-insecure-change-me'),
@@ -111,19 +114,27 @@ export function getCorsOrigins(): string[] {
 
   const raw = env('CORS_ORIGIN', configuredPublicOrigin);
   const fromEnv = parseCorsOrigins(raw);
-  if (config.isProduction) {
-    return fromEnv.length > 0 ? fromEnv : [getEffectivePublicOrigin()];
-  }
-
   const origins = new Set(fromEnv);
   origins.add(getEffectivePublicOrigin());
+  origins.add('http://localhost:5173');
+  origins.add('http://localhost:3000');
   origins.add(`http://localhost:${vitePort}`);
   origins.add(`http://127.0.0.1:${vitePort}`);
+  if (config.isProduction) {
+    return [...origins];
+  }
+
+  const devOrigins = new Set(fromEnv);
+  devOrigins.add(getEffectivePublicOrigin());
+  devOrigins.add('http://localhost:5173');
+  devOrigins.add('http://localhost:3000');
+  devOrigins.add(`http://localhost:${vitePort}`);
+  devOrigins.add(`http://127.0.0.1:${vitePort}`);
   const lanIp = env('SXM_DETECTED_LAN_IP') || detectLanIPv4();
   if (lanIp) {
-    origins.add(`http://${lanIp}:${vitePort}`);
+    devOrigins.add(`http://${lanIp}:${vitePort}`);
   }
-  return [...origins];
+  return [...devOrigins];
 }
 
 export function isSmtpConfigured(): boolean {

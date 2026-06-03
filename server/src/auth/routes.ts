@@ -8,20 +8,68 @@ import {
   type AuthedRequest,
 } from '../auth/middleware.js';
 import { parseRememberQuery, resolveRequestOrigin } from '../auth/cookies.js';
+import {
+  clientEmailErrorMessage,
+  formatSmtpError,
+  sanitizeEmail,
+  shouldExposeEmailErrorDetail,
+} from '../email/smtp.js';
+import { config } from '../config.js';
 
 import type { PeopleService } from '../people/service.js';
+
+function magicLinkErrorStatus(message: string): number {
+  if (/not configured/i.test(message)) {
+    return 503;
+  }
+  if (/not authorised/i.test(message)) {
+    return 400;
+  }
+  if (
+    /SMTP|sendMail|ECONN|ETIMEDOUT|ENOTFOUND|certificate|EAUTH|535|BadCredentials|authentication failed/i.test(
+      message,
+    )
+  ) {
+    return 502;
+  }
+  return 400;
+}
 
 export function createAuthRouter(auth: AuthService, people: PeopleService): Router {
   const router = Router();
 
   router.post('/request-magic-link', async (req, res) => {
+    const email = String(req.body?.email ?? '');
+    const rememberMe = req.body?.rememberMe !== false;
+    // eslint-disable-next-line no-console
+    console.log(
+      `[SXM][auth] POST /api/auth/request-magic-link recipient=${sanitizeEmail(email)} rememberMe=${rememberMe}`,
+    );
     try {
-      const email = String(req.body?.email ?? '');
-      const rememberMe = req.body?.rememberMe !== false;
       const result = await auth.requestMagicLink(email, rememberMe);
+      // eslint-disable-next-line no-console
+      console.log(
+        `[SXM][auth] magic-link request ok recipient=${sanitizeEmail(email)} emailed=${config.isProduction || Boolean(result.devLink)}`,
+      );
       res.json(result);
     } catch (err) {
-      res.status(400).json({ error: err instanceof Error ? err.message : 'Request failed' });
+      const message = clientEmailErrorMessage(err);
+      const status = magicLinkErrorStatus(message);
+      // eslint-disable-next-line no-console
+      console.error(
+        `[SXM][auth] magic-link request failed recipient=${sanitizeEmail(email)} status=${status}`,
+        formatSmtpError(err),
+      );
+      const body: Record<string, unknown> = {
+        error:
+          config.isProduction && status >= 500
+            ? 'Could not send sign-in email. Check server logs.'
+            : message,
+      };
+      if (shouldExposeEmailErrorDetail()) {
+        body.detail = formatSmtpError(err);
+      }
+      res.status(status).json(body);
     }
   });
 

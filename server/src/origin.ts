@@ -52,11 +52,46 @@ export function parseOriginPort(origin: string, fallback = 5173): number {
   }
 }
 
+/** Canonical origin for comparisons: scheme + host, no trailing slash. */
+export function normalizeOrigin(value: string): string {
+  const trimmed = value.trim().replace(/\/$/, '');
+  if (!trimmed) {
+    return '';
+  }
+  const withScheme = trimmed.includes('://') ? trimmed : null;
+  const scheme =
+    withScheme === null &&
+    (trimmed.startsWith('localhost') || trimmed.startsWith('127.0.0.1'))
+      ? 'http:'
+      : 'https:';
+  try {
+    const url = new URL(withScheme ?? `${scheme}//${trimmed}`);
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return '';
+  }
+}
+
 export function parseCorsOrigins(raw: string): string[] {
   return raw
     .split(',')
-    .map((part) => part.trim().replace(/\/$/, ''))
+    .map((part) => normalizeOrigin(part))
     .filter(Boolean);
+}
+
+export function isCorsOriginAllowed(
+  requestOrigin: string | undefined,
+  allowedOrigins: readonly string[],
+): boolean {
+  if (!requestOrigin) {
+    return true;
+  }
+  const normalized = normalizeOrigin(requestOrigin);
+  if (!normalized) {
+    return false;
+  }
+  const allowed = new Set(allowedOrigins.map((o) => normalizeOrigin(o)).filter(Boolean));
+  return allowed.has(normalized);
 }
 
 export function resolveEffectivePublicOrigin(params: {

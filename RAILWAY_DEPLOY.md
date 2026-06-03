@@ -154,6 +154,28 @@ Expect on `/debug/client-config` (in browser):
 - `apiBase` and `socketBase` equal `https://<railway-domain>`
 - `VITE_API_URL` and `VITE_TABLE_HOST` show `(blank)`
 
+### Magic-link email (SMTP)
+
+Backend diagnostics (JSON, not the frontend `/debug/client-config` page):
+
+```bash
+curl -sS "https://<railway-domain>/api/debug/email-config"
+```
+
+Expect `smtpConfigured: true`, `smtpHost`, `smtpPort`, `smtpSecure`, `smtpUserPresent`, `smtpPassPresent`, and `publicOrigin` with `https://`.
+
+Optional live send test (set `DEBUG_EMAIL_TEST=true` on Railway, then remove after debugging):
+
+```bash
+curl -sS -X POST "https://<railway-domain>/api/debug/send-test-email" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@gmail.com"}'
+```
+
+After requesting a magic link, inspect **Deploy Logs** for lines prefixed `[SXM][auth]` and `[SXM][email]` (see project docs — no secrets in logs).
+
+Verbose API errors: set `DEBUG_EMAIL_VERBOSE=true` temporarily (returns SMTP error detail in JSON).
+
 ### Socket.IO
 
 In browser DevTools → **Network** → filter `socket.io`:

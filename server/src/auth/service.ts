@@ -4,6 +4,7 @@ import { config, getEffectivePublicOrigin } from '../config.js';
 import { createMagicLinkToken, createSessionToken } from './tokens.js';
 import { sendMagicLinkEmail } from '../email/mailer.js';
 import { isSmtpConfigured } from '../config.js';
+import { logSmtpContext, sanitizeEmail } from '../email/smtp.js';
 
 export class AuthService {
   constructor(
@@ -40,7 +41,18 @@ export class AuthService {
 
     const rememberParam = rememberMe ? 'remember=1' : 'remember=0';
     const verifyUrl = `${getEffectivePublicOrigin().replace(/\/$/, '')}/api/auth/verify?token=${encodeURIComponent(token)}&${rememberParam}`;
-    await sendMagicLinkEmail(normalized, verifyUrl);
+    // eslint-disable-next-line no-console
+    console.log(
+      `[SXM][auth] magic-link token created recipient=${sanitizeEmail(normalized)} verifyHost=${new URL(verifyUrl).host}`,
+    );
+    logSmtpContext('request-magic-link');
+    try {
+      await sendMagicLinkEmail(normalized, verifyUrl);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(`[SXM][auth] magic-link email failed recipient=${sanitizeEmail(normalized)}`);
+      throw err;
+    }
 
     if (!config.isProduction) {
       console.log(`[SXMCards dev] Magic link for ${normalized}: ${verifyUrl}`);

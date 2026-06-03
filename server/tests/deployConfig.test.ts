@@ -23,12 +23,15 @@ describe('production deploy config (Railway)', () => {
     expect(config.effectivePublicOrigin).toBe('https://sxmcards-production.up.railway.app');
   });
 
-  it('uses PUBLIC_ORIGIN for production CORS when CORS_ORIGIN is set', async () => {
+  it('uses normalized PUBLIC_ORIGIN for production CORS when CORS_ORIGIN is set', async () => {
     process.env.NODE_ENV = 'production';
     process.env.PUBLIC_ORIGIN = 'https://app.example.com';
     process.env.CORS_ORIGIN = 'https://app.example.com';
     vi.resetModules();
     const { getCorsOrigins } = await import('../src/config.js');
-    expect(getCorsOrigins()).toEqual(['https://app.example.com']);
+    const origins = getCorsOrigins();
+    expect(origins).toContain('https://app.example.com');
+    expect(origins).toContain('http://localhost:5173');
+    expect(origins).toContain('http://localhost:3000');
   });
 });
