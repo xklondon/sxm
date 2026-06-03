@@ -1,16 +1,38 @@
 import { Router } from 'express';
 import {
-  clientEmailErrorMessage,
   formatSmtpError,
   getEmailConfigSnapshot,
+  is465SslFallbackMode,
+  isSmtpTimeoutError,
   sanitizeEmail,
-  sendMailWithLogging,
+  sendDebugTestEmail,
+  smtpFailureResponse,
+  SmtpOperationTimeoutError,
   shouldExposeEmailErrorDetail,
+  type SmtpStage,
 } from '../email/smtp.js';
 
 function envBool(key: string): boolean {
   const v = process.env[key]?.trim().toLowerCase();
   return v === 'true' || v === '1';
+}
+
+function failureStatus(err: unknown): number {
+  if (isSmtpTimeoutError(err)) {
+    return 502;
+  }
+  const code = err && typeof err === 'object' && 'code' in err ? String((err as { code?: string }).code) : '';
+  if (/ECONN|ETIMEDOUT|ENOTFOUND|EAUTH|ESOCKET/i.test(code)) {
+    return 502;
+  }
+  return 500;
+}
+
+function inferFailedStage(err: unknown): SmtpStage {
+  if (err instanceof SmtpOperationTimeoutError) {
+    return err.stage;
+  }
+  return 'sendMail';
 }
 
 export function createEmailDebugRouter(): Router {
@@ -28,7 +50,7 @@ export function createEmailDebugRouter(): Router {
 
     const email = String(req.body?.email ?? '').trim().toLowerCase();
     if (!email.includes('@')) {
-      res.status(400).json({ error: 'Provide { "email": "you@example.com" }' });
+      res.status(400).json({ ok: false, error: 'Provide { "email": "you@example.com" }' });
       return;
     }
 
@@ -42,14 +64,28 @@ export function createEmailDebugRouter(): Router {
       return;
     }
 
-    try {
-      const info = await sendMailWithLogging('debug/send-test-email', {
-        from: snap.fromEmail,
-        to: email,
-        subject: 'SXMCARDS SMTP test (Railway/debug)',
-        text: 'If you received this, production SMTP delivery is working.',
-        html: '<p>If you received this, production SMTP delivery is working.</p>',
+    const use465 = req.body?.use465 === true;
+    const fallback465 = req.body?.fallback465 === true;
+    if (use465 && !is465SslFallbackMode()) {
+      res.status(400).json({
+        ok: false,
+        error: 'use465 requires SMTP_PORT=465 and SMTP_SECURE=true in environment',
+        ssl465FallbackAvailable: false,
       });
+      return;
+    }
+
+    try {
+      const info = await sendDebugTestEmail(
+        {
+          from: snap.fromEmail,
+          to: email,
+          subject: 'SXMCARDS SMTP test (Railway/debug)',
+          text: 'If you received this, production SMTP delivery is working.',
+          html: '<p>If you received this, production SMTP delivery is working.</p>',
+        },
+        { use465, fallback465 },
+      );
 
       res.json({
         ok: true,
@@ -57,17 +93,20 @@ export function createEmailDebugRouter(): Router {
         messageId: info.messageId,
         accepted: info.accepted,
         rejected: info.rejected,
+        ssl465FallbackAvailable: is465SslFallbackMode(),
       });
     } catch (err) {
+      const stage = inferFailedStage(err);
+      const status = failureStatus(err);
       const body: Record<string, unknown> = {
-        ok: false,
-        error: clientEmailErrorMessage(err),
+        ...smtpFailureResponse(err, stage),
         to: sanitizeEmail(email),
+        ssl465FallbackAvailable: is465SslFallbackMode(),
       };
       if (shouldExposeEmailErrorDetail()) {
         body.detail = formatSmtpError(err);
       }
-      res.status(500).json(body);
+      res.status(status).json(body);
     }
   });
 

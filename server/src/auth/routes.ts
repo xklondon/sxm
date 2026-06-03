@@ -26,7 +26,7 @@ function magicLinkErrorStatus(message: string): number {
     return 400;
   }
   if (
-    /SMTP|sendMail|ECONN|ETIMEDOUT|ENOTFOUND|certificate|EAUTH|535|BadCredentials|authentication failed/i.test(
+    /SMTP|sendMail|timed out|ECONN|ETIMEDOUT|ENOTFOUND|certificate|EAUTH|535|BadCredentials|authentication failed/i.test(
       message,
     )
   ) {

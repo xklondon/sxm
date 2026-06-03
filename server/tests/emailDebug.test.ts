@@ -54,6 +54,19 @@ describe('GET /api/debug/email-config', () => {
   });
 });
 
+describe('SMTP timeout helpers', () => {
+  it('smtpFailureResponse exposes stage and ETIMEDOUT code', async () => {
+    const { SmtpOperationTimeoutError, smtpFailureResponse } = await import('../src/email/smtp.js');
+    const err = new SmtpOperationTimeoutError('verify', 'smtp.gmail.com', 587);
+    expect(smtpFailureResponse(err, 'sendMail')).toEqual({
+      ok: false,
+      stage: 'verify',
+      code: 'ETIMEDOUT',
+      message: 'SMTP operation timed out (verify)',
+    });
+  });
+});
+
 describe('POST /api/debug/send-test-email', () => {
   it('returns 404 when DEBUG_EMAIL_TEST is not enabled', async () => {
     delete process.env.DEBUG_EMAIL_TEST;

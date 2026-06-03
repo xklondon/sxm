@@ -164,12 +164,27 @@ curl -sS "https://<railway-domain>/api/debug/email-config"
 
 Expect `smtpConfigured: true`, `smtpHost`, `smtpPort`, `smtpSecure`, `smtpUserPresent`, `smtpPassPresent`, and `publicOrigin` with `https://`.
 
-Optional live send test (set `DEBUG_EMAIL_TEST=true` on Railway, then remove after debugging):
+Optional live send test (set `DEBUG_EMAIL_TEST=true` on Railway, then remove after debugging).
+The endpoint runs `verify()` then `sendMail()` with hard 20s caps (never hangs past ~20s per stage).
 
 ```bash
 curl -sS -X POST "https://<railway-domain>/api/debug/send-test-email" \
   -H "Content-Type: application/json" \
   -d '{"email":"you@gmail.com"}'
+```
+
+On timeout you get `502` JSON: `{ "ok": false, "stage": "verify"|"sendMail", "code": "ETIMEDOUT", "message": "..." }`.
+
+To test Gmail SSL (port 465), set `SMTP_PORT=465` and `SMTP_SECURE=true`, then either redeploy or send:
+
+```json
+{"email":"you@gmail.com","use465":true}
+```
+
+After a failed 587 attempt, retry with fallback (same env 465 vars required):
+
+```json
+{"email":"you@gmail.com","fallback465":true}
 ```
 
 After requesting a magic link, inspect **Deploy Logs** for lines prefixed `[SXM][auth]` and `[SXM][email]` (see project docs — no secrets in logs).
