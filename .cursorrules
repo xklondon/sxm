@@ -120,3 +120,15 @@ Aligned env keys (same LAN host, no localhost in links):
 ## Preferred vocabulary
 
 Use: chips, ledger, table balance, friends, buy-in, settlement, round.
+
+
+
+## SXM Casino UX / Flow Polish Guardrail
+
+For UX polish tasks:
+- Do not change SMTP, email, auth transport, Railway envs, cookies, sessions, or backend mail logic.
+- Do not rewire the game engine or protocol state machine.
+- UI must reflect protocol/legal actions from existing engine state.
+- Keep changes minimal, reversible, and scoped to layout, labels, navigation, button placement, status/error presentation, and view flow.
+- Preserve betting-phase rules, bust settlement, play-flow rules, score ledger integrity, and wager-level protocol logging.
+- Any change touching backend/auth/SMTP requires explicit approval.

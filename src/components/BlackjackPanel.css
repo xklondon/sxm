@@ -20,20 +20,23 @@
 
 .bj-casino__toolbar {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
   align-items: center;
   gap: 0.35rem;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.25rem;
 }
 
 .bj-casino__view-toggle {
   display: flex;
   gap: 0.25rem;
+  flex-shrink: 0;
 }
 
 .bj-casino__view-btn,
-.bj-casino__view-btn--active {
+.bj-casino__view-btn--active,
+.bj-casino__nav-btn,
+.bj-casino__nav-btn--active {
   font: inherit;
   font-size: 0.65rem;
   padding: 0.25rem 0.45rem;
@@ -44,21 +47,19 @@
   cursor: pointer;
 }
 
-.bj-casino__view-btn--active {
+.bj-casino__view-btn--active,
+.bj-casino__nav-btn--active {
   background: rgb(255 255 255 / 0.1);
   color: var(--ds-color-text);
   border-color: var(--ds-color-gold);
   box-shadow: var(--ds-glow-gold);
 }
 
-.bj-casino__toolbar-actions {
+.bj-casino__table-nav {
   display: flex;
-  gap: 0.35rem;
-}
-
-.bj-casino__toolbar-actions button {
-  font-size: 0.65rem;
-  padding: 0.25rem 0.5rem;
+  gap: 0.25rem;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* Outer rail + felt */
@@ -485,6 +486,22 @@
 
 .bj-arc__slot--turn {
   filter: drop-shadow(0 0 10px var(--ds-color-gold-glow));
+  animation: bj-turn-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes bj-turn-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px var(--ds-color-gold-glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px var(--ds-color-gold-glow));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bj-arc__slot--turn {
+    animation: none;
+  }
 }
 
 .bj-arc__turn-badge {
@@ -865,6 +882,18 @@
   font-size: 0.72rem;
   text-align: center;
   max-width: 90%;
+}
+
+.bj-table-alert {
+  margin: 0.25rem auto 0.35rem;
+  padding: 0.35rem 0.65rem;
+  max-width: 20rem;
+  background: rgb(185 28 28 / 0.35);
+  border: 1px solid rgb(252 165 165 / 0.35);
+  border-radius: var(--ds-radius-md);
+  font-size: 0.72rem;
+  text-align: center;
+  line-height: 1.35;
 }
 
 .bj-casino__tray-wrap {

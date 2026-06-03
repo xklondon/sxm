@@ -41,6 +41,7 @@ describe('GET /api/debug/email-config', () => {
     expect(res.headers['content-type']).toMatch(/json/);
     expect(res.body).toMatchObject({
       env: 'production',
+      emailProvider: 'smtp',
       publicOrigin: 'https://sxm-production.up.railway.app',
       smtpHost: 'smtp.gmail.com',
       smtpPort: 587,
@@ -48,6 +49,8 @@ describe('GET /api/debug/email-config', () => {
       smtpUserPresent: true,
       smtpPassPresent: true,
       smtpConfigured: true,
+      emailConfigured: true,
+      resendConfigured: false,
     });
     expect(res.body.smtpPass).toBeUndefined();
     expect(String(res.text).toLowerCase()).not.toContain('<!doctype');
@@ -84,7 +87,38 @@ describe('POST /api/debug/send-test-email', () => {
       .post('/api/debug/send-test-email')
       .send({ email: 'test@example.com' });
     expect(res.status).toBe(503);
-    expect(res.body.smtpConfigured).toBe(false);
+    expect(res.body.emailConfigured).toBe(false);
+  });
+
+  it('sends test email via Resend API when EMAIL_PROVIDER=resend', async () => {
+    process.env.DEBUG_EMAIL_TEST = 'true';
+    process.env.EMAIL_PROVIDER = 'resend';
+    process.env.RESEND_API_KEY = 're_test_key';
+    process.env.RESEND_FROM = 'SXM Casino <onboarding@resend.dev>';
+    delete process.env.SMTP_HOST;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json({ id: 'msg-resend-1' }, { status: 200 }),
+      ),
+    );
+    const { app } = await createApp({ smtp: false });
+    const res = await request(app)
+      .post('/api/debug/send-test-email')
+      .send({ email: 'test@example.com' });
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.messageId).toBe('msg-resend-1');
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.resend.com/emails',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer re_test_key',
+        }),
+      }),
+    );
+    vi.unstubAllGlobals();
   });
 });
 

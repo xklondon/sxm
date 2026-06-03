@@ -53,15 +53,12 @@ export function sortBoxSlotsForTableVisualOrder<T extends { slotNumber: number }
   return [...slots].sort((a, b) => b.slotNumber - a.slotNumber);
 }
 
-/** Card View box row: mobile matches table orientation; desktop keeps ascending DOM order. */
+/** Card View box row: active box on the right (descending slot numbers, same as table). */
 export function sortBoxSlotsForCardViewDisplay<T extends { slotNumber: number }>(
   slots: readonly T[],
-  device: DeviceView,
+  _device: DeviceView,
 ): T[] {
-  if (device === 'mobile') {
-    return sortBoxSlotsForTableVisualOrder(slots);
-  }
-  return [...slots].sort((a, b) => a.slotNumber - b.slotNumber);
+  return sortBoxSlotsForTableVisualOrder(slots);
 }
 
 /** Desktop status corner styling is CSS-only (`.bj-view-*-desktop .bj-center-status`). */

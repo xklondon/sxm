@@ -1,4 +1,5 @@
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
+import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
 import './DealerBlock.css';
 
 interface DealerBlockProps {
@@ -9,6 +10,12 @@ interface DealerBlockProps {
   minimumBet: number;
   canChangeMinBet: boolean;
   onChangeMinBet: () => void;
+  dealSpeedLabel: string;
+  canChangeDealSpeed: boolean;
+  onCycleDealSpeed: () => void;
+  protocolLabel: string;
+  canChangeProtocol: boolean;
+  onChangeProtocol: () => void;
   awaitingNextRound: boolean;
   gameEnded: boolean;
   /** Shown in center status by parent — not duplicated in dealer block. */
@@ -42,6 +49,12 @@ export function DealerBlock({
   minimumBet,
   canChangeMinBet,
   onChangeMinBet,
+  dealSpeedLabel,
+  canChangeDealSpeed,
+  onCycleDealSpeed,
+  protocolLabel,
+  canChangeProtocol,
+  onChangeProtocol,
   awaitingNextRound,
   gameEnded,
   roundSummaryLines,
@@ -140,22 +153,71 @@ export function DealerBlock({
     <div className="dealer-block">
       <p className="dealer-block__title">Blackjack</p>
       <p className="dealer-block__line">Playing for: {playingFor}</p>
-      <p className="dealer-block__line">Minimum bet: {minimumBet}</p>
+      <p className="dealer-block__line dealer-block__line--min-bet">
+        Minimum bet: {minimumBet}
+        {canChangeMinBet && !gameEnded && (
+          <button
+            type="button"
+            className="dealer-block__icon-btn"
+            onClick={onChangeMinBet}
+            aria-label="Change minimum bet"
+            title="Change minimum bet"
+          >
+            $
+          </button>
+        )}
+      </p>
       {hasDeck && (
         <p className="dealer-block__line">
           {deckCount}-deck · Total Cards: {totalCards} / {remaining}
         </p>
       )}
 
-      {dealerCards && <div className="dealer-block__cards">{dealerCards}</div>}
+      <p className="dealer-block__meta-line">
+        {canChangeDealSpeed && !gameEnded ? (
+          <button
+            type="button"
+            className="dealer-block__icon-btn dealer-block__icon-btn--meta"
+            onClick={onCycleDealSpeed}
+            aria-label="Change dealing speed"
+            title="Change dealing speed"
+          >
+            <span className="dealer-block__icon" aria-hidden="true">⏱</span>
+            {dealSpeedLabel}
+          </button>
+        ) : (
+          <>
+            <span className="dealer-block__icon" aria-hidden="true">⏱</span>
+            {dealSpeedLabel}
+          </>
+        )}
+      </p>
+
+      <p className="dealer-block__meta-line">
+        {canChangeProtocol && !gameEnded ? (
+          <button
+            type="button"
+            className="dealer-block__icon-btn dealer-block__icon-btn--meta"
+            onClick={onChangeProtocol}
+            aria-label="Change protocol"
+            title="Change protocol"
+          >
+            <span className="dealer-block__icon" aria-hidden="true">⚙</span>
+            {protocolLabel}
+          </button>
+        ) : (
+          <>
+            <span className="dealer-block__icon" aria-hidden="true">⚙</span>
+            {protocolLabel}
+          </>
+        )}
+      </p>
 
       {!bankerReady && !gameEnded && <p className="dealer-block__hint">Choose banker first.</p>}
 
-      {canChangeMinBet && !gameEnded && (
-        <button type="button" className="dealer-block__action secondary" onClick={onChangeMinBet}>
-          Change min bet
-        </button>
-      )}
+      <div className="dealer-block__actions">{renderBettingActions()}</div>
+
+      {dealerCards && <div className="dealer-block__cards">{dealerCards}</div>}
 
       {roundSummaryLines && roundSummaryLines.length > 0 && (
         <div className="dealer-block__summary" aria-live="polite">
@@ -166,8 +228,19 @@ export function DealerBlock({
           ))}
         </div>
       )}
-
-      <div className="dealer-block__actions">{renderBettingActions()}</div>
     </div>
   );
+}
+
+export const DEAL_SPEED_CYCLE: DealSpeedPreset[] = ['fast', 'normal', 'slow'];
+
+export function dealSpeedDisplayLabel(preset: DealSpeedPreset): string {
+  switch (preset) {
+    case 'fast':
+      return '1s deal';
+    case 'slow':
+      return '5s deal';
+    default:
+      return '3s deal';
+  }
 }

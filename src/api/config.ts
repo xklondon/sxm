@@ -11,10 +11,17 @@ export function resolveApiBaseUrl(params: {
     return { baseUrl: params.pageOrigin, proxied: true };
   }
   if (useProxyFlag === 'false') {
-    return {
-      baseUrl: configured?.replace(/\/$/, '') || params.pageOrigin,
-      proxied: false,
-    };
+    const baseUrl = configured?.replace(/\/$/, '') || params.pageOrigin;
+    if (params.isDev) {
+      try {
+        if (new URL(baseUrl).origin !== new URL(params.pageOrigin).origin) {
+          return { baseUrl: params.pageOrigin, proxied: true };
+        }
+      } catch {
+        return { baseUrl: params.pageOrigin, proxied: true };
+      }
+    }
+    return { baseUrl, proxied: false };
   }
 
   if (!params.isDev) {

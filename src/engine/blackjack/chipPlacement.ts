@@ -127,16 +127,6 @@ export function resolveChipTrayBetTarget(
   return null;
 }
 
-export function formatPlaceBetError(
-  err: unknown,
-  target: PlaceBetTarget | null,
-  context: { viewMode: string; phase: string },
-): string {
-  const base = err instanceof Error ? err.message : 'Action failed';
-  const targetStr = target
-    ? target.kind === 'box'
-      ? `boxId=${target.boxId}`
-      : `slotNumber=${target.slotNumber}`
-    : 'target=none';
-  return `${base} (${targetStr}, view=${context.viewMode}, phase=${context.phase})`;
+export function formatPlaceBetError(err: unknown): string {
+  return err instanceof Error ? err.message : 'Action failed';
 }

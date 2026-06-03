@@ -35,6 +35,65 @@ body {
   border-bottom: 1px solid var(--ds-color-border-subtle);
 }
 
+.personal-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.72rem;
+  background: rgb(0 0 0 / 0.42);
+  border-bottom: 1px solid var(--ds-color-border-subtle);
+}
+
+.personal-nav__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.personal-nav__user {
+  font-weight: var(--ds-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 14rem;
+}
+
+.personal-nav__role {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+  color: var(--ds-color-gold);
+}
+
+.personal-nav__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: auto;
+}
+
+.personal-nav__actions .secondary {
+  font-size: 0.65rem;
+  padding: 0.22rem 0.45rem;
+}
+
+.personal-nav__live {
+  font-size: 0.62rem;
+  opacity: 0.85;
+}
+
+.personal-nav__live--ok {
+  color: var(--ds-color-success);
+}
+
 .online-bar__ok {
   color: var(--ds-color-success);
 }

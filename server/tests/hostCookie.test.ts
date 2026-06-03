@@ -48,11 +48,19 @@ describe('host-mode session cookies', () => {
     expect(setCookie).not.toMatch(/Domain=/i);
   });
 
-  it('remember=1 sets Max-Age; remember=0 omits Max-Age (browser session cookie)', async () => {
-    const persistent = buildSessionCookieHeader('tok', { persistent: true });
-    const sessionOnly = buildSessionCookieHeader('tok', { persistent: false });
-    expect(persistent).toContain('Max-Age=');
-    expect(sessionOnly).not.toContain('Max-Age=');
+  it('remember=1 sets Max-Age; remember=0 omits Max-Age in production only', async () => {
+    process.env.NODE_ENV = 'development';
+    vi.resetModules();
+    const { buildSessionCookieHeader: devBuild } = await import('../src/auth/cookies.js');
+    expect(devBuild('tok', { persistent: true })).toContain('Max-Age=');
+    expect(devBuild('tok', { persistent: false })).toContain('Max-Age=');
+
+    process.env.NODE_ENV = 'production';
+    process.env.SXM_HOST_MODE = 'false';
+    vi.resetModules();
+    const { buildSessionCookieHeader: prodBuild } = await import('../src/auth/cookies.js');
+    expect(prodBuild('tok', { persistent: true })).toContain('Max-Age=');
+    expect(prodBuild('tok', { persistent: false })).not.toContain('Max-Age=');
     expect(parseRememberQuery('1')).toBe(true);
     expect(parseRememberQuery('0')).toBe(false);
   });

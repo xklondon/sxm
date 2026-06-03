@@ -1,8 +1,16 @@
 import nodemailer from 'nodemailer';
 import type Mail from 'nodemailer/lib/mailer/index.js';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
-import { config, isSmtpConfigured } from '../config.js';
+import {
+  config,
+  getEmailFrom,
+  getEmailProvider,
+  isEmailConfigured,
+  isResendConfigured,
+  isSmtpConfigured,
+} from '../config.js';
 import { getCorsOrigins, getEffectivePublicOrigin } from '../config.js';
+import { sendResendMail } from './resend.js';
 
 export const SMTP_HARD_TIMEOUT_MS = 20_000;
 
@@ -41,17 +49,8 @@ function envBool(key: string, fallback = false): boolean {
   return fallback;
 }
 
-/** Sanitized recipient for logs (never full address in production logs). */
-export function sanitizeEmail(email: string): string {
-  const normalized = email.trim().toLowerCase();
-  const at = normalized.indexOf('@');
-  if (at < 1) {
-    return '(invalid)';
-  }
-  const local = normalized.slice(0, at);
-  const domain = normalized.slice(at + 1);
-  return `${local[0]}***@${domain}`;
-}
+export { sanitizeEmail } from './sanitize.js';
+import { sanitizeEmail } from './sanitize.js';
 
 export function getSmtpSecureFlag(port = config.smtp.port): boolean {
   const raw = process.env.SMTP_SECURE?.trim().toLowerCase();
@@ -91,17 +90,23 @@ export function get465SslTransportOptions(): SMTPTransport.Options | null {
 }
 
 export function getEmailConfigSnapshot() {
+  const provider = getEmailProvider();
   const snap = {
     env: config.nodeEnv,
     publicOrigin: getEffectivePublicOrigin(),
     corsOrigin: env('CORS_ORIGIN') || config.publicOrigin,
     corsOrigins: getCorsOrigins(),
+    emailProvider: provider,
+    emailConfigured: isEmailConfigured(),
+    fromEmail: getEmailFrom(),
+    resendConfigured: isResendConfigured(),
+    resendFrom: config.resend.from || '',
+    resendApiKeyPresent: Boolean(config.resend.apiKey),
     smtpHost: config.smtp.host || '',
     smtpPort: config.smtp.port,
     smtpSecure: getSmtpSecureFlag(),
     smtpUserPresent: Boolean(config.smtp.user),
     smtpPassPresent: Boolean(config.smtp.pass),
-    fromEmail: config.smtp.from || '',
     smtpConfigured: isSmtpConfigured(),
     ssl465FallbackAvailable: is465SslFallbackMode(),
   };
@@ -183,7 +188,7 @@ export function logSmtpContext(label: string): void {
   const snap = getEmailConfigSnapshot();
   // eslint-disable-next-line no-console
   console.log(
-    `[SXM][email] ${label} publicOrigin=${snap.publicOrigin} corsOrigin=${snap.corsOrigin} smtpHost=${snap.smtpHost} smtpPort=${snap.smtpPort} smtpSecure=${snap.smtpSecure} smtpUserPresent=${snap.smtpUserPresent} smtpPassPresent=${snap.smtpPassPresent} from=${snap.fromEmail || '(empty)'} configured=${snap.smtpConfigured}`,
+    `[SXM][email] ${label} provider=${snap.emailProvider} publicOrigin=${snap.publicOrigin} corsOrigin=${snap.corsOrigin} smtpHost=${snap.smtpHost} smtpPort=${snap.smtpPort} smtpSecure=${snap.smtpSecure} smtpUserPresent=${snap.smtpUserPresent} smtpPassPresent=${snap.smtpPassPresent} resendConfigured=${snap.resendConfigured} from=${snap.fromEmail || '(empty)'} configured=${snap.emailConfigured}`,
   );
 }
 
@@ -266,11 +271,23 @@ export async function sendMailWithLogging(
   context: string,
   mail: Mail.Options,
 ): Promise<SMTPTransport.SentMessageInfo> {
-  if (!isSmtpConfigured()) {
-    const msg = 'SMTP not configured';
+  if (!isEmailConfigured()) {
+    const msg =
+      getEmailProvider() === 'resend' ? 'Resend not configured' : 'SMTP not configured';
     // eslint-disable-next-line no-console
     console.error(`[SXM][email] ${context} aborted: ${msg}`);
     throw new Error(msg);
+  }
+
+  if (getEmailProvider() === 'resend') {
+    logSmtpContext(`${context} before resend send`);
+    try {
+      return await sendResendMail(context, mail);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(`[SXM][email] ${context} resend send failed`, formatSmtpError(err));
+      throw err;
+    }
   }
 
   const to = typeof mail.to === 'string' ? mail.to : Array.isArray(mail.to) ? mail.to[0] : '';
@@ -314,8 +331,14 @@ export async function sendDebugTestEmail(
   options: DebugTestEmailOptions = {},
 ): Promise<SMTPTransport.SentMessageInfo> {
   const context = 'debug/send-test-email';
-  if (!isSmtpConfigured()) {
-    throw new Error('SMTP not configured');
+  if (!isEmailConfigured()) {
+    throw new Error(
+      getEmailProvider() === 'resend' ? 'Resend not configured' : 'SMTP not configured',
+    );
+  }
+
+  if (getEmailProvider() === 'resend') {
+    return sendMailWithLogging(context, mail);
   }
 
   const profiles: { label: string; opts: SMTPTransport.Options }[] = [];

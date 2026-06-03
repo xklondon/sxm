@@ -46,9 +46,9 @@ import { useBlackjackTableFlow } from './useBlackjackTableFlow';
 import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
 import { BlackjackCardView } from './BlackjackCardView';
 import { BankerSetupPanel } from './BankerSetupPanel';
-import { DealerBlock } from './DealerBlock';
+import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
 import { LocalProfileSetup } from './LocalProfileSetup';
-import { PlayLedgerModal, ScoreLedgerModal } from './LedgerModals';
+import { PlayLedgerModal } from './LedgerModals';
 import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
 import { TableAccountsPanel } from './TableAccountsPanel';
@@ -76,8 +76,14 @@ import {
   resolveChipTrayBetTarget,
   type PlaceBetTarget,
 } from '../engine/blackjack/chipPlacement';
-import { canUserAssignChips } from '../engine/table/adminControls';
+import { canUserAssignChips, canUserChangeProtocol } from '../engine/table/adminControls';
 import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
+import {
+  getBlackjackProtocolForState,
+  listBlackjackProtocolPresets,
+  setBlackjackProtocolOnState,
+  updateBlackjackFlowSettings,
+} from '../engine/blackjack';
 import { getActionableHandForView } from './blackjackViewPhase';
 import { MAX_TABLE_BOXES } from '../types/table';
 import { getPlayerInitials, loadProfile, type PlayFlowAutoStand } from '../storage/profileStorage';
@@ -106,6 +112,9 @@ interface BlackjackPanelProps {
   onLeaveBox?: () => void;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
   onlineActionInFlight?: boolean;
+  profileOpen?: boolean;
+  onProfileOpenChange?: (open: boolean) => void;
+  onSaveTable?: () => void;
 }
 
 function arcVisualIndex(slotNumber: number): number {
@@ -115,10 +124,12 @@ function arcVisualIndex(slotNumber: number): number {
 export function BlackjackPanel({
   gameState,
   onGameStateChange,
-  onJoinTable,
   onInviteTable,
   onlineDispatch,
   onlineActionInFlight = false,
+  profileOpen: profileOpenProp,
+  onProfileOpenChange,
+  onSaveTable,
 }: BlackjackPanelProps) {
   const { session, players, ledger, deck, blackjack, blackjackSettings, tableViewMode, tableMeta } =
     gameState;
@@ -128,11 +139,12 @@ export function BlackjackPanel({
   const [error, setError] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(
+  const [profileOpenInternal, setProfileOpenInternal] = useState(
     () => !isOnlineModeEnabled() && !loadProfile().name.trim(),
   );
+  const profileOpen = profileOpenProp ?? profileOpenInternal;
+  const setProfileOpen = onProfileOpenChange ?? setProfileOpenInternal;
   const [playLedgerOpen, setPlayLedgerOpen] = useState(false);
-  const [scoreLedgerOpen, setScoreLedgerOpen] = useState(false);
   const [personalLedgerAdded, setPersonalLedgerAdded] = useState(false);
   const [assignChipsOpen, setAssignChipsOpen] = useState(false);
   const [minBetOpen, setMinBetOpen] = useState(false);
@@ -185,6 +197,10 @@ export function BlackjackPanel({
   const canAssignChips = canUserAssignChips(gameState, controllerName);
   const minimumBet = getTableMinimumBet(gameState);
   const canChangeMinBet = tableOwner && canChangeMinimumBet(gameState);
+  const canChangeProtocol =
+    tableOwner && canUserChangeProtocol(gameState, controllerName) && canChangeMinimumBet(gameState);
+  const canChangeDealSpeed = tableOwner && canChangeMinimumBet(gameState);
+  const activeProtocol = getBlackjackProtocolForState(gameState);
   const activeBoxId =
     round?.activeHandKey != null ? parseBlackjackHandKey(round.activeHandKey).playerId : null;
 
@@ -265,12 +281,11 @@ export function BlackjackPanel({
   function placeBetAtTarget(target: PlaceBetTarget, amount: ChipValue) {
     rememberBetTarget(target);
     const payload = placeBetPayloadFromTarget(target, amount);
-    const betContext = { viewMode, phase: protocolPhase };
 
     if (onlineDispatch) {
       setError(null);
       void onlineDispatch('placeBet', payload).catch((err) => {
-        setError(formatPlaceBetError(err, target, betContext));
+        setError(formatPlaceBetError(err));
       });
       return;
     }
@@ -298,7 +313,7 @@ export function BlackjackPanel({
         addChipToBoxStake(state, target.boxId, amount, personId ?? undefined),
       );
     } catch (err) {
-      setError(formatPlaceBetError(err, target, betContext));
+      setError(formatPlaceBetError(err));
     }
   }
 
@@ -472,8 +487,76 @@ export function BlackjackPanel({
       : inBetting && activeBoxStakeMessage
         ? activeBoxStakeMessage
         : null;
-  const blockingError = displayError;
+  const tableAlert =
+    displayError && !isInsufficientChipsMessage(displayError) ? displayError : null;
   const shoeStarted = Boolean(tableMeta.shoeStarted);
+
+  function handleCycleDealSpeed() {
+    if (!canChangeDealSpeed) {
+      return;
+    }
+    const presets = DEAL_SPEED_CYCLE;
+    const idx = presets.indexOf(flowSettings.dealSpeedPreset);
+    const nextPreset = presets[(idx + 1) % presets.length]!;
+    run((s) => updateBlackjackFlowSettings(s, { dealSpeedPreset: nextPreset }));
+  }
+
+  function handleCycleProtocol() {
+    if (!canChangeProtocol) {
+      return;
+    }
+    const presets = listBlackjackProtocolPresets();
+    const idx = presets.findIndex((p) => p.protocolId === gameState.blackjackProtocolId);
+    const next = presets[(idx + 1) % presets.length]!;
+    run((s) => setBlackjackProtocolOnState(s, next.protocolId, controllerName));
+  }
+
+  const dealerBlockProps = {
+    deckCount,
+    totalCards: deckCount * 52,
+    remaining,
+    playingFor,
+    minimumBet,
+    canChangeMinBet,
+    onChangeMinBet: () => setMinBetOpen(true),
+    dealSpeedLabel: dealSpeedDisplayLabel(flowSettings.dealSpeedPreset),
+    canChangeDealSpeed,
+    onCycleDealSpeed: handleCycleDealSpeed,
+    protocolLabel: activeProtocol.displayName,
+    canChangeProtocol,
+    onChangeProtocol: handleCycleProtocol,
+    awaitingNextRound,
+    gameEnded,
+    gameOverMessage,
+    roundSummaryLines,
+    onNextRound: handleNextRound,
+    protocolPhase,
+    hasDeck,
+    bankerReady,
+    shoeStarted,
+    bettingOpen,
+    canDeal,
+    hasStakes,
+    onShuffleToStart: handleShuffleToStart,
+    onDealCards: handleDealCards,
+    onDealNextCard: handleDealNextCard,
+    onDrawBank: handleDrawBank,
+    dealActionPending,
+    engineStatus,
+    initialDealManual: initialDealStaged,
+    bankDrawManual: flowSettings.bankDrawMode === 'manual',
+  };
+
+  function renderTableAlert() {
+    if (!tableAlert) {
+      return null;
+    }
+    return (
+      <p className="bj-table-alert" role="alert">
+        {tableAlert}
+      </p>
+    );
+  }
 
   function renderBetZone(boxId: string, slotNumber: number) {
     const stake = getStakeForBox(gameState, boxId);
@@ -893,19 +976,19 @@ export function BlackjackPanel({
           <button type="button" className={viewMode === 'full' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('full')}>Full Table</button>
           <button type="button" className={viewMode === 'card' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('card')}>Card View</button>
         </div>
-        <div className="bj-casino__toolbar-actions">
+        <div className="bj-casino__table-nav">
           <button
             type="button"
-            className="secondary bj-casino__accounts-btn"
+            className={!accountsCollapsed ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
             onClick={() => setAccountsCollapsed((v) => !v)}
           >
             This Table
           </button>
-          <button type="button" className="secondary" onClick={() => setPlayLedgerOpen(true)}>Play Ledger</button>
-          <button type="button" className="secondary" onClick={() => setScoreLedgerOpen(true)}>Score Ledger</button>
-          <button type="button" className="secondary" onClick={() => setProfileOpen(true)}>Profile</button>
-          {onJoinTable && <button type="button" className="secondary" onClick={onJoinTable}>+ Join</button>}
-          <button type="button" className="secondary" onClick={() => setSettingsOpen(true)}>Settings</button>
+          <button type="button" className="bj-casino__nav-btn" onClick={() => setPlayLedgerOpen(true)}>Play Ledger</button>
+          <button type="button" className="bj-casino__nav-btn" onClick={() => setSettingsOpen(true)}>Settings</button>
+          {onSaveTable && (
+            <button type="button" className="bj-casino__nav-btn" onClick={onSaveTable}>Save Table</button>
+          )}
         </div>
       </div>
 
@@ -922,7 +1005,6 @@ export function BlackjackPanel({
       />
       <BlackjackFlowSettingsMenu gameState={gameState} onGameStateChange={onGameStateChange} open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <PlayLedgerModal gameState={gameState} open={playLedgerOpen} onClose={() => setPlayLedgerOpen(false)} />
-      <ScoreLedgerModal open={scoreLedgerOpen} onClose={() => setScoreLedgerOpen(false)} />
       <AssignChipsModal
         gameState={gameState}
         open={assignChipsOpen}
@@ -944,36 +1026,8 @@ export function BlackjackPanel({
           {viewMode === 'full' && (
             <>
               <div className="bj-casino__felt-main">
-              <DealerBlock
-                deckCount={deckCount}
-                totalCards={deckCount * 52}
-                remaining={remaining}
-                playingFor={playingFor}
-                minimumBet={minimumBet}
-                canChangeMinBet={canChangeMinBet}
-                onChangeMinBet={() => setMinBetOpen(true)}
-                awaitingNextRound={awaitingNextRound}
-                gameEnded={gameEnded}
-                gameOverMessage={gameOverMessage}
-                roundSummaryLines={roundSummaryLines}
-                onNextRound={handleNextRound}
-                dealerCards={dealerCardNodes}
-                protocolPhase={protocolPhase}
-                hasDeck={hasDeck}
-                bankerReady={bankerReady}
-                shoeStarted={shoeStarted}
-                bettingOpen={bettingOpen}
-                canDeal={canDeal}
-                hasStakes={hasStakes}
-                onShuffleToStart={handleShuffleToStart}
-                onDealCards={handleDealCards}
-                onDealNextCard={handleDealNextCard}
-                onDrawBank={handleDrawBank}
-                dealActionPending={dealActionPending}
-                engineStatus={engineStatus}
-                initialDealManual={initialDealStaged}
-                bankDrawManual={flowSettings.bankDrawMode === 'manual'}
-              />
+              <DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} />
+              {renderTableAlert()}
 
               {centerText && (
                 <p className={`bj-center-status${gameEnded ? ' bj-center-status--game-over' : ''}`} aria-live="polite">
@@ -1032,36 +1086,8 @@ export function BlackjackPanel({
           {viewMode === 'card' && (
             <>
               <div className="bj-casino__felt-main bj-casino__felt-main--card">
-                <DealerBlock
-                  deckCount={deckCount}
-                  totalCards={deckCount * 52}
-                  remaining={remaining}
-                  playingFor={playingFor}
-                  minimumBet={minimumBet}
-                  canChangeMinBet={canChangeMinBet}
-                  onChangeMinBet={() => setMinBetOpen(true)}
-                  awaitingNextRound={awaitingNextRound}
-                  gameEnded={gameEnded}
-                  gameOverMessage={gameOverMessage}
-                  roundSummaryLines={roundSummaryLines}
-                  onNextRound={handleNextRound}
-                  dealerCards={dealerCardNodes}
-                  protocolPhase={protocolPhase}
-                  hasDeck={hasDeck}
-                  bankerReady={bankerReady}
-                  shoeStarted={shoeStarted}
-                  bettingOpen={bettingOpen}
-                  canDeal={canDeal}
-                  hasStakes={hasStakes}
-                  onShuffleToStart={handleShuffleToStart}
-                  onDealCards={handleDealCards}
-                  onDealNextCard={handleDealNextCard}
-                  onDrawBank={handleDrawBank}
-                  dealActionPending={dealActionPending}
-                  engineStatus={engineStatus}
-                  initialDealManual={initialDealStaged}
-                  bankDrawManual={flowSettings.bankDrawMode === 'manual'}
-                />
+                <DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} />
+                {renderTableAlert()}
 
                 {centerText && (
                   <p className={`bj-center-status${gameEnded ? ' bj-center-status--game-over' : ''}`} aria-live="polite">
@@ -1131,8 +1157,6 @@ export function BlackjackPanel({
               />
             </>
           )}
-
-          {blockingError && <p className="bj-casino__error" role="alert">{blockingError}</p>}
         </div>
       </div>
       )}

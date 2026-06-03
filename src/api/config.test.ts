@@ -57,6 +57,17 @@ describe('resolveApiBaseUrl', () => {
     expect(result.baseUrl).toBe('http://192.168.1.42:5173');
   });
 
+  it('forces proxied page origin in dev when VITE_USE_PROXY=false but API origin differs', () => {
+    const result = resolveApiBaseUrl({
+      isDev: true,
+      pageOrigin: 'http://localhost:5173',
+      configuredApiUrl: 'http://127.0.0.1:3017',
+      useProxyFlag: 'false',
+    });
+    expect(result.proxied).toBe(true);
+    expect(result.baseUrl).toBe('http://localhost:5173');
+  });
+
   it('host mode falls back to page origin even on loopback', () => {
     const result = resolveApiBaseUrl({
       isDev: false,

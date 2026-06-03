@@ -5,7 +5,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const PROTECTED_ENV_KEYS = ['SMTP_PASS', 'SESSION_SECRET', 'SMTP_USER'] as const;
+export const PROTECTED_ENV_KEYS = [
+  'SMTP_PASS',
+  'SESSION_SECRET',
+  'SMTP_USER',
+  'RESEND_API_KEY',
+] as const;
 
 export const RECOMMENDED_ENV_KEYS = [
   'PUBLIC_ORIGIN',

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import type { GameState, GameType } from '../types';
+import { useCallback, useEffect, useState } from 'react';
+import type { GameState } from '../types';
 import { deriveAllBalancesFromLedger } from '../engine/ledger';
 import {
   drawTestCard,
@@ -14,14 +14,11 @@ import {
   defaultBlackjackSeatId,
   DEFAULT_TABLE_CHIPS,
   removeSeatFromTable,
-  selectTableGame,
-  switchGameType,
   recordTableOutcome,
   startNewGameWithWager,
 } from '../engine/session';
 import { log } from '../utils/logger';
 import {
-  clearSavedGame,
   loadCurrentGame,
   saveCurrentGame,
 } from '../storage/gameStorage';
@@ -34,6 +31,13 @@ import { InviteModal } from '../components/InviteModal';
 import { AdminPanel } from '../components/AdminPanel';
 import './TableScreen.css';
 
+export interface TableNavHandlers {
+  saveTable: () => void;
+  loadTable: () => void;
+  startNewTable: () => void;
+  openAdmin: () => void;
+}
+
 interface TableScreenProps {
   gameState: GameState;
   onGameStateChange: (state: GameState) => void;
@@ -41,12 +45,10 @@ interface TableScreenProps {
   onlineTableId?: string | null;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
   onlineActionInFlight?: boolean;
+  profileOpen?: boolean;
+  onProfileOpenChange?: (open: boolean) => void;
+  onRegisterNavHandlers?: (handlers: TableNavHandlers | null) => void;
 }
-
-const GAME_OPTIONS: { value: GameType; label: string }[] = [
-  { value: 'blackjack', label: 'Blackjack' },
-  { value: 'texas-holdem', label: "Texas Hold'em" },
-];
 
 function dealingStatusLabel(status: GameState['session']['dealingStatus']): string {
   switch (status) {
@@ -64,10 +66,12 @@ function dealingStatusLabel(status: GameState['session']['dealingStatus']): stri
 export function TableScreen({
   gameState,
   onGameStateChange,
-  onLeave,
   onlineTableId = null,
   onlineDispatch,
   onlineActionInFlight = false,
+  profileOpen,
+  onProfileOpenChange,
+  onRegisterNavHandlers,
 }: TableScreenProps) {
   const {
     session,
@@ -97,23 +101,6 @@ export function TableScreen({
     session.gameType === 'texas-holdem'
       ? session.dealerButtonPlayerId
       : session.bankPlayerId;
-
-  function handleSelectGame(gameType: GameType) {
-    if (tableGame === gameType) {
-      return;
-    }
-    if (
-      tableGame !== null &&
-      !window.confirm(
-        `Switch to ${gameType === 'blackjack' ? 'Blackjack' : "Texas Hold'em"}? Hand progress will be cleared.`,
-      )
-    ) {
-      return;
-    }
-    onGameStateChange(
-      tableGame === null ? selectTableGame(gameState, gameType) : switchGameType(gameState, gameType),
-    );
-  }
 
   function setViewMode(mode: typeof tableViewMode) {
     onGameStateChange({ ...gameState, tableViewMode: mode });
@@ -180,107 +167,72 @@ export function TableScreen({
     onGameStateChange(resetGameDeck(gameState));
   }
 
-  function handleStartNewGame() {
-    const wager = window.prompt('New wager / stake?', tableMeta.agreement?.stakeDescription ?? '');
-    if (wager === null) {
-      return;
-    }
-    const seatDefault = String(tableMeta.startingChipsEachSeat ?? tableMeta.agreement?.defaultChips ?? DEFAULT_TABLE_CHIPS);
-    const seatStr = window.prompt('Starting chips each seat?', seatDefault);
-    if (seatStr === null) {
-      return;
-    }
-    const seatAmount = Number.parseInt(seatStr, 10) || DEFAULT_TABLE_CHIPS;
-    const bankDefault = String(tableMeta.startingChipsBank ?? seatAmount);
-    const bankStr = window.prompt('Starting chips bank?', bankDefault);
-    if (bankStr === null) {
-      return;
-    }
-    const bankAmount = Number.parseInt(bankStr, 10) || seatAmount;
-    if (!window.confirm('Start a new game? Table ledger will reset.')) {
-      return;
-    }
-    onGameStateChange(startNewGameWithWager(gameState, wager, seatAmount, bankAmount));
-  }
+  const registerNavHandlers = useCallback((): TableNavHandlers => ({
+    saveTable: () => {
+      try {
+        saveCurrentGame(gameState);
+        window.alert('Table saved.');
+      } catch (err) {
+        window.alert(err instanceof Error ? err.message : 'Save failed.');
+      }
+    },
+    loadTable: () => {
+      const saved = loadCurrentGame();
+      if (!saved) {
+        window.alert('No saved table found.');
+        return;
+      }
+      try {
+        onGameStateChange(saved);
+        log.info('Game loaded');
+      } catch (err) {
+        log.warn('Load failed', { err });
+        window.alert('Could not load saved table.');
+      }
+    },
+    startNewTable: () => {
+      const wager = window.prompt('New wager / stake?', tableMeta.agreement?.stakeDescription ?? '');
+      if (wager === null) {
+        return;
+      }
+      const seatDefault = String(
+        tableMeta.startingChipsEachSeat ?? tableMeta.agreement?.defaultChips ?? DEFAULT_TABLE_CHIPS,
+      );
+      const seatStr = window.prompt('Starting chips each seat?', seatDefault);
+      if (seatStr === null) {
+        return;
+      }
+      const seatAmount = Number.parseInt(seatStr, 10) || DEFAULT_TABLE_CHIPS;
+      const bankDefault = String(tableMeta.startingChipsBank ?? seatAmount);
+      const bankStr = window.prompt('Starting chips bank?', bankDefault);
+      if (bankStr === null) {
+        return;
+      }
+      const bankAmount = Number.parseInt(bankStr, 10) || seatAmount;
+      if (!window.confirm('Start a new table? Table ledger will reset.')) {
+        return;
+      }
+      onGameStateChange(startNewGameWithWager(gameState, wager, seatAmount, bankAmount));
+    },
+    openAdmin: () => setAdminOpen(true),
+  }), [gameState, onGameStateChange, tableMeta]);
 
   function handleSaveGame() {
-    try {
-      saveCurrentGame(gameState);
-      window.alert('Game saved.');
-    } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Save failed.');
-    }
+    registerNavHandlers().saveTable();
   }
 
-  function handleLoadGame() {
-    const saved = loadCurrentGame();
-    if (!saved) {
-      window.alert('No saved game found.');
+  useEffect(() => {
+    if (!onRegisterNavHandlers) {
       return;
     }
-    try {
-      onGameStateChange(saved);
-      log.info('Game loaded');
-    } catch (err) {
-      log.warn('Load failed', { err });
-      window.alert('Could not load saved game.');
-    }
-  }
-
-  function handleClearSavedGame() {
-    if (!window.confirm('Clear saved game from this device?')) {
-      return;
-    }
-    clearSavedGame();
-  }
+    onRegisterNavHandlers(registerNavHandlers());
+    return () => onRegisterNavHandlers(null);
+  }, [onRegisterNavHandlers, registerNavHandlers]);
 
   const canDeal = deck !== null && remaining > 0;
 
   return (
     <main className="table-screen table-screen--casino">
-      <header className="table-screen__header table-screen__header--compact">
-        <label className="table-screen__game-select">
-          <select
-            value={tableGame ?? 'blackjack'}
-            onChange={(e) => handleSelectGame(e.target.value as GameType)}
-            aria-label="Choose game"
-          >
-            {GAME_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="table-screen__header-actions">
-          {isBlackjack && (
-            <>
-              <button type="button" className="secondary" onClick={() => setInviteOpen(true)}>
-                Invite
-              </button>
-              <button type="button" className="secondary" onClick={() => setAdminOpen(true)}>
-                Admin
-              </button>
-              <button type="button" className="secondary" onClick={handleStartNewGame}>
-                Start New Game
-              </button>
-              <button type="button" className="secondary" onClick={handleSaveGame}>
-                Save Game
-              </button>
-              <button type="button" className="secondary" onClick={handleLoadGame}>
-                Load Game
-              </button>
-              <button type="button" className="secondary" onClick={handleClearSavedGame}>
-                Clear Saved
-              </button>
-            </>
-          )}
-          <button type="button" className="secondary table-screen__leave" onClick={onLeave}>
-            Leave table
-          </button>
-        </div>
-      </header>
-
       <InviteModal
         gameState={gameState}
         open={inviteOpen && isBlackjack}
@@ -356,6 +308,9 @@ export function TableScreen({
               onLeaveBox={handleLeaveBox}
               onlineDispatch={onlineDispatch}
               onlineActionInFlight={onlineActionInFlight}
+              profileOpen={profileOpen}
+              onProfileOpenChange={onProfileOpenChange}
+              onSaveTable={handleSaveGame}
             />
           )}
 

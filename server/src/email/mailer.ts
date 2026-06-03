@@ -1,18 +1,17 @@
-import { config } from '../config.js';
-import { isSmtpConfigured } from '../config.js';
+import { getEmailFrom, isEmailConfigured } from '../config.js';
 import { sanitizeEmail, sendMailWithLogging } from './smtp.js';
 
 export async function sendMagicLinkEmail(to: string, verifyUrl: string): Promise<void> {
-  if (!isSmtpConfigured()) {
+  if (!isEmailConfigured()) {
     // eslint-disable-next-line no-console
     console.warn(
-      `[SXM][email] sendMagicLinkEmail skipped: SMTP not configured (recipient=${sanitizeEmail(to)})`,
+      `[SXM][email] sendMagicLinkEmail skipped: email not configured (recipient=${sanitizeEmail(to)})`,
     );
     return;
   }
 
   await sendMailWithLogging('magic-link', {
-    from: config.smtp.from,
+    from: getEmailFrom(),
     to,
     subject: 'Sign in to SXMCARDS',
     text: `Click to sign in (expires in 15 minutes):\n\n${verifyUrl}\n`,
@@ -26,12 +25,12 @@ export async function sendTableInviteEmail(params: {
   tableName: string;
   joinUrl: string;
 }): Promise<void> {
-  if (!isSmtpConfigured()) {
+  if (!isEmailConfigured()) {
     return;
   }
 
   await sendMailWithLogging('table-invite', {
-    from: config.smtp.from,
+    from: getEmailFrom(),
     to: params.to,
     subject: 'You have been invited to an SXM Casino table',
     text: `${params.inviterName} invited you to ${params.tableName}.\n\nClick this link to join the table:\n${params.joinUrl}\n`,

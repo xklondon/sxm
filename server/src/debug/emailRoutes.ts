@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { getEmailProvider } from '../config.js';
 import {
   formatSmtpError,
   getEmailConfigSnapshot,
@@ -55,10 +56,10 @@ export function createEmailDebugRouter(): Router {
     }
 
     const snap = getEmailConfigSnapshot();
-    if (!snap.smtpConfigured) {
+    if (!snap.emailConfigured) {
       res.status(503).json({
         ok: false,
-        error: 'SMTP not configured',
+        error: 'Email not configured',
         ...snap,
       });
       return;
@@ -66,7 +67,7 @@ export function createEmailDebugRouter(): Router {
 
     const use465 = req.body?.use465 === true;
     const fallback465 = req.body?.fallback465 === true;
-    if (use465 && !is465SslFallbackMode()) {
+    if (getEmailProvider() === 'smtp' && use465 && !is465SslFallbackMode()) {
       res.status(400).json({
         ok: false,
         error: 'use465 requires SMTP_PORT=465 and SMTP_SECURE=true in environment',
@@ -80,9 +81,9 @@ export function createEmailDebugRouter(): Router {
         {
           from: snap.fromEmail,
           to: email,
-          subject: 'SXMCARDS SMTP test (Railway/debug)',
-          text: 'If you received this, production SMTP delivery is working.',
-          html: '<p>If you received this, production SMTP delivery is working.</p>',
+          subject: 'SXMCARDS email test (Railway/debug)',
+          text: 'If you received this, production email delivery is working.',
+          html: '<p>If you received this, production email delivery is working.</p>',
         },
         { use465, fallback465 },
       );

@@ -154,7 +154,19 @@ Expect on `/debug/client-config` (in browser):
 - `apiBase` and `socketBase` equal `https://<railway-domain>`
 - `VITE_API_URL` and `VITE_TABLE_HOST` show `(blank)`
 
-### Magic-link email (SMTP)
+### Magic-link email (Resend on Railway)
+
+Railway blocks outbound SMTP on many plans. Use the Resend HTTP API instead of Gmail SMTP:
+
+| Variable | Example |
+|----------|---------|
+| `EMAIL_PROVIDER` | `resend` |
+| `RESEND_API_KEY` | `re_...` from [Resend](https://resend.com) |
+| `RESEND_FROM` | `SXM Casino <onboarding@yourdomain.com>` (must be a verified sender in Resend) |
+
+Local dev can keep `EMAIL_PROVIDER=smtp` (default) with your existing `SMTP_*` / `EMAIL_FROM` vars.
+
+### Magic-link email (debug / SMTP)
 
 Backend diagnostics (JSON, not the frontend `/debug/client-config` page):
 
@@ -162,7 +174,7 @@ Backend diagnostics (JSON, not the frontend `/debug/client-config` page):
 curl -sS "https://<railway-domain>/api/debug/email-config"
 ```
 
-Expect `smtpConfigured: true`, `smtpHost`, `smtpPort`, `smtpSecure`, `smtpUserPresent`, `smtpPassPresent`, and `publicOrigin` with `https://`.
+Expect `emailProvider`, `emailConfigured: true`, and `publicOrigin` with `https://`. With Resend: `emailProvider: "resend"`, `resendConfigured: true`, `resendFrom` set (no API key in JSON).
 
 Optional live send test (set `DEBUG_EMAIL_TEST=true` on Railway, then remove after debugging).
 The endpoint runs `verify()` then `sendMail()` with hard 20s caps (never hangs past ~20s per stage).

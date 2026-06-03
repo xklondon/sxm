@@ -3,7 +3,7 @@ import type { PeopleService } from '../people/service.js';
 import { config, getEffectivePublicOrigin } from '../config.js';
 import { createMagicLinkToken, createSessionToken } from './tokens.js';
 import { sendMagicLinkEmail } from '../email/mailer.js';
-import { isSmtpConfigured } from '../config.js';
+import { isEmailConfigured } from '../config.js';
 import { logSmtpContext, sanitizeEmail } from '../email/smtp.js';
 
 export class AuthService {
@@ -30,7 +30,7 @@ export class AuthService {
       }
     }
 
-    if (config.isProduction && !isSmtpConfigured()) {
+    if (config.isProduction && !isEmailConfigured()) {
       throw new Error('Email server must be configured in production');
     }
 

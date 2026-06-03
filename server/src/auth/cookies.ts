@@ -26,7 +26,9 @@ export function shouldSecureSessionCookie(req?: Request): boolean {
 
 export function buildSessionCookieHeader(token: string, options: SessionCookieOptions = {}): string {
   const persistent = options.persistent !== false;
-  const maxAgePart = persistent ? `; Max-Age=${Math.floor(config.sessionMaxAgeMs / 1000)}` : '';
+  // Local dev: always emit Max-Age so reloads on localhost keep the session cookie.
+  const useMaxAge = persistent || !config.isProduction;
+  const maxAgePart = useMaxAge ? `; Max-Age=${Math.floor(config.sessionMaxAgeMs / 1000)}` : '';
   const secure = shouldSecureSessionCookie(options.req) ? '; Secure' : '';
   return `${config.sessionCookieName}=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax${maxAgePart}${secure}`;
 }

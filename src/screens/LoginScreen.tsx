@@ -39,7 +39,14 @@ export function LoginScreen({
         setMessage('Check your email for a sign-in link.');
       }
       if (result.devLink) {
-        setDevLink(result.devLink);
+        try {
+          const link = new URL(result.devLink, window.location.origin);
+          link.protocol = window.location.protocol;
+          link.host = window.location.host;
+          setDevLink(link.toString());
+        } catch {
+          setDevLink(result.devLink);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Request failed');

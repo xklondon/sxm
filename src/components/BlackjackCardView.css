@@ -1446,7 +1446,28 @@
   box-shadow:
     0 0 0 1px var(--ds-color-gold),
     0 0 14px var(--ds-color-gold-glow);
+  animation: bj-turn-pulse 1.6s ease-in-out infinite;
 }
+
+@keyframes bj-turn-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px var(--ds-color-gold),
+      0 0 8px var(--ds-color-gold-glow);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px var(--ds-color-gold),
+      0 0 16px var(--ds-color-gold-glow);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bj-phone-view__mini-hand--active {
+    animation: none;
+  }
+}
+
 
 /* Desktop Card View betting — ordered horizontal row, uniform boxes, no hero placeholder. */
 .bj-phone-view__betting-stage--row {

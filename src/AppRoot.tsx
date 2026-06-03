@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import App from './App';
 import { JoinTableCurtain } from './components/JoinTableCurtain';
+import { MagicLinkResultScreen } from './screens/MagicLinkResultScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import {
   fetchInvitePreview,
@@ -71,6 +72,7 @@ export function AppRoot() {
   const isJoinPath = pathname === '/join-table' || pathname.endsWith('/join-table');
   const isPublicPath = isPublicAuthPath(pathname);
   const loginError = new URLSearchParams(window.location.search).get('error');
+  const loginOk = new URLSearchParams(window.location.search).get('login') === 'ok';
   const loginParams = new URLSearchParams(window.location.search);
   const inviteAcceptToken = loginParams.get('token');
   const pendingSearch = isJoinPath ? window.location.search : getPendingJoin() ?? '';
@@ -170,6 +172,9 @@ export function AppRoot() {
     if (user) {
       return null;
     }
+    if (loginError) {
+      return <MagicLinkResultScreen success={false} error={loginError} />;
+    }
     if (inviteAcceptToken || inviteTokenFromSearch(window.location.search)) {
       return (
         <main className="login-screen">
@@ -231,6 +236,9 @@ export function AppRoot() {
   }
 
   const tableFromUrl = new URLSearchParams(window.location.search).get('table');
+  if (loginOk && onlineMode && user) {
+    return <MagicLinkResultScreen success />;
+  }
   if (tableFromUrl) {
     rememberPendingTable(tableFromUrl);
   }

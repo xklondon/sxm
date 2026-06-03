@@ -19,9 +19,13 @@ import {
   getProtocolDisplayRules,
 } from '../engine/blackjack/protocols';
 import { setBlackjackProtocolOnState } from '../engine/blackjack/protocolState';
+import { updateBlackjackFlowSettings } from '../engine/blackjack';
+import type { DealSpeedPreset, InitialDealMode } from '../engine/blackjack/flowSettings';
+import { clampNaturalDealDelayMs } from '../engine/blackjack/dealing/dealingModes';
 
 import { loadProfile } from '../storage/profileStorage';
 import { log } from '../utils/logger';
+import { isOnlineModeEnabled } from '../api/config';
 
 import './TableStakePanel.css';
 
@@ -34,7 +38,9 @@ interface TableStakePanelProps {
 
 export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) {
   const profile = loadProfile();
+  const flow = gameState.blackjackFlowSettings;
   const [stake, setStake] = useState('');
+  const [inviteNote, setInviteNote] = useState('');
   const [seatChips, setSeatChips] = useState(
     String(gameState.tableMeta.startingChipsEachSeat ?? DEFAULT_TABLE_CHIPS),
   );
@@ -47,9 +53,17 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
   const [protocolId, setProtocolId] = useState(
     gameState.blackjackProtocolId ?? listBlackjackProtocolPresets()[0]?.protocolId ?? 'las-vegas-house',
   );
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [initialDealMode, setInitialDealMode] = useState<InitialDealMode>(flow.initialDealMode);
+  const [naturalDealDelayMs, setNaturalDealDelayMs] = useState(flow.naturalDealDelayMs);
+  const [dealSpeedPreset, setDealSpeedPreset] = useState<DealSpeedPreset>(flow.dealSpeedPreset);
+  const [cardTimerPreset, setCardTimerPreset] = useState(flow.cardTimerPreset);
+  const [bankDrawAuto, setBankDrawAuto] = useState(flow.bankDrawMode === 'auto');
 
   const selectedProtocol = getBlackjackProtocolOrDefault(protocolId);
   const protocolRules = getProtocolDisplayRules(selectedProtocol);
+  const showPlayingFor = bankerMode === 'bot';
+  const onlineMode = isOnlineModeEnabled();
 
   const controller = profile.name.trim() || gameState.tableMeta.controllerName;
 
@@ -68,15 +82,17 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
   function handleConfirm() {
     const seatAmount = Number.parseInt(seatChips, 10) || DEFAULT_TABLE_CHIPS;
     const bankAmount = Number.parseInt(bankChips, 10) || seatAmount;
+    const stakeDescription = showPlayingFor ? stake.trim() || 'Friendly wager' : 'Table session';
 
     log.info('setupStartingChipsInput', {
       seatChipsInput: seatChips,
       bankChipsInput: bankChips,
       seatAmount,
       bankAmount,
+      inviteNote: inviteNote.trim() || undefined,
     });
 
-    let next = confirmTableAgreement(gameState, stake, seatAmount, bankAmount);
+    let next = confirmTableAgreement(gameState, stakeDescription, seatAmount, bankAmount);
 
     next = setTableOwner(next, controller, profile.email);
 
@@ -103,58 +119,42 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
     logDerivedBalances(next, 'start-playing');
     logTableMetaStartingChips(next, 'start-playing');
     next = setBlackjackProtocolOnState(next, protocolId, controller);
+    next = updateBlackjackFlowSettings(next, {
+      initialDealMode,
+      naturalDealDelayMs: clampNaturalDealDelayMs(naturalDealDelayMs),
+      dealSpeedPreset,
+      cardTimerPreset,
+      countdownSeconds: cardTimerPreset,
+      bankDrawMode: bankDrawAuto ? 'auto' : 'manual',
+    });
     onConfirm(next);
   }
 
   return (
-    <div className="table-stake-overlay" role="dialog" aria-label="Table agreement">
+    <div className="table-stake-overlay" role="dialog" aria-label="New table setup">
       <div className="table-stake-panel">
-        <h2 className="table-stake-panel__title">What are we playing for?</h2>
+        <h2 className="table-stake-panel__title">New Table</h2>
         <p className="table-stake-panel__sub">
-          Local honor-system agreement — not payment processing.
+          Set up who plays, who banks, and how the table runs.
         </p>
 
-        <label className="table-stake-panel__field">
-          <span>Playing for / wager</span>
-          <input
-            type="text"
-            className="table-stake-panel__input"
-            placeholder="e.g. dinner, favour, friendly wager"
-            value={stake}
-            onChange={(e) => setStake(e.target.value)}
-            list="stake-examples"
-          />
-          <datalist id="stake-examples">
-            {STAKE_EXAMPLES.map((ex) => (
-              <option key={ex} value={ex} />
-            ))}
-          </datalist>
-        </label>
-
-        <label className="table-stake-panel__field">
-          <span>Starting chips each seat</span>
-          <input
-            type="number"
-            min={1}
-            className="table-stake-panel__input table-stake-panel__input--short"
-            value={seatChips}
-            onChange={(e) => handleSeatChipsChange(e.target.value)}
-          />
-        </label>
-
-        <label className="table-stake-panel__field">
-          <span>Starting chips bank</span>
-          <input
-            type="number"
-            min={1}
-            className="table-stake-panel__input table-stake-panel__input--short"
-            value={bankChips}
-            onChange={(e) => handleBankChipsChange(e.target.value)}
-          />
-          {!bankChipsCustom && (
-            <span className="table-stake-panel__hint">Defaults to seat amount</span>
+        <fieldset className="table-stake-panel__banker">
+          <legend>Invite who to play with</legend>
+          <p className="table-stake-panel__hint">
+            {onlineMode
+              ? 'After the table starts, use Invite on This Table to email friends a join link.'
+              : 'Add players at the table once play begins.'}
+          </p>
+          {onlineMode && (
+            <input
+              type="text"
+              className="table-stake-panel__input"
+              placeholder="Friend names or emails (optional reminder)"
+              value={inviteNote}
+              onChange={(e) => setInviteNote(e.target.value)}
+            />
           )}
-        </label>
+        </fieldset>
 
         <fieldset className="table-stake-panel__banker">
           <legend>Who is the bank?</legend>
@@ -196,6 +196,53 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
           )}
         </fieldset>
 
+        {showPlayingFor && (
+          <label className="table-stake-panel__field">
+            <span>What to play for</span>
+            <input
+              type="text"
+              className="table-stake-panel__input"
+              placeholder="e.g. dinner, favour, friendly wager"
+              value={stake}
+              onChange={(e) => setStake(e.target.value)}
+              list="stake-examples"
+            />
+            <span className="table-stake-panel__hint">
+              Recorded on your personal ledger when the bank is the house bot.
+            </span>
+            <datalist id="stake-examples">
+              {STAKE_EXAMPLES.map((ex) => (
+                <option key={ex} value={ex} />
+              ))}
+            </datalist>
+          </label>
+        )}
+
+        <label className="table-stake-panel__field">
+          <span>Starting chips each seat</span>
+          <input
+            type="number"
+            min={1}
+            className="table-stake-panel__input table-stake-panel__input--short"
+            value={seatChips}
+            onChange={(e) => handleSeatChipsChange(e.target.value)}
+          />
+        </label>
+
+        <label className="table-stake-panel__field">
+          <span>Starting chips bank</span>
+          <input
+            type="number"
+            min={1}
+            className="table-stake-panel__input table-stake-panel__input--short"
+            value={bankChips}
+            onChange={(e) => handleBankChipsChange(e.target.value)}
+          />
+          {!bankChipsCustom && (
+            <span className="table-stake-panel__hint">Defaults to seat amount</span>
+          )}
+        </label>
+
         <fieldset className="table-stake-panel__banker">
           <legend>Rule protocol</legend>
           <select
@@ -218,6 +265,78 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
             ))}
           </ul>
         </fieldset>
+
+        <div className="table-stake-panel__advanced">
+          <button
+            type="button"
+            className="table-stake-panel__advanced-toggle secondary"
+            onClick={() => setAdvancedOpen((v) => !v)}
+            aria-expanded={advancedOpen}
+          >
+            Advanced settings {advancedOpen ? '▾' : '▸'}
+          </button>
+          {advancedOpen && (
+            <div className="table-stake-panel__advanced-body">
+              <label className="table-stake-panel__field">
+                <span>Initial deal</span>
+                <select
+                  className="table-stake-panel__input"
+                  value={initialDealMode}
+                  onChange={(e) => setInitialDealMode(e.target.value as InitialDealMode)}
+                >
+                  <option value="instant">All at once</option>
+                  <option value="staged">One card per tap</option>
+                  <option value="natural">Natural (timed)</option>
+                </select>
+              </label>
+              <label className="table-stake-panel__field">
+                <span>Natural deal delay (ms)</span>
+                <input
+                  type="number"
+                  min={600}
+                  max={900}
+                  className="table-stake-panel__input table-stake-panel__input--short"
+                  value={naturalDealDelayMs}
+                  onChange={(e) => setNaturalDealDelayMs(Number(e.target.value) || 750)}
+                />
+              </label>
+              <label className="table-stake-panel__field">
+                <span>Dealing speed</span>
+                <select
+                  className="table-stake-panel__input"
+                  value={dealSpeedPreset}
+                  onChange={(e) => setDealSpeedPreset(e.target.value as DealSpeedPreset)}
+                >
+                  <option value="fast">Fast</option>
+                  <option value="normal">Normal (3s)</option>
+                  <option value="slow">Slow</option>
+                </select>
+              </label>
+              <label className="table-stake-panel__field">
+                <span>Card timer</span>
+                <select
+                  className="table-stake-panel__input"
+                  value={cardTimerPreset}
+                  onChange={(e) => setCardTimerPreset(Number(e.target.value) as typeof cardTimerPreset)}
+                >
+                  <option value={0}>Off</option>
+                  <option value={5}>5 sec</option>
+                  <option value={10}>10 sec</option>
+                  <option value={15}>15 sec</option>
+                  <option value={30}>30 sec</option>
+                </select>
+              </label>
+              <label className="table-stake-panel__option">
+                <input
+                  type="checkbox"
+                  checked={bankDrawAuto}
+                  onChange={(e) => setBankDrawAuto(e.target.checked)}
+                />
+                Auto bank draw
+              </label>
+            </div>
+          )}
+        </div>
 
         <button type="button" className="table-stake-panel__confirm" onClick={handleConfirm}>
           Start playing

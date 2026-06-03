@@ -84,6 +84,10 @@ export const config = {
     pass: env('SMTP_PASS'),
     from: env('EMAIL_FROM', 'noreply@sxmcards.local'),
   },
+  resend: {
+    apiKey: env('RESEND_API_KEY'),
+    from: env('RESEND_FROM'),
+  },
   rootUserEmail: normalizeEmailEnv(env('ROOT_USER_EMAIL')),
   inviteOnlyMode: envBool('INVITE_ONLY_MODE', true),
   inviteTtlMs: envInt('INVITE_TTL_MS', 7 * 24 * 60 * 60 * 1000),
@@ -137,10 +141,29 @@ export function getCorsOrigins(): string[] {
   return [...devOrigins];
 }
 
+export type EmailProvider = 'smtp' | 'resend';
+
+export function getEmailProvider(): EmailProvider {
+  const raw = env('EMAIL_PROVIDER', 'smtp').toLowerCase();
+  return raw === 'resend' ? 'resend' : 'smtp';
+}
+
 export function isSmtpConfigured(): boolean {
   return Boolean(
     config.smtp.host && config.smtp.from && config.smtp.user && config.smtp.pass,
   );
+}
+
+export function isResendConfigured(): boolean {
+  return Boolean(config.resend.apiKey && config.resend.from);
+}
+
+export function isEmailConfigured(): boolean {
+  return getEmailProvider() === 'resend' ? isResendConfigured() : isSmtpConfigured();
+}
+
+export function getEmailFrom(): string {
+  return getEmailProvider() === 'resend' ? config.resend.from : config.smtp.from;
 }
 
 export function assertProductionOrigin(): void {

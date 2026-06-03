@@ -331,12 +331,12 @@ describe('mobile Card View structure', () => {
     expect(cardOrder.filter((n) => arcOrder.includes(n))).toEqual(arcOrder);
   });
 
-  it('desktop Card View keeps ascending box order unchanged', () => {
+  it('desktop Card View matches table order (Box 1 on the right)', () => {
     const state = withView(playingState(), 'card');
     const desktop = renderPanelAt(1280, state);
     const order = cardViewMiniBoxOrder(desktop);
-    expect(order[0]).toBe('1');
-    expect(order[order.length - 1]).toBe('7');
+    expect(order[0]).toBe('7');
+    expect(order[order.length - 1]).toBe('1');
   });
 
   it('highlights the active box as the live hero with its controls', () => {

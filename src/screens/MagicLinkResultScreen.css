@@ -1,0 +1,39 @@
+.magic-link-result {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--ds-color-felt-dark, #0a3224);
+}
+
+.magic-link-result__card {
+  max-width: 22rem;
+  width: 100%;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: rgb(0 0 0 / 0.35);
+  border: 1px solid rgb(255 255 255 / 0.15);
+  text-align: center;
+  color: var(--ds-color-text, #f5f5f4);
+}
+
+.magic-link-result__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+}
+
+.magic-link-result__msg {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.magic-link-result__msg--error {
+  color: #fca5a5;
+  opacity: 1;
+}
+
+.magic-link-result__close {
+  width: 100%;
+}

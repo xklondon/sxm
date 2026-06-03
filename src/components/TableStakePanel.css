@@ -58,6 +58,21 @@
   margin-top: 0.25rem;
 }
 
+.table-stake-panel__advanced {
+  margin-bottom: 0.85rem;
+}
+
+.table-stake-panel__advanced-toggle {
+  width: 100%;
+  font-size: 0.78rem;
+}
+
+.table-stake-panel__advanced-body {
+  margin-top: 0.65rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+}
+
 .table-stake-panel__hint {
   display: block;
   margin-top: 0.2rem;

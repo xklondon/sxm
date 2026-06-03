@@ -92,12 +92,12 @@ describe('box visual order', () => {
     ]);
   });
 
-  it('mobile Card View matches table order; desktop Card View stays ascending', () => {
+  it('Card View matches table order on mobile and desktop (Box 1 on the right)', () => {
     expect(sortBoxSlotsForCardViewDisplay(slots, 'mobile').map((s) => s.slotNumber)).toEqual([
       7, 6, 5, 4, 3, 2, 1,
     ]);
     expect(sortBoxSlotsForCardViewDisplay(slots, 'desktop').map((s) => s.slotNumber)).toEqual([
-      1, 2, 3, 4, 5, 6, 7,
+      7, 6, 5, 4, 3, 2, 1,
     ]);
   });
 });
