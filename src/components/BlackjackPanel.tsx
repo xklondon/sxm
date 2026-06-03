@@ -48,7 +48,7 @@ import { BlackjackCardView } from './BlackjackCardView';
 import { BankerSetupPanel } from './BankerSetupPanel';
 import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
 import { LocalProfileSetup } from './LocalProfileSetup';
-import { PlayLedgerPanel } from './LedgerModals';
+import { PlayLedgerModal } from './LedgerModals';
 import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
 import { TableAccountsPanel } from './TableAccountsPanel';
@@ -524,9 +524,9 @@ export function BlackjackPanel({
     onChangeProtocol: handleCycleProtocol,
     awaitingNextRound,
     gameEnded,
-    gameOverMessage,
     roundSummaryLines,
     onNextRound: handleNextRound,
+    statusMessage: centerText,
     protocolPhase,
     hasDeck,
     bankerReady,
@@ -984,20 +984,19 @@ export function BlackjackPanel({
       </div>
 
       {activeTablePanel === 'playLedger' && (
-        <div className="bj-table-wide-panel">
-          <PlayLedgerPanel gameState={gameState} />
-        </div>
+        <PlayLedgerModal
+          open
+          onClose={() => setActiveTablePanel('thisTable')}
+          gameState={gameState}
+        />
       )}
       {activeTablePanel === 'settings' && (
-        <div className="bj-table-wide-panel bj-table-wide-panel--settings">
-          <BlackjackFlowSettingsMenu
-            embedded
-            gameState={gameState}
-            onGameStateChange={onGameStateChange}
-            open
-            onClose={() => setActiveTablePanel('thisTable')}
-          />
-        </div>
+        <BlackjackFlowSettingsMenu
+          gameState={gameState}
+          onGameStateChange={onGameStateChange}
+          open
+          onClose={() => setActiveTablePanel('thisTable')}
+        />
       )}
 
       <LocalProfileSetup
@@ -1038,12 +1037,6 @@ export function BlackjackPanel({
               <div className="bj-casino__felt-main">
               <DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} />
               {renderTableAlert()}
-
-              {centerText && (
-                <p className={`bj-center-status${gameEnded ? ' bj-center-status--game-over' : ''}`} aria-live="polite">
-                  {centerText}
-                </p>
-              )}
               {showPersonalLedgerOffer && (
                 <div className="bj-personal-ledger-offer">
                   <button
@@ -1101,11 +1094,6 @@ export function BlackjackPanel({
                 <DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} />
                 {renderTableAlert()}
 
-                {centerText && (
-                  <p className={`bj-center-status${gameEnded ? ' bj-center-status--game-over' : ''}`} aria-live="polite">
-                    {centerText}
-                  </p>
-                )}
                 {showPersonalLedgerOffer && (
                   <div className="bj-personal-ledger-offer">
                     <button

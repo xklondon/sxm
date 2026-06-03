@@ -3,7 +3,7 @@ import type { TableService } from './service.js';
 import type { TableActionType } from './actions.js';
 import { requireAuth, readSessionToken, setSessionCookie, clearSessionCookie, type AuthedRequest } from '../auth/middleware.js';
 import { verifySessionToken } from '../auth/tokens.js';
-import { getEffectivePublicOrigin } from '../config.js';
+import { resolveRequestOrigin } from '../auth/cookies.js';
 import type { Server as SocketServer } from 'socket.io';
 
 export function createTableRouter(tables: TableService, io: SocketServer): Router {
@@ -20,7 +20,7 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
 
   router.get('/invites/accept', (req, res) => {
     const token = String(req.query.token ?? '');
-    const origin = getEffectivePublicOrigin().replace(/\/$/, '');
+    const origin = resolveRequestOrigin(req);
     try {
       const preview = tables.previewInviteByToken(token);
       const raw = readSessionToken(req);
@@ -38,7 +38,7 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       }
 
       const result = tables.acceptInviteByToken(token, sessionUserId);
-      setSessionCookie(res, result.sessionToken);
+      setSessionCookie(res, result.sessionToken, { req });
       const spectator = result.spectator ? '&spectator=1' : '';
       res.redirect(`${origin}/?table=${encodeURIComponent(result.tableId)}${spectator}`);
     } catch (err) {

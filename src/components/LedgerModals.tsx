@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { GameState } from '../types';
 import type { ScoreLedgerEntry } from '../types/scoreLedger';
 import { loadScoreLedgerDisplayEntries } from '../storage/scoreLedgerStorage';
@@ -17,6 +18,72 @@ export function PlayLedgerPanel({ gameState }: PlayLedgerPanelProps) {
       </p>
       <LedgerPanel gameState={gameState} variant="play" />
     </div>
+  );
+}
+
+interface TablePanelOverlayProps {
+  open: boolean;
+  title: string;
+  subtitle?: string;
+  onClose: () => void;
+  children: ReactNode;
+  wide?: boolean;
+}
+
+export function TablePanelOverlay({
+  open,
+  title,
+  subtitle,
+  onClose,
+  children,
+  wide = true,
+}: TablePanelOverlayProps) {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div className="invite-modal-overlay bj-table-panel-overlay" role="presentation" onClick={onClose}>
+      <div
+        className={`invite-modal invite-modal--ledger${wide ? ' invite-modal--table-panel' : ''}`}
+        role="dialog"
+        aria-labelledby="table-panel-overlay-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="invite-modal__header">
+          <h2 id="table-panel-overlay-title" className="invite-modal__title">
+            {title}
+          </h2>
+          <button type="button" className="invite-modal__close secondary" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </div>
+        {subtitle && <p className="invite-modal__sub">{subtitle}</p>}
+        <div className="bj-table-panel-overlay__body">{children}</div>
+        <button type="button" className="secondary bj-table-panel-overlay__close-btn" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface PlayLedgerModalProps {
+  open: boolean;
+  onClose: () => void;
+  gameState: GameState;
+}
+
+export function PlayLedgerModal({ open, onClose, gameState }: PlayLedgerModalProps) {
+  return (
+    <TablePanelOverlay
+      open={open}
+      title="Play Ledger"
+      subtitle="Chip and table action history for this game — bets, wins, losses, and adjustments."
+      onClose={onClose}
+    >
+      <LedgerPanel gameState={gameState} variant="play" />
+    </TablePanelOverlay>
   );
 }
 

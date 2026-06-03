@@ -136,7 +136,7 @@ const FULL_TABLE_SECTIONS = [
 
 const FULL_TABLE_PLAYING_SECTIONS = [
   ...FULL_TABLE_SECTIONS,
-  'bj-center-status',
+  'dealer-block__status',
   'bj-table-actions',
   'bj-arc__slot--turn',
 ] as const;
@@ -154,7 +154,7 @@ const CARD_VIEW_SECTIONS = [
 
 const CARD_VIEW_PLAYING_SECTIONS = [
   ...CARD_VIEW_SECTIONS,
-  'bj-center-status',
+  'dealer-block__status',
   'bj-phone-view__play-area',
   'bj-phone-view__side-btn--live',
   'bj-phone-view__mini-row',

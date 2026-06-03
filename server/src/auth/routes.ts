@@ -7,7 +7,12 @@ import {
   setSessionCookie,
   type AuthedRequest,
 } from '../auth/middleware.js';
-import { parseRememberQuery, resolveRequestOrigin } from '../auth/cookies.js';
+import {
+  logAuthVerifyDiagnostics,
+  parseRememberQuery,
+  resolveRequestOrigin,
+  shouldSecureSessionCookie,
+} from '../auth/cookies.js';
 import {
   clientEmailErrorMessage,
   formatSmtpError,
@@ -80,11 +85,25 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
       const persistent = parseRememberQuery(req.query.remember);
       const sessionToken = auth.verifyMagicLink(token, { persistent });
       setSessionCookie(res, sessionToken, { persistent, req });
-      res.redirect(`${origin}/?newTable=1`);
+      const redirectUrl = `${origin}/?newTable=1`;
+      logAuthVerifyDiagnostics(req, {
+        redirectUrl,
+        cookieName: config.sessionCookieName,
+        secure: shouldSecureSessionCookie(req),
+        maxAgePresent: persistent || !config.isProduction,
+        persistent,
+      });
+      res.redirect(redirectUrl);
     } catch (err) {
-      res.redirect(
-        `${origin}/login?error=${encodeURIComponent(err instanceof Error ? err.message : 'verify failed')}`,
-      );
+      const message = err instanceof Error ? err.message : 'verify failed';
+      logAuthVerifyDiagnostics(req, {
+        redirectUrl: `${origin}/login?error=…`,
+        cookieName: config.sessionCookieName,
+        secure: shouldSecureSessionCookie(req),
+        maxAgePresent: false,
+        persistent: parseRememberQuery(req.query.remember),
+      });
+      res.redirect(`${origin}/login?error=${encodeURIComponent(message)}`);
     }
   });
 

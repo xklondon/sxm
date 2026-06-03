@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import App from './App';
 import { JoinTableCurtain } from './components/JoinTableCurtain';
-import { MagicLinkResultScreen } from './screens/MagicLinkResultScreen';
 import { LoginScreen } from './screens/LoginScreen';
 import {
   fetchInvitePreview,
@@ -178,9 +177,6 @@ export function AppRoot() {
   if (onlineMode && isLoginPath) {
     if (user) {
       return null;
-    }
-    if (loginError) {
-      return <MagicLinkResultScreen success={false} error={loginError} />;
     }
     if (inviteAcceptToken || inviteTokenFromSearch(window.location.search)) {
       return (

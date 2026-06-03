@@ -46,6 +46,29 @@
   overflow: auto;
 }
 
+.invite-modal--table-panel {
+  max-width: min(52rem, 96vw);
+  width: min(52rem, 96vw);
+  max-height: min(85dvh, 40rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.bj-table-panel-overlay__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  margin-bottom: 0.75rem;
+}
+
+.bj-table-panel-overlay__body .ledger-panel {
+  max-height: none;
+}
+
+.bj-table-panel-overlay__close-btn {
+  align-self: flex-end;
+}
+
 .invite-modal__placeholder {
   margin: 0 0 1rem;
   padding: 0.65rem;

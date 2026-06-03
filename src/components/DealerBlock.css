@@ -1,21 +1,56 @@
 .dealer-block {
+  width: 100%;
+  padding: 0.35rem 0.5rem 0.25rem;
+  margin: 0 0 0.25rem;
+}
+
+.dealer-block__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.dealer-block__status-col,
+.dealer-block__center-col,
+.dealer-block__info-col {
+  min-width: 0;
+}
+
+.dealer-block__status {
+  margin: 0;
+  font-size: 0.62rem;
+  line-height: 1.45;
+  text-align: left;
+  padding: 0.3rem 0.55rem;
+  background: rgb(0 0 0 / 0.3);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--ds-radius-md);
+}
+
+.dealer-block__status--game-over {
+  color: var(--ds-color-gold);
+  font-weight: 600;
+}
+
+.dealer-block__status--placeholder {
+  visibility: hidden;
+  min-height: 1.5rem;
+}
+
+.dealer-block__center-col {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
-  padding: 0.35rem 0.75rem 0.25rem;
-  width: 100%;
-  max-width: 22rem;
-  margin: 0 auto 0.25rem;
-  text-align: center;
 }
 
-.dealer-block__title {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.dealer-block__info-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  text-align: center;
 }
 
 .dealer-block__line {
@@ -73,7 +108,7 @@
 }
 
 .dealer-block__hint {
-  margin: 0.1rem 0 0;
+  margin: 0;
   font-size: 0.58rem;
   opacity: 0.75;
 }
@@ -84,11 +119,10 @@
   align-items: flex-start;
   gap: 0.15rem;
   min-height: 3.25rem;
-  margin-top: 0.15rem;
 }
 
 .dealer-block__summary {
-  margin: 0.25rem 0 0;
+  margin: 0.15rem 0 0;
   padding: 0.4rem 0.6rem;
   width: 100%;
   max-width: 22rem;
@@ -111,7 +145,6 @@
 }
 
 .dealer-block__actions {
-  margin-top: 0.2rem;
   display: flex;
   justify-content: center;
 }
@@ -144,4 +177,36 @@
 .dealer-block__action:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+@media (min-width: 721px) {
+  .dealer-block__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: start;
+    gap: 0.65rem;
+  }
+
+  .dealer-block__status-col {
+    align-self: stretch;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .dealer-block__status {
+    width: 100%;
+  }
+
+  .dealer-block__info-col {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .dealer-block__line--min-bet {
+    justify-content: flex-end;
+  }
+
+  .dealer-block__meta-line {
+    justify-content: flex-end;
+  }
 }

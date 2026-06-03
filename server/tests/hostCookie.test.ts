@@ -110,6 +110,18 @@ describe('host-mode session cookies', () => {
     expect(res.headers.location).toBe('http://10.0.0.7:5173/?newTable=1');
   });
 
+  it('verify redirects using request Host even when not in CORS allowlist', async () => {
+    const { app, auth } = await createHostApp();
+    const { devLink } = await auth.requestMagicLink('root@example.com', true);
+    const token = new URL(devLink!, 'http://10.0.0.7:5173').searchParams.get('token')!;
+    const res = await request(app)
+      .get(`/api/auth/verify?token=${encodeURIComponent(token)}&remember=1`)
+      .set('Host', 'custom-client.local:5173')
+      .redirects(0);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('http://custom-client.local:5173/?newTable=1');
+  });
+
   it('production host mode still omits Secure on HTTP', async () => {
     process.env.NODE_ENV = 'production';
     process.env.SXM_HOST_MODE = 'true';

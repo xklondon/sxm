@@ -37,7 +37,7 @@ export function buildClearSessionCookieHeader(): string {
   return `${config.sessionCookieName}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`;
 }
 
-/** Keep redirects on the origin the user actually used (127.0.0.1 vs LAN IP). */
+/** Keep redirects on the origin the user actually used (127.0.0.1 vs LAN IP, Railway host, etc.). */
 export function resolveRequestOrigin(req: Request): string {
   const forwardedHost = req.headers['x-forwarded-host'];
   const host =
@@ -53,10 +53,32 @@ export function resolveRequestOrigin(req: Request): string {
       : req.protocol;
   const origin = `${proto}://${host}`.replace(/\/$/, '');
   const allowed = new Set(getCorsOrigins().map((o) => o.replace(/\/$/, '')));
-  if (allowed.has(origin)) {
-    return origin;
+  if (!allowed.has(origin)) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[SXM][auth] request origin ${origin} not in CORS allowlist — redirecting to request host so Set-Cookie matches landing page`,
+    );
   }
-  return getEffectivePublicOrigin().replace(/\/$/, '');
+  return origin;
+}
+
+/** Safe auth verify diagnostics — never log tokens, emails, or cookie values. */
+export function logAuthVerifyDiagnostics(
+  req: Request,
+  details: {
+    redirectUrl: string;
+    cookieName: string;
+    secure: boolean;
+    maxAgePresent: boolean;
+    persistent: boolean;
+  },
+): void {
+  const forwardedHost = req.headers['x-forwarded-host'];
+  const host = req.get('host');
+  // eslint-disable-next-line no-console
+  console.log(
+    `[SXM][auth] verify host=${host ?? '(none)'} x-forwarded-host=${typeof forwardedHost === 'string' ? forwardedHost.split(',')[0]!.trim() : '(none)'} resolvedOrigin=${resolveRequestOrigin(req)} redirect=${details.redirectUrl} cookieName=${details.cookieName} secure=${details.secure} maxAge=${details.maxAgePresent} persistent=${details.persistent}`,
+  );
 }
 
 export function parseRememberQuery(value: unknown): boolean {

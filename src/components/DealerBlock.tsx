@@ -18,9 +18,9 @@ interface DealerBlockProps {
   onChangeProtocol: () => void;
   awaitingNextRound: boolean;
   gameEnded: boolean;
-  /** Shown in center status by parent — not duplicated in dealer block. */
-  gameOverMessage?: string;
-  /** Consolidated per-box round summary, shown above the Next Round action. */
+  /** Table/status message for the left column (desktop). */
+  statusMessage?: string | null;
+  /** Consolidated per-box round summary, shown in the center column. */
   roundSummaryLines?: string[];
   onNextRound: () => void;
   dealerCards: React.ReactNode;
@@ -57,6 +57,7 @@ export function DealerBlock({
   onChangeProtocol,
   awaitingNextRound,
   gameEnded,
+  statusMessage,
   roundSummaryLines,
   onNextRound,
   dealerCards,
@@ -151,83 +152,100 @@ export function DealerBlock({
 
   return (
     <div className="dealer-block">
-      <p className="dealer-block__title">Blackjack</p>
-      <p className="dealer-block__line">Playing for: {playingFor}</p>
-      <p className="dealer-block__line dealer-block__line--min-bet">
-        Minimum bet: {minimumBet}
-        {canChangeMinBet && !gameEnded && (
-          <button
-            type="button"
-            className="dealer-block__icon-btn"
-            onClick={onChangeMinBet}
-            aria-label="Change minimum bet"
-            title="Change minimum bet"
-          >
-            $
-          </button>
-        )}
-      </p>
-      {hasDeck && (
-        <p className="dealer-block__line">
-          {deckCount}-deck · Total Cards: {totalCards} / {remaining}
-        </p>
-      )}
-
-      <p className="dealer-block__meta-line">
-        {canChangeDealSpeed && !gameEnded ? (
-          <button
-            type="button"
-            className="dealer-block__icon-btn dealer-block__icon-btn--meta"
-            onClick={onCycleDealSpeed}
-            aria-label="Change dealing speed"
-            title="Change dealing speed"
-          >
-            <span className="dealer-block__icon" aria-hidden="true">⏱</span>
-            {dealSpeedLabel}
-          </button>
-        ) : (
-          <>
-            <span className="dealer-block__icon" aria-hidden="true">⏱</span>
-            {dealSpeedLabel}
-          </>
-        )}
-      </p>
-
-      <p className="dealer-block__meta-line">
-        {canChangeProtocol && !gameEnded ? (
-          <button
-            type="button"
-            className="dealer-block__icon-btn dealer-block__icon-btn--meta"
-            onClick={onChangeProtocol}
-            aria-label="Change protocol"
-            title="Change protocol"
-          >
-            <span className="dealer-block__icon" aria-hidden="true">⚙</span>
-            {protocolLabel}
-          </button>
-        ) : (
-          <>
-            <span className="dealer-block__icon" aria-hidden="true">⚙</span>
-            {protocolLabel}
-          </>
-        )}
-      </p>
-
-      {!bankerReady && !gameEnded && <p className="dealer-block__hint">Choose banker first.</p>}
-
-      <div className="dealer-block__actions">{renderBettingActions()}</div>
-
-      {dealerCards && <div className="dealer-block__cards">{dealerCards}</div>}
-
-      {roundSummaryLines && roundSummaryLines.length > 0 && (
-        <div className="dealer-block__summary" aria-live="polite">
-          {roundSummaryLines.map((line, i) => (
-            <p key={i} className="dealer-block__summary-line">
-              {line}
+      <div className="dealer-block__grid">
+        <div className="dealer-block__status-col">
+          {statusMessage ? (
+            <p
+              className={`dealer-block__status${gameEnded ? ' dealer-block__status--game-over' : ''}`}
+              aria-live="polite"
+            >
+              {statusMessage}
             </p>
-          ))}
+          ) : (
+            <p className="dealer-block__status dealer-block__status--placeholder" aria-hidden="true">
+              &nbsp;
+            </p>
+          )}
         </div>
-      )}
+
+        <div className="dealer-block__center-col">
+          {!bankerReady && !gameEnded && (
+            <p className="dealer-block__hint">Choose banker first.</p>
+          )}
+          <div className="dealer-block__actions">{renderBettingActions()}</div>
+          {dealerCards && <div className="dealer-block__cards">{dealerCards}</div>}
+          {roundSummaryLines && roundSummaryLines.length > 0 && (
+            <div className="dealer-block__summary" aria-live="polite">
+              {roundSummaryLines.map((line, i) => (
+                <p key={i} className="dealer-block__summary-line">
+                  {line}
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="dealer-block__info-col">
+          <p className="dealer-block__line">Playing for: {playingFor}</p>
+          <p className="dealer-block__line dealer-block__line--min-bet">
+            Minimum bet: {minimumBet}
+            {canChangeMinBet && !gameEnded && (
+              <button
+                type="button"
+                className="dealer-block__icon-btn"
+                onClick={onChangeMinBet}
+                aria-label="Change minimum bet"
+                title="Change minimum bet"
+              >
+                $
+              </button>
+            )}
+          </p>
+          {hasDeck && (
+            <p className="dealer-block__line">
+              {deckCount}-deck · Total Cards: {totalCards} / {remaining}
+            </p>
+          )}
+          <p className="dealer-block__meta-line">
+            {canChangeDealSpeed && !gameEnded ? (
+              <button
+                type="button"
+                className="dealer-block__icon-btn dealer-block__icon-btn--meta"
+                onClick={onCycleDealSpeed}
+                aria-label="Change dealing speed"
+                title="Change dealing speed"
+              >
+                <span className="dealer-block__icon" aria-hidden="true">⏱</span>
+                {dealSpeedLabel}
+              </button>
+            ) : (
+              <>
+                <span className="dealer-block__icon" aria-hidden="true">⏱</span>
+                {dealSpeedLabel}
+              </>
+            )}
+          </p>
+          <p className="dealer-block__meta-line">
+            {canChangeProtocol && !gameEnded ? (
+              <button
+                type="button"
+                className="dealer-block__icon-btn dealer-block__icon-btn--meta"
+                onClick={onChangeProtocol}
+                aria-label="Change protocol"
+                title="Change protocol"
+              >
+                <span className="dealer-block__icon" aria-hidden="true">⚙</span>
+                {protocolLabel}
+              </button>
+            ) : (
+              <>
+                <span className="dealer-block__icon" aria-hidden="true">⚙</span>
+                {protocolLabel}
+              </>
+            )}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
