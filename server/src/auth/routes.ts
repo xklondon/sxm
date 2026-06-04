@@ -93,6 +93,7 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
         secure: shouldSecureSessionCookie(req),
         maxAgePresent: persistent || !config.isProduction,
         persistent,
+        rememberQuery: req.query.remember,
       });
       res.redirect(redirectUrl);
     } catch (err) {
@@ -103,6 +104,7 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
         secure: shouldSecureSessionCookie(req),
         maxAgePresent: false,
         persistent: parseRememberQuery(req.query.remember),
+        rememberQuery: req.query.remember,
       });
       res.redirect(`${origin}/login?error=${encodeURIComponent(message)}`);
     }

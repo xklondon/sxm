@@ -3,6 +3,7 @@ import { getEmailProvider } from '../config.js';
 import {
   formatSmtpError,
   getEmailConfigSnapshot,
+  getEmailProviderDiagnostics,
   is465SslFallbackMode,
   isSmtpTimeoutError,
   sanitizeEmail,
@@ -41,6 +42,10 @@ export function createEmailDebugRouter(): Router {
 
   router.get('/email-config', (_req, res) => {
     res.json(getEmailConfigSnapshot());
+  });
+
+  router.get('/email-provider', (_req, res) => {
+    res.json(getEmailProviderDiagnostics());
   });
 
   router.post('/send-test-email', async (req, res) => {

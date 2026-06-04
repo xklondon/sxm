@@ -12,28 +12,34 @@ import { io, type Socket } from 'socket.io-client';
 
 const ONLINE_TABLE_KEY = 'sxmcards:online-table-id';
 
-
-
-export function getStoredOnlineTableId(): string | null {
-
-  return sessionStorage.getItem(ONLINE_TABLE_KEY);
-
+function readStoredTableId(): string | null {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+  try {
+    return localStorage.getItem(ONLINE_TABLE_KEY);
+  } catch {
+    return null;
+  }
 }
 
-
+export function getStoredOnlineTableId(): string | null {
+  return readStoredTableId();
+}
 
 export function setStoredOnlineTableId(tableId: string | null): void {
-
-  if (tableId) {
-
-    sessionStorage.setItem(ONLINE_TABLE_KEY, tableId);
-
-  } else {
-
-    sessionStorage.removeItem(ONLINE_TABLE_KEY);
-
+  if (typeof localStorage === 'undefined') {
+    return;
   }
-
+  try {
+    if (tableId) {
+      localStorage.setItem(ONLINE_TABLE_KEY, tableId);
+    } else {
+      localStorage.removeItem(ONLINE_TABLE_KEY);
+    }
+  } catch {
+    /* storage unavailable */
+  }
 }
 
 

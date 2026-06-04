@@ -203,6 +203,18 @@
   max-width: 100%;
 }
 
+.bj-accounts-panel--slide {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
 @media (max-width: 720px) {
   .bj-accounts-panel {
     flex: 0 0 auto;

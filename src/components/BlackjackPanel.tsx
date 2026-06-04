@@ -47,7 +47,7 @@ import { BankerSetupPanel } from './BankerSetupPanel';
 import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
 import { getBoxCallerDisplayName } from './boxCallerDisplay';
 import { LocalProfileSetup } from './LocalProfileSetup';
-import { PlayLedgerModal } from './LedgerModals';
+import { PlayLedgerModal, ThisTableSlidePanel } from './LedgerModals';
 import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
 import { TableAccountsPanel } from './TableAccountsPanel';
@@ -137,7 +137,8 @@ export function BlackjackPanel({
 
   const [error, setError] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
-  const [activeTablePanel, setActiveTablePanel] = useState<'thisTable' | 'playLedger' | 'settings'>('thisTable');
+  const [thisTableOpen, setThisTableOpen] = useState(true);
+  const [activeTablePanel, setActiveTablePanel] = useState<'playLedger' | 'settings' | null>(null);
   const [profileOpenInternal, setProfileOpenInternal] = useState(
     () => !isOnlineModeEnabled() && !loadProfile().name.trim(),
   );
@@ -977,22 +978,29 @@ export function BlackjackPanel({
         <div className="bj-casino__table-nav">
           <button
             type="button"
-            className={activeTablePanel === 'thisTable' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-            onClick={() => setActiveTablePanel('thisTable')}
+            className={thisTableOpen ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+            onClick={() => setThisTableOpen((open) => !open)}
+            aria-expanded={thisTableOpen}
           >
             This Table
           </button>
           <button
             type="button"
             className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-            onClick={() => setActiveTablePanel('playLedger')}
+            onClick={() => {
+              setThisTableOpen(false);
+              setActiveTablePanel('playLedger');
+            }}
           >
             Play Ledger
           </button>
           <button
             type="button"
             className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-            onClick={() => setActiveTablePanel('settings')}
+            onClick={() => {
+              setThisTableOpen(false);
+              setActiveTablePanel('settings');
+            }}
           >
             Settings
           </button>
@@ -1002,7 +1010,7 @@ export function BlackjackPanel({
       {activeTablePanel === 'playLedger' && (
         <PlayLedgerModal
           open
-          onClose={() => setActiveTablePanel('thisTable')}
+          onClose={() => setActiveTablePanel(null)}
           gameState={gameState}
         />
       )}
@@ -1011,9 +1019,23 @@ export function BlackjackPanel({
           gameState={gameState}
           onGameStateChange={onGameStateChange}
           open
-          onClose={() => setActiveTablePanel('thisTable')}
+          onClose={() => setActiveTablePanel(null)}
         />
       )}
+
+      <ThisTableSlidePanel open={thisTableOpen} onClose={() => setThisTableOpen(false)}>
+        <TableAccountsPanel
+          gameState={gameState}
+          showAssignButton={canAssignChips}
+          onAssignChips={() => setAssignChipsOpen(true)}
+          onInvite={onInviteTable}
+          onSaveTable={onSaveTable}
+          showPlayerOrderControls={tableOwner && bettingOpen}
+          onMovePlayer={handleMovePlayer}
+          onPlayFlowChange={handlePlayFlowChange}
+          variant="slide"
+        />
+      </ThisTableSlidePanel>
 
       <LocalProfileSetup
         open={profileOpen}
@@ -1044,9 +1066,7 @@ export function BlackjackPanel({
       ) : (
       <div className="bj-casino__rail">
         <div
-          className={`bj-casino__felt${
-            activeTablePanel === 'thisTable' ? ' bj-casino__felt--with-account' : ''
-          }${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}
+          className={`bj-casino__felt${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}
         >
           {viewMode === 'full' && (
             <>
@@ -1089,18 +1109,6 @@ export function BlackjackPanel({
                 </div>
               )}
               </div>
-              {activeTablePanel === 'thisTable' && (
-                <TableAccountsPanel
-                  gameState={gameState}
-                  showAssignButton={canAssignChips}
-                  onAssignChips={() => setAssignChipsOpen(true)}
-                  onInvite={onInviteTable}
-                  onSaveTable={onSaveTable}
-                  showPlayerOrderControls={tableOwner && bettingOpen}
-                  onMovePlayer={handleMovePlayer}
-                  onPlayFlowChange={handlePlayFlowChange}
-                />
-              )}
             </>
           )}
 
@@ -1161,18 +1169,6 @@ export function BlackjackPanel({
                   </div>
                 )}
               </div>
-              {activeTablePanel === 'thisTable' && (
-                <TableAccountsPanel
-                  gameState={gameState}
-                  showAssignButton={canAssignChips}
-                  onAssignChips={() => setAssignChipsOpen(true)}
-                  onInvite={onInviteTable}
-                  onSaveTable={onSaveTable}
-                  showPlayerOrderControls={tableOwner && bettingOpen}
-                  onMovePlayer={handleMovePlayer}
-                  onPlayFlowChange={handlePlayFlowChange}
-                />
-              )}
             </>
           )}
         </div>

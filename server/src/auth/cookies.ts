@@ -71,13 +71,18 @@ export function logAuthVerifyDiagnostics(
     secure: boolean;
     maxAgePresent: boolean;
     persistent: boolean;
+    rememberQuery?: unknown;
   },
 ): void {
   const forwardedHost = req.headers['x-forwarded-host'];
   const host = req.get('host');
+  const maxAgeSeconds =
+    details.maxAgePresent && (details.persistent || !config.isProduction)
+      ? Math.floor(config.sessionMaxAgeMs / 1000)
+      : null;
   // eslint-disable-next-line no-console
   console.log(
-    `[SXM][auth] verify host=${host ?? '(none)'} x-forwarded-host=${typeof forwardedHost === 'string' ? forwardedHost.split(',')[0]!.trim() : '(none)'} resolvedOrigin=${resolveRequestOrigin(req)} redirect=${details.redirectUrl} cookieName=${details.cookieName} secure=${details.secure} maxAge=${details.maxAgePresent} persistent=${details.persistent}`,
+    `[SXM][auth] verify host=${host ?? '(none)'} x-forwarded-host=${typeof forwardedHost === 'string' ? forwardedHost.split(',')[0]!.trim() : '(none)'} resolvedOrigin=${resolveRequestOrigin(req)} redirect=${details.redirectUrl} remember=${parseRememberQuery(details.rememberQuery)} cookieName=${details.cookieName} secure=${details.secure} maxAgePresent=${details.maxAgePresent} maxAgeSeconds=${maxAgeSeconds ?? '(session)'} persistent=${details.persistent}`,
   );
 }
 

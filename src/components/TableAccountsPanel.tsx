@@ -21,6 +21,8 @@ interface TableAccountsPanelProps {
   onMovePlayer?: (personId: string, direction: 'up' | 'down') => void;
   onPlayFlowChange?: (personId: string, playFlow: PlayFlowAutoStand) => void;
   showPlayerOrderControls?: boolean;
+  /** Slide drawer variant — drops inline dock chrome. */
+  variant?: 'inline' | 'slide';
 }
 
 function statusLabel(status: TablePersonStatus): string {
@@ -47,6 +49,7 @@ export function TableAccountsPanel({
   onMovePlayer,
   onPlayFlowChange,
   showPlayerOrderControls = false,
+  variant = 'inline',
 }: TableAccountsPanelProps) {
   const bank = buildTableBankRow(gameState);
   const people = buildTablePeopleRows(gameState);
@@ -57,7 +60,10 @@ export function TableAccountsPanel({
   }, [gameState]);
 
   return (
-    <aside className="bj-accounts-panel" aria-label="This Table">
+    <aside
+      className={`bj-accounts-panel${variant === 'slide' ? ' bj-accounts-panel--slide' : ''}`}
+      aria-label="This Table"
+    >
 
       {!bank && people.length === 0 ? (
         <p className="bj-accounts-panel__empty">Complete setup to see bank and players.</p>

@@ -236,10 +236,12 @@ export function AppRoot() {
   }
 
   const tableFromUrl = new URLSearchParams(window.location.search).get('table');
+  const forceNewTable = new URLSearchParams(window.location.search).get('newTable') === '1';
   if (tableFromUrl) {
     rememberPendingTable(tableFromUrl);
   }
-  const onlineTableId = tableFromUrl ?? getStoredOnlineTableId();
+  const storedTableId = forceNewTable ? null : getStoredOnlineTableId();
+  const onlineTableId = tableFromUrl ?? storedTableId;
 
-  return <App user={user} onlineMode={onlineMode} onlineTableId={onlineTableId} />;
+  return <App user={user} onlineMode={onlineMode} onlineTableId={onlineTableId} forceNewTable={forceNewTable} />;
 }

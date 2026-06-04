@@ -34,6 +34,7 @@ interface AppProps {
   user?: AuthUser | null;
   onlineMode?: boolean;
   onlineTableId?: string | null;
+  forceNewTable?: boolean;
 }
 
 function createTableWithSettings(): GameState {
@@ -69,7 +70,7 @@ function formatRoleLabel(user?: AuthUser | null): string {
   }
 }
 
-export default function App({ user, onlineMode = false, onlineTableId = null }: AppProps) {
+export default function App({ user, onlineMode = false, onlineTableId = null, forceNewTable = false }: AppProps) {
   const tableFromUrl = onlineTableId;
   const pendingTable = getPendingTable();
   const resolvedTableId = tableFromUrl ?? pendingTable;
@@ -83,9 +84,8 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
   const [inviteTableName, setInviteTableName] = useState<string | null>(null);
   const [tableVersion, setTableVersion] = useState<number | null>(null);
   const [tableNavHandlers, setTableNavHandlers] = useState<TableNavHandlers | null>(null);
-  const [autoNewTablePending, setAutoNewTablePending] = useState(
-    () => new URLSearchParams(window.location.search).get('newTable') === '1',
-  );
+  const [tableBootstrapDone, setTableBootstrapDone] = useState(Boolean(resolvedTableId));
+  const [bootstrappingTable, setBootstrappingTable] = useState(false);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
   const navMenuRef = useRef<HTMLDivElement>(null);
   const isMobileViewport = useIsMobileViewport();
@@ -170,16 +170,29 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
   }, [handleNewOnlineGame, onlineMode]);
 
   useEffect(() => {
-    if (!autoNewTablePending || resolvedTableId || loadingOnline) {
+    if (!onlineMode || !user || resolvedTableId || loadingOnline || tableBootstrapDone) {
       return;
     }
-    window.history.replaceState({}, '', '/');
-    setAutoNewTablePending(false);
-    const canCreate = !onlineMode || (user?.canOwnTables ?? true);
-    if (canCreate) {
-      handleNewGame();
+    setTableBootstrapDone(true);
+    if (forceNewTable) {
+      window.history.replaceState({}, '', '/');
     }
-  }, [autoNewTablePending, resolvedTableId, loadingOnline, handleNewGame, onlineMode, user?.canOwnTables]);
+    const canCreate = user.canOwnTables ?? true;
+    if (!canCreate) {
+      setScreen('start');
+      return;
+    }
+    setBootstrappingTable(true);
+    void handleNewOnlineGame().finally(() => setBootstrappingTable(false));
+  }, [
+    onlineMode,
+    user,
+    resolvedTableId,
+    loadingOnline,
+    tableBootstrapDone,
+    forceNewTable,
+    handleNewOnlineGame,
+  ]);
 
   function handleLeaveTable() {
     setGameState(null);
@@ -188,6 +201,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
     setStoredOnlineTableId(null);
     setTableNavHandlers(null);
     consumePendingTable();
+    setTableBootstrapDone(false);
     setScreen('start');
   }
 
@@ -196,10 +210,10 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
     window.location.assign('/login');
   }
 
-  if (loadingOnline) {
+  if (loadingOnline || bootstrappingTable) {
     return (
       <main className="start-screen">
-        <p>Loading table…</p>
+        <p>{bootstrappingTable ? 'Opening new table…' : 'Loading table…'}</p>
       </main>
     );
   }
@@ -402,7 +416,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
           </div>
         </header>
       )}
-      {screen === 'start' && !resolvedTableId && (
+      {screen === 'start' && !resolvedTableId && !(onlineMode && user && (user.canOwnTables ?? true)) && (
         <StartScreen
           onNewGame={handleNewGame}
           onlineMode={onlineMode}

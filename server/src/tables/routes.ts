@@ -4,6 +4,7 @@ import type { TableActionType } from './actions.js';
 import { requireAuth, readSessionToken, setSessionCookie, clearSessionCookie, type AuthedRequest } from '../auth/middleware.js';
 import { verifySessionToken } from '../auth/tokens.js';
 import { resolveRequestOrigin } from '../auth/cookies.js';
+import { clientEmailErrorMessage } from '../email/smtp.js';
 import type { Server as SocketServer } from 'socket.io';
 
 export function createTableRouter(tables: TableService, io: SocketServer): Router {
@@ -89,8 +90,8 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       });
       res.status(201).json(result);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Invite failed';
-      const status = /email|smtp|configured|send/i.test(message) ? 502 : 400;
+      const message = clientEmailErrorMessage(err);
+      const status = /email|smtp|configured|send|resend|sandbox|domain/i.test(message) ? 502 : 400;
       res.status(status).json({ error: message });
     }
   });
@@ -111,8 +112,8 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       });
       res.status(201).json(result);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Invite failed';
-      const status = /email|smtp|configured|send/i.test(message) ? 502 : 400;
+      const message = clientEmailErrorMessage(err);
+      const status = /email|smtp|configured|send|resend|sandbox|domain/i.test(message) ? 502 : 400;
       res.status(status).json({ error: message });
     }
   });

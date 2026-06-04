@@ -25,8 +25,13 @@ export function resolveApiBaseUrl(params: {
   }
 
   if (!params.isDev) {
+    const configuredBase = configured?.replace(/\/$/, '') || '';
+    // Session cookies are first-party — never call a mismatched baked API origin in production.
+    if (configuredBase && configuredBase !== stripSlash(params.pageOrigin)) {
+      return { baseUrl: params.pageOrigin, proxied: false };
+    }
     return {
-      baseUrl: configured?.replace(/\/$/, '') || params.pageOrigin,
+      baseUrl: configuredBase || params.pageOrigin,
       proxied: false,
     };
   }

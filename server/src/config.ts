@@ -143,9 +143,56 @@ export function getCorsOrigins(): string[] {
 
 export type EmailProvider = 'smtp' | 'resend';
 
+/** Parse bare or `"Name" <addr>` From header values. */
+export function parseFromEmailAddress(from: string): string {
+  const trimmed = from.trim();
+  const bracket = trimmed.match(/<([^>]+)>/);
+  if (bracket?.[1]) {
+    return bracket[1].trim().toLowerCase();
+  }
+  const bare = trimmed.match(/([^\s<>]+@[^\s<>]+)/);
+  return (bare?.[1] ?? trimmed).trim().toLowerCase();
+}
+
+export function getFromDomain(from: string): string {
+  const addr = parseFromEmailAddress(from);
+  return addr.split('@')[1] ?? '';
+}
+
+/** Resend test/sandbox senders cannot deliver to external recipients. */
+export function isResendSandboxFromAddress(from: string): boolean {
+  const addr = parseFromEmailAddress(from);
+  return addr.endsWith('@resend.dev') || addr.includes('onboarding@resend');
+}
+
 export function getEmailProvider(): EmailProvider {
-  const raw = env('EMAIL_PROVIDER', 'smtp').toLowerCase();
-  return raw === 'resend' ? 'resend' : 'smtp';
+  const raw = env('EMAIL_PROVIDER', 'auto').toLowerCase();
+  const smtpOk = isSmtpConfigured();
+  const resendOk = isResendConfigured();
+  const resendSandbox = resendOk && isResendSandboxFromAddress(config.resend.from);
+
+  if (raw === 'smtp') {
+    return 'smtp';
+  }
+  if (raw === 'resend') {
+    if (resendSandbox && smtpOk) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[SXM][email] EMAIL_PROVIDER=resend but RESEND_FROM is sandbox — using SMTP for external delivery',
+      );
+      return 'smtp';
+    }
+    return 'resend';
+  }
+
+  // auto (default): prefer SMTP when configured — supports external recipients on Railway.
+  if (smtpOk) {
+    return 'smtp';
+  }
+  if (resendOk) {
+    return 'resend';
+  }
+  return 'smtp';
 }
 
 export function isSmtpConfigured(): boolean {

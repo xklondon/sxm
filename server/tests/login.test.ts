@@ -49,16 +49,19 @@ describe('public auth endpoints', () => {
     expect(res.status).toBe(401);
   });
 
-  it('GET /api/auth/verify creates session cookie', async () => {
+  it('GET /api/auth/verify creates session cookie with remember=1 Max-Age', async () => {
     const { app, auth } = await createTestApp();
-    const { devLink } = await auth.requestMagicLink('root@example.com');
+    const { devLink } = await auth.requestMagicLink('root@example.com', true);
     const token = new URL(devLink!, 'http://localhost:5173').searchParams.get('token')!;
     const res = await request(app)
-      .get(`/api/auth/verify?token=${encodeURIComponent(token)}`)
+      .get(`/api/auth/verify?token=${encodeURIComponent(token)}&remember=1`)
       .redirects(0);
     expect(res.status).toBe(302);
-    const setCookie = res.headers['set-cookie'];
-    expect(setCookie).toBeTruthy();
+    const setCookie = res.headers['set-cookie']?.[0] ?? '';
+    expect(setCookie).toContain('Max-Age=');
+    expect(setCookie).toContain('SameSite=Lax');
+    expect(setCookie).toContain('Path=/');
+    expect(setCookie).toContain('HttpOnly');
   });
 
   it('root email can request magic link without person record', async () => {

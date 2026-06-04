@@ -21,6 +21,45 @@ export function PlayLedgerPanel({ gameState }: PlayLedgerPanelProps) {
   );
 }
 
+interface ThisTableSlidePanelProps {
+  open: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}
+
+/** Right-side slide drawer for bank/players — keeps the felt dealer zone centred. */
+export function ThisTableSlidePanel({ open, onClose, children }: ThisTableSlidePanelProps) {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div className="bj-table-slide-overlay" role="presentation" onClick={onClose}>
+      <aside
+        className="bj-table-slide-drawer"
+        role="dialog"
+        aria-labelledby="this-table-slide-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="bj-table-slide-drawer__header">
+          <h2 id="this-table-slide-title" className="bj-table-slide-drawer__title">
+            This Table
+          </h2>
+          <button
+            type="button"
+            className="bj-table-slide-drawer__close secondary"
+            onClick={onClose}
+            aria-label="Close This Table panel"
+          >
+            ×
+          </button>
+        </div>
+        <div className="bj-table-slide-drawer__body">{children}</div>
+      </aside>
+    </div>
+  );
+}
+
 interface TablePanelOverlayProps {
   open: boolean;
   title: string;

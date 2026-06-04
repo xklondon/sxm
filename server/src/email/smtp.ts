@@ -5,9 +5,12 @@ import {
   config,
   getEmailFrom,
   getEmailProvider,
+  getFromDomain,
   isEmailConfigured,
   isResendConfigured,
+  isResendSandboxFromAddress,
   isSmtpConfigured,
+  parseFromEmailAddress,
 } from '../config.js';
 import { getCorsOrigins, getEffectivePublicOrigin } from '../config.js';
 import { sendResendMail } from './resend.js';
@@ -91,16 +94,32 @@ export function get465SslTransportOptions(): SMTPTransport.Options | null {
 
 export function getEmailConfigSnapshot() {
   const provider = getEmailProvider();
+  const fromEmail = getEmailFrom();
+  const fromAddress = parseFromEmailAddress(fromEmail);
+  const fromDomain = getFromDomain(fromEmail);
+  const resendSandboxMode =
+    isResendConfigured() && isResendSandboxFromAddress(config.resend.from);
+  const explicitProvider = env('EMAIL_PROVIDER', 'auto').toLowerCase();
   const snap = {
     env: config.nodeEnv,
     publicOrigin: getEffectivePublicOrigin(),
     corsOrigin: env('CORS_ORIGIN') || config.publicOrigin,
     corsOrigins: getCorsOrigins(),
     emailProvider: provider,
+    emailProviderEnv: explicitProvider || 'auto',
+    effectiveProvider: provider,
     emailConfigured: isEmailConfigured(),
-    fromEmail: getEmailFrom(),
+    fromEmail,
+    fromAddress,
+    fromDomain,
     resendConfigured: isResendConfigured(),
     resendFrom: config.resend.from || '',
+    resendSandboxMode,
+    resendDomainVerifiedHint: resendSandboxMode
+      ? 'Resend sandbox FROM — verify a domain at resend.com/domains or set EMAIL_PROVIDER=smtp with SMTP_* vars'
+      : provider === 'resend'
+        ? 'Ensure FROM domain is verified in the Resend dashboard'
+        : null,
     resendApiKeyPresent: Boolean(config.resend.apiKey),
     smtpHost: config.smtp.host || '',
     smtpPort: config.smtp.port,
@@ -111,6 +130,11 @@ export function getEmailConfigSnapshot() {
     ssl465FallbackAvailable: is465SslFallbackMode(),
   };
   return snap;
+}
+
+/** Alias for /api/debug/email-provider — same sanitized snapshot. */
+export function getEmailProviderDiagnostics() {
+  return getEmailConfigSnapshot();
 }
 
 export function formatSmtpError(err: unknown): Record<string, unknown> {
@@ -178,10 +202,18 @@ export function shouldExposeEmailErrorDetail(): boolean {
 }
 
 export function clientEmailErrorMessage(err: unknown): string {
-  if (err instanceof Error) {
-    return err.message;
+  const raw = err instanceof Error ? err.message : typeof err === 'string' ? err : 'Email send failed';
+  if (/only send testing emails to your own email address/i.test(raw)) {
+    return (
+      'Email provider is in Resend sandbox mode and cannot send to external addresses. ' +
+      'Verify a domain at resend.com/domains and set RESEND_FROM to that domain, ' +
+      'or set EMAIL_PROVIDER=smtp with SMTP_HOST/SMTP_USER/SMTP_PASS/EMAIL_FROM configured.'
+    );
   }
-  return 'Email send failed';
+  if (/verify a domain at resend\.com\/domains/i.test(raw)) {
+    return raw;
+  }
+  return raw;
 }
 
 export function logSmtpContext(label: string): void {

@@ -8,8 +8,8 @@ interface MagicLinkResultScreenProps {
 export function MagicLinkResultScreen({ success, error }: MagicLinkResultScreenProps) {
   function handleClose() {
     if (success) {
-      window.history.replaceState({}, '', '/?newTable=1');
-      window.location.assign('/?newTable=1');
+      window.history.replaceState({}, '', '/');
+      window.location.assign('/');
       return;
     }
     window.history.replaceState({}, '', '/login');
