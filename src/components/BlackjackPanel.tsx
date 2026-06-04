@@ -155,6 +155,12 @@ export function BlackjackPanel({
   /** Last chip-tray / box-tap target — shared across Full Table and Card View. */
   const lastBetTargetRef = useRef<PlaceBetTarget | null>(null);
 
+  const profile = loadProfile();
+  const controllerName = profile.name.trim() || tableMeta.controllerName;
+  const tableOwner = isTableOwner(gameState, controllerName);
+  const canDriveTableAutomation =
+    tableOwner || controllerName === tableMeta.controllerName;
+
   const {
     centerStatus,
     flowError,
@@ -173,7 +179,13 @@ export function BlackjackPanel({
     handleShuffleToStart,
     engineStatus,
     initialDealStaged,
-  } = useBlackjackTableFlow(gameState, onGameStateChange, onlineDispatch, onlineActionInFlight);
+  } = useBlackjackTableFlow(
+    gameState,
+    onGameStateChange,
+    onlineDispatch,
+    onlineActionInFlight,
+    canDriveTableAutomation,
+  );
 
   const isMobileViewport = useIsMobileViewport();
   // Full Table felt only degrades to the "Use Card View" hint on ultra-narrow
@@ -198,9 +210,6 @@ export function BlackjackPanel({
   const viewRootClass = getViewRootClass(deviceView, viewMode);
   const effectiveBoxId = gameState.selectedSeatId ?? defaultBlackjackSeatId(gameState);
   const flowSettings = gameState.blackjackFlowSettings;
-  const profile = loadProfile();
-  const controllerName = profile.name.trim() || tableMeta.controllerName;
-  const tableOwner = isTableOwner(gameState, controllerName);
   const canAssignChips = canUserAssignChips(gameState, controllerName);
   const minimumBet = getTableMinimumBet(gameState);
   const canChangeMinBet = tableOwner && canChangeMinimumBet(gameState);

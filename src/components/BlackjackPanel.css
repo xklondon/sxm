@@ -1469,6 +1469,34 @@
   font-size: 0.62rem;
 }
 
+/* Card View — desktop hero cards (same phone-view structure, larger stage). */
+.bj-view-card-desktop .bj-phone-view__hero-stage,
+.bj-view-card-desktop .bj-phone-view__hand {
+  min-height: 11.5rem;
+}
+
+.bj-view-card-desktop .bj-phone-view__cards-slot {
+  min-height: 10.5rem;
+}
+
+.bj-view-card-desktop .bj-phone-view__cards .playing-card.bj-phone-card--hero {
+  width: min(22vw, 8.5rem);
+  min-height: min(30vw, 12rem);
+  font-size: 1.55rem;
+}
+
+.bj-view-card-desktop .bj-phone-view__side-action {
+  flex: 0 0 2.65rem;
+  min-height: 9.5rem;
+  font-size: 0.62rem;
+}
+
+.bj-view-card-desktop .bj-phone-view__slot--stage,
+.bj-view-card-desktop .bj-phone-view__play-stack,
+.bj-view-card-desktop .bj-phone-view__stage {
+  overflow: visible;
+}
+
 /* Mobile This Table — stacked card below felt (same for Full Table + Card View). */
 .bj-view-card-mobile .bj-accounts-panel,
 .bj-view-full-mobile .bj-accounts-panel {

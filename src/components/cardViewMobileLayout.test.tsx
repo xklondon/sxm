@@ -118,14 +118,14 @@ describe('mobile Card View layout contract', () => {
     expect(playing).toContain('bj-phone-view__mini-row');
   });
 
-  it('playing phase: Stand left, Hit right, secondary actions in same bar', () => {
+  it('playing phase: Stand left, Hit right beside hero cards; extras in action bar', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__action-bar-primary');
+    expect(html).toContain('bj-phone-view__hero-stage');
+    expect(html).toContain('bj-phone-view__side-action--stand');
+    expect(html).toContain('bj-phone-view__side-action--hit');
     expect(html).toContain('bj-phone-view__action-bar-secondary');
-    expect(html).toContain('bj-phone-view__action-bar-btn--stand');
-    expect(html).toContain('bj-phone-view__action-bar-btn--hit');
-    const standIdx = html.indexOf('bj-phone-view__action-bar-btn--stand');
-    const hitIdx = html.indexOf('bj-phone-view__action-bar-btn--hit');
+    const standIdx = html.indexOf('bj-phone-view__side-action--stand');
+    const hitIdx = html.indexOf('bj-phone-view__side-action--hit');
     const splitIdx = html.indexOf('bj-phone-view__action-bar-extra');
     expect(standIdx).toBeGreaterThan(-1);
     expect(hitIdx).toBeGreaterThan(standIdx);

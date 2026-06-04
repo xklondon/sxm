@@ -303,9 +303,12 @@ export const CARD_VIEW_PLAYING_LAYOUT = {
   miniBoxes: 'bj-phone-view__mini-row',
   actionBtnTappable: 'bj-phone-view__action-btn--tappable',
   totalBadgeHero: 'bj-phone-view__total--hero',
+  heroStage: 'bj-phone-view__hero-stage',
+  sideActionStand: 'bj-phone-view__side-action--stand',
+  sideActionHit: 'bj-phone-view__side-action--hit',
   actionBarBtn: 'bj-phone-view__action-bar-btn',
-  actionBarBtnStand: 'bj-phone-view__action-bar-btn--stand',
-  actionBarBtnHit: 'bj-phone-view__action-bar-btn--hit',
+  actionBarBtnStand: 'bj-phone-view__side-action--stand',
+  actionBarBtnHit: 'bj-phone-view__side-action--hit',
 } as const;
 
 export const CARD_VIEW_PLAYING_SLOT_ORDER = [

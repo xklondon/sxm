@@ -39,11 +39,31 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+/** Client-side bank pacing / initial-deal loops — table driver only (not passive viewers). */
+export function shouldRunClientBankAutomation(params: {
+  hasOnlineDispatch: boolean;
+  canDriveTableAutomation: boolean;
+  bankDrawMode: 'manual' | 'auto';
+  roundStatus: string | undefined;
+}): boolean {
+  if (params.hasOnlineDispatch) {
+    return false;
+  }
+  if (!params.canDriveTableAutomation) {
+    return false;
+  }
+  if (params.bankDrawMode !== 'auto') {
+    return false;
+  }
+  return params.roundStatus === 'bank-turn' || params.roundStatus === 'banking';
+}
+
 export function useBlackjackTableFlow(
   gameState: GameState,
   onGameStateChange: (state: GameState) => void,
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>,
   onlineActionInFlight = false,
+  canDriveTableAutomation = true,
 ) {
   const { blackjack: round, tableMeta } = gameState;
   const flow = gameState.blackjackFlowSettings;
@@ -268,28 +288,23 @@ export function useBlackjackTableFlow(
       }
       naturalDealingRef.current = false;
     })();
-  }, [round?.status, flow.initialDealMode, onGameStateChange, onlineDispatch]);
+  }, [round?.status, flow.initialDealMode, onGameStateChange, onlineDispatch, canDriveTableAutomation]);
 
   /** Auto bank draw: random 2–5s between cards; pause before banking/payout. */
   useEffect(() => {
-    // Online resolves the bank turn + settlement server-side inside the action
-    // that ends player turns; never draw the bank or settle locally online.
-    if (onlineDispatch) {
-      bankPacingRef.current = 'idle';
-      setBankUiMessage(null);
-      return;
-    }
     const status = round?.status;
-    if (flow.bankDrawMode !== 'auto') {
+    if (
+      !shouldRunClientBankAutomation({
+        hasOnlineDispatch: Boolean(onlineDispatch),
+        canDriveTableAutomation,
+        bankDrawMode: flow.bankDrawMode,
+        roundStatus: status,
+      })
+    ) {
+      bankPacingRef.current = 'idle';
       if (status !== 'bank-turn' && status !== 'banking') {
         setBankUiMessage(null);
       }
-      return;
-    }
-
-    if (status !== 'bank-turn' && status !== 'banking') {
-      bankPacingRef.current = 'idle';
-      setBankUiMessage(null);
       return;
     }
 
@@ -353,12 +368,12 @@ export function useBlackjackTableFlow(
       bankPacingRef.current = 'idle';
       setBankUiMessage(null);
     };
-  }, [round?.status, flow.bankDrawMode, onGameStateChange, onlineDispatch]);
+  }, [round?.status, flow.bankDrawMode, onGameStateChange, onlineDispatch, canDriveTableAutomation]);
 
   /** Manual bank: show final bank state before payout. */
   useEffect(() => {
     // Online never settles locally; server resolves banking.
-    if (onlineDispatch) {
+    if (onlineDispatch || !canDriveTableAutomation) {
       manualBankingRef.current = false;
       return;
     }
@@ -419,7 +434,15 @@ export function useBlackjackTableFlow(
     if (afterKey !== beforeKey || afterStatus !== beforeStatus) {
       onGameStateChange(next);
     }
-  }, [round?.status, round?.activeHandKey, round?.playerHands, tableMeta.personPlayFlow, onGameStateChange, onlineDispatch]);
+  }, [
+    round?.status,
+    round?.activeHandKey,
+    round?.playerHands,
+    tableMeta.personPlayFlow,
+    onGameStateChange,
+    onlineDispatch,
+    canDriveTableAutomation,
+  ]);
 
   return {
     tableMessage,

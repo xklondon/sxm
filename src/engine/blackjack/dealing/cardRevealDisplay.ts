@@ -102,3 +102,28 @@ export function countsFromRevealSteps(steps: InitialDealStep[]): CardVisibilityC
 export function maxVisibilityForRound(round: BlackjackRound | null): CardVisibilityCounts {
   return countVisibleCards(round);
 }
+
+/** Stable key for per-table, per-round visual hydration. */
+export function cardRevealScopeKey(sessionId: string, roundNumber: number): string {
+  return `${sessionId}:${roundNumber}`;
+}
+
+export function shouldHydrateCardRevealScope(
+  previousScope: string | null,
+  nextScope: string,
+  hasHydrated: boolean,
+): boolean {
+  return !hasHydrated || previousScope !== nextScope;
+}
+
+/** Ordered initial-deal steps only while the round is still in initial-deal. */
+export function shouldUseOrderedInitialReveal(
+  roundStatus: BlackjackRound['status'] | undefined,
+  visible: CardVisibilityCounts,
+  target: CardVisibilityCounts,
+): boolean {
+  return (
+    roundStatus === 'initial-deal' &&
+    totalCardCount(target) - totalCardCount(visible) > 1
+  );
+}

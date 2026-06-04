@@ -877,32 +877,100 @@ export function BlackjackCardView({
             BUST
           </span>
         )}
-        <div className="bj-phone-view__hand-meta">
-          <div className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero">
-            Total {value}
-          </div>
-        </div>
+        <div
+          className={[
+            "bj-phone-view__hero-stage",
+            showSideControls ? "bj-phone-view__hero-stage--with-actions" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {showSideControls && (
+            <button
+              type="button"
+              className={[
+                "bj-phone-view__side-action",
+                "bj-phone-view__side-action--stand",
+                "ds-btn",
+                "ds-btn--stand",
+                isActiveTurn ? "bj-phone-view__side-action--live" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              disabled={!isActiveTurn || !canStand}
+              title={
+                !isActiveTurn || !canStand
+                  ? (disabledReason ?? "")
+                  : "Stay — swipe left"
+              }
+              aria-label={
+                !isActiveTurn || !canStand
+                  ? `Stay disabled: ${disabledReason}`
+                  : "Stay"
+              }
+              onClick={handleStayClick}
+            >
+              <span className="bj-phone-view__side-action-label">Stand</span>
+            </button>
+          )}
 
-        <div className="bj-phone-view__cards-slot">
-          {cardIds.length > 0 ? (
-            <div className="bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched">
-              {cardIds.map((id, i) => (
-                <div
-                  key={`${heroHandKey}-${i}-${id}`}
-                  className="bj-phone-view__card-wrap"
-                  style={{ "--card-i": i } as CSSProperties}
-                >
-                  {renderHugeCard(
-                    id,
-                    false,
-                    "hero",
-                    `${heroHandKey}-${i}-${id}`,
-                  )}
+          <div className="bj-phone-view__hero-center">
+            <div className="bj-phone-view__cards-slot">
+              {cardIds.length > 0 ? (
+                <div className="bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched">
+                  {cardIds.map((id, i) => (
+                    <div
+                      key={`${heroHandKey}-${i}-${id}`}
+                      className="bj-phone-view__card-wrap"
+                      style={{ "--card-i": i } as CSSProperties}
+                    >
+                      {renderHugeCard(
+                        id,
+                        false,
+                        "hero",
+                        `${heroHandKey}-${i}-${id}`,
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="bj-phone-view__cards-placeholder" aria-hidden="true" />
+              )}
             </div>
-          ) : (
-            <div className="bj-phone-view__cards-placeholder" aria-hidden="true" />
+            <div className="bj-phone-view__hand-meta">
+              <div className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero">
+                Total {value}
+              </div>
+            </div>
+          </div>
+
+          {showSideControls && (
+            <button
+              type="button"
+              className={[
+                "bj-phone-view__side-action",
+                "bj-phone-view__side-action--hit",
+                "ds-btn",
+                "ds-btn--hit",
+                isActiveTurn ? "bj-phone-view__side-action--live" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              disabled={!isActiveTurn || !canHit}
+              title={
+                !isActiveTurn || !canHit
+                  ? (disabledReason ?? "")
+                  : "Hit me — swipe right"
+              }
+              aria-label={
+                !isActiveTurn || !canHit
+                  ? `Hit disabled: ${disabledReason}`
+                  : "Hit me"
+              }
+              onClick={handleHitClick}
+            >
+              <span className="bj-phone-view__side-action-label">Hit</span>
+            </button>
           )}
         </div>
       </div>
@@ -910,7 +978,6 @@ export function BlackjackCardView({
   }
 
   function renderActionBar() {
-    const showPrimary = showSideControls;
     const canDoubleNow =
       isActiveTurn &&
       turnHandKey &&
@@ -929,64 +996,7 @@ export function BlackjackCardView({
     return (
       <div className="bj-phone-view__action-bar" aria-label="Player actions">
         <div className="bj-phone-view__action-bar-primary">
-          {showPrimary ? (
-            <>
-              <button
-                type="button"
-                className={[
-                  "bj-phone-view__action-bar-btn",
-                  "bj-phone-view__action-bar-btn--stand",
-                  "ds-btn",
-                  "ds-btn--stand",
-                  isActiveTurn ? "bj-phone-view__action-bar-btn--live" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                disabled={!isActiveTurn || !canStand}
-                title={
-                  !isActiveTurn || !canStand
-                    ? (disabledReason ?? "")
-                    : "Stay — swipe left"
-                }
-                aria-label={
-                  !isActiveTurn || !canStand
-                    ? `Stay disabled: ${disabledReason}`
-                    : "Stay"
-                }
-                onClick={handleStayClick}
-              >
-                Stand
-              </button>
-              <button
-                type="button"
-                className={[
-                  "bj-phone-view__action-bar-btn",
-                  "bj-phone-view__action-bar-btn--hit",
-                  "ds-btn",
-                  "ds-btn--hit",
-                  isActiveTurn ? "bj-phone-view__action-bar-btn--live" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                disabled={!isActiveTurn || !canHit}
-                title={
-                  !isActiveTurn || !canHit
-                    ? (disabledReason ?? "")
-                    : "Hit me — swipe right"
-                }
-                aria-label={
-                  !isActiveTurn || !canHit
-                    ? `Hit disabled: ${disabledReason}`
-                    : "Hit me"
-                }
-                onClick={handleHitClick}
-              >
-                Hit
-              </button>
-            </>
-          ) : (
-            <span className="bj-phone-view__action-bar-spacer" aria-hidden="true" />
-          )}
+          <span className="bj-phone-view__action-bar-spacer" aria-hidden="true" />
         </div>
         <div className="bj-phone-view__action-bar-secondary">
           {showDouble ? (

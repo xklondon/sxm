@@ -6,7 +6,10 @@ import {
   applyCardVisibility,
   applyRevealStep,
   buildInitialRevealSteps,
+  cardRevealScopeKey,
   maxVisibilityForRound,
+  shouldHydrateCardRevealScope,
+  shouldUseOrderedInitialReveal,
   totalCardCount,
   type CardVisibilityCounts,
 } from '../engine/blackjack/dealing/cardRevealDisplay';
@@ -63,50 +66,88 @@ function nextInitialStepReveal(
   return null;
 }
 
+export interface SequentialCardRevealOptions {
+  /** Reserved for callers (online tables hydrate on first snapshot like offline join). */
+  onlineMode?: boolean;
+}
+
 /**
- * Natural dealing: authoritative state updates immediately; UI reveals cards one-by-one.
+ * Natural dealing: authoritative state updates immediately; UI reveals only NEW
+ * cards after hydration. Mid-round join/table switch snaps to full visibility.
  */
 export function useSequentialCardReveal(
   gameState: GameState,
-  options?: { onlineMode?: boolean },
+  _options?: SequentialCardRevealOptions,
 ): { displayState: GameState; isRevealing: boolean } {
   const natural = isNaturalInitialDeal(gameState.blackjackFlowSettings.initialDealMode);
-  const onlineMode = options?.onlineMode ?? false;
 
-  const [displayState, setDisplayState] = useState(gameState);
-  const [isRevealing, setIsRevealing] = useState(false);
+  const scopeKey = cardRevealScopeKey(
+    gameState.session.id,
+    gameState.session.currentRound,
+  );
 
-  const visibleRef = useRef<CardVisibilityCounts>({ dealer: 0, hands: {} });
+  const initialTarget = maxVisibilityForRound(gameState.blackjack);
+  const visibleRef = useRef<CardVisibilityCounts>(initialTarget);
+  const scopeKeyRef = useRef<string | null>(scopeKey);
+  const hasHydratedRef = useRef(true);
   const runIdRef = useRef(0);
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
 
+  const [displayState, setDisplayState] = useState(() =>
+    natural ? applyCardVisibility(gameState, initialTarget) : gameState,
+  );
+  const [isRevealing, setIsRevealing] = useState(false);
+
   useEffect(() => {
-    if (!natural) {
-      visibleRef.current = maxVisibilityForRound(gameState.blackjack);
-      setDisplayState(gameState);
+    return () => {
+      runIdRef.current += 1;
+    };
+  }, []);
+
+  useEffect(() => {
+    const cancelReveal = () => {
+      runIdRef.current += 1;
+    };
+
+    const hydrateInstant = (state: GameState) => {
+      cancelReveal();
+      const target = maxVisibilityForRound(state.blackjack);
+      visibleRef.current = target;
+      setDisplayState(state);
       setIsRevealing(false);
+      hasHydratedRef.current = true;
+    };
+
+    if (!natural) {
+      hydrateInstant(gameState);
+      scopeKeyRef.current = scopeKey;
+      return;
+    }
+
+    const scopeChanged = shouldHydrateCardRevealScope(
+      scopeKeyRef.current,
+      scopeKey,
+      hasHydratedRef.current,
+    );
+
+    if (scopeChanged) {
+      scopeKeyRef.current = scopeKey;
+      hydrateInstant(gameState);
       return;
     }
 
     const target = maxVisibilityForRound(gameState.blackjack);
     const current = visibleRef.current;
+
     if (countsEqual(current, target)) {
       setDisplayState(gameState);
       setIsRevealing(false);
       return;
     }
 
-    const delta = totalCardCount(target) - totalCardCount(current);
-    const roundStatus = gameState.blackjack?.status;
-    const paceSingleCard =
-      roundStatus === 'player-turns' ||
-      roundStatus === 'bank-turn' ||
-      roundStatus === 'banking';
-    if (!onlineMode && delta <= 1 && !paceSingleCard) {
-      visibleRef.current = target;
-      setDisplayState(gameState);
-      setIsRevealing(false);
+    if (totalCardCount(target) < totalCardCount(current)) {
+      hydrateInstant(gameState);
       return;
     }
 
@@ -124,12 +165,20 @@ export function useSequentialCardReveal(
           break;
         }
 
+        if (totalCardCount(authoritativeTarget) < totalCardCount(visible)) {
+          visible = authoritativeTarget;
+          visibleRef.current = visible;
+          setDisplayState(applyCardVisibility(authoritative, visible));
+          break;
+        }
+
         const delay = cardDealDelayMs(authoritative.blackjackFlowSettings);
         const round = authoritative.blackjack;
-        const useOrdered =
+        const orderedNext =
           round &&
-          totalCardCount(authoritativeTarget) - totalCardCount(visible) > 1;
-        const orderedNext = useOrdered ? nextInitialStepReveal(visible, round) : null;
+          shouldUseOrderedInitialReveal(round.status, visible, authoritativeTarget)
+            ? nextInitialStepReveal(visible, round)
+            : null;
 
         visible = orderedNext ?? incrementVisibility(visible, authoritativeTarget);
         visibleRef.current = visible;
@@ -144,7 +193,7 @@ export function useSequentialCardReveal(
         setIsRevealing(false);
       }
     })();
-  }, [gameState, natural, onlineMode]);
+  }, [gameState, natural, scopeKey]);
 
   return { displayState: natural ? displayState : gameState, isRevealing };
 }

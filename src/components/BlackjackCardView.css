@@ -607,7 +607,7 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .bj-phone-view__slot {
@@ -753,12 +753,12 @@
 }
 
 .bj-phone-view__cards-slot {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: min(52vw, 9.5rem);
+  min-height: min(56vw, 10.25rem);
   max-height: none;
   overflow: visible;
 }
@@ -910,7 +910,7 @@
 
   touch-action: none;
 
-  overflow: hidden;
+  overflow: visible;
 
 }
 
@@ -928,8 +928,70 @@
 
   width: 100%;
 
-  min-height: 6.25rem;
+  min-height: min(58vw, 11.5rem);
 
+  overflow: visible;
+
+}
+
+.bj-phone-view__hero-stage {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 100%;
+  min-height: min(58vw, 11.5rem);
+  padding: 0.15rem 0;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.bj-phone-view__hero-center {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow: visible;
+}
+
+.bj-phone-view__side-action {
+  flex: 0 0 2.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: min(46vw, 8.75rem);
+  max-height: 9.5rem;
+  padding: 0.45rem 0.25rem;
+  border-radius: var(--ds-radius-lg);
+  font: inherit;
+  font-size: 0.58rem;
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.42;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.bj-phone-view__side-action--live {
+  opacity: 1;
+}
+
+.bj-phone-view__side-action--live:not(:disabled) {
+  box-shadow: var(--ds-glow-gold);
+}
+
+.bj-phone-view__side-action.ds-btn--stand.bj-phone-view__side-action--live:not(:disabled) {
+  box-shadow: 0 0 12px rgb(110 231 183 / 0.45);
+}
+
+.bj-phone-view__side-action-label {
+  display: inline-block;
+  line-height: 1.1;
 }
 
 
@@ -948,11 +1010,13 @@
 
 .bj-phone-view__card-wrap {
 
-  margin-left: calc(var(--card-i, 0) * -1rem);
+  margin-left: calc(var(--card-i, 0) * -1.35rem);
 
-  transform: rotate(calc((var(--card-i, 0) - 0.5) * 5deg));
+  transform: rotate(calc((var(--card-i, 0) - 0.5) * 7deg));
 
   max-width: 100%;
+
+  filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.35));
 
 }
 
@@ -968,11 +1032,11 @@
 
 .bj-phone-view__cards .playing-card.bj-phone-card--hero {
 
-  width: min(38vw, 6.5rem);
+  width: min(42vw, 7.25rem);
 
-  min-height: min(52vw, 9.5rem);
+  min-height: min(56vw, 10.25rem);
 
-  font-size: 1.2rem;
+  font-size: 1.35rem;
 
   max-width: 100%;
 

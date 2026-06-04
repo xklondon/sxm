@@ -14,10 +14,17 @@ describe('Card View — full card visibility', () => {
     expect(cardCss).not.toMatch(
       /\.bj-phone-view__cards-slot[\s\S]*max-height:\s*6\.75rem/,
     );
+    expect(cardCss).toMatch(/\.bj-phone-view__hero-stage[\s\S]*overflow:\s*visible/);
   });
 
   it('play stage allows overflow for tall hero cards', () => {
     expect(cardCss).toMatch(/\.bj-phone-view__slot--stage[\s\S]*overflow:\s*visible/);
+    expect(cardCss).toMatch(/\.bj-phone-view__stage[\s\S]*overflow:\s*visible/);
+    expect(cardCss).toMatch(/\.bj-phone-view__hero-stage[\s\S]*min-height:/);
+  });
+
+  it('stand/hit flank hero cards vertically', () => {
+    expect(cardCss).toMatch(/\.bj-phone-view__side-action[\s\S]*writing-mode:\s*vertical-rl/);
   });
 
   it('hero total badge is compact', () => {
