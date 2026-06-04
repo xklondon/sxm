@@ -48,6 +48,40 @@ export function createEmailDebugRouter(): Router {
     res.json(getEmailProviderDiagnostics());
   });
 
+  router.get('/routes', (_req, res) => {
+    res.json({
+      auth: [
+        'POST /api/auth/request-magic-link',
+        'GET /api/auth/verify',
+        'GET /api/auth/me',
+        'POST /api/auth/logout',
+      ],
+      debug: [
+        'GET /api/debug/email-config',
+        'GET /api/debug/email-provider',
+        'GET /api/debug/routes',
+        'POST /api/debug/send-test-email (DEBUG_EMAIL_TEST)',
+      ],
+      health: ['GET /api/health', 'GET /health'],
+      tables: [
+        'GET /api/tables/invites/preview',
+        'GET /api/tables/invites/accept',
+        'POST /api/tables',
+        'POST /api/tables/join',
+        'GET /api/tables/:tableId',
+        'POST /api/tables/:tableId/actions',
+        'POST /api/tables/:tableId/invites',
+        'POST /api/tables/:tableId/invite-person',
+      ],
+      people: [
+        'GET /api/people',
+        'POST /api/people',
+        'PATCH /api/people/:personId',
+        'POST /api/people/:personId/send-invite',
+      ],
+    });
+  });
+
   router.post('/send-test-email', async (req, res) => {
     if (!envBool('DEBUG_EMAIL_TEST')) {
       res.status(404).json({ error: 'Not found' });

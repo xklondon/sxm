@@ -165,28 +165,73 @@ export function isResendSandboxFromAddress(from: string): boolean {
   return addr.endsWith('@resend.dev') || addr.includes('onboarding@resend');
 }
 
+/** Resend API + verified (non-sandbox) FROM — safe for production external mail. */
+export function isResendProductionReady(): boolean {
+  return isResendConfigured() && !isResendSandboxFromAddress(config.resend.from);
+}
+
+export function isGmailSmtpHost(): boolean {
+  const host = config.smtp.host.trim().toLowerCase();
+  return host.includes('gmail.com') || host.includes('google.com');
+}
+
+function smtpTcpReachabilityEnv(): boolean | null {
+  const raw = env('SMTP_TCP_REACHABLE').toLowerCase();
+  if (raw === 'true' || raw === '1') return true;
+  if (raw === 'false' || raw === '0') return false;
+  return null;
+}
+
+/** SMTP usable for sending — in production, Gmail requires a passing TCP probe. */
+export function isSmtpReachable(): boolean {
+  const forced = smtpTcpReachabilityEnv();
+  if (forced !== null) {
+    return forced;
+  }
+  if (isGmailSmtpHost()) {
+    return false;
+  }
+  return true;
+}
+
 export function getEmailProvider(): EmailProvider {
   const raw = env('EMAIL_PROVIDER', 'auto').toLowerCase();
   const smtpOk = isSmtpConfigured();
+  const smtpUsable = smtpOk && isSmtpReachable();
+  const resendProd = isResendProductionReady();
   const resendOk = isResendConfigured();
-  const resendSandbox = resendOk && isResendSandboxFromAddress(config.resend.from);
 
   if (raw === 'smtp') {
+    if (!smtpUsable && resendProd) {
+      // eslint-disable-next-line no-console
+      console.warn('[SXM][email] SMTP unreachable — falling back to Resend API');
+      return 'resend';
+    }
     return 'smtp';
   }
   if (raw === 'resend') {
-    if (resendSandbox && smtpOk) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        '[SXM][email] EMAIL_PROVIDER=resend but RESEND_FROM is sandbox — using SMTP for external delivery',
-      );
-      return 'smtp';
-    }
     return 'resend';
   }
 
-  // auto (default): prefer SMTP when configured — supports external recipients on Railway.
-  if (smtpOk) {
+  // auto
+  if (config.isProduction) {
+    if (resendProd) {
+      return 'resend';
+    }
+    if (smtpUsable) {
+      return 'smtp';
+    }
+    if (resendOk) {
+      return 'resend';
+    }
+    // Do not select broken Gmail SMTP on Railway when only sandbox Resend exists.
+    return 'resend';
+  }
+
+  if (resendProd) {
+    return 'resend';
+  }
+  if (smtpUsable) {
     return 'smtp';
   }
   if (resendOk) {

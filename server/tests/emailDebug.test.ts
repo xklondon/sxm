@@ -41,7 +41,7 @@ describe('GET /api/debug/email-config', () => {
     expect(res.headers['content-type']).toMatch(/json/);
     expect(res.body).toMatchObject({
       env: 'production',
-      emailProvider: 'smtp',
+      emailProvider: 'resend',
       publicOrigin: 'https://sxm-production.up.railway.app',
       smtpHost: 'smtp.gmail.com',
       smtpPort: 587,
@@ -49,7 +49,9 @@ describe('GET /api/debug/email-config', () => {
       smtpUserPresent: true,
       smtpPassPresent: true,
       smtpConfigured: true,
-      emailConfigured: true,
+      smtpReachable: false,
+      smtpGmailHost: true,
+      emailConfigured: false,
       resendConfigured: false,
     });
     expect(res.body.smtpPass).toBeUndefined();

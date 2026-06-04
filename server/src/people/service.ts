@@ -294,8 +294,12 @@ export class PeopleService {
     return person!;
   }
 
-  getAuthProfile(userId: string) {
-    const user = this.store.getUserById(userId);
+  getAuthProfile(userId: string, emailFromSession?: string) {
+    let user = this.store.getUserById(userId);
+    if (!user && emailFromSession) {
+      user = this.store.createUser(emailFromSession, emailFromSession.split('@')[0]!);
+      this.ensurePersonOnLogin(emailFromSession, user.id);
+    }
     if (!user) {
       throw new Error('User not found');
     }

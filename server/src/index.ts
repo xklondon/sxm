@@ -1,8 +1,13 @@
 import './loadEnv.js';
 import { createApp } from './app.js';
-import { config, getCorsOrigins, getEffectivePublicOrigin } from './config.js';
+import { config, getCorsOrigins, getEffectivePublicOrigin, isSmtpConfigured } from './config.js';
+import { probeConfiguredSmtpReachability } from './email/smtpProbe.js';
 
 const { httpServer } = createApp();
+
+if (isSmtpConfigured() && process.env.VITEST !== 'true') {
+  void probeConfiguredSmtpReachability();
+}
 
 httpServer.listen(config.port, config.host, () => {
   if (config.isProduction) {

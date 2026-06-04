@@ -7,11 +7,15 @@ import {
   getEmailProvider,
   getFromDomain,
   isEmailConfigured,
+  isGmailSmtpHost,
   isResendConfigured,
+  isResendProductionReady,
   isResendSandboxFromAddress,
   isSmtpConfigured,
+  isSmtpReachable,
   parseFromEmailAddress,
 } from '../config.js';
+import { getSmtpTcpReachabilityCache } from './smtpProbe.js';
 import { getCorsOrigins, getEffectivePublicOrigin } from '../config.js';
 import { sendResendMail } from './resend.js';
 
@@ -127,6 +131,10 @@ export function getEmailConfigSnapshot() {
     smtpUserPresent: Boolean(config.smtp.user),
     smtpPassPresent: Boolean(config.smtp.pass),
     smtpConfigured: isSmtpConfigured(),
+    smtpReachable: isSmtpReachable(),
+    smtpTcpProbe: getSmtpTcpReachabilityCache(),
+    smtpGmailHost: isGmailSmtpHost(),
+    resendProductionReady: isResendProductionReady(),
     ssl465FallbackAvailable: is465SslFallbackMode(),
   };
   return snap;
@@ -201,8 +209,26 @@ export function shouldExposeEmailErrorDetail(): boolean {
   return !config.isProduction || envBool('DEBUG_EMAIL_VERBOSE');
 }
 
+export function gmailSmtpUnreachableMessage(): string {
+  return (
+    'Gmail SMTP is unreachable from this host (common on Railway — outbound SMTP is blocked). ' +
+    'Use EMAIL_PROVIDER=resend with RESEND_API_KEY and a verified RESEND_FROM domain, ' +
+    'or configure a reachable SMTP relay.'
+  );
+}
+
 export function clientEmailErrorMessage(err: unknown): string {
   const raw = err instanceof Error ? err.message : typeof err === 'string' ? err : 'Email send failed';
+  if (/Gmail SMTP is unreachable from this host/i.test(raw)) {
+    return raw;
+  }
+  if (
+    isGmailSmtpHost() &&
+    (/ETIMEDOUT|ECONNREFUSED|ENOTFOUND|SMTP operation timed out/i.test(raw) ||
+      (err instanceof SmtpOperationTimeoutError))
+  ) {
+    return gmailSmtpUnreachableMessage();
+  }
   if (/only send testing emails to your own email address/i.test(raw)) {
     return (
       'Email provider is in Resend sandbox mode and cannot send to external addresses. ' +
@@ -311,7 +337,15 @@ export async function sendMailWithLogging(
     throw new Error(msg);
   }
 
-  if (getEmailProvider() === 'resend') {
+  const provider = getEmailProvider();
+  if (provider === 'smtp' && !isSmtpReachable()) {
+    const msg = isGmailSmtpHost() ? gmailSmtpUnreachableMessage() : 'SMTP host is not reachable from this server';
+    // eslint-disable-next-line no-console
+    console.error(`[SXM][email] ${context} aborted: ${msg}`);
+    throw new Error(msg);
+  }
+
+  if (provider === 'resend') {
     logSmtpContext(`${context} before resend send`);
     try {
       return await sendResendMail(context, mail);

@@ -97,6 +97,14 @@ export function createApp() {
     app.use('/api/dev', createDevRouter());
   }
 
+  app.use('/api', (req, res) => {
+    res.status(404).json({
+      error: 'API route not found',
+      method: req.method,
+      path: req.originalUrl,
+    });
+  });
+
   if (config.serveStatic) {
     const distDir = path.resolve(fileURLToPath(import.meta.url), '../../../dist');
     const assetsDir = path.join(distDir, 'assets');

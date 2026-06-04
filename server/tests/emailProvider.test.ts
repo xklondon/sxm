@@ -15,13 +15,30 @@ function smtpEnv() {
 }
 
 describe('email provider config', () => {
-  it('auto defaults to smtp when SMTP is configured', async () => {
+  it('dev auto uses SMTP when only SMTP is configured', async () => {
+    process.env.NODE_ENV = 'development';
     delete process.env.EMAIL_PROVIDER;
     smtpEnv();
     vi.resetModules();
     const mod = await import('../src/config.js');
     expect(mod.getEmailProvider()).toBe('smtp');
     expect(mod.isEmailConfigured()).toBe(true);
+  });
+
+  it('production auto prefers verified Resend over Gmail SMTP', async () => {
+    process.env.NODE_ENV = 'production';
+    delete process.env.EMAIL_PROVIDER;
+    process.env.RESEND_API_KEY = 're_x';
+    process.env.RESEND_FROM = 'SXM <notify@verified.example.com>';
+    process.env.SMTP_HOST = 'smtp.gmail.com';
+    process.env.SMTP_PORT = '587';
+    process.env.SMTP_USER = 'user@gmail.com';
+    process.env.SMTP_PASS = 'pass';
+    process.env.EMAIL_FROM = 'user@gmail.com';
+    vi.resetModules();
+    const mod = await import('../src/config.js');
+    expect(mod.isResendProductionReady()).toBe(true);
+    expect(mod.getEmailProvider()).toBe('resend');
   });
 
   it('uses Resend when EMAIL_PROVIDER=resend and no SMTP', async () => {
@@ -37,8 +54,9 @@ describe('email provider config', () => {
     expect(mod.getEmailFrom()).toBe('SXM <notify@verified.example.com>');
   });
 
-  it('prefers SMTP over Resend sandbox when both are configured', async () => {
-    process.env.EMAIL_PROVIDER = 'resend';
+  it('dev auto uses SMTP when Resend is sandbox-only', async () => {
+    process.env.NODE_ENV = 'development';
+    process.env.EMAIL_PROVIDER = 'auto';
     process.env.RESEND_API_KEY = 're_x';
     process.env.RESEND_FROM = 'SXM <onboarding@resend.dev>';
     smtpEnv();
@@ -64,6 +82,15 @@ describe('email provider config', () => {
     expect(msg).toMatch(/Resend sandbox/i);
     expect(msg).toMatch(/resend\.com\/domains/i);
   });
+
+  it('clientEmailErrorMessage explains Gmail SMTP timeout on Railway', async () => {
+    process.env.SMTP_HOST = 'smtp.gmail.com';
+    vi.resetModules();
+    const { clientEmailErrorMessage } = await import('../src/email/smtp.js');
+    const msg = clientEmailErrorMessage(new Error('SMTP operation timed out (sendMail)'));
+    expect(msg).toMatch(/Gmail SMTP is unreachable/i);
+    expect(msg).toMatch(/Resend/i);
+  });
 });
 
 describe('GET /api/debug/email-provider', () => {
@@ -72,6 +99,8 @@ describe('GET /api/debug/email-provider', () => {
     process.env.PUBLIC_ORIGIN = 'https://sxm-production.up.railway.app';
     process.env.CORS_ORIGIN = 'https://sxm-production.up.railway.app';
     process.env.SESSION_SECRET = 'test-secret';
+    process.env.RESEND_API_KEY = 're_x';
+    process.env.RESEND_FROM = 'SXM <notify@verified.example.com>';
     smtpEnv();
     vi.resetModules();
     const { createApp } = await import('../src/app.js');
@@ -80,9 +109,9 @@ describe('GET /api/debug/email-provider', () => {
     const res = await request(app).get('/api/debug/email-provider');
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
-      emailProvider: 'smtp',
+      emailProvider: 'resend',
       emailConfigured: true,
-      fromAddress: 'a@b.c',
+      resendProductionReady: true,
       resendSandboxMode: false,
     });
     expect(res.body.smtpPass).toBeUndefined();

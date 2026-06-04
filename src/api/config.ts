@@ -151,10 +151,26 @@ export function clientConfigHasStaleLanIp(c: ClientConfigSnapshot): boolean {
   return bakedViteLanIp || apiOffOrigin;
 }
 
-/** Relative `/api/...` path in proxied dev mode; absolute URL otherwise. */
+/** Always returns an absolute-path URL segment starting with `/`. */
+export function normalizeApiPath(path: string): string {
+  const trimmed = path.trim();
+  if (!trimmed) {
+    return '/';
+  }
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+}
+
+/**
+ * Production and proxied dev: same-origin relative `/api/...` (session cookies).
+ * Non-proxied dev with matching API origin: absolute URL.
+ */
 export function apiPath(path: string): string {
-  const normalized = path.startsWith('/') ? path : `/${path}`;
-  if (typeof window !== 'undefined' && usesProxiedApi()) {
+  const normalized = normalizeApiPath(path);
+  if (typeof window === 'undefined') {
+    return `${getApiBaseUrl()}${normalized}`;
+  }
+  const isProdBuild = Boolean(import.meta.env.PROD);
+  if (isProdBuild || usesProxiedApi()) {
     return normalized;
   }
   return `${getApiBaseUrl()}${normalized}`;

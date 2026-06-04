@@ -9,6 +9,13 @@ export async function sendMagicLinkEmail(to: string, verifyUrl: string): Promise
     );
     return;
   }
+  if (!config.isProduction) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[SXM][email] sendMagicLinkEmail skipped in dev (recipient=${sanitizeEmail(to)}) — use logged devLink`,
+    );
+    return;
+  }
 
   await sendMailWithLogging('magic-link', {
     from: getEmailFrom(),

@@ -50,6 +50,9 @@ export default defineConfig(({ mode }) => {
       environment: 'node',
       include: ['src/**/*.test.{ts,tsx}', 'server/tests/**/*.test.ts'],
       setupFiles: ['server/tests/setup.ts'],
+      pool: 'forks',
+      maxWorkers: 2,
+      testTimeout: 15_000,
     },
   };
 });

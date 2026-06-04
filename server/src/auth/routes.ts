@@ -112,11 +112,17 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
 
   router.get('/me', requireAuth, (req: AuthedRequest, res) => {
     try {
-      const user = people.getAuthProfile(req.auth!.userId);
+      const user = people.getAuthProfile(req.auth!.userId, req.auth!.email);
       refreshSessionCookie(res, req.auth!, req);
       res.json({ user });
     } catch (err) {
-      res.status(404).json({ error: err instanceof Error ? err.message : 'Not found' });
+      const message = err instanceof Error ? err.message : 'Not found';
+      if (/user not found/i.test(message)) {
+        clearSessionCookie(res);
+        res.status(401).json({ error: 'Session expired — sign in again' });
+        return;
+      }
+      res.status(500).json({ error: message });
     }
   });
 
