@@ -93,4 +93,6 @@ export interface ZilchGameState {
     pendingValues?: number[];
   };
   winnerPlayerId?: string | null;
+  /** Set when a player just zilched — cleared on next roll. */
+  lastZilchPlayerId?: string | null;
 }

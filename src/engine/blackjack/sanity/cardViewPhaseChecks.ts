@@ -3,9 +3,11 @@ import { confirmTableAgreement } from '../../session/table';
 import { getTableWagerDisplay } from '../../session/wagerDisplay';
 import {
   addChipToBoxStake,
+  confirmBoxStake,
   getStakeForBox,
   removeLastChipFromBoxStake,
 } from '../stakes';
+import { syncCallersForDeal } from '../../session/playerAssignment';
 import { getAvailableChipsForBankrollOwner } from '../../session/bankroll';
 import { applySkipBankIfNeeded } from '../roundFlow';
 import { allInsuranceResolved } from '../insurance';
@@ -102,6 +104,12 @@ export function runCardViewPhaseChecks(): SanitySuiteResult {
   insState = claimBoxSlot(insState, 2);
   const insB1 = boxPlayerId(insState, 1)!;
   const insB2 = boxPlayerId(insState, 2)!;
+  const insPersonId = insState.tableMeta.ownerPersonId!;
+  insState = addChipToBoxStake(insState, insB1, 50, insPersonId);
+  insState = addChipToBoxStake(insState, insB2, 50, insPersonId);
+  insState = confirmBoxStake(insState, insB1);
+  insState = confirmBoxStake(insState, insB2);
+  insState = syncCallersForDeal(insState, [insB1, insB2]);
   const aceId = findCardId(insState.deck!, 'A');
   const insRound: BlackjackRound = {
     ...actingRound(insState, insB1, [findCardId(insState.deck!, '10'), findCardId(insState.deck!, '9')], 50),
@@ -135,7 +143,7 @@ export function runCardViewPhaseChecks(): SanitySuiteResult {
   results.push(
     check(
       'dealer ace waits for all insurance before bank',
-      !allInsuranceResolved(insState.session, insRound, LAS_VEGAS_PROTOCOL) &&
+      !allInsuranceResolved(insState, insRound, LAS_VEGAS_PROTOCOL) &&
         applySkipBankIfNeeded(insState.session, insRound).status === 'player-turns',
     ),
   );

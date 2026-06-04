@@ -23,6 +23,7 @@ import {
   closeInsuranceOffer,
   allInsuranceResolved,
   advanceInsurancePhaseIfComplete,
+  getInsuranceOfferForBox,
 } from './insurance';
 import { drawSingleBankCard, enterBankingIfComplete } from './bankTurn';
 import { activePlayerIdFromRound, getVirtualBlackjackAction, isVirtualPlayer } from './virtual';
@@ -474,7 +475,7 @@ export function applyInsuranceAdvanceOnState(state: GameState): GameState {
     return state;
   }
   const protocol = getBlackjackProtocolForState(state);
-  const advanced = advanceInsurancePhaseIfComplete(state.session, state.players, round, protocol);
+  const advanced = advanceInsurancePhaseIfComplete(state, round, protocol);
   if (!advanced.closed) {
     return state;
   }
@@ -663,6 +664,14 @@ export function takeInsuranceOnState(state: GameState, playerId: string): GameSt
   if (!s.blackjack) {
     throw new Error('No active Blackjack round');
   }
+  const protocol = getBlackjackProtocolForState(s);
+  const offer = getInsuranceOfferForBox(s, s.blackjack, playerId, protocol);
+  if (!offer) {
+    throw new Error('Insurance not offered for this box');
+  }
+  if (!offer.canAfford) {
+    throw new Error('Not enough chips for insurance');
+  }
   const result = takeInsuranceBet(
     s.session,
     s.players,
@@ -673,7 +682,7 @@ export function takeInsuranceOnState(state: GameState, playerId: string): GameSt
     getBlackjackProtocolForState(s),
   );
   let next: GameState = { ...s, session: result.session, ledger: result.ledger, blackjack: result.round };
-  if (allInsuranceResolved(next.session, result.round, getBlackjackProtocolForState(next))) {
+  if (allInsuranceResolved(next, result.round, getBlackjackProtocolForState(next))) {
     const closed = closeInsuranceOffer(next.session, next.players, result.round);
     next = { ...next, players: closed.players, blackjack: closed.round };
     next = resolvePendingNaturalsAfterDealerPeek(next);
@@ -688,7 +697,7 @@ export function declineInsuranceOnState(state: GameState, playerId: string): Gam
   }
   const round = declineInsurance(s.blackjack, playerId);
   let next: GameState = { ...s, blackjack: round };
-  if (allInsuranceResolved(next.session, round, getBlackjackProtocolForState(next))) {
+  if (allInsuranceResolved(next, round, getBlackjackProtocolForState(next))) {
     const closed = closeInsuranceOffer(next.session, next.players, round);
     next = { ...next, players: closed.players, blackjack: closed.round };
     next = resolvePendingNaturalsAfterDealerPeek(next);

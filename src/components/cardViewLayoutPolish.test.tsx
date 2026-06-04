@@ -93,12 +93,12 @@ describe('Card View layout polish', () => {
   it('central action rows sit under hand meta', () => {
     const html = renderAt(390);
     const metaIdx = html.indexOf('bj-phone-view__hand-meta');
-    const primaryIdx = html.indexOf('bj-phone-view__hero-actions-primary');
+    const primaryIdx = html.indexOf('bj-phone-view__action-bar-row--primary');
     expect(metaIdx).toBeGreaterThan(-1);
     expect(primaryIdx).toBeGreaterThan(metaIdx);
-    expect(html).toContain('bj-phone-view__hero-actions-extras');
-    expect(html).toMatch(/bj-phone-view__hero-actions-primary[\s\S]*Stand/);
-    expect(html).toMatch(/bj-phone-view__hero-actions-extras[\s\S]*2×/);
+    expect(html).toContain('bj-phone-view__action-bar-row--secondary');
+    expect(html).toMatch(/bj-phone-view__action-bar-row--primary[\s\S]*Stand/);
+    expect(html).toMatch(/bj-phone-view__action-bar-row--secondary[\s\S]*2×/);
   });
 
   it('command box is under centered dealer stack', () => {
@@ -114,9 +114,9 @@ describe('Card View layout polish', () => {
 
   it('hero action CSS uses two centered rows with smaller extras', () => {
     const css = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
-    expect(css).toMatch(/\.bj-phone-view__hero-actions[\s\S]*flex-direction:\s*column/);
-    expect(css).toContain('.bj-phone-view__hero-actions-primary');
-    expect(css).toContain('.bj-phone-view__hero-actions-extras');
-    expect(css).toContain('.bj-phone-view__hero-actions-btn--extra');
+    expect(css).toContain('.bj-phone-view__action-bar--playing');
+    expect(css).toContain('.bj-phone-view__action-bar-row--primary');
+    expect(css).toContain('.bj-phone-view__action-bar-row--secondary');
+    expect(css).toContain('.bj-phone-view__mini-hand-card-stack');
   });
 });

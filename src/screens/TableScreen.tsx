@@ -13,6 +13,9 @@ import {
   addSeatAtTable,
   defaultBlackjackSeatId,
   DEFAULT_TABLE_CHIPS,
+  isBlackjackTable,
+  isHoldemTable,
+  isZilchTable,
   removeSeatFromTable,
   recordTableOutcome,
   startNewGameWithWager,
@@ -27,7 +30,11 @@ import { PlayingCard } from '../components/PlayingCard';
 import { BlackjackPanel } from '../components/BlackjackPanel';
 import { HoldemPanel } from '../components/HoldemPanel';
 import { ZilchPanel } from '../components/ZilchPanel';
-import { TableStakePanel, type TableStakePanelMode } from '../components/TableStakePanel';
+import {
+  TableStakePanel,
+  type TableResetSetupVariant,
+  type TableStakePanelMode,
+} from '../components/TableStakePanel';
 import { InviteModal } from '../components/InviteModal';
 import { AdminPanel } from '../components/AdminPanel';
 import './TableScreen.css';
@@ -79,7 +86,6 @@ export function TableScreen({
     players,
     ledger,
     deck,
-    tableGame,
     tableViewMode,
     selectedSeatId,
     tableMeta,
@@ -92,14 +98,16 @@ export function TableScreen({
   const [adminOpen, setAdminOpen] = useState(false);
   const [stakePanelMode, setStakePanelMode] = useState<TableStakePanelMode>('new');
   const [resetSetupOpen, setResetSetupOpen] = useState(false);
+  const [resetSetupVariant, setResetSetupVariant] =
+    useState<TableResetSetupVariant>('resetTable');
 
   const balances = deriveAllBalancesFromLedger(session, ledger);
   const remaining = deck ? getRemainingCardCount(deck) : 0;
   const lastDealt = deck ? getLastDealtCard(deck) : null;
   const dealtHistory = deck ? getDealtCards(deck) : [];
-  const isBlackjack = tableGame === 'blackjack';
-  const isHoldem = tableGame === 'texas-holdem';
-  const isZilch = tableGame === 'zilch';
+  const isZilch = isZilchTable(gameState);
+  const isBlackjack = isBlackjackTable(gameState);
+  const isHoldem = isHoldemTable(gameState);
 
   const bankId =
     session.gameType === 'texas-holdem'
@@ -304,13 +312,16 @@ export function TableScreen({
             <TableStakePanel
               gameState={gameState}
               mode={resetSetupOpen ? 'reset' : stakePanelMode}
+              resetSetupVariant={resetSetupVariant}
               onConfirm={(next) => {
                 onGameStateChange(next);
                 setResetSetupOpen(false);
+                setResetSetupVariant('resetTable');
                 setStakePanelMode('new');
               }}
               onFinished={() => {
                 setResetSetupOpen(false);
+                setResetSetupVariant('resetTable');
                 setStakePanelMode('new');
               }}
               onlineDispatch={onlineDispatch}
@@ -321,7 +332,6 @@ export function TableScreen({
             <ZilchPanel
               gameState={gameState}
               onGameStateChange={onGameStateChange}
-              onJoinTable={() => setShowJoin(true)}
               onInviteTable={() => setInviteOpen(true)}
               onlineDispatch={onlineDispatch}
               onlineActionInFlight={onlineActionInFlight}
@@ -340,7 +350,8 @@ export function TableScreen({
               profileOpen={profileOpen}
               onProfileOpenChange={onProfileOpenChange}
               onSaveTable={handleSaveGame}
-              onBeginTableReset={() => {
+              onBeginTableReset={(variant = 'resetTable') => {
+                setResetSetupVariant(variant);
                 setStakePanelMode('reset');
                 setResetSetupOpen(true);
               }}

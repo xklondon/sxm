@@ -162,8 +162,8 @@ const CARD_VIEW_PLAYING_SECTIONS = [
   'bj-phone-view__slot--actions',
   'bj-phone-view__slot--boxes',
   'bj-phone-view__action-bar',
-  'bj-phone-view__hero-actions-primary',
-  'bj-phone-view__hero-actions-extras',
+  'bj-phone-view__action-bar-row--primary',
+  'bj-phone-view__action-bar-row--secondary',
   'bj-phone-view__hero-stage',
   'bj-phone-view__mini-row',
 ] as const;
@@ -355,7 +355,7 @@ describe('mobile Card View structure', () => {
 
   it('highlights the active box as the live hero with central controls', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__hero-actions-primary');
+    expect(html).toContain('bj-phone-view__action-bar-row--primary');
     expect(html).toContain('bj-phone-view__mini-row');
   });
 });

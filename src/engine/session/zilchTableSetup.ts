@@ -18,6 +18,7 @@ import {
   logTableMetaStartingChips,
 } from './tokens';
 import type { TableBankerSetupMode, TableStakeSetupInput } from './tableSetup';
+import { ensureZilchTableIdentity } from './tableKind';
 
 export interface ZilchTableStakeSetupInput extends TableStakeSetupInput {
   zilchMode: ZilchMode;
@@ -111,7 +112,7 @@ export function applyZilchTableStakeSetup(
   logDerivedBalances(next, 'zilch-start');
   logTableMetaStartingChips(next, 'zilch-start');
 
-  return next;
+  return ensureZilchTableIdentity(next);
 }
 
 export function beginZilchPlay(state: GameState): GameState {

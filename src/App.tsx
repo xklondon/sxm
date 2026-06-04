@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState } from './types';
-import { createNewBlackjackTable } from './engine/session';
+import { createNewBlackjackTable, normalizeLoadedGameState } from './engine/session';
 import { applySettingsToGameState, loadSettings } from './storage/settingsStorage';
 import {
   loadProfile,
@@ -130,7 +130,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
   const isMobileViewport = useIsMobileViewport();
 
   const handleGameStateChange = useCallback((next: GameState) => {
-    setGameState(next);
+    setGameState(normalizeLoadedGameState(next));
   }, []);
 
   const { connected, connectionState, dispatchAction, isOnline, actionInFlight } = useOnlineTable(
@@ -240,7 +240,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
         if (fetchGenerationRef.current !== fetchGen) {
           return;
         }
-        setGameState(data.state);
+        setGameState(normalizeLoadedGameState(data.state));
         setActiveTableId(data.tableId);
         setTableVersion(data.version);
         setStoredOnlineTableId(data.tableId);
@@ -415,7 +415,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     if (onlineMode && activeTableId) {
       try {
         const data = await fetchTable(activeTableId);
-        setGameState(data.state);
+        setGameState(normalizeLoadedGameState(data.state));
         setTableVersion(data.version);
         setStoredOnlineTableId(data.tableId);
         setScreen('table');

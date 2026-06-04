@@ -246,23 +246,39 @@ export function isHandEligibleForInsuranceOffer(
   return true;
 }
 
+/** Box player ids with a confirmed bet and an insurance-eligible hand (one per box). */
+export function getInsuranceEligibleBoxIds(
+  session: GameSession,
+  round: BlackjackRound,
+  protocol: BlackjackProtocol,
+): string[] {
+  const boxIds: string[] = [];
+  const seen = new Set<string>();
+  for (const handKey of handKeysWithConfirmedBets(session, round)) {
+    const boxId = parseBlackjackHandKey(handKey).playerId;
+    if (seen.has(boxId)) {
+      continue;
+    }
+    const hand = round.playerHands[handKey];
+    if (!hand || !isHandEligibleForInsuranceOffer(protocol, hand)) {
+      continue;
+    }
+    seen.add(boxId);
+    boxIds.push(boxId);
+  }
+  return boxIds;
+}
+
+/** @deprecated Use getInsuranceEligibleBoxIds — values are box player ids, not person ids. */
 export function getInsuranceEligiblePlayerIds(
   session: GameSession,
   round: BlackjackRound,
   protocol: BlackjackProtocol,
 ): string[] {
-  const ids = new Set<string>();
-  for (const handKey of handKeysWithConfirmedBets(session, round)) {
-    const hand = round.playerHands[handKey];
-    if (!hand || !isHandEligibleForInsuranceOffer(protocol, hand)) {
-      continue;
-    }
-    ids.add(parseBlackjackHandKey(handKey).playerId);
-  }
-  return [...ids];
+  return getInsuranceEligibleBoxIds(session, round, protocol);
 }
 
-/** True when every insurance-eligible box has accepted or declined. */
+/** True when every insurance-eligible box has accepted or declined (see insurance.ts for auto-skip). */
 export function allInsuranceDecisionsResolved(
   session: GameSession,
   round: BlackjackRound,
@@ -271,13 +287,13 @@ export function allInsuranceDecisionsResolved(
   if (!round.insuranceOfferPending) {
     return true;
   }
-  const eligible = getInsuranceEligiblePlayerIds(session, round, protocol);
+  const eligible = getInsuranceEligibleBoxIds(session, round, protocol);
   if (eligible.length === 0) {
     return true;
   }
-  return eligible.every((playerId) => {
-    const declined = round.insuranceDeclined?.[playerId];
-    const bet = round.insuranceBets?.[playerId] ?? 0;
+  return eligible.every((boxId) => {
+    const declined = round.insuranceDeclined?.[boxId];
+    const bet = round.insuranceBets?.[boxId] ?? 0;
     return Boolean(declined) || bet > 0;
   });
 }

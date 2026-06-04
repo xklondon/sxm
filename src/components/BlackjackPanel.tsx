@@ -106,6 +106,7 @@ import {
   getViewRootClass,
   resolveInitialViewMode,
 } from './tableViewContract';
+import type { TableResetSetupVariant } from './TableStakePanel';
 import './BlackjackPanel.css';
 
 const MAX_BOXES = MAX_TABLE_BOXES;
@@ -122,7 +123,7 @@ interface BlackjackPanelProps {
   profileOpen?: boolean;
   onProfileOpenChange?: (open: boolean) => void;
   onSaveTable?: () => void;
-  onBeginTableReset?: () => void;
+  onBeginTableReset?: (variant?: TableResetSetupVariant) => void;
 }
 
 function arcVisualIndex(slotNumber: number): number {
@@ -567,7 +568,7 @@ export function BlackjackPanel({
     onResetTable: onBeginTableReset
       ? () => {
           setSideRailPanel(null);
-          onBeginTableReset();
+          onBeginTableReset('resetTable');
         }
       : undefined,
   };
@@ -575,6 +576,13 @@ export function BlackjackPanel({
   const dealerBlockProps = {
     awaitingNextRound,
     gameEnded,
+    onNewGame:
+      gameEnded && onBeginTableReset
+        ? () => onBeginTableReset('newGame')
+        : undefined,
+    canStartNewGame: canResetTable,
+    newGameDisabledReason:
+      gameEnded && !canResetTable ? 'Only the table owner can start a new game.' : null,
     commentaryText: tableAidTip,
     commandMessage: tableCommand.commandMessage,
     commandLines: tableCommand.commandLines,

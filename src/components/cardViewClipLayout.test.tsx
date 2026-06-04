@@ -24,14 +24,14 @@ describe('Card View — full card visibility', () => {
   });
 
   it('central hero actions use stacked primary and extras rows', () => {
-    expect(cardCss).toContain('.bj-phone-view__hero-actions-primary');
-    expect(cardCss).toContain('.bj-phone-view__hero-actions-extras');
+    expect(cardCss).toContain('.bj-phone-view__action-bar--playing');
+    expect(cardCss).toContain('.bj-phone-view__mini-hand-card-stack');
     expect(cardCss).toMatch(/\.bj-phone-view__hero-center[\s\S]*align-items:\s*center/);
   });
 
   it('hero total badge is compact', () => {
-    expect(cardCss).toMatch(/\.bj-phone-view__total--hero[\s\S]*min-height:\s*1\.65rem/);
-    expect(cardCss).toMatch(/\.bj-phone-view__total--hero[\s\S]*font-size:\s*0\.82rem/);
+    expect(cardCss).toMatch(/\.bj-phone-view__total--hero[\s\S]*min-height:\s*1\.25rem/);
+    expect(cardCss).toMatch(/\.bj-phone-view__total--hero[\s\S]*font-size:\s*0\.68rem/);
   });
 
   it('dealer/command header block uses compact spacing', () => {

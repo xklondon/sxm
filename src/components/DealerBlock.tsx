@@ -14,6 +14,10 @@ interface DealerBlockProps {
   onOpenTableDetails?: () => void;
   tableDetailsOpen?: boolean;
   onNextRound: () => void;
+  /** Finished table — opens reset setup (owner only). */
+  onNewGame?: () => void;
+  canStartNewGame?: boolean;
+  newGameDisabledReason?: string | null;
   dealerCards: React.ReactNode;
   protocolPhase: BlackjackProtocolPhase;
   bankerReady: boolean;
@@ -40,6 +44,9 @@ export function DealerBlock({
   onOpenTableDetails,
   tableDetailsOpen = false,
   onNextRound,
+  onNewGame,
+  canStartNewGame = false,
+  newGameDisabledReason = null,
   dealerCards,
   protocolPhase,
   bankerReady,
@@ -79,9 +86,30 @@ export function DealerBlock({
     return null;
   }
 
+  function renderGameEndedAction() {
+    if (!gameEnded || !onNewGame) {
+      return null;
+    }
+    return (
+      <>
+        <button
+          type="button"
+          className="dealer-block__action dealer-block__action--primary"
+          onClick={onNewGame}
+          disabled={!canStartNewGame}
+        >
+          New Game
+        </button>
+        {!canStartNewGame && newGameDisabledReason ? (
+          <p className="dealer-block__hint dealer-block__hint--new-game">{newGameDisabledReason}</p>
+        ) : null}
+      </>
+    );
+  }
+
   function renderBettingActions() {
     if (gameEnded) {
-      return null;
+      return renderGameEndedAction();
     }
 
     if (protocolPhase === 'round-complete' && awaitingNextRound) {

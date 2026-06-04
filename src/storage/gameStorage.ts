@@ -7,6 +7,7 @@ import { DEFAULT_DESIGN_TEMPLATE_ID } from '../design/templates';
 import { DEFAULT_TABLE_ADMIN_SETTINGS } from '../types/admin';
 import { normalizeFlowSettings } from '../engine/blackjack/flowSettings';
 import { DEFAULT_ZILCH_SETTINGS } from '../engine/zilch/settings';
+import { normalizeLoadedGameState } from '../engine/session/tableKind';
 
 const CURRENT_GAME_KEY = 'sxmcards:current-game:v1';
 const SAVED_GAMES_KEY = 'sxmcards:saved-games:v1';
@@ -31,10 +32,12 @@ export function deserializeGameState(raw: string): GameState {
   if (!parsed?.session?.id || !parsed.ledger) {
     throw new Error('Invalid saved game data');
   }
-  return {
+  const merged: GameState = {
     ...parsed,
     tableMeta: {
       ...parsed.tableMeta,
+      gameCategory: parsed.tableMeta?.gameCategory,
+      diceGame: parsed.tableMeta?.diceGame,
       owner: parsed.tableMeta.owner ?? null,
       ownerPersonId: parsed.tableMeta.ownerPersonId ?? null,
       playerOrder: parsed.tableMeta.playerOrder ?? [],
@@ -103,6 +106,7 @@ export function deserializeGameState(raw: string): GameState {
     zilch: parsed.zilch ?? null,
     zilchSettings: parsed.zilchSettings ?? { ...DEFAULT_ZILCH_SETTINGS },
   };
+  return normalizeLoadedGameState(merged);
 }
 
 export function saveCurrentGame(state: GameState): void {

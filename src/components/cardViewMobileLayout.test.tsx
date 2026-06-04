@@ -125,10 +125,10 @@ describe('mobile Card View layout contract', () => {
 
   it('playing phase: two centered action rows under total', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__hero-actions-primary');
-    expect(html).toContain('bj-phone-view__hero-actions-extras');
+    expect(html).toContain('bj-phone-view__action-bar-row--primary');
+    expect(html).toContain('bj-phone-view__action-bar-row--secondary');
     expect(html).not.toContain('bj-phone-view__side-action--stand');
-    expect(html).toContain('bj-phone-view__action-bar--play-placeholder');
+    expect(html).toContain('bj-phone-view__action-bar--playing');
   });
 
   it('removes redundant hero label and in-card Full Table button', () => {

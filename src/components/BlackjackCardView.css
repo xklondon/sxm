@@ -138,12 +138,28 @@
   font-weight: var(--ds-weight-bold);
 }
 
-.bj-phone-view__mini-hand-cards {
+.bj-phone-view__mini-hand-card-stack {
   display: flex;
-  gap: 0.05rem;
-  transform: scale(0.55);
-  transform-origin: center;
-  min-height: 1.6rem;
+  flex: 0 0 1.9rem;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  min-height: 1.9rem;
+  height: 1.9rem;
+  overflow: visible;
+  padding: 0 0.05rem;
+  box-sizing: border-box;
+}
+
+.bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card {
+  flex: 0 0 auto;
+  margin-left: calc(var(--mini-card-i, 0) * -0.42rem);
+  transform: scale(0.5);
+  transform-origin: bottom center;
+}
+
+.bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card:first-child {
+  margin-left: 0;
 }
 
 .bj-phone-view__mini-card {
@@ -670,6 +686,39 @@
   box-sizing: border-box;
 }
 
+.bj-phone-view__action-bar--playing {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12rem;
+  min-height: 4rem;
+  padding: 0.12rem 0.35rem 0.18rem;
+}
+
+.bj-phone-view__action-bar-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 100%;
+  max-width: 14rem;
+}
+
+.bj-phone-view__action-bar-row--primary {
+  gap: 0.35rem;
+}
+
+.bj-phone-view__action-bar-row--primary .bj-phone-view__action-bar-btn {
+  flex: 1 1 0;
+  max-width: 5.75rem;
+  min-height: 2rem;
+}
+
+.bj-phone-view__action-bar-row--secondary {
+  gap: 0.2rem;
+}
+
 .bj-phone-view__action-bar-primary {
   display: flex;
   flex: 1 1 48%;
@@ -761,7 +810,8 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  min-height: 1.35rem;
+  min-height: 1.1rem;
+  margin-bottom: 0.05rem;
 }
 
 .bj-phone-view__cards-slot {
@@ -1247,16 +1297,17 @@
 
 .bj-phone-view__total--hero {
   margin-top: 0;
-  font-size: 0.82rem;
-  letter-spacing: 0.05em;
-  min-height: 1.65rem;
-  padding: 0.18rem 0.75rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  min-height: 1.25rem;
+  padding: 0.1rem 0.55rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--ds-color-gold);
   border-radius: var(--ds-radius-full);
-  box-shadow: 0 0 8px rgb(251 191 36 / 0.18);
+  box-shadow: 0 0 6px rgb(251 191 36 / 0.14);
+  line-height: 1.1;
 }
 
 .bj-phone-view__extras--hero {

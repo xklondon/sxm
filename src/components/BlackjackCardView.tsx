@@ -40,7 +40,7 @@ import {
   getCardViewHandKeyForBox,
   getCardViewHeroBoxId,
   getCardViewHeroHandKey,
-  getInsuranceActionsForController,
+  getPrimaryInsuranceActionForController,
   showHeroPlayerCards,
   isBettingPhase,
   isDealingPhase,
@@ -595,18 +595,22 @@ export function BlackjackCardView({
             />
           ) : null}
         </span>
-        {ids.length > 0 && deck && (
-          <span className="bj-phone-view__mini-hand-cards">
-            {ids.slice(0, 3).map((id) => (
-              <PlayingCard
-                key={id}
-                card={getCardById(deck, id)!}
-                compact
-                className="bj-phone-view__mini-card"
-              />
-            ))}
-          </span>
-        )}
+        <span
+          className="bj-phone-view__mini-hand-card-stack"
+          aria-hidden={ids.length === 0}
+        >
+          {ids.length > 0 && deck
+            ? ids.slice(0, 3).map((id, i) => (
+                <span
+                  key={id}
+                  className="bj-phone-view__mini-card"
+                  style={{ "--mini-card-i": i } as CSSProperties}
+                >
+                  <PlayingCard card={getCardById(deck, id)!} compact />
+                </span>
+              ))
+            : null}
+        </span>
         <span className="bj-phone-view__mini-hand-meta">
           {miniTotal !== null && <span>T {miniTotal}</span>}
           {wager > 0 && !showBetStakeChips && <span>W {wager}c</span>}
@@ -721,44 +725,45 @@ export function BlackjackCardView({
       return null;
     }
 
-    const actions = getInsuranceActionsForController(gameState, round, controllerLabel);
+    const action = getPrimaryInsuranceActionForController(gameState, round, controllerLabel);
 
-    if (actions.length === 0) {
+    if (!action) {
       return null;
     }
 
+    const { playerId, maxBet, canAfford, slotNumber } = action;
+
     return (
       <div className="bj-phone-view__phase-actions bj-phone-view__phase-actions--insurance" aria-live="polite">
-        {actions.map(({ playerId, maxBet, canAfford, slotNumber }) => (
-          <div key={playerId} className="bj-phone-view__ins-row">
-            <span className="bj-phone-view__ins-label">
-              Box {slotNumber ?? "?"} — up to {maxBet}c
-              {!canAfford && " (not enough chips)"}
-            </span>
+        <div className="bj-phone-view__ins-row">
+          <span className="bj-phone-view__ins-label">
+            Box {slotNumber ?? "?"} — up to {maxBet}c
+            {!canAfford && " (not enough chips)"}
+          </span>
+          {canAfford ? (
             <button
               type="button"
               className={[
                 "ds-btn",
                 "ds-btn--secondary",
                 "bj-phone-view__ins-btn",
-                canAfford ? "bj-phone-view__extra-btn--legal" : "",
+                "bj-phone-view__extra-btn--legal",
               ]
                 .filter(Boolean)
                 .join(" ")}
-              disabled={!canAfford}
               onClick={() => onTakeInsurance?.(playerId)}
             >
               Insure {maxBet}
             </button>
-            <button
-              type="button"
-              className="ds-btn ds-btn--ghost bj-phone-view__ins-btn"
-              onClick={() => onDeclineInsurance?.(playerId)}
-            >
-              No thanks
-            </button>
-          </div>
-        ))}
+          ) : null}
+          <button
+            type="button"
+            className="ds-btn ds-btn--ghost bj-phone-view__ins-btn"
+            onClick={() => onDeclineInsurance?.(playerId)}
+          >
+            No thanks
+          </button>
+        </div>
       </div>
     );
   }
@@ -888,114 +893,8 @@ export function BlackjackCardView({
                 Total {value}
               </div>
             </div>
-            {renderHeroInlineActions()}
           </div>
         </div>
-      </div>
-    );
-  }
-
-  function renderHeroInlineActions() {
-    if (!showSideControls) {
-      return null;
-    }
-
-    const canDoubleNow =
-      isActiveTurn &&
-      turnHandKey &&
-      blackjackSettings.allowDoubleDown &&
-      canDoubleBlackjackForState(logicalGameState, turnHandKey);
-    const canSplitNow =
-      isActiveTurn &&
-      turnHandKey &&
-      blackjackSettings.allowSplit &&
-      deck &&
-      canSplitBlackjackForState(gameState, turnHandKey);
-    const showDouble = blackjackSettings.allowDoubleDown;
-    const showSplit = blackjackSettings.allowSplit && Boolean(deck);
-    const showAid = blackjackFlowSettings.adviceEnabled;
-
-    return (
-      <div className="bj-phone-view__hero-actions" aria-label="Player actions">
-        <div className="bj-phone-view__hero-actions-primary">
-          <button
-            type="button"
-            className={[
-              "bj-phone-view__hero-actions-btn",
-              "bj-phone-view__hero-actions-btn--stand",
-              "ds-btn",
-              "ds-btn--stand",
-              isActiveTurn ? "bj-phone-view__hero-actions-btn--live" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            disabled={!isActiveTurn || !canStand}
-            onClick={handleStayClick}
-          >
-            Stand
-          </button>
-          <button
-            type="button"
-            className={[
-              "bj-phone-view__hero-actions-btn",
-              "bj-phone-view__hero-actions-btn--hit",
-              "ds-btn",
-              "ds-btn--hit",
-              isActiveTurn ? "bj-phone-view__hero-actions-btn--live" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            disabled={!isActiveTurn || !canHit}
-            onClick={handleHitClick}
-          >
-            Hit
-          </button>
-        </div>
-        {(showDouble || showSplit || showAid) && (
-          <div className="bj-phone-view__hero-actions-extras">
-            {showDouble ? (
-              <button
-                type="button"
-                className={[
-                  "bj-phone-view__hero-actions-btn",
-                  "bj-phone-view__hero-actions-btn--extra",
-                  canDoubleNow ? "bj-phone-view__hero-actions-btn--legal" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                disabled={!canDoubleNow}
-                onClick={() => turnHandKey && onDouble(turnHandKey)}
-              >
-                2×
-              </button>
-            ) : null}
-            {showSplit ? (
-              <button
-                type="button"
-                className={[
-                  "bj-phone-view__hero-actions-btn",
-                  "bj-phone-view__hero-actions-btn--extra",
-                  canSplitNow ? "bj-phone-view__hero-actions-btn--legal" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                disabled={!canSplitNow}
-                onClick={() => turnHandKey && onSplit(turnHandKey)}
-              >
-                Split
-              </button>
-            ) : null}
-            {showAid ? (
-              <button
-                type="button"
-                className="bj-phone-view__hero-actions-btn bj-phone-view__hero-actions-btn--extra bj-phone-view__hero-actions-btn--aid"
-                onClick={handleAid}
-              >
-                AID
-              </button>
-            ) : null}
-          </div>
-        )}
       </div>
     );
   }
@@ -1016,7 +915,16 @@ export function BlackjackCardView({
     const showSplit = blackjackSettings.allowSplit && Boolean(deck);
     const showAid = blackjackFlowSettings.adviceEnabled;
 
-    if (showSideControls || bettingMainStage) {
+    if (bettingMainStage) {
+      return (
+        <div
+          className="bj-phone-view__action-bar bj-phone-view__action-bar--play-placeholder"
+          aria-hidden="true"
+        />
+      );
+    }
+
+    if (!showSideControls) {
       return (
         <div
           className="bj-phone-view__action-bar bj-phone-view__action-bar--play-placeholder"
@@ -1026,11 +934,42 @@ export function BlackjackCardView({
     }
 
     return (
-      <div className="bj-phone-view__action-bar" aria-label="Player actions">
-        <div className="bj-phone-view__action-bar-primary">
-          <span className="bj-phone-view__action-bar-spacer" aria-hidden="true" />
+      <div className="bj-phone-view__action-bar bj-phone-view__action-bar--playing" aria-label="Player actions">
+        <div className="bj-phone-view__action-bar-row bj-phone-view__action-bar-row--primary">
+          <button
+            type="button"
+            className={[
+              "bj-phone-view__action-bar-btn",
+              "bj-phone-view__action-bar-btn--stand",
+              "ds-btn",
+              "ds-btn--stand",
+              isActiveTurn ? "bj-phone-view__action-bar-btn--live" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            disabled={!isActiveTurn || !canStand}
+            onClick={handleStayClick}
+          >
+            Stand
+          </button>
+          <button
+            type="button"
+            className={[
+              "bj-phone-view__action-bar-btn",
+              "bj-phone-view__action-bar-btn--hit",
+              "ds-btn",
+              "ds-btn--hit",
+              isActiveTurn ? "bj-phone-view__action-bar-btn--live" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            disabled={!isActiveTurn || !canHit}
+            onClick={handleHitClick}
+          >
+            Hit
+          </button>
         </div>
-        <div className="bj-phone-view__action-bar-secondary">
+        <div className="bj-phone-view__action-bar-row bj-phone-view__action-bar-row--secondary">
           {showDouble ? (
             <button
               type="button"

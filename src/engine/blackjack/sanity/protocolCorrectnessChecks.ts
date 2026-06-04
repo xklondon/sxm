@@ -2,9 +2,11 @@ import { getAvailableChipsForBankrollOwner } from '../../session/bankroll';
 import {
   addChipToBoxStake,
   clearBoxStake,
+  confirmBoxStake,
   getStakeForBox,
   removeLastChipFromBoxStake,
 } from '../stakes';
+import { syncCallersForDeal } from '../../session/playerAssignment';
 import { canDoubleBlackjackForState } from '../validation';
 import { hitBlackjackOnState, processPlayFlowAutoStands } from '../gameState';
 import {
@@ -229,6 +231,12 @@ export function runProtocolCorrectnessSanityChecks(): SanitySuiteResult {
   insState = claimBoxSlot(insState, 2);
   const insB1 = boxPlayerId(insState, 1)!;
   const insB2 = boxPlayerId(insState, 2)!;
+  const insPersonId = insState.tableMeta.ownerPersonId!;
+  insState = addChipToBoxStake(insState, insB1, 50, insPersonId);
+  insState = addChipToBoxStake(insState, insB2, 50, insPersonId);
+  insState = confirmBoxStake(insState, insB1);
+  insState = confirmBoxStake(insState, insB2);
+  insState = syncCallersForDeal(insState, [insB1, insB2]);
   const aceId = findCardId(insState.deck!, 'A');
   const insRound: BlackjackRound = {
     ...actingRound(insState, insB1, [findCardId(insState.deck!, '10'), findCardId(insState.deck!, '9')], 50),
@@ -257,7 +265,7 @@ export function runProtocolCorrectnessSanityChecks(): SanitySuiteResult {
   results.push(
     check(
       'dealer ace waits for all insurance decisions',
-      !allInsuranceResolved(insState.session, insRound, LAS_VEGAS_PROTOCOL),
+      !allInsuranceResolved(insState, insRound, LAS_VEGAS_PROTOCOL),
     ),
   );
   results.push(
@@ -274,7 +282,7 @@ export function runProtocolCorrectnessSanityChecks(): SanitySuiteResult {
   results.push(
     check(
       'all active boxes insurance resolved',
-      allInsuranceResolved(insState.session, insResolvedRound, LAS_VEGAS_PROTOCOL),
+      allInsuranceResolved(insState, insResolvedRound, LAS_VEGAS_PROTOCOL),
     ),
   );
 

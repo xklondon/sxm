@@ -146,6 +146,7 @@ export function rollDice(
     ...state,
     rollNumberInTurn: state.rollNumberInTurn + 1,
     keptThisRoll: false,
+    lastZilchPlayerId: null,
     dice: nextDice,
     availableCombinations: [],
     diceAnimation: {
@@ -362,6 +363,7 @@ export function endTurnWithZilch(state: ZilchGameState): ZilchGameState {
       availableCombinations: [],
       keptThisRoll: false,
       diceAnimation: { isRolling: false },
+      lastZilchPlayerId: playerId,
     },
     playerId,
   );
@@ -471,11 +473,18 @@ export function canRollDice(state: ZilchGameState): boolean {
 }
 
 export function canBank(state: ZilchGameState): boolean {
+  if (state.phase === 'zilch' || state.phase === 'completed') {
+    return false;
+  }
   return (
     state.turnScore > 0 &&
     state.keptThisRoll &&
     (state.phase === 'player-turn' || state.phase === 'awaiting-keep-selection')
   );
+}
+
+export function canKeepCombination(state: ZilchGameState): boolean {
+  return state.phase === 'awaiting-keep-selection' && state.availableCombinations.length > 0;
 }
 
 /** Bank current turn score without rolling remaining dice (Greater Glory quit). */

@@ -3,10 +3,10 @@ import type { BlackjackRound } from '../types/blackjack';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { getBlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
-import { getInsuranceEligiblePlayerIds } from '../engine/blackjack/protocols/activeRules';
+import { getInsuranceEligibleBoxIds } from '../engine/blackjack/protocols/activeRules';
+import { isInsuranceBoxDecisionResolved } from '../engine/blackjack/insurance';
 import { getBlackjackProtocolForState } from '../engine/blackjack/protocolState';
-import { getInsuranceOfferForPlayer } from '../engine/blackjack/insurance';
-import { bankrollContextFromState } from '../engine/session/bankroll';
+import { getInsuranceOfferForBox } from '../engine/blackjack/insurance';
 import {
   canControllerCallBox,
   getCallerPersonIdForBox,
@@ -369,18 +369,16 @@ export function actionButtonsUseTappableClass(): boolean {
   return CARD_VIEW_PLAYING_LAYOUT.actionBtnTappable === 'bj-phone-view__action-btn--tappable';
 }
 
-/** Eligible boxes still needing an insurance accept/decline. */
+/** Eligible boxes still needing an explicit insurance accept/decline from the caller. */
 export function getPendingInsurancePlayerIds(
   state: GameState,
   round: BlackjackRound,
 ): string[] {
   const protocol = getBlackjackProtocolForState(state);
-  const eligible = getInsuranceEligiblePlayerIds(state.session, round, protocol);
-  return eligible.filter((playerId) => {
-    const declined = round.insuranceDeclined?.[playerId];
-    const insBet = round.insuranceBets?.[playerId] ?? 0;
-    return !declined && insBet <= 0;
-  });
+  const eligible = getInsuranceEligibleBoxIds(state.session, round, protocol);
+  return eligible.filter(
+    (boxId) => !isInsuranceBoxDecisionResolved(state, round, protocol, boxId),
+  );
 }
 
 export function getMyPendingInsurancePlayerIds(
@@ -407,29 +405,29 @@ export function getInsuranceActionsForController(
   controllerName: string,
 ): InsuranceActionView[] {
   const protocol = getBlackjackProtocolForState(state);
-  const ctx = bankrollContextFromState(state);
-  return getMyPendingInsurancePlayerIds(state, round, controllerName).flatMap((playerId) => {
-    const offer = getInsuranceOfferForPlayer(
-      state.session,
-      state.players,
-      state.ledger,
-      round,
-      playerId,
-      ctx,
-      protocol,
-    );
+  return getMyPendingInsurancePlayerIds(state, round, controllerName).flatMap((boxId) => {
+    const offer = getInsuranceOfferForBox(state, round, boxId, protocol);
     if (!offer) {
       return [];
     }
     return [
       {
-        playerId,
+        playerId: boxId,
         maxBet: offer.maxBet,
         canAfford: offer.canAfford,
-        slotNumber: state.session.boxSlotNumbers?.[playerId],
+        slotNumber: state.session.boxSlotNumbers?.[boxId],
       },
     ];
   });
+}
+
+/** Next insurance decision for this controller (Card View shows one box at a time). */
+export function getPrimaryInsuranceActionForController(
+  state: GameState,
+  round: BlackjackRound,
+  controllerName: string,
+): InsuranceActionView | null {
+  return getInsuranceActionsForController(state, round, controllerName)[0] ?? null;
 }
 
 export function canCallEvenMoneyForHand(

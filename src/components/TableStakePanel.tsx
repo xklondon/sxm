@@ -6,8 +6,9 @@ import {
   applyTableResetSetup,
   applyTableStakeSetup,
   applyZilchTableStakeSetup,
-  createNewZilchTable,
   DEFAULT_TABLE_CHIPS,
+  ensureZilchTableIdentity,
+  isZilchTable,
   switchGameType,
   type TableBankerSetupMode,
   type TableStakeSetupInput,
@@ -33,9 +34,14 @@ type SetupCategoryTab = 'cards' | 'dice';
 
 export type TableStakePanelMode = 'new' | 'reset';
 
+/** Copy variant when mode is reset (same resetTable path). */
+export type TableResetSetupVariant = 'newGame' | 'resetTable';
+
 interface TableStakePanelProps {
   gameState: GameState;
   mode?: TableStakePanelMode;
+  /** When mode is reset: main-button flow uses newGame; Table Details uses resetTable. */
+  resetSetupVariant?: TableResetSetupVariant;
   onConfirm: (state: GameState) => void;
   /** Called after online reset dispatches (state arrives via socket). */
   onFinished?: () => void;
@@ -58,6 +64,7 @@ function initialBankerMode(state: GameState): TableBankerSetupMode {
 export function TableStakePanel({
   gameState,
   mode = 'new',
+  resetSetupVariant = 'resetTable',
   onConfirm,
   onFinished,
   onlineDispatch,
@@ -65,6 +72,7 @@ export function TableStakePanel({
   const profile = loadProfile();
   const flow = gameState.blackjackFlowSettings;
   const isReset = mode === 'reset';
+  const isNewGameSetup = isReset && resetSetupVariant === 'newGame';
   const agreement = gameState.tableMeta.agreement;
 
   const [stake, setStake] = useState(
@@ -197,9 +205,9 @@ export function TableStakePanel({
     }
 
     let base = gameState;
-    if (setupTab === 'dice' && base.tableGame !== 'zilch') {
+    if (setupTab === 'dice' && !isZilchTable(base)) {
       base = applySettingsToDiceTable(base);
-    } else if (setupTab === 'cards' && base.tableGame === 'zilch') {
+    } else if (setupTab === 'cards' && isZilchTable(base)) {
       base = switchGameType(base, 'blackjack');
     }
 
@@ -218,35 +226,28 @@ export function TableStakePanel({
   }
 
   function applySettingsToDiceTable(state: GameState): GameState {
-    const fresh = createNewZilchTable();
-    return {
-      ...fresh,
-      session: { ...fresh.session, id: state.session.id },
-      ledger: state.ledger,
-      players: state.players,
+    return ensureZilchTableIdentity({
+      ...state,
+      blackjack: null,
       tableMeta: {
         ...state.tableMeta,
-        gameCategory: 'dice',
-        diceGame: 'zilch',
         showStakeSetup: true,
       },
-      tableAdminSettings: state.tableAdminSettings,
-      designTemplateId: state.designTemplateId,
-      blackjackFlowSettings: state.blackjackFlowSettings,
-      blackjackProtocolId: state.blackjackProtocolId,
-    };
+    });
   }
 
   return (
     <div
       className="table-stake-overlay"
       role="dialog"
-      aria-label={isReset ? 'Reset table setup' : 'New table setup'}
+      aria-label={
+        isNewGameSetup ? 'New game setup' : isReset ? 'Reset table setup' : 'New table setup'
+      }
     >
       <div className="table-stake-panel">
         <header className="table-stake-panel__header">
           <h2 className="table-stake-panel__title">
-            {isReset ? 'Reset table' : 'New Table'}
+            {isNewGameSetup ? 'New Game' : isReset ? 'Reset table' : 'New Table'}
           </h2>
           <p className="table-stake-panel__sub">
             {isReset

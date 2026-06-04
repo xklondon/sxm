@@ -108,11 +108,15 @@ export function buildTableCommandDisplay(params: {
     const actions = getInsuranceActionsForController(gameState, round, controllerName);
     if (actions.length === 0) {
       return {
-        commandMessage: 'Dealer shows Ace — waiting for insurance decisions…',
+        commandMessage: 'Dealer shows Ace — insurance decisions.',
         commandLines: [],
       };
     }
-    return { commandMessage: 'Dealer shows Ace — insurance pays 2:1', commandLines: [] };
+    const first = actions[0]!;
+    return {
+      commandMessage: `Box ${first.slotNumber ?? '?'} — insurance decision.`,
+      commandLines: ['Dealer shows Ace — insurance pays 2:1'],
+    };
   }
 
   if (protocolPhase === 'player') {

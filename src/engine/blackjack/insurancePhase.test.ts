@@ -27,6 +27,7 @@ import { canDoubleBlackjackForState, canSplitBlackjackForState } from './validat
 import type { GameState } from '../../types';
 import { actingRound, boxPlayerId, findCardId, tableWithClaimedBox } from './sanity/fixtures';
 import { claimBoxSlot, setControllerName } from '../session/boxOps';
+import { syncCallersForDeal } from '../session/playerAssignment';
 
 function insuranceRound(
   state: GameState,
@@ -154,7 +155,7 @@ describe('insurance phase', () => {
       insuranceBets: {},
       insuranceDeclined: {},
     };
-    const result = advanceInsurancePhaseIfComplete(state.session, state.players, round, LAS_VEGAS_PROTOCOL);
+    const result = advanceInsurancePhaseIfComplete({ ...state, blackjack: round }, round, LAS_VEGAS_PROTOCOL);
     expect(result.closed).toBe(true);
     expect(result.round.insuranceOfferPending).toBe(false);
   });
@@ -232,6 +233,12 @@ describe('insurance phase', () => {
     state = claimBoxSlot(state, 2);
     const box1 = boxPlayerId(state, 1)!;
     const box2 = boxPlayerId(state, 2)!;
+    const personId = state.tableMeta.ownerPersonId!;
+    state = addChipToBoxStake(state, box1, 50, personId);
+    state = addChipToBoxStake(state, box2, 10, personId);
+    state = confirmBoxStake(state, box1);
+    state = confirmBoxStake(state, box2);
+    state = syncCallersForDeal(state, [box1, box2]);
     const round: BlackjackRound = {
       ...createEmptyBlackjackRound(),
       status: 'player-turns',

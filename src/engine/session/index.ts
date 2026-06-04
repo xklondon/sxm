@@ -35,6 +35,13 @@ export {
   type ZilchTableStakeSetupInput,
 } from './zilchTableSetup';
 export {
+  ensureZilchTableIdentity,
+  isBlackjackTable,
+  isHoldemTable,
+  isZilchTable,
+  normalizeLoadedGameState,
+} from './tableKind';
+export {
   applyTableResetSetup,
   beginTableResetSetup,
   TABLE_RESET_LEDGER_MESSAGE,

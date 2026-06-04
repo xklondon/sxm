@@ -156,16 +156,16 @@ describe('Card View central layout', () => {
 
   it('central action rows: Stand/Hit then 2x/Split/AID', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__hero-actions-primary');
-    expect(html).toContain('bj-phone-view__hero-actions-extras');
+    expect(html).toContain('bj-phone-view__action-bar-row--primary');
+    expect(html).toContain('bj-phone-view__action-bar-row--secondary');
     expect(html).not.toContain('bj-phone-view__side-action--stand');
     expect(html).not.toContain('bj-phone-view__side-action--hit');
-    const primaryIdx = html.indexOf('bj-phone-view__hero-actions-primary');
-    const extrasIdx = html.indexOf('bj-phone-view__hero-actions-extras');
+    const primaryIdx = html.indexOf('bj-phone-view__action-bar-row--primary');
+    const extrasIdx = html.indexOf('bj-phone-view__action-bar-row--secondary');
     expect(extrasIdx).toBeGreaterThan(primaryIdx);
-    expect(html).toMatch(/bj-phone-view__hero-actions-primary[\s\S]*Stand/);
-    expect(html).toMatch(/bj-phone-view__hero-actions-primary[\s\S]*Hit/);
-    expect(html).toMatch(/bj-phone-view__hero-actions-extras[\s\S]*2×/);
+    expect(html).toMatch(/bj-phone-view__action-bar-row--primary[\s\S]*Stand/);
+    expect(html).toMatch(/bj-phone-view__action-bar-row--primary[\s\S]*Hit/);
+    expect(html).toMatch(/bj-phone-view__action-bar-row--secondary[\s\S]*2×/);
   });
 
   it('hero cards remain overflow-visible on central axis', () => {
