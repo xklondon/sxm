@@ -10,7 +10,7 @@ import {
 } from './api/client';
 import { isPublicAuthPath, shouldShowGlobalSessionLoading } from './auth/authBoot';
 import { isOnlineModeEnabled, apiPath } from './api/config';
-import { getStoredOnlineTableId } from './hooks/useOnlineMultiplayer';
+import { resolveOnlineTableId } from './onlineTableStorage';
 import { rememberPendingTable } from './session/pendingTable';
 import { parseJoinTableParams } from './engine/table/invites';
 import { BOOT_STAGES, markBootStage, markBootSucceeded } from './debug/bootDiagnostics';
@@ -244,11 +244,10 @@ export function AppRoot() {
 
   const tableFromUrl = new URLSearchParams(window.location.search).get('table');
   const forceNewTable = new URLSearchParams(window.location.search).get('newTable') === '1';
-  if (tableFromUrl) {
-    rememberPendingTable(tableFromUrl);
+  const onlineTableId = resolveOnlineTableId(tableFromUrl, forceNewTable);
+  if (onlineTableId) {
+    rememberPendingTable(onlineTableId);
   }
-  const storedTableId = forceNewTable ? null : getStoredOnlineTableId();
-  const onlineTableId = tableFromUrl ?? storedTableId;
 
   return <App user={user} onlineMode={onlineMode} onlineTableId={onlineTableId} forceNewTable={forceNewTable} />;
 }

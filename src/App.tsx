@@ -17,10 +17,8 @@ import { createOnlineTable, isPeopleAdmin, logout, type AuthUser } from './api/c
 import { AuthFetchError, accessDeniedMessage, isHandledAuthRejection } from './auth/authErrors';
 import { PeopleScreen } from './screens/PeopleScreen';
 import { apiPath } from './api/config';
-import {
-  setStoredOnlineTableId,
-  useOnlineTable,
-} from './hooks/useOnlineMultiplayer';
+import { setStoredOnlineTableId, useOnlineTable } from './hooks/useOnlineMultiplayer';
+import { sanitizeOnlineTableId } from './onlineTableStorage';
 import { useIsMobileViewport } from './hooks/useIsMobileViewport';
 import {
   consumePendingTable,
@@ -72,8 +70,8 @@ function formatRoleLabel(user?: AuthUser | null): string {
 }
 
 export default function App({ user, onlineMode = false, onlineTableId = null, forceNewTable = false }: AppProps) {
-  const tableFromUrl = onlineTableId;
-  const pendingTable = getPendingTable();
+  const tableFromUrl = sanitizeOnlineTableId(onlineTableId);
+  const pendingTable = sanitizeOnlineTableId(getPendingTable());
   const resolvedTableId = tableFromUrl ?? pendingTable;
   const [screen, setScreen] = useState<AppScreen>(resolvedTableId ? 'table' : 'start');
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -208,6 +206,19 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     handleNewOnlineGame,
   ]);
 
+  useEffect(() => {
+    if (!navMenuOpen) {
+      return;
+    }
+    function handlePointerDown(event: MouseEvent) {
+      if (!navMenuRef.current?.contains(event.target as Node)) {
+        setNavMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, [navMenuOpen]);
+
   function handleLeaveTable() {
     setGameState(null);
     setActiveTableId(null);
@@ -269,19 +280,6 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     }
     window.alert('Open a table first, then use Load Table.');
   }
-
-  useEffect(() => {
-    if (!navMenuOpen) {
-      return;
-    }
-    function handlePointerDown(event: MouseEvent) {
-      if (!navMenuRef.current?.contains(event.target as Node)) {
-        setNavMenuOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handlePointerDown);
-    return () => document.removeEventListener('mousedown', handlePointerDown);
-  }, [navMenuOpen]);
 
   return (
     <>
