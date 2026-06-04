@@ -26,6 +26,20 @@ describe('fetchMe', () => {
     await expect(fetchMe()).resolves.toBeNull();
   });
 
+  it('403 response throws AuthFetchError', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Response.json(
+          { error: 'Ask an admin for an invite.', code: 'NOT_REGISTERED' },
+          { status: 403 },
+        ),
+      ),
+    );
+    const { fetchMe } = await import('./client');
+    await expect(fetchMe()).rejects.toMatchObject({ status: 403, code: 'NOT_REGISTERED' });
+  });
+
   it('network failure surfaces as error', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => {
       throw new Error('Network down');

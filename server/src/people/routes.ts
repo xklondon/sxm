@@ -3,22 +3,26 @@ import type { PeopleService } from './service.js';
 import type { AuthService } from '../auth/service.js';
 import type { PersonRole } from '../store/types.js';
 import { requireAuth, type AuthedRequest } from '../auth/middleware.js';
+import { respondPeopleAuthError } from './httpErrors.js';
 
 export function createPeopleRouter(people: PeopleService, auth: AuthService): Router {
   const router = Router();
 
   router.get('/', requireAuth, (req: AuthedRequest, res) => {
     try {
-      people.assertPeopleAdmin(req.auth!.userId);
+      people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'GET /api/people');
       res.json({ people: people.listPeople() });
     } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
       res.status(403).json({ error: err instanceof Error ? err.message : 'Forbidden' });
     }
   });
 
   router.post('/', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      people.assertPeopleAdmin(req.auth!.userId);
+      people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'POST /api/people');
       const person = people.addPerson({
         email: String(req.body?.email ?? ''),
         displayName: req.body?.displayName ? String(req.body.displayName) : undefined,
@@ -36,13 +40,16 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
       }
       res.status(201).json({ person, devLink });
     } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
       res.status(400).json({ error: err instanceof Error ? err.message : 'Create failed' });
     }
   });
 
   router.patch('/:personId', requireAuth, (req: AuthedRequest, res) => {
     try {
-      people.assertPeopleAdmin(req.auth!.userId);
+      people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'PATCH /api/people/:id');
       const patches: Partial<import('../store/types.js').PersonRecord> = {};
       if (req.body?.displayName !== undefined) patches.displayName = String(req.body.displayName);
       if (req.body?.role !== undefined) patches.role = req.body.role;
@@ -54,6 +61,9 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
       const person = people.updatePerson(req.params.personId!, patches, req.auth!.email);
       res.json({ person });
     } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
       const status = err instanceof Error && err.message.includes('Root') ? 403 : 400;
       res.status(status).json({ error: err instanceof Error ? err.message : 'Update failed' });
     }
@@ -61,7 +71,7 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
 
   router.post('/:personId/send-invite', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      people.assertPeopleAdmin(req.auth!.userId);
+      people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'POST /api/people/:id/send-invite');
       const target = people.listPeople().find((p) => p.id === req.params.personId);
       if (!target) {
         res.status(404).json({ error: 'Person not found' });
@@ -70,6 +80,9 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
       const result = await auth.requestMagicLink(target.email);
       res.json(result);
     } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
       res.status(400).json({ error: err instanceof Error ? err.message : 'Send failed' });
     }
   });

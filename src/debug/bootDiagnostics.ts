@@ -1,3 +1,5 @@
+import { isHandledAuthRejection } from '../auth/authErrors';
+
 /**
  * Boot diagnostics — make a stalled/crashed boot VISIBLE instead of leaving the
  * green felt background (the "green screen"). Installs global error handlers,
@@ -128,6 +130,10 @@ export function installBootDiagnostics(): void {
   });
 
   window.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) => {
+    if (isHandledAuthRejection(e.reason)) {
+      e.preventDefault();
+      return;
+    }
     showBootError('Unhandled promise rejection', String(e.reason ?? 'Unknown reason'));
   });
 

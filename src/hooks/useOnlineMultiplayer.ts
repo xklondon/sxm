@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { GameState } from '../types';
 
 import { fetchMe, fetchTable, sendTableAction, type AuthUser } from '../api/client';
+import { AuthFetchError } from '../auth/authErrors';
 
 import { getSocketBaseUrl, isOnlineModeEnabled } from '../api/config';
 
@@ -63,9 +64,13 @@ export function useAuth() {
     }
 
     fetchMe()
-
       .then(setUser)
-
+      .catch((err) => {
+        setUser(null);
+        if (err instanceof AuthFetchError) {
+          return;
+        }
+      })
       .finally(() => setLoading(false));
 
   }, []);

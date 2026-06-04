@@ -14,6 +14,7 @@ import { TableScreen, type TableNavHandlers } from './screens/TableScreen';
 import { LocalProfileSetup } from './components/LocalProfileSetup';
 import { ScoreLedgerModal } from './components/LedgerModals';
 import { createOnlineTable, isPeopleAdmin, logout, type AuthUser } from './api/client';
+import { AuthFetchError, accessDeniedMessage, isHandledAuthRejection } from './auth/authErrors';
 import { PeopleScreen } from './screens/PeopleScreen';
 import { apiPath } from './api/config';
 import {
@@ -86,6 +87,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
   const [tableNavHandlers, setTableNavHandlers] = useState<TableNavHandlers | null>(null);
   const [tableBootstrapDone, setTableBootstrapDone] = useState(Boolean(resolvedTableId));
   const [bootstrappingTable, setBootstrappingTable] = useState(false);
+  const [bootstrapError, setBootstrapError] = useState<string | null>(null);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
   const navMenuRef = useRef<HTMLDivElement>(null);
   const isMobileViewport = useIsMobileViewport();
@@ -144,20 +146,32 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
   }, [onlineMode, resolvedTableId]);
 
   const handleNewOnlineGame = useCallback(async () => {
+    setBootstrapError(null);
     const profile = loadProfile();
     const displayName = profile.name.trim() || user?.email.split('@')[0] || 'Host';
-    const result = await createOnlineTable(displayName);
-    setGameState({
-      ...result.state,
-      tableMeta: {
-        ...result.state.tableMeta,
-        showStakeSetup: true,
-      },
-    });
-    setActiveTableId(result.tableId);
-    setTableVersion(result.version);
-    setStoredOnlineTableId(result.tableId);
-    setScreen('table');
+    try {
+      const result = await createOnlineTable(displayName);
+      setGameState({
+        ...result.state,
+        tableMeta: {
+          ...result.state.tableMeta,
+          showStakeSetup: true,
+        },
+      });
+      setActiveTableId(result.tableId);
+      setTableVersion(result.version);
+      setStoredOnlineTableId(result.tableId);
+      setScreen('table');
+    } catch (err) {
+      if (err instanceof AuthFetchError && err.status === 403) {
+        setBootstrapError(accessDeniedMessage(err.code));
+      } else if (isHandledAuthRejection(err)) {
+        setBootstrapError(err instanceof Error ? err.message : 'Sign in required');
+      } else {
+        setBootstrapError(err instanceof Error ? err.message : 'Could not create table');
+      }
+      setScreen('start');
+    }
   }, [user?.email]);
 
   const handleNewGame = useCallback(() => {
@@ -208,6 +222,17 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
   async function handleLogout() {
     await logout();
     window.location.assign('/login');
+  }
+
+  if (bootstrapError) {
+    return (
+      <main className="start-screen">
+        <p>{bootstrapError}</p>
+        <button type="button" onClick={() => window.location.assign('/login')}>
+          Back to sign in
+        </button>
+      </main>
+    );
   }
 
   if (loadingOnline || bootstrappingTable) {

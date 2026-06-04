@@ -14,6 +14,7 @@ import { getStoredOnlineTableId } from './hooks/useOnlineMultiplayer';
 import { rememberPendingTable } from './session/pendingTable';
 import { parseJoinTableParams } from './engine/table/invites';
 import { BOOT_STAGES, markBootStage, markBootSucceeded } from './debug/bootDiagnostics';
+import { AuthFetchError, accessDeniedMessage } from './auth/authErrors';
 import { ClientConfigScreen, isClientConfigPath } from './debug/ClientConfigScreen';
 
 const PENDING_JOIN_KEY = 'sxmcards:pending-join';
@@ -64,6 +65,7 @@ export function AppRoot() {
   }, []);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [sessionWarning, setSessionWarning] = useState<string | null>(null);
+  const [accessDenied, setAccessDenied] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState<string | null>(null);
   const [inviteTableName, setInviteTableName] = useState<string | null>(null);
   const pathname = window.location.pathname;
@@ -80,10 +82,15 @@ export function AppRoot() {
       return;
     }
     setSessionWarning(null);
+    setAccessDenied(null);
     fetchMe()
       .then(setUser)
       .catch((err) => {
         setUser(null);
+        if (err instanceof AuthFetchError && err.status === 403) {
+          setAccessDenied(accessDeniedMessage(err.code));
+          return;
+        }
         if (!isPublicAuthPath(pathname) && isSessionCheckConnectivityError(err)) {
           setSessionWarning('Could not reach the server. You can still request a magic link.');
         }
@@ -184,7 +191,7 @@ export function AppRoot() {
     }
     return (
       <LoginScreen
-        error={loginError}
+        error={accessDenied ?? loginError}
         sessionWarning={sessionWarning}
         checkingSession={authLoading}
         invitedEmail={inviteEmail}
@@ -206,7 +213,7 @@ export function AppRoot() {
       savePendingJoin(window.location.search);
       return (
         <LoginScreen
-          error="Sign in to join this table."
+          error={accessDenied ?? 'Sign in to join this table.'}
           sessionWarning={sessionWarning}
           checkingSession={authLoading}
           invitedEmail={inviteEmail}

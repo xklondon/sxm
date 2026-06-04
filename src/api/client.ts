@@ -1,4 +1,5 @@
 import { apiPath } from './config';
+import { AuthFetchError, authErrorCodeFromBody } from '../auth/authErrors';
 
 const DEFAULT_FETCH_TIMEOUT_MS = 30_000;
 export const SESSION_CHECK_TIMEOUT_MS = 8_000;
@@ -78,11 +79,24 @@ export function isSessionCheckConnectivityError(err: unknown): boolean {
 
 export async function fetchMe(): Promise<AuthUser | null> {
   const res = await apiFetch('/api/auth/me', {}, SESSION_CHECK_TIMEOUT_MS);
-  if (res.status === 401 || res.status === 403 || res.status === 404) {
+  if (res.status === 401 || res.status === 404) {
     return null;
   }
+  if (res.status === 403) {
+    let body: { error?: string; code?: string } = {};
+    try {
+      body = (await res.json()) as { error?: string; code?: string };
+    } catch {
+      /* ignore */
+    }
+    throw new AuthFetchError(
+      403,
+      body.error ?? 'Access required — ask an admin for an invite.',
+      authErrorCodeFromBody(body),
+    );
+  }
   if (!res.ok) {
-    throw new Error(`Auth check failed (${res.status})`);
+    throw new AuthFetchError(res.status, `Auth check failed (${res.status})`);
   }
   const data = (await res.json()) as { user: AuthUser };
   return data.user;
@@ -112,7 +126,14 @@ export async function createOnlineTable(displayName: string, name?: string) {
     method: 'POST',
     body: JSON.stringify({ displayName, name }),
   });
-  const data = await res.json();
+  const data = (await res.json()) as { error?: string; code?: string };
+  if (res.status === 401 || res.status === 403) {
+    throw new AuthFetchError(
+      res.status,
+      data.error ?? 'Create table failed',
+      authErrorCodeFromBody(data),
+    );
+  }
   if (!res.ok) {
     throw new Error(data.error ?? 'Create table failed');
   }

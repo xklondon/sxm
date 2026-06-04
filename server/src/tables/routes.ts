@@ -6,6 +6,7 @@ import { verifySessionToken } from '../auth/tokens.js';
 import { resolveRequestOrigin } from '../auth/cookies.js';
 import { clientEmailErrorMessage } from '../email/smtp.js';
 import type { Server as SocketServer } from 'socket.io';
+import { respondPeopleAuthError } from '../people/httpErrors.js';
 
 export function createTableRouter(tables: TableService, io: SocketServer): Router {
   const router = Router();
@@ -55,22 +56,37 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
   router.post('/', requireAuth, (req: AuthedRequest, res) => {    try {
       const displayName = String(req.body?.displayName ?? req.auth!.email.split('@')[0]);
       const tableName = req.body?.name ? String(req.body.name) : undefined;
-      const table = tables.createTable(req.auth!.userId, displayName, tableName);
+      const table = tables.createTable(
+        req.auth!.userId,
+        displayName,
+        tableName,
+        req.auth!.email,
+      );
       res.status(201).json({
         tableId: table.id,
         version: table.version,
         state: table.state,
       });
     } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
       res.status(400).json({ error: err instanceof Error ? err.message : 'Create failed' });
     }
   });
 
   router.get('/:tableId', requireAuth, (req: AuthedRequest, res) => {
     try {
-      const table = tables.getTableForUser(req.params.tableId!, req.auth!.userId);
+      const table = tables.getTableForUser(
+        req.params.tableId!,
+        req.auth!.userId,
+        req.auth!.email,
+      );
       res.json({ tableId: table.id, version: table.version, state: table.state });
     } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
       res.status(404).json({ error: err instanceof Error ? err.message : 'Not found' });
     }
   });
@@ -87,9 +103,13 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         userId: req.auth!.userId,
         invitedEmail,
         invitedName: String(req.body?.name ?? ''),
+        sessionEmail: req.auth!.email,
       });
       res.status(201).json(result);
     } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
       const message = clientEmailErrorMessage(err);
       const status = /email|smtp|configured|send|resend|sandbox|domain/i.test(message) ? 502 : 400;
       res.status(status).json({ error: message });
@@ -109,9 +129,13 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         email,
         displayName: String(req.body?.displayName ?? req.body?.name ?? ''),
         role: req.body?.role,
+        sessionEmail: req.auth!.email,
       });
       res.status(201).json(result);
     } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
       const message = clientEmailErrorMessage(err);
       const status = /email|smtp|configured|send|resend|sandbox|domain/i.test(message) ? 502 : 400;
       res.status(status).json({ error: message });
@@ -126,9 +150,13 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         tableId: String(req.body?.tableId ?? ''),
         inviteId: String(req.body?.inviteId ?? ''),
         token: String(req.body?.token ?? ''),
+        sessionEmail: req.auth!.email,
       });
       res.json({ tableId: table.id, version: table.version, state: table.state });
     } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
       res.status(400).json({ error: err instanceof Error ? err.message : 'Join failed' });
     }
   });
@@ -145,6 +173,7 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         type,
         payload,
         expectedVersion,
+        req.auth!.email,
       );
       io.to(`table:${req.params.tableId}`).emit('table:update', {
         tableId: req.params.tableId,
@@ -153,6 +182,9 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       });
       res.json(result);
     } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
       const message = err instanceof Error ? err.message : 'Action failed';
       const status = message.includes('Stale') ? 409 : 400;
       res.status(status).json({ error: message });

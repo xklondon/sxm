@@ -22,6 +22,8 @@ import {
 import { config } from '../config.js';
 
 import type { PeopleService } from '../people/service.js';
+import { respondPeopleAuthError } from '../people/httpErrors.js';
+import { resolveAuthForRequest } from './sessionResolve.js';
 
 function magicLinkErrorStatus(message: string): number {
   if (/not configured/i.test(message)) {
@@ -112,16 +114,18 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
 
   router.get('/me', requireAuth, (req: AuthedRequest, res) => {
     try {
-      const user = people.getAuthProfile(req.auth!.userId, req.auth!.email);
-      refreshSessionCookie(res, req.auth!, req);
-      res.json({ user });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Not found';
-      if (/user not found/i.test(message)) {
-        clearSessionCookie(res);
-        res.status(401).json({ error: 'Session expired — sign in again' });
+      const auth = resolveAuthForRequest(people, req.auth!, res, req, 'GET /api/auth/me');
+      if (!auth) {
         return;
       }
+      const user = people.getAuthProfile(auth.userId, auth.email);
+      refreshSessionCookie(res, { ...auth, userId: user.userId }, req);
+      res.json({ user });
+    } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      const message = err instanceof Error ? err.message : 'Not found';
       res.status(500).json({ error: message });
     }
   });

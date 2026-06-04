@@ -48,6 +48,22 @@ export function createEmailDebugRouter(): Router {
     res.json(getEmailProviderDiagnostics());
   });
 
+  router.get('/auth-provision', (_req, res) => {
+    res.json({
+      hint: 'Provisioning events are logged server-side as [SXM][auth-provision] (no secrets).',
+      fields: ['route', 'path', 'sessionEmail', 'userId', 'resolvedUserId', 'personFound'],
+      paths: [
+        'resolve-by-id',
+        'resolve-by-email',
+        'create-user',
+        'ensure-person-login',
+        'ensure-root',
+        'ensure-invite-guest',
+        'get-auth-profile',
+      ],
+    });
+  });
+
   router.get('/routes', (_req, res) => {
     res.json({
       auth: [
@@ -60,6 +76,7 @@ export function createEmailDebugRouter(): Router {
         'GET /api/debug/email-config',
         'GET /api/debug/email-provider',
         'GET /api/debug/routes',
+        'GET /api/debug/auth-provision',
         'POST /api/debug/send-test-email (DEBUG_EMAIL_TEST)',
       ],
       health: ['GET /api/health', 'GET /health'],

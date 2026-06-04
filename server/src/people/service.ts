@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { PersonRecord, PersonRole, Store, TableInviteRecord } from '../store/types.js';
+import type { PersonRecord, PersonRole, Store, TableInviteRecord, UserRecord } from '../store/types.js';
 import { config } from '../config.js';
 import {
   isPeopleAdmin,
@@ -10,9 +10,42 @@ import {
   permissionsForTableInvite,
   personToPermissions,
 } from './permissions.js';
+import { PeopleAuthError } from './errors.js';
+import { logAuthProvision } from './provisioningLog.js';
 
 export class PeopleService {
   constructor(private readonly store: Store) {}
+
+  /** Resolve session userId after store reset — prefer id, then email, then create. */
+  resolveSessionUser(userId: string, sessionEmail?: string, route = 'internal'): UserRecord {
+    const byId = this.store.getUserById(userId);
+    if (byId) {
+      logAuthProvision(route, 'resolve-by-id', sessionEmail, {
+        userId: byId.id,
+        personFound: Boolean(this.getPersonForUser(byId.id)),
+      });
+      return byId;
+    }
+    if (!sessionEmail) {
+      throw new PeopleAuthError('SESSION_INVALID', 'Session expired — sign in again');
+    }
+    const normalized = normalizeEmail(sessionEmail);
+    const byEmail = this.store.getUserByEmail(normalized);
+    if (byEmail) {
+      logAuthProvision(route, 'resolve-by-email', sessionEmail, {
+        sessionUserId: userId,
+        resolvedUserId: byEmail.id,
+        personFound: Boolean(this.getPersonForUser(byEmail.id)),
+      });
+      return byEmail;
+    }
+    const created = this.store.createUser(normalized, normalized.split('@')[0]!);
+    logAuthProvision(route, 'create-user', sessionEmail, {
+      sessionUserId: userId,
+      resolvedUserId: created.id,
+    });
+    return created;
+  }
 
   listPeople(): PersonRecord[] {
     return this.store.listPeople().sort((a, b) => a.email.localeCompare(b.email));
@@ -202,16 +235,16 @@ export class PeopleService {
     return updated;
   }
 
-  assertCanOwnTables(userId: string): PersonRecord {
-    const person = this.requireActivePerson(userId);
+  assertCanOwnTables(userId: string, sessionEmail?: string, route = 'tables.create'): PersonRecord {
+    const person = this.requireActivePerson(userId, sessionEmail, route);
     if (!person.canOwnTables && !isRootPerson(person)) {
       throw new Error('You do not have permission to create tables');
     }
     return person;
   }
 
-  assertCanInvite(userId: string): PersonRecord {
-    const person = this.requireActivePerson(userId);
+  assertCanInvite(userId: string, sessionEmail?: string, route = 'tables.invite'): PersonRecord {
+    const person = this.requireActivePerson(userId, sessionEmail, route);
     if (!person.canInvite && !isRootPerson(person)) {
       throw new Error('You do not have permission to invite others');
     }
@@ -221,18 +254,18 @@ export class PeopleService {
   assertCanJoinTable(
     userId: string,
     invite: TableInviteRecord | null,
+    sessionEmail?: string,
+    route = 'tables.join',
   ): PersonRecord {
-    const user = this.store.getUserById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
-    const person = this.getPersonForUser(userId);
+    const user = this.resolveSessionUser(userId, sessionEmail, route);
+    const person = this.getPersonForUser(user.id);
     if (person && (person.canPlay || isRootPerson(person))) {
       return person;
     }
     if (invite && normalizeEmail(invite.invitedEmail) === user.email) {
       if (!person) {
-        return this.ensureInvitedGuestOnJoin(user.email, userId);
+        logAuthProvision(route, 'ensure-invite-guest', sessionEmail, { resolvedUserId: user.id });
+        return this.ensureInvitedGuestOnJoin(user.email, user.id);
       }
       return person;
     }
@@ -279,15 +312,13 @@ export class PeopleService {
     return person;
   }
 
-  assertPeopleAdmin(userId: string): PersonRecord {
-    const user = this.store.getUserById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
+  assertPeopleAdmin(userId: string, sessionEmail?: string, route = 'people.admin'): PersonRecord {
+    const user = this.resolveSessionUser(userId, sessionEmail, route);
     if (isRootEmail(user.email)) {
-      return this.ensurePersonOnLogin(user.email, userId);
+      logAuthProvision(route, 'ensure-root', sessionEmail, { resolvedUserId: user.id });
+      return this.ensurePersonOnLogin(user.email, user.id);
     }
-    const person = this.getPersonForUser(userId);
+    const person = this.getPersonForUser(user.id);
     if (!isPeopleAdmin(person, user.email)) {
       throw new Error('Admin access required');
     }
@@ -295,18 +326,24 @@ export class PeopleService {
   }
 
   getAuthProfile(userId: string, emailFromSession?: string) {
-    let user = this.store.getUserById(userId);
-    if (!user && emailFromSession) {
-      user = this.store.createUser(emailFromSession, emailFromSession.split('@')[0]!);
-      this.ensurePersonOnLogin(emailFromSession, user.id);
-    }
-    if (!user) {
-      throw new Error('User not found');
-    }
-    let person = this.getPersonForUser(userId);
+    const user = this.resolveSessionUser(userId, emailFromSession, 'GET /api/auth/me');
+    let person = this.getPersonForUser(user.id);
     if (!person && isRootEmail(user.email)) {
-      person = this.ensurePersonOnLogin(user.email, userId);
+      logAuthProvision('GET /api/auth/me', 'ensure-root', emailFromSession, {
+        resolvedUserId: user.id,
+      });
+      person = this.ensurePersonOnLogin(user.email, user.id);
+    } else if (!person && emailFromSession && !config.inviteOnlyMode) {
+      logAuthProvision('GET /api/auth/me', 'ensure-person-login', emailFromSession, {
+        resolvedUserId: user.id,
+      });
+      person = this.ensurePersonOnLogin(emailFromSession, user.id);
     }
+    logAuthProvision('GET /api/auth/me', 'get-auth-profile', emailFromSession, {
+      resolvedUserId: user.id,
+      personFound: Boolean(person),
+      isRoot: isRootEmail(user.email),
+    });
     return {
       userId: user.id,
       email: user.email,
@@ -325,17 +362,22 @@ export class PeopleService {
     };
   }
 
-  private requireActivePerson(userId: string): PersonRecord {
-    const user = this.store.getUserById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
+  private requireActivePerson(
+    userId: string,
+    sessionEmail?: string,
+    route = 'people.require-active',
+  ): PersonRecord {
+    const user = this.resolveSessionUser(userId, sessionEmail, route);
     if (isRootEmail(user.email)) {
-      return this.ensurePersonOnLogin(user.email, userId);
+      logAuthProvision(route, 'ensure-root', sessionEmail, { resolvedUserId: user.id });
+      return this.ensurePersonOnLogin(user.email, user.id);
     }
-    const person = this.getPersonForUser(userId);
+    const person = this.getPersonForUser(user.id);
     if (!person) {
-      throw new Error('Your account is not registered on this platform. Ask an admin for an invite.');
+      throw new PeopleAuthError(
+        'NOT_REGISTERED',
+        'Your account is not registered on this platform. Ask an admin for an invite.',
+      );
     }
     if (person.status === 'disabled') {
       throw new Error('Account disabled');
