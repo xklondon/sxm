@@ -71,7 +71,8 @@ describe('Card View dealer vs hero', () => {
     const html = renderCardView(state);
     expect(html).not.toContain('bj-phone-view__cards--bank');
     expect(html).not.toContain('bj-phone-view__bank-hero');
-    expect(html).toContain('bj-phone-view__cards--stitched');
+    expect(html).not.toContain('bj-phone-view__cards--stitched');
+    expect(html).toContain('bj-phone-view__cards-placeholder');
   });
 
   it('shows hero placeholder when betting with no active hand cards', () => {

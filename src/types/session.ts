@@ -1,6 +1,8 @@
 export type DealingStatus = 'no-deck' | 'ready' | 'depleted';
 
-export type GameType = 'blackjack' | 'texas-holdem';
+export type GameType = 'blackjack' | 'texas-holdem' | 'zilch';
+
+export type GameCategory = 'cards' | 'dice';
 
 export type GameStatus =
   | 'setup'

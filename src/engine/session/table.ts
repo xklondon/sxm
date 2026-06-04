@@ -26,6 +26,7 @@ import { DEFAULT_BLACKJACK_FLOW_SETTINGS } from '../blackjack/flowSettings';
 import { DEFAULT_BLACKJACK_PROTOCOL_ID } from '../blackjack/protocols';
 import { DEFAULT_DESIGN_TEMPLATE_ID } from '../../design/templates';
 import { DEFAULT_TABLE_ADMIN_SETTINGS } from '../../types/admin';
+import { DEFAULT_ZILCH_SETTINGS } from '../zilch/settings';
 
 const DEFAULT_TABLE_CHIPS = 500;
 
@@ -45,8 +46,10 @@ export function createNewBlackjackTable(): GameState {
     ledger: createEmptyLedger(id),
     blackjack: null,
     holdem: null,
+    zilch: null,
     blackjackSettings: { ...DEFAULT_BLACKJACK_SETTINGS },
     holdemSettings: { ...DEFAULT_HOLDEM_SETTINGS },
+    zilchSettings: { ...DEFAULT_ZILCH_SETTINGS },
     tableGame: 'blackjack',
     tableViewMode: 'full',
     selectedSeatId: null,
@@ -58,6 +61,44 @@ export function createNewBlackjackTable(): GameState {
   };
 
   log.info('Blackjack table created (empty boxes)', { sessionId: id });
+  return state;
+}
+
+/** Open a new Zilch dice table — same session/ledger shell as cards. */
+export function createNewZilchTable(): GameState {
+  const id = generateId();
+  const state: GameState = {
+    session: {
+      ...createEmptySession(id),
+      gameType: 'zilch',
+      status: 'active',
+      currentRound: 1,
+      boxSlotNumbers: {},
+    },
+    players: {},
+    deck: null,
+    ledger: createEmptyLedger(id),
+    blackjack: null,
+    holdem: null,
+    zilch: null,
+    blackjackSettings: { ...DEFAULT_BLACKJACK_SETTINGS },
+    holdemSettings: { ...DEFAULT_HOLDEM_SETTINGS },
+    zilchSettings: { ...DEFAULT_ZILCH_SETTINGS },
+    tableGame: 'zilch',
+    tableViewMode: 'full',
+    selectedSeatId: null,
+    tableMeta: {
+      ...createDefaultTableMeta(),
+      gameCategory: 'dice',
+      diceGame: 'zilch',
+    },
+    blackjackFlowSettings: { ...DEFAULT_BLACKJACK_FLOW_SETTINGS },
+    blackjackProtocolId: DEFAULT_BLACKJACK_PROTOCOL_ID,
+    tableAdminSettings: { ...DEFAULT_TABLE_ADMIN_SETTINGS },
+    designTemplateId: DEFAULT_DESIGN_TEMPLATE_ID,
+  };
+
+  log.info('Zilch table created', { sessionId: id });
   return state;
 }
 
@@ -81,6 +122,7 @@ export function startNewTable(state: GameState): GameState {
     deck: null,
     blackjack: null,
     holdem: null,
+    zilch: null,
     tableMeta: {
       ...state.tableMeta,
       outcome: null,
@@ -231,6 +273,7 @@ export function switchGameType(state: GameState, gameType: import('../../types')
     deck: null,
     blackjack: null,
     holdem: null,
+    zilch: null,
     tableGame: gameType,
   };
 }

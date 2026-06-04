@@ -13,6 +13,7 @@ import { DEFAULT_BLACKJACK_FLOW_SETTINGS } from '../blackjack/flowSettings';
 import { DEFAULT_BLACKJACK_PROTOCOL_ID } from '../blackjack/protocols';
 import { DEFAULT_DESIGN_TEMPLATE_ID } from '../../design/templates';
 import { DEFAULT_TABLE_ADMIN_SETTINGS } from '../../types/admin';
+import { DEFAULT_ZILCH_SETTINGS } from '../zilch/settings';
 import { allocateChipsToBankrollOwner } from './allocation';
 
 export interface CreateGameSessionOptions {
@@ -57,8 +58,10 @@ export function createGameSession(
     ledger: createEmptyLedger(id),
     blackjack: null,
     holdem: null,
+    zilch: null,
     blackjackSettings: { ...DEFAULT_BLACKJACK_SETTINGS },
     holdemSettings: { ...DEFAULT_HOLDEM_SETTINGS },
+    zilchSettings: { ...DEFAULT_ZILCH_SETTINGS },
     tableGame: null,
     tableViewMode: 'full',
     selectedSeatId: null,
@@ -226,6 +229,13 @@ export function startGame(session: GameSession): GameSession {
   }
   if (needsDealer && !session.dealerButtonPlayerId) {
     throw new Error('Dealer button must be assigned before starting');
+  }
+  if (session.gameType === 'zilch') {
+    return {
+      ...session,
+      status: 'active',
+      currentRound: 1,
+    };
   }
 
   return {

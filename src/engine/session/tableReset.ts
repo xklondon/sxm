@@ -48,6 +48,7 @@ function clearGameStateForReset(state: GameState): GameState {
     deck: null,
     blackjack: null,
     holdem: null,
+    zilch: null,
     players: resetPlayerRoundFields(state.players),
     tableMeta: {
       ...state.tableMeta,

@@ -109,6 +109,20 @@ export function assertActionAuthorized(state: GameState, ctx: ActionContext): vo
       assertTableHost(state, ctx.personId);
       return;
 
+    case 'zilchStartGame':
+    case 'zilchRandomiseStarter':
+    case 'zilchConfirmStarter':
+      assertTableHost(state, ctx.personId);
+      return;
+
+    case 'zilchRollDice':
+    case 'zilchCompleteRoll':
+    case 'zilchKeepCombination':
+    case 'zilchBankTurn':
+    case 'zilchQuitTurn':
+      assertZilchPlayerTurn(state, ctx);
+      return;
+
     case 'leaveTable':
     case 'createTable':
     case 'joinTable':
@@ -153,6 +167,15 @@ function assertHostDealAction(
     }
   }
   assertTableHost(state, ctx.personId);
+}
+
+function assertZilchPlayerTurn(state: GameState, ctx: ActionContext): void {
+  if (state.tableGame !== 'zilch' || !state.zilch) {
+    throw new Error('Not a Zilch table');
+  }
+  if (state.zilch.currentPlayerId !== ctx.personId) {
+    throw new Error('Not your turn');
+  }
 }
 
 function assertTableHost(state: GameState, personId: string): void {

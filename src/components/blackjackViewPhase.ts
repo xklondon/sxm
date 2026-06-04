@@ -126,10 +126,25 @@ export function showStitchedPlayerCards(
   gameEnded: boolean,
   cardCount: number,
 ): boolean {
-  if (gameEnded || isBettingPhase(phase) || cardCount <= 0) {
+  return showHeroPlayerCards(phase, gameEnded, cardCount);
+}
+
+/** Hero area shows active player hand cards (authoritative count), not dealer/bank placeholders. */
+export function showHeroPlayerCards(
+  phase: BlackjackProtocolPhase,
+  gameEnded: boolean,
+  logicalCardCount: number,
+): boolean {
+  if (gameEnded || isBettingPhase(phase) || logicalCardCount <= 0) {
     return false;
   }
-  return true;
+  if (isBankPhase(phase) || isRoundCompletePhase(phase)) {
+    return false;
+  }
+  if (isPlayerTurnPhase(phase) || isInsurancePhase(phase)) {
+    return true;
+  }
+  return isDealingPhase(phase);
 }
 
 /** Side hit/stand controls — player turn only, not insurance/even-money. */
@@ -216,7 +231,7 @@ export function getCardViewHeroBoxId(
   return selectedSeatId ?? focusBoxId ?? null;
 }
 
-/** Hand key for the hero box — follows activeHandKey when it belongs to the hero box. */
+/** Hand key for the hero box — active turn hand during play; primary hand otherwise. */
 export function getCardViewHeroHandKey(
   phase: BlackjackProtocolPhase,
   round: BlackjackRound | null | undefined,
@@ -226,12 +241,24 @@ export function getCardViewHeroHandKey(
     return null;
   }
   if (isPlayerTurnPhase(phase) && round?.activeHandKey) {
-    const activePlayerId = round.activeHandKey.split(':')[0]!;
-    if (activePlayerId === heroBoxId) {
+    return round.activeHandKey;
+  }
+  return `${heroBoxId}:0`;
+}
+
+/** Hand key for a box tile — matches active split hand when that box is on turn. */
+export function getCardViewHandKeyForBox(
+  phase: BlackjackProtocolPhase,
+  round: BlackjackRound | null | undefined,
+  boxId: string,
+): string {
+  if (isPlayerTurnPhase(phase) && round?.activeHandKey) {
+    const { playerId } = parseBlackjackHandKey(round.activeHandKey);
+    if (playerId === boxId) {
       return round.activeHandKey;
     }
   }
-  return `${heroBoxId}:0`;
+  return `${boxId}:0`;
 }
 
 export function isCardViewMiniBox(boxId: string, heroBoxId: string | null): boolean {

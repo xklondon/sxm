@@ -6,6 +6,7 @@ import { DEFAULT_BLACKJACK_PROTOCOL_ID } from '../engine/blackjack/protocols';
 import { DEFAULT_DESIGN_TEMPLATE_ID } from '../design/templates';
 import { DEFAULT_TABLE_ADMIN_SETTINGS } from '../types/admin';
 import { normalizeFlowSettings } from '../engine/blackjack/flowSettings';
+import { DEFAULT_ZILCH_SETTINGS } from '../engine/zilch/settings';
 
 const CURRENT_GAME_KEY = 'sxmcards:current-game:v1';
 const SAVED_GAMES_KEY = 'sxmcards:saved-games:v1';
@@ -99,6 +100,8 @@ export function deserializeGameState(raw: string): GameState {
     designTemplateId: parsed.designTemplateId ?? DEFAULT_DESIGN_TEMPLATE_ID,
     tableAdminSettings: parsed.tableAdminSettings ?? { ...DEFAULT_TABLE_ADMIN_SETTINGS },
     blackjackFlowSettings: normalizeFlowSettings(parsed.blackjackFlowSettings),
+    zilch: parsed.zilch ?? null,
+    zilchSettings: parsed.zilchSettings ?? { ...DEFAULT_ZILCH_SETTINGS },
   };
 }
 

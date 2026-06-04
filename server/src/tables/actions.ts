@@ -20,6 +20,14 @@ export const TABLE_ACTIONS = [
   'addGameToPersonalLedger',
   'assignChips',
   'resetTable',
+  'zilchRandomiseStarter',
+  'zilchConfirmStarter',
+  'zilchRollDice',
+  'zilchCompleteRoll',
+  'zilchKeepCombination',
+  'zilchBankTurn',
+  'zilchQuitTurn',
+  'zilchStartGame',
 ] as const;
 
 export type TableActionType = (typeof TABLE_ACTIONS)[number];

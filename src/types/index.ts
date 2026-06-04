@@ -62,8 +62,10 @@ export interface GameState {
   ledger: import('./ledger').Ledger;
   blackjack: import('./blackjack').BlackjackRound | null;
   holdem: import('./holdem').HoldemRound | null;
+  zilch: import('../engine/zilch/zilchTypes').ZilchGameState | null;
   blackjackSettings: import('../engine/blackjack/settings').BlackjackSettings;
   holdemSettings: import('../engine/holdem/settings').HoldemSettings;
+  zilchSettings: import('../engine/zilch/zilchTypes').ZilchGameSettings;
   tableGame: import('./session').GameType | null;
   tableViewMode: TableViewMode;
   selectedSeatId: string | null;

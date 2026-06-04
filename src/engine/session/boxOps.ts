@@ -431,6 +431,7 @@ export function startNewGameWithWager(
     deck: null,
     blackjack: null,
     holdem: null,
+    zilch: null,
     selectedSeatId: null,
     tableMeta: {
       agreement,

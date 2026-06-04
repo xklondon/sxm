@@ -778,9 +778,10 @@
 .bj-phone-view__cards-placeholder {
   width: 2.35rem;
   height: 3.25rem;
-  border-radius: 0.28rem;
-  border: 1px dashed rgb(255 255 255 / 0.14);
-  background: rgb(0 0 0 / 0.12);
+  border: none;
+  background: transparent;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .bj-phone-view__bet-stake-slot {
@@ -979,8 +980,11 @@
 }
 
 .bj-phone-view__total--placeholder {
-  opacity: 0.28;
-  border-color: rgb(255 255 255 / 0.1);
+  visibility: hidden;
+  pointer-events: none;
+  border: none;
+  background: transparent;
+  opacity: 0;
   box-shadow: none;
   color: transparent;
 }

@@ -12,6 +12,7 @@ export {
   addSeatAtTable,
   confirmTableAgreement,
   createNewBlackjackTable,
+  createNewZilchTable,
   defaultBlackjackSeatId,
   nextBoxDisplayName,
   recordTableOutcome,
@@ -27,6 +28,12 @@ export {
   type TableStakeSetupInput,
   type TableBankerSetupMode,
 } from './tableSetup';
+export {
+  applyZilchTableStakeSetup,
+  beginZilchPlay,
+  parseZilchTableStakePayload,
+  type ZilchTableStakeSetupInput,
+} from './zilchTableSetup';
 export {
   applyTableResetSetup,
   beginTableResetSetup,

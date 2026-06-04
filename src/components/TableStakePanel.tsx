@@ -5,9 +5,13 @@ import type { GameState } from '../types';
 import {
   applyTableResetSetup,
   applyTableStakeSetup,
+  applyZilchTableStakeSetup,
+  createNewZilchTable,
   DEFAULT_TABLE_CHIPS,
+  switchGameType,
   type TableBankerSetupMode,
   type TableStakeSetupInput,
+  type ZilchTableStakeSetupInput,
 } from '../engine/session';
 import {
   listBlackjackProtocolPresets,
@@ -24,6 +28,8 @@ import { isOnlineModeEnabled } from '../api/config';
 import './TableStakePanel.css';
 
 const STAKE_EXAMPLES = ['$5', 'dinner', 'car wash', 'bottle of wine', 'favour', 'immaterial promise'];
+
+type SetupCategoryTab = 'cards' | 'dice';
 
 export type TableStakePanelMode = 'new' | 'reset';
 
@@ -76,8 +82,32 @@ export function TableStakePanel({
   const [bankerName, setBankerName] = useState(
     () => gameState.tableMeta.bankerSetup.displayName ?? '',
   );
+  const [setupTab, setSetupTab] = useState<SetupCategoryTab>(() =>
+    gameState.tableMeta.gameCategory === 'dice' || gameState.tableGame === 'zilch'
+      ? 'dice'
+      : 'cards',
+  );
   const [protocolId, setProtocolId] = useState(
     gameState.blackjackProtocolId ?? listBlackjackProtocolPresets()[0]?.protocolId ?? 'las-vegas-house',
+  );
+  const [zilchMode, setZilchMode] = useState<'target_points' | 'fixed_rounds'>(
+    gameState.zilchSettings.mode ?? 'target_points',
+  );
+  const [targetPoints, setTargetPoints] = useState(
+    String(gameState.zilchSettings.targetPoints ?? 100),
+  );
+  const [roundLimit, setRoundLimit] = useState(String(gameState.zilchSettings.roundLimit ?? 10));
+  const [diceAnimMode, setDiceAnimMode] = useState<'fixed' | 'random'>(
+    gameState.zilchSettings.diceAnimation.diceAnimationMode,
+  );
+  const [diceAnimMs, setDiceAnimMs] = useState(
+    String(gameState.zilchSettings.diceAnimation.diceAnimationMs),
+  );
+  const [diceAnimMin, setDiceAnimMin] = useState(
+    String(gameState.zilchSettings.diceAnimation.diceAnimationRandomMinMs),
+  );
+  const [diceAnimMax, setDiceAnimMax] = useState(
+    String(gameState.zilchSettings.diceAnimation.diceAnimationRandomMaxMs),
   );
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [naturalDealing, setNaturalDealing] = useState(isNaturalInitialDeal(flow.initialDealMode));
@@ -92,6 +122,20 @@ export function TableStakePanel({
   const onlineMode = isOnlineModeEnabled();
 
   const controller = profile.name.trim() || gameState.tableMeta.controllerName;
+
+  function buildZilchSetupInput(): ZilchTableStakeSetupInput {
+    const base = buildSetupInput();
+    return {
+      ...base,
+      zilchMode,
+      targetPoints: Number.parseInt(targetPoints, 10) || 100,
+      roundLimit: Number.parseInt(roundLimit, 10) || 10,
+      diceAnimationMode: diceAnimMode,
+      diceAnimationMs: Number.parseInt(diceAnimMs, 10) || 2500,
+      diceAnimationRandomMinMs: Number.parseInt(diceAnimMin, 10) || 2000,
+      diceAnimationRandomMaxMs: Number.parseInt(diceAnimMax, 10) || 8000,
+    };
+  }
 
   function buildSetupInput(): TableStakeSetupInput {
     const seatAmount = Number.parseInt(seatChips, 10) || DEFAULT_TABLE_CHIPS;
@@ -140,10 +184,11 @@ export function TableStakePanel({
     if (onlineMode && onlineDispatch && isReset) {
       setSubmitting(true);
       try {
-        await onlineDispatch('resetTable', {
-          ...input,
-          inviteNote: inviteNote.trim() || undefined,
-        });
+        const resetPayload =
+          setupTab === 'dice'
+            ? { ...buildZilchSetupInput(), inviteNote: inviteNote.trim() || undefined }
+            : { ...input, inviteNote: inviteNote.trim() || undefined };
+        await onlineDispatch('resetTable', resetPayload);
         onFinished?.();
       } finally {
         setSubmitting(false);
@@ -151,10 +196,45 @@ export function TableStakePanel({
       return;
     }
 
-    const next = isReset
-      ? applyTableResetSetup(gameState, input, gameState.tableMeta.ownerPersonId)
-      : applyTableStakeSetup(gameState, input);
+    let base = gameState;
+    if (setupTab === 'dice' && base.tableGame !== 'zilch') {
+      base = applySettingsToDiceTable(base);
+    } else if (setupTab === 'cards' && base.tableGame === 'zilch') {
+      base = switchGameType(base, 'blackjack');
+    }
+
+    const next =
+      setupTab === 'dice'
+        ? isReset
+          ? applyZilchTableStakeSetup(
+              applyTableResetSetup(base, input, base.tableMeta.ownerPersonId),
+              buildZilchSetupInput(),
+            )
+          : applyZilchTableStakeSetup(base, buildZilchSetupInput())
+        : isReset
+          ? applyTableResetSetup(base, input, base.tableMeta.ownerPersonId)
+          : applyTableStakeSetup(base, input);
     onConfirm(next);
+  }
+
+  function applySettingsToDiceTable(state: GameState): GameState {
+    const fresh = createNewZilchTable();
+    return {
+      ...fresh,
+      session: { ...fresh.session, id: state.session.id },
+      ledger: state.ledger,
+      players: state.players,
+      tableMeta: {
+        ...state.tableMeta,
+        gameCategory: 'dice',
+        diceGame: 'zilch',
+        showStakeSetup: true,
+      },
+      tableAdminSettings: state.tableAdminSettings,
+      designTemplateId: state.designTemplateId,
+      blackjackFlowSettings: state.blackjackFlowSettings,
+      blackjackProtocolId: state.blackjackProtocolId,
+    };
   }
 
   return (
@@ -287,28 +367,148 @@ export function TableStakePanel({
             </label>
 
             <fieldset className="table-stake-panel__banker">
-              <legend>Rule protocol</legend>
-              <select
-                className="table-stake-panel__input"
-                value={protocolId}
-                onChange={(e) => setProtocolId(e.target.value)}
-              >
-                {listBlackjackProtocolPresets().map((p) => (
-                  <option key={p.protocolId} value={p.protocolId}>
-                    {p.displayName}
-                  </option>
-                ))}
-              </select>
-              <p className="table-stake-panel__hint">{selectedProtocol.shortDescription}</p>
-              <ul className="table-stake-panel__protocol-rules">
-                {protocolRules.map((rule) => (
-                  <li key={rule.id}>
-                    <strong>{rule.label}:</strong> {rule.value}
-                  </li>
-                ))}
-              </ul>
+              <legend>Game category</legend>
+              <div className="table-stake-panel__tabs" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={setupTab === 'cards'}
+                  className={setupTab === 'cards' ? '' : 'secondary'}
+                  onClick={() => setSetupTab('cards')}
+                >
+                  Cards
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={setupTab === 'dice'}
+                  className={setupTab === 'dice' ? '' : 'secondary'}
+                  onClick={() => setSetupTab('dice')}
+                >
+                  Dice
+                </button>
+              </div>
+
+              {setupTab === 'cards' && (
+                <>
+                  <label className="table-stake-panel__field">
+                    <span>Rule protocol</span>
+                    <select
+                      className="table-stake-panel__input"
+                      value={protocolId}
+                      onChange={(e) => setProtocolId(e.target.value)}
+                    >
+                      {listBlackjackProtocolPresets().map((p) => (
+                        <option key={p.protocolId} value={p.protocolId}>
+                          {p.displayName}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <p className="table-stake-panel__hint">{selectedProtocol.shortDescription}</p>
+                  <ul className="table-stake-panel__protocol-rules">
+                    {protocolRules.map((rule) => (
+                      <li key={rule.id}>
+                        <strong>{rule.label}:</strong> {rule.value}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+
+              {setupTab === 'dice' && (
+                <>
+                  <p className="table-stake-panel__hint">
+                    <strong>Zilch</strong> — six dice, scoring combinations, bank your turn or
+                    risk a zilch.
+                  </p>
+                  <label className="table-stake-panel__field">
+                    <span>Game mode</span>
+                    <select
+                      className="table-stake-panel__input"
+                      value={zilchMode}
+                      onChange={(e) =>
+                        setZilchMode(e.target.value as 'target_points' | 'fixed_rounds')
+                      }
+                    >
+                      <option value="target_points">First to target points</option>
+                      <option value="fixed_rounds">Most points after fixed rounds</option>
+                    </select>
+                  </label>
+                  {zilchMode === 'target_points' ? (
+                    <label className="table-stake-panel__field">
+                      <span>Target points</span>
+                      <input
+                        type="number"
+                        min={1}
+                        className="table-stake-panel__input table-stake-panel__input--short"
+                        value={targetPoints}
+                        onChange={(e) => setTargetPoints(e.target.value)}
+                      />
+                    </label>
+                  ) : (
+                    <label className="table-stake-panel__field">
+                      <span>Round limit (per player)</span>
+                      <input
+                        type="number"
+                        min={1}
+                        className="table-stake-panel__input table-stake-panel__input--short"
+                        value={roundLimit}
+                        onChange={(e) => setRoundLimit(e.target.value)}
+                      />
+                    </label>
+                  )}
+                  <label className="table-stake-panel__field">
+                    <span>Dice animation</span>
+                    <select
+                      className="table-stake-panel__input"
+                      value={diceAnimMode}
+                      onChange={(e) => setDiceAnimMode(e.target.value as 'fixed' | 'random')}
+                    >
+                      <option value="fixed">Fixed duration</option>
+                      <option value="random">Random duration</option>
+                    </select>
+                  </label>
+                  {diceAnimMode === 'fixed' ? (
+                    <label className="table-stake-panel__field">
+                      <span>Animation ms</span>
+                      <input
+                        type="number"
+                        min={200}
+                        className="table-stake-panel__input table-stake-panel__input--short"
+                        value={diceAnimMs}
+                        onChange={(e) => setDiceAnimMs(e.target.value)}
+                      />
+                    </label>
+                  ) : (
+                    <>
+                      <label className="table-stake-panel__field">
+                        <span>Min ms</span>
+                        <input
+                          type="number"
+                          min={200}
+                          className="table-stake-panel__input table-stake-panel__input--short"
+                          value={diceAnimMin}
+                          onChange={(e) => setDiceAnimMin(e.target.value)}
+                        />
+                      </label>
+                      <label className="table-stake-panel__field">
+                        <span>Max ms</span>
+                        <input
+                          type="number"
+                          min={200}
+                          className="table-stake-panel__input table-stake-panel__input--short"
+                          value={diceAnimMax}
+                          onChange={(e) => setDiceAnimMax(e.target.value)}
+                        />
+                      </label>
+                    </>
+                  )}
+                </>
+              )}
             </fieldset>
 
+            {setupTab === 'cards' && (
             <div className="table-stake-panel__advanced">
               <button
                 type="button"
@@ -365,6 +565,7 @@ export function TableStakePanel({
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
 

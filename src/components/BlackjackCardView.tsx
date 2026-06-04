@@ -37,9 +37,11 @@ import {
   formatCardViewBoxStatus,
   getActionableHandForView,
   getCardViewBoxStatus,
+  getCardViewHandKeyForBox,
   getCardViewHeroBoxId,
   getCardViewHeroHandKey,
   getInsuranceActionsForController,
+  showHeroPlayerCards,
   isBettingPhase,
   isDealingPhase,
   isPlayerTurnPhase,
@@ -47,7 +49,6 @@ import {
   showEvenMoneyControls,
   showInsuranceControls,
   showStitchedActionControls,
-  showStitchedPlayerCards,
 } from "./blackjackViewPhase";
 
 import { getBoxCallerDisplayName } from "./boxCallerDisplay";
@@ -71,7 +72,10 @@ import {
 import "./BlackjackCardView.css";
 
 interface BlackjackCardViewProps {
+  /** Display state (may mask card visibility during natural dealing). */
   gameState: GameState;
+  /** Authoritative engine state for hand keys, totals, and hero visibility. */
+  logicalGameState?: GameState;
   /** Drives desktop vs mobile betting layout; defaults to mobile-canonical. */
   deviceView?: DeviceView;
   focusBoxId?: string;
@@ -107,6 +111,7 @@ const SWIPE_THRESHOLD = 48;
 
 export function BlackjackCardView({
   gameState,
+  logicalGameState: logicalGameStateProp,
   deviceView = "mobile",
   focusBoxId,
   activeBoxId,
@@ -128,6 +133,7 @@ export function BlackjackCardView({
   onTakeInsurance,
   onDeclineInsurance,
 }: BlackjackCardViewProps) {
+  const logicalGameState = logicalGameStateProp ?? gameState;
   const {
     session,
     players,
@@ -136,6 +142,7 @@ export function BlackjackCardView({
     blackjackSettings,
     blackjackFlowSettings,
   } = gameState;
+  const logicalRound = logicalGameState.blackjack;
 
   const [aidTip, setAidTip] = useState<string | null>(null);
 
@@ -157,12 +164,12 @@ export function BlackjackCardView({
     gameState.selectedSeatId,
     focusBoxId ?? null,
   );
-  const heroHandKey = getCardViewHeroHandKey(protocolPhase, round, heroBoxId);
+  const heroHandKey = getCardViewHeroHandKey(protocolPhase, logicalRound, heroBoxId);
   /** Hero box follows active turn in play, selected seat in betting. */
 
   const controllerLabel =
-    loadProfile().name.trim() || gameState.tableMeta.controllerName;
-  const controllerPersonId = resolveControllerPersonId(gameState, controllerLabel);
+    loadProfile().name.trim() || logicalGameState.tableMeta.controllerName;
+  const controllerPersonId = resolveControllerPersonId(logicalGameState, controllerLabel);
   const callerPersonId = turnBoxId ? getCallerPersonIdForBox(gameState, turnBoxId) : null;
   const caller = callerPersonId ? players[callerPersonId] : null;
   const callerName = caller?.controllerName?.trim() || caller?.displayName || "caller";
@@ -171,7 +178,11 @@ export function BlackjackCardView({
     controllerPersonId !== null &&
     canControllerCallBox(gameState, turnBoxId, controllerPersonId);
 
-  const hand =
+  const logicalHand =
+    heroHandKey && logicalRound?.playerHands[heroHandKey]
+      ? logicalRound.playerHands[heroHandKey]
+      : undefined;
+  const visualHand =
     heroHandKey && round?.playerHands[heroHandKey]
       ? round.playerHands[heroHandKey]
       : undefined;
@@ -179,7 +190,7 @@ export function BlackjackCardView({
   // Canonical gate shared with Full Table: the hero box is actionable only when
   // it owns the server-authoritative active hand and the viewer may call it.
   const actionable = getActionableHandForView(
-    gameState,
+    logicalGameState,
     controllerPersonId,
     isOnlineModeEnabled(),
   );
@@ -192,11 +203,13 @@ export function BlackjackCardView({
     ? session.boxSlotNumbers?.[turnBoxId]
     : null;
 
-  /** Card ids from engine hand only — no local card state. */
+  const logicalCardIds = (logicalHand?.cardIds ?? []).filter((id) => id.length > 0);
+  const visualCardIds = (visualHand?.cardIds ?? []).filter((id) => id.length > 0);
+  /** Reveal may lag authoritative state — show dealt cards once engine has them. */
+  const heroCardIds =
+    visualCardIds.length > 0 ? visualCardIds : logicalCardIds;
 
-  const cardIds = (hand?.cardIds ?? []).filter((id) => id.length > 0);
-
-  const cards = deck ? cardsFromIds(deck, cardIds) : [];
+  const cards = deck ? cardsFromIds(deck, heroCardIds) : [];
 
   const { value } = getBlackjackHandValue(cards);
 
@@ -204,10 +217,10 @@ export function BlackjackCardView({
 
   const selectedId = gameState.selectedSeatId ?? heroBoxId;
 
-  const stitchedCardsVisible = showStitchedPlayerCards(
+  const heroCardsVisible = showHeroPlayerCards(
     protocolPhase,
     gameEnded,
-    cardIds.length,
+    logicalCardIds.length,
   );
   const showSideControls =
     stitchedActionsActive && !evenMoneyActive && !insuranceActive;
@@ -294,7 +307,8 @@ export function BlackjackCardView({
 
       isActiveTurn,
 
-      cardIds,
+      logicalCardIds,
+      heroCardIds,
 
       canHit,
 
@@ -319,7 +333,8 @@ export function BlackjackCardView({
 
     isActiveTurn,
 
-    cardIds,
+    logicalCardIds,
+    heroCardIds,
 
     canHit,
 
@@ -425,7 +440,7 @@ export function BlackjackCardView({
       return;
     }
 
-    const beforeHandCards = [...cardIds];
+    const beforeHandCards = [...logicalCardIds];
 
     if (dx > SWIPE_THRESHOLD) {
       logSwipe(
@@ -467,7 +482,7 @@ export function BlackjackCardView({
 
         activeHandKey: turnHandKey,
 
-        beforeHandCards: cardIds,
+        beforeHandCards: logicalCardIds,
       });
     }
 
@@ -485,7 +500,7 @@ export function BlackjackCardView({
 
         activeHandKey: turnHandKey,
 
-        beforeHandCards: cardIds,
+        beforeHandCards: logicalCardIds,
       });
     }
 
@@ -512,15 +527,15 @@ export function BlackjackCardView({
   }
 
   function renderMiniHandBox(slotNumber: number, boxId: string) {
-    const handKey = `${boxId}:0`;
-    const boxHand = round?.playerHands[handKey];
-    const ids = (boxHand?.cardIds ?? []).filter(Boolean);
+    const handKey = getCardViewHandKeyForBox(protocolPhase, logicalRound, boxId);
+    const logicalBoxHand = logicalRound?.playerHands[handKey];
+    const ids = (logicalBoxHand?.cardIds ?? []).filter(Boolean);
     const miniCards = deck ? cardsFromIds(deck, ids) : [];
     const miniTotal =
       miniCards.length > 0 ? getBlackjackHandValue(miniCards).value : null;
     const openStake = getStakeForBox(gameState, boxId);
     const stakeChips = getStakeChipsForBox(gameState, boxId);
-    const wager = bettingMainStage ? openStake : (boxHand?.currentBet ?? openStake);
+    const wager = bettingMainStage ? openStake : (logicalBoxHand?.currentBet ?? openStake);
     const showBetStakeChips = bettingMainStage && openStake > 0 && stakeChips.length > 0;
     const isTurnBox = boxId === heroBoxId;
     const isActiveBox = bettingMainStage
@@ -831,11 +846,11 @@ export function BlackjackCardView({
       );
     }
 
-    if (!stitchedCardsVisible) {
+    if (!heroCardsVisible) {
       return renderPlayHeroPlaceholder();
     }
 
-    const heroBusted = hand?.actionStatus === 'busted';
+    const heroBusted = logicalHand?.actionStatus === 'busted';
 
     return (
       <div className="bj-phone-view__hand">
@@ -847,9 +862,9 @@ export function BlackjackCardView({
         <div className="bj-phone-view__hero-stage">
           <div className="bj-phone-view__hero-center">
             <div className="bj-phone-view__cards-slot">
-              {cardIds.length > 0 ? (
+              {heroCardIds.length > 0 ? (
                 <div className="bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched">
-                  {cardIds.map((id, i) => (
+                  {heroCardIds.map((id, i) => (
                     <div
                       key={`${heroHandKey}-${i}-${id}`}
                       className="bj-phone-view__card-wrap"
@@ -889,7 +904,7 @@ export function BlackjackCardView({
       isActiveTurn &&
       turnHandKey &&
       blackjackSettings.allowDoubleDown &&
-      canDoubleBlackjackForState(gameState, turnHandKey);
+      canDoubleBlackjackForState(logicalGameState, turnHandKey);
     const canSplitNow =
       isActiveTurn &&
       turnHandKey &&
@@ -990,7 +1005,7 @@ export function BlackjackCardView({
       isActiveTurn &&
       turnHandKey &&
       blackjackSettings.allowDoubleDown &&
-      canDoubleBlackjackForState(gameState, turnHandKey);
+      canDoubleBlackjackForState(logicalGameState, turnHandKey);
     const canSplitNow =
       isActiveTurn &&
       turnHandKey &&

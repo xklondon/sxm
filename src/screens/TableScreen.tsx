@@ -26,6 +26,7 @@ import { LedgerPanel } from '../components/LedgerPanel';
 import { PlayingCard } from '../components/PlayingCard';
 import { BlackjackPanel } from '../components/BlackjackPanel';
 import { HoldemPanel } from '../components/HoldemPanel';
+import { ZilchPanel } from '../components/ZilchPanel';
 import { TableStakePanel, type TableStakePanelMode } from '../components/TableStakePanel';
 import { InviteModal } from '../components/InviteModal';
 import { AdminPanel } from '../components/AdminPanel';
@@ -98,6 +99,7 @@ export function TableScreen({
   const dealtHistory = deck ? getDealtCards(deck) : [];
   const isBlackjack = tableGame === 'blackjack';
   const isHoldem = tableGame === 'texas-holdem';
+  const isZilch = tableGame === 'zilch';
 
   const bankId =
     session.gameType === 'texas-holdem'
@@ -237,7 +239,7 @@ export function TableScreen({
     <main className="table-screen table-screen--casino">
       <InviteModal
         gameState={gameState}
-        open={inviteOpen && isBlackjack}
+        open={inviteOpen && (isBlackjack || isZilch)}
         onClose={() => setInviteOpen(false)}
         onInvite={onGameStateChange}
         onInviteSent={(sentEmail) => {
@@ -292,9 +294,13 @@ export function TableScreen({
         </div>
       )}
 
-      <div className={`table-screen__layout table-screen__layout--wide${isBlackjack ? ' table-screen__layout--full' : ''}`}>
+      <div
+        className={`table-screen__layout table-screen__layout--wide${
+          isBlackjack || isZilch ? ' table-screen__layout--full' : ''
+        }`}
+      >
         <section className="table-felt table-felt--casino" aria-label="Table">
-          {isBlackjack && (tableMeta.showStakeSetup || resetSetupOpen) && (
+          {(isBlackjack || isZilch) && (tableMeta.showStakeSetup || resetSetupOpen) && (
             <TableStakePanel
               gameState={gameState}
               mode={resetSetupOpen ? 'reset' : stakePanelMode}
@@ -308,6 +314,17 @@ export function TableScreen({
                 setStakePanelMode('new');
               }}
               onlineDispatch={onlineDispatch}
+            />
+          )}
+
+          {isZilch && (
+            <ZilchPanel
+              gameState={gameState}
+              onGameStateChange={onGameStateChange}
+              onJoinTable={() => setShowJoin(true)}
+              onInviteTable={() => setInviteOpen(true)}
+              onlineDispatch={onlineDispatch}
+              onlineActionInFlight={onlineActionInFlight}
             />
           )}
 
@@ -355,7 +372,7 @@ export function TableScreen({
             </>
           )}
 
-          {!isBlackjack && !isHoldem && (
+          {!isBlackjack && !isHoldem && !isZilch && (
             <div className="table-felt__deck-area">
               <button type="button" onClick={handleShuffle}>Shuffle</button>
               <button type="button" onClick={handleDealTest} disabled={!canDeal}>Deal test</button>
@@ -368,7 +385,7 @@ export function TableScreen({
           )}
         </section>
 
-        {!isBlackjack && (
+        {!isBlackjack && !isZilch && (
           <aside className="table-screen__sidebar">
             <LedgerPanel
               gameState={gameState}

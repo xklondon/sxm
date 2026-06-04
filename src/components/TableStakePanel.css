@@ -27,6 +27,16 @@
   margin-bottom: 1rem;
 }
 
+.table-stake-panel__tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.table-stake-panel__tabs button {
+  flex: 1;
+}
+
 .table-stake-panel__grid {
   display: flex;
   flex-direction: column;

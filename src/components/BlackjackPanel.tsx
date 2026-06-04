@@ -1217,6 +1217,7 @@ export function BlackjackPanel({
 
                 <BlackjackCardView
                   gameState={tableVisualState}
+                  logicalGameState={gameState}
                   deviceView={deviceView}
                   focusBoxId={focusBoxId ?? undefined}
                   activeBoxId={activeBoxId}

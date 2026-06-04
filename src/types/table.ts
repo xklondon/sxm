@@ -112,6 +112,10 @@ export interface TableMeta {
   wagerVoucherStatus: WagerVoucherStatus;
   /** Per-person auto-stand play flow (manual | auto-18 … auto-21). */
   personPlayFlow?: Record<string, import('../storage/profileStorage').PlayFlowAutoStand>;
+  /** Table game family — cards (blackjack/holdem) or dice (zilch). */
+  gameCategory?: import('./session').GameCategory;
+  /** Active dice game when gameCategory is dice. */
+  diceGame?: 'zilch';
   /** Brief table-wide message in the command area (e.g. player joined). */
   tableNotice?: {
     message: string;

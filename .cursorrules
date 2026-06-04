@@ -47,6 +47,21 @@ Aligned env keys (same LAN host, no localhost in links):
 - **Online mode:** `VITE_ONLINE_MODE=true` — magic-link auth, multiplayer tables, WebSocket sync
 - **Offline mode:** `VITE_ONLINE_MODE=false` — single-browser local play still works
 
+## Game categories (Cards vs Dice)
+
+- **Cards:** Blackjack (default table), Texas Hold'em — protocols under `src/engine/blackjack/`,
+  `src/engine/holdem/`; table creation **Cards** tab in `TableStakePanel`.
+- **Dice:** Zilch — engine in `src/engine/zilch/` (`zilchTypes`, `zilchScoring`, `zilchEngine`,
+  `applyZilchAction`); UI in `ZilchPanel` + `useZilchTableFlow`; table creation **Dice** tab.
+- **Shared table shell:** auth, invites, virtual players, `TableMeta`, ledger, wager/outcome
+  (`recordTableOutcome`), `beginTableResetSetup` / `TableStakePanel` — do not duplicate.
+- **New dice/card games:** add engine module + panel (or extend category selector); route in
+  `TableScreen` by `tableGame` / `tableMeta.gameCategory`; extend `TABLE_ACTIONS` + `applyAction`
+  + `authority.ts` for gameplay actions. Do not fold dice logic into `BlackjackPanel` or
+  `applyBlackjackActionToState`.
+- **Primary action label:** Blackjack uses **Cards** (deal); Zilch uses **Dice** (roll). Mobile
+  Zilch: optional shake-to-roll via `useDeviceShake` (3+ seconds).
+
 ## Multiplayer / auth (when online)
 
 - Tables: create/join via invite link after login

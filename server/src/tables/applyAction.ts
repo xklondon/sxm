@@ -16,6 +16,15 @@ import { assignChips, type ChipAssignReason } from '../../../src/engine/session/
 import { canUserAssignChips } from '../../../src/engine/table/adminControls.js';
 import { applyTableResetSetup } from '../../../src/engine/session/tableReset.js';
 import { parseTableStakeSetupPayload } from '../../../src/engine/session/tableSetup.js';
+import {
+  applyZilchTableStakeSetup,
+  parseZilchTableStakePayload,
+} from '../../../src/engine/session/zilchTableSetup.js';
+import {
+  applyZilchActionToState,
+  isZilchGameplayAction,
+} from '../../../src/engine/zilch/applyZilchAction.js';
+import { beginZilchPlay } from '../../../src/engine/session/zilchTableSetup.js';
 import type { TableActionType } from './actions.js';
 
 export function applyTableAction(
@@ -86,9 +95,18 @@ export function applyTableAction(
       const caller = state.players[personId];
       const controllerName =
         caller?.controllerName?.trim() || caller?.displayName || state.tableMeta.controllerName;
+      if (payload.zilchMode !== undefined || state.tableGame === 'zilch') {
+        const zilchInput = parseZilchTableStakePayload(payload, controllerName);
+        return applyZilchTableStakeSetup(
+          applyTableResetSetup(state, zilchInput, personId),
+          zilchInput,
+        );
+      }
       const input = parseTableStakeSetupPayload(payload, controllerName);
       return applyTableResetSetup(state, input, personId);
     }
+    case 'zilchStartGame':
+      return beginZilchPlay(state);
     case 'assignChips': {
       const recipientId = payload.recipientId as string;
       const amount = Number(payload.amount);
@@ -119,6 +137,9 @@ export function applyTableAction(
           payload,
           resolveBankAuto: true,
         });
+      }
+      if (isZilchGameplayAction(action)) {
+        return applyZilchActionToState(state, action, payload);
       }
       throw new Error(`Action not applied on state: ${action}`);
   }
