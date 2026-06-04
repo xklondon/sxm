@@ -259,6 +259,18 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     expect(html).toContain('bj-casino__tray');
   });
 
+  it('chip tray hides denominations below table minimum bet (same on Full Table and Card View)', () => {
+    const state = withView(bettingState(), 'full');
+    const full = renderPanelAt(390, state);
+    const card = renderPanelAt(390, { ...state, tableViewMode: 'card' });
+    for (const html of [full, card]) {
+      expect(html).toContain('aria-label="Add 5 to bet"');
+      expect(html).toContain('aria-label="Add 10 to bet"');
+      expect(html).not.toContain('aria-label="Add 1 to bet"');
+      expect(html).not.toContain('aria-label="Add 2 to bet"');
+    }
+  });
+
   it('highlights the active/turn box', () => {
     const html = renderPanelAt(390, withView(playingState(), 'full'));
     expect(html).toContain('bj-arc__slot--turn');
@@ -286,6 +298,15 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     );
     expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*padding:\s*0\s+1\.35rem/);
     expect(css).toMatch(/\.bj-view-full-mobile[\s\S]*overflow-x:\s*hidden/);
+  });
+
+  it('mobile Full Table vertical spacing aligns with Card View (tall felt, boxes at bottom)', () => {
+    const css = mobileFullTableCss();
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__felt[\s\S]*flex:\s*1\s+1\s+auto/);
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__felt[\s\S]*min-height:\s*min\(52dvh,\s*22rem\)/);
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*min-height:\s*min\(42dvh,\s*18rem\)/);
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*margin-top:\s*auto/);
+    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__slot--stage[\s\S]*max-height:\s*min\(42dvh,\s*14rem\)/);
   });
 
   it('falls back only on ultra-narrow widths (< 360px)', () => {

@@ -1227,7 +1227,11 @@ export function BlackjackPanel({
               {inBetting && (
                 <div className="bj-casino__tray-wrap">
                   <div className="bj-casino__tray">
-                    <ChipTray onChipClick={handleChipTrayClick} disabled={!bettingOpen} />
+                    <ChipTray
+                      onChipClick={handleChipTrayClick}
+                      disabled={!bettingOpen}
+                      minimumBet={minimumBet}
+                    />
                   </div>
                   {chipTrayHint && (
                     <p className="bj-casino__tray-hint" role="status">{chipTrayHint}</p>
@@ -1292,7 +1296,11 @@ export function BlackjackPanel({
                 {inBetting && (
                   <div className="bj-casino__tray-wrap">
                     <div className="bj-casino__tray">
-                      <ChipTray onChipClick={handleChipTrayClick} disabled={!bettingOpen} />
+                      <ChipTray
+                      onChipClick={handleChipTrayClick}
+                      disabled={!bettingOpen}
+                      minimumBet={minimumBet}
+                    />
                     </div>
                     {chipTrayHint && (
                       <p className="bj-casino__tray-hint" role="status">{chipTrayHint}</p>

@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { CHIP_VALUES, type ChipValue } from './chipUtils';
+import { CHIP_VALUES, chipValuesForMinimumBet, type ChipValue } from './chipUtils';
 import { setChipDragData } from './chipDrag';
 import './ChipStack.css';
 
@@ -171,21 +171,27 @@ export function ChipButton({ value, onClick, disabled, draggable = false }: {
   );
 }
 
-export function ChipTray({ onChipClick, disabled }: {
+export function ChipTray({
+  onChipClick,
+  disabled,
+  minimumBet = 1,
+}: {
   onChipClick: (value: ChipValue) => void;
   disabled?: boolean;
+  minimumBet?: number;
 }) {
+  const denominations = chipValuesForMinimumBet(minimumBet);
   return (
     <div className="chip-tray" aria-label="Chip tray">
       <span className="chip-tray__label">Chips</span>
       <div className="chip-tray__chips">
-        {[50, 10, 5, 2, 1].map((v) => (
+        {denominations.map((v) => (
           <ChipButton
             key={v}
-            value={v as ChipValue}
+            value={v}
             disabled={disabled}
             draggable={!disabled}
-            onClick={() => onChipClick(v as ChipValue)}
+            onClick={() => onChipClick(v)}
           />
         ))}
       </div>
@@ -193,5 +199,5 @@ export function ChipTray({ onChipClick, disabled }: {
   );
 }
 
-export { CHIP_VALUES } from './chipUtils';
+export { CHIP_VALUES, chipValuesForMinimumBet } from './chipUtils';
 export type { ChipValue } from './chipUtils';

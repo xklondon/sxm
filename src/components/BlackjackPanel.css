@@ -1708,6 +1708,13 @@
   overflow-x: hidden; /* page never scrolls sideways */
 }
 
+.bj-view-full-mobile .bj-casino__rail-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .bj-view-full-mobile .bj-casino__felt--with-account {
   flex-direction: column;
   align-items: stretch;
@@ -1715,26 +1722,40 @@
 }
 
 .bj-view-full-mobile .bj-casino__rail {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   padding: 0.28rem 0.55rem 0.4rem;
   /* Preserve desktop elliptical rail — avoid brown rectangular side bands. */
   border-radius: 50% / 18%;
   overflow: hidden;
 }
 
+/* Match Card View mobile: felt grows vertically; dealer/command top, boxes near bottom. */
 .bj-view-full-mobile .bj-casino__felt {
+  flex: 1 1 auto;
   border-radius: 50% / 16%;
-  min-height: min(36dvh, 16.5rem);
+  min-height: min(52dvh, 22rem);
   padding: 0.28rem 0.85rem 0.32rem;
   width: 100%;
   box-sizing: border-box;
   overflow-x: clip;
   overflow-y: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 /* contract: mobile-arc-safe — inner horizontal scroll, edge gutters, cards may extend upward */
 .bj-view-full-mobile .bj-casino__felt-main {
+  flex: 1 1 auto;
+  min-height: min(42dvh, 18rem);
   width: 100%;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
@@ -1750,8 +1771,16 @@
   font-size: 0.62rem;
 }
 
+.bj-view-full-mobile .bj-arc-separator {
+  flex: 1 1 auto;
+  min-height: min(12dvh, 3.5rem);
+  margin: 0.15rem 0 0.35rem;
+}
+
 /* Preserve desktop arc curve; extra inline padding + scroll width for rotated end slots */
 .bj-view-full-mobile .bj-arc {
+  flex: 0 0 auto;
+  margin-top: auto;
   flex-wrap: nowrap;
   justify-content: center;
   align-items: flex-end;
@@ -1951,8 +1980,16 @@
 
   .bj-view-full-mobile .bj-casino__felt {
     border-radius: 50% / 16%;
-    min-height: min(34dvh, 15.5rem);
+    min-height: min(50dvh, 21rem);
     padding-inline: 0.95rem;
+  }
+
+  .bj-view-full-mobile .bj-casino__felt-main {
+    min-height: min(40dvh, 17rem);
+  }
+
+  .bj-view-full-mobile .bj-arc-separator {
+    min-height: min(10dvh, 3rem);
   }
 
   .bj-view-full-mobile .bj-arc__slot {
