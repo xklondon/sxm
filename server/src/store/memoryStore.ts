@@ -191,5 +191,14 @@ export function createMemoryStore(): Store {
     listAuditLogs(limit = 50) {
       return auditLogs.slice(0, limit);
     },
+
+    getRuntimeStats() {
+      return {
+        tables: tables.size,
+        users: usersById.size,
+        people: peopleById.size,
+        invites: invites.size,
+      };
+    },
   };
 }

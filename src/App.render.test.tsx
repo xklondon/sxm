@@ -18,6 +18,10 @@ vi.mock('socket.io-client', () => ({
     on: vi.fn(),
     emit: vi.fn(),
     disconnect: vi.fn(),
+    removeAllListeners: vi.fn(),
+    connected: false,
+    active: true,
+    io: { on: vi.fn(), removeAllListeners: vi.fn() },
   }),
 }));
 

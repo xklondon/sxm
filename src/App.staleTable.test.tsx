@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import App from './App';
+import { resetOnlineSocketForTests } from './hooks/onlineSocket';
 import { ONLINE_TABLE_STORAGE_KEY } from './onlineTableStorage';
 import { TableNotFoundError } from './api/client';
 
@@ -26,6 +27,10 @@ vi.mock('socket.io-client', () => ({
     on: vi.fn(),
     emit: vi.fn(),
     disconnect: vi.fn(),
+    removeAllListeners: vi.fn(),
+    connected: false,
+    active: true,
+    io: { on: vi.fn(), removeAllListeners: vi.fn() },
   }),
 }));
 
@@ -82,6 +87,7 @@ describe('stale localStorage table id (GET /api/tables/:id 404)', () => {
   });
 
   afterEach(() => {
+    resetOnlineSocketForTests();
     vi.unstubAllGlobals();
   });
 

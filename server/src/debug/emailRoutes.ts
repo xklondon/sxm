@@ -73,6 +73,8 @@ export function createEmailDebugRouter(): Router {
         'POST /api/auth/logout',
       ],
       debug: [
+        'GET /api/debug/health',
+        'GET /api/debug/runtime',
         'GET /api/debug/email-config',
         'GET /api/debug/email-provider',
         'GET /api/debug/routes',

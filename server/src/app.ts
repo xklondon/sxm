@@ -23,11 +23,14 @@ import { TableService } from './tables/service.js';
 import { createTableRouter } from './tables/routes.js';
 import { createDevRouter } from './dev/routes.js';
 import { createEmailDebugRouter } from './debug/emailRoutes.js';
+import { createRuntimeDebugRouter } from './debug/runtimeRoutes.js';
+import { createApiErrorHandler } from './middleware/apiErrorHandler.js';
 import { verifySessionToken } from './auth/tokens.js';
 import { readSessionToken } from './auth/middleware.js';
 
 export function createApp() {
   assertProductionOrigin();
+  const startedAt = Date.now();
   const store = createMemoryStore();
   const people = new PeopleService(store);
   const auth = new AuthService(store, people);
@@ -88,7 +91,10 @@ export function createApp() {
     });
   });
 
-  app.use('/api/debug', createEmailDebugRouter());
+  const debugRouter = express.Router();
+  debugRouter.use(createEmailDebugRouter());
+  debugRouter.use(createRuntimeDebugRouter({ store, io, startedAt }));
+  app.use('/api/debug', debugRouter);
   app.use('/api/auth', createAuthRouter(auth, people));
   app.use('/api/people', createPeopleRouter(people, auth));
   app.use('/api/tables', createTableRouter(tables, io));
@@ -170,7 +176,23 @@ export function createApp() {
 
   io.on('connection', (socket) => {
     socket.on('table:subscribe', (tableId: string) => {
+      const prev = socket.data.subscribedTableId as string | undefined;
+      if (prev && prev !== tableId) {
+        socket.leave(`table:${prev}`);
+      }
+      socket.data.subscribedTableId = tableId;
       socket.join(`table:${tableId}`);
+    });
+
+    socket.on('table:unsubscribe', (tableId: string) => {
+      socket.leave(`table:${tableId}`);
+      if (socket.data.subscribedTableId === tableId) {
+        socket.data.subscribedTableId = undefined;
+      }
+    });
+
+    socket.on('disconnect', () => {
+      socket.data.subscribedTableId = undefined;
     });
   });
 

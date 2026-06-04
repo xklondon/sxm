@@ -24,6 +24,7 @@ import {
 import { AuthFetchError, accessDeniedMessage, isHandledAuthRejection } from './auth/authErrors';
 import { PeopleScreen } from './screens/PeopleScreen';
 import { setStoredOnlineTableId, useOnlineTable } from './hooks/useOnlineMultiplayer';
+import type { OnlineConnectionState } from './hooks/onlineSocket';
 import { sanitizeOnlineTableId } from './onlineTableStorage';
 import { clearStaleOnlineTableContext } from './onlineTableRecovery';
 import { useIsMobileViewport } from './hooks/useIsMobileViewport';
@@ -73,6 +74,23 @@ function userCanCreateOnlineTable(user?: AuthUser | null): boolean {
   );
 }
 
+function formatConnectionLabel(state: OnlineConnectionState): string {
+  switch (state) {
+    case 'connected':
+      return 'Live';
+    case 'connecting':
+      return 'Connecting…';
+    case 'reconnecting':
+      return 'Connection lost — reconnecting';
+    case 'polling':
+      return 'Connection lost — syncing';
+    case 'offline':
+      return 'Connection lost — actions still work';
+    default:
+      return '';
+  }
+}
+
 function formatRoleLabel(user?: AuthUser | null): string {
   if (user?.isRoot || user?.role === 'root' || user?.role === 'admin') {
     return 'ADMIN';
@@ -112,7 +130,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     setGameState(next);
   }, []);
 
-  const { connected, dispatchAction, isOnline, actionInFlight } = useOnlineTable(
+  const { connected, connectionState, dispatchAction, isOnline, actionInFlight } = useOnlineTable(
     activeTableId,
     handleGameStateChange,
     tableVersion,
@@ -307,6 +325,14 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     return (
       <main className="start-screen">
         <p>{bootstrappingTable ? 'Opening new table…' : 'Loading table…'}</p>
+      </main>
+    );
+  }
+
+  if (onlineMode && screen === 'table' && activeTableId && !gameState && !loadingOnline && !bootstrappingTable) {
+    return (
+      <main className="start-screen">
+        <p>Loading table…</p>
       </main>
     );
   }
@@ -525,9 +551,13 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
                 )}
                 {onlineMode && user && (
                   <>
-                    {isOnline && (
-                      <span className={connected ? 'personal-nav__live personal-nav__live--ok' : 'personal-nav__live'}>
-                        {connected ? 'Live' : 'Reconnecting…'}
+                    {isOnline && connectionState !== 'idle' && (
+                      <span
+                        className={
+                          connected ? 'personal-nav__live personal-nav__live--ok' : 'personal-nav__live'
+                        }
+                      >
+                        {formatConnectionLabel(connectionState)}
                       </span>
                     )}
                     <button type="button" className="secondary" onClick={() => void handleLogout()}>

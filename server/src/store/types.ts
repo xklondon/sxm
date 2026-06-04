@@ -107,4 +107,11 @@ export interface Store {
 
   appendAuditLog(entry: AuditLogRecord): void;
   listAuditLogs(limit?: number): AuditLogRecord[];
+
+  getRuntimeStats(): {
+    tables: number;
+    users: number;
+    people: number;
+    invites: number;
+  };
 }
