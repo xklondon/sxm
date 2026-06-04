@@ -1,6 +1,7 @@
 import type { GameSession } from '../../types/session';
 import type { BlackjackRound } from '../../types/blackjack';
-import { orderedHandKeys } from './helpers';
+import { orderedHandKeys, syncActivePlayerId } from './helpers';
+import { findNextActingHand } from './virtual';
 
 export const ALL_PLAYERS_BUST_MESSAGE = 'All players busted — bank wins this round.';
 
@@ -77,6 +78,25 @@ export function shouldSkipBankDraw(session: GameSession, round: BlackjackRound):
   return allPlayerHandsEliminated(session, round);
 }
 
+/** When the active hand finished but other boxes still act, advance the turn pointer. */
+function repairStaleActiveHandKey(
+  session: GameSession,
+  round: BlackjackRound,
+): BlackjackRound {
+  if (round.status !== 'player-turns' || !round.activeHandKey) {
+    return round;
+  }
+  const activeHand = round.playerHands[round.activeHandKey];
+  if (activeHand?.actionStatus === 'acting') {
+    return round;
+  }
+  const nextHandKey = findNextActingHand(session, round);
+  if (nextHandKey) {
+    return syncActivePlayerId({ ...round, activeHandKey: nextHandKey, status: 'player-turns' });
+  }
+  return round;
+}
+
 export function applySkipBankIfNeeded(
   session: GameSession,
   round: BlackjackRound,
@@ -84,6 +104,7 @@ export function applySkipBankIfNeeded(
   if (round.status !== 'bank-turn' && round.status !== 'player-turns') {
     return round;
   }
+  round = repairStaleActiveHandKey(session, round);
   if (!shouldSkipBankDraw(session, round)) {
     if (
       round.status === 'player-turns' &&

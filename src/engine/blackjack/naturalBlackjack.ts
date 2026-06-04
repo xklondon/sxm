@@ -17,6 +17,7 @@ import {
   shouldPayNaturalImmediately,
 } from './protocols/activeRules';
 import { findNextActingHand } from './virtual';
+import { syncActivePlayerId } from './helpers';
 import { applySkipBankIfNeeded } from './roundFlow';
 import { log } from '../../utils/logger';
 
@@ -314,6 +315,12 @@ export function resolvePendingNaturalsAfterDealerPeek(state: GameState): GameSta
     nextRound = paid.round;
   }
 
+  const firstActing = findNextActingHand(session, nextRound);
+  nextRound = syncActivePlayerId({
+    ...nextRound,
+    activeHandKey: firstActing,
+    status: firstActing ? 'player-turns' : nextRound.status,
+  });
   nextRound = applySkipBankIfNeeded(session, nextRound);
   return { ...state, session, ledger, blackjack: nextRound };
 }

@@ -55,6 +55,7 @@ export function useBlackjackTableFlow(
   const lastFlowErrorRef = useRef<string | null>(null);
   const [bankUiMessage, setBankUiMessage] = useState<string | null>(null);
   const bankPacingRef = useRef<'idle' | 'running'>('idle');
+  const bankRunIdRef = useRef(0);
   const manualBankingRef = useRef(false);
   const naturalDealingRef = useRef(false);
 
@@ -297,35 +298,61 @@ export function useBlackjackTableFlow(
     }
 
     bankPacingRef.current = 'running';
+    const runId = bankRunIdRef.current + 1;
+    bankRunIdRef.current = runId;
 
     void (async () => {
-      let current = gameStateRef.current;
-
-      if (current.blackjack?.status === 'bank-turn') {
+      if (gameStateRef.current.blackjack?.status === 'bank-turn') {
         setBankUiMessage('Bank thinking…');
-        while (current.blackjack?.status === 'bank-turn') {
-          await sleep(randomBankDrawDelayMs(current.blackjackFlowSettings));
-          if (current.blackjack?.status !== 'bank-turn') {
+        while (gameStateRef.current.blackjack?.status === 'bank-turn') {
+          if (bankRunIdRef.current !== runId) {
+            break;
+          }
+          const delay = randomBankDrawDelayMs(gameStateRef.current.blackjackFlowSettings);
+          await sleep(delay);
+          if (bankRunIdRef.current !== runId) {
+            break;
+          }
+          const snap = gameStateRef.current;
+          if (snap.blackjack?.status !== 'bank-turn') {
             break;
           }
           setBankUiMessage('Bank draws.');
-          current = drawBankCardOnState(current);
-          gameStateRef.current = current;
-          onGameStateChange(current);
+          const next = drawBankCardOnState(snap);
+          gameStateRef.current = next;
+          onGameStateChange(next);
         }
       }
 
-      current = gameStateRef.current;
-      if (current.blackjack?.status === 'banking') {
-        setBankUiMessage(getBankFinalMessage(current));
-        await sleep(cardDealDelayMs(current.blackjackFlowSettings));
-        await sleep(Math.round(cardDealDelayMs(current.blackjackFlowSettings) * 0.5));
+      if (bankRunIdRef.current !== runId) {
+        return;
+      }
+
+      const afterDraw = gameStateRef.current;
+      if (afterDraw.blackjack?.status === 'banking') {
+        setBankUiMessage(getBankFinalMessage(afterDraw));
+        await sleep(cardDealDelayMs(afterDraw.blackjackFlowSettings));
+        if (bankRunIdRef.current !== runId) {
+          return;
+        }
+        await sleep(Math.round(cardDealDelayMs(afterDraw.blackjackFlowSettings) * 0.5));
+        if (bankRunIdRef.current !== runId) {
+          return;
+        }
         onGameStateChange(completeBankingOnState(gameStateRef.current));
         setBankUiMessage(null);
       }
 
-      bankPacingRef.current = 'idle';
+      if (bankRunIdRef.current === runId) {
+        bankPacingRef.current = 'idle';
+      }
     })();
+
+    return () => {
+      bankRunIdRef.current += 1;
+      bankPacingRef.current = 'idle';
+      setBankUiMessage(null);
+    };
   }, [round?.status, flow.bankDrawMode, onGameStateChange, onlineDispatch]);
 
   /** Manual bank: show final bank state before payout. */

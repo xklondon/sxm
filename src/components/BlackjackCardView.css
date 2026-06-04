@@ -758,9 +758,9 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 5.5rem;
-  max-height: 6.75rem;
-  overflow: hidden;
+  min-height: min(52vw, 9.5rem);
+  max-height: none;
+  overflow: visible;
 }
 
 .bj-phone-view__cards-placeholder {
@@ -994,13 +994,13 @@
 
 .bj-phone-view__total {
 
-  margin-top: 0.45rem;
+  margin-top: 0.25rem;
 
-  font-size: 1.35rem;
+  font-size: 1rem;
 
   font-weight: var(--ds-weight-extrabold);
 
-  padding: 0.2rem 0.85rem;
+  padding: 0.12rem 0.55rem;
 
 }
 
@@ -1029,16 +1029,16 @@
 
 .bj-phone-view__total--hero {
   margin-top: 0;
-  font-size: 1.05rem;
-  letter-spacing: 0.06em;
-  min-height: 2.75rem;
-  padding: 0.4rem 1.25rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  min-height: 1.65rem;
+  padding: 0.18rem 0.75rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--ds-color-gold);
+  border: 1px solid var(--ds-color-gold);
   border-radius: var(--ds-radius-full);
-  box-shadow: 0 0 10px rgb(251 191 36 / 0.2);
+  box-shadow: 0 0 8px rgb(251 191 36 / 0.18);
 }
 
 .bj-phone-view__extras--hero {

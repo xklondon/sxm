@@ -98,7 +98,12 @@ export function useSequentialCardReveal(
     }
 
     const delta = totalCardCount(target) - totalCardCount(current);
-    if (!onlineMode && delta <= 1) {
+    const roundStatus = gameState.blackjack?.status;
+    const paceSingleCard =
+      roundStatus === 'player-turns' ||
+      roundStatus === 'bank-turn' ||
+      roundStatus === 'banking';
+    if (!onlineMode && delta <= 1 && !paceSingleCard) {
       visibleRef.current = target;
       setDisplayState(gameState);
       setIsRevealing(false);

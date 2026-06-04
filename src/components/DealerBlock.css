@@ -1,7 +1,7 @@
 .dealer-block {
   width: 100%;
-  padding: 0.35rem 0.45rem 0.25rem;
-  margin: 0 0 0.25rem;
+  padding: 0.2rem 0.35rem 0.15rem;
+  margin: 0 0 0.15rem;
   box-sizing: border-box;
 }
 
@@ -23,8 +23,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.28rem;
-  padding: 0.25rem 0.35rem 0.2rem;
+  gap: 0.18rem;
+  padding: 0.18rem 0.3rem 0.14rem;
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: var(--ds-radius-md);
   background: rgb(255 255 255 / 0.03);
@@ -58,7 +58,7 @@
 
 .dealer-block__cards-slot {
   width: 100%;
-  min-height: 3.15rem;
+  min-height: 2.65rem;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -68,13 +68,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 2.2rem;
+  min-height: 1.85rem;
   width: 100%;
 }
 
 .dealer-block__action-spacer {
   display: block;
-  min-height: 2.2rem;
+  min-height: 1.85rem;
 }
 
 .dealer-block__details-btn {
@@ -105,14 +105,14 @@
 
 .dealer-block__command {
   width: 100%;
-  min-height: 2.35rem;
+  min-height: 1.85rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.12rem;
-  padding: 0.2rem 0.35rem;
-  margin-top: 0.05rem;
+  gap: 0.08rem;
+  padding: 0.12rem 0.3rem;
+  margin-top: 0;
   border-top: 1px solid rgb(255 255 255 / 0.08);
 }
 
