@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState } from './types';
-import { createNewBlackjackTable, normalizeLoadedGameState } from './engine/session';
+import {
+  applyTableStakeSetup,
+  createNewBlackjackTable,
+  normalizeLoadedGameState,
+} from './engine/session';
+import type { TableStakeSetupInput } from './engine/session/tableSetup';
 import { applySettingsToGameState, loadSettings } from './storage/settingsStorage';
 import {
   loadProfile,
@@ -295,6 +300,40 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     setScreen('table');
   }, [handleNewOnlineGame, onlineMode]);
 
+  const handleConfirmNavNewTable = useCallback(
+    async (input: TableStakeSetupInput) => {
+      if (onlineMode) {
+        const profile = loadProfile();
+        const displayName = profile.name.trim() || user?.email.split('@')[0] || 'Host';
+        const result = await createOnlineTable(displayName);
+        consumePendingTable();
+        const configured = applyTableStakeSetup(
+          {
+            ...result.state,
+            tableMeta: { ...result.state.tableMeta, showStakeSetup: false },
+          },
+          input,
+        );
+        setGameState(configured);
+        setActiveTableId(result.tableId);
+        setTableVersion(result.version);
+        setStoredOnlineTableId(result.tableId);
+        rememberPendingTable(result.tableId);
+        setDismissStoredTable(false);
+        setScreen('table');
+        return;
+      }
+      let state = createTableWithSettings();
+      state = applyTableStakeSetup(
+        { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
+        input,
+      );
+      setGameState(state);
+      setScreen('table');
+    },
+    [onlineMode, user?.email],
+  );
+
   useEffect(() => {
     if (!onlineMode || !user || resolvedTableId || loadingOnline || tableBootstrapDone) {
       return;
@@ -413,7 +452,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
 
   function handleStartNewTable() {
     if (onTableScreen && tableNavHandlers) {
-      tableNavHandlers.startNewTable();
+      tableNavHandlers.openNewTableSetup();
       return;
     }
     handleNewGame();
@@ -649,6 +688,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
           profileOpen={profileOpen}
           onProfileOpenChange={setProfileOpen}
           onRegisterNavHandlers={setTableNavHandlers}
+          onConfirmNavNewTable={handleConfirmNavNewTable}
         />
       )}
     </>

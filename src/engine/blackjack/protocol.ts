@@ -17,7 +17,7 @@ import {
   hasAnyStakes,
   isBettingOpen,
 } from './stakes';
-import { isStepwiseInitialDeal } from './dealing/dealingModes';
+import { isStagedInitialDeal } from './dealing/dealingModes';
 import { isInitialDealRoundComplete } from './initialDealGuards';
 import {
   getEligibleDealBoxes,
@@ -289,7 +289,7 @@ export function getAllowedBlackjackActionsForPhase(
     case 'round-complete':
       return ['none'];
     case 'dealing':
-      return isStepwiseInitialDeal(state.blackjackFlowSettings.initialDealMode)
+      return isStagedInitialDeal(state.blackjackFlowSettings.initialDealMode)
         ? ['deal-next-card']
         : ['none'];
     case 'insurance':

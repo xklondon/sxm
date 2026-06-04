@@ -4,6 +4,7 @@ import type { AuthService } from '../auth/service.js';
 import type { PersonRole } from '../store/types.js';
 import { requireAuth, type AuthedRequest } from '../auth/middleware.js';
 import { respondPeopleAuthError } from './httpErrors.js';
+import { clientEmailErrorMessage } from '../email/smtp.js';
 
 export function createPeopleRouter(people: PeopleService, auth: AuthService): Router {
   const router = Router();
@@ -34,8 +35,11 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
         const invite = await auth.requestMagicLink(person.email);
         devLink = invite.devLink;
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Invite email failed';
-        res.status(502).json({ error: `Person added but invite email failed: ${message}`, person });
+        res.status(502).json({
+          error: `Person added, but the invite email could not be sent: ${clientEmailErrorMessage(err)}`,
+          code: 'invite_email_failed',
+          person,
+        });
         return;
       }
       res.status(201).json({ person, devLink });
@@ -83,7 +87,10 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
       if (respondPeopleAuthError(res, err)) {
         return;
       }
-      res.status(400).json({ error: err instanceof Error ? err.message : 'Send failed' });
+      res.status(502).json({
+        error: clientEmailErrorMessage(err),
+        code: 'invite_email_failed',
+      });
     }
   });
 

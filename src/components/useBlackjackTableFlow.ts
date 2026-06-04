@@ -27,7 +27,7 @@ import {
   logDealCardsAudit,
 } from '../engine/blackjack/protocol';
 import type { CardTimerPreset } from '../engine/blackjack/flowSettings';
-import { isNaturalInitialDeal, isStepwiseInitialDeal } from '../engine/blackjack/dealing/dealingModes';
+import { isNaturalInitialDeal, isStagedInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import {
   getGameOverMessage,
   recordWagerResultPlaceholder,
@@ -424,7 +424,7 @@ export function useBlackjackTableFlow(
     handleDrawBank,
     handleSetTimerPreset,
     engineStatus: round?.status,
-    initialDealStaged: isStepwiseInitialDeal(flow.initialDealMode),
+    initialDealStaged: isStagedInitialDeal(flow.initialDealMode),
     initialDealNatural: isNaturalInitialDeal(flow.initialDealMode),
   };
 }

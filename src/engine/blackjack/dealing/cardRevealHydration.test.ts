@@ -25,10 +25,10 @@ describe('card reveal hydration helpers', () => {
     expect(shouldHydrateCardRevealScope('t:1', 't:2', true)).toBe(true);
   });
 
-  it('ordered initial reveal only during initial-deal with multiple cards pending', () => {
+  it('ordered initial reveal uses canonical plan for any pending initial-deal cards', () => {
     const empty = { dealer: 0, hands: {} };
     const oneCard = { dealer: 0, hands: { 'p:0': 1 } };
-    expect(shouldUseOrderedInitialReveal('initial-deal', empty, oneCard)).toBe(false);
+    expect(shouldUseOrderedInitialReveal('initial-deal', empty, oneCard)).toBe(true);
     expect(
       shouldUseOrderedInitialReveal('initial-deal', empty, { dealer: 2, hands: { 'p:0': 2, 'p2:0': 2 } }),
     ).toBe(true);

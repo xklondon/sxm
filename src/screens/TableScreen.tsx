@@ -18,8 +18,8 @@ import {
   isZilchTable,
   removeSeatFromTable,
   recordTableOutcome,
-  startNewGameWithWager,
 } from '../engine/session';
+import type { TableStakeSetupInput } from '../engine/session/tableSetup';
 import { log } from '../utils/logger';
 import {
   loadCurrentGame,
@@ -42,7 +42,7 @@ import './TableScreen.css';
 export interface TableNavHandlers {
   saveTable: () => void;
   loadTable: () => void;
-  startNewTable: () => void;
+  openNewTableSetup: () => void;
   openAdmin: () => void;
 }
 
@@ -59,6 +59,8 @@ interface TableScreenProps {
   profileOpen?: boolean;
   onProfileOpenChange?: (open: boolean) => void;
   onRegisterNavHandlers?: (handlers: TableNavHandlers | null) => void;
+  /** When set, confirming New Table setup creates a fresh table (online or local). */
+  onConfirmNavNewTable?: (input: TableStakeSetupInput) => void | Promise<void>;
 }
 
 function dealingStatusLabel(status: GameState['session']['dealingStatus']): string {
@@ -84,6 +86,7 @@ export function TableScreen({
   profileOpen,
   onProfileOpenChange,
   onRegisterNavHandlers,
+  onConfirmNavNewTable,
 }: TableScreenProps) {
   const {
     session,
@@ -104,6 +107,7 @@ export function TableScreen({
   const [resetSetupOpen, setResetSetupOpen] = useState(false);
   const [resetSetupVariant, setResetSetupVariant] =
     useState<TableResetSetupVariant>('resetTable');
+  const [navNewTableSetup, setNavNewTableSetup] = useState(false);
 
   const balances = deriveAllBalancesFromLedger(session, ledger);
   const remaining = deck ? getRemainingCardCount(deck) : 0;
@@ -206,29 +210,15 @@ export function TableScreen({
         window.alert('Could not load saved table.');
       }
     },
-    startNewTable: () => {
-      const wager = window.prompt('New wager / stake?', tableMeta.agreement?.stakeDescription ?? '');
-      if (wager === null) {
-        return;
-      }
-      const seatDefault = String(
-        tableMeta.startingChipsEachSeat ?? tableMeta.agreement?.defaultChips ?? DEFAULT_TABLE_CHIPS,
-      );
-      const seatStr = window.prompt('Starting chips each seat?', seatDefault);
-      if (seatStr === null) {
-        return;
-      }
-      const seatAmount = Number.parseInt(seatStr, 10) || DEFAULT_TABLE_CHIPS;
-      const bankDefault = String(tableMeta.startingChipsBank ?? seatAmount);
-      const bankStr = window.prompt('Starting chips bank?', bankDefault);
-      if (bankStr === null) {
-        return;
-      }
-      const bankAmount = Number.parseInt(bankStr, 10) || seatAmount;
-      if (!window.confirm('Start a new table? Table ledger will reset.')) {
-        return;
-      }
-      onGameStateChange(startNewGameWithWager(gameState, wager, seatAmount, bankAmount));
+    openNewTableSetup: () => {
+      setNavNewTableSetup(true);
+      setResetSetupOpen(false);
+      setResetSetupVariant('resetTable');
+      setStakePanelMode('new');
+      onGameStateChange({
+        ...gameState,
+        tableMeta: { ...gameState.tableMeta, showStakeSetup: true },
+      });
     },
     openAdmin: () => setAdminOpen(true),
   }), [gameState, onGameStateChange, tableMeta]);
@@ -317,8 +307,12 @@ export function TableScreen({
               gameState={gameState}
               mode={resetSetupOpen ? 'reset' : stakePanelMode}
               resetSetupVariant={resetSetupVariant}
+              onConfirmNewTable={
+                navNewTableSetup && onConfirmNavNewTable ? onConfirmNavNewTable : undefined
+              }
               onConfirm={(next) => {
                 onGameStateChange(next);
+                setNavNewTableSetup(false);
                 setResetSetupOpen(false);
                 setResetSetupVariant('resetTable');
                 setStakePanelMode('new');

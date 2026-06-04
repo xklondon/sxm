@@ -21,9 +21,14 @@ export function migrateInitialDealMode(value: unknown): InitialDealMode {
   return 'instant';
 }
 
-/** True when engine deals one card at a time (staged or natural). */
+/** True when the engine leaves the round in `initial-deal` for manual next-card dealing. */
+export function isStagedInitialDeal(mode: InitialDealMode): boolean {
+  return mode === 'staged';
+}
+
+/** @deprecated Use isStagedInitialDeal — natural/instant deal authoritatively in one pass. */
 export function isStepwiseInitialDeal(mode: InitialDealMode): boolean {
-  return mode === 'staged' || mode === 'natural';
+  return isStagedInitialDeal(mode);
 }
 
 /** True when UI should auto-advance cards with delay. */

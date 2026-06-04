@@ -43,6 +43,8 @@ interface TableStakePanelProps {
   /** When mode is reset: main-button flow uses newGame; Table Details uses resetTable. */
   resetSetupVariant?: TableResetSetupVariant;
   onConfirm: (state: GameState) => void;
+  /** When set with mode `new`, confirm creates a fresh table instead of mutating the current one. */
+  onConfirmNewTable?: (input: TableStakeSetupInput) => void | Promise<void>;
   /** Called after online reset dispatches (state arrives via socket). */
   onFinished?: () => void;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
@@ -66,6 +68,7 @@ export function TableStakePanel({
   mode = 'new',
   resetSetupVariant = 'resetTable',
   onConfirm,
+  onConfirmNewTable,
   onFinished,
   onlineDispatch,
 }: TableStakePanelProps) {
@@ -197,6 +200,17 @@ export function TableStakePanel({
             ? { ...buildZilchSetupInput(), inviteNote: inviteNote.trim() || undefined }
             : { ...input, inviteNote: inviteNote.trim() || undefined };
         await onlineDispatch('resetTable', resetPayload);
+        onFinished?.();
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    if (!isReset && onConfirmNewTable) {
+      setSubmitting(true);
+      try {
+        await onConfirmNewTable(input);
         onFinished?.();
       } finally {
         setSubmitting(false);

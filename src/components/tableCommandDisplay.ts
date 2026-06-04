@@ -40,6 +40,14 @@ export function formatCallerTurnMessage(slotNum: number | undefined, callerName:
   return `Box ${slotNum ?? '?'} — ${callerName}'s turn.`;
 }
 
+/** Gold command-area hints (split/double) vs green generic turn lines. */
+export function isTableInstructionMessage(message: string | null | undefined): boolean {
+  if (!message?.trim()) {
+    return false;
+  }
+  return /\bcan (?:split|double)\b/i.test(message);
+}
+
 export function formatCallerLegalLine(
   slotNum: number | undefined,
   callerName: string,
@@ -150,7 +158,6 @@ export function buildTableCommandDisplay(params: {
       };
     }
 
-    const lines: string[] = [];
     const hintLine = formatCallerLegalLine(
       activeSlotNum,
       callerName,
@@ -160,11 +167,11 @@ export function buildTableCommandDisplay(params: {
         canDoubleBlackjackForState(gameState, turnHandKey),
     );
     if (hintLine) {
-      lines.push(hintLine);
+      return { commandMessage: hintLine, commandLines: [] };
     }
     return {
       commandMessage: formatCallerTurnMessage(activeSlotNum, callerName),
-      commandLines: lines,
+      commandLines: [],
     };
   }
 

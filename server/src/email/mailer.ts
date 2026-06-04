@@ -1,4 +1,4 @@
-import { getEmailFrom, isEmailConfigured } from '../config.js';
+import { config, getEmailFrom, isEmailConfigured } from '../config.js';
 import { sanitizeEmail, sendMailWithLogging } from './smtp.js';
 
 export async function sendMagicLinkEmail(to: string, verifyUrl: string): Promise<void> {

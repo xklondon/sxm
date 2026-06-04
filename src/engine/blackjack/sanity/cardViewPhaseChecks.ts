@@ -34,7 +34,7 @@ import {
   showEvenMoneyControls,
   showInsuranceControls,
   showPlayerActionControls,
-  showStitchedActionControls,
+  canShowPlayerDecisionControls,
   showStitchedPlayerCards,
   hitStandUseActionBarButtonClass,
 } from '../../../components/blackjackViewPhase';
@@ -56,7 +56,12 @@ export function runCardViewPhaseChecks(): SanitySuiteResult {
   results.push(check('stitched cards when hand dealt in player phase', showStitchedPlayerCards('player', false, 2)));
   results.push(check('dealer header hidden in betting', !showDealerHeader('betting', false)));
   results.push(check('dealer header visible in player phase', showDealerHeader('player', false)));
-  results.push(check('no stitched actions in betting', !showStitchedActionControls('betting', null)));
+  results.push(
+    check(
+      'no stitched actions in betting',
+      !canShowPlayerDecisionControls(state, 'betting', { cardRevealComplete: true }),
+    ),
+  );
   results.push(check('no betting footer during player turn', !showBettingFooter('player', false)));
   results.push(check('no betting footer when game ended', !showBettingFooter('betting', true)));
 

@@ -2,6 +2,7 @@ import type { GameState } from '../types';
 import type { BlackjackRound } from '../types/blackjack';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { getBlackjackProtocolPhase } from '../engine/blackjack/protocol';
+import { isInitialDealRoundComplete } from '../engine/blackjack/initialDealGuards';
 import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
 import { getInsuranceEligibleBoxIds } from '../engine/blackjack/protocols/activeRules';
 import { isInsuranceBoxDecisionResolved } from '../engine/blackjack/insurance';
@@ -79,6 +80,31 @@ export function showPlayerActionControls(
   return Boolean(round.activeHandKey);
 }
 
+/**
+ * Player decision buttons (HIT/STAY/2×/SPLIT/AID) — only after initial deal is
+ * complete in engine and UI reveal has caught up (display phase + reveal flag).
+ */
+export function canShowPlayerDecisionControls(
+  state: GameState,
+  displayPhase: BlackjackProtocolPhase,
+  options: { cardRevealComplete: boolean },
+): boolean {
+  const round = state.blackjack;
+  if (!showPlayerActionControls(displayPhase, round)) {
+    return false;
+  }
+  if (!options.cardRevealComplete || isDealingPhase(displayPhase)) {
+    return false;
+  }
+  if (round?.status === 'initial-deal') {
+    return false;
+  }
+  if (round && !isInitialDealRoundComplete(state.session, round)) {
+    return false;
+  }
+  return true;
+}
+
 export function showEvenMoneyControls(
   phase: BlackjackProtocolPhase,
   round: BlackjackRound | null | undefined,
@@ -149,10 +175,11 @@ export function showHeroPlayerCards(
 
 /** Side hit/stand controls — player turn only, not insurance/even-money. */
 export function showStitchedActionControls(
-  phase: BlackjackProtocolPhase,
-  round: BlackjackRound | null | undefined,
+  state: GameState,
+  displayPhase: BlackjackProtocolPhase,
+  options: { cardRevealComplete: boolean },
 ): boolean {
-  return showPlayerActionControls(phase, round);
+  return canShowPlayerDecisionControls(state, displayPhase, options);
 }
 
 export interface ActionableHandForView {

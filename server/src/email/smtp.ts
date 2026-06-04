@@ -217,8 +217,22 @@ export function gmailSmtpUnreachableMessage(): string {
   );
 }
 
+const SERVER_CONFIG_LEAK_RE =
+  /\bconfig\b.*\b(?:not found|is not defined)\b|\b(?:not found|is not defined)\b.*\bconfig\b|cannot find module.*config/i;
+
 export function clientEmailErrorMessage(err: unknown): string {
+  if (err instanceof ReferenceError) {
+    return 'Sign-in email could not be sent due to a server error. Please try again or contact support.';
+  }
   const raw = err instanceof Error ? err.message : typeof err === 'string' ? err : 'Email send failed';
+  if (
+    /is not defined$/i.test(raw) ||
+    /\bReferenceError\b/i.test(raw) ||
+    SERVER_CONFIG_LEAK_RE.test(raw) ||
+    /cannot find module/i.test(raw)
+  ) {
+    return 'Sign-in email could not be sent due to a server error. Please try again or contact support.';
+  }
   if (/Gmail SMTP is unreachable from this host/i.test(raw)) {
     return raw;
   }

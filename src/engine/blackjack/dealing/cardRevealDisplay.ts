@@ -166,15 +166,15 @@ export function shouldUseOrderedInitialReveal(
   visible: CardVisibilityCounts,
   target: CardVisibilityCounts,
 ): boolean {
-  const pending = totalCardCount(target) - totalCardCount(visible);
-  if (pending <= 1 || !isInitialDealVisibilityCounts(target)) {
+  if (!hasPendingCardReveal(visible, target) || !isInitialDealVisibilityCounts(target)) {
     return false;
   }
-  if (roundStatus === 'initial-deal') {
-    return true;
+  if (
+    roundStatus === 'bank-turn' ||
+    roundStatus === 'banking' ||
+    roundStatus === 'resolved'
+  ) {
+    return false;
   }
-  if (roundStatus === 'player-turns') {
-    return true;
-  }
-  return false;
+  return true;
 }

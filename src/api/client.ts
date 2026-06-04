@@ -233,6 +233,14 @@ export async function addPerson(params: {
     body: JSON.stringify(params),
   });
   const data = await res.json();
+  if (res.status === 502 && data.person) {
+    const err = new Error(
+      data.error ?? 'Person was added, but the invite email could not be sent.',
+    ) as Error & { person: PersonRecord; inviteEmailFailed: true };
+    err.person = data.person as PersonRecord;
+    err.inviteEmailFailed = true;
+    throw err;
+  }
   if (!res.ok) {
     throw new Error(data.error ?? 'Could not add person');
   }

@@ -91,7 +91,11 @@ import {
   setBlackjackProtocolOnState,
   updateBlackjackFlowSettings,
 } from '../engine/blackjack';
-import { getActionableHandForView, getInsuranceActionsForController } from './blackjackViewPhase';
+import {
+  canShowPlayerDecisionControls,
+  getActionableHandForView,
+  getInsuranceActionsForController,
+} from './blackjackViewPhase';
 import {
   buildViewerIdentityHints,
   resolveViewerPersonIdForTable,
@@ -753,12 +757,19 @@ export function BlackjackPanel({
       return renderEvenMoneyActions();
     }
 
-    if (protocolPhase !== 'player' || !round?.activeHandKey) {
+    if (!canShowPlayerDecisionControls(gameState, protocolPhase, { cardRevealComplete })) {
       return null;
     }
 
-    const turnHandKey = round.activeHandKey;
-    const { playerId } = parseBlackjackHandKey(turnHandKey);
+    if (!round) {
+      return null;
+    }
+    const activeRound: NonNullable<typeof round> = round;
+    if (!activeRound.activeHandKey) {
+      return null;
+    }
+    const activeHandKey: string = activeRound.activeHandKey;
+    const { playerId } = parseBlackjackHandKey(activeHandKey);
     const activeSlotNum = session.boxSlotNumbers?.[playerId];
     const isCaller =
       viewerPersonId !== null &&
@@ -778,18 +789,18 @@ export function BlackjackPanel({
     // Canonical gate: controls enabled only when this viewer may act on the
     // server-authoritative active hand. Shared with Card View.
     const actionable = getActionableHandForView(gameState, viewerPersonId, isOnlineModeEnabled());
-    const canHit = Boolean(actionable) && canHitBlackjack(round, turnHandKey);
-    const canStand = Boolean(actionable) && canStandBlackjack(round, turnHandKey);
+    const canHit = Boolean(actionable) && canHitBlackjack(activeRound, activeHandKey);
+    const canStand = Boolean(actionable) && canStandBlackjack(activeRound, activeHandKey);
 
     const canDouble =
-      Boolean(actionable) && Boolean(deck) && canDoubleBlackjackForState(gameState, turnHandKey);
-    const canSplit = Boolean(actionable) && canSplitBlackjackForState(gameState, turnHandKey);
+      Boolean(actionable) && Boolean(deck) && canDoubleBlackjackForState(gameState, activeHandKey);
+    const canSplit = Boolean(actionable) && canSplitBlackjackForState(gameState, activeHandKey);
 
     function handleTableAid() {
-      if (!deck || !round) {
+      if (!deck) {
         return;
       }
-      const advice = getAidAdvice(round, turnHandKey, deck, flowSettings, gameState, ledger);
+      const advice = getAidAdvice(activeRound, activeHandKey, deck, flowSettings, gameState, ledger);
       if (advice) {
         setTableAidTip(advice.text);
       }
@@ -802,7 +813,7 @@ export function BlackjackPanel({
             type="button"
             className="ds-btn ds-btn--stand bj-table-actions__btn"
             disabled={!canStand}
-            onClick={() => run((s) => standBlackjackOnState(s, turnHandKey), { type: 'stand', payload: {} })}
+            onClick={() => run((s) => standBlackjackOnState(s, activeHandKey), { type: 'stand', payload: {} })}
           >
             Stay
           </button>
@@ -810,7 +821,7 @@ export function BlackjackPanel({
             type="button"
             className="ds-btn ds-btn--hit bj-table-actions__btn"
             disabled={!canHit}
-            onClick={() => run((s) => hitBlackjackOnState(s, turnHandKey), { type: 'hit', payload: {} })}
+            onClick={() => run((s) => hitBlackjackOnState(s, activeHandKey), { type: 'hit', payload: {} })}
           >
             Hit
           </button>
@@ -827,7 +838,7 @@ export function BlackjackPanel({
                 .filter(Boolean)
                 .join(' ')}
               disabled={!canDouble}
-              onClick={() => run((s) => doubleDownBlackjackOnState(s, turnHandKey), { type: 'double', payload: {} })}
+              onClick={() => run((s) => doubleDownBlackjackOnState(s, activeHandKey), { type: 'double', payload: {} })}
             >
               2×
             </button>
@@ -845,7 +856,7 @@ export function BlackjackPanel({
                 .filter(Boolean)
                 .join(' ')}
               disabled={!canSplit}
-              onClick={() => run((s) => splitBlackjackOnState(s, turnHandKey), { type: 'split', payload: {} })}
+              onClick={() => run((s) => splitBlackjackOnState(s, activeHandKey), { type: 'split', payload: {} })}
             >
               Split
             </button>
@@ -1257,6 +1268,7 @@ export function BlackjackPanel({
                   activeBoxId={activeBoxId}
                   showHoleHidden={showHoleHidden}
                   protocolPhase={protocolPhase}
+                  cardRevealComplete={cardRevealComplete}
                   bettingOpen={bettingOpen}
                   gameEnded={gameEnded}
                   onSelectBox={selectBox}

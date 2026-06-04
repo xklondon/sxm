@@ -49,7 +49,7 @@ import {
   showBettingMainStage,
   showEvenMoneyControls,
   showInsuranceControls,
-  showStitchedActionControls,
+  canShowPlayerDecisionControls,
 } from "./blackjackViewPhase";
 
 import { getBoxCallerDisplayName } from "./boxCallerDisplay";
@@ -83,6 +83,8 @@ interface BlackjackCardViewProps {
   activeBoxId: string | null;
   showHoleHidden: boolean;
   protocolPhase: BlackjackProtocolPhase;
+  /** False while natural-deal reveal is catching up — hides decision buttons. */
+  cardRevealComplete?: boolean;
   bettingOpen: boolean;
   gameEnded: boolean;
   onSelectBox: (boxId: string) => void;
@@ -122,6 +124,7 @@ export function BlackjackCardView({
   activeBoxId,
   showHoleHidden: _showHoleHidden,
   protocolPhase,
+  cardRevealComplete = true,
   bettingOpen,
   gameEnded,
   onSelectBox,
@@ -161,7 +164,11 @@ export function BlackjackCardView({
   const bettingMainStage = showBettingMainStage(protocolPhase, gameEnded);
   const insuranceActive = showInsuranceControls(protocolPhase, round);
   const evenMoneyActive = showEvenMoneyControls(protocolPhase, round);
-  const stitchedActionsActive = showStitchedActionControls(protocolPhase, round);
+  const stitchedActionsActive = canShowPlayerDecisionControls(
+    logicalGameState,
+    protocolPhase,
+    { cardRevealComplete },
+  );
   const isPlayerPhase = isPlayerTurnPhase(protocolPhase);
 
   const turnHandKey = isPlayerPhase ? (round?.activeHandKey ?? null) : null;

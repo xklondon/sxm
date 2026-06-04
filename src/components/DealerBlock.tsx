@@ -1,5 +1,6 @@
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
+import { isTableInstructionMessage } from './tableCommandDisplay';
 import './DealerBlock.css';
 
 interface DealerBlockProps {
@@ -211,9 +212,15 @@ export function DealerBlock({
               <>
                 {commandMessage ? (
                   <p
-                    className={`dealer-block__status${
-                      gameEnded ? ' dealer-block__status--game-over' : ''
-                    }`}
+                    className={[
+                      'dealer-block__status',
+                      gameEnded ? 'dealer-block__status--game-over' : '',
+                      isTableInstructionMessage(commandMessage)
+                        ? 'dealer-block__status--summary'
+                        : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
                   >
                     {commandMessage}
                   </p>

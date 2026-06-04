@@ -37,11 +37,12 @@ function insuranceRound(
   overrides: Partial<BlackjackRound> = {},
 ): BlackjackRound {
   const aceId = findCardId(state.deck!, 'A');
+  const holeId = findCardId(state.deck!, '9');
   return {
     ...actingRound(state, boxId, cardIds, bet),
     status: 'player-turns',
     insuranceOfferPending: true,
-    dealerCardIds: [aceId],
+    dealerCardIds: [aceId, holeId],
     dealerHoleHidden: true,
     activeHandKey: null,
     activePlayerId: null,

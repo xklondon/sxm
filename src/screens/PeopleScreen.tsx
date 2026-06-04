@@ -59,7 +59,16 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
       setNewName('');
       await reload();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Add failed');
+      const inviteErr = err as Error & { inviteEmailFailed?: boolean; person?: PersonRecord };
+      if (inviteErr.inviteEmailFailed && inviteErr.person) {
+        setSuccessMessage(
+          `${inviteErr.person.email} was added to People. The invite email could not be sent.`,
+        );
+        setNewEmail('');
+        setNewName('');
+        await reload();
+      }
+      setError(inviteErr.message || 'Add failed');
     }
   }
 
