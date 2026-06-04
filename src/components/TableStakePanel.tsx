@@ -3,25 +3,19 @@ import { useState } from 'react';
 import type { GameState } from '../types';
 
 import {
-  assignBankBot,
-  assignBankPerson,
-  confirmTableAgreement,
+  applyTableResetSetup,
+  applyTableStakeSetup,
   DEFAULT_TABLE_CHIPS,
-  ensureTableOwnerPersonBankroll,
-  logDerivedBalances,
-  logLedgerAfterAllocation,
-  logTableMetaStartingChips,
-  setTableOwner,
+  type TableBankerSetupMode,
+  type TableStakeSetupInput,
 } from '../engine/session';
 import {
   listBlackjackProtocolPresets,
   getBlackjackProtocolOrDefault,
   getProtocolDisplayRules,
 } from '../engine/blackjack/protocols';
-import { setBlackjackProtocolOnState } from '../engine/blackjack/protocolState';
-import { updateBlackjackFlowSettings } from '../engine/blackjack';
-import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
 import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
+import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
 
 import { loadProfile } from '../storage/profileStorage';
 import { log } from '../utils/logger';
@@ -31,15 +25,45 @@ import './TableStakePanel.css';
 
 const STAKE_EXAMPLES = ['$5', 'dinner', 'car wash', 'bottle of wine', 'favour', 'immaterial promise'];
 
+export type TableStakePanelMode = 'new' | 'reset';
+
 interface TableStakePanelProps {
   gameState: GameState;
+  mode?: TableStakePanelMode;
   onConfirm: (state: GameState) => void;
+  /** Called after online reset dispatches (state arrives via socket). */
+  onFinished?: () => void;
+  onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
 }
 
-export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) {
+function initialBankerMode(state: GameState): TableBankerSetupMode {
+  const mode = state.tableMeta.bankerSetup.mode;
+  if (mode === 'person') {
+    const owner = state.tableMeta.owner?.ownerName?.trim();
+    const bankName = state.tableMeta.bankerSetup.displayName?.trim();
+    if (owner && bankName && owner === bankName) {
+      return 'self';
+    }
+    return 'other';
+  }
+  return 'bot';
+}
+
+export function TableStakePanel({
+  gameState,
+  mode = 'new',
+  onConfirm,
+  onFinished,
+  onlineDispatch,
+}: TableStakePanelProps) {
   const profile = loadProfile();
   const flow = gameState.blackjackFlowSettings;
-  const [stake, setStake] = useState('');
+  const isReset = mode === 'reset';
+  const agreement = gameState.tableMeta.agreement;
+
+  const [stake, setStake] = useState(
+    () => agreement?.stakeDescription ?? '',
+  );
   const [inviteNote, setInviteNote] = useState('');
   const [seatChips, setSeatChips] = useState(
     String(gameState.tableMeta.startingChipsEachSeat ?? DEFAULT_TABLE_CHIPS),
@@ -48,8 +72,10 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
     String(gameState.tableMeta.startingChipsBank ?? gameState.tableMeta.startingChipsEachSeat ?? DEFAULT_TABLE_CHIPS),
   );
   const [bankChipsCustom, setBankChipsCustom] = useState(false);
-  const [bankerMode, setBankerMode] = useState<'bot' | 'self' | 'other'>('bot');
-  const [bankerName, setBankerName] = useState('');
+  const [bankerMode, setBankerMode] = useState<TableBankerSetupMode>(() => initialBankerMode(gameState));
+  const [bankerName, setBankerName] = useState(
+    () => gameState.tableMeta.bankerSetup.displayName ?? '',
+  );
   const [protocolId, setProtocolId] = useState(
     gameState.blackjackProtocolId ?? listBlackjackProtocolPresets()[0]?.protocolId ?? 'las-vegas-house',
   );
@@ -58,6 +84,7 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
   const [dealSpeedPreset, setDealSpeedPreset] = useState<DealSpeedPreset>(flow.dealSpeedPreset);
   const [cardTimerPreset, setCardTimerPreset] = useState(flow.cardTimerPreset);
   const [bankDrawAuto, setBankDrawAuto] = useState(flow.bankDrawMode === 'auto');
+  const [submitting, setSubmitting] = useState(false);
 
   const selectedProtocol = getBlackjackProtocolOrDefault(protocolId);
   const protocolRules = getProtocolDisplayRules(selectedProtocol);
@@ -65,6 +92,26 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
   const onlineMode = isOnlineModeEnabled();
 
   const controller = profile.name.trim() || gameState.tableMeta.controllerName;
+
+  function buildSetupInput(): TableStakeSetupInput {
+    const seatAmount = Number.parseInt(seatChips, 10) || DEFAULT_TABLE_CHIPS;
+    const bankAmount = Number.parseInt(bankChips, 10) || seatAmount;
+    const showPlayingForStake = bankerMode === 'bot';
+    return {
+      stakeDescription: showPlayingForStake ? stake.trim() || 'Friendly wager' : 'Table session',
+      seatChips: seatAmount,
+      bankChips: bankAmount,
+      bankerMode,
+      bankerName,
+      controllerName: controller,
+      controllerEmail: profile.email,
+      protocolId,
+      naturalDealing,
+      dealSpeedPreset,
+      cardTimerPreset,
+      bankDrawAuto,
+    };
+  }
 
   function handleSeatChipsChange(value: string) {
     setSeatChips(value);
@@ -78,76 +125,68 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
     setBankChips(value);
   }
 
-  function handleConfirm() {
-    const seatAmount = Number.parseInt(seatChips, 10) || DEFAULT_TABLE_CHIPS;
-    const bankAmount = Number.parseInt(bankChips, 10) || seatAmount;
-    const stakeDescription = showPlayingFor ? stake.trim() || 'Friendly wager' : 'Table session';
+  async function handleConfirm() {
+    const input = buildSetupInput();
 
     log.info('setupStartingChipsInput', {
+      mode: isReset ? 'reset' : 'new',
       seatChipsInput: seatChips,
       bankChipsInput: bankChips,
-      seatAmount,
-      bankAmount,
+      seatAmount: input.seatChips,
+      bankAmount: input.bankChips,
       inviteNote: inviteNote.trim() || undefined,
     });
 
-    let next = confirmTableAgreement(gameState, stakeDescription, seatAmount, bankAmount);
-
-    next = setTableOwner(next, controller, profile.email);
-
-    next = {
-      ...next,
-      tableMeta: {
-        ...next.tableMeta,
-        controllerName: controller,
-        showBankerSetup: false,
-      },
-    };
-
-    if (bankerMode === 'bot') {
-      next = assignBankBot(next, bankAmount);
-    } else if (bankerMode === 'self') {
-      next = assignBankPerson(next, controller, bankAmount);
-    } else {
-      next = assignBankPerson(next, bankerName.trim(), bankAmount);
+    if (onlineMode && onlineDispatch && isReset) {
+      setSubmitting(true);
+      try {
+        await onlineDispatch('resetTable', {
+          ...input,
+          inviteNote: inviteNote.trim() || undefined,
+        });
+        onFinished?.();
+      } finally {
+        setSubmitting(false);
+      }
+      return;
     }
 
-    next = ensureTableOwnerPersonBankroll(next);
-
-    logLedgerAfterAllocation(next, 'start-playing');
-    logDerivedBalances(next, 'start-playing');
-    logTableMetaStartingChips(next, 'start-playing');
-    next = setBlackjackProtocolOnState(next, protocolId, controller);
-    next = updateBlackjackFlowSettings(next, {
-      initialDealMode: naturalDealing ? 'natural' : 'instant',
-      dealSpeedPreset,
-      cardTimerPreset,
-      countdownSeconds: cardTimerPreset,
-      bankDrawMode: bankDrawAuto ? 'auto' : 'manual',
-    });
+    const next = isReset
+      ? applyTableResetSetup(gameState, input, gameState.tableMeta.ownerPersonId)
+      : applyTableStakeSetup(gameState, input);
     onConfirm(next);
   }
 
   return (
-    <div className="table-stake-overlay" role="dialog" aria-label="New table setup">
+    <div
+      className="table-stake-overlay"
+      role="dialog"
+      aria-label={isReset ? 'Reset table setup' : 'New table setup'}
+    >
       <div className="table-stake-panel">
         <header className="table-stake-panel__header">
-          <h2 className="table-stake-panel__title">New Table</h2>
+          <h2 className="table-stake-panel__title">
+            {isReset ? 'Reset table' : 'New Table'}
+          </h2>
           <p className="table-stake-panel__sub">
-            Set up who plays, who banks, and how the table runs.
+            {isReset
+              ? 'Start a new game with the players currently at this table.'
+              : 'Set up who plays, who banks, and how the table runs.'}
           </p>
         </header>
 
         <div className="table-stake-panel__grid">
           <div className="table-stake-panel__col">
             <fieldset className="table-stake-panel__banker">
-              <legend>Invite who to play with</legend>
+              <legend>Players at this table</legend>
               <p className="table-stake-panel__hint">
-                {onlineMode
-                  ? 'After the table starts, use Invite on This Table to email friends a join link.'
-                  : 'Add players at the table once play begins.'}
+                {isReset
+                  ? 'Seat assignments and invites stay the same. Adjust bank, wager, and chips below.'
+                  : onlineMode
+                    ? 'After the table starts, use Invite on This Table to email friends a join link.'
+                    : 'Add players at the table once play begins.'}
               </p>
-              {onlineMode && (
+              {onlineMode && !isReset && (
                 <input
                   type="text"
                   className="table-stake-panel__input"
@@ -329,8 +368,13 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
           </div>
         </div>
 
-        <button type="button" className="table-stake-panel__confirm" onClick={handleConfirm}>
-          Start playing
+        <button
+          type="button"
+          className="table-stake-panel__confirm"
+          onClick={() => void handleConfirm()}
+          disabled={submitting}
+        >
+          {isReset ? 'Start new game' : 'Start playing'}
         </button>
       </div>
     </div>

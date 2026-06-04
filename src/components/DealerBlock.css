@@ -23,11 +23,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.18rem;
+  gap: 0.12rem;
   padding: 0.18rem 0.3rem 0.14rem;
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: var(--ds-radius-md);
   background: rgb(255 255 255 / 0.03);
+}
+
+.dealer-block__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.14rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .dealer-block__commentary {
@@ -49,6 +58,7 @@
 
 .dealer-block__brand {
   margin: 0;
+  align-self: center;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -105,15 +115,19 @@
 
 .dealer-block__command {
   width: 100%;
+  min-width: 0;
   min-height: 1.85rem;
+  max-height: 4.5rem;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.08rem;
-  padding: 0.12rem 0.3rem;
-  margin-top: 0;
-  border-top: 1px solid rgb(255 255 255 / 0.08);
+  gap: 0.06rem;
+  padding: 0.1rem 0.35rem 0.06rem;
+  margin-top: 0.04rem;
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  box-sizing: border-box;
 }
 
 .dealer-block__status {
@@ -145,6 +159,8 @@
   margin: 0;
   font-size: 0.55rem;
   opacity: 0.72;
+  text-align: center;
+  align-self: center;
 }
 
 .dealer-block__cards {
@@ -256,6 +272,6 @@
 
 @media (max-width: 720px) {
   .dealer-block__command {
-    border-top-color: rgb(255 255 255 / 0.1);
+    padding: 0.08rem 0.28rem 0.04rem;
   }
 }

@@ -14,6 +14,8 @@ import {
 import { addGameToPersonalLedger } from '../../../src/engine/scoreLedger/scoreLedger.js';
 import { assignChips, type ChipAssignReason } from '../../../src/engine/session/tokens.js';
 import { canUserAssignChips } from '../../../src/engine/table/adminControls.js';
+import { applyTableResetSetup } from '../../../src/engine/session/tableReset.js';
+import { parseTableStakeSetupPayload } from '../../../src/engine/session/tableSetup.js';
 import type { TableActionType } from './actions.js';
 
 export function applyTableAction(
@@ -80,6 +82,13 @@ export function applyTableAction(
     case 'addGameToPersonalLedger':
       addGameToPersonalLedger(state);
       return state;
+    case 'resetTable': {
+      const caller = state.players[personId];
+      const controllerName =
+        caller?.controllerName?.trim() || caller?.displayName || state.tableMeta.controllerName;
+      const input = parseTableStakeSetupPayload(payload, controllerName);
+      return applyTableResetSetup(state, input, personId);
+    }
     case 'assignChips': {
       const recipientId = payload.recipientId as string;
       const amount = Number(payload.amount);

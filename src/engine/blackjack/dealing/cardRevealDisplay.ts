@@ -37,10 +37,23 @@ function handKeysForRound(round: BlackjackRound): string[] {
   return Object.keys(round.playerHands);
 }
 
+/** True when visibility targets are still within the two-card initial deal. */
+export function isInitialDealVisibilityCounts(target: CardVisibilityCounts): boolean {
+  if (target.dealer > 2) {
+    return false;
+  }
+  for (const count of Object.values(target.hands)) {
+    if (count > 2) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /** Steps to reveal when authoritative state already has all initial-deal cards. */
 export function buildInitialRevealSteps(round: BlackjackRound): InitialDealStep[] {
   const handKeys = handKeysForRound(round);
-  const holeLast = round.dealerCardIds.length >= 2 && round.dealerHoleHidden;
+  const holeLast = !round.dealerCardIds[1];
   return buildInitialDealPlanFromHandKeys(handKeys, holeLast);
 }
 
@@ -116,14 +129,52 @@ export function shouldHydrateCardRevealScope(
   return !hasHydrated || previousScope !== nextScope;
 }
 
-/** Ordered initial-deal steps only while the round is still in initial-deal. */
+/** Reveal one gameplay card (hit, double, bank draw) toward target visibility. */
+export function nextGameplayRevealStep(
+  visible: CardVisibilityCounts,
+  target: CardVisibilityCounts,
+): CardVisibilityCounts | null {
+  if (visible.dealer < target.dealer) {
+    return { ...visible, dealer: visible.dealer + 1 };
+  }
+  const handKeys = [
+    ...new Set([...Object.keys(visible.hands), ...Object.keys(target.hands)]),
+  ];
+  for (const handKey of handKeys) {
+    const cur = visible.hands[handKey] ?? 0;
+    const tgt = target.hands[handKey] ?? 0;
+    if (cur < tgt) {
+      return {
+        ...visible,
+        hands: { ...visible.hands, [handKey]: cur + 1 },
+      };
+    }
+  }
+  return null;
+}
+
+export function hasPendingCardReveal(
+  visible: CardVisibilityCounts,
+  target: CardVisibilityCounts,
+): boolean {
+  return totalCardCount(target) > totalCardCount(visible);
+}
+
+/** Ordered initial-deal reveal while catching up the first two cards per hand. */
 export function shouldUseOrderedInitialReveal(
   roundStatus: BlackjackRound['status'] | undefined,
   visible: CardVisibilityCounts,
   target: CardVisibilityCounts,
 ): boolean {
-  return (
-    roundStatus === 'initial-deal' &&
-    totalCardCount(target) - totalCardCount(visible) > 1
-  );
+  const pending = totalCardCount(target) - totalCardCount(visible);
+  if (pending <= 1 || !isInitialDealVisibilityCounts(target)) {
+    return false;
+  }
+  if (roundStatus === 'initial-deal') {
+    return true;
+  }
+  if (roundStatus === 'player-turns') {
+    return true;
+  }
+  return false;
 }

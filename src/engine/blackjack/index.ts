@@ -191,6 +191,12 @@ export {
   listAllBlackjackProtocolsForSelector,
 } from './protocolState';
 
+export {
+  getDealerDisplayHand,
+  getDealerAuthoritativeHand,
+} from './dealerDisplay';
+export type { DealerDisplayHand } from './dealerDisplay';
+
 export { getProtocolMessage } from './protocolMessages';
 export { formatRoundResultSummary, buildRoundResultSummary } from './roundResultSummary';
 export { shouldDealerDraw, evaluateDealerDraw } from './dealerDraw';

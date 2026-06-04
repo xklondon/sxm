@@ -162,23 +162,22 @@ export function DealerBlock({
 
         <div className="dealer-block__center-col">
           <p className="dealer-block__brand">Blackjack</p>
-          <div className="dealer-block__cards-slot">{cardsSlot}</div>
-          <div className="dealer-block__action-slot">
-            {primaryAction ?? <span className="dealer-block__action-spacer" aria-hidden="true" />}
+          <div className="dealer-block__stack">
+            <div className="dealer-block__cards-slot">{cardsSlot}</div>
+            <div className="dealer-block__action-slot">
+              {primaryAction ?? <span className="dealer-block__action-spacer" aria-hidden="true" />}
+            </div>
+            {onOpenTableDetails && (
+              <button
+                type="button"
+                className="dealer-block__details-btn"
+                onClick={onOpenTableDetails}
+                aria-expanded={tableDetailsOpen}
+              >
+                Table details
+              </button>
+            )}
           </div>
-
-          {onOpenTableDetails && (
-            <button
-              type="button"
-              className="dealer-block__details-btn"
-              onClick={onOpenTableDetails}
-              aria-expanded={tableDetailsOpen}
-              aria-controls="table-details-slide-title"
-            >
-              Table details
-            </button>
-          )}
-
           <div className="dealer-block__command" aria-live="polite">
             {hasCommandContent ? (
               <>

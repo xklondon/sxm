@@ -280,9 +280,9 @@ export function dealCardsFromState(state: GameState): GameState {
 
   let result: GameState;
   const dealMode = prepared.blackjackFlowSettings.initialDealMode;
-  if (dealMode === 'instant') {
+  if (dealMode === 'instant' || dealMode === 'natural') {
     let next = dealInitialBlackjackOnState(prepared);
-    log.info('First card dealt (instant complete)');
+    log.info(`Initial deal complete (${dealMode} mode, authoritative)`);
     next = processVirtualTurns(syncBankPhaseOnState(next));
     logPhase(next, 'deal complete');
     result = lockProtocolOnState(next);

@@ -19,6 +19,7 @@ export const TABLE_ACTIONS = [
   'nextRound',
   'addGameToPersonalLedger',
   'assignChips',
+  'resetTable',
 ] as const;
 
 export type TableActionType = (typeof TABLE_ACTIONS)[number];

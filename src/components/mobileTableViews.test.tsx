@@ -156,19 +156,27 @@ const CARD_VIEW_SECTIONS = [
 const CARD_VIEW_PLAYING_SECTIONS = [
   ...CARD_VIEW_SECTIONS,
   'dealer-block__status',
+  'dealer-block__command',
+  'dealer-block__stack',
   'bj-phone-view__slot--stage',
   'bj-phone-view__slot--actions',
+  'bj-phone-view__slot--boxes',
   'bj-phone-view__action-bar',
+  'bj-phone-view__hero-actions-primary',
+  'bj-phone-view__hero-actions-extras',
   'bj-phone-view__hero-stage',
-  'bj-phone-view__side-action--stand',
-  'bj-phone-view__side-action--hit',
   'bj-phone-view__mini-row',
 ] as const;
 
 const CARD_VIEW_BETTING_SECTIONS = [
   ...CARD_VIEW_SECTIONS,
-  'bj-phone-view__betting-stage--row',
-  'bj-phone-view__action-bar',
+  'dealer-block__stack',
+  'bj-phone-view__slot--stage',
+  'bj-phone-view__slot--boxes',
+  'bj-phone-view__hand--waiting',
+  'bj-phone-view__cards-placeholder',
+  'bj-phone-view__mini-row',
+  'bj-phone-view__action-bar--play-placeholder',
   'bj-casino__tray',
 ] as const;
 
@@ -345,15 +353,14 @@ describe('mobile Card View structure', () => {
     expect(order[order.length - 1]).toBe('1');
   });
 
-  it('highlights the active box as the live hero with its controls', () => {
+  it('highlights the active box as the live hero with central controls', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__side-action--stand');
-    expect(html).toContain('bj-phone-view__side-action--hit');
+    expect(html).toContain('bj-phone-view__hero-actions-primary');
     expect(html).toContain('bj-phone-view__mini-row');
   });
 });
 
-describe('table details slide-out (not This Table)', () => {
+describe('Table Details side rail (same slot as This Table)', () => {
   it('does not render inline info chips in the dealer header', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).not.toContain('dealer-block__info-panel');
@@ -362,23 +369,26 @@ describe('table details slide-out (not This Table)', () => {
     expect(html).toContain('Table details');
   });
 
-  it('renders table details drawer markup only when open', () => {
-    const closed = renderPanelAt(390, withView(bettingState(), 'full'));
-    expect(closed).not.toContain('bj-table-slide-overlay--details');
-    expect(closed).not.toContain('table-details-panel');
+  it('does not use table-details slide overlay markup', () => {
+    const html = renderPanelAt(390, withView(playingState(), 'card'));
+    expect(html).not.toContain('bj-table-slide-overlay--details');
+    expect(html).not.toContain('TableDetailsSlidePanel');
   });
 
-  it('table details overlay CSS keeps mobile viewport width (bottom sheet)', () => {
-    const css = mobileFullTableCss();
-    expect(css).toContain('bj-table-slide-overlay--details');
-    expect(css).toMatch(
-      /@media \(max-width: 720px\)[\s\S]*\.bj-table-slide-drawer--details[\s\S]*max-width:\s*100%/,
-    );
+  it('uses felt-adjacent panel slot with data-side-panel (not modal)', () => {
+    const mobile = renderPanelAt(390, withView(playingState(), 'card'));
+    const desktop = renderPanelAt(1280, withView(playingState(), 'card'));
+    expect(mobile).toContain('bj-casino__this-table--below');
+    expect(mobile).toContain('data-side-panel="thisTable"');
+    expect(desktop).toContain('bj-casino__this-table--float');
+    expect(desktop).toContain('data-side-panel="thisTable"');
+    expect(mobile).not.toMatch(/bj-table-slide-overlay[^>]*>[\s\S]*table-details-panel/);
   });
 });
 
 describe('stable dealer layout slots across phases', () => {
   const dealerSlots = [
+    'dealer-block__stack',
     'dealer-block__cards-slot',
     'dealer-block__action-slot',
     'dealer-block__command',
@@ -395,6 +405,8 @@ describe('stable dealer layout slots across phases', () => {
     expect(playing).toContain('dealer-block__cards');
     expect(betting).toContain('bj-phone-view__action-bar');
     expect(playing).toContain('bj-phone-view__action-bar');
+    expect(betting).toContain('bj-phone-view__mini-row');
+    expect(playing).toContain('bj-phone-view__mini-row');
   });
 
   it('Full Table mobile: dealer slots and action bar area across phases', () => {
@@ -415,7 +427,6 @@ describe('mobile Card View width contract', () => {
     const css = mobileFullTableCss();
     expect(css).toMatch(/\.bj-view-card-mobile[\s\S]*max-width:\s*100vw/);
     expect(css).toMatch(/\.bj-view-card-mobile \.bj-casino__rail[\s\S]*max-width:\s*100%/);
-    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__betting-stage--row[\s\S]*overflow-x:\s*auto/);
     expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*auto/);
   });
 });

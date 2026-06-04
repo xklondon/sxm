@@ -77,3 +77,21 @@
   border-color: rgb(134 239 172 / 0.75);
   background: rgb(110 231 183 / 0.18);
 }
+
+.table-details-panel__reset {
+  grid-column: 1 / -1;
+  margin-top: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.table-details-panel__reset-btn {
+  width: 100%;
+}
+
+.table-details-panel__reset-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  color: rgb(255 255 255 / 0.55);
+  line-height: 1.35;
+}

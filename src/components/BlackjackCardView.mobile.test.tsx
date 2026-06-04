@@ -105,11 +105,16 @@ describe('mobile Card View render contract', () => {
     expect(html).not.toContain('bj-phone-view__table-btn');
   });
 
-  it('uses the same ordered betting row markup as desktop (no hero-only branch)', () => {
+  it('uses hero placeholder and bottom mini box strip during betting', () => {
     const { state, boxId } = bettingTableWithBox();
     const html = renderBettingCardView(state, boxId);
-    expect(html).toContain('bj-phone-view__betting-stage--row');
-    expect(html).not.toContain('bj-phone-view__bet-secondary-row');
+    expect(html).toContain('bj-phone-view__hand--waiting');
+    expect(html).toContain('bj-phone-view__cards-placeholder');
+    expect(html).toContain('bj-phone-view__mini-row');
+    expect(html).toContain('bj-phone-view__slot--boxes');
+    expect(html).not.toContain('bj-phone-view__betting-center');
+    expect(html).not.toContain('bj-phone-view__bet-chip-wrap--main');
+    expect(html).not.toContain('bj-phone-view__betting-stage--row');
     expect(html).toContain('Box 1');
   });
 

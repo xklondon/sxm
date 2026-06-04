@@ -26,7 +26,7 @@ import { LedgerPanel } from '../components/LedgerPanel';
 import { PlayingCard } from '../components/PlayingCard';
 import { BlackjackPanel } from '../components/BlackjackPanel';
 import { HoldemPanel } from '../components/HoldemPanel';
-import { TableStakePanel } from '../components/TableStakePanel';
+import { TableStakePanel, type TableStakePanelMode } from '../components/TableStakePanel';
 import { InviteModal } from '../components/InviteModal';
 import { AdminPanel } from '../components/AdminPanel';
 import './TableScreen.css';
@@ -89,6 +89,8 @@ export function TableScreen({
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteToast, setInviteToast] = useState<string | null>(null);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [stakePanelMode, setStakePanelMode] = useState<TableStakePanelMode>('new');
+  const [resetSetupOpen, setResetSetupOpen] = useState(false);
 
   const balances = deriveAllBalancesFromLedger(session, ledger);
   const remaining = deck ? getRemainingCardCount(deck) : 0;
@@ -292,10 +294,20 @@ export function TableScreen({
 
       <div className={`table-screen__layout table-screen__layout--wide${isBlackjack ? ' table-screen__layout--full' : ''}`}>
         <section className="table-felt table-felt--casino" aria-label="Table">
-          {tableMeta.showStakeSetup && isBlackjack && (
+          {isBlackjack && (tableMeta.showStakeSetup || resetSetupOpen) && (
             <TableStakePanel
               gameState={gameState}
-              onConfirm={onGameStateChange}
+              mode={resetSetupOpen ? 'reset' : stakePanelMode}
+              onConfirm={(next) => {
+                onGameStateChange(next);
+                setResetSetupOpen(false);
+                setStakePanelMode('new');
+              }}
+              onFinished={() => {
+                setResetSetupOpen(false);
+                setStakePanelMode('new');
+              }}
+              onlineDispatch={onlineDispatch}
             />
           )}
 
@@ -311,6 +323,10 @@ export function TableScreen({
               profileOpen={profileOpen}
               onProfileOpenChange={onProfileOpenChange}
               onSaveTable={handleSaveGame}
+              onBeginTableReset={() => {
+                setStakePanelMode('reset');
+                setResetSetupOpen(true);
+              }}
             />
           )}
 

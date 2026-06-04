@@ -77,7 +77,6 @@ export function useBlackjackTableFlow(
   const bankPacingRef = useRef<'idle' | 'running'>('idle');
   const bankRunIdRef = useRef(0);
   const manualBankingRef = useRef(false);
-  const naturalDealingRef = useRef(false);
 
   const protocolPhase = getBlackjackProtocolPhase(gameState);
   const tableMessage = getProtocolTableMessage(gameState);
@@ -248,47 +247,6 @@ export function useBlackjackTableFlow(
     },
     [onGameStateChange],
   );
-
-  /** Natural dealing — auto-advance one card at a time with configurable delay. */
-  useEffect(() => {
-    // Online deals are server-driven (single dealCards action); never pace deals locally.
-    if (onlineDispatch) {
-      naturalDealingRef.current = false;
-      return;
-    }
-    if (!isNaturalInitialDeal(flow.initialDealMode)) {
-      naturalDealingRef.current = false;
-      return;
-    }
-    if (round?.status !== 'initial-deal') {
-      naturalDealingRef.current = false;
-      return;
-    }
-    if (naturalDealingRef.current) {
-      return;
-    }
-    naturalDealingRef.current = true;
-
-    void (async () => {
-      let current = gameStateRef.current;
-      while (current.blackjack?.status === 'initial-deal') {
-        const delay = cardDealDelayMs(current.blackjackFlowSettings);
-        await sleep(delay);
-        current = gameStateRef.current;
-        if (current.blackjack?.status !== 'initial-deal') {
-          break;
-        }
-        try {
-          current = dealNextInitialCardOnState(current);
-          onGameStateChange(current);
-        } catch (err) {
-          setFlowError(err instanceof Error ? err.message : 'Natural deal failed');
-          break;
-        }
-      }
-      naturalDealingRef.current = false;
-    })();
-  }, [round?.status, flow.initialDealMode, onGameStateChange, onlineDispatch, canDriveTableAutomation]);
 
   /** Auto bank draw: random 2–5s between cards; pause before banking/payout. */
   useEffect(() => {

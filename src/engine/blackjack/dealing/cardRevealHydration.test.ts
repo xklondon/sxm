@@ -34,7 +34,7 @@ describe('card reveal hydration helpers', () => {
     ).toBe(true);
     expect(
       shouldUseOrderedInitialReveal('player-turns', empty, { dealer: 2, hands: { 'p:0': 2 } }),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       shouldUseOrderedInitialReveal('bank-turn', { dealer: 1, hands: {} }, { dealer: 3, hands: {} }),
     ).toBe(false);

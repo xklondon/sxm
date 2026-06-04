@@ -105,6 +105,10 @@ export function assertActionAuthorized(state: GameState, ctx: ActionContext): vo
       return;
     }
 
+    case 'resetTable':
+      assertTableHost(state, ctx.personId);
+      return;
+
     case 'leaveTable':
     case 'createTable':
     case 'joinTable':

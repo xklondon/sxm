@@ -8,6 +8,7 @@ import { ensureTableOwnerPersonBankroll } from '../../session/ownerBankroll';
 import { createBlackjackShoe, shuffleBlackjackShoe } from '../shoe';
 import { createBlackjackPlayerHand } from '../../../types/blackjack';
 import { blackjackHandKey } from '../handKeys';
+import { createInitialBlackjackRound } from '../helpers';
 
 export function tableAfterStartPlaying(seatChips = 500, bankChips?: number): GameState {
   const bank = bankChips ?? seatChips;
@@ -64,12 +65,14 @@ export function actingRound(
   bet = 50,
 ): BlackjackRound {
   const handKey = blackjackHandKey(boxId, 0);
+  const base = state.blackjack ?? createInitialBlackjackRound(state.session);
   return {
-    ...state.blackjack!,
+    ...base,
     status: 'player-turns',
     activeHandKey: handKey,
     activePlayerId: boxId,
     playerHands: {
+      ...base.playerHands,
       [handKey]: {
         ...createBlackjackPlayerHand(boxId, 0),
         cardIds,

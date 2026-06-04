@@ -60,9 +60,9 @@ export function getBlackjackHandStatus(cards: Card[]): BlackjackHandStatus {
   return 'playing';
 }
 
-export function cardsFromIds(deck: import('../../types/deck').Deck, ids: string[]): Card[] {
+export function cardsFromIds(deck: import('../../types/deck').Deck, ids: string[] | undefined): Card[] {
   const byId = new Map(deck.cards.map((c) => [c.id, c]));
-  return ids
+  return (ids ?? [])
     .map((id) => byId.get(id))
     .filter((c): c is Card => c !== undefined);
 }

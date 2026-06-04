@@ -48,7 +48,8 @@ import { BankerSetupPanel } from './BankerSetupPanel';
 import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
 import { getBoxCallerDisplayName } from './boxCallerDisplay';
 import { LocalProfileSetup } from './LocalProfileSetup';
-import { PlayLedgerModal, TableDetailsSlidePanel } from './LedgerModals';
+import { PlayLedgerModal } from './LedgerModals';
+import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
 import { TableDetailsPanelContent } from './TableDetailsPanel';
 import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
@@ -77,7 +78,11 @@ import {
   resolveChipTrayBetTarget,
   type PlaceBetTarget,
 } from '../engine/blackjack/chipPlacement';
-import { canUserAssignChips, canUserChangeProtocol } from '../engine/table/adminControls';
+import {
+  canUserAssignChips,
+  canUserChangeProtocol,
+  canUserResetTable,
+} from '../engine/table/adminControls';
 import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
 import {
   getBlackjackProtocolForState,
@@ -117,6 +122,7 @@ interface BlackjackPanelProps {
   profileOpen?: boolean;
   onProfileOpenChange?: (open: boolean) => void;
   onSaveTable?: () => void;
+  onBeginTableReset?: () => void;
 }
 
 function arcVisualIndex(slotNumber: number): number {
@@ -132,6 +138,7 @@ export function BlackjackPanel({
   profileOpen: profileOpenProp,
   onProfileOpenChange,
   onSaveTable,
+  onBeginTableReset,
 }: BlackjackPanelProps) {
   const { session, ledger, deck, blackjack, blackjackSettings, tableViewMode, tableMeta } =
     gameState;
@@ -140,8 +147,7 @@ export function BlackjackPanel({
 
   const [error, setError] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
-  const [thisTableOpen, setThisTableOpen] = useState(true);
-  const [tableDetailsOpen, setTableDetailsOpen] = useState(false);
+  const [sideRailPanel, setSideRailPanel] = useState<SideRailPanel>('thisTable');
   const [activeTablePanel, setActiveTablePanel] = useState<'playLedger' | 'settings' | null>(null);
   const [profileOpenInternal, setProfileOpenInternal] = useState(
     () => !isOnlineModeEnabled() && !loadProfile().name.trim(),
@@ -216,6 +222,7 @@ export function BlackjackPanel({
   const canChangeProtocol =
     tableOwner && canUserChangeProtocol(gameState, controllerName) && canChangeMinimumBet(gameState);
   const canChangeDealSpeed = tableOwner && canChangeMinimumBet(gameState);
+  const canResetTable = canUserResetTable(gameState, controllerName);
   const activeProtocol = getBlackjackProtocolForState(gameState);
   const activeBoxId =
     round?.activeHandKey != null ? parseBlackjackHandKey(round.activeHandKey).playerId : null;
@@ -470,10 +477,10 @@ export function BlackjackPanel({
   }
 
   function renderCard(cardId: string, faceDown = false, compact = true, reactKey?: string) {
-    if (!deck) {
+    if (!visualDeck) {
       return null;
     }
-    const card = getCardById(deck, cardId);
+    const card = getCardById(visualDeck, cardId);
     if (!card) {
       return null;
     }
@@ -535,10 +542,9 @@ export function BlackjackPanel({
     run((s) => setBlackjackProtocolOnState(s, next.protocolId, controllerName));
   }
 
-  function openTableDetails() {
-    setThisTableOpen(false);
+  function toggleTableDetails() {
     setActiveTablePanel(null);
-    setTableDetailsOpen(true);
+    setSideRailPanel((current) => toggleSideRailPanel(current, 'tableDetails'));
   }
 
   const tableDetailsProps = {
@@ -557,6 +563,13 @@ export function BlackjackPanel({
     canChangeProtocol,
     onChangeProtocol: handleCycleProtocol,
     gameEnded,
+    canResetTable: canResetTable && Boolean(onBeginTableReset),
+    onResetTable: onBeginTableReset
+      ? () => {
+          setSideRailPanel(null);
+          onBeginTableReset();
+        }
+      : undefined,
   };
 
   const dealerBlockProps = {
@@ -565,8 +578,8 @@ export function BlackjackPanel({
     commentaryText: tableAidTip,
     commandMessage: tableCommand.commandMessage,
     commandLines: tableCommand.commandLines,
-    onOpenTableDetails: openTableDetails,
-    tableDetailsOpen,
+    onOpenTableDetails: toggleTableDetails,
+    tableDetailsOpen: sideRailPanel === 'tableDetails',
     onNextRound: handleNextRound,
     protocolPhase,
     bankerReady,
@@ -987,31 +1000,43 @@ export function BlackjackPanel({
 
   const dealerCardNodes =
     dealerCards.length > 0
-      ? dealerCards.map((cardId, index) => renderCard(cardId, showHoleHidden && index === 1, true))
+      ? dealerCards.map((cardId, index) =>
+          renderCard(
+            cardId,
+            showHoleHidden && index === 1,
+            true,
+            `dealer-${index}-${cardId}`,
+          ),
+        )
       : null;
 
   const thisTableInline = deviceView === 'desktop';
 
-  function renderThisTablePanel(variant: 'float' | 'below') {
-    if (!thisTableOpen) {
+  function renderSideRailPanel(variant: 'float' | 'below') {
+    if (!sideRailPanel) {
       return null;
     }
     return (
       <div
         className={`bj-casino__this-table bj-casino__this-table--${variant}`}
         data-panel-placement={variant}
+        data-side-panel={sideRailPanel}
       >
-        <TableAccountsPanel
-          gameState={gameState}
-          showAssignButton={canAssignChips}
-          onAssignChips={() => setAssignChipsOpen(true)}
-          onInvite={onInviteTable}
-          onSaveTable={onSaveTable}
-          showPlayerOrderControls={tableOwner && bettingOpen}
-          onMovePlayer={handleMovePlayer}
-          onPlayFlowChange={handlePlayFlowChange}
-          variant="inline"
-        />
+        {sideRailPanel === 'thisTable' ? (
+          <TableAccountsPanel
+            gameState={gameState}
+            showAssignButton={canAssignChips}
+            onAssignChips={() => setAssignChipsOpen(true)}
+            onInvite={onInviteTable}
+            onSaveTable={onSaveTable}
+            showPlayerOrderControls={tableOwner && bettingOpen}
+            onMovePlayer={handleMovePlayer}
+            onPlayFlowChange={handlePlayFlowChange}
+            variant="inline"
+          />
+        ) : (
+          <TableDetailsPanelContent {...tableDetailsProps} />
+        )}
       </div>
     );
   }
@@ -1037,15 +1062,15 @@ export function BlackjackPanel({
           <button
             type="button"
             className={
-              thisTableOpen
+              sideRailPanel === 'thisTable'
                 ? 'bj-casino__nav-btn bj-casino__nav-btn--this-table bj-casino__nav-btn--active'
                 : 'bj-casino__nav-btn bj-casino__nav-btn--this-table'
             }
             onClick={() => {
-              setTableDetailsOpen(false);
-              setThisTableOpen((open) => !open);
+              setActiveTablePanel(null);
+              setSideRailPanel((current) => toggleSideRailPanel(current, 'thisTable'));
             }}
-            aria-expanded={thisTableOpen}
+            aria-expanded={sideRailPanel === 'thisTable'}
           >
             This Table
           </button>
@@ -1053,8 +1078,7 @@ export function BlackjackPanel({
             type="button"
             className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
             onClick={() => {
-              setThisTableOpen(false);
-              setTableDetailsOpen(false);
+              setSideRailPanel(null);
               setActiveTablePanel('playLedger');
             }}
           >
@@ -1064,8 +1088,7 @@ export function BlackjackPanel({
             type="button"
             className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
             onClick={() => {
-              setThisTableOpen(false);
-              setTableDetailsOpen(false);
+              setSideRailPanel(null);
               setActiveTablePanel('settings');
             }}
           >
@@ -1074,7 +1097,7 @@ export function BlackjackPanel({
         </div>
       </div>
 
-      {thisTableInline && renderThisTablePanel('float')}
+      {thisTableInline && renderSideRailPanel('float')}
 
       {activeTablePanel === 'playLedger' && (
         <PlayLedgerModal
@@ -1091,10 +1114,6 @@ export function BlackjackPanel({
           onClose={() => setActiveTablePanel(null)}
         />
       )}
-
-      <TableDetailsSlidePanel open={tableDetailsOpen} onClose={() => setTableDetailsOpen(false)}>
-        <TableDetailsPanelContent {...tableDetailsProps} />
-      </TableDetailsSlidePanel>
 
       <LocalProfileSetup
         open={profileOpen}
@@ -1238,7 +1257,7 @@ export function BlackjackPanel({
           )}
         </div>
         </div>
-        {!thisTableInline && renderThisTablePanel('below')}
+        {!thisTableInline && renderSideRailPanel('below')}
       </div>
       )}
     </div>

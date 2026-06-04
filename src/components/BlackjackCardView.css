@@ -21,6 +21,7 @@
   flex: 1;
 
   overflow: hidden;
+  overflow-x: hidden;
 
   box-sizing: border-box;
 
@@ -101,7 +102,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.12rem;
+  justify-content: flex-start;
+  gap: 0.1rem;
   padding: 0.25rem 0.3rem;
   border-radius: var(--ds-radius-sm);
   border: 1px solid var(--ds-color-border-subtle);
@@ -110,7 +112,10 @@
   font: inherit;
   cursor: pointer;
   min-width: 3.6rem;
-  max-width: 4.5rem;
+  max-width: 4.85rem;
+  min-height: 5.5rem;
+  height: 5.5rem;
+  box-sizing: border-box;
 }
 
 .bj-phone-view__mini-hand-head {
@@ -170,10 +175,16 @@
 .bj-phone-view__mini-row {
   flex: 0 0 auto;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
+  align-items: flex-start;
   gap: 0.3rem;
   padding: 0.2rem 0.35rem;
+  min-height: 6.25rem;
+  max-height: 6.25rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-sizing: border-box;
 }
 
 .bj-casino__felt-main {
@@ -621,15 +632,19 @@
 .bj-phone-view__slot--stage {
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
-.bj-phone-view__slot--betting {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
+.bj-phone-view__axis {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: visible;
 }
 
 .bj-phone-view__slot--actions {
@@ -638,9 +653,6 @@
 
 .bj-phone-view__slot--boxes {
   flex: 0 0 auto;
-}
-
-.bj-phone-view__slot--boxes-placeholder {
   min-height: 2.55rem;
 }
 
@@ -928,6 +940,8 @@
 
   width: 100%;
 
+  max-width: 100%;
+
   min-height: min(58vw, 11.5rem);
 
   overflow: visible;
@@ -936,11 +950,11 @@
 
 .bj-phone-view__hero-stage {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
   width: 100%;
+  max-width: 100%;
   min-height: min(58vw, 11.5rem);
   padding: 0.15rem 0;
   overflow: visible;
@@ -948,14 +962,63 @@
 }
 
 .bj-phone-view__hero-center {
-  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
   overflow: visible;
+}
+
+.bj-phone-view__hand--waiting {
+  width: 100%;
+  max-width: 100%;
+}
+
+.bj-phone-view__total--placeholder {
+  opacity: 0.28;
+  border-color: rgb(255 255 255 / 0.1);
+  box-shadow: none;
+  color: transparent;
+}
+
+.bj-phone-view__mini-stake-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.35rem;
+  pointer-events: auto;
+}
+
+.bj-phone-view__mini-stake-slot .stake-chips--bet {
+  transform: scale(0.52);
+  transform-origin: center center;
+}
+
+.bj-phone-view__mini-hand--has-stake {
+  max-width: 4.85rem;
+}
+
+.bj-phone-view__mini-hand-status--reserved {
+  visibility: hidden;
+  min-height: 0.85rem;
+}
+
+.bj-phone-view__hero-actions--placeholder {
+  min-height: 3.35rem;
+  width: 100%;
+  max-width: 12rem;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.bj-phone-view__mini-hand-shell {
+  flex: 0 0 auto;
+  display: flex;
 }
 
 .bj-phone-view__side-action {
@@ -1072,9 +1135,96 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
+  gap: 0.2rem;
   width: 100%;
-  margin-bottom: 0.2rem;
+  max-width: 100%;
+  margin-top: 0.12rem;
+  padding: 0 0.1rem;
+  box-sizing: border-box;
+}
+
+.bj-phone-view__hero-actions-primary,
+.bj-phone-view__hero-actions-extras {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.24rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.bj-phone-view__hero-actions-extras {
+  gap: 0.18rem;
+}
+
+.bj-phone-view__hero-actions-btn {
+  flex: 0 0 auto;
+  font: inherit;
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: 0.04em;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--ds-color-border-subtle);
+  background: rgb(0 0 0 / 0.28);
+  color: var(--ds-color-text-muted);
+  cursor: pointer;
+  opacity: 0.42;
+  padding: 0.22rem 0.42rem;
+  font-size: 0.56rem;
+  min-height: 1.65rem;
+  line-height: 1.1;
+}
+
+.bj-phone-view__hero-actions-btn--stand,
+.bj-phone-view__hero-actions-btn--hit {
+  min-width: 2.35rem;
+  font-size: 0.6rem;
+  min-height: 1.75rem;
+}
+
+.bj-phone-view__hero-actions-btn--live {
+  opacity: 1;
+}
+
+.bj-phone-view__hero-actions-btn--live:not(:disabled) {
+  box-shadow: var(--ds-glow-gold);
+}
+
+.bj-phone-view__hero-actions-btn.ds-btn--stand.bj-phone-view__hero-actions-btn--live:not(:disabled) {
+  box-shadow: 0 0 10px rgb(110 231 183 / 0.4);
+}
+
+.bj-phone-view__hero-actions-btn--extra {
+  min-width: 1.75rem;
+  padding: 0.18rem 0.32rem;
+  font-size: 0.52rem;
+  min-height: 1.55rem;
+}
+
+.bj-phone-view__hero-actions-btn--legal:not(:disabled) {
+  opacity: 1;
+  color: var(--ds-color-gold);
+  border-color: rgb(251 191 36 / 0.45);
+  box-shadow: 0 0 8px rgb(251 191 36 / 0.2);
+}
+
+.bj-phone-view__hero-actions-btn:disabled {
+  cursor: not-allowed;
+}
+
+.bj-phone-view__hero-actions-btn--aid {
+  opacity: 1;
+  color: var(--ds-color-text);
+  border-color: var(--ds-color-border);
+}
+
+.bj-phone-view__action-bar--play-placeholder {
+  min-height: 2.65rem;
+  padding: 0.2rem 0.35rem 0.25rem;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .bj-phone-view__bust-label {
@@ -1263,7 +1413,23 @@
 
   overflow-x: auto;
 
+  overflow-y: hidden;
+
   justify-content: center;
+
+  align-items: flex-start;
+
+  width: 100%;
+
+  max-width: 100%;
+
+  min-height: 6.25rem;
+
+  max-height: 6.25rem;
+
+  padding: 0.1rem var(--ds-space-2) 0.15rem;
+
+  box-sizing: border-box;
 
   scrollbar-width: none;
 

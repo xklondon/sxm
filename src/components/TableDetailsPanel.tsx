@@ -16,6 +16,8 @@ export interface TableDetailsPanelProps {
   canChangeProtocol: boolean;
   onChangeProtocol: () => void;
   gameEnded: boolean;
+  canResetTable?: boolean;
+  onResetTable?: () => void;
 }
 
 /** Table wager/shoe/protocol settings — shown in the Table details slide-out only. */
@@ -35,6 +37,8 @@ export function TableDetailsPanelContent({
   canChangeProtocol,
   onChangeProtocol,
   gameEnded,
+  canResetTable = false,
+  onResetTable,
 }: TableDetailsPanelProps) {
   return (
     <div className="table-details-panel" aria-label="Table details">
@@ -119,6 +123,20 @@ export function TableDetailsPanelContent({
           )}
         </span>
       </div>
+      {canResetTable && onResetTable && (
+        <div className="table-details-panel__reset">
+          <button
+            type="button"
+            className="table-details-panel__reset-btn secondary"
+            onClick={onResetTable}
+          >
+            Reset table
+          </button>
+          <p className="table-details-panel__reset-hint">
+            Start a new game with these players
+          </p>
+        </div>
+      )}
     </div>
   );
 }

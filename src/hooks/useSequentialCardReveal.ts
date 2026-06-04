@@ -7,7 +7,9 @@ import {
   applyRevealStep,
   buildInitialRevealSteps,
   cardRevealScopeKey,
+  hasPendingCardReveal,
   maxVisibilityForRound,
+  nextGameplayRevealStep,
   shouldHydrateCardRevealScope,
   shouldUseOrderedInitialReveal,
   totalCardCount,
@@ -31,22 +33,25 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-function incrementVisibility(
-  current: CardVisibilityCounts,
+function nextRevealStep(
+  visible: CardVisibilityCounts,
   target: CardVisibilityCounts,
-): CardVisibilityCounts {
-  if (current.dealer < target.dealer) {
-    return { ...current, dealer: current.dealer + 1 };
-  }
-  const hands = { ...current.hands };
-  for (const [handKey, targetCount] of Object.entries(target.hands)) {
-    const cur = hands[handKey] ?? 0;
-    if (cur < targetCount) {
-      hands[handKey] = cur + 1;
-      return { ...current, hands };
+  round: NonNullable<GameState['blackjack']> | null,
+  roundStatus: NonNullable<GameState['blackjack']>['status'] | undefined,
+): CardVisibilityCounts | null {
+  if (
+    round &&
+    shouldUseOrderedInitialReveal(roundStatus, visible, target)
+  ) {
+    const initial = nextInitialStepReveal(visible, round);
+    if (initial && !countsEqual(initial, visible)) {
+      return initial;
     }
   }
-  return target;
+  if (hasPendingCardReveal(visible, target)) {
+    return nextGameplayRevealStep(visible, target);
+  }
+  return null;
 }
 
 function nextInitialStepReveal(
@@ -174,13 +179,11 @@ export function useSequentialCardReveal(
 
         const delay = cardDealDelayMs(authoritative.blackjackFlowSettings);
         const round = authoritative.blackjack;
-        const orderedNext =
-          round &&
-          shouldUseOrderedInitialReveal(round.status, visible, authoritativeTarget)
-            ? nextInitialStepReveal(visible, round)
-            : null;
+        const stepped = round
+          ? nextRevealStep(visible, authoritativeTarget, round, round.status)
+          : nextGameplayRevealStep(visible, authoritativeTarget);
 
-        visible = orderedNext ?? incrementVisibility(visible, authoritativeTarget);
+        visible = stepped ?? authoritativeTarget;
         visibleRef.current = visible;
         setDisplayState(applyCardVisibility(authoritative, visible));
         await sleep(delay);

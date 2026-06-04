@@ -12,6 +12,8 @@ import { log } from '../../utils/logger';
 
 import { blackjackHandKey } from './handKeys';
 
+import { getBettingPlayerIds } from './helpers';
+
 import { getStakeForBox, hasAnyStakes, isBoxStakeConfirmed } from './stakes';
 
 
@@ -170,34 +172,22 @@ export function getEligibleDealBoxes(state: GameState): string[] {
 
   const minBet = getTableMinimumBet(state);
 
-
-
-  return getPlayableBoxPlayerIds(state).filter((boxPlayerId) => {
-
+  const eligible = getPlayableBoxPlayerIds(state).filter((boxPlayerId) => {
     if (!state.players[boxPlayerId]) {
-
       return false;
-
     }
-
     if (!isBoxStakeConfirmed(state, boxPlayerId)) {
-
       return false;
-
     }
-
     const stake = getStakeForBox(state, boxPlayerId);
-
     if (stake < minBet) {
-
       return false;
-
     }
-
     return Boolean(getCallerPersonIdForBox(state, boxPlayerId));
-
   });
 
+  const eligibleSet = new Set(eligible);
+  return getBettingPlayerIds(state.session).filter((id) => eligibleSet.has(id));
 }
 
 

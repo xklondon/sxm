@@ -23,8 +23,10 @@ describe('Card View — full card visibility', () => {
     expect(cardCss).toMatch(/\.bj-phone-view__hero-stage[\s\S]*min-height:/);
   });
 
-  it('stand/hit flank hero cards vertically', () => {
-    expect(cardCss).toMatch(/\.bj-phone-view__side-action[\s\S]*writing-mode:\s*vertical-rl/);
+  it('central hero actions use stacked primary and extras rows', () => {
+    expect(cardCss).toContain('.bj-phone-view__hero-actions-primary');
+    expect(cardCss).toContain('.bj-phone-view__hero-actions-extras');
+    expect(cardCss).toMatch(/\.bj-phone-view__hero-center[\s\S]*align-items:\s*center/);
   });
 
   it('hero total badge is compact', () => {

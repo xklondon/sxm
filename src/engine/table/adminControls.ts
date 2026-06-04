@@ -60,3 +60,7 @@ export function canUserStartTable(state: GameState, personName: string): boolean
   }
   return getTableAdminSettings(state).allowInvitedPlayersToStartTables;
 }
+
+export function canUserResetTable(state: GameState, personName: string): boolean {
+  return isTableOwner(state, personName);
+}

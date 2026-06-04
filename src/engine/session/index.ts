@@ -22,6 +22,17 @@ export {
   DEFAULT_TABLE_CHIPS,
 } from './table';
 export {
+  applyTableStakeSetup,
+  parseTableStakeSetupPayload,
+  type TableStakeSetupInput,
+  type TableBankerSetupMode,
+} from './tableSetup';
+export {
+  applyTableResetSetup,
+  beginTableResetSetup,
+  TABLE_RESET_LEDGER_MESSAGE,
+} from './tableReset';
+export {
   assignBankBot,
   assignBankPerson,
   claimBoxSlot,

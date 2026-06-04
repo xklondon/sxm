@@ -68,6 +68,17 @@ describe('cardRevealDisplay', () => {
     expect(steps.length).toBeGreaterThan(2);
     expect(steps[0]?.type).toBe('box');
     expect(steps.some((s) => s.type === 'dealer')).toBe(true);
+    expect(steps[steps.length - 1]).toEqual({ type: 'dealer', cardIndex: 1 });
+  });
+
+  it('reveal plan includes dealer hole when hole card exists in state', () => {
+    let state = tableReadyToDeal();
+    state = completeStepwiseInitialDealIfNeeded(dealCardsButtonOnState(state));
+    const round = state.blackjack!;
+    expect(round.dealerHoleHidden).toBe(true);
+    expect(round.dealerCardIds[1]).toBeTruthy();
+    const steps = buildInitialRevealSteps(round);
+    expect(steps.filter((s) => s.type === 'dealer' && s.cardIndex === 1)).toHaveLength(1);
   });
 
   it('natural mode uses deal speed presets for pacing', () => {

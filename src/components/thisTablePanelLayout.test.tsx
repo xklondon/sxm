@@ -118,4 +118,21 @@ describe('This Table panel placement', () => {
     const css = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     expect(css).toContain('.bj-table-slide-overlay');
   });
+
+  it('Table Details shares this-table panel slot (no details slide overlay)', () => {
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(panelSrc).toContain('TableDetailsPanelContent');
+    expect(panelSrc).toContain('data-side-panel={sideRailPanel}');
+    expect(panelSrc).not.toContain('TableDetailsSlidePanel');
+    const html = renderAt(1280, playingState());
+    expect(html).not.toContain('bj-table-slide-overlay--details');
+    expect(html).toContain('bj-casino__this-table--float');
+    expect(html).toContain('data-side-panel="thisTable"');
+  });
+
+  it('Settings modal markup remains separate from side rail', () => {
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(panelSrc).toContain("activeTablePanel === 'settings'");
+    expect(panelSrc).toContain("activeTablePanel === 'playLedger'");
+  });
 });
