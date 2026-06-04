@@ -53,7 +53,7 @@ import {
 } from "./blackjackViewPhase";
 
 import { getBoxCallerDisplayName } from "./boxCallerDisplay";
-
+import { isJoinAssignedHighlight } from "../engine/session/inviteJoin";
 import { sortBoxSlotsForCardViewDisplay, type DeviceView } from "./tableViewContract";
 
 import { isOnlineModeEnabled } from "../api/config";
@@ -102,6 +102,7 @@ interface BlackjackCardViewProps {
   onWaitForBlackjackPayout?: (handKey: string) => void;
   onTakeInsurance?: (playerId: string) => void;
   onDeclineInsurance?: (playerId: string) => void;
+  /** @deprecated View toggle lives in table toolbar; kept for API compatibility. */
   onBack: () => void;
 }
 
@@ -129,7 +130,6 @@ export function BlackjackCardView({
   onWaitForBlackjackPayout,
   onTakeInsurance,
   onDeclineInsurance,
-  onBack,
 }: BlackjackCardViewProps) {
   const {
     session,
@@ -163,7 +163,6 @@ export function BlackjackCardView({
     focusBoxId ?? null,
   );
   const heroHandKey = getCardViewHeroHandKey(protocolPhase, round, heroBoxId);
-  const heroSlotNum = heroBoxId ? session.boxSlotNumbers?.[heroBoxId] : null;
   /** Hero box follows active turn in play, selected seat in betting. */
 
   const controllerLabel =
@@ -600,6 +599,7 @@ export function BlackjackCardView({
       : null;
 
     const isSelected = boxId === selectedId;
+    const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
     const isMain = size === "main";
 
     return (
@@ -619,6 +619,7 @@ export function BlackjackCardView({
               ? "bj-phone-view__bet-chip--owned"
               : "bj-phone-view__bet-chip--open",
             isSelected ? "bj-phone-view__bet-chip--sel" : "",
+            isJoinAssigned ? "bj-phone-view__bet-chip--assigned" : "",
             isMain ? "bj-phone-view__bet-chip--hero" : "bj-phone-view__bet-chip--mini",
             getBetBoxPulseClassName(bettingOpen, Boolean(boxId)),
           ]
@@ -661,24 +662,26 @@ export function BlackjackCardView({
             </span>
           )}
 
-          {stake > 0 && bettingOpen && boxId && (
-            <>
-              <span className="bj-phone-view__bet-stake">{stake}</span>
-              <StakeChips
-                chips={chips}
-                variant="bet"
-                removable
-                onRemoveTopChip={() => onRemoveLastChip(boxId)}
-              />
-              <button
-                type="button"
-                className="bj-phone-view__bet-clear"
-                onClick={() => onClearStake(boxId)}
-              >
-                Clear
-              </button>
-            </>
-          )}
+          <span className="bj-phone-view__bet-stake-slot">
+            {stake > 0 && bettingOpen && boxId ? (
+              <>
+                <span className="bj-phone-view__bet-stake">{stake}</span>
+                <StakeChips
+                  chips={chips}
+                  variant="bet"
+                  removable
+                  onRemoveTopChip={() => onRemoveLastChip(boxId)}
+                />
+                <button
+                  type="button"
+                  className="bj-phone-view__bet-clear"
+                  onClick={() => onClearStake(boxId)}
+                >
+                  Clear
+                </button>
+              </>
+            ) : null}
+          </span>
         </div>
       </div>
     );
@@ -874,199 +877,212 @@ export function BlackjackCardView({
             BUST
           </span>
         )}
-        <div className="bj-phone-view__hero-actions">
+        <div className="bj-phone-view__hand-meta">
           <div className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero">
             Total {value}
           </div>
+        </div>
 
-          {isActiveTurn && turnHandKey && (
-            <div className="bj-phone-view__extras bj-phone-view__extras--hero">
-              {blackjackSettings.allowDoubleDown && (() => {
-                const canDoubleNow =
-                  isActiveTurn &&
-                  turnHandKey &&
-                  canDoubleBlackjackForState(gameState, turnHandKey);
-                return (
-                <button
-                  type="button"
-                  className={[
-                    "bj-phone-view__extra-btn",
-                    "bj-phone-view__action-btn--tappable",
-                    canDoubleNow ? "bj-phone-view__extra-btn--legal" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  disabled={!canDoubleNow}
-                  onClick={() => onDouble(turnHandKey)}
+        <div className="bj-phone-view__cards-slot">
+          {cardIds.length > 0 ? (
+            <div className="bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched">
+              {cardIds.map((id, i) => (
+                <div
+                  key={`${heroHandKey}-${i}-${id}`}
+                  className="bj-phone-view__card-wrap"
+                  style={{ "--card-i": i } as CSSProperties}
                 >
-                  2×
-                </button>
-                );
-              })()}
-
-              {blackjackSettings.allowSplit && deck && (() => {
-                const canSplitNow =
-                  isActiveTurn &&
-                  turnHandKey &&
-                  canSplitBlackjackForState(gameState, turnHandKey);
-                return (
-                <button
-                  type="button"
-                  className={[
-                    "bj-phone-view__extra-btn",
-                    "bj-phone-view__action-btn--tappable",
-                    canSplitNow ? "bj-phone-view__extra-btn--legal" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  disabled={!canSplitNow}
-                  onClick={() => onSplit(turnHandKey)}
-                >
-                  Split
-                </button>
-                );
-              })()}
-
-              {blackjackFlowSettings.adviceEnabled && (
-                <button
-                  type="button"
-                  className="bj-phone-view__extra-btn bj-phone-view__action-btn--tappable"
-                  onClick={handleAid}
-                >
-                  Ask AID
-                </button>
-              )}
+                  {renderHugeCard(
+                    id,
+                    false,
+                    "hero",
+                    `${heroHandKey}-${i}-${id}`,
+                  )}
+                </div>
+              ))}
             </div>
+          ) : (
+            <div className="bj-phone-view__cards-placeholder" aria-hidden="true" />
           )}
         </div>
+      </div>
+    );
+  }
 
-        <div className="bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched">
-          {cardIds.map((id, i) => (
-            <div
-              key={`${heroHandKey}-${i}-${id}`}
-              className="bj-phone-view__card-wrap"
-              style={{ "--card-i": i } as CSSProperties}
-            >
-              {renderHugeCard(
-                id,
-                false,
-                "hero",
-                `${heroHandKey}-${i}-${id}`,
-              )}
-            </div>
-          ))}
+  function renderActionBar() {
+    const showPrimary = showSideControls;
+    const canDoubleNow =
+      isActiveTurn &&
+      turnHandKey &&
+      blackjackSettings.allowDoubleDown &&
+      canDoubleBlackjackForState(gameState, turnHandKey);
+    const canSplitNow =
+      isActiveTurn &&
+      turnHandKey &&
+      blackjackSettings.allowSplit &&
+      deck &&
+      canSplitBlackjackForState(gameState, turnHandKey);
+    const showDouble = blackjackSettings.allowDoubleDown;
+    const showSplit = blackjackSettings.allowSplit && Boolean(deck);
+    const showAid = blackjackFlowSettings.adviceEnabled;
+
+    return (
+      <div className="bj-phone-view__action-bar" aria-label="Player actions">
+        <div className="bj-phone-view__action-bar-primary">
+          {showPrimary ? (
+            <>
+              <button
+                type="button"
+                className={[
+                  "bj-phone-view__action-bar-btn",
+                  "bj-phone-view__action-bar-btn--stand",
+                  "ds-btn",
+                  "ds-btn--stand",
+                  isActiveTurn ? "bj-phone-view__action-bar-btn--live" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                disabled={!isActiveTurn || !canStand}
+                title={
+                  !isActiveTurn || !canStand
+                    ? (disabledReason ?? "")
+                    : "Stay — swipe left"
+                }
+                aria-label={
+                  !isActiveTurn || !canStand
+                    ? `Stay disabled: ${disabledReason}`
+                    : "Stay"
+                }
+                onClick={handleStayClick}
+              >
+                Stand
+              </button>
+              <button
+                type="button"
+                className={[
+                  "bj-phone-view__action-bar-btn",
+                  "bj-phone-view__action-bar-btn--hit",
+                  "ds-btn",
+                  "ds-btn--hit",
+                  isActiveTurn ? "bj-phone-view__action-bar-btn--live" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                disabled={!isActiveTurn || !canHit}
+                title={
+                  !isActiveTurn || !canHit
+                    ? (disabledReason ?? "")
+                    : "Hit me — swipe right"
+                }
+                aria-label={
+                  !isActiveTurn || !canHit
+                    ? `Hit disabled: ${disabledReason}`
+                    : "Hit me"
+                }
+                onClick={handleHitClick}
+              >
+                Hit
+              </button>
+            </>
+          ) : (
+            <span className="bj-phone-view__action-bar-spacer" aria-hidden="true" />
+          )}
         </div>
-
+        <div className="bj-phone-view__action-bar-secondary">
+          {showDouble ? (
+            <button
+              type="button"
+              className={[
+                "bj-phone-view__action-bar-extra",
+                "bj-phone-view__action-btn--tappable",
+                canDoubleNow ? "bj-phone-view__action-bar-extra--legal" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              disabled={!canDoubleNow}
+              onClick={() => turnHandKey && onDouble(turnHandKey)}
+            >
+              2×
+            </button>
+          ) : (
+            <span className="bj-phone-view__action-bar-extra bj-phone-view__action-bar-extra--placeholder" aria-hidden="true" />
+          )}
+          {showSplit ? (
+            <button
+              type="button"
+              className={[
+                "bj-phone-view__action-bar-extra",
+                "bj-phone-view__action-btn--tappable",
+                canSplitNow ? "bj-phone-view__action-bar-extra--legal" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              disabled={!canSplitNow}
+              onClick={() => turnHandKey && onSplit(turnHandKey)}
+            >
+              Split
+            </button>
+          ) : (
+            <span className="bj-phone-view__action-bar-extra bj-phone-view__action-bar-extra--placeholder" aria-hidden="true" />
+          )}
+          {showAid ? (
+            <button
+              type="button"
+              className="bj-phone-view__action-bar-extra bj-phone-view__action-btn--tappable bj-phone-view__action-bar-extra--aid"
+              onClick={handleAid}
+            >
+              AID
+            </button>
+          ) : (
+            <span className="bj-phone-view__action-bar-extra bj-phone-view__action-bar-extra--placeholder" aria-hidden="true" />
+          )}
+        </div>
       </div>
     );
   }
 
   return (
     <div className="bj-phone-view">
-      <header className="bj-phone-view__card-bar">
-        {heroBoxId && heroSlotNum && !bettingMainStage && (
-          <span className="bj-phone-view__hero-label">
-            Box {heroSlotNum} · {getBoxCallerDisplayName(gameState, heroBoxId)}
-          </span>
-        )}
-        <button
-          type="button"
-          className="ds-btn ds-btn--ghost bj-phone-view__table-btn"
-          onClick={onBack}
-          aria-label="Full table view"
-        >
-          Full Table
-        </button>
-      </header>
-
       {bettingMainStage ? (
         <>
-          {renderBettingStage()}
-          <div className="bj-phone-view__action-bar" aria-hidden="true">
-            <span className="bj-phone-view__action-bar-spacer" aria-hidden="true" />
+          <div className="bj-phone-view__slot bj-phone-view__slot--betting">
+            {renderBettingStage()}
           </div>
+          <div className="bj-phone-view__slot bj-phone-view__slot--actions">
+            {renderActionBar()}
+          </div>
+          <div className="bj-phone-view__slot bj-phone-view__slot--boxes bj-phone-view__slot--boxes-placeholder" aria-hidden="true" />
         </>
       ) : (
         <>
           {renderInsuranceActions()}
           {renderEvenMoneyActions()}
 
-          <div className="bj-phone-view__play-stack">
-            <div
-              className="bj-phone-view__stage"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
-              {renderStageContent()}
+          <div className="bj-phone-view__slot bj-phone-view__slot--stage">
+            <div className="bj-phone-view__play-stack">
+              <div
+                className="bj-phone-view__stage"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+              >
+                {renderStageContent()}
 
-              {swipeHint && (
-                <p className="bj-phone-view__swipe-hint">{swipeHint}</p>
-              )}
+                {swipeHint && (
+                  <p className="bj-phone-view__swipe-hint">{swipeHint}</p>
+                )}
 
-              {aidTip && <p className="bj-phone-view__aid">{aidTip}</p>}
-            </div>
-
-            <div className="bj-phone-view__action-bar" aria-label="Player actions">
-              {showSideControls ? (
-                <>
-                  <button
-                    type="button"
-                    className={[
-                      "bj-phone-view__action-bar-btn",
-                      "ds-btn",
-                      "ds-btn--stand",
-                      isActiveTurn ? "bj-phone-view__action-bar-btn--live" : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    disabled={!isActiveTurn || !canStand}
-                    title={
-                      !isActiveTurn || !canStand
-                        ? (disabledReason ?? "")
-                        : "Stay — swipe left"
-                    }
-                    aria-label={
-                      !isActiveTurn || !canStand
-                        ? `Stay disabled: ${disabledReason}`
-                        : "Stay"
-                    }
-                    onClick={handleStayClick}
-                  >
-                    Stand
-                  </button>
-                  <button
-                    type="button"
-                    className={[
-                      "bj-phone-view__action-bar-btn",
-                      "ds-btn",
-                      "ds-btn--hit",
-                      isActiveTurn ? "bj-phone-view__action-bar-btn--live" : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    disabled={!isActiveTurn || !canHit}
-                    title={
-                      !isActiveTurn || !canHit
-                        ? (disabledReason ?? "")
-                        : "Hit me — swipe right"
-                    }
-                    aria-label={
-                      !isActiveTurn || !canHit
-                        ? `Hit disabled: ${disabledReason}`
-                        : "Hit me"
-                    }
-                    onClick={handleHitClick}
-                  >
-                    Hit
-                  </button>
-                </>
-              ) : (
-                <span className="bj-phone-view__action-bar-spacer" aria-hidden="true" />
-              )}
+                {aidTip && <p className="bj-phone-view__aid">{aidTip}</p>}
+              </div>
             </div>
           </div>
 
-          {renderMiniBoxesRow()}
+          <div className="bj-phone-view__slot bj-phone-view__slot--actions">
+            {renderActionBar()}
+          </div>
+
+          <div className="bj-phone-view__slot bj-phone-view__slot--boxes">
+            {renderMiniBoxesRow()}
+          </div>
         </>
       )}
     </div>

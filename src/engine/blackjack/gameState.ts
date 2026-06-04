@@ -50,6 +50,7 @@ import {
 import { bankrollContextFromState } from '../session/bankroll';
 import { applyTableGameEndIfNeeded } from '../session/tableGameEnd';
 import { syncCallersForDeal } from '../session/playerAssignment';
+import { clearTableUiEphemeral } from '../session/inviteJoin';
 import { settleBustHandOnState } from './bustSettlement';
 import { shuffleGameDeck } from '../deck';
 import { resolveNaturalsAfterInitialDeal, resolvePendingNaturalsAfterDealerPeek } from './naturalBlackjack';
@@ -272,7 +273,7 @@ export function prepareDealState(state: GameState): GameState {
 export function dealCardsFromState(state: GameState): GameState {
   logDealSanity(state);
   logConfirmedBetsBeforeCards(state);
-  const prepared = prepareDealState(state);
+  const prepared = prepareDealState(clearTableUiEphemeral(state));
   const plan = getActiveHandKeysForDeal(prepared);
   logDealPlan(plan);
   log.info('Cards deal starting', { mode: prepared.blackjackFlowSettings.initialDealMode, plan });
@@ -336,7 +337,7 @@ export function shuffleToStartOnState(state: GameState): GameState {
   if (state.tableMeta.bettingLocked) {
     throw new Error('Finish the current round before shuffling.');
   }
-  const s = shuffleGameDeck(state);
+  const s = shuffleGameDeck(clearTableUiEphemeral(state));
   return {
     ...s,
     tableMeta: { ...s.tableMeta, shoeStarted: true },
@@ -637,19 +638,20 @@ export function startNextRoundOnState(state: GameState): GameState {
     shoeStarted: settled.tableMeta.shoeStarted,
     wasSettled: settled.blackjack?.isSettled ?? false,
   });
-  const reset = resetBlackjackRound(settled.session, settled.players, settled.deck);
+  const cleared = clearTableUiEphemeral(settled);
+  const reset = resetBlackjackRound(cleared.session, cleared.players, cleared.deck);
   return {
-    ...settled,
+    ...cleared,
     session: reset.session,
     players: reset.players,
     deck: reset.deck,
     blackjack: reset.round,
     tableMeta: {
-      ...settled.tableMeta,
+      ...cleared.tableMeta,
       boxStakes: {},
       bettingLocked: false,
       awaitingNextRound: false,
-      boxSlots: settled.tableMeta.boxSlots.map((slot) =>
+      boxSlots: cleared.tableMeta.boxSlots.map((slot) =>
         slot.nativeAssignedPersonId ? slot : { ...slot, callerPersonId: null },
       ),
     },

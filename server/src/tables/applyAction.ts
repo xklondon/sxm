@@ -12,6 +12,8 @@ import {
   isBlackjackGameplayAction,
 } from '../../../src/engine/blackjack/applyBlackjackAction.js';
 import { addGameToPersonalLedger } from '../../../src/engine/scoreLedger/scoreLedger.js';
+import { assignChips, type ChipAssignReason } from '../../../src/engine/session/tokens.js';
+import { canUserAssignChips } from '../../../src/engine/table/adminControls.js';
 import type { TableActionType } from './actions.js';
 
 export function applyTableAction(
@@ -78,6 +80,23 @@ export function applyTableAction(
     case 'addGameToPersonalLedger':
       addGameToPersonalLedger(state);
       return state;
+    case 'assignChips': {
+      const recipientId = payload.recipientId as string;
+      const amount = Number(payload.amount);
+      const reason = (payload.reason as ChipAssignReason) ?? 'top-up';
+      if (!recipientId) {
+        throw new Error('recipientId required');
+      }
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error('amount must be a positive number');
+      }
+      const caller = state.players[personId];
+      const callerLabel = caller?.controllerName?.trim() || caller?.displayName || '';
+      if (!canUserAssignChips(state, callerLabel)) {
+        throw new Error('Not authorized to assign chips');
+      }
+      return assignChips(state, recipientId, amount, reason);
+    }
     default:
       // All blackjack gameplay actions (shuffle/deal/hit/stand/double/split/
       // insurance/even-money/nextRound) go through the single canonical engine

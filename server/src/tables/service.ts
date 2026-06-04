@@ -7,7 +7,7 @@ import { applyTableAction, createHostedTableState } from './applyAction.js';
 import { assertActionAuthorized } from './authority.js';
 import type { TableActionType } from './actions.js';
 import type { GameState } from '../../../src/types/index.js';
-import { assignFirstFreeBox } from './inviteJoin.js';
+import { finalizeInviteJoinAtTable } from './inviteJoin.js';
 import { getAssignedSlotForPerson } from '../../../src/engine/session/playerAssignment.js';
 import { log } from '../../../src/utils/logger.js';
 import { ensureTableOwnerPersonBankroll } from '../../../src/engine/session/ownerBankroll.js';
@@ -238,10 +238,10 @@ export class TableService {
       });
     }
 
-    const boxResult = assignFirstFreeBox(state, personId);
-    state = boxResult.state;
-    boxAssigned = boxResult.boxAssigned;
-    spectator = boxResult.spectator;
+    const joined = finalizeInviteJoinAtTable(state, personId, params.displayName);
+    state = joined.state;
+    boxAssigned = joined.boxAssigned;
+    spectator = joined.spectator;
 
     log.info('inviteJoinComplete', {
       tableId: params.invite.tableId,
@@ -250,6 +250,7 @@ export class TableService {
       boxAssigned,
       spectator,
       assignedSlot: getAssignedSlotForPerson(state, personId),
+      tableNotice: state.tableMeta.tableNotice?.message ?? null,
     });
 
     this.store.updateTable(params.invite.tableId, state, table.version + 1);

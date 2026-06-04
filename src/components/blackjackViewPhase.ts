@@ -295,17 +295,21 @@ export function formatCardViewBoxStatus(status: CardViewBoxStatus): string {
 
 /** Playing-phase layout slot class names — order is documented in CARD_VIEW_PLAYING_SLOT_ORDER. */
 export const CARD_VIEW_PLAYING_LAYOUT = {
-  heroActions: 'bj-phone-view__hero-actions',
+  handMeta: 'bj-phone-view__hand-meta',
   heroCards: 'bj-phone-view__cards--stitched',
   actionBar: 'bj-phone-view__action-bar',
+  actionBarPrimary: 'bj-phone-view__action-bar-primary',
+  actionBarSecondary: 'bj-phone-view__action-bar-secondary',
   miniBoxes: 'bj-phone-view__mini-row',
   actionBtnTappable: 'bj-phone-view__action-btn--tappable',
   totalBadgeHero: 'bj-phone-view__total--hero',
   actionBarBtn: 'bj-phone-view__action-bar-btn',
+  actionBarBtnStand: 'bj-phone-view__action-bar-btn--stand',
+  actionBarBtnHit: 'bj-phone-view__action-bar-btn--hit',
 } as const;
 
 export const CARD_VIEW_PLAYING_SLOT_ORDER = [
-  CARD_VIEW_PLAYING_LAYOUT.heroActions,
+  CARD_VIEW_PLAYING_LAYOUT.handMeta,
   CARD_VIEW_PLAYING_LAYOUT.heroCards,
   CARD_VIEW_PLAYING_LAYOUT.actionBar,
   CARD_VIEW_PLAYING_LAYOUT.miniBoxes,
@@ -314,9 +318,9 @@ export const CARD_VIEW_PLAYING_SLOT_ORDER = [
 export function heroActionsRenderBeforeCards(
   order: readonly string[] = CARD_VIEW_PLAYING_SLOT_ORDER,
 ): boolean {
-  const actionsIdx = order.indexOf(CARD_VIEW_PLAYING_LAYOUT.heroActions);
+  const metaIdx = order.indexOf(CARD_VIEW_PLAYING_LAYOUT.handMeta);
   const cardsIdx = order.indexOf(CARD_VIEW_PLAYING_LAYOUT.heroCards);
-  return actionsIdx >= 0 && cardsIdx >= 0 && actionsIdx < cardsIdx;
+  return metaIdx >= 0 && cardsIdx >= 0 && metaIdx < cardsIdx;
 }
 
 export function miniBoxesRenderAfterHeroCards(

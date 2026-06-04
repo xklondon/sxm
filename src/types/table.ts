@@ -112,6 +112,18 @@ export interface TableMeta {
   wagerVoucherStatus: WagerVoucherStatus;
   /** Per-person auto-stand play flow (manual | auto-18 … auto-21). */
   personPlayFlow?: Record<string, import('../storage/profileStorage').PlayFlowAutoStand>;
+  /** Brief table-wide message in the command area (e.g. player joined). */
+  tableNotice?: {
+    message: string;
+    personId: string;
+    slotNumber: number;
+    at: string;
+  } | null;
+  /** Highlights a newly assigned box during betting. */
+  joinHighlight?: {
+    personId: string;
+    slotNumber: number;
+  } | null;
 }
 
 export const MAX_TABLE_BOXES = 7;
@@ -159,5 +171,7 @@ export function createDefaultTableMeta(): TableMeta {
     winnerId: null,
     endedAt: null,
     wagerVoucherStatus: 'not-created',
+    tableNotice: null,
+    joinHighlight: null,
   };
 }

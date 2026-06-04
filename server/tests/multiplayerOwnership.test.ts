@@ -11,6 +11,8 @@ import { TableService } from '../src/tables/service.js';
 import { seedHostUser } from './testHelpers.js';
 import { addSeatAtTable } from '../../src/engine/session/table.js';
 import { allocateChipsToBankrollOwner } from '../../src/engine/session/allocation.js';
+import { derivePlayerBalanceFromLedger } from '../../src/engine/ledger/ledger.js';
+import { getAvailableChipsForBankrollOwner } from '../../src/engine/session/bankroll.js';
 import {
   ensureBoxPositionForPerson,
   getCallerPersonIdForBox,
@@ -47,6 +49,59 @@ describe('multiplayer ownership (server authority)', () => {
       (s) => s.nativeAssignedPersonId === member.personId,
     );
     expect(assignedSlot).toBeTruthy();
+
+    const guestPersonId = member.personId;
+    expect(derivePlayerBalanceFromLedger(guestPersonId, updated.state.ledger)).toBe(500);
+    expect(getAvailableChipsForBankrollOwner(updated.state, guestPersonId)).toBe(500);
+    expect(updated.state.tableMeta.tableNotice?.message).toMatch(/Guest joined the table on Box \d+\./);
+
+    const boxId = assignedSlot!.playerId!;
+    const bet = tables.applyAction(
+      table.id,
+      guest.id,
+      'placeBet',
+      { boxId, amount: 5 },
+      updated.version,
+    );
+    expect(bet.state.tableMeta.boxStakes[boxId]?.amount).toBe(5);
+    expect(getAvailableChipsForBankrollOwner(bet.state, guestPersonId)).toBe(495);
+  });
+
+  it('host assignChips syncs balance used for betting', async () => {
+    const host = seedHostUser(store);
+    const table = tables.createTable(host.id, 'Host');
+    const { joinUrl } = await tables.createInvite({
+      tableId: table.id,
+      userId: host.id,
+      invitedEmail: 'low@example.com',
+      invitedName: 'Low',
+    });
+    const token = new URL(joinUrl).searchParams.get('token')!;
+    tables.acceptInviteByToken(token);
+    const guest = store.getUserByEmail('low@example.com')!;
+    let current = store.getTable(table.id)!;
+    const guestPersonId = store.getMember(table.id, guest.id)!.personId;
+
+    current = tables.applyAction(
+      table.id,
+      host.id,
+      'assignChips',
+      { recipientId: guestPersonId, amount: 200, reason: 'top-up' },
+      current.version,
+    );
+    expect(getAvailableChipsForBankrollOwner(current.state, guestPersonId)).toBe(700);
+
+    const boxId = current.state.tableMeta.boxSlots.find(
+      (s) => s.nativeAssignedPersonId === guestPersonId,
+    )!.playerId!;
+    const bet = tables.applyAction(
+      table.id,
+      guest.id,
+      'placeBet',
+      { boxId, amount: 10 },
+      current.version,
+    );
+    expect(bet.state.tableMeta.boxStakes[boxId]?.amount).toBe(10);
   });
 
   it('assigned box: non-owner can bet but cannot hit', () => {

@@ -10,6 +10,7 @@ import {
 import { canUserAssignChips } from '../engine/table/adminControls';
 import { deriveAllBalancesFromLedger } from '../engine/ledger';
 import { loadProfile } from '../storage/profileStorage';
+import { isOnlineModeEnabled } from '../api/config';
 import './InviteModal.css';
 
 interface AssignChipsModalProps {
@@ -17,6 +18,11 @@ interface AssignChipsModalProps {
   open: boolean;
   onClose: () => void;
   onAssign: (state: GameState) => void;
+  onAssignOnline?: (params: {
+    recipientId: string;
+    amount: number;
+    reason: ChipAssignReason;
+  }) => Promise<unknown>;
 }
 
 const REASON_OPTIONS: { value: ChipAssignReason; label: string }[] = [
@@ -25,7 +31,13 @@ const REASON_OPTIONS: { value: ChipAssignReason; label: string }[] = [
   { value: 'adjustment', label: 'Adjustment' },
 ];
 
-export function AssignChipsModal({ gameState, open, onClose, onAssign }: AssignChipsModalProps) {
+export function AssignChipsModal({
+  gameState,
+  open,
+  onClose,
+  onAssign,
+  onAssignOnline,
+}: AssignChipsModalProps) {
   const { session, players } = gameState;
   const profile = loadProfile();
   const controller = profile.name.trim() || gameState.tableMeta.controllerName;
@@ -67,6 +79,14 @@ export function AssignChipsModal({ gameState, open, onClose, onAssign }: AssignC
       return;
     }
     try {
+      if (onAssignOnline && isOnlineModeEnabled()) {
+        void onAssignOnline({ recipientId, amount: chips, reason })
+          .then(() => onClose())
+          .catch((err: unknown) => {
+            setError(err instanceof Error ? err.message : 'Could not assign chips');
+          });
+        return;
+      }
       onAssign(assignChips(gameState, recipientId, chips, reason));
       onClose();
     } catch (err) {

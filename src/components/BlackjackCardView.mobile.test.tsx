@@ -98,11 +98,11 @@ function renderBettingCardView(state: GameState, boxId: string): string {
 }
 
 describe('mobile Card View render contract', () => {
-  it('renders the phone-view root and a Full Table switch affordance', () => {
+  it('renders the phone-view root without in-card view toggle', () => {
     const { state, boxId } = bettingTableWithBox();
     const html = renderBettingCardView(state, boxId);
     expect(html).toContain('bj-phone-view');
-    expect(html).toContain('Full Table');
+    expect(html).not.toContain('bj-phone-view__table-btn');
   });
 
   it('uses the same ordered betting row markup as desktop (no hero-only branch)', () => {

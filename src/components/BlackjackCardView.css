@@ -610,12 +610,47 @@
   overflow: hidden;
 }
 
+.bj-phone-view__slot {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.bj-phone-view__slot--stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bj-phone-view__slot--betting {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bj-phone-view__slot--actions {
+  flex: 0 0 auto;
+}
+
+.bj-phone-view__slot--boxes {
+  flex: 0 0 auto;
+}
+
+.bj-phone-view__slot--boxes-placeholder {
+  min-height: 2.55rem;
+}
+
 .bj-phone-view__action-bar {
   flex: 0 0 auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0.25rem;
   width: 100%;
   max-width: 100%;
   min-height: 2.65rem;
@@ -623,10 +658,55 @@
   box-sizing: border-box;
 }
 
+.bj-phone-view__action-bar-primary {
+  display: flex;
+  flex: 1 1 48%;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.bj-phone-view__action-bar-secondary {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.18rem;
+}
+
 .bj-phone-view__action-bar-spacer {
   display: block;
   width: 100%;
   min-height: 2.15rem;
+}
+
+.bj-phone-view__action-bar-extra {
+  flex: 0 0 auto;
+  min-width: 2.05rem;
+  min-height: 2.05rem;
+  padding: 0.2rem 0.35rem;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--ds-color-border-subtle);
+  background: rgb(0 0 0 / 0.22);
+  font: inherit;
+  font-size: 0.58rem;
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: 0.04em;
+  color: var(--ds-color-text-muted);
+  opacity: 0.42;
+  cursor: pointer;
+}
+
+.bj-phone-view__action-bar-extra--legal {
+  opacity: 1;
+  color: var(--ds-color-gold);
+  border-color: rgb(251 191 36 / 0.45);
+  box-shadow: 0 0 8px rgb(251 191 36 / 0.2);
+}
+
+.bj-phone-view__action-bar-extra--placeholder {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .bj-phone-view__action-bar-btn {
@@ -654,6 +734,54 @@
 
 .bj-phone-view__action-bar-btn.ds-btn--stand:not(:disabled).bj-phone-view__action-bar-btn--live {
   box-shadow: 0 0 12px rgb(110 231 183 / 0.45);
+}
+
+.bj-phone-view__action-bar-btn--stand {
+  margin-right: auto;
+}
+
+.bj-phone-view__action-bar-btn--hit {
+  margin-left: auto;
+}
+
+.bj-phone-view__hand-meta {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 1.35rem;
+}
+
+.bj-phone-view__cards-slot {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 5.5rem;
+  max-height: 6.75rem;
+  overflow: hidden;
+}
+
+.bj-phone-view__cards-placeholder {
+  width: 2.35rem;
+  height: 3.25rem;
+  border-radius: 0.28rem;
+  border: 1px dashed rgb(255 255 255 / 0.14);
+  background: rgb(0 0 0 / 0.12);
+}
+
+.bj-phone-view__bet-stake-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 1.35rem;
+  width: 100%;
+}
+
+.bj-phone-view__bet-chip--mini {
+  min-height: 4.35rem;
 }
 
 /* Legacy side controls — kept for desktop card view overrides */
@@ -1265,6 +1393,11 @@
 
   border-color: var(--ds-color-gold);
 
+}
+
+.bj-phone-view__bet-chip--assigned {
+  border-color: #7dd3fc;
+  box-shadow: 0 0 0 2px rgb(125 211 252 / 0.35);
 }
 
 

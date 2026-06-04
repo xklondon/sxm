@@ -8,6 +8,7 @@ import {
   isSeatedPersonAtTable,
 } from '../../../src/engine/session/playerAssignment.js';
 import { hasPersonalLedgerEntryForTable } from '../../../src/engine/scoreLedger/scoreLedger.js';
+import { canUserAssignChips } from '../../../src/engine/table/adminControls.js';
 import {
   getDealBlockReason,
   hasEligibleDealBoxes,
@@ -94,6 +95,15 @@ export function assertActionAuthorized(state: GameState, ctx: ActionContext): vo
         throw new Error('Already added to personal ledger');
       }
       return;
+
+    case 'assignChips': {
+      const caller = state.players[ctx.personId];
+      const callerLabel = caller?.controllerName?.trim() || caller?.displayName || '';
+      if (!canUserAssignChips(state, callerLabel)) {
+        throw new Error('Not authorized to assign chips');
+      }
+      return;
+    }
 
     case 'leaveTable':
     case 'createTable':

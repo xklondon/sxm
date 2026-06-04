@@ -11,40 +11,44 @@ import {
 } from '../engine/blackjack';
 import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
 import {
-  getActionableHandForView,
   getInsuranceActionsForController,
   canCallEvenMoneyForHand,
 } from './blackjackViewPhase';
-import { isOnlineModeEnabled } from '../api/config';
 
 export interface TableCommandDisplay {
   commandMessage: string | null;
   commandLines: string[];
 }
 
-function legalActionHint(gameState: GameState, handKey: string): string | null {
-  const canSplit =
-    gameState.blackjackSettings.allowSplit &&
-    canSplitBlackjackForState(gameState, handKey);
-  const canDouble =
-    gameState.blackjackSettings.allowDoubleDown &&
-    canDoubleBlackjackForState(gameState, handKey);
-
-  return formatLegalActionHint(canSplit, canDouble);
-}
-
 /** UI-only wording for split/double availability (exported for tests). */
 export function formatLegalActionHint(canSplit: boolean, canDouble: boolean): string | null {
   if (canSplit && canDouble) {
-    return 'You can split or double — double gets one card only.';
+    return 'can split or double — double gets one card only.';
   }
   if (canSplit) {
-    return 'You can split.';
+    return 'can split.';
   }
   if (canDouble) {
-    return 'You can double — one card only.';
+    return 'can double — one card only.';
   }
   return null;
+}
+
+export function formatCallerTurnMessage(slotNum: number | undefined, callerName: string): string {
+  return `Box ${slotNum ?? '?'} — ${callerName}'s turn.`;
+}
+
+export function formatCallerLegalLine(
+  slotNum: number | undefined,
+  callerName: string,
+  canSplit: boolean,
+  canDouble: boolean,
+): string | null {
+  const hint = formatLegalActionHint(canSplit, canDouble);
+  if (!hint) {
+    return null;
+  }
+  return `Box ${slotNum ?? '?'} — ${callerName} ${hint}`;
 }
 
 /** UI-only consolidation of gameplay instructions for the central command area. */
@@ -75,6 +79,13 @@ export function buildTableCommandDisplay(params: {
 
   if (roundSummaryLines.length > 0) {
     return { commandMessage: null, commandLines: roundSummaryLines };
+  }
+
+  if (protocolPhase === 'betting' && gameState.tableMeta.tableNotice?.message) {
+    return {
+      commandMessage: gameState.tableMeta.tableNotice.message,
+      commandLines: [],
+    };
   }
 
   if (round?.evenMoneyOfferHandKey) {
@@ -122,24 +133,27 @@ export function buildTableCommandDisplay(params: {
 
     if (!isCaller) {
       return {
-        commandMessage: `Waiting for ${callerName} to call Box ${activeSlotNum ?? '?'}.`,
+        commandMessage: `Box ${activeSlotNum ?? '?'} — waiting for ${callerName} to call.`,
         commandLines: [],
       };
     }
 
-    const actionable = getActionableHandForView(
-      gameState,
-      controllerPersonId,
-      isOnlineModeEnabled(),
-    );
     const lines: string[] = [];
-    if (actionable && turnHandKey) {
-      const hint = legalActionHint(gameState, turnHandKey);
-      if (hint) {
-        lines.push(hint);
-      }
+    const hintLine = formatCallerLegalLine(
+      activeSlotNum,
+      callerName,
+      gameState.blackjackSettings.allowSplit &&
+        canSplitBlackjackForState(gameState, turnHandKey),
+      gameState.blackjackSettings.allowDoubleDown &&
+        canDoubleBlackjackForState(gameState, turnHandKey),
+    );
+    if (hintLine) {
+      lines.push(hintLine);
     }
-    return { commandMessage: centerStatus, commandLines: lines };
+    return {
+      commandMessage: formatCallerTurnMessage(activeSlotNum, callerName),
+      commandLines: lines,
+    };
   }
 
   return { commandMessage: centerStatus, commandLines: [] };

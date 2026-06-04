@@ -9,6 +9,7 @@ import {
   resolveControllerPersonId,
   canControllerCallBox,
 } from '../engine/session';
+import { isJoinAssignedHighlight } from '../engine/session/inviteJoin';
 import {
   blackjackHandKey,
   canDoubleBlackjackForState,
@@ -47,7 +48,7 @@ import { BankerSetupPanel } from './BankerSetupPanel';
 import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
 import { getBoxCallerDisplayName } from './boxCallerDisplay';
 import { LocalProfileSetup } from './LocalProfileSetup';
-import { PlayLedgerModal, TableDetailsSlidePanel, ThisTableSlidePanel } from './LedgerModals';
+import { PlayLedgerModal, TableDetailsSlidePanel } from './LedgerModals';
 import { TableDetailsPanelContent } from './TableDetailsPanel';
 import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
@@ -93,6 +94,7 @@ import {
   useIsUltraNarrowViewport,
   shouldShowMobileFullTableFallback,
 } from '../hooks/useIsMobileViewport';
+import { useSequentialCardReveal } from '../hooks/useSequentialCardReveal';
 import { FullTableMobileFallback } from './FullTableMobileFallback';
 import {
   getDeviceView,
@@ -183,6 +185,11 @@ export function BlackjackPanel({
     resolveInitialViewMode(isMobileViewport, tableViewMode),
   );
   const round = blackjack;
+  const { displayState: tableVisualState } = useSequentialCardReveal(gameState, {
+    onlineMode: Boolean(onlineDispatch) || isOnlineModeEnabled(),
+  });
+  const visualRound = tableVisualState.blackjack;
+  const visualDeck = tableVisualState.deck;
   const hasDeck = deck !== null;
   const deckCount = deck ? getShoeDeckCount(deck) : blackjackSettings.numberOfDecks;
   const remaining = deck ? getRemainingCardCount(deck) : 0;
@@ -466,7 +473,8 @@ export function BlackjackPanel({
     );
   }
 
-  const dealerCards = round && deck ? getVisibleDealerCardIds(gameState) : [];
+  const dealerCards =
+    visualRound && visualDeck ? getVisibleDealerCardIds(tableVisualState) : [];
   const showHoleHidden = Boolean(
     round?.dealerHoleHidden &&
       round.status !== 'resolved' &&
@@ -474,9 +482,9 @@ export function BlackjackPanel({
       round.status !== 'banking',
   );
   const handKeysByBox = new Map<string, string[]>();
-  if (round) {
-    for (const key of orderedHandKeys(session, round)) {
-      const { playerId } = round.playerHands[key]!;
+  if (visualRound) {
+    for (const key of orderedHandKeys(session, visualRound)) {
+      const { playerId } = visualRound.playerHands[key]!;
       const list = handKeysByBox.get(playerId) ?? [];
       list.push(key);
       handKeysByBox.set(playerId, list);
@@ -854,11 +862,12 @@ export function BlackjackPanel({
   function renderArcSlot(boxId: string, slotNumber: number) {
     const isSelected = effectiveBoxId === boxId;
     const isTurn = activeBoxId === boxId && round?.status === 'player-turns';
+    const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
     const callerDisplayName = getBoxCallerDisplayName(gameState, boxId);
     let handKeys = handKeysByBox.get(boxId) ?? [];
-    if (handKeys.length === 0 && round) {
+    if (handKeys.length === 0 && visualRound) {
       const primaryKey = blackjackHandKey(boxId, 0);
-      const hand = round.playerHands[primaryKey];
+      const hand = visualRound.playerHands[primaryKey];
       if (hand && (hand.currentBet > 0 || hand.cardIds.some(Boolean))) {
         handKeys = [primaryKey];
       }
@@ -874,6 +883,7 @@ export function BlackjackPanel({
           'bj-arc__slot--owned',
           isSelected ? 'bj-arc__slot--selected' : '',
           isTurn ? 'bj-arc__slot--turn' : '',
+          isJoinAssigned ? 'bj-arc__slot--assigned' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
         role="button"
@@ -884,12 +894,12 @@ export function BlackjackPanel({
         <div className="bj-arc__play-zone">
           <div className="bj-arc__cards">
             {handKeys.map((handKey) => {
-              const hand = round?.playerHands[handKey];
+              const hand = visualRound?.playerHands[handKey];
               const cardIds = (hand?.cardIds ?? []).filter(Boolean);
               if (cardIds.length === 0) {
                 return null;
               }
-              const cards = deck ? cardsFromIds(deck, cardIds) : [];
+              const cards = visualDeck ? cardsFromIds(visualDeck, cardIds) : [];
               const { value } = getBlackjackHandValue(cards);
               const isBusted = hand?.actionStatus === 'busted';
               return (
@@ -971,6 +981,32 @@ export function BlackjackPanel({
       ? dealerCards.map((cardId, index) => renderCard(cardId, showHoleHidden && index === 1, true))
       : null;
 
+  const thisTableInline = deviceView === 'desktop';
+
+  function renderThisTablePanel(variant: 'float' | 'below') {
+    if (!thisTableOpen) {
+      return null;
+    }
+    return (
+      <div
+        className={`bj-casino__this-table bj-casino__this-table--${variant}`}
+        data-panel-placement={variant}
+      >
+        <TableAccountsPanel
+          gameState={gameState}
+          showAssignButton={canAssignChips}
+          onAssignChips={() => setAssignChipsOpen(true)}
+          onInvite={onInviteTable}
+          onSaveTable={onSaveTable}
+          showPlayerOrderControls={tableOwner && bettingOpen}
+          onMovePlayer={handleMovePlayer}
+          onPlayFlowChange={handlePlayFlowChange}
+          variant="inline"
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className={`bj-casino ${viewRootClass}`}
@@ -991,7 +1027,11 @@ export function BlackjackPanel({
         <div className="bj-casino__table-nav">
           <button
             type="button"
-            className={thisTableOpen ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+            className={
+              thisTableOpen
+                ? 'bj-casino__nav-btn bj-casino__nav-btn--this-table bj-casino__nav-btn--active'
+                : 'bj-casino__nav-btn bj-casino__nav-btn--this-table'
+            }
             onClick={() => {
               setTableDetailsOpen(false);
               setThisTableOpen((open) => !open);
@@ -1025,6 +1065,8 @@ export function BlackjackPanel({
         </div>
       </div>
 
+      {thisTableInline && renderThisTablePanel('float')}
+
       {activeTablePanel === 'playLedger' && (
         <PlayLedgerModal
           open
@@ -1045,20 +1087,6 @@ export function BlackjackPanel({
         <TableDetailsPanelContent {...tableDetailsProps} />
       </TableDetailsSlidePanel>
 
-      <ThisTableSlidePanel open={thisTableOpen} onClose={() => setThisTableOpen(false)}>
-        <TableAccountsPanel
-          gameState={gameState}
-          showAssignButton={canAssignChips}
-          onAssignChips={() => setAssignChipsOpen(true)}
-          onInvite={onInviteTable}
-          onSaveTable={onSaveTable}
-          showPlayerOrderControls={tableOwner && bettingOpen}
-          onMovePlayer={handleMovePlayer}
-          onPlayFlowChange={handlePlayFlowChange}
-          variant="slide"
-        />
-      </ThisTableSlidePanel>
-
       <LocalProfileSetup
         open={profileOpen}
         required={!isOnlineModeEnabled() && !loadProfile().name.trim()}
@@ -1075,6 +1103,11 @@ export function BlackjackPanel({
         open={assignChipsOpen}
         onClose={() => setAssignChipsOpen(false)}
         onAssign={onGameStateChange}
+        onAssignOnline={
+          onlineDispatch
+            ? (params) => onlineDispatch('assignChips', params)
+            : undefined
+        }
       />
       <ChangeMinBetModal
         gameState={gameState}
@@ -1086,7 +1119,8 @@ export function BlackjackPanel({
       {shouldShowMobileFullTableFallback(isUltraNarrowViewport, viewMode) ? (
         <FullTableMobileFallback onSwitchToCardView={() => setViewMode('card')} />
       ) : (
-      <div className="bj-casino__rail">
+      <div className="bj-casino__rail-wrap">
+        <div className="bj-casino__rail">
         <div
           className={`bj-casino__felt${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}
         >
@@ -1154,7 +1188,7 @@ export function BlackjackPanel({
                 )}
 
                 <BlackjackCardView
-                  gameState={gameState}
+                  gameState={tableVisualState}
                   deviceView={deviceView}
                   focusBoxId={focusBoxId ?? undefined}
                   activeBoxId={activeBoxId}
@@ -1194,6 +1228,8 @@ export function BlackjackPanel({
             </>
           )}
         </div>
+        </div>
+        {!thisTableInline && renderThisTablePanel('below')}
       </div>
       )}
     </div>
