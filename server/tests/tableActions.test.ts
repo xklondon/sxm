@@ -8,7 +8,7 @@ import { AuthService } from '../src/auth/service.js';
 import { createSessionToken } from '../src/auth/tokens.js';
 import { seedHostUser, seedPerson } from './testHelpers.js';
 import { addSeatAtTable } from '../../src/engine/session/table.js';
-import { ensureBoxPositionForPerson } from '../../src/engine/session/playerAssignment.js';
+import { ensureBoxPositionForPerson, getCallerPersonIdForBox } from '../../src/engine/session/playerAssignment.js';
 
 describe('table deal flow', () => {
   let store: ReturnType<typeof createMemoryStore>;
@@ -142,7 +142,7 @@ describe('table deal flow', () => {
     expect(bet.state.tableMeta.boxStakes[slot!.playerId!]?.amount).toBe(10);
   });
 
-  it('cannot bet on another player occupied box', () => {
+  it('allows shared betting on another player occupied box', () => {
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
     const guest = store.createUser('guest@example.com', 'Guest');
@@ -165,9 +165,15 @@ describe('table deal flow', () => {
     const guestBoxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === guestSlot.slotNumber)!.playerId!;
     store.updateTable(table.id, state, table.version);
 
-    expect(() =>
-      tables.applyAction(table.id, host.id, 'placeBet', { boxId: guestBoxId, amount: 10 }, table.version),
-    ).toThrow(/not authorized/i);
+    const bet = tables.applyAction(
+      table.id,
+      host.id,
+      'placeBet',
+      { boxId: guestBoxId, amount: 10 },
+      table.version,
+    );
+    expect(bet.state.tableMeta.boxStakes[guestBoxId]?.amount).toBe(10);
+    expect(getCallerPersonIdForBox(bet.state, guestBoxId)).toBe(guestPersonId);
   });
 });
 

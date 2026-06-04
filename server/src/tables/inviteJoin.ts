@@ -4,6 +4,7 @@ import {
   getAssignedSlotForPerson,
 } from '../../../src/engine/session/playerAssignment.js';
 import { addSeatAtTable } from '../../../src/engine/session/table.js';
+import { log } from '../../../src/utils/logger.js';
 
 export function assignFirstFreeBox(
   state: GameState,
@@ -13,6 +14,11 @@ export function assignFirstFreeBox(
   if (preferredSlot) {
     const slot = state.tableMeta.boxSlots.find((s) => s.slotNumber === preferredSlot);
     if (slot && !slot.playerId) {
+      log.info('inviteJoinBoxAssigned', {
+        personId,
+        slotNumber: preferredSlot,
+        reason: 'preferredSlot',
+      });
       return {
         state: ensureBoxPositionForPerson(state, preferredSlot, personId),
         boxAssigned: true,
@@ -23,9 +29,15 @@ export function assignFirstFreeBox(
 
   const free = state.tableMeta.boxSlots.find((s) => !s.playerId);
   if (!free) {
+    log.info('inviteJoinSpectator', { personId, reason: 'noFreeBox' });
     return { state, boxAssigned: false, spectator: true };
   }
 
+  log.info('inviteJoinBoxAssigned', {
+    personId,
+    slotNumber: free.slotNumber,
+    reason: 'firstFree',
+  });
   return {
     state: ensureBoxPositionForPerson(state, free.slotNumber, personId),
     boxAssigned: true,

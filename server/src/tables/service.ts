@@ -8,6 +8,8 @@ import { assertActionAuthorized } from './authority.js';
 import type { TableActionType } from './actions.js';
 import type { GameState } from '../../../src/types/index.js';
 import { assignFirstFreeBox } from './inviteJoin.js';
+import { getAssignedSlotForPerson } from '../../../src/engine/session/playerAssignment.js';
+import { log } from '../../../src/utils/logger.js';
 import { ensureTableOwnerPersonBankroll } from '../../../src/engine/session/ownerBankroll.js';
 import { setTableOwner } from '../../../src/engine/session/invites.js';
 import { assignBankBot } from '../../../src/engine/session/boxOps.js';
@@ -211,6 +213,15 @@ export class TableService {
     state = boxResult.state;
     boxAssigned = boxResult.boxAssigned;
     spectator = boxResult.spectator;
+
+    log.info('inviteJoinComplete', {
+      tableId: params.invite.tableId,
+      userId: params.userId,
+      personId,
+      boxAssigned,
+      spectator,
+      assignedSlot: getAssignedSlotForPerson(state, personId),
+    });
 
     this.store.updateTable(params.invite.tableId, state, table.version + 1);
     this.store.updateInviteStatus(params.invite.tableId, params.invite.id, 'accepted');

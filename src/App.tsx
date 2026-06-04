@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState } from './types';
 import { createNewBlackjackTable } from './engine/session';
 import { applySettingsToGameState, loadSettings } from './storage/settingsStorage';
@@ -20,6 +20,7 @@ import {
   setStoredOnlineTableId,
   useOnlineTable,
 } from './hooks/useOnlineMultiplayer';
+import { useIsMobileViewport } from './hooks/useIsMobileViewport';
 import {
   consumePendingTable,
   getPendingTable,
@@ -60,11 +61,11 @@ function formatRoleLabel(role?: AuthUser['role']): string {
   switch (role) {
     case 'root':
     case 'admin':
-      return 'admin';
+      return 'ADMIN';
     case 'guest':
-      return 'guest';
+      return 'GUEST';
     default:
-      return 'player';
+      return 'PLAYER';
   }
 }
 
@@ -85,6 +86,9 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
   const [autoNewTablePending, setAutoNewTablePending] = useState(
     () => new URLSearchParams(window.location.search).get('newTable') === '1',
   );
+  const [navMenuOpen, setNavMenuOpen] = useState(false);
+  const navMenuRef = useRef<HTMLDivElement>(null);
+  const isMobileViewport = useIsMobileViewport();
 
   const handleGameStateChange = useCallback((next: GameState) => {
     setGameState(next);
@@ -227,6 +231,19 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
     window.alert('Open a table first, then use Load Table.');
   }
 
+  useEffect(() => {
+    if (!navMenuOpen) {
+      return;
+    }
+    function handlePointerDown(event: MouseEvent) {
+      if (!navMenuRef.current?.contains(event.target as Node)) {
+        setNavMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, [navMenuOpen]);
+
   return (
     <>
       {gameState && <ThemeSync templateId={gameState.designTemplateId} />}
@@ -256,13 +273,13 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
         gameStatus={gameState?.tableMeta.gameStatus}
       />
       {showPersonalNav && (
-        <header className="personal-nav">
+        <header className={`personal-nav${isMobileViewport ? ' personal-nav--mobile' : ''}`}>
           <div className="personal-nav__identity">
             <span className="personal-nav__user">{personalName}</span>
             {onlineMode && user && (
               <span className="personal-nav__role">{roleLabel}</span>
             )}
-            {!onlineMode && <span className="personal-nav__role">local</span>}
+            {!onlineMode && <span className="personal-nav__role">LOCAL</span>}
           </div>
           <div className="personal-nav__actions">
             <button type="button" className="secondary" onClick={() => setScoreLedgerOpen(true)}>
@@ -271,42 +288,115 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
             <button type="button" className="secondary" onClick={() => setProfileOpen(true)}>
               Profile
             </button>
-            <button
-              type="button"
-              className="secondary"
-              onClick={handleStartNewTable}
-              disabled={onlineMode && !canOwnTables}
-            >
-              Start New Table
-            </button>
-            <button type="button" className="secondary" onClick={handleLoadTable}>
-              Load Table
-            </button>
-            {onlineMode && isPeopleAdmin(user) && (
-              <button type="button" className="secondary" onClick={() => setScreen('people')}>
-                People
-              </button>
-            )}
-            {onTableScreen && tableNavHandlers && (
-              <button type="button" className="secondary" onClick={() => tableNavHandlers.openAdmin()}>
-                Admin
-              </button>
-            )}
-            {onTableScreen && (
-              <button type="button" className="secondary" onClick={handleLeaveTable}>
-                Leave table
-              </button>
-            )}
-            {onlineMode && user && (
+            {isMobileViewport ? (
               <>
-                {isOnline && (
-                  <span className={connected ? 'personal-nav__live personal-nav__live--ok' : 'personal-nav__live'}>
-                    {connected ? 'Live' : 'Reconnecting…'}
-                  </span>
+                {onlineMode && user && (
+                  <button type="button" className="secondary" onClick={() => void handleLogout()}>
+                    Sign out
+                  </button>
                 )}
-                <button type="button" className="secondary" onClick={() => void handleLogout()}>
-                  Sign out
+                <div className="personal-nav__menu" ref={navMenuRef}>
+                  <button
+                    type="button"
+                    className="secondary personal-nav__menu-btn"
+                    aria-expanded={navMenuOpen}
+                    aria-haspopup="menu"
+                    aria-label="More actions"
+                    onClick={() => setNavMenuOpen((open) => !open)}
+                  >
+                    ⋯
+                  </button>
+                  {navMenuOpen && (
+                    <div className="personal-nav__menu-panel" role="menu">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setNavMenuOpen(false);
+                          handleStartNewTable();
+                        }}
+                        disabled={onlineMode && !canOwnTables}
+                      >
+                        Start New Table
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setNavMenuOpen(false);
+                          handleLoadTable();
+                        }}
+                      >
+                        Load Table
+                      </button>
+                      {onTableScreen && tableNavHandlers && (
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setNavMenuOpen(false);
+                            tableNavHandlers.openAdmin();
+                          }}
+                        >
+                          Admin
+                        </button>
+                      )}
+                      {onTableScreen && (
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setNavMenuOpen(false);
+                            handleLeaveTable();
+                          }}
+                        >
+                          Leave table
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={handleStartNewTable}
+                  disabled={onlineMode && !canOwnTables}
+                >
+                  Start New Table
                 </button>
+                <button type="button" className="secondary" onClick={handleLoadTable}>
+                  Load Table
+                </button>
+                {onlineMode && isPeopleAdmin(user) && (
+                  <button type="button" className="secondary" onClick={() => setScreen('people')}>
+                    People
+                  </button>
+                )}
+                {onTableScreen && tableNavHandlers && (
+                  <button type="button" className="secondary" onClick={() => tableNavHandlers.openAdmin()}>
+                    Admin
+                  </button>
+                )}
+                {onTableScreen && (
+                  <button type="button" className="secondary" onClick={handleLeaveTable}>
+                    Leave table
+                  </button>
+                )}
+                {onlineMode && user && (
+                  <>
+                    {isOnline && (
+                      <span className={connected ? 'personal-nav__live personal-nav__live--ok' : 'personal-nav__live'}>
+                        {connected ? 'Live' : 'Reconnecting…'}
+                      </span>
+                    )}
+                    <button type="button" className="secondary" onClick={() => void handleLogout()}>
+                      Sign out
+                    </button>
+                  </>
+                )}
               </>
             )}
           </div>

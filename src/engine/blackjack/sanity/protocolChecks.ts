@@ -63,8 +63,8 @@ export function runProtocolSanityChecks(): SanitySuiteResult {
 
   results.push(
     check(
-      'Las Vegas: double any first two cards',
-      vegasSettings.doubleAllowedTotals === 'any',
+      'Las Vegas: double restricted to 9/10/11',
+      JSON.stringify(vegasSettings.doubleAllowedTotals) === JSON.stringify([9, 10, 11]),
     ),
   );
   results.push(

@@ -47,6 +47,90 @@ body {
   border-bottom: 1px solid var(--ds-color-border-subtle);
 }
 
+.personal-nav--mobile {
+  flex-wrap: nowrap;
+  gap: 0.25rem 0.4rem;
+  padding: 0.18rem 0.45rem;
+  min-height: 2rem;
+}
+
+.personal-nav--mobile .personal-nav__identity {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.personal-nav--mobile .personal-nav__user {
+  max-width: 9rem;
+  font-size: 0.68rem;
+}
+
+.personal-nav--mobile .personal-nav__role {
+  font-size: 0.52rem;
+  padding: 0.06rem 0.32rem;
+}
+
+.personal-nav--mobile .personal-nav__actions {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  gap: 0.2rem;
+}
+
+.personal-nav--mobile .personal-nav__actions .secondary {
+  font-size: 0.58rem;
+  padding: 0.16rem 0.35rem;
+  white-space: nowrap;
+}
+
+.personal-nav__menu {
+  position: relative;
+}
+
+.personal-nav__menu-btn {
+  min-width: 1.65rem;
+  padding-inline: 0.35rem !important;
+  font-size: 0.95rem !important;
+  line-height: 1;
+}
+
+.personal-nav__menu-panel {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 9.5rem;
+  padding: 0.35rem;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-color-border-subtle);
+  background: rgb(12 18 28 / 0.98);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+}
+
+.personal-nav__menu-panel button {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 0.62rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid transparent;
+  background: rgb(255 255 255 / 0.06);
+  color: inherit;
+  cursor: pointer;
+}
+
+.personal-nav__menu-panel button:hover:not(:disabled) {
+  border-color: rgb(255 255 255 / 0.18);
+  background: rgb(255 255 255 / 0.1);
+}
+
+.personal-nav__menu-panel button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .personal-nav__identity {
   display: flex;
   align-items: center;

@@ -8,8 +8,6 @@ import {
   releaseBoxSlot,
   resolveControllerPersonId,
   canControllerCallBox,
-  getCallerPersonIdForBox,
-  getCallerInitials,
 } from '../engine/session';
 import {
   blackjackHandKey,
@@ -47,6 +45,7 @@ import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
 import { BlackjackCardView } from './BlackjackCardView';
 import { BankerSetupPanel } from './BankerSetupPanel';
 import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
+import { getBoxCallerDisplayName } from './boxCallerDisplay';
 import { LocalProfileSetup } from './LocalProfileSetup';
 import { PlayLedgerModal } from './LedgerModals';
 import { AssignChipsModal } from './AssignChipsModal';
@@ -67,6 +66,7 @@ import {
   isBotBankGame,
 } from '../engine/scoreLedger/scoreLedger';
 import { buildRoundResultSummary } from '../engine/blackjack';
+import { buildTableCommandDisplay } from './tableCommandDisplay';
 import {
   formatPlaceBetError,
   getChipPlacementTarget,
@@ -85,7 +85,7 @@ import {
 } from '../engine/blackjack';
 import { getActionableHandForView, getInsuranceActionsForController } from './blackjackViewPhase';
 import { MAX_TABLE_BOXES } from '../types/table';
-import { getPlayerInitials, loadProfile, type PlayFlowAutoStand } from '../storage/profileStorage';
+import { loadProfile, type PlayFlowAutoStand } from '../storage/profileStorage';
 import { isOnlineModeEnabled } from '../api/config';
 import {
   useIsMobileViewport,
@@ -130,7 +130,7 @@ export function BlackjackPanel({
   onProfileOpenChange,
   onSaveTable,
 }: BlackjackPanelProps) {
-  const { session, players, ledger, deck, blackjack, blackjackSettings, tableViewMode, tableMeta } =
+  const { session, ledger, deck, blackjack, blackjackSettings, tableViewMode, tableMeta } =
     gameState;
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
@@ -227,8 +227,15 @@ export function BlackjackPanel({
   // the Next Round button). Per-box result chips are intentionally not repeated.
   const roundSummaryLines =
     awaitingNextRound && !gameEnded ? buildRoundResultSummary(gameState) : [];
-  const showRoundSummary = roundSummaryLines.length > 0;
-  const centerText = gameEnded ? gameOverMessage : showRoundSummary ? '' : centerStatus;
+  const tableCommand = buildTableCommandDisplay({
+    gameState,
+    gameEnded,
+    gameOverMessage,
+    centerStatus,
+    protocolPhase,
+    roundSummaryLines,
+    controllerName,
+  });
 
   function handleAddToPersonalLedger() {
     setError(null);
@@ -524,9 +531,11 @@ export function BlackjackPanel({
     onChangeProtocol: handleCycleProtocol,
     awaitingNextRound,
     gameEnded,
-    roundSummaryLines,
+    commentaryText: tableAidTip,
+    commandMessage: tableCommand.commandMessage,
+    commandLines: tableCommand.commandLines,
+    showDealerPlaceholder: protocolPhase === 'betting' && dealerCards.length === 0,
     onNextRound: handleNextRound,
-    statusMessage: centerText,
     protocolPhase,
     hasDeck,
     bankerReady,
@@ -651,7 +660,6 @@ export function BlackjackPanel({
 
     return (
       <div className="bj-table-actions bj-table-actions--even-money" aria-live="polite">
-        <p className="bj-table-actions__label">Dealer may have blackjack. Take 1:1 now?</p>
         <div className="bj-table-actions__row">
           <button
             type="button"
@@ -683,21 +691,13 @@ export function BlackjackPanel({
 
     const turnHandKey = round.activeHandKey;
     const { playerId } = parseBlackjackHandKey(turnHandKey);
-    const activeSlotNum = session.boxSlotNumbers?.[playerId];
-    const callerId = getCallerPersonIdForBox(gameState, playerId);
-    const caller = callerId ? players[callerId] : null;
-    const callerName = caller?.controllerName?.trim() || caller?.displayName || 'caller';
     const controllerPersonId = resolveControllerPersonId(gameState, controllerName);
     const isCaller =
       controllerPersonId !== null &&
       canControllerCallBox(gameState, playerId, controllerPersonId);
 
     if (!isCaller) {
-      return (
-        <p className="bj-table-actions bj-table-actions--wait">
-          Waiting for {callerName} to call Box {activeSlotNum ?? '?'}.
-        </p>
-      );
+      return null;
     }
 
     // Canonical gate: controls enabled only when this viewer may act on the
@@ -705,6 +705,10 @@ export function BlackjackPanel({
     const actionable = getActionableHandForView(gameState, controllerPersonId, isOnlineModeEnabled());
     const canHit = Boolean(actionable) && canHitBlackjack(round, turnHandKey);
     const canStand = Boolean(actionable) && canStandBlackjack(round, turnHandKey);
+
+    const canDouble =
+      Boolean(actionable) && Boolean(deck) && canDoubleBlackjackForState(gameState, turnHandKey);
+    const canSplit = Boolean(actionable) && canSplitBlackjackForState(gameState, turnHandKey);
 
     function handleTableAid() {
       if (!deck || !round) {
@@ -738,8 +742,16 @@ export function BlackjackPanel({
           {blackjackSettings.allowDoubleDown && (
             <button
               type="button"
-              className="ds-btn ds-btn--secondary bj-table-actions__btn bj-table-actions__btn--sm"
-              disabled={!actionable || !deck || !canDoubleBlackjackForState(gameState, turnHandKey)}
+              className={[
+                'ds-btn',
+                'ds-btn--secondary',
+                'bj-table-actions__btn',
+                'bj-table-actions__btn--sm',
+                canDouble ? 'bj-table-actions__btn--legal' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              disabled={!canDouble}
               onClick={() => run((s) => doubleDownBlackjackOnState(s, turnHandKey), { type: 'double', payload: {} })}
             >
               2×
@@ -748,8 +760,16 @@ export function BlackjackPanel({
           {blackjackSettings.allowSplit && deck && (
             <button
               type="button"
-              className="ds-btn ds-btn--secondary bj-table-actions__btn bj-table-actions__btn--sm"
-              disabled={!actionable || !canSplitBlackjackForState(gameState, turnHandKey)}
+              className={[
+                'ds-btn',
+                'ds-btn--secondary',
+                'bj-table-actions__btn',
+                'bj-table-actions__btn--sm',
+                canSplit ? 'bj-table-actions__btn--legal' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              disabled={!canSplit}
               onClick={() => run((s) => splitBlackjackOnState(s, turnHandKey), { type: 'split', payload: {} })}
             >
               Split
@@ -761,7 +781,6 @@ export function BlackjackPanel({
             </button>
           )}
         </div>
-        {tableAidTip && <p className="bj-table-actions__aid">{tableAidTip}</p>}
       </div>
     );
   }
@@ -774,16 +793,11 @@ export function BlackjackPanel({
     const actions = getInsuranceActionsForController(gameState, round, controllerName);
 
     if (actions.length === 0) {
-      return (
-        <p className="bj-table-actions bj-table-actions--wait">
-          Dealer shows Ace — waiting for insurance decisions…
-        </p>
-      );
+      return null;
     }
 
     return (
       <div className="bj-table-actions bj-table-actions--insurance" aria-live="polite">
-        <p className="bj-table-actions__label">Dealer shows Ace — insurance pays 2:1</p>
         {actions.map(({ playerId, maxBet, canAfford, slotNumber }) => (
           <div key={playerId} className="bj-table-actions__ins-row">
             <span className="bj-table-actions__ins-label">
@@ -792,7 +806,15 @@ export function BlackjackPanel({
             </span>
             <button
               type="button"
-              className="ds-btn ds-btn--secondary bj-table-actions__btn bj-table-actions__btn--sm"
+              className={[
+                'ds-btn',
+                'ds-btn--secondary',
+                'bj-table-actions__btn',
+                'bj-table-actions__btn--sm',
+                canAfford ? 'bj-table-actions__btn--legal' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               disabled={!canAfford}
               onClick={() => run((s) => takeInsuranceOnState(s, playerId), { type: 'takeInsurance', payload: { playerId } })}
             >
@@ -812,17 +834,13 @@ export function BlackjackPanel({
   }
 
   function renderWaitingForTurn() {
-    if (protocolPhase !== 'player' || round?.activeHandKey) {
-      return null;
-    }
-    return <p className="bj-table-actions bj-table-actions--wait">Waiting for next box…</p>;
+    return null;
   }
 
   function renderArcSlot(boxId: string, slotNumber: number) {
-    const player = players[boxId];
     const isSelected = effectiveBoxId === boxId;
     const isTurn = activeBoxId === boxId && round?.status === 'player-turns';
-    const initials = getCallerInitials(gameState, boxId) || getPlayerInitials(player.controllerName);
+    const callerDisplayName = getBoxCallerDisplayName(gameState, boxId);
     let handKeys = handKeysByBox.get(boxId) ?? [];
     if (handKeys.length === 0 && round) {
       const primaryKey = blackjackHandKey(boxId, 0);
@@ -877,9 +895,7 @@ export function BlackjackPanel({
 
         <div className="bj-arc__slot-foot">
           <span className="bj-arc__box-label">Box {slotNumber}</span>
-          {initials && (
-            <span className="bj-arc__initials" aria-label={player.controllerName}>{initials}</span>
-          )}
+          <span className="bj-arc__played-by">{callerDisplayName}</span>
         </div>
 
         <button

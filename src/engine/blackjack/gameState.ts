@@ -1,6 +1,6 @@
 import type { GameState } from '../../types';
 import type { BlackjackFlowSettings } from './flowSettings';
-import { dealDelayMsForPreset, normalizeFlowSettings } from './flowSettings';
+import { normalizeFlowSettings, syncDealTimingFromPreset } from './flowSettings';
 import { lockProtocolOnState, getBlackjackProtocolForState } from './protocolState';
 import {
   createBlackjackRound,
@@ -421,6 +421,17 @@ export function dealNextInitialCardOnState(state: GameState): GameState {
   return next;
 }
 
+/** Finish staged/natural initial deals — used by server-authoritative actions, not offline UI pacing. */
+export function completeStepwiseInitialDealIfNeeded(state: GameState): GameState {
+  let next = state;
+  let guard = 0;
+  while (next.blackjack?.status === 'initial-deal' && guard < 50) {
+    guard += 1;
+    next = dealNextInitialCardOnState(next);
+  }
+  return next;
+}
+
 export function dealInitialBlackjackOnState(state: GameState): GameState {
   const s = prepareDealState(state);
   if (!s.blackjack) {
@@ -638,6 +649,9 @@ export function startNextRoundOnState(state: GameState): GameState {
       boxStakes: {},
       bettingLocked: false,
       awaitingNextRound: false,
+      boxSlots: settled.tableMeta.boxSlots.map((slot) =>
+        slot.nativeAssignedPersonId ? slot : { ...slot, callerPersonId: null },
+      ),
     },
   };
 }
@@ -720,24 +734,9 @@ export function updateBlackjackFlowSettings(
   patch: Partial<BlackjackFlowSettings>,
 ): GameState {
   const merged = normalizeFlowSettings({ ...state.blackjackFlowSettings, ...patch });
-  if (patch.dealSpeedPreset) {
-    merged.autoDealDelayMs = dealDelayMsForPreset(patch.dealSpeedPreset);
-  }
-  if (merged.bankDrawMinDelayMs == null) {
-    merged.bankDrawMinDelayMs = 2000;
-  }
-  if (merged.bankDrawMaxDelayMs == null) {
-    merged.bankDrawMaxDelayMs = 5000;
-  }
-  if (merged.bankStandPauseMs == null) {
-    merged.bankStandPauseMs = 1500;
-  }
-  if (merged.bankingDisplayMs == null) {
-    merged.bankingDisplayMs = 1500;
-  }
   return {
     ...state,
-    blackjackFlowSettings: merged,
+    blackjackFlowSettings: syncDealTimingFromPreset(merged),
   };
 }
 

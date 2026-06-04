@@ -14,13 +14,7 @@
 }
 
 .bj-accounts-panel__title {
-  margin: 0 0 0.45rem;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ds-color-gold);
-  text-align: center;
+  display: none;
 }
 
 .bj-accounts-panel__empty {

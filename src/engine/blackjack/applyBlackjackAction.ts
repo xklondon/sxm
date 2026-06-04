@@ -1,6 +1,7 @@
 import type { GameState } from '../../types';
 import {
   shuffleToStartOnState,
+  completeStepwiseInitialDealIfNeeded,
   dealCardsButtonOnState,
   hitBlackjackOnState,
   standBlackjackOnState,
@@ -73,11 +74,12 @@ export function applyBlackjackActionToState(
     case 'shuffleToStart':
       next = shuffleToStartOnState(state);
       break;
-    case 'dealCards':
-      // Auto-stand boxes server-side so the authoritative activeHandKey skips
-      // 18+ hands immediately (matches the offline post-deal auto-stand effect).
-      next = syncBankPhaseOnState(processPlayFlowAutoStands(dealCardsButtonOnState(state)));
+    case 'dealCards': {
+      next = syncBankPhaseOnState(
+        processPlayFlowAutoStands(completeStepwiseInitialDealIfNeeded(dealCardsButtonOnState(state))),
+      );
       break;
+    }
     case 'hit':
       next = hitBlackjackOnState(state);
       break;

@@ -34,7 +34,7 @@ import {
   showPlayerActionControls,
   showStitchedActionControls,
   showStitchedPlayerCards,
-  sideControlsUseSideButtonClass,
+  hitStandUseActionBarButtonClass,
 } from '../../../components/blackjackViewPhase';
 import { BLACKJACK_TABLE_LAYOUT } from '../../../components/blackjackTableLayout';
 import { check, type SanitySuiteResult } from './types';
@@ -275,7 +275,7 @@ export function runCardViewPhaseChecks(): SanitySuiteResult {
       miniBoxesRenderAfterHeroCards(),
     ),
   );
-  results.push(check('hit/stand use side button class', sideControlsUseSideButtonClass()));
+  results.push(check('hit/stand use action bar button class', hitStandUseActionBarButtonClass()));
   results.push(check('2x/split/AID use tappable action class', actionButtonsUseTappableClass()));
 
   return { passed: results.every((r) => r.passed), results };

@@ -297,17 +297,17 @@ export function formatCardViewBoxStatus(status: CardViewBoxStatus): string {
 export const CARD_VIEW_PLAYING_LAYOUT = {
   heroActions: 'bj-phone-view__hero-actions',
   heroCards: 'bj-phone-view__cards--stitched',
-  wagerBadge: 'bj-phone-view__wager-badge',
+  actionBar: 'bj-phone-view__action-bar',
   miniBoxes: 'bj-phone-view__mini-row',
-  sideHitStand: 'bj-phone-view__side-btn',
   actionBtnTappable: 'bj-phone-view__action-btn--tappable',
   totalBadgeHero: 'bj-phone-view__total--hero',
+  actionBarBtn: 'bj-phone-view__action-bar-btn',
 } as const;
 
 export const CARD_VIEW_PLAYING_SLOT_ORDER = [
   CARD_VIEW_PLAYING_LAYOUT.heroActions,
   CARD_VIEW_PLAYING_LAYOUT.heroCards,
-  CARD_VIEW_PLAYING_LAYOUT.wagerBadge,
+  CARD_VIEW_PLAYING_LAYOUT.actionBar,
   CARD_VIEW_PLAYING_LAYOUT.miniBoxes,
 ] as const;
 
@@ -327,8 +327,8 @@ export function miniBoxesRenderAfterHeroCards(
   return miniIdx >= 0 && cardsIdx >= 0 && miniIdx > cardsIdx;
 }
 
-export function sideControlsUseSideButtonClass(): boolean {
-  return CARD_VIEW_PLAYING_LAYOUT.sideHitStand === 'bj-phone-view__side-btn';
+export function hitStandUseActionBarButtonClass(): boolean {
+  return CARD_VIEW_PLAYING_LAYOUT.actionBarBtn === 'bj-phone-view__action-bar-btn';
 }
 
 export function actionButtonsUseTappableClass(): boolean {

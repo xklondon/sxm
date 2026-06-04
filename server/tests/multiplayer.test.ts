@@ -104,7 +104,7 @@ describe('SXMCards multiplayer API', () => {
 
 
 
-  it('only box owner can act on placeBet', () => {
+  it('non-member cannot placeBet on host box', () => {
 
     const host = seedHostUser(store, 'host@example.com');
 

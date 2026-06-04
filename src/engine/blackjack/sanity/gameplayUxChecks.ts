@@ -83,7 +83,6 @@ export function runGameplayUxSanityChecks(): SanitySuiteResult {
   state = {
     ...state,
     blackjackProtocolId: LAS_VEGAS_PROTOCOL.id,
-    blackjackSettings: { ...state.blackjackSettings, doubleAllowedTotals: 'any' },
     blackjack: actingRound(state, hard11Box, [five, six], 25),
   };
   results.push(

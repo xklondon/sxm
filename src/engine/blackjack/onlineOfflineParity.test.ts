@@ -8,6 +8,7 @@ import { addChipToBoxStake } from './stakes';
 import { createBlackjackShoe, shuffleBlackjackShoe } from './shoe';
 import {
   shuffleToStartOnState,
+  completeStepwiseInitialDealIfNeeded,
   dealCardsButtonOnState,
   standBlackjackOnState,
   hitBlackjackOnState,
@@ -91,7 +92,9 @@ describe('online/offline blackjack action parity', () => {
     const online = applyBlackjackActionToState(base, 'dealCards', ctx(true));
     // Offline = deal + post-deal auto-stand effect + bank animation final frame.
     const offline = resolveBankTurnAuto(
-      syncBankPhaseOnState(processPlayFlowAutoStands(dealCardsButtonOnState(base))),
+      syncBankPhaseOnState(
+        processPlayFlowAutoStands(completeStepwiseInitialDealIfNeeded(dealCardsButtonOnState(base))),
+      ),
     );
     expect(projectParity(online)).toEqual(projectParity(offline));
   });

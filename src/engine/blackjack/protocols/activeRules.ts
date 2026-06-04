@@ -103,9 +103,6 @@ function hardTotalAllowedForDouble(
   if (protocol.double.allowedHardTotals === 'any') {
     return !isSoft || value <= 21;
   }
-  if (isSoft) {
-    return false;
-  }
   return protocol.double.allowedHardTotals.includes(value);
 }
 

@@ -58,7 +58,6 @@ export function TableAccountsPanel({
 
   return (
     <aside className="bj-accounts-panel" aria-label="This Table">
-      <h3 className="bj-accounts-panel__title">This Table</h3>
 
       {!bank && people.length === 0 ? (
         <p className="bj-accounts-panel__empty">Complete setup to see bank and players.</p>

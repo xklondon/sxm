@@ -22,6 +22,7 @@ export {
   dealNextInitialCardOnState,
   dealInitialBlackjackOnState,
   dealCardsFromState,
+  completeStepwiseInitialDealIfNeeded,
   dealCardsButtonOnState,
   prepareDealState,
   shuffleToStartOnState,
@@ -87,6 +88,8 @@ export {
   CARD_TIMER_PRESETS,
   DEAL_SPEED_MS,
   dealDelayMsForPreset,
+  cardDealDelayMs,
+  syncDealTimingFromPreset,
   randomBankDrawDelayMs,
 } from './flowSettings';
 export type { BlackjackFlowSettings, DealMode, AdviceCostMode, DealSpeedPreset } from './flowSettings';

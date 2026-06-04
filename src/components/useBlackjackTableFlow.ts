@@ -10,6 +10,7 @@ import {
   shuffleFreshShoeOnState,
   updateBlackjackFlowSettings,
   randomBankDrawDelayMs,
+  cardDealDelayMs,
   getBankFinalMessage,
   processPlayFlowAutoStands,
   syncBankPhaseOnState,
@@ -250,7 +251,7 @@ export function useBlackjackTableFlow(
     void (async () => {
       let current = gameStateRef.current;
       while (current.blackjack?.status === 'initial-deal') {
-        const delay = current.blackjackFlowSettings.naturalDealDelayMs ?? 750;
+        const delay = cardDealDelayMs(current.blackjackFlowSettings);
         await sleep(delay);
         current = gameStateRef.current;
         if (current.blackjack?.status !== 'initial-deal') {
@@ -317,8 +318,8 @@ export function useBlackjackTableFlow(
       current = gameStateRef.current;
       if (current.blackjack?.status === 'banking') {
         setBankUiMessage(getBankFinalMessage(current));
-        await sleep(current.blackjackFlowSettings.bankStandPauseMs);
-        await sleep(current.blackjackFlowSettings.bankingDisplayMs);
+        await sleep(cardDealDelayMs(current.blackjackFlowSettings));
+        await sleep(Math.round(cardDealDelayMs(current.blackjackFlowSettings) * 0.5));
         onGameStateChange(completeBankingOnState(gameStateRef.current));
         setBankUiMessage(null);
       }
@@ -350,8 +351,8 @@ export function useBlackjackTableFlow(
     const current = gameStateRef.current;
     setBankUiMessage(getBankFinalMessage(current));
     const pause =
-      current.blackjackFlowSettings.bankStandPauseMs +
-      current.blackjackFlowSettings.bankingDisplayMs;
+      cardDealDelayMs(current.blackjackFlowSettings) +
+      Math.round(cardDealDelayMs(current.blackjackFlowSettings) * 0.5);
 
     const timer = window.setTimeout(() => {
       try {

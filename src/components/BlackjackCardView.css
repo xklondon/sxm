@@ -10,13 +10,19 @@
 
   width: 100%;
 
+  max-width: 100%;
+
   height: 100%;
 
   min-height: 0;
 
+  min-width: 0;
+
   flex: 1;
 
   overflow: hidden;
+
+  box-sizing: border-box;
 
   color: var(--ds-color-text);
 
@@ -409,35 +415,11 @@
 }
 
 .bj-phone-view__cards--stitched .bj-phone-view__card-wrap {
-  margin-left: -1.8rem;
+  margin-left: -1.35rem;
 }
 
 .bj-phone-view__cards--stitched .bj-phone-view__card-wrap:first-child {
   margin-left: 0;
-}
-
-.bj-phone-view__wager-badge {
-  margin-top: 0.35rem;
-  padding: 0.25rem 0.55rem;
-  border: 1px dashed var(--ds-color-border);
-  border-radius: var(--ds-radius-sm);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.1rem;
-}
-
-.bj-phone-view__wager-label {
-  font-size: 0.45rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ds-color-text-muted);
-}
-
-.bj-phone-view__wager-amount {
-  font-size: 0.72rem;
-  font-weight: var(--ds-weight-bold);
-  color: var(--ds-color-gold);
 }
 
 .bj-phone-view__settle-results {
@@ -614,7 +596,67 @@
 
 
 
-/* Play area — cards flanked by vertical Stay / Hit */
+/* Play stack — hero stage + fixed action bar */
+
+.bj-phone-view__play-stack {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.bj-phone-view__action-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  max-width: 100%;
+  min-height: 2.65rem;
+  padding: 0.2rem 0.35rem 0.25rem;
+  box-sizing: border-box;
+}
+
+.bj-phone-view__action-bar-spacer {
+  display: block;
+  width: 100%;
+  min-height: 2.15rem;
+}
+
+.bj-phone-view__action-bar-btn {
+  flex: 1 1 0;
+  max-width: 8.5rem;
+  min-height: 2.15rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: var(--ds-radius-md);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.45;
+  transition: opacity 0.12s ease, box-shadow 0.12s ease;
+}
+
+.bj-phone-view__action-bar-btn--live {
+  opacity: 1;
+}
+
+.bj-phone-view__action-bar-btn--live:not(:disabled) {
+  box-shadow: var(--ds-glow-gold);
+}
+
+.bj-phone-view__action-bar-btn.ds-btn--stand:not(:disabled).bj-phone-view__action-bar-btn--live {
+  box-shadow: 0 0 12px rgb(110 231 183 / 0.45);
+}
+
+/* Legacy side controls — kept for desktop card view overrides */
 
 .bj-phone-view__play-area {
 
@@ -627,6 +669,10 @@
   min-height: 0;
 
   width: 100%;
+
+  max-width: 100%;
+
+  min-width: 0;
 
 }
 
@@ -772,9 +818,11 @@
 
 .bj-phone-view__card-wrap {
 
-  margin-left: calc(var(--card-i, 0) * -1.35rem);
+  margin-left: calc(var(--card-i, 0) * -1rem);
 
   transform: rotate(calc((var(--card-i, 0) - 0.5) * 5deg));
+
+  max-width: 100%;
 
 }
 
@@ -790,11 +838,13 @@
 
 .bj-phone-view__cards .playing-card.bj-phone-card--hero {
 
-  width: min(42vw, 7.5rem);
+  width: min(38vw, 6.5rem);
 
-  min-height: min(58vw, 11rem);
+  min-height: min(52vw, 9.5rem);
 
-  font-size: 1.35rem;
+  font-size: 1.2rem;
+
+  max-width: 100%;
 
 }
 
@@ -933,6 +983,22 @@
 .bj-phone-view__extra-btn:disabled {
 
   opacity: 0.35;
+
+}
+
+
+
+.bj-phone-view__extra-btn--legal:not(:disabled) {
+
+  background: var(--ds-color-gold, #fbbf24);
+
+  color: #1a1a1a;
+
+  border-color: rgb(251 191 36 / 0.55);
+
+  font-weight: var(--ds-weight-bold, 700);
+
+  box-shadow: 0 0 10px rgb(251 191 36 / 0.25);
 
 }
 

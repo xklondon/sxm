@@ -210,20 +210,34 @@ export function movePlayerInOrder(
   return next;
 }
 
+export function isSeatedPersonAtTable(state: GameState, personId: string): boolean {
+  return getEffectivePlayerOrder(state).includes(personId);
+}
+
+/** Decision owner for hit/stand/split/double/insurance on a box. */
 export function getCallerPersonIdForBox(state: GameState, boxPlayerId: string): string | null {
   const slot = findSlotByBoxPlayerId(state, boxPlayerId);
-  if (slot?.callerPersonId) {
-    return slot.callerPersonId;
-  }
+  // Native seat assignment always owns decisions on assigned boxes.
   if (slot?.nativeAssignedPersonId) {
     return slot.nativeAssignedPersonId;
+  }
+  // Unassigned: locked caller from deal lock, or first bettor during betting.
+  if (slot?.callerPersonId) {
+    return slot.callerPersonId;
   }
   const stake = state.tableMeta.boxStakes[boxPlayerId];
   if (stake?.callerPersonId) {
     return stake.callerPersonId;
   }
-  if (slot?.bankrollOwnerId) {
-    return slot.bankrollOwnerId;
+  // Solo play: one person may call every box on their bankroll during betting or play.
+  if (isSinglePlayerTable(state) && slot?.bankrollOwnerId) {
+    const hasStake = (stake?.amount ?? 0) > 0;
+    const inPlay =
+      state.blackjack?.status === 'player-turns' ||
+      state.blackjack?.insuranceOfferPending === true;
+    if (hasStake || inPlay) {
+      return slot.bankrollOwnerId;
+    }
   }
   return null;
 }

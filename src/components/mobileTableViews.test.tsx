@@ -155,8 +155,9 @@ const CARD_VIEW_SECTIONS = [
 const CARD_VIEW_PLAYING_SECTIONS = [
   ...CARD_VIEW_SECTIONS,
   'dealer-block__status',
-  'bj-phone-view__play-area',
-  'bj-phone-view__side-btn--live',
+  'bj-phone-view__play-stack',
+  'bj-phone-view__action-bar',
+  'bj-phone-view__action-bar-btn--live',
   'bj-phone-view__mini-row',
 ] as const;
 
@@ -341,7 +342,7 @@ describe('mobile Card View structure', () => {
 
   it('highlights the active box as the live hero with its controls', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__side-btn--live');
+    expect(html).toContain('bj-phone-view__action-bar-btn--live');
     expect(html).toContain('bj-phone-view__mini-row');
   });
 });

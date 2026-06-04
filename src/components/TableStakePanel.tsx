@@ -20,8 +20,8 @@ import {
 } from '../engine/blackjack/protocols';
 import { setBlackjackProtocolOnState } from '../engine/blackjack/protocolState';
 import { updateBlackjackFlowSettings } from '../engine/blackjack';
-import type { DealSpeedPreset, InitialDealMode } from '../engine/blackjack/flowSettings';
-import { clampNaturalDealDelayMs } from '../engine/blackjack/dealing/dealingModes';
+import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
+import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 
 import { loadProfile } from '../storage/profileStorage';
 import { log } from '../utils/logger';
@@ -54,8 +54,7 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
     gameState.blackjackProtocolId ?? listBlackjackProtocolPresets()[0]?.protocolId ?? 'las-vegas-house',
   );
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [initialDealMode, setInitialDealMode] = useState<InitialDealMode>(flow.initialDealMode);
-  const [naturalDealDelayMs, setNaturalDealDelayMs] = useState(flow.naturalDealDelayMs);
+  const [naturalDealing, setNaturalDealing] = useState(isNaturalInitialDeal(flow.initialDealMode));
   const [dealSpeedPreset, setDealSpeedPreset] = useState<DealSpeedPreset>(flow.dealSpeedPreset);
   const [cardTimerPreset, setCardTimerPreset] = useState(flow.cardTimerPreset);
   const [bankDrawAuto, setBankDrawAuto] = useState(flow.bankDrawMode === 'auto');
@@ -120,8 +119,7 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
     logTableMetaStartingChips(next, 'start-playing');
     next = setBlackjackProtocolOnState(next, protocolId, controller);
     next = updateBlackjackFlowSettings(next, {
-      initialDealMode,
-      naturalDealDelayMs: clampNaturalDealDelayMs(naturalDealDelayMs),
+      initialDealMode: naturalDealing ? 'natural' : 'instant',
       dealSpeedPreset,
       cardTimerPreset,
       countdownSeconds: cardTimerPreset,
@@ -283,43 +281,28 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
               </button>
               {advancedOpen && (
                 <div className="table-stake-panel__advanced-body">
-                  <label className="table-stake-panel__field">
-                    <span>Initial deal</span>
-                    <select
-                      className="table-stake-panel__input"
-                      value={initialDealMode}
-                      onChange={(e) => setInitialDealMode(e.target.value as InitialDealMode)}
-                    >
-                      <option value="instant">All at once</option>
-                      <option value="staged">One card per tap</option>
-                      <option value="natural">Natural (timed)</option>
-                    </select>
-                  </label>
-                  <label className="table-stake-panel__field">
-                    <span>Natural deal delay (ms)</span>
+                  <label className="table-stake-panel__option">
                     <input
-                      type="number"
-                      min={600}
-                      max={900}
-                      className="table-stake-panel__input table-stake-panel__input--short"
-                      value={naturalDealDelayMs}
-                      onChange={(e) => setNaturalDealDelayMs(Number(e.target.value) || 750)}
+                      type="checkbox"
+                      checked={naturalDealing}
+                      onChange={(e) => setNaturalDealing(e.target.checked)}
                     />
+                    Natural dealing
                   </label>
                   <label className="table-stake-panel__field">
-                    <span>Dealing speed</span>
+                    <span>Deal speed</span>
                     <select
                       className="table-stake-panel__input"
                       value={dealSpeedPreset}
                       onChange={(e) => setDealSpeedPreset(e.target.value as DealSpeedPreset)}
                     >
-                      <option value="fast">Fast</option>
+                      <option value="fast">Fast (1s)</option>
                       <option value="normal">Normal (3s)</option>
-                      <option value="slow">Slow</option>
+                      <option value="slow">Slow (5s)</option>
                     </select>
                   </label>
                   <label className="table-stake-panel__field">
-                    <span>Card timer</span>
+                    <span>Turn timer</span>
                     <select
                       className="table-stake-panel__input"
                       value={cardTimerPreset}
@@ -338,7 +321,7 @@ export function TableStakePanel({ gameState, onConfirm }: TableStakePanelProps) 
                       checked={bankDrawAuto}
                       onChange={(e) => setBankDrawAuto(e.target.checked)}
                     />
-                    Auto bank draw
+                    Auto bank play
                   </label>
                 </div>
               )}

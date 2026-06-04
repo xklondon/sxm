@@ -84,6 +84,7 @@ export {
   getEffectivePlayerOrder,
   getAssignedSlotForPerson,
   getCallerPersonIdForBox,
+  isSeatedPersonAtTable,
   canControllerCallBox,
   resolveControllerPersonId,
   getCallerInitials,

@@ -2,7 +2,11 @@ import type { GameState } from '../../../src/types/index.js';
 import type { TableActionType } from './actions.js';
 import { getBlackjackProtocolPhase } from '../../../src/engine/blackjack/protocol.js';
 import { parseBlackjackHandKey } from '../../../src/engine/blackjack/handKeys.js';
-import { getCallerPersonIdForBox, getAssignedSlotForPerson } from '../../../src/engine/session/playerAssignment.js';
+import {
+  getCallerPersonIdForBox,
+  getAssignedSlotForPerson,
+  isSeatedPersonAtTable,
+} from '../../../src/engine/session/playerAssignment.js';
 import { hasPersonalLedgerEntryForTable } from '../../../src/engine/scoreLedger/scoreLedger.js';
 import {
   getDealBlockReason,
@@ -188,32 +192,14 @@ function assertBetPlacement(state: GameState, ctx: ActionContext): void {
 }
 
 function assertBetOnExistingBox(state: GameState, personId: string, boxId: string): void {
-  const caller = getCallerPersonIdForBox(state, boxId);
-  if (caller === personId) {
-    return;
-  }
-
   const slot = findSlotByBoxPlayerId(state, boxId);
-  if (!slot) {
+  if (!slot?.playerId) {
     throw new Error('Box not found');
   }
-
-  if (slot.nativeAssignedPersonId && slot.nativeAssignedPersonId !== personId) {
+  // Shared betting: any seated table member may add chips; decision ownership is separate.
+  if (!isSeatedPersonAtTable(state, personId)) {
     throw new Error('Not authorized for this box');
   }
-  if (caller && caller !== personId) {
-    throw new Error('Not authorized for this box');
-  }
-
-  if (state.tableMeta.ownerPersonId === personId) {
-    return;
-  }
-  const assigned = getAssignedSlotForPerson(state, personId);
-  if (assigned === slot.slotNumber) {
-    return;
-  }
-
-  throw new Error('Not authorized for this box');
 }
 
 function assertBoxOwner(state: GameState, ctx: ActionContext, boxPlayerId: string): void {
