@@ -1,5 +1,10 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 
+vi.mock('../src/email/mailer.js', () => ({
+  sendMagicLinkEmail: vi.fn(async () => {}),
+  sendTableInviteEmail: vi.fn(async () => ({ messageId: 'test-message-id' })),
+}));
+
 import request from 'supertest';
 
 import { createApp } from '../src/app.js';
@@ -79,7 +84,7 @@ describe('SXMCards multiplayer API', () => {
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
     seedPerson(store, { email: 'guest@example.com', role: 'player', status: 'invited' });
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',

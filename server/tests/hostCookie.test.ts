@@ -39,7 +39,7 @@ describe('host-mode session cookies', () => {
       .set('Host', '10.0.0.7:5173')
       .redirects(0);
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe('http://10.0.0.7:5173/?newTable=1');
+    expect(res.headers.location).toBe('http://10.0.0.7:5173/');
     const setCookie = res.headers['set-cookie']?.[0] ?? '';
     expect(setCookie).toContain('Max-Age=');
     expect(setCookie).toContain('SameSite=Lax');
@@ -93,7 +93,7 @@ describe('host-mode session cookies', () => {
       .set('Host', '127.0.0.1:5173')
       .redirects(0);
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe('http://127.0.0.1:5173/?newTable=1');
+    expect(res.headers.location).toBe('http://127.0.0.1:5173/');
   });
 
   it('verify redirects using X-Forwarded-Host from dev proxy', async () => {
@@ -107,7 +107,7 @@ describe('host-mode session cookies', () => {
       .set('X-Forwarded-Proto', 'http')
       .redirects(0);
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe('http://10.0.0.7:5173/?newTable=1');
+    expect(res.headers.location).toBe('http://10.0.0.7:5173/');
   });
 
   it('verify redirects using request Host even when not in CORS allowlist', async () => {
@@ -119,7 +119,7 @@ describe('host-mode session cookies', () => {
       .set('Host', 'custom-client.local:5173')
       .redirects(0);
     expect(res.status).toBe(302);
-    expect(res.headers.location).toBe('http://custom-client.local:5173/?newTable=1');
+    expect(res.headers.location).toBe('http://custom-client.local:5173/');
   });
 
   it('production host mode still omits Secure on HTTP', async () => {

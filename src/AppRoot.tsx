@@ -72,7 +72,6 @@ export function AppRoot() {
   const isPublicPath = isPublicAuthPath(pathname);
   const loginParams = new URLSearchParams(window.location.search);
   const loginError = loginParams.get('error');
-  const loginOk = loginParams.get('login') === 'ok';
   const inviteAcceptToken = loginParams.get('token');
   const pendingSearch = isJoinPath ? window.location.search : getPendingJoin() ?? '';
 
@@ -141,17 +140,11 @@ export function AppRoot() {
     if (!onlineMode || authLoading || !user || !isLoginPath) {
       return;
     }
-    if (!getPendingJoin()) {
-      window.location.replace('/');
-    }
-  }, [onlineMode, authLoading, user, isLoginPath]);
-
-  useEffect(() => {
-    if (!onlineMode || authLoading || !loginOk) {
+    if (getPendingJoin()) {
       return;
     }
-    window.location.replace('/?newTable=1');
-  }, [onlineMode, authLoading, loginOk]);
+    window.location.replace('/');
+  }, [onlineMode, authLoading, user, isLoginPath]);
 
   useEffect(() => {
     if (!onlineMode || authLoading) {
@@ -176,7 +169,11 @@ export function AppRoot() {
 
   if (onlineMode && isLoginPath) {
     if (user) {
-      return null;
+      return (
+        <main className="login-screen">
+          <p>Signing you in…</p>
+        </main>
+      );
     }
     if (inviteAcceptToken || inviteTokenFromSearch(window.location.search)) {
       return (

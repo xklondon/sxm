@@ -85,7 +85,8 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
       const persistent = parseRememberQuery(req.query.remember);
       const sessionToken = auth.verifyMagicLink(token, { persistent });
       setSessionCookie(res, sessionToken, { persistent, req });
-      const redirectUrl = `${origin}/?newTable=1`;
+      const wantsNewTable = req.query.newTable === '1';
+      const redirectUrl = wantsNewTable ? `${origin}/?newTable=1` : `${origin}/`;
       logAuthVerifyDiagnostics(req, {
         redirectUrl,
         cookieName: config.sessionCookieName,

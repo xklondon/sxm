@@ -22,6 +22,7 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
   const [newName, setNewName] = useState('');
   const [newRole, setNewRole] = useState<PersonRecord['role']>('player');
   const [devLink, setDevLink] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -43,12 +44,17 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
     e.preventDefault();
     setError(null);
     setDevLink(null);
+    setSuccessMessage(null);
     try {
-      await addPerson({
+      const result = await addPerson({
         email: newEmail.trim(),
         displayName: newName.trim() || undefined,
         role: newRole,
       });
+      if (result.devLink) {
+        setDevLink(result.devLink);
+      }
+      setSuccessMessage(`Added ${result.person.email} and sent invite email.`);
       setNewEmail('');
       setNewName('');
       await reload();
@@ -90,6 +96,7 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
       </header>
 
       {error && <p className="people-screen__error">{error}</p>}
+      {successMessage && <p className="people-screen__success">{successMessage}</p>}
       {devLink && (
         <p className="people-screen__dev-link">
           Dev magic link: <code>{devLink}</code>

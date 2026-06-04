@@ -66,11 +66,19 @@ export function saveProfile(profile: LocalProfile): void {
   }
 }
 
-export function needsLocalProfileSetup(onlineMode: boolean, authEmail?: string | null): boolean {
+export function needsLocalProfileSetup(
+  onlineMode: boolean,
+  authEmail?: string | null,
+  authDisplayName?: string | null,
+): boolean {
   const profile = loadProfile();
   if (onlineMode) {
     if (authEmail && !profile.email.trim()) {
       saveProfile(buildProfile(profile.name, authEmail, profile.playFlow));
+    }
+    if (authDisplayName?.trim() && !profile.name.trim()) {
+      saveProfile(buildProfile(authDisplayName, authEmail ?? profile.email, profile.playFlow));
+      return false;
     }
     return !profile.name.trim();
   }

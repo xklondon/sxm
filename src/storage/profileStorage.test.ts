@@ -42,4 +42,10 @@ describe('profileStorage online setup', () => {
     saveProfile(buildProfile('Guest Player', 'guest@example.com', 'manual'));
     expect(needsLocalProfileSetup(true, 'guest@example.com')).toBe(false);
   });
+
+  it('seeds display name from auth profile when missing', () => {
+    saveProfile(buildProfile('', '', 'manual'));
+    expect(needsLocalProfileSetup(true, 'guest@example.com', 'Guest Player')).toBe(false);
+    expect(loadProfile().name).toBe('Guest Player');
+  });
 });

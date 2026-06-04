@@ -1,4 +1,10 @@
 import { describe, expect, it, afterEach, vi } from 'vitest';
+
+vi.mock('../src/email/mailer.js', () => ({
+  sendMagicLinkEmail: vi.fn(async () => {}),
+  sendTableInviteEmail: vi.fn(async () => ({ messageId: 'test-message-id' })),
+}));
+
 import request from 'supertest';
 import { createSessionToken } from '../src/auth/tokens.js';
 import { seedHostUser, seedPerson } from './testHelpers.js';
@@ -60,7 +66,7 @@ describe('people access control', () => {
 
   it('unknown email rejected when invite-only enabled', async () => {
     const { auth } = await setupServices('root@example.com', true);
-    await expect(auth.requestMagicLink('stranger@example.com')).rejects.toThrow(/not authorised/i);
+    await expect(auth.requestMagicLink('stranger@example.com')).rejects.toThrow(/not registered or authorised/i);
   });
 
   it('invited person can request magic link', async () => {
@@ -74,13 +80,14 @@ describe('people access control', () => {
     const { people, tables, store } = await setupServices();
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
-    const { personId } = tables.invitePersonByEmail({
+    const { personId, emailSent } = await tables.invitePersonByEmail({
       tableId: table.id,
       userId: host.id,
       email: 'newguest@example.com',
       displayName: 'New Guest',
       role: 'player',
     });
+    expect(emailSent).toBe(true);
     const person = store.getPersonByEmail('newguest@example.com');
     expect(person).toBeTruthy();
     expect(person!.canLogin).toBe(true);
@@ -103,14 +110,14 @@ describe('people access control', () => {
     const table = tables.createTable(host.id, 'Host');
     const guest = store.createUser('guest@example.com', 'Guest');
     seedPerson(store, { userId: guest.id, email: 'guest@example.com', role: 'player', canInvite: false });
-    expect(() =>
+    await expect(
       tables.createInvite({
         tableId: table.id,
         userId: guest.id,
         invitedEmail: 'friend@example.com',
         invitedName: 'Friend',
       }),
-    ).toThrow(/permission to invite/i);
+    ).rejects.toThrow(/permission to invite/i);
   });
 
   it('canPlay or table invite required to join table', async () => {
@@ -124,7 +131,7 @@ describe('people access control', () => {
       role: 'guest',
       canPlay: false,
     });
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'allowed@example.com',
@@ -167,7 +174,7 @@ describe('people access control', () => {
     const tables = new TableService(store, people);
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',
@@ -224,5 +231,19 @@ describe('people admin HTTP API', () => {
     expect(res.body.user.canOwnTables).toBe(true);
     expect(res.body.user.canInvite).toBe(true);
     expect(res.body.user.isRoot).toBe(true);
+  });
+
+  it('root email has people admin before person row is linked', async () => {
+    process.env.ROOT_USER_EMAIL = 'root@example.com';
+    process.env.INVITE_ONLY_MODE = 'true';
+    process.env.NODE_ENV = 'development';
+    vi.resetModules();
+    const { createApp } = await import('../src/app.js');
+    const { app, store } = createApp();
+    const root = store.createUser('root@example.com', 'Root');
+    const cookie = `${process.env.SESSION_COOKIE_NAME ?? 'sxmcards_session'}=${createSessionToken({ userId: root.id, email: 'root@example.com' })}`;
+    const res = await request(app).get('/api/people').set('Cookie', cookie);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.people)).toBe(true);
   });
 });

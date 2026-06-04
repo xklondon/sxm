@@ -44,7 +44,7 @@ export interface AuthUser {
 }
 
 export function isPeopleAdmin(user: AuthUser | null | undefined): boolean {
-  return user?.role === 'root' || user?.role === 'admin';
+  return user?.isRoot === true || user?.role === 'root' || user?.role === 'admin';
 }
 
 export interface PersonRecord {
@@ -167,7 +167,7 @@ export async function invitePersonToTable(
   email: string,
   displayName: string,
   role?: 'guest' | 'player',
-): Promise<{ inviteId: string; joinUrl: string; personId: string }> {
+): Promise<{ inviteId: string; joinUrl: string; personId: string; emailSent: boolean }> {
   const res = await apiFetch(`/api/tables/${tableId}/invite-person`, {
     method: 'POST',
     body: JSON.stringify({ email, displayName, name: displayName, role }),
@@ -192,7 +192,7 @@ export async function addPerson(params: {
   email: string;
   displayName?: string;
   role?: PersonRecord['role'];
-}): Promise<PersonRecord> {
+}): Promise<{ person: PersonRecord; devLink?: string }> {
   const res = await apiFetch('/api/people', {
     method: 'POST',
     body: JSON.stringify(params),
@@ -201,7 +201,7 @@ export async function addPerson(params: {
   if (!res.ok) {
     throw new Error(data.error ?? 'Could not add person');
   }
-  return data.person as PersonRecord;
+  return { person: data.person as PersonRecord, devLink: data.devLink as string | undefined };
 }
 
 export async function updatePerson(
@@ -228,7 +228,7 @@ export async function createServerInvite(
   tableId: string,
   email: string,
   name: string,
-): Promise<{ inviteId: string; joinUrl: string }> {
+): Promise<{ inviteId: string; joinUrl: string; emailSent?: boolean }> {
   const res = await apiFetch(`/api/tables/${tableId}/invites`, {
     method: 'POST',
     body: JSON.stringify({ email, name }),

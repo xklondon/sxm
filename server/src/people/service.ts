@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { PersonRecord, PersonRole, Store, TableInviteRecord } from '../store/types.js';
-import { config } from '../config.js';import {
+import { config } from '../config.js';
+import {
   isPeopleAdmin,
   isRootEmail,
   isRootPerson,
@@ -279,8 +280,15 @@ export class PeopleService {
   }
 
   assertPeopleAdmin(userId: string): PersonRecord {
+    const user = this.store.getUserById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    if (isRootEmail(user.email)) {
+      return this.ensurePersonOnLogin(user.email, userId);
+    }
     const person = this.getPersonForUser(userId);
-    if (!isPeopleAdmin(person)) {
+    if (!isPeopleAdmin(person, user.email)) {
       throw new Error('Admin access required');
     }
     return person!;
@@ -291,30 +299,39 @@ export class PeopleService {
     if (!user) {
       throw new Error('User not found');
     }
-    const person = this.getPersonForUser(userId);
+    let person = this.getPersonForUser(userId);
+    if (!person && isRootEmail(user.email)) {
+      person = this.ensurePersonOnLogin(user.email, userId);
+    }
     return {
       userId: user.id,
       email: user.email,
       displayName: person?.displayName ?? user.displayName,
-      ...(person ? personToPermissions(person) : {
-        canLogin: true,
-        canOwnTables: !config.inviteOnlyMode,
-        canPlay: !config.inviteOnlyMode,
-        canInvite: !config.inviteOnlyMode,
-        role: 'player' as PersonRole,
-        status: 'active' as const,
-        isRoot: isRootEmail(user.email),
-      }),
+      ...(person
+        ? personToPermissions(person)
+        : {
+            canLogin: true,
+            canOwnTables: !config.inviteOnlyMode,
+            canPlay: !config.inviteOnlyMode,
+            canInvite: !config.inviteOnlyMode,
+            role: 'player' as PersonRole,
+            status: 'active' as const,
+            isRoot: isRootEmail(user.email),
+          }),
     };
   }
 
   private requireActivePerson(userId: string): PersonRecord {
+    const user = this.store.getUserById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    if (isRootEmail(user.email)) {
+      return this.ensurePersonOnLogin(user.email, userId);
+    }
     const person = this.getPersonForUser(userId);
     if (!person) {
-      if (!config.inviteOnlyMode) {
-        throw new Error('Person record required — contact an admin');
-      }
-      throw new Error('You are not registered. Ask an admin for an invite.');
+      throw new Error('Your account is not registered on this platform. Ask an admin for an invite.');
     }
     if (person.status === 'disabled') {
       throw new Error('Account disabled');

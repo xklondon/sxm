@@ -77,7 +77,7 @@ describe('public auth endpoints', () => {
       .post('/api/auth/request-magic-link')
       .send({ email: 'stranger@example.com' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/not authorised/i);
+    expect(res.body.error).toMatch(/not registered or authorised/i);
   });
 
   it('invited person can request magic link', async () => {

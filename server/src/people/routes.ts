@@ -16,7 +16,7 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
     }
   });
 
-  router.post('/', requireAuth, (req: AuthedRequest, res) => {
+  router.post('/', requireAuth, async (req: AuthedRequest, res) => {
     try {
       people.assertPeopleAdmin(req.auth!.userId);
       const person = people.addPerson({
@@ -25,7 +25,16 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
         role: req.body?.role as PersonRole | undefined,
         invitedByEmail: req.auth!.email,
       });
-      res.status(201).json({ person });
+      let devLink: string | undefined;
+      try {
+        const invite = await auth.requestMagicLink(person.email);
+        devLink = invite.devLink;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Invite email failed';
+        res.status(502).json({ error: `Person added but invite email failed: ${message}`, person });
+        return;
+      }
+      res.status(201).json({ person, devLink });
     } catch (err) {
       res.status(400).json({ error: err instanceof Error ? err.message : 'Create failed' });
     }

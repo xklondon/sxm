@@ -57,11 +57,11 @@ function ThemeSync({ templateId }: { templateId: string }) {
   return null;
 }
 
-function formatRoleLabel(role?: AuthUser['role']): string {
-  switch (role) {
-    case 'root':
-    case 'admin':
-      return 'ADMIN';
+function formatRoleLabel(user?: AuthUser | null): string {
+  if (user?.isRoot || user?.role === 'root' || user?.role === 'admin') {
+    return 'ADMIN';
+  }
+  switch (user?.role) {
     case 'guest':
       return 'GUEST';
     default:
@@ -106,7 +106,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
       return;
     }
     syncAuthEmailToProfile(user.email);
-    setProfileSetupOpen(needsLocalProfileSetup(true, user.email));
+    setProfileSetupOpen(needsLocalProfileSetup(true, user.email, user.displayName));
   }, [onlineMode, user]);
 
   useEffect(() => {
@@ -210,7 +210,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null }: 
   const profile = loadProfile();
   const personalName =
     user?.displayName ?? user?.email ?? (profile.name.trim() || 'Player');
-  const roleLabel = formatRoleLabel(user?.role);
+  const roleLabel = formatRoleLabel(user);
   const showPersonalNav = screen === 'table' || screen === 'start';
   const canOwnTables = user?.canOwnTables ?? !onlineMode;
   const onTableScreen = screen === 'table' && Boolean(gameState);

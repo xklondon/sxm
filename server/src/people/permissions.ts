@@ -41,7 +41,10 @@ export function permissionsForRole(role: PersonRole): Pick<
   }
 }
 
-export function isPeopleAdmin(person: PersonRecord | null): boolean {
+export function isPeopleAdmin(person: PersonRecord | null, email?: string): boolean {
+  if (email && isRootEmail(email)) {
+    return true;
+  }
   return Boolean(person && (person.role === 'root' || person.role === 'admin'));
 }
 

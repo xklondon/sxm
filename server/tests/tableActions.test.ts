@@ -1,4 +1,10 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
+
+vi.mock('../src/email/mailer.js', () => ({
+  sendMagicLinkEmail: vi.fn(async () => {}),
+  sendTableInviteEmail: vi.fn(async () => ({ messageId: 'test-message-id' })),
+}));
+
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { createMemoryStore } from '../src/store/memoryStore.js';
@@ -9,6 +15,7 @@ import { createSessionToken } from '../src/auth/tokens.js';
 import { seedHostUser, seedPerson } from './testHelpers.js';
 import { addSeatAtTable } from '../../src/engine/session/table.js';
 import { ensureBoxPositionForPerson, getCallerPersonIdForBox } from '../../src/engine/session/playerAssignment.js';
+import { getBlackjackProtocolPhase } from '../../src/engine/blackjack/protocol.js';
 
 describe('table deal flow', () => {
   let store: ReturnType<typeof createMemoryStore>;
@@ -51,10 +58,20 @@ describe('table deal flow', () => {
     v = res.version;
 
     let guard = 0;
-    while (res.state.blackjack?.status === 'player-turns' && guard < 12) {
+    while (guard < 12 && res.state.blackjack?.status !== 'resolved') {
       guard += 1;
-      res = tables.applyAction(table.id, host.id, 'stand', {}, v);
-      v = res.version;
+      const phase = getBlackjackProtocolPhase(res.state);
+      if (phase === 'insurance') {
+        res = tables.applyAction(table.id, host.id, 'declineInsurance', { playerId: boxId }, v);
+        v = res.version;
+        continue;
+      }
+      if (phase === 'player') {
+        res = tables.applyAction(table.id, host.id, 'stand', {}, v);
+        v = res.version;
+        continue;
+      }
+      break;
     }
 
     // Bank turn + settlement resolved server-side — no client-local bank draw.
@@ -189,7 +206,7 @@ describe('invite accept flow', () => {
     const tables = new TableService(store, people);
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',
@@ -207,14 +224,14 @@ describe('invite accept flow', () => {
     expect(person.canInvite).toBe(true);
   });
 
-  it('invite token cannot be reused', () => {
+  it('invite token cannot be reused', async () => {
     const store = createMemoryStore();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
     seedPerson(store, { email: 'guest@example.com', role: 'player', status: 'invited' });
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',
@@ -225,14 +242,14 @@ describe('invite accept flow', () => {
     expect(() => tables.acceptInviteByToken(token)).toThrow(/already used/i);
   });
 
-  it('wrong-session user id still accepts invite as invitee', () => {
+  it('wrong-session user id still accepts invite as invitee', async () => {
     const store = createMemoryStore();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
     const other = store.createUser('other@example.com', 'Other');
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',
@@ -252,7 +269,7 @@ describe('invite accept flow', () => {
     const tables = new TableService(store, people);
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',
@@ -269,13 +286,13 @@ describe('invite accept flow', () => {
     expect(res.headers.location).toContain('inviteError=');
   });
 
-  it('expired invite rejected', () => {
+  it('expired invite rejected', async () => {
     const store = createMemoryStore();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',
@@ -296,7 +313,7 @@ describe('invite accept flow', () => {
     const tables = new TableService(store, people);
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',
@@ -317,7 +334,7 @@ describe('invite accept flow', () => {
     const tables = new TableService(store, people);
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',
@@ -375,13 +392,13 @@ describe('invite accept flow', () => {
     expect(staleDeal.status).toBe(409);
   });
 
-  it('invite link uses accept endpoint', () => {
+  it('invite link uses accept endpoint', async () => {
     const store = createMemoryStore();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',

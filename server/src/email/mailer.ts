@@ -24,16 +24,35 @@ export async function sendTableInviteEmail(params: {
   inviterName: string;
   tableName: string;
   joinUrl: string;
-}): Promise<void> {
+}): Promise<{ messageId?: string }> {
+  const recipient = sanitizeEmail(params.to);
+  // eslint-disable-next-line no-console
+  console.log(
+    `[SXM][email] table-invite send target=${recipient} inviter=${params.inviterName.trim() || '(unknown)'}`,
+  );
+
   if (!isEmailConfigured()) {
-    return;
+    const message = 'Email server is not configured — cannot send table invite';
+    // eslint-disable-next-line no-console
+    console.error(`[SXM][email] table-invite rejected: ${message} target=${recipient}`);
+    throw new Error(message);
   }
 
-  await sendMailWithLogging('table-invite', {
+  const info = await sendMailWithLogging('table-invite', {
     from: getEmailFrom(),
     to: params.to,
     subject: 'You have been invited to an SXM Casino table',
     text: `${params.inviterName} invited you to ${params.tableName}.\n\nClick this link to join the table:\n${params.joinUrl}\n`,
     html: `<p><strong>${params.inviterName}</strong> invited you to <strong>${params.tableName}</strong>.</p><p>Click this link to join the table.</p><p><a href="${params.joinUrl}">Join table</a></p>`,
   });
+
+  const messageId =
+    typeof info === 'object' && info && 'messageId' in info
+      ? String((info as { messageId?: string }).messageId ?? '')
+      : undefined;
+  // eslint-disable-next-line no-console
+  console.log(
+    `[SXM][email] table-invite accepted target=${recipient} messageId=${messageId || '(none)'}`,
+  );
+  return { messageId };
 }

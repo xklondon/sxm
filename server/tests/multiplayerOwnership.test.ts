@@ -1,4 +1,9 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
+
+vi.mock('../src/email/mailer.js', () => ({
+  sendMagicLinkEmail: vi.fn(async () => {}),
+  sendTableInviteEmail: vi.fn(async () => ({ messageId: 'test-message-id' })),
+}));
 
 import { createMemoryStore } from '../src/store/memoryStore.js';
 import { PeopleService } from '../src/people/service.js';
@@ -22,10 +27,10 @@ describe('multiplayer ownership (server authority)', () => {
     tables = new TableService(store, people);
   });
 
-  it('invited player accept assigns next free box', () => {
+  it('invited player accept assigns next free box', async () => {
     const host = seedHostUser(store);
     const table = tables.createTable(host.id, 'Host');
-    const { joinUrl } = tables.createInvite({
+    const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
       invitedEmail: 'guest@example.com',
@@ -85,13 +90,41 @@ describe('multiplayer ownership (server authority)', () => {
     expect(betResult.state.tableMeta.boxStakes[hostBoxId]?.amount).toBe(10);
     expect(getCallerPersonIdForBox(betResult.state, hostBoxId)).toBe(hostPersonId);
 
-    let v = betResult.version;
-    v = tables.applyAction(table.id, host.id, 'shuffleToStart', {}, v).version;
-    const dealt = tables.applyAction(table.id, host.id, 'dealCards', {}, v);
+    const handKey = `${hostBoxId}:0`;
+    const playerTurnState = {
+      ...betResult.state,
+      blackjack: {
+        status: 'player-turns',
+        activeHandKey: handKey,
+        playerHands: {
+          [handKey]: {
+            cardIds: ['c1', 'c2'],
+            actionStatus: 'acting',
+            stakeAmount: 10,
+            isDoubled: false,
+            isSplitChild: false,
+          },
+        },
+        dealerCardIds: ['d1'],
+        dealerHoleHidden: true,
+        insuranceOffered: false,
+        evenMoneyOfferHandKey: null,
+        bankDrawMode: 'auto',
+        initialDealMode: 'auto',
+      },
+      tableMeta: {
+        ...betResult.state.tableMeta,
+        bettingLocked: true,
+        shoeStarted: true,
+      },
+    } as typeof betResult.state;
 
-    expect(getBlackjackProtocolPhase(dealt.state)).toBe('player');
+    store.updateTable(table.id, playerTurnState, betResult.version);
+    const updated = store.getTable(table.id)!;
 
-    expect(() => tables.applyAction(table.id, guest.id, 'hit', {}, dealt.version)).toThrow(
+    expect(getBlackjackProtocolPhase(updated.state)).toBe('player');
+
+    expect(() => tables.applyAction(table.id, guest.id, 'hit', {}, updated.version)).toThrow(
       /Not box owner/i,
     );
   });

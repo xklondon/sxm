@@ -19,7 +19,7 @@ export class AuthService {
     }
 
     if (!this.people.canRequestMagicLink(normalized)) {
-      throw new Error('This email is not authorised for this table/app.');
+      throw new Error('This email is not registered or authorised. Ask an admin for an invite.');
     }
 
     const last = this.store.lastMagicLinkRequestAt(normalized);

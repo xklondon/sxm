@@ -233,12 +233,12 @@ export class TableService {
     };
   }
 
-  createInvite(params: {
+  async createInvite(params: {
     tableId: string;
     userId: string;
     invitedEmail: string;
     invitedName: string;
-  }): { inviteId: string; joinUrl: string } {
+  }): Promise<{ inviteId: string; joinUrl: string; emailSent: boolean }> {
     this.people.assertCanInvite(params.userId);
     const table = this.getTableForUser(params.tableId, params.userId);
     if (table.hostUserId !== params.userId) {
@@ -247,6 +247,7 @@ export class TableService {
         throw new Error('Only host can invite');
       }
     }
+    const invitedEmail = params.invitedEmail.trim().toLowerCase();
     const inviteId = randomUUID();
     const token = createInviteToken();
     const now = new Date().toISOString();
@@ -254,7 +255,7 @@ export class TableService {
       id: inviteId,
       tableId: params.tableId,
       token,
-      invitedEmail: params.invitedEmail.trim().toLowerCase(),
+      invitedEmail,
       invitedName: params.invitedName.trim(),
       inviterUserId: params.userId,
       status: 'pending',
@@ -263,37 +264,46 @@ export class TableService {
     });
     const joinUrl = `${getEffectivePublicOrigin().replace(/\/$/, '')}/api/tables/invites/accept?token=${encodeURIComponent(token)}`;
     const inviter = this.store.getUserById(params.userId);
-    void sendTableInviteEmail({
-      to: params.invitedEmail,
-      inviterName: inviter?.displayName ?? 'A friend',
-      tableName: table.name,
-      joinUrl,
-    });
-    return { inviteId, joinUrl };
+    let emailSent = false;
+    if (invitedEmail) {
+      const existingPerson = this.store.getPersonByEmail(invitedEmail);
+      // eslint-disable-next-line no-console
+      console.log(
+        `[SXM][tables] createInvite target=${invitedEmail} registered=${Boolean(existingPerson)} status=${existingPerson?.status ?? 'none'}`,
+      );
+      await sendTableInviteEmail({
+        to: invitedEmail,
+        inviterName: inviter?.displayName ?? 'A friend',
+        tableName: table.name,
+        joinUrl,
+      });
+      emailSent = true;
+    }
+    return { inviteId, joinUrl, emailSent };
   }
 
-  invitePersonByEmail(params: {
+  async invitePersonByEmail(params: {
     tableId: string;
     userId: string;
     email: string;
     displayName: string;
     role?: import('../store/types.js').PersonRole;
-  }): { inviteId: string; joinUrl: string; personId: string } {
-    this.people.assertCanInvite(params.userId);
+  }): Promise<{ inviteId: string; joinUrl: string; personId: string; emailSent: boolean }> {
     const inviter = this.store.getUserById(params.userId);
+    const normalizedEmail = params.email.trim().toLowerCase();
     const person = this.people.ensureInvitedPersonForTable({
-      email: params.email,
+      email: normalizedEmail,
       displayName: params.displayName,
       inviterEmail: inviter?.email ?? 'admin',
       role: params.role,
     });
-    const { inviteId, joinUrl } = this.createInvite({
+    const { inviteId, joinUrl, emailSent } = await this.createInvite({
       tableId: params.tableId,
       userId: params.userId,
-      invitedEmail: params.email,
+      invitedEmail: normalizedEmail,
       invitedName: params.displayName,
     });
-    return { inviteId, joinUrl, personId: person.id };
+    return { inviteId, joinUrl, personId: person.id, emailSent };
   }
 
   applyAction(

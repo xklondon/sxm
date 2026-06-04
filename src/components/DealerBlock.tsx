@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
 import './DealerBlock.css';
@@ -84,7 +83,6 @@ export function DealerBlock({
   initialDealManual,
   bankDrawManual,
 }: DealerBlockProps) {
-  const [infoOpen, setInfoOpen] = useState(false);
   const status = engineStatus;
 
   function renderInPlayAction() {
@@ -278,23 +276,8 @@ export function DealerBlock({
             {primaryAction ?? <span className="dealer-block__action-spacer" aria-hidden="true" />}
           </div>
 
-          <div className="dealer-block__info-wrap">
-            <button
-              type="button"
-              className={`dealer-block__info-toggle${infoOpen ? ' dealer-block__info-toggle--open' : ''}`}
-              aria-expanded={infoOpen}
-              aria-controls="dealer-block-table-info"
-              onClick={() => setInfoOpen((open) => !open)}
-            >
-              Table info
-            </button>
-            <div
-              id="dealer-block-table-info"
-              className={`dealer-block__info-panel${infoOpen ? ' dealer-block__info-panel--open' : ''}`}
-              aria-hidden={!infoOpen}
-            >
-              {renderInfoPanelContent()}
-            </div>
+          <div className="dealer-block__info-panel dealer-block__info-panel--compact" aria-label="Table info">
+            {renderInfoPanelContent()}
           </div>
 
           <div className="dealer-block__command" aria-live="polite">

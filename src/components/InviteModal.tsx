@@ -35,6 +35,7 @@ export function InviteModal({
   const [lastMagicLink, setLastMagicLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const profile = loadProfile();
@@ -63,12 +64,14 @@ export function InviteModal({
 
   async function handleCreate() {
     setError(null);
+    setSuccessMessage(null);
     setCopied(false);
     if (!canInvite) {
       setError('You do not have permission to invite.');
       return;
     }
     setBusy(true);
+    setSuccessMessage(null);
     try {
       if (onlineInvite && onlineTableId) {
         const trimmedEmail = email.trim();
@@ -78,8 +81,13 @@ export function InviteModal({
           : await createServerInvite(onlineTableId, trimmedEmail, displayName);
         setLastMagicLink(result.joinUrl);
         if (trimmedEmail) {
-          onInviteSent?.(trimmedEmail);
-          onClose();
+          if (result.emailSent) {
+            setSuccessMessage(`Invite email sent to ${trimmedEmail}.`);
+            onInviteSent?.(trimmedEmail);
+            onClose();
+            return;
+          }
+          setError('Invite was created but the email could not be sent.');
           return;
         }
       } else {
@@ -176,6 +184,7 @@ export function InviteModal({
         )}
 
         {error && <p className="invite-modal__error">{error}</p>}
+        {successMessage && <p className="invite-modal__msg">{successMessage}</p>}
 
         <div className="invite-modal__actions">
           <button type="button" onClick={() => void handleCreate()} disabled={!canInvite || busy}>

@@ -77,68 +77,22 @@
   min-height: 2.2rem;
 }
 
-.dealer-block__info-wrap {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-}
-
-.dealer-block__info-toggle {
-  font: inherit;
-  font-size: 0.58rem;
-  font-weight: var(--ds-weight-semibold, 600);
-  letter-spacing: 0.04em;
-  padding: 0.28rem 0.65rem;
-  border-radius: 999px;
-  border: 1px solid rgb(110 231 183 / 0.45);
-  background: rgb(110 231 183 / 0.14);
-  color: #ecfdf5;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.dealer-block__info-toggle:hover {
-  background: rgb(110 231 183 / 0.22);
-  border-color: rgb(110 231 183 / 0.65);
-}
-
-.dealer-block__info-toggle--open {
-  background: rgb(110 231 183 / 0.24);
-  border-color: rgb(134 239 172 / 0.75);
-  box-shadow: 0 0 10px rgb(110 231 183 / 0.18);
-}
-
 .dealer-block__info-panel {
   width: 100%;
-  max-width: 14rem;
-  display: grid;
-  gap: 0.22rem;
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  margin-top: 0;
-  padding: 0 0.35rem;
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.22rem 0.35rem;
+  margin-top: 0.12rem;
+  padding: 0.28rem 0.35rem;
   border-radius: var(--ds-radius-md);
-  border: 1px solid transparent;
+  border: 1px solid rgb(110 231 183 / 0.22);
   background: rgb(110 231 183 / 0.06);
-  transition:
-    max-height 0.28s ease,
-    opacity 0.22s ease,
-    margin 0.22s ease,
-    padding 0.22s ease,
-    border-color 0.22s ease;
-  pointer-events: none;
 }
 
-.dealer-block__info-panel--open {
-  max-height: 14rem;
-  opacity: 1;
-  margin-top: 0.3rem;
-  padding: 0.35rem 0.4rem 0.4rem;
-  border-color: rgb(110 231 183 / 0.28);
-  pointer-events: auto;
+.dealer-block__info-panel--compact {
+  max-width: 22rem;
 }
 
 .dealer-block__info-chip {
@@ -146,8 +100,9 @@
   flex-direction: column;
   align-items: center;
   gap: 0.06rem;
-  width: 100%;
-  padding: 0.1rem 0.15rem;
+  min-width: 3.4rem;
+  flex: 0 1 auto;
+  padding: 0.1rem 0.28rem;
   border-radius: var(--ds-radius-sm);
   border: 1px solid rgb(110 231 183 / 0.12);
   background: rgb(255 255 255 / 0.04);

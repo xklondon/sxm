@@ -75,31 +75,45 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
   });
 
   router.post('/:tableId/invites', requireAuth, async (req: AuthedRequest, res) => {
+    const invitedEmail = String(req.body?.email ?? '').trim();
+    // eslint-disable-next-line no-console
+    console.log(
+      `[SXM][tables] POST /invites tableId=${req.params.tableId} target=${invitedEmail || '(link-only)'}`,
+    );
     try {
-      const result = tables.createInvite({
+      const result = await tables.createInvite({
         tableId: req.params.tableId!,
         userId: req.auth!.userId,
-        invitedEmail: String(req.body?.email ?? ''),
+        invitedEmail,
         invitedName: String(req.body?.name ?? ''),
       });
       res.status(201).json(result);
     } catch (err) {
-      res.status(400).json({ error: err instanceof Error ? err.message : 'Invite failed' });
+      const message = err instanceof Error ? err.message : 'Invite failed';
+      const status = /email|smtp|configured|send/i.test(message) ? 502 : 400;
+      res.status(status).json({ error: message });
     }
   });
 
   router.post('/:tableId/invite-person', requireAuth, async (req: AuthedRequest, res) => {
+    const email = String(req.body?.email ?? '').trim();
+    // eslint-disable-next-line no-console
+    console.log(
+      `[SXM][tables] POST /invite-person tableId=${req.params.tableId} target=${email}`,
+    );
     try {
-      const result = tables.invitePersonByEmail({
+      const result = await tables.invitePersonByEmail({
         tableId: req.params.tableId!,
         userId: req.auth!.userId,
-        email: String(req.body?.email ?? ''),
+        email,
         displayName: String(req.body?.displayName ?? req.body?.name ?? ''),
         role: req.body?.role,
       });
       res.status(201).json(result);
     } catch (err) {
-      res.status(400).json({ error: err instanceof Error ? err.message : 'Invite failed' });
+      const message = err instanceof Error ? err.message : 'Invite failed';
+      const status = /email|smtp|configured|send/i.test(message) ? 502 : 400;
+      res.status(status).json({ error: message });
     }
   });
 
