@@ -29,6 +29,7 @@ import { clearStaleOnlineTableContext } from './onlineTableRecovery';
 import { resolveEffectiveOnlineTableId } from './onlineTableBootstrap';
 import { useIsMobileViewport } from './hooks/useIsMobileViewport';
 import { consumePendingTable, rememberPendingTable } from './session/pendingTable';
+import { syncStoredViewerPersonId } from './components/viewerIdentity';
 import './index.css';
 
 type AppScreen = 'start' | 'setup' | 'table' | 'people';
@@ -129,9 +130,16 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
   const recoverInFlightRef = useRef(false);
   const isMobileViewport = useIsMobileViewport();
 
-  const handleGameStateChange = useCallback((next: GameState) => {
-    setGameState(normalizeLoadedGameState(next));
-  }, []);
+  const handleGameStateChange = useCallback(
+    (next: GameState) => {
+      const normalized = normalizeLoadedGameState(next);
+      setGameState(normalized);
+      if (onlineMode && activeTableId) {
+        syncStoredViewerPersonId(activeTableId, normalized, user);
+      }
+    },
+    [onlineMode, activeTableId, user],
+  );
 
   const { connected, connectionState, dispatchAction, isOnline, actionInFlight } = useOnlineTable(
     activeTableId,
@@ -635,6 +643,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
           onGameStateChange={handleGameStateChange}
           onLeave={handleLeaveTable}
           onlineTableId={isOnline ? activeTableId : null}
+          viewerAuth={user}
           onlineDispatch={isOnline ? dispatchAction : undefined}
           onlineActionInFlight={actionInFlight}
           profileOpen={profileOpen}

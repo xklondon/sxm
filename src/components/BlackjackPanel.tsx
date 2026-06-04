@@ -8,6 +8,7 @@ import {
   releaseBoxSlot,
   resolveControllerPersonId,
   canControllerCallBox,
+  getCallerPersonIdForBox,
 } from '../engine/session';
 import { isJoinAssignedHighlight } from '../engine/session/inviteJoin';
 import {
@@ -91,6 +92,11 @@ import {
   updateBlackjackFlowSettings,
 } from '../engine/blackjack';
 import { getActionableHandForView, getInsuranceActionsForController } from './blackjackViewPhase';
+import {
+  buildViewerIdentityHints,
+  resolveViewerPersonIdForTable,
+} from './viewerIdentity';
+import type { AuthUser } from '../api/client';
 import { MAX_TABLE_BOXES } from '../types/table';
 import { loadProfile, type PlayFlowAutoStand } from '../storage/profileStorage';
 import { isOnlineModeEnabled } from '../api/config';
@@ -124,6 +130,8 @@ interface BlackjackPanelProps {
   onProfileOpenChange?: (open: boolean) => void;
   onSaveTable?: () => void;
   onBeginTableReset?: (variant?: TableResetSetupVariant) => void;
+  onlineTableId?: string | null;
+  viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
 }
 
 function arcVisualIndex(slotNumber: number): number {
@@ -140,6 +148,8 @@ export function BlackjackPanel({
   onProfileOpenChange,
   onSaveTable,
   onBeginTableReset,
+  onlineTableId = null,
+  viewerAuth = null,
 }: BlackjackPanelProps) {
   const { session, ledger, deck, blackjack, blackjackSettings, tableViewMode, tableMeta } =
     gameState;
@@ -164,6 +174,8 @@ export function BlackjackPanel({
 
   const profile = loadProfile();
   const controllerName = profile.name.trim() || tableMeta.controllerName;
+  const viewerHints = buildViewerIdentityHints(gameState, onlineTableId, viewerAuth);
+  const viewerPersonId = resolveViewerPersonIdForTable(gameState, onlineTableId, viewerAuth);
   const tableOwner = isTableOwner(gameState, controllerName);
   const canDriveTableAutomation =
     tableOwner || controllerName === tableMeta.controllerName;
@@ -262,6 +274,8 @@ export function BlackjackPanel({
     protocolPhase,
     roundSummaryLines,
     controllerName,
+    viewerPersonId,
+    viewerHints,
   });
 
   function handleAddToPersonalLedger() {
@@ -697,10 +711,9 @@ export function BlackjackPanel({
 
     const { playerId } = parseBlackjackHandKey(offerKey);
     const activeSlotNum = session.boxSlotNumbers?.[playerId];
-    const controllerPersonId = resolveControllerPersonId(gameState, controllerName);
     const isCaller =
-      controllerPersonId !== null &&
-      canControllerCallBox(gameState, playerId, controllerPersonId);
+      viewerPersonId !== null &&
+      canControllerCallBox(gameState, playerId, viewerPersonId);
 
     if (!isCaller) {
       return (
@@ -743,18 +756,25 @@ export function BlackjackPanel({
 
     const turnHandKey = round.activeHandKey;
     const { playerId } = parseBlackjackHandKey(turnHandKey);
-    const controllerPersonId = resolveControllerPersonId(gameState, controllerName);
+    const activeSlotNum = session.boxSlotNumbers?.[playerId];
     const isCaller =
-      controllerPersonId !== null &&
-      canControllerCallBox(gameState, playerId, controllerPersonId);
+      viewerPersonId !== null &&
+      canControllerCallBox(gameState, playerId, viewerPersonId);
 
     if (!isCaller) {
-      return null;
+      const callerId = getCallerPersonIdForBox(gameState, playerId);
+      const caller = callerId ? gameState.players[callerId] : null;
+      const callerName = caller?.controllerName?.trim() || caller?.displayName || 'caller';
+      return (
+        <p className="bj-table-actions bj-table-actions--wait">
+          Box {activeSlotNum ?? '?'} — waiting for {callerName} to call.
+        </p>
+      );
     }
 
     // Canonical gate: controls enabled only when this viewer may act on the
     // server-authoritative active hand. Shared with Card View.
-    const actionable = getActionableHandForView(gameState, controllerPersonId, isOnlineModeEnabled());
+    const actionable = getActionableHandForView(gameState, viewerPersonId, isOnlineModeEnabled());
     const canHit = Boolean(actionable) && canHitBlackjack(round, turnHandKey);
     const canStand = Boolean(actionable) && canStandBlackjack(round, turnHandKey);
 
@@ -842,7 +862,7 @@ export function BlackjackPanel({
       return null;
     }
 
-    const actions = getInsuranceActionsForController(gameState, round, controllerName);
+    const actions = getInsuranceActionsForController(gameState, round, viewerPersonId);
 
     if (actions.length === 0) {
       return null;
@@ -1226,6 +1246,9 @@ export function BlackjackPanel({
                 <BlackjackCardView
                   gameState={tableVisualState}
                   logicalGameState={gameState}
+                  viewerPersonId={viewerPersonId}
+                  onlineTableId={onlineTableId}
+                  viewerAuth={viewerAuth}
                   deviceView={deviceView}
                   focusBoxId={focusBoxId ?? undefined}
                   activeBoxId={activeBoxId}

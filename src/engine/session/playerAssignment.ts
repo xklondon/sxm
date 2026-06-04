@@ -267,6 +267,119 @@ export function canControllerCallBox(
   return isCallerForBox(state, boxPlayerId, controllerPersonId);
 }
 
+export interface ViewerIdentityHints {
+  /** Persisted after online invite join — authoritative for guests. */
+  storedViewerPersonId?: string | null;
+  profileName?: string;
+  profileEmail?: string;
+  authEmail?: string;
+  authDisplayName?: string;
+}
+
+function personLabelMatches(
+  state: GameState,
+  personId: string,
+  names: string[],
+): boolean {
+  const person = state.players[personId];
+  if (!person) {
+    return false;
+  }
+  const label = (person.controllerName?.trim() || person.displayName || '').toLowerCase();
+  return names.some((n) => n.toLowerCase() === label);
+}
+
+function collectNameCandidates(hints: ViewerIdentityHints, state: GameState): string[] {
+  const out: string[] = [];
+  for (const raw of [
+    hints.profileName,
+    hints.authDisplayName,
+    state.tableMeta.controllerName,
+  ]) {
+    const t = raw?.trim();
+    if (t && !out.includes(t)) {
+      out.push(t);
+    }
+  }
+  return out;
+}
+
+/**
+ * Resolves the local viewer's seated person id for multiplayer action visibility.
+ * Prefer stored id (invite join), then invite-email mapping, then display-name match.
+ */
+export function resolveViewerPersonId(
+  state: GameState,
+  hints: ViewerIdentityHints,
+): string | null {
+  const seated = new Set(getEffectivePlayerOrder(state));
+
+  const stored = hints.storedViewerPersonId?.trim();
+  if (stored && seated.has(stored)) {
+    return stored;
+  }
+
+  const emails = [hints.profileEmail, hints.authEmail]
+    .map((e) => e?.trim().toLowerCase())
+    .filter((e): e is string => Boolean(e));
+
+  if (emails.length > 0) {
+    const acceptedForViewer = state.tableMeta.invites.filter(
+      (inv) =>
+        inv.inviteStatus === 'accepted' &&
+        emails.includes(inv.invitedEmail.trim().toLowerCase()),
+    );
+    if (acceptedForViewer.length > 0) {
+      for (const invite of acceptedForViewer) {
+        const invitedName = invite.invitedName?.trim().toLowerCase();
+        if (invitedName) {
+          for (const id of seated) {
+            const p = state.players[id];
+            const label = (p?.controllerName?.trim() || p?.displayName || '').toLowerCase();
+            if (label === invitedName) {
+              return id;
+            }
+          }
+        }
+      }
+      const ownerId = state.tableMeta.ownerPersonId;
+      const nonOwners = [...seated].filter((id) => id !== ownerId);
+      if (nonOwners.length === 1) {
+        return nonOwners[0]!;
+      }
+    }
+  }
+
+  const highlightId = state.tableMeta.joinHighlight?.personId;
+  if (highlightId && seated.has(highlightId)) {
+    const names = collectNameCandidates(hints, state);
+    if (names.length === 0 || personLabelMatches(state, highlightId, names)) {
+      return highlightId;
+    }
+  }
+
+  const noticeId = state.tableMeta.tableNotice?.personId;
+  if (noticeId && seated.has(noticeId)) {
+    const names = collectNameCandidates(hints, state);
+    if (names.length === 0 || personLabelMatches(state, noticeId, names)) {
+      return noticeId;
+    }
+  }
+
+  for (const name of collectNameCandidates(hints, state)) {
+    const id = resolveControllerPersonId(state, name);
+    if (id) {
+      return id;
+    }
+  }
+
+  if (isSinglePlayerTable(state) && state.tableMeta.ownerPersonId) {
+    return state.tableMeta.ownerPersonId;
+  }
+
+  return null;
+}
+
 export function resolveControllerPersonId(
   state: GameState,
   controllerName: string,

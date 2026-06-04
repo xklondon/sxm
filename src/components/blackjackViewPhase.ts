@@ -10,8 +10,8 @@ import { getInsuranceOfferForBox } from '../engine/blackjack/insurance';
 import {
   canControllerCallBox,
   getCallerPersonIdForBox,
-  isSinglePlayerTable,
-  resolveControllerPersonId,
+  resolveViewerPersonId,
+  type ViewerIdentityHints,
 } from '../engine/session';
 import { isTableGameActive } from '../engine/session/tableGameEnd';
 
@@ -384,10 +384,10 @@ export function getPendingInsurancePlayerIds(
 export function getMyPendingInsurancePlayerIds(
   state: GameState,
   round: BlackjackRound,
-  controllerName: string,
+  viewerPersonId: string | null,
 ): string[] {
   return getPendingInsurancePlayerIds(state, round).filter((playerId) =>
-    canCallBoxForPlayer(state, playerId, controllerName),
+    canCallBoxForPlayer(state, playerId, viewerPersonId),
   );
 }
 
@@ -402,10 +402,10 @@ export interface InsuranceActionView {
 export function getInsuranceActionsForController(
   state: GameState,
   round: BlackjackRound,
-  controllerName: string,
+  viewerPersonId: string | null,
 ): InsuranceActionView[] {
   const protocol = getBlackjackProtocolForState(state);
-  return getMyPendingInsurancePlayerIds(state, round, controllerName).flatMap((boxId) => {
+  return getMyPendingInsurancePlayerIds(state, round, viewerPersonId).flatMap((boxId) => {
     const offer = getInsuranceOfferForBox(state, round, boxId, protocol);
     if (!offer) {
       return [];
@@ -425,35 +425,37 @@ export function getInsuranceActionsForController(
 export function getPrimaryInsuranceActionForController(
   state: GameState,
   round: BlackjackRound,
-  controllerName: string,
+  viewerPersonId: string | null,
 ): InsuranceActionView | null {
-  return getInsuranceActionsForController(state, round, controllerName)[0] ?? null;
+  return getInsuranceActionsForController(state, round, viewerPersonId)[0] ?? null;
 }
 
 export function canCallEvenMoneyForHand(
   state: GameState,
   handKey: string,
-  controllerName: string,
+  viewerPersonId: string | null,
 ): boolean {
   const playerId = handKey.split(':')[0]!;
-  const controllerPersonId = resolveControllerPersonId(state, controllerName);
   return (
-    controllerPersonId !== null &&
-    canControllerCallBox(state, playerId, controllerPersonId)
+    viewerPersonId !== null &&
+    canControllerCallBox(state, playerId, viewerPersonId)
   );
 }
 
 export function canCallBoxForPlayer(
   state: GameState,
   boxPlayerId: string,
-  controllerName: string,
+  viewerPersonId: string | null,
 ): boolean {
-  let controllerPersonId = resolveControllerPersonId(state, controllerName);
-  if (controllerPersonId === null && isSinglePlayerTable(state) && state.tableMeta.ownerPersonId) {
-    controllerPersonId = state.tableMeta.ownerPersonId;
-  }
   return (
-    controllerPersonId !== null &&
-    canControllerCallBox(state, boxPlayerId, controllerPersonId)
+    viewerPersonId !== null &&
+    canControllerCallBox(state, boxPlayerId, viewerPersonId)
   );
+}
+
+export function resolveViewerPersonIdForActions(
+  state: GameState,
+  hints: ViewerIdentityHints,
+): string | null {
+  return resolveViewerPersonId(state, hints);
 }

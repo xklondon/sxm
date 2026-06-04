@@ -4,6 +4,8 @@ import {
   canControllerCallBox,
   getCallerPersonIdForBox,
   resolveControllerPersonId,
+  resolveViewerPersonId,
+  type ViewerIdentityHints,
 } from '../engine/session';
 import {
   canDoubleBlackjackForState,
@@ -60,6 +62,8 @@ export function buildTableCommandDisplay(params: {
   protocolPhase: BlackjackProtocolPhase;
   roundSummaryLines: string[];
   controllerName: string;
+  viewerPersonId?: string | null;
+  viewerHints?: ViewerIdentityHints;
 }): TableCommandDisplay {
   const {
     gameState,
@@ -69,7 +73,13 @@ export function buildTableCommandDisplay(params: {
     protocolPhase,
     roundSummaryLines,
     controllerName,
+    viewerPersonId: viewerPersonIdParam,
+    viewerHints,
   } = params;
+  const viewerPersonId =
+    viewerPersonIdParam ??
+    (viewerHints ? resolveViewerPersonId(gameState, viewerHints) : null) ??
+    resolveControllerPersonId(gameState, controllerName);
   const round = gameState.blackjack;
   const { players } = gameState;
 
@@ -91,10 +101,9 @@ export function buildTableCommandDisplay(params: {
   if (round?.evenMoneyOfferHandKey) {
     const { playerId } = parseBlackjackHandKey(round.evenMoneyOfferHandKey);
     const slotNum = gameState.session.boxSlotNumbers?.[playerId];
-    const controllerPersonId = resolveControllerPersonId(gameState, controllerName);
     const canCall =
-      controllerPersonId !== null &&
-      canCallEvenMoneyForHand(gameState, round.evenMoneyOfferHandKey, controllerName);
+      viewerPersonId !== null &&
+      canCallEvenMoneyForHand(gameState, round.evenMoneyOfferHandKey, viewerPersonId);
     if (!canCall) {
       return {
         commandMessage: `Box ${slotNum ?? '?'} — even-money decision pending…`,
@@ -105,7 +114,7 @@ export function buildTableCommandDisplay(params: {
   }
 
   if (protocolPhase === 'insurance' && round?.insuranceOfferPending) {
-    const actions = getInsuranceActionsForController(gameState, round, controllerName);
+    const actions = getInsuranceActionsForController(gameState, round, viewerPersonId);
     if (actions.length === 0) {
       return {
         commandMessage: 'Dealer shows Ace — insurance decisions.',
@@ -130,10 +139,9 @@ export function buildTableCommandDisplay(params: {
     const callerId = getCallerPersonIdForBox(gameState, playerId);
     const caller = callerId ? players[callerId] : null;
     const callerName = caller?.controllerName?.trim() || caller?.displayName || 'caller';
-    const controllerPersonId = resolveControllerPersonId(gameState, controllerName);
     const isCaller =
-      controllerPersonId !== null &&
-      canControllerCallBox(gameState, playerId, controllerPersonId);
+      viewerPersonId !== null &&
+      canControllerCallBox(gameState, playerId, viewerPersonId);
 
     if (!isCaller) {
       return {

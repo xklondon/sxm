@@ -50,7 +50,7 @@ function insuranceRound(
 }
 
 describe('insurance phase', () => {
-  it('shows insurance actions when profile name differs from box controllerName', () => {
+  it('shows insurance actions for caller person id when profile name differs from box controllerName', () => {
     let state = tableWithClaimedBox(1);
     state = setControllerName(state, 'Alice');
     const boxId = boxPlayerId(state, 1)!;
@@ -66,8 +66,8 @@ describe('insurance phase', () => {
     );
     state = { ...state, blackjack: round };
 
-    expect(getMyPendingInsurancePlayerIds(state, round, 'Bob')).toEqual([boxId]);
-    const actions = getInsuranceActionsForController(state, round, 'Bob');
+    expect(getMyPendingInsurancePlayerIds(state, round, personId)).toEqual([boxId]);
+    const actions = getInsuranceActionsForController(state, round, personId);
     expect(actions).toHaveLength(1);
     expect(actions[0]?.maxBet).toBe(25);
     expect(actions[0]?.canAfford).toBe(true);
@@ -221,7 +221,7 @@ describe('insurance phase', () => {
     const actions = getInsuranceActionsForController(
       { ...brokeState, blackjack: round },
       round,
-      brokeState.tableMeta.controllerName,
+      personId,
     );
     if (actions.length > 0) {
       expect(actions[0]?.canAfford).toBe(false);

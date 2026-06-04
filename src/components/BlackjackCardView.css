@@ -99,12 +99,13 @@
 }
 
 .bj-phone-view__mini-hand {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.1rem;
-  padding: 0.25rem 0.3rem;
+  gap: 0.08rem;
+  padding: 0.2rem 0.28rem 0.15rem;
   border-radius: var(--ds-radius-sm);
   border: 1px solid var(--ds-color-border-subtle);
   background: rgb(0 0 0 / 0.22);
@@ -116,6 +117,7 @@
   min-height: 5.5rem;
   height: 5.5rem;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .bj-phone-view__mini-hand-head {
@@ -139,31 +141,28 @@
 }
 
 .bj-phone-view__mini-hand-card-stack {
-  display: flex;
-  flex: 0 0 1.9rem;
-  align-items: flex-end;
-  justify-content: center;
+  position: relative;
+  flex: 0 0 1.55rem;
   width: 100%;
-  min-height: 1.9rem;
-  height: 1.9rem;
+  min-height: 1.55rem;
+  height: 1.55rem;
+  margin-top: 0.05rem;
   overflow: visible;
-  padding: 0 0.05rem;
   box-sizing: border-box;
 }
 
 .bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card {
-  flex: 0 0 auto;
-  margin-left: calc(var(--mini-card-i, 0) * -0.42rem);
-  transform: scale(0.5);
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  margin-left: 0;
+  transform: translateX(calc(-50% + var(--mini-card-i, 0) * 0.38rem)) scale(0.44);
   transform-origin: bottom center;
 }
 
-.bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card:first-child {
-  margin-left: 0;
-}
-
 .bj-phone-view__mini-card {
-  flex: 0 0 auto;
+  display: block;
+  line-height: 0;
 }
 
 .bj-phone-view__mini-hand-meta {
@@ -580,13 +579,7 @@
   line-height: 1.35;
 }
 
-.bj-phone-view__mini-hand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  margin-bottom: 0.2rem;
-}
+/* Legacy block removed — mini tile sizing is defined above (lines ~101–119). */
 
 .bj-phone-view__mini-cards {
   display: flex;
@@ -1992,6 +1985,37 @@
 
   .bj-phone-view__mini-hand-name {
     font-size: 0.6rem;
+  }
+}
+
+/* Mobile Card View — compact play actions under hero total */
+@media (max-width: 720px) {
+  .bj-phone-view__action-bar--playing {
+    min-height: 3.35rem;
+    padding: 0.1rem 0.3rem 0.12rem;
+    gap: 0.08rem;
+  }
+
+  .bj-phone-view__action-bar-row--primary .bj-phone-view__action-bar-btn {
+    min-height: 1.65rem;
+    max-width: 5rem;
+    padding: 0.22rem 0.4rem;
+    font-size: 0.58rem;
+  }
+
+  .bj-phone-view__action-bar-row--secondary .bj-phone-view__action-bar-extra {
+    min-width: 1.65rem;
+    min-height: 1.55rem;
+    padding: 0.14rem 0.28rem;
+    font-size: 0.5rem;
+  }
+
+  .bj-phone-view__slot--actions {
+    min-height: 3.4rem;
+  }
+
+  .bj-phone-view__total--hero {
+    margin-bottom: 0.12rem;
   }
 }
 

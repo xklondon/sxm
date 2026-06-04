@@ -112,9 +112,11 @@ export {
   isSeatedPersonAtTable,
   canControllerCallBox,
   resolveControllerPersonId,
+  resolveViewerPersonId,
   getCallerInitials,
   isSinglePlayerTable,
 } from './playerAssignment';
+export type { ViewerIdentityHints } from './playerAssignment';
 export { getTableWagerDisplay } from './wagerDisplay';
 export {
   addTableInvite,

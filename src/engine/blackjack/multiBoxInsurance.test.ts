@@ -155,10 +155,10 @@ describe('multi-box insurance', () => {
     state = { ...state, blackjack: insuranceRoundTwoBoxes(state, box1, box2, [50, 10]) };
     const round = state.blackjack!;
 
-    const aliceActions = getInsuranceActionsForController(state, round, 'Alice');
+    const aliceActions = getInsuranceActionsForController(state, round, aliceId);
     expect(aliceActions.map((a) => a.playerId)).toEqual([box1]);
 
-    const bobActions = getInsuranceActionsForController(state, round, 'Bob');
+    const bobActions = getInsuranceActionsForController(state, round, bobId);
     expect(bobActions.map((a) => a.playerId)).toEqual([box2]);
   });
 });

@@ -2,6 +2,7 @@ import { deriveInitials } from '../utils/initials';
 import { log } from '../utils/logger';
 
 const STORAGE_KEY = 'sxmcards:profile:v1';
+const VIEWER_PERSON_IDS_KEY = 'sxmcards:table-viewer-person:v1';
 
 export type PlayFlowAutoStand = 'manual' | 'auto-18' | 'auto-19' | 'auto-20' | 'auto-21';
 
@@ -93,6 +94,38 @@ export function syncAuthEmailToProfile(authEmail: string): LocalProfile {
   const next = buildProfile(profile.name, authEmail, profile.playFlow);
   saveProfile(next);
   return next;
+}
+
+/** Online table id → seated person id for action visibility (set on invite join). */
+export function getStoredViewerPersonIdForTable(tableId: string): string | null {
+  if (typeof localStorage === 'undefined' || !tableId.trim()) {
+    return null;
+  }
+  try {
+    const raw = localStorage.getItem(VIEWER_PERSON_IDS_KEY);
+    if (!raw) {
+      return null;
+    }
+    const map = JSON.parse(raw) as Record<string, string>;
+    const id = map[tableId.trim()];
+    return typeof id === 'string' && id.length > 0 ? id : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredViewerPersonIdForTable(tableId: string, personId: string): void {
+  if (typeof localStorage === 'undefined' || !tableId.trim() || !personId.trim()) {
+    return;
+  }
+  try {
+    const raw = localStorage.getItem(VIEWER_PERSON_IDS_KEY);
+    const map = raw ? (JSON.parse(raw) as Record<string, string>) : {};
+    map[tableId.trim()] = personId.trim();
+    localStorage.setItem(VIEWER_PERSON_IDS_KEY, JSON.stringify(map));
+  } catch (err) {
+    log.warn('Failed to store viewer person id', { err });
+  }
 }
 
 export function getPlayerInitials(name: string, email?: string): string | null {

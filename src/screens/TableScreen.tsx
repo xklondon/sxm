@@ -46,11 +46,14 @@ export interface TableNavHandlers {
   openAdmin: () => void;
 }
 
+import type { AuthUser } from '../api/client';
+
 interface TableScreenProps {
   gameState: GameState;
   onGameStateChange: (state: GameState) => void;
   onLeave: () => void;
   onlineTableId?: string | null;
+  viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
   onlineActionInFlight?: boolean;
   profileOpen?: boolean;
@@ -75,6 +78,7 @@ export function TableScreen({
   gameState,
   onGameStateChange,
   onlineTableId = null,
+  viewerAuth = null,
   onlineDispatch,
   onlineActionInFlight = false,
   profileOpen,
@@ -345,6 +349,8 @@ export function TableScreen({
               onJoinTable={() => setShowJoin(true)}
               onInviteTable={() => setInviteOpen(true)}
               onLeaveBox={handleLeaveBox}
+              onlineTableId={onlineTableId}
+              viewerAuth={viewerAuth}
               onlineDispatch={onlineDispatch}
               onlineActionInFlight={onlineActionInFlight}
               profileOpen={profileOpen}

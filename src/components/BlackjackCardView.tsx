@@ -25,12 +25,13 @@ import {
 
 import { getCardById } from "../engine/deck";
 
-import { getPlayerInitials, loadProfile } from "../storage/profileStorage";
+import { getPlayerInitials } from "../storage/profileStorage";
 import {
   canControllerCallBox,
   getCallerPersonIdForBox,
-  resolveControllerPersonId,
 } from "../engine/session";
+import { resolveViewerPersonIdForTable } from "./viewerIdentity";
+import type { AuthUser } from "../api/client";
 
 import {
   canCallEvenMoneyForHand,
@@ -105,6 +106,10 @@ interface BlackjackCardViewProps {
   onDeclineInsurance?: (playerId: string) => void;
   /** @deprecated View toggle lives in table toolbar; kept for API compatibility. */
   onBack: () => void;
+  /** Seated person id for this client — drives Hit/Stand visibility in multiplayer. */
+  viewerPersonId?: string | null;
+  onlineTableId?: string | null;
+  viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
 }
 
 const SWIPE_THRESHOLD = 48;
@@ -132,6 +137,9 @@ export function BlackjackCardView({
   onWaitForBlackjackPayout,
   onTakeInsurance,
   onDeclineInsurance,
+  viewerPersonId: viewerPersonIdProp,
+  onlineTableId = null,
+  viewerAuth = null,
 }: BlackjackCardViewProps) {
   const logicalGameState = logicalGameStateProp ?? gameState;
   const {
@@ -167,16 +175,16 @@ export function BlackjackCardView({
   const heroHandKey = getCardViewHeroHandKey(protocolPhase, logicalRound, heroBoxId);
   /** Hero box follows active turn in play, selected seat in betting. */
 
-  const controllerLabel =
-    loadProfile().name.trim() || logicalGameState.tableMeta.controllerName;
-  const controllerPersonId = resolveControllerPersonId(logicalGameState, controllerLabel);
+  const viewerPersonId =
+    viewerPersonIdProp ??
+    resolveViewerPersonIdForTable(logicalGameState, onlineTableId, viewerAuth);
   const callerPersonId = turnBoxId ? getCallerPersonIdForBox(gameState, turnBoxId) : null;
   const caller = callerPersonId ? players[callerPersonId] : null;
   const callerName = caller?.controllerName?.trim() || caller?.displayName || "caller";
   const isCaller =
     turnBoxId !== null &&
-    controllerPersonId !== null &&
-    canControllerCallBox(gameState, turnBoxId, controllerPersonId);
+    viewerPersonId !== null &&
+    canControllerCallBox(gameState, turnBoxId, viewerPersonId);
 
   const logicalHand =
     heroHandKey && logicalRound?.playerHands[heroHandKey]
@@ -191,7 +199,7 @@ export function BlackjackCardView({
   // it owns the server-authoritative active hand and the viewer may call it.
   const actionable = getActionableHandForView(
     logicalGameState,
-    controllerPersonId,
+    viewerPersonId,
     isOnlineModeEnabled(),
   );
   const isActiveTurn =
@@ -263,7 +271,7 @@ export function BlackjackCardView({
 
     if (isPlayerPhase && turnHandKey && !isCaller) {
       return activeSlotNum
-        ? `Waiting for ${callerName} to call Box ${activeSlotNum}.`
+        ? `Box ${activeSlotNum} — waiting for ${callerName} to call.`
         : `Waiting for ${callerName} to call.`;
     }
 
@@ -285,7 +293,7 @@ export function BlackjackCardView({
   const evenMoneyHandKey = evenMoneyActive ? round?.evenMoneyOfferHandKey ?? null : null;
   const canCallEvenMoney =
     evenMoneyHandKey !== null &&
-    canCallEvenMoneyForHand(gameState, evenMoneyHandKey, controllerLabel);
+    canCallEvenMoneyForHand(gameState, evenMoneyHandKey, viewerPersonId);
 
   useEffect(() => {
     if (!import.meta.env.DEV) {
@@ -725,7 +733,7 @@ export function BlackjackCardView({
       return null;
     }
 
-    const action = getPrimaryInsuranceActionForController(gameState, round, controllerLabel);
+    const action = getPrimaryInsuranceActionForController(gameState, round, viewerPersonId);
 
     if (!action) {
       return null;
