@@ -47,7 +47,8 @@ import { BankerSetupPanel } from './BankerSetupPanel';
 import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
 import { getBoxCallerDisplayName } from './boxCallerDisplay';
 import { LocalProfileSetup } from './LocalProfileSetup';
-import { PlayLedgerModal, ThisTableSlidePanel } from './LedgerModals';
+import { PlayLedgerModal, TableDetailsSlidePanel, ThisTableSlidePanel } from './LedgerModals';
+import { TableDetailsPanelContent } from './TableDetailsPanel';
 import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
 import { TableAccountsPanel } from './TableAccountsPanel';
@@ -138,6 +139,7 @@ export function BlackjackPanel({
   const [error, setError] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [thisTableOpen, setThisTableOpen] = useState(true);
+  const [tableDetailsOpen, setTableDetailsOpen] = useState(false);
   const [activeTablePanel, setActiveTablePanel] = useState<'playLedger' | 'settings' | null>(null);
   const [profileOpenInternal, setProfileOpenInternal] = useState(
     () => !isOnlineModeEnabled() && !loadProfile().name.trim(),
@@ -516,29 +518,40 @@ export function BlackjackPanel({
     run((s) => setBlackjackProtocolOnState(s, next.protocolId, controllerName));
   }
 
-  const dealerBlockProps = {
-    deckCount,
-    totalCards: deckCount * 52,
-    remaining,
+  function openTableDetails() {
+    setThisTableOpen(false);
+    setActiveTablePanel(null);
+    setTableDetailsOpen(true);
+  }
+
+  const tableDetailsProps = {
     playingFor,
     minimumBet,
     canChangeMinBet,
     onChangeMinBet: () => setMinBetOpen(true),
+    deckCount,
+    totalCards: deckCount * 52,
+    remaining,
+    hasDeck,
     dealSpeedLabel: dealSpeedDisplayLabel(flowSettings.dealSpeedPreset),
     canChangeDealSpeed,
     onCycleDealSpeed: handleCycleDealSpeed,
     protocolLabel: activeProtocol.displayName,
     canChangeProtocol,
     onChangeProtocol: handleCycleProtocol,
+    gameEnded,
+  };
+
+  const dealerBlockProps = {
     awaitingNextRound,
     gameEnded,
     commentaryText: tableAidTip,
     commandMessage: tableCommand.commandMessage,
     commandLines: tableCommand.commandLines,
-    showDealerPlaceholder: protocolPhase === 'betting' && dealerCards.length === 0,
+    onOpenTableDetails: openTableDetails,
+    tableDetailsOpen,
     onNextRound: handleNextRound,
     protocolPhase,
-    hasDeck,
     bankerReady,
     shoeStarted,
     bettingOpen,
@@ -979,7 +992,10 @@ export function BlackjackPanel({
           <button
             type="button"
             className={thisTableOpen ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-            onClick={() => setThisTableOpen((open) => !open)}
+            onClick={() => {
+              setTableDetailsOpen(false);
+              setThisTableOpen((open) => !open);
+            }}
             aria-expanded={thisTableOpen}
           >
             This Table
@@ -989,6 +1005,7 @@ export function BlackjackPanel({
             className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
             onClick={() => {
               setThisTableOpen(false);
+              setTableDetailsOpen(false);
               setActiveTablePanel('playLedger');
             }}
           >
@@ -999,6 +1016,7 @@ export function BlackjackPanel({
             className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
             onClick={() => {
               setThisTableOpen(false);
+              setTableDetailsOpen(false);
               setActiveTablePanel('settings');
             }}
           >
@@ -1022,6 +1040,10 @@ export function BlackjackPanel({
           onClose={() => setActiveTablePanel(null)}
         />
       )}
+
+      <TableDetailsSlidePanel open={tableDetailsOpen} onClose={() => setTableDetailsOpen(false)}>
+        <TableDetailsPanelContent {...tableDetailsProps} />
+      </TableDetailsSlidePanel>
 
       <ThisTableSlidePanel open={thisTableOpen} onClose={() => setThisTableOpen(false)}>
         <TableAccountsPanel

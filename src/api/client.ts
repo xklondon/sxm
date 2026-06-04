@@ -174,9 +174,23 @@ export async function sendTableAction(
   return data as { state: import('../types').GameState; version: number };
 }
 
+export class TableNotFoundError extends Error {
+  readonly tableId: string;
+  readonly status = 404;
+
+  constructor(tableId: string, message = 'Table not found') {
+    super(message);
+    this.name = 'TableNotFoundError';
+    this.tableId = tableId;
+  }
+}
+
 export async function fetchTable(tableId: string) {
   const res = await apiFetch(`/api/tables/${tableId}`);
-  const data = await res.json();
+  const data = (await res.json()) as { error?: string };
+  if (res.status === 404) {
+    throw new TableNotFoundError(tableId, data.error ?? 'Table not found');
+  }
   if (!res.ok) {
     throw new Error(data.error ?? 'Could not load table');
   }

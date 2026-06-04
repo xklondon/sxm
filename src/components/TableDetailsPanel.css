@@ -1,0 +1,79 @@
+.table-details-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.table-details-panel__chip {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.35rem 0.45rem;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid rgb(110 231 183 / 0.22);
+  background: rgb(110 231 183 / 0.06);
+  box-sizing: border-box;
+}
+
+.table-details-panel__k {
+  flex: 0 0 auto;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(236 253 245 / 0.62);
+}
+
+.table-details-panel__v {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.22rem;
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-semibold, 600);
+  line-height: 1.25;
+  color: #f0fdf4;
+  text-align: right;
+}
+
+.table-details-panel__chip-icon {
+  font-size: 0.65rem;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.table-details-panel__chip-btn {
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.16rem;
+  padding: 0.06rem 0.3rem;
+  border-radius: 999px;
+  border: 1px solid rgb(110 231 183 / 0.35);
+  background: rgb(110 231 183 / 0.1);
+  color: inherit;
+  cursor: pointer;
+  line-height: 1.25;
+}
+
+.table-details-panel__chip-btn--meta {
+  border-color: rgb(255 255 255 / 0.16);
+  background: rgb(255 255 255 / 0.05);
+}
+
+.table-details-panel__chip-btn:hover:not(:disabled) {
+  border-color: rgb(134 239 172 / 0.75);
+  background: rgb(110 231 183 / 0.18);
+}

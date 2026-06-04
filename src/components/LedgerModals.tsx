@@ -60,6 +60,49 @@ export function ThisTableSlidePanel({ open, onClose, children }: ThisTableSlideP
   );
 }
 
+interface TableDetailsSlidePanelProps {
+  open: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}
+
+/** Slide-out for wager/shoe/protocol — separate from This Table bank/players nav. */
+export function TableDetailsSlidePanel({ open, onClose, children }: TableDetailsSlidePanelProps) {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div
+      className="bj-table-slide-overlay bj-table-slide-overlay--details"
+      role="presentation"
+      onClick={onClose}
+    >
+      <aside
+        className="bj-table-slide-drawer bj-table-slide-drawer--details"
+        role="dialog"
+        aria-labelledby="table-details-slide-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="bj-table-slide-drawer__header">
+          <h2 id="table-details-slide-title" className="bj-table-slide-drawer__title">
+            Table details
+          </h2>
+          <button
+            type="button"
+            className="bj-table-slide-drawer__close secondary"
+            onClick={onClose}
+            aria-label="Close table details"
+          >
+            ×
+          </button>
+        </div>
+        <div className="bj-table-slide-drawer__body">{children}</div>
+      </aside>
+    </div>
+  );
+}
+
 interface TablePanelOverlayProps {
   open: boolean;
   title: string;

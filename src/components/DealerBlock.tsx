@@ -3,19 +3,6 @@ import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
 import './DealerBlock.css';
 
 interface DealerBlockProps {
-  deckCount: number;
-  totalCards: number;
-  remaining: number;
-  playingFor: string;
-  minimumBet: number;
-  canChangeMinBet: boolean;
-  onChangeMinBet: () => void;
-  dealSpeedLabel: string;
-  canChangeDealSpeed: boolean;
-  onCycleDealSpeed: () => void;
-  protocolLabel: string;
-  canChangeProtocol: boolean;
-  onChangeProtocol: () => void;
   awaitingNextRound: boolean;
   gameEnded: boolean;
   /** AID advice and optional contextual commentary — left column. */
@@ -24,12 +11,11 @@ interface DealerBlockProps {
   commandMessage?: string | null;
   /** Extra command lines (round summary, legal-action hints). */
   commandLines?: string[];
-  /** Show stacked card backs when no dealer cards (betting). */
-  showDealerPlaceholder?: boolean;
+  onOpenTableDetails?: () => void;
+  tableDetailsOpen?: boolean;
   onNextRound: () => void;
   dealerCards: React.ReactNode;
   protocolPhase: BlackjackProtocolPhase;
-  hasDeck: boolean;
   bankerReady: boolean;
   shoeStarted: boolean;
   bettingOpen: boolean;
@@ -46,29 +32,16 @@ interface DealerBlockProps {
 }
 
 export function DealerBlock({
-  deckCount,
-  totalCards,
-  remaining,
-  playingFor,
-  minimumBet,
-  canChangeMinBet,
-  onChangeMinBet,
-  dealSpeedLabel,
-  canChangeDealSpeed,
-  onCycleDealSpeed,
-  protocolLabel,
-  canChangeProtocol,
-  onChangeProtocol,
   awaitingNextRound,
   gameEnded,
   commentaryText,
   commandMessage,
   commandLines = [],
-  showDealerPlaceholder = false,
+  onOpenTableDetails,
+  tableDetailsOpen = false,
   onNextRound,
   dealerCards,
   protocolPhase,
-  hasDeck,
   bankerReady,
   shoeStarted,
   bettingOpen,
@@ -160,99 +133,17 @@ export function DealerBlock({
 
   const cardsSlot = dealerCards ? (
     <div className="dealer-block__cards">{dealerCards}</div>
-  ) : showDealerPlaceholder ? (
+  ) : (
     <div className="dealer-block__card-placeholder" aria-hidden="true">
       <div className="dealer-block__card-stack">
         <div className="dealer-block__card-back dealer-block__card-back--2" />
         <div className="dealer-block__card-back dealer-block__card-back--1" />
       </div>
     </div>
-  ) : (
-    <div className="dealer-block__cards dealer-block__cards--empty" aria-hidden="true" />
   );
 
   const hasCommandContent =
     Boolean(commandMessage?.trim()) || commandLines.some((line) => line.trim().length > 0);
-
-  function renderInfoPanelContent() {
-    return (
-      <>
-        <div className="dealer-block__info-chip">
-          <span className="dealer-block__info-k">Playing for</span>
-          <span className="dealer-block__info-v">{playingFor}</span>
-        </div>
-        <div className="dealer-block__info-chip dealer-block__info-chip--bet">
-          <span className="dealer-block__info-k">Minimum bet</span>
-          <span className="dealer-block__info-v">
-            {minimumBet}
-            {canChangeMinBet && !gameEnded && (
-              <button
-                type="button"
-                className="dealer-block__chip-btn"
-                onClick={onChangeMinBet}
-                aria-label="Change minimum bet"
-                title="Change minimum bet"
-              >
-                $
-              </button>
-            )}
-          </span>
-        </div>
-        {hasDeck && (
-          <div className="dealer-block__info-chip">
-            <span className="dealer-block__info-k">Shoe</span>
-            <span className="dealer-block__info-v">
-              {deckCount}-deck · {totalCards} / {remaining}
-            </span>
-          </div>
-        )}
-        <div className="dealer-block__info-chip">
-          <span className="dealer-block__info-k">Deal speed</span>
-          <span className="dealer-block__info-v">
-            {canChangeDealSpeed && !gameEnded ? (
-              <button
-                type="button"
-                className="dealer-block__chip-btn dealer-block__chip-btn--meta"
-                onClick={onCycleDealSpeed}
-                aria-label="Change dealing speed"
-                title="Change dealing speed"
-              >
-                <span className="dealer-block__chip-icon" aria-hidden="true">⏱</span>
-                {dealSpeedLabel}
-              </button>
-            ) : (
-              <>
-                <span className="dealer-block__chip-icon" aria-hidden="true">⏱</span>
-                {dealSpeedLabel}
-              </>
-            )}
-          </span>
-        </div>
-        <div className="dealer-block__info-chip">
-          <span className="dealer-block__info-k">Protocol</span>
-          <span className="dealer-block__info-v">
-            {canChangeProtocol && !gameEnded ? (
-              <button
-                type="button"
-                className="dealer-block__chip-btn dealer-block__chip-btn--meta"
-                onClick={onChangeProtocol}
-                aria-label="Change protocol"
-                title="Change protocol"
-              >
-                <span className="dealer-block__chip-icon" aria-hidden="true">⚙</span>
-                {protocolLabel}
-              </button>
-            ) : (
-              <>
-                <span className="dealer-block__chip-icon" aria-hidden="true">⚙</span>
-                {protocolLabel}
-              </>
-            )}
-          </span>
-        </div>
-      </>
-    );
-  }
 
   return (
     <div className="dealer-block">
@@ -276,9 +167,17 @@ export function DealerBlock({
             {primaryAction ?? <span className="dealer-block__action-spacer" aria-hidden="true" />}
           </div>
 
-          <div className="dealer-block__info-panel dealer-block__info-panel--compact" aria-label="Table info">
-            {renderInfoPanelContent()}
-          </div>
+          {onOpenTableDetails && (
+            <button
+              type="button"
+              className="dealer-block__details-btn"
+              onClick={onOpenTableDetails}
+              aria-expanded={tableDetailsOpen}
+              aria-controls="table-details-slide-title"
+            >
+              Table details
+            </button>
+          )}
 
           <div className="dealer-block__command" aria-live="polite">
             {hasCommandContent ? (

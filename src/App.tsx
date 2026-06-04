@@ -13,12 +13,19 @@ import { GameSetupScreen } from './screens/GameSetupScreen';
 import { TableScreen, type TableNavHandlers } from './screens/TableScreen';
 import { LocalProfileSetup } from './components/LocalProfileSetup';
 import { ScoreLedgerModal } from './components/LedgerModals';
-import { createOnlineTable, isPeopleAdmin, logout, type AuthUser } from './api/client';
+import {
+  createOnlineTable,
+  fetchTable,
+  isPeopleAdmin,
+  logout,
+  TableNotFoundError,
+  type AuthUser,
+} from './api/client';
 import { AuthFetchError, accessDeniedMessage, isHandledAuthRejection } from './auth/authErrors';
 import { PeopleScreen } from './screens/PeopleScreen';
-import { apiPath } from './api/config';
 import { setStoredOnlineTableId, useOnlineTable } from './hooks/useOnlineMultiplayer';
 import { sanitizeOnlineTableId } from './onlineTableStorage';
+import { clearStaleOnlineTableContext } from './onlineTableRecovery';
 import { useIsMobileViewport } from './hooks/useIsMobileViewport';
 import {
   consumePendingTable,
@@ -57,6 +64,15 @@ function ThemeSync({ templateId }: { templateId: string }) {
   return null;
 }
 
+function userCanCreateOnlineTable(user?: AuthUser | null): boolean {
+  return (
+    user?.canOwnTables === true ||
+    user?.isRoot === true ||
+    user?.role === 'root' ||
+    user?.role === 'admin'
+  );
+}
+
 function formatRoleLabel(user?: AuthUser | null): string {
   if (user?.isRoot || user?.role === 'root' || user?.role === 'admin') {
     return 'ADMIN';
@@ -70,8 +86,10 @@ function formatRoleLabel(user?: AuthUser | null): string {
 }
 
 export default function App({ user, onlineMode = false, onlineTableId = null, forceNewTable = false }: AppProps) {
-  const tableFromUrl = sanitizeOnlineTableId(onlineTableId);
-  const pendingTable = sanitizeOnlineTableId(getPendingTable());
+  const [dismissStoredTable, setDismissStoredTable] = useState(false);
+  const [tableMissingNotice, setTableMissingNotice] = useState<string | null>(null);
+  const tableFromUrl = dismissStoredTable ? null : sanitizeOnlineTableId(onlineTableId);
+  const pendingTable = dismissStoredTable ? null : sanitizeOnlineTableId(getPendingTable());
   const resolvedTableId = tableFromUrl ?? pendingTable;
   const [screen, setScreen] = useState<AppScreen>(resolvedTableId ? 'table' : 'start');
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -116,35 +134,9 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     rememberPendingTable(resolvedTableId);
   }, [onlineMode, resolvedTableId]);
 
-  useEffect(() => {
-    if (!onlineMode || !resolvedTableId) {
-      return;
-    }
-    setLoadingOnline(true);
-    fetch(apiPath(`/api/tables/${resolvedTableId}`), { credentials: 'include' })
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error('Could not load table');
-        }
-        const data = (await res.json()) as { state: GameState; tableId: string; version: number };
-        setGameState(data.state);
-        setActiveTableId(data.tableId);
-        setTableVersion(data.version);
-        setStoredOnlineTableId(data.tableId);
-        setInviteTableName(data.state.tableMeta.controllerName || null);
-        setScreen('table');
-      })
-      .catch(() => {
-        setStoredOnlineTableId(null);
-        if (!getPendingTable()) {
-          setScreen('start');
-        }
-      })
-      .finally(() => setLoadingOnline(false));
-  }, [onlineMode, resolvedTableId]);
-
   const handleNewOnlineGame = useCallback(async () => {
     setBootstrapError(null);
+    setTableMissingNotice(null);
     const profile = loadProfile();
     const displayName = profile.name.trim() || user?.email.split('@')[0] || 'Host';
     try {
@@ -159,6 +151,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
       setActiveTableId(result.tableId);
       setTableVersion(result.version);
       setStoredOnlineTableId(result.tableId);
+      setDismissStoredTable(false);
       setScreen('table');
     } catch (err) {
       if (err instanceof AuthFetchError && err.status === 403) {
@@ -171,6 +164,70 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
       setScreen('start');
     }
   }, [user?.email]);
+
+  const recoverMissingOnlineTable = useCallback(
+    (options?: { notice?: string; autoCreate?: boolean }) => {
+      clearStaleOnlineTableContext();
+      setDismissStoredTable(true);
+      setActiveTableId(null);
+      setGameState(null);
+      setTableVersion(null);
+      setInviteTableName(null);
+      setTableNavHandlers(null);
+      setTableBootstrapDone(true);
+
+      const autoCreate = options?.autoCreate ?? userCanCreateOnlineTable(user);
+      if (autoCreate) {
+        setTableMissingNotice(null);
+        setScreen('start');
+        setBootstrappingTable(true);
+        void handleNewOnlineGame().finally(() => setBootstrappingTable(false));
+        return;
+      }
+
+      setTableMissingNotice(
+        options?.notice ??
+          'This table is no longer on the server (it may have been cleared after a restart). Ask the host for a new invite link.',
+      );
+      setScreen('start');
+    },
+    [user, handleNewOnlineGame],
+  );
+
+  useEffect(() => {
+    if (!onlineMode || !resolvedTableId) {
+      return;
+    }
+    setLoadingOnline(true);
+    setTableMissingNotice(null);
+    fetchTable(resolvedTableId)
+      .then((data) => {
+        setGameState(data.state);
+        setActiveTableId(data.tableId);
+        setTableVersion(data.version);
+        setStoredOnlineTableId(data.tableId);
+        setInviteTableName(data.state.tableMeta.controllerName || null);
+        setScreen('table');
+      })
+      .catch((err) => {
+        if (err instanceof TableNotFoundError) {
+          recoverMissingOnlineTable({ autoCreate: userCanCreateOnlineTable(user) });
+          return;
+        }
+        setStoredOnlineTableId(null);
+        setDismissStoredTable(true);
+        clearStaleOnlineTableContext();
+        setActiveTableId(null);
+        setGameState(null);
+        setTableVersion(null);
+        setTableBootstrapDone(false);
+        setTableMissingNotice(
+          err instanceof Error ? err.message : 'Could not load table',
+        );
+        setScreen('start');
+      })
+      .finally(() => setLoadingOnline(false));
+  }, [onlineMode, resolvedTableId, user, recoverMissingOnlineTable]);
 
   const handleNewGame = useCallback(() => {
     if (onlineMode) {
@@ -254,6 +311,31 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     );
   }
 
+  if (tableMissingNotice) {
+    return (
+      <main className="start-screen">
+        <p>{tableMissingNotice}</p>
+        <div className="start-screen__actions" style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem' }}>
+          {userCanCreateOnlineTable(user) && (
+            <button type="button" onClick={() => void handleNewOnlineGame()}>
+              Start new table
+            </button>
+          )}
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => {
+              setTableMissingNotice(null);
+              setScreen('start');
+            }}
+          >
+            Back
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   const showOnlineProfileSetup =
     onlineMode && user && profileSetupOpen && (screen === 'table' || Boolean(resolvedTableId));
 
@@ -273,7 +355,26 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     handleNewGame();
   }
 
-  function handleLoadTable() {
+  async function handleLoadTable() {
+    if (onlineMode && activeTableId) {
+      try {
+        const data = await fetchTable(activeTableId);
+        setGameState(data.state);
+        setTableVersion(data.version);
+        setStoredOnlineTableId(data.tableId);
+        setScreen('table');
+      } catch (err) {
+        if (err instanceof TableNotFoundError) {
+          recoverMissingOnlineTable({
+            autoCreate: userCanCreateOnlineTable(user),
+            notice: 'Table not found — start a new table or ask the host for a new invite.',
+          });
+          return;
+        }
+        window.alert(err instanceof Error ? err.message : 'Could not load table');
+      }
+      return;
+    }
     if (onTableScreen && tableNavHandlers) {
       tableNavHandlers.loadTable();
       return;
@@ -439,7 +540,9 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
           </div>
         </header>
       )}
-      {screen === 'start' && !resolvedTableId && !(onlineMode && user && (user.canOwnTables ?? true)) && (
+      {screen === 'start' &&
+        !resolvedTableId &&
+        !(onlineMode && user && userCanCreateOnlineTable(user) && !tableMissingNotice) && (
         <StartScreen
           onNewGame={handleNewGame}
           onlineMode={onlineMode}

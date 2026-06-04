@@ -1,11 +1,19 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import App from './App';
-import { TableNotFoundError } from './api/client';
 import { ONLINE_TABLE_STORAGE_KEY } from './onlineTableStorage';
+import { TableNotFoundError } from './api/client';
 
-const VALID_TABLE = 'a1b2c3d4-e5f6-4789-a012-3456789abcde';
+const STALE_TABLE = '60232d60-9604-4fd5-8672-f51713669ee3';
+
+const rootUser = {
+  userId: 'user-1',
+  email: 'root@example.com',
+  displayName: 'Root',
+  canOwnTables: true,
+  isRoot: true,
+};
 
 vi.mock('./api/config', () => ({
   isOnlineModeEnabled: () => true,
@@ -26,7 +34,7 @@ vi.mock('./storage/settingsStorage', () => ({
 }));
 
 vi.mock('./storage/profileStorage', () => ({
-  loadProfile: () => ({ name: 'Tester', email: '' }),
+  loadProfile: () => ({ name: 'Root', email: 'root@example.com' }),
   needsLocalProfileSetup: () => false,
   syncAuthEmailToProfile: vi.fn(),
 }));
@@ -63,18 +71,12 @@ vi.mock('./api/client', async (importOriginal) => {
   };
 });
 
-const rootUser = {
-  userId: 'user-1',
-  email: 'root@example.com',
-  displayName: 'Root',
-  canOwnTables: true,
-  isRoot: true,
-};
-
-describe('App render (hooks order / online bootstrap)', () => {
+describe('stale localStorage table id (GET /api/tables/:id 404)', () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    window.history.replaceState({}, '', `/?table=${STALE_TABLE}`);
+    localStorage.setItem(ONLINE_TABLE_STORAGE_KEY, STALE_TABLE);
     createOnlineTableMock.mockClear();
     fetchTableMock.mockClear();
   });
@@ -83,21 +85,39 @@ describe('App render (hooks order / online bootstrap)', () => {
     vi.unstubAllGlobals();
   });
 
-  it('recovers from 404 with auto new table (not blank)', async () => {
-    localStorage.setItem(ONLINE_TABLE_STORAGE_KEY, VALID_TABLE);
-    render(<App user={rootUser} onlineMode onlineTableId={VALID_TABLE} />);
+  it('clears stored id and auto-opens new table for owner (no blank screen)', async () => {
+    render(<App user={rootUser} onlineMode onlineTableId={STALE_TABLE} />);
+
     await waitFor(() => {
-      expect(createOnlineTableMock).toHaveBeenCalled();
+      expect(fetchTableMock).toHaveBeenCalledWith(STALE_TABLE);
+    });
+
+    await waitFor(() => {
       expect(localStorage.getItem(ONLINE_TABLE_STORAGE_KEY)).toBe(
         '11111111-1111-4111-8111-111111111111',
       );
     });
+
+    expect(createOnlineTableMock).toHaveBeenCalled();
+    expect(screen.queryByText(/no longer on the server/i)).toBeNull();
   });
 
-  it('ignores stale localStorage table id without crashing', async () => {
-    localStorage.setItem(ONLINE_TABLE_STORAGE_KEY, 'stale-not-uuid');
-    expect(() =>
-      render(<App user={rootUser} onlineMode onlineTableId={null} forceNewTable={false} />),
-    ).not.toThrow();
+  it('shows CTA for guest without create permission', async () => {
+    const guest = {
+      userId: 'g1',
+      email: 'guest@example.com',
+      canOwnTables: false,
+      canPlay: true,
+    };
+    render(<App user={guest} onlineMode onlineTableId={STALE_TABLE} />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/no longer on the server|Table not found|new invite/i),
+      ).toBeTruthy();
+    });
+    expect(localStorage.getItem(ONLINE_TABLE_STORAGE_KEY)).toBeNull();
+    expect(createOnlineTableMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/no longer on the server/i)).toBeTruthy();
   });
 });

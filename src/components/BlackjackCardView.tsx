@@ -980,7 +980,12 @@ export function BlackjackCardView({
       </header>
 
       {bettingMainStage ? (
-        renderBettingStage()
+        <>
+          {renderBettingStage()}
+          <div className="bj-phone-view__action-bar" aria-hidden="true">
+            <span className="bj-phone-view__action-bar-spacer" aria-hidden="true" />
+          </div>
+        </>
       ) : (
         <>
           {renderInsuranceActions()}

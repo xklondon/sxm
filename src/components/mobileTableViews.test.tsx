@@ -148,6 +148,7 @@ const FULL_TABLE_BETTING_SECTIONS = [
 
 const CARD_VIEW_SECTIONS = [
   'dealer-block',
+  'dealer-block__details-btn',
   'bj-phone-view',
   'bj-accounts-panel',
 ] as const;
@@ -164,6 +165,7 @@ const CARD_VIEW_PLAYING_SECTIONS = [
 const CARD_VIEW_BETTING_SECTIONS = [
   ...CARD_VIEW_SECTIONS,
   'bj-phone-view__betting-stage--row',
+  'bj-phone-view__action-bar',
   'bj-casino__tray',
 ] as const;
 
@@ -344,5 +346,72 @@ describe('mobile Card View structure', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).toContain('bj-phone-view__action-bar-btn--live');
     expect(html).toContain('bj-phone-view__mini-row');
+  });
+});
+
+describe('table details slide-out (not This Table)', () => {
+  it('does not render inline info chips in the dealer header', () => {
+    const html = renderPanelAt(390, withView(playingState(), 'card'));
+    expect(html).not.toContain('dealer-block__info-panel');
+    expect(html).not.toContain('dealer-block__info-chip');
+    expect(html).toContain('dealer-block__details-btn');
+    expect(html).toContain('Table details');
+  });
+
+  it('renders table details drawer markup only when open', () => {
+    const closed = renderPanelAt(390, withView(bettingState(), 'full'));
+    expect(closed).not.toContain('bj-table-slide-overlay--details');
+    expect(closed).not.toContain('table-details-panel');
+  });
+
+  it('table details overlay CSS keeps mobile viewport width (bottom sheet)', () => {
+    const css = mobileFullTableCss();
+    expect(css).toContain('bj-table-slide-overlay--details');
+    expect(css).toMatch(
+      /@media \(max-width: 720px\)[\s\S]*\.bj-table-slide-drawer--details[\s\S]*max-width:\s*100%/,
+    );
+  });
+});
+
+describe('stable dealer layout slots across phases', () => {
+  const dealerSlots = [
+    'dealer-block__cards-slot',
+    'dealer-block__action-slot',
+    'dealer-block__command',
+  ] as const;
+
+  it('Card View mobile: same dealer slots in betting and playing', () => {
+    const betting = renderPanelAt(390, withView(bettingState(), 'card'));
+    const playing = renderPanelAt(390, withView(playingState(), 'card'));
+    for (const slot of dealerSlots) {
+      expect(betting).toContain(slot);
+      expect(playing).toContain(slot);
+    }
+    expect(betting).toContain('dealer-block__card-placeholder');
+    expect(playing).toContain('dealer-block__cards');
+    expect(betting).toContain('bj-phone-view__action-bar');
+    expect(playing).toContain('bj-phone-view__action-bar');
+  });
+
+  it('Full Table mobile: dealer slots and action bar area across phases', () => {
+    const betting = renderPanelAt(390, withView(bettingState(), 'full'));
+    const playing = renderPanelAt(390, withView(playingState(), 'full'));
+    for (const slot of dealerSlots) {
+      expect(betting).toContain(slot);
+      expect(playing).toContain(slot);
+    }
+    expect(betting).toContain('dealer-block__card-placeholder');
+    expect(playing).toContain('dealer-block__cards');
+    expect(playing).toContain('bj-table-actions');
+  });
+});
+
+describe('mobile Card View width contract', () => {
+  it('CSS constrains casino rail and hides page-level horizontal overflow', () => {
+    const css = mobileFullTableCss();
+    expect(css).toMatch(/\.bj-view-card-mobile[\s\S]*max-width:\s*100vw/);
+    expect(css).toMatch(/\.bj-view-card-mobile \.bj-casino__rail[\s\S]*max-width:\s*100%/);
+    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__betting-stage--row[\s\S]*overflow-x:\s*auto/);
+    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*auto/);
   });
 });
