@@ -29,6 +29,7 @@ import {
   shouldOfferInsuranceUnderProtocol,
 } from './protocols/activeRules';
 import { getBlackjackProtocolOrDefault } from './protocols';
+import { canOfferInsuranceAfterInitialDeal } from './initialDealGuards';
 
 export function dealerShowsAce(deck: Deck, round: BlackjackRound): boolean {
   const upId = round.dealerCardIds[0];
@@ -59,6 +60,9 @@ export function activateInsuranceOfferIfNeeded(
   protocol?: BlackjackProtocol,
 ): BlackjackRound {
   const resolvedProtocol = protocol ?? getBlackjackProtocolOrDefault();
+  if (session && !canOfferInsuranceAfterInitialDeal(session, round)) {
+    return { ...round, insuranceOfferPending: false };
+  }
   if (!shouldOfferInsurance(round, deck, settings, resolvedProtocol)) {
     return { ...round, insuranceOfferPending: false };
   }

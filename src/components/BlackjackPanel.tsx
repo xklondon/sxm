@@ -180,6 +180,12 @@ export function BlackjackPanel({
   const canDriveTableAutomation =
     tableOwner || controllerName === tableMeta.controllerName;
 
+  const isMobileViewport = useIsMobileViewport();
+  const { displayState: tableVisualState, isRevealing } = useSequentialCardReveal(gameState, {
+    onlineMode: Boolean(onlineDispatch) || isOnlineModeEnabled(),
+  });
+  const cardRevealComplete = !isRevealing;
+
   const {
     centerStatus,
     flowError,
@@ -204,9 +210,9 @@ export function BlackjackPanel({
     onlineDispatch,
     onlineActionInFlight,
     canDriveTableAutomation,
+    cardRevealComplete,
   );
 
-  const isMobileViewport = useIsMobileViewport();
   // Full Table felt only degrades to the "Use Card View" hint on ultra-narrow
   // screens (< 360px). All normal phone widths render the real Full Table.
   const isUltraNarrowViewport = useIsUltraNarrowViewport();
@@ -216,9 +222,6 @@ export function BlackjackPanel({
     resolveInitialViewMode(isMobileViewport, tableViewMode),
   );
   const round = blackjack;
-  const { displayState: tableVisualState } = useSequentialCardReveal(gameState, {
-    onlineMode: Boolean(onlineDispatch) || isOnlineModeEnabled(),
-  });
   const visualRound = tableVisualState.blackjack;
   const visualDeck = tableVisualState.deck;
   const hasDeck = deck !== null;

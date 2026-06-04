@@ -17,7 +17,7 @@ import {
 } from '../engine/blackjack';
 import {
   canStartCards,
-  getBlackjackProtocolPhase,
+  getDisplayBlackjackProtocolPhase,
   getProtocolTableMessage,
   getCenterStatusMessage,
   getCardsBlockReason,
@@ -64,6 +64,7 @@ export function useBlackjackTableFlow(
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>,
   onlineActionInFlight = false,
   canDriveTableAutomation = true,
+  cardRevealComplete = true,
 ) {
   const { blackjack: round, tableMeta } = gameState;
   const flow = gameState.blackjackFlowSettings;
@@ -78,7 +79,7 @@ export function useBlackjackTableFlow(
   const bankRunIdRef = useRef(0);
   const manualBankingRef = useRef(false);
 
-  const protocolPhase = getBlackjackProtocolPhase(gameState);
+  const protocolPhase = getDisplayBlackjackProtocolPhase(gameState, cardRevealComplete);
   const tableMessage = getProtocolTableMessage(gameState);
   const baseCenterStatus = getCenterStatusMessage(gameState, 0);
   const centerStatus = bankUiMessage ?? baseCenterStatus;
@@ -308,7 +309,7 @@ export function useBlackjackTableFlow(
         if (bankRunIdRef.current !== runId) {
           return;
         }
-        await sleep(Math.round(cardDealDelayMs(afterDraw.blackjackFlowSettings) * 0.5));
+        await sleep(cardDealDelayMs(afterDraw.blackjackFlowSettings));
         if (bankRunIdRef.current !== runId) {
           return;
         }
@@ -350,9 +351,7 @@ export function useBlackjackTableFlow(
 
     const current = gameStateRef.current;
     setBankUiMessage(getBankFinalMessage(current));
-    const pause =
-      cardDealDelayMs(current.blackjackFlowSettings) +
-      Math.round(cardDealDelayMs(current.blackjackFlowSettings) * 0.5);
+    const pause = cardDealDelayMs(current.blackjackFlowSettings);
 
     const timer = window.setTimeout(() => {
       try {

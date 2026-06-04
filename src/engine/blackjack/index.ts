@@ -121,7 +121,15 @@ export {
 } from './dealEligibility';
 
 export {
+  canOfferInsuranceAfterInitialDeal,
+  isInitialDealRoundComplete,
+  hasPlayerActionsStarted,
+  activeBetBoxesHaveTwoCards,
+} from './initialDealGuards';
+
+export {
   getBlackjackProtocolPhase,
+  getDisplayBlackjackProtocolPhase,
   getAllowedBlackjackActionsForPhase,
   canStartCards,
   canDealCards,

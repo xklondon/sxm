@@ -13,6 +13,7 @@ import {
 import type { BlackjackSettings } from './settings';
 import type { BlackjackProtocol } from './protocols/types';
 import { activateInsuranceOfferIfNeeded, shouldOfferInsurance } from './insurance';
+import { canOfferInsuranceAfterInitialDeal } from './initialDealGuards';
 import { findNextActingHand } from './virtual';
 
 export type InitialDealStep =
@@ -134,7 +135,10 @@ function finalizeAfterInitialDeal(
     });
 
   const insuranceOffer =
-    settings && shouldOfferInsurance(nextRound, deck, settings, protocol);
+    settings &&
+    session &&
+    canOfferInsuranceAfterInitialDeal(session, nextRound) &&
+    shouldOfferInsurance(nextRound, deck, settings, protocol);
 
   if (insuranceOffer) {
     nextRound = activateInsuranceOfferIfNeeded(nextRound, deck, settings!, session, protocol);

@@ -18,6 +18,7 @@ import {
   isBettingOpen,
 } from './stakes';
 import { isStepwiseInitialDeal } from './dealing/dealingModes';
+import { isInitialDealRoundComplete } from './initialDealGuards';
 import {
   getEligibleDealBoxes,
   getDealBlockReason,
@@ -217,7 +218,11 @@ export function getBlackjackProtocolPhase(state: GameState): BlackjackProtocolPh
     return 'round-complete';
   }
   if (state.blackjack?.insuranceOfferPending) {
-    return 'insurance';
+    const round = state.blackjack;
+    if (isInitialDealRoundComplete(state.session, round)) {
+      return 'insurance';
+    }
+    return 'dealing';
   }
   const status = state.blackjack?.status;
   switch (status) {
@@ -235,6 +240,29 @@ export function getBlackjackProtocolPhase(state: GameState): BlackjackProtocolPh
     default:
       return 'betting';
   }
+}
+
+/**
+ * UI-facing phase: defers insurance (and other post-deal phases) until card reveal catches up.
+ */
+export function getDisplayBlackjackProtocolPhase(
+  state: GameState,
+  cardRevealComplete: boolean,
+): BlackjackProtocolPhase {
+  const phase = getBlackjackProtocolPhase(state);
+  if (!cardRevealComplete && phase === 'insurance') {
+    return 'dealing';
+  }
+  if (!cardRevealComplete && phase === 'player' && state.blackjack) {
+    const round = state.blackjack;
+    if (
+      round.insuranceOfferPending ||
+      !isInitialDealRoundComplete(state.session, round)
+    ) {
+      return 'dealing';
+    }
+  }
+  return phase;
 }
 
 export function getAllowedBlackjackActionsForPhase(
