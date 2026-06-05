@@ -12,7 +12,7 @@
     "dev:vite": "vite",
     "dev:server": "tsx watch server/src/index.ts",
     "dev:all": "npm run dev",
-    "postinstall": "prisma generate",
+    "postinstall": "node scripts/prisma-postinstall.mjs",
     "build": "prisma generate && tsc -b && vite build",
     "build:server": "prisma generate && tsc -p server/tsconfig.json",
     "build:all": "npm run build && npm run build:server",
