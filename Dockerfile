@@ -2,8 +2,9 @@ FROM node:20-bookworm-slim
 
 WORKDIR /app
 
-# Install deps (postinstall skips generate until schema exists).
+# Install deps (postinstall script must exist; generate runs later in npm run build).
 COPY package.json package-lock.json ./
+COPY scripts ./scripts
 RUN npm ci
 
 # Full source + prisma generate via build.
