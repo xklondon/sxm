@@ -137,11 +137,12 @@ describe('Card View betting chips and layout', () => {
   });
 
   it('desktop Card View has no horizontal overflow contract', () => {
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     const cardCss = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
-    expect(panelCss).toMatch(/\.bj-view-card-desktop[\s\S]*overflow-x:\s*hidden/);
-    expect(panelCss).toMatch(/\.bj-casino\.bj-view-card-desktop[\s\S]*overflow-x:\s*hidden/);
-    expect(panelCss).toMatch(
+    expect(sharedCss).toMatch(/\.bj-casino\.bj-view-card-desktop[\s\S]*overflow:\s*hidden/);
+    expect(sharedCss).toMatch(/\.bj-table-desktop-shell[\s\S]*overflow:\s*hidden/);
+    expect(sharedCss).toMatch(
       /\.bj-view-card-desktop \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*auto/,
     );
     expect(panelCss).toMatch(

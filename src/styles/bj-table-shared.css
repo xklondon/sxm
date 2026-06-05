@@ -47,12 +47,10 @@
   --bj-side-rail-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
   --bj-side-rail-header-bg: rgb(0 0 0 / 0.28);
 
-  /* Desktop Full Table + Card View — Card View leads proportions; Full Table leads rail chrome. */
-  --bj-desktop-table-height: min(calc(100dvh - 4.75rem), 38rem);
+  /* One desktop table shell — same size for Full Table + Card View. */
+  --bj-desktop-table-height: min(72vh, 46rem);
   --bj-desktop-table-max-width: min(100%, 52rem);
-  --bj-desktop-rail-padding: 0.3rem 0.45rem 0.4rem;
-  --bj-desktop-mini-row-height: 6.25rem;
-  --bj-desktop-mini-hand-height: 5.5rem;
+  --bj-desktop-rail-padding: 0.35rem 0.5rem 0.45rem;
 }
 
 @media (max-width: 720px) {
@@ -374,52 +372,79 @@
   padding: 0;
 }
 
-/* Desktop table shell — unified size/proportions (Card View leads; rail outline from Full Table). */
+/* Desktop table shell — one fixed size; content flexes inside (no page scroll). */
 @media (min-width: 721px) {
-  .bj-table-desktop-shell {
-    flex: 1 1 auto;
+  .bj-casino.bj-view-full-desktop,
+  .bj-casino.bj-view-card-desktop {
+    overflow: hidden;
     min-height: 0;
+  }
+
+  .bj-table-desktop-shell {
+    position: relative;
     display: flex;
     flex-direction: column;
+    flex: 0 0 auto;
     width: 100%;
     max-width: var(--bj-desktop-table-max-width);
+    height: var(--bj-desktop-table-height);
+    max-height: var(--bj-desktop-table-height);
     margin-inline: auto;
     box-sizing: border-box;
+    overflow: hidden;
   }
 
   .bj-view-full-desktop .bj-casino__rail,
   .bj-view-card-desktop .bj-casino__rail {
+    position: relative;
+    overflow: hidden;
     flex: 1 1 auto;
-    min-height: var(--bj-desktop-table-height);
-    max-height: var(--bj-desktop-table-height);
+    height: 100%;
+    min-height: 0;
+    max-height: none;
     padding: var(--bj-desktop-rail-padding);
     box-sizing: border-box;
   }
 
   .bj-view-full-desktop .bj-casino__felt,
   .bj-view-card-desktop .bj-casino__felt {
+    position: relative;
+    overflow: hidden;
     flex: 1 1 auto;
     min-height: 0;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
+    padding: 0.3rem 0.4rem 0.35rem;
     box-sizing: border-box;
+    background: var(--bj-table-felt-bg);
+    border: var(--bj-table-felt-border);
+    border-radius: var(--bj-table-felt-radius);
+  }
+
+  .bj-view-full-desktop .bj-casino__felt.bj-table-surface,
+  .bj-view-card-desktop .bj-casino__felt.bj-table-surface {
+    min-height: 0;
   }
 
   .bj-view-full-desktop .bj-casino__felt-main,
+  .bj-view-card-desktop .bj-casino__felt-main,
   .bj-view-card-desktop .bj-casino__felt-main--card {
     flex: 1 1 auto;
     min-height: 0;
     width: 100%;
     max-width: none;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
   }
 
   .bj-view-full-desktop .bj-arc-separator {
     flex: 1 1 auto;
-    min-height: 1.25rem;
-    height: auto;
-    margin: 0.1rem 0 0.25rem;
+    min-height: 0;
+    margin: 0.08rem 0 0.2rem;
   }
 
   .bj-view-full-desktop .bj-arc {
@@ -428,23 +453,67 @@
     align-items: flex-end;
   }
 
+  .bj-view-full-desktop .bj-casino__tray-wrap {
+    flex: 0 0 auto;
+    margin-top: auto;
+  }
+
+  .bj-view-card-desktop .bj-phone-view.bj-table-column-surface {
+    background: transparent;
+  }
+
+  .bj-view-card-desktop .bj-phone-view {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .bj-view-card-desktop .bj-phone-view__play-area,
+  .bj-view-card-desktop .bj-phone-view__play-stack,
+  .bj-view-card-desktop .bj-phone-view__stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .bj-view-card-desktop .bj-phone-view__slot--stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .bj-view-card-desktop .bj-phone-view__hero-stage,
+  .bj-view-card-desktop .bj-phone-view__hand,
+  .bj-view-card-desktop .bj-phone-view__cards-slot {
+    min-height: 0;
+  }
+
+  .bj-view-card-desktop .bj-phone-view__cards .playing-card.bj-phone-card--hero {
+    width: min(16vw, 6.75rem);
+    min-height: min(22vw, 8.5rem);
+    font-size: 1.35rem;
+  }
+
+  .bj-view-card-desktop .bj-phone-view__action-bar--playing {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
   .bj-view-card-desktop .bj-phone-view__slot--boxes {
-    min-height: var(--bj-desktop-mini-row-height);
+    flex: 0 0 auto;
+    min-height: 4.5rem;
+    max-height: 4.75rem;
   }
 
   .bj-view-card-desktop .bj-phone-view__mini-row {
-    min-height: var(--bj-desktop-mini-row-height);
-    max-height: var(--bj-desktop-mini-row-height);
+    min-height: 4.5rem;
+    max-height: 4.75rem;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .bj-view-card-desktop .bj-phone-view__mini-hand {
-    min-height: var(--bj-desktop-mini-hand-height);
-    height: var(--bj-desktop-mini-hand-height);
-  }
-
-  .bj-view-card-desktop .bj-phone-view__mini-hand-card-stack {
-    flex: 0 0 1.55rem;
-    min-height: 1.55rem;
-    height: 1.55rem;
+    min-height: 4.25rem;
+    height: 4.25rem;
   }
 }
