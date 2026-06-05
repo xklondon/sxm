@@ -4,7 +4,6 @@ import { resolveDiceAnimationDurationMs } from './settings';
 import {
   bankTurn,
   completeDiceRoll,
-  confirmStarter,
   createInitialZilchState,
   endTurnWithZilch,
   keepCombination,
@@ -33,7 +32,7 @@ function dice(values: number[]): ZilchDie[] {
 describe('zilchEngine', () => {
   it('turnover / Greater Glory clears kept dice for full re-roll', () => {
     let state = createInitialZilchState([P1], DEFAULT_ZILCH_SETTINGS);
-    state = confirmStarter(randomiseStarter(state, () => 0));
+    state = randomiseStarter(state, () => 0);
     state = {
       ...state,
       phase: 'awaiting-keep-selection',
@@ -68,7 +67,7 @@ describe('zilchEngine', () => {
 
   it('zilch resets turn score only', () => {
     let state = createInitialZilchState([P1], DEFAULT_ZILCH_SETTINGS);
-    state = confirmStarter(randomiseStarter(state, () => 0));
+    state = randomiseStarter(state, () => 0);
     state = {
       ...state,
       totalScoresByPlayerId: { [P1]: 42 },
@@ -89,7 +88,7 @@ describe('zilchEngine', () => {
       targetPoints: 100,
     };
     let state = createInitialZilchState([P1, P2], settings);
-    state = confirmStarter(randomiseStarter(state, () => 0));
+    state = randomiseStarter(state, () => 0);
     state = startTurn(state, P1);
     state = {
       ...state,
@@ -111,7 +110,7 @@ describe('zilchEngine', () => {
       roundLimit: 1,
     };
     let state = createInitialZilchState([P1, P2], settings);
-    state = confirmStarter(randomiseStarter(state, () => 0));
+    state = randomiseStarter(state, () => 0);
     state = startTurn(state, P1);
     state = {
       ...state,
@@ -163,7 +162,7 @@ describe('zilchEngine', () => {
 
   it('completeDiceRoll reveals zilch path', () => {
     let state = createInitialZilchState([P1], DEFAULT_ZILCH_SETTINGS);
-    state = confirmStarter(randomiseStarter(state, () => 0));
+    state = randomiseStarter(state, () => 0);
     state = rollDice(state, DEFAULT_ZILCH_SETTINGS, seqRng([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]), 1000);
     state = {
       ...state,

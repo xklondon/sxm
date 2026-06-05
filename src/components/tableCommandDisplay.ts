@@ -15,6 +15,7 @@ import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
 import {
   getInsuranceActionsForController,
   canCallEvenMoneyForHand,
+  formatDecisionOwnerWaitMessage,
 } from './blackjackViewPhase';
 
 export interface TableCommandDisplay {
@@ -153,7 +154,7 @@ export function buildTableCommandDisplay(params: {
 
     if (!isCaller) {
       return {
-        commandMessage: `Box ${activeSlotNum ?? '?'} — waiting for ${callerName} to call.`,
+        commandMessage: formatDecisionOwnerWaitMessage(gameState, playerId),
         commandLines: [],
       };
     }

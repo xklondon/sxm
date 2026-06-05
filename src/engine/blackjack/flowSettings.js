@@ -49,6 +49,11 @@ export function syncDealTimingFromPreset(settings) {
 export function cardDealDelayMs(settings) {
     return dealDelayMsForPreset(settings.dealSpeedPreset);
 }
+/** Single timing source for every card reveal / bank pacing delay. */
+export function getCardDealDelayMs(state, _context = 'initial-deal') {
+    void _context;
+    return cardDealDelayMs(state.blackjackFlowSettings);
+}
 /** Bank draw pacing — uses the same deal-speed delay as player cards. */
 export function randomBankDrawDelayMs(settings) {
     return cardDealDelayMs(settings);

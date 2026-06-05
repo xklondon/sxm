@@ -89,10 +89,11 @@ export {
   DEAL_SPEED_MS,
   dealDelayMsForPreset,
   cardDealDelayMs,
+  getCardDealDelayMs,
   syncDealTimingFromPreset,
   randomBankDrawDelayMs,
 } from './flowSettings';
-export type { BlackjackFlowSettings, DealMode, AdviceCostMode, DealSpeedPreset } from './flowSettings';
+export type { BlackjackFlowSettings, DealMode, AdviceCostMode, DealSpeedPreset, CardDealDelayContext } from './flowSettings';
 
 export {
   getStakeForBox,

@@ -10,10 +10,13 @@ import { getBlackjackProtocolForState } from '../engine/blackjack/protocolState'
 import { getInsuranceOfferForBox } from '../engine/blackjack/insurance';
 import {
   canControllerCallBox,
-  getCallerPersonIdForBox,
   resolveViewerPersonId,
   type ViewerIdentityHints,
 } from '../engine/session';
+import {
+  getViewerCanActOnActiveHand,
+  type ActionableHandForView,
+} from '../engine/session/boxDecisionOwnership';
 import { isTableGameActive } from '../engine/session/tableGameEnd';
 
 export function isBettingPhase(phase: BlackjackProtocolPhase): boolean {
@@ -164,13 +167,31 @@ export function showHeroPlayerCards(
   if (gameEnded || isBettingPhase(phase) || logicalCardCount <= 0) {
     return false;
   }
-  if (isBankPhase(phase) || isRoundCompletePhase(phase)) {
-    return false;
-  }
-  if (isPlayerTurnPhase(phase) || isInsurancePhase(phase)) {
+  if (
+    isPlayerTurnPhase(phase) ||
+    isInsurancePhase(phase) ||
+    isDealingPhase(phase) ||
+    isBankPhase(phase) ||
+    isRoundCompletePhase(phase)
+  ) {
     return true;
   }
-  return isDealingPhase(phase);
+  return false;
+}
+
+/** Box id owning the server-authoritative active hand during player turns. */
+export function getActiveTurnBoxId(
+  state: GameState,
+  phase: BlackjackProtocolPhase,
+): string | null {
+  if (!isPlayerTurnPhase(phase)) {
+    return null;
+  }
+  const handKey = state.blackjack?.activeHandKey;
+  if (!handKey) {
+    return null;
+  }
+  return parseBlackjackHandKey(handKey).playerId;
 }
 
 /** Side hit/stand controls — player turn only, not insurance/even-money. */
@@ -182,12 +203,7 @@ export function showStitchedActionControls(
   return canShowPlayerDecisionControls(state, displayPhase, options);
 }
 
-export interface ActionableHandForView {
-  /** Server-authoritative active hand key. */
-  handKey: string;
-  /** Box (player) id owning the active hand. */
-  boxId: string;
-}
+export type { ActionableHandForView } from '../engine/session/boxDecisionOwnership';
 
 /**
  * Canonical "can this viewer act right now?" selector shared by Full Table and
@@ -207,31 +223,15 @@ export function getActionableHandForView(
   onlineMode: boolean,
 ): ActionableHandForView | null {
   void onlineMode;
-  const round = state.blackjack;
-  if (!round || getBlackjackProtocolPhase(state) !== 'player') {
-    return null;
-  }
-  if (round.evenMoneyOfferHandKey) {
-    return null;
-  }
-  const handKey = round.activeHandKey;
-  if (!handKey) {
-    return null;
-  }
-  const hand = round.playerHands[handKey];
-  if (!hand || hand.actionStatus !== 'acting') {
-    return null;
-  }
-  if (!personId) {
-    return null;
-  }
-  const { playerId } = parseBlackjackHandKey(handKey);
-  const caller = getCallerPersonIdForBox(state, playerId);
-  if (caller !== personId || !canControllerCallBox(state, playerId, personId)) {
-    return null;
-  }
-  return { handKey, boxId: playerId };
+  return getViewerCanActOnActiveHand(state, personId);
 }
+
+export {
+  formatDecisionOwnerWaitMessage,
+  getViewerCanActOnActiveHand,
+  resolveViewerActionPermission,
+  type ViewerActionPermission,
+} from '../engine/session/boxDecisionOwnership';
 
 export type CardViewBoxStatus =
   | 'betting'

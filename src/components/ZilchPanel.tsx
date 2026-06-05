@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { GameState } from '../types';
 import type { VirtualPlayerStyle } from '../types/player';
 import {
@@ -36,6 +36,7 @@ interface ZilchPanelProps {
 
 const RANDOMISER_SPIN_MS = 2400;
 const RANDOMISER_TICK_MS = 120;
+const RANDOMISER_FALLBACK_MS = 3200;
 
 const VIRTUAL_STYLES: VirtualPlayerStyle[] = [
   'conservative',
@@ -64,15 +65,18 @@ export function ZilchPanel({
   const {
     handleStartGame,
     handleRandomiseStarter,
-    handleConfirmStarter,
     handleRollDice,
     handleKeepCombination,
     handleBank,
     handleQuitTurn,
   } = useZilchTableFlow({ gameState, onGameStateChange, onlineDispatch });
 
+  const [starterSpinActive, setStarterSpinActive] = useState(false);
   const [randomiserIndex, setRandomiserIndex] = useState(0);
-  const [randomiserSpinning, setRandomiserSpinning] = useState(false);
+  const spinTimersRef = useRef<{ tick?: number; done?: number }>(
+    {},
+  );
+  const pendingStarterSpinRef = useRef(false);
 
   const playerOrder = useMemo(() => {
     if (session.playerIds.length > 0) {
@@ -83,25 +87,74 @@ export function ZilchPanel({
       .map((s) => s.playerId!);
   }, [session.playerIds, tableMeta.boxSlots]);
 
-  useEffect(() => {
-    if (zilch?.phase !== 'randomising-starter' || playerOrder.length === 0) {
-      setRandomiserSpinning(false);
+  function stopStarterSpin() {
+    const timers = spinTimersRef.current;
+    if (timers.tick) {
+      clearInterval(timers.tick);
+    }
+    if (timers.done) {
+      clearTimeout(timers.done);
+    }
+    spinTimersRef.current = {};
+    setStarterSpinActive(false);
+  }
+
+  function startStarterSpinPresentation(starterId: string | null) {
+    stopStarterSpin();
+    if (playerOrder.length === 0) {
       return;
     }
-    setRandomiserSpinning(true);
-    const tick = window.setInterval(() => {
+    setStarterSpinActive(true);
+    const starterIdx = starterId ? playerOrder.indexOf(starterId) : 0;
+    setRandomiserIndex(starterIdx >= 0 ? starterIdx : 0);
+
+    spinTimersRef.current.tick = window.setInterval(() => {
       setRandomiserIndex((i) => (i + 1) % playerOrder.length);
     }, RANDOMISER_TICK_MS);
-    const done = window.setTimeout(() => {
-      clearInterval(tick);
-      setRandomiserSpinning(false);
-      handleConfirmStarter();
+
+    spinTimersRef.current.done = window.setTimeout(() => {
+      if (starterId) {
+        const idx = playerOrder.indexOf(starterId);
+        if (idx >= 0) {
+          setRandomiserIndex(idx);
+        }
+      }
+      stopStarterSpin();
     }, RANDOMISER_SPIN_MS);
-    return () => {
-      clearInterval(tick);
-      clearTimeout(done);
-    };
-  }, [zilch?.phase, playerOrder.length, handleConfirmStarter]);
+  }
+
+  function onRandomiseStarter() {
+    pendingStarterSpinRef.current = true;
+    startStarterSpinPresentation(null);
+    const starterId = handleRandomiseStarter();
+    if (starterId) {
+      pendingStarterSpinRef.current = false;
+      startStarterSpinPresentation(starterId);
+    }
+  }
+
+  useEffect(() => {
+    const starterId = zilch?.starterPlayerId;
+    if (
+      !pendingStarterSpinRef.current ||
+      !starterId ||
+      zilch?.phase !== 'player-turn'
+    ) {
+      return;
+    }
+    pendingStarterSpinRef.current = false;
+    startStarterSpinPresentation(starterId);
+  }, [zilch?.starterPlayerId, zilch?.phase]);
+
+  useEffect(() => {
+    if (!starterSpinActive) {
+      return;
+    }
+    const fallback = window.setTimeout(() => stopStarterSpin(), RANDOMISER_FALLBACK_MS);
+    return () => clearTimeout(fallback);
+  }, [starterSpinActive]);
+
+  useEffect(() => () => stopStarterSpin(), []);
 
   useEffect(() => {
     if (shakeReady && zilch && canAct && canRollDice(zilch)) {
@@ -153,7 +206,7 @@ export function ZilchPanel({
       case 'setup':
         return 'Randomise who starts.';
       case 'randomising-starter':
-        return 'Choosing starter…';
+        return 'Starting…';
       case 'final-round':
         return 'Final round — each other player gets one last turn.';
       case 'completed': {
@@ -279,17 +332,16 @@ export function ZilchPanel({
         })}
 
         <div className="zilch-table__felt">
-          {zilch?.phase === 'randomising-starter' && (
+          {starterSpinActive && (
             <div
-              className={`zilch-panel__randomiser${
-                randomiserSpinning ? ' zilch-panel__randomiser--spin' : ''
-              }`}
+              className="zilch-panel__randomiser zilch-panel__randomiser--spin"
+              aria-live="polite"
             >
               {players[playerOrder[randomiserIndex] ?? '']?.displayName ?? '…'}
             </div>
           )}
 
-          {zilch && zilch.phase !== 'randomising-starter' && (
+          {zilch && (
             <>
               <div className="zilch-table__roll-zone" aria-label="Dice on table">
                 {diceToRender.map((die, index) => (
@@ -339,11 +391,12 @@ export function ZilchPanel({
               )}
 
               <div className="zilch-table__actions">
-                {zilch.phase === 'setup' && (
+                {(zilch.phase === 'setup' ||
+                  (zilch.phase === 'randomising-starter' && !zilch.starterPlayerId)) && (
                   <button
                     type="button"
-                    onClick={handleRandomiseStarter}
-                    disabled={controlsDisabled}
+                    onClick={onRandomiseStarter}
+                    disabled={onlineActionInFlight}
                   >
                     Randomise starter
                   </button>

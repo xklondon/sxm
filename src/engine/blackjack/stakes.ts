@@ -6,8 +6,8 @@ import {
   getAvailableChipsForBankrollOwner,
   resolveBankrollOwnerIdForBox,
 } from '../session/bankroll';
+import { assignTemporaryBoxOwnerOnFirstBet } from '../session/boxDecisionOwnership';
 import {
-  getNativeAssignedPersonForSlot,
   resolveControllerPersonId,
 } from '../session/playerAssignment';
 import { formatInsufficientChipsMessage } from './playFlow';
@@ -23,14 +23,6 @@ function occupiedBoxIds(state: GameState): string[] {
   return state.tableMeta.boxSlots
     .map((s) => s.playerId)
     .filter((id): id is string => id !== null);
-}
-
-function slotForBox(state: GameState, boxPlayerId: string) {
-  const slotNum = state.session.boxSlotNumbers?.[boxPlayerId];
-  if (!slotNum) {
-    return undefined;
-  }
-  return state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNum);
 }
 
 /** Single source of truth: stake amount for a box. */
@@ -83,29 +75,6 @@ function resolveStakerPersonId(
   return resolveBankrollOwnerIdForBox(state, boxPlayerId);
 }
 
-function resolveCallerForStake(
-  state: GameState,
-  boxPlayerId: string,
-  stakerPersonId: string,
-  existing?: BoxStakeEntry,
-): string {
-  if (existing?.callerPersonId) {
-    return existing.callerPersonId;
-  }
-  const slot = slotForBox(state, boxPlayerId);
-  if (slot?.nativeAssignedPersonId) {
-    return slot.nativeAssignedPersonId;
-  }
-  const slotNum = state.session.boxSlotNumbers?.[boxPlayerId];
-  if (slotNum) {
-    const native = getNativeAssignedPersonForSlot(state, slotNum);
-    if (native) {
-      return native;
-    }
-  }
-  return stakerPersonId;
-}
-
 export function addChipToBoxStake(
   state: GameState,
   boxPlayerId: string,
@@ -125,7 +94,7 @@ export function addChipToBoxStake(
   const minBet = getTableMinimumBet(state);
   const protocol = getBlackjackProtocolForState(state);
   const validation = isBetValidUnderProtocol(protocol, newAmount, minBet);
-  const callerPersonId = resolveCallerForStake(state, boxPlayerId, bettorId, entry);
+  const callerPersonId = assignTemporaryBoxOwnerOnFirstBet(state, boxPlayerId, bettorId, entry);
   log.info('Stake chip added', {
     boxId: boxPlayerId,
     chip,

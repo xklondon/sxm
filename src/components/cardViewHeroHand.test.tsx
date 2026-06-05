@@ -95,7 +95,7 @@ describe('Card View hero hand', () => {
     expect(html).not.toContain('bj-phone-view__cards--bank');
   });
 
-  it('shows hero cards when natural reveal masks display but logical hand has cards', () => {
+  it('masks hero cards and total until display reveal catches up', () => {
     const state = playerTurnState();
     const target = maxVisibilityForRound(state.blackjack);
     const masked = applyCardVisibility(state, {
@@ -107,18 +107,19 @@ describe('Card View hero hand', () => {
       activeBoxId: boxPlayerId(state, 1),
       logicalGameState: state,
     });
-    expect(html).toContain('bj-phone-view__cards--stitched');
-    expect(html).toContain('Total 9');
+    expect(html).not.toContain('bj-phone-view__cards--stitched');
+    expect(html).not.toContain('Total 9');
+    expect(html).toContain('bj-phone-view__cards-placeholder');
   });
 
-  it('does not show player cards in hero during bank turn', () => {
+  it('keeps hero cards visible during bank turn until next round', () => {
     const state = playerTurnState();
     state.blackjack!.status = 'bank-turn';
     state.blackjack!.activeHandKey = null;
-    expect(showHeroPlayerCards('bank', false, 2)).toBe(false);
+    expect(showHeroPlayerCards('bank', false, 2)).toBe(true);
     const html = renderCardView(state, { protocolPhase: 'bank', activeBoxId: boxPlayerId(state, 1) });
-    expect(html).not.toContain('bj-phone-view__cards--stitched');
-    expect(html).toContain('bj-phone-view__cards-placeholder');
+    expect(html).toContain('bj-phone-view__cards--stitched');
+    expect(html).toContain('Total 9');
   });
 
   it('betting placeholder is invisible in markup', () => {

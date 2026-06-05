@@ -61,7 +61,7 @@ export function sortBoxSlotsForCardViewDisplay<T extends { slotNumber: number }>
   return sortBoxSlotsForTableVisualOrder(slots);
 }
 
-/** Desktop status corner styling is CSS-only (`.bj-view-*-desktop .bj-center-status`). */
+/** Reserved for future desktop status chrome; command text lives in dealer-block__command. */
 export function showStatusCornerBox(device: DeviceView): boolean {
   return device === 'desktop';
 }

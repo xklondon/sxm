@@ -9,6 +9,7 @@ import {
   randomiseStarter,
   rollDice,
 } from './zilchEngine';
+import { normalizeZilchState } from './normalizeZilchState';
 
 export const ZILCH_GAMEPLAY_ACTIONS = [
   'zilchRandomiseStarter',
@@ -68,7 +69,7 @@ export function applyZilchActionToState(
       throw new Error(`Unknown Zilch action: ${action}`);
   }
 
-  return { ...state, zilch };
+  return { ...state, zilch: normalizeZilchState(zilch) };
 }
 
 export function startZilchGameOnState(
@@ -78,7 +79,7 @@ export function startZilchGameOnState(
 ): GameState {
   return {
     ...state,
-    zilch: createInitialZilchState(playerIds, settings),
+    zilch: normalizeZilchState(createInitialZilchState(playerIds, settings)),
     zilchSettings: settings,
     tableMeta: {
       ...state.tableMeta,

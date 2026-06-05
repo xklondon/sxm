@@ -9,8 +9,7 @@ import {
   shuffleToStartOnState,
   shuffleFreshShoeOnState,
   updateBlackjackFlowSettings,
-  randomBankDrawDelayMs,
-  cardDealDelayMs,
+  getCardDealDelayMs,
   getBankFinalMessage,
   processPlayFlowAutoStands,
   syncBankPhaseOnState,
@@ -282,7 +281,8 @@ export function useBlackjackTableFlow(
           if (bankRunIdRef.current !== runId) {
             break;
           }
-          const delay = randomBankDrawDelayMs(gameStateRef.current.blackjackFlowSettings);
+          const beforeDraw = gameStateRef.current;
+          const delay = getCardDealDelayMs(beforeDraw, 'dealer');
           await sleep(delay);
           if (bankRunIdRef.current !== runId) {
             break;
@@ -305,11 +305,11 @@ export function useBlackjackTableFlow(
       const afterDraw = gameStateRef.current;
       if (afterDraw.blackjack?.status === 'banking') {
         setBankUiMessage(getBankFinalMessage(afterDraw));
-        await sleep(cardDealDelayMs(afterDraw.blackjackFlowSettings));
+        await sleep(getCardDealDelayMs(afterDraw, 'bank-pause'));
         if (bankRunIdRef.current !== runId) {
           return;
         }
-        await sleep(cardDealDelayMs(afterDraw.blackjackFlowSettings));
+        await sleep(getCardDealDelayMs(afterDraw, 'bank-pause'));
         if (bankRunIdRef.current !== runId) {
           return;
         }
@@ -351,7 +351,7 @@ export function useBlackjackTableFlow(
 
     const current = gameStateRef.current;
     setBankUiMessage(getBankFinalMessage(current));
-    const pause = cardDealDelayMs(current.blackjackFlowSettings);
+    const pause = getCardDealDelayMs(current, 'bank-pause');
 
     const timer = window.setTimeout(() => {
       try {

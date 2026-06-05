@@ -1,4 +1,5 @@
 import { buildInitialDealPlanFromHandKeys } from '../initialDeal';
+import { cardsFromIds, getBlackjackHandValue } from '../hand';
 export function countVisibleCards(round) {
     if (!round) {
         return { dealer: 0, hands: {} };
@@ -132,4 +133,22 @@ export function shouldUseOrderedInitialReveal(roundStatus, visible, target) {
         return false;
     }
     return true;
+}
+/** Visible card ids for a hand in the current display round (masked or full). */
+export function getVisibleHandCardIds(round, handKey) {
+    return (round?.playerHands[handKey]?.cardIds ?? []).filter(Boolean);
+}
+/**
+ * Hand total from visible cards only — totals must never lead card reveal.
+ * Returns null when no visible cards exist yet.
+ */
+export function getDisplayedHandValue(deck, round, handKey) {
+    if (!deck) {
+        return null;
+    }
+    const ids = getVisibleHandCardIds(round, handKey);
+    if (ids.length === 0) {
+        return null;
+    }
+    return getBlackjackHandValue(cardsFromIds(deck, ids)).value;
 }

@@ -9,7 +9,7 @@ export { blackjackHandKey, parseBlackjackHandKey, listHandKeysForPlayer, countSp
 export { orderedHandKeys } from './helpers';
 export { BLACKJACK_UX, dealDelaysForPace } from './uxSettings';
 export { buildInitialDealSequence } from './dealSequence';
-export { DEFAULT_BLACKJACK_FLOW_SETTINGS, CARD_TIMER_PRESETS, DEAL_SPEED_MS, dealDelayMsForPreset, cardDealDelayMs, syncDealTimingFromPreset, randomBankDrawDelayMs, } from './flowSettings';
+export { DEFAULT_BLACKJACK_FLOW_SETTINGS, CARD_TIMER_PRESETS, DEAL_SPEED_MS, dealDelayMsForPreset, cardDealDelayMs, getCardDealDelayMs, syncDealTimingFromPreset, randomBankDrawDelayMs, } from './flowSettings';
 export { getStakeForBox, getStakeBetValidationMessage, getStakeChipsForBox, getBoxesWithStakes, hasAnyStakes, isBettingOpen, addChipToBoxStake, clearBoxStake, removeLastChipFromBoxStake, confirmBoxStake, unlockBettingForNextRound, } from './stakes';
 export { getEligibleDealBoxes, getDealBlockReason, getTableMinimumBet, hasEligibleDealBoxes, isStakeBelowMinimum, canChangeMinimumBet, setTableMinimumBet, logDealCardsAudit, } from './dealEligibility';
 export { canOfferInsuranceAfterInitialDeal, isInitialDealRoundComplete, hasPlayerActionsStarted, activeBetBoxesHaveTwoCards, } from './initialDealGuards';

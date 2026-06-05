@@ -1,4 +1,5 @@
 import type { GameState } from '../../types';
+import { normalizeZilchState } from '../zilch/normalizeZilchState';
 
 /** True when this table session is a dice Zilch game (any authoritative marker). */
 export function isZilchTable(state: GameState): boolean {
@@ -47,5 +48,12 @@ export function isHoldemTable(state: GameState): boolean {
 
 /** Normalize loaded/saved/hydrated state before render. */
 export function normalizeLoadedGameState(state: GameState): GameState {
-  return ensureZilchTableIdentity(state);
+  const withIdentity = ensureZilchTableIdentity(state);
+  if (!withIdentity.zilch) {
+    return withIdentity;
+  }
+  return {
+    ...withIdentity,
+    zilch: normalizeZilchState(withIdentity.zilch),
+  };
 }

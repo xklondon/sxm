@@ -404,6 +404,39 @@ describe('Table Details side rail (same slot as This Table)', () => {
     expect(desktop).toContain('bj-casino__this-table--float');
     expect(desktop).toContain('data-side-panel="thisTable"');
     expect(mobile).not.toMatch(/bj-table-slide-overlay[^>]*>[\s\S]*table-details-panel/);
+    for (const html of [mobile, desktop]) {
+      expect(html).toContain('bj-side-rail-shell');
+      expect(html).toContain('bj-side-rail-shell__header');
+    }
+  });
+});
+
+describe('shared table UX classes (Full Table + Card View)', () => {
+  it('desktop and mobile render canonical rail, felt, and card column surface classes', () => {
+    for (const mode of ['full', 'card'] as const) {
+      const state = withView(playingState(), mode);
+      for (const width of [390, 1280]) {
+        const html = renderPanelAt(width, state);
+        expect(html).toContain('bj-table-rail');
+        expect(html).toContain('bj-table-surface');
+        if (mode === 'card') {
+          expect(html).toContain('bj-table-column-surface');
+        }
+      }
+    }
+  });
+
+  it('shared CSS uses one felt gradient for table surface and card column', () => {
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    expect(sharedCss).not.toContain('--bj-table-column-bg');
+    expect(sharedCss).toMatch(/\.bj-table-column-surface[\s\S]*var\(--bj-table-felt-bg\)/);
+    expect(sharedCss).toMatch(/\.bj-bet-zone[\s\S]*var\(--bj-seat-radius\)/);
+    expect(sharedCss).toContain('.bj-player-actions');
+  });
+
+  it('shared CSS is imported once via index.css', () => {
+    const indexCss = readFileSync(join(process.cwd(), 'src/index.css'), 'utf8');
+    expect(indexCss).toContain("bj-table-shared.css");
   });
 });
 

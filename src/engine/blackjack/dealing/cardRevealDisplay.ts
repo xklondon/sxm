@@ -1,7 +1,9 @@
 import type { GameState } from '../../../types';
 import type { BlackjackRound } from '../../../types/blackjack';
+import type { Deck } from '../../../types/deck';
 import { buildInitialDealPlanFromHandKeys } from '../initialDeal';
 import type { InitialDealStep } from '../initialDeal';
+import { cardsFromIds, getBlackjackHandValue } from '../hand';
 
 export interface CardVisibilityCounts {
   dealer: number;
@@ -114,6 +116,33 @@ export function countsFromRevealSteps(steps: InitialDealStep[]): CardVisibilityC
 
 export function maxVisibilityForRound(round: BlackjackRound | null): CardVisibilityCounts {
   return countVisibleCards(round);
+}
+
+/** Visible card ids for a hand in the current display round (masked or full). */
+export function getVisibleHandCardIds(
+  round: BlackjackRound | null | undefined,
+  handKey: string,
+): string[] {
+  return (round?.playerHands[handKey]?.cardIds ?? []).filter(Boolean);
+}
+
+/**
+ * Hand total from visible cards only — totals must never lead card reveal.
+ * Returns null when no visible cards exist yet.
+ */
+export function getDisplayedHandValue(
+  deck: Deck | null | undefined,
+  round: BlackjackRound | null | undefined,
+  handKey: string,
+): number | null {
+  if (!deck) {
+    return null;
+  }
+  const ids = getVisibleHandCardIds(round, handKey);
+  if (ids.length === 0) {
+    return null;
+  }
+  return getBlackjackHandValue(cardsFromIds(deck, ids)).value;
 }
 
 /** Stable key for per-table, per-round visual hydration. */

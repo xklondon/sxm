@@ -414,7 +414,15 @@ export function syncCallersForDeal(state: GameState, boxPlayerIds: string[]): Ga
     const caller =
       slot.nativeAssignedPersonId ??
       state.tableMeta.boxStakes[slot.playerId]?.callerPersonId ??
-      slot.bankrollOwnerId;
+      null;
+    if (caller && caller !== slot.callerPersonId) {
+      log.info('dealCallerLocked', {
+        boxPlayerId: slot.playerId,
+        slotNumber: slot.slotNumber,
+        callerPersonId: caller,
+        native: Boolean(slot.nativeAssignedPersonId),
+      });
+    }
     return caller ? { ...slot, callerPersonId: caller } : slot;
   });
   return { ...state, tableMeta: { ...state.tableMeta, boxSlots } };

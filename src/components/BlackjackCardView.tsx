@@ -15,9 +15,7 @@ import {
   canHitBlackjack,
   canSplitBlackjackForState,
   canStandBlackjack,
-  cardsFromIds,
   getAidAdvice,
-  getBlackjackHandValue,
   getStakeForBox,
   getStakeChipsForBox,
   parseBlackjackHandKey,
@@ -26,17 +24,12 @@ import {
 import { getCardById } from "../engine/deck";
 
 import { getPlayerInitials } from "../storage/profileStorage";
-import {
-  canControllerCallBox,
-  getCallerPersonIdForBox,
-} from "../engine/session";
 import { resolveViewerPersonIdForTable } from "./viewerIdentity";
 import type { AuthUser } from "../api/client";
 
 import {
   canCallEvenMoneyForHand,
   formatCardViewBoxStatus,
-  getActionableHandForView,
   getCardViewBoxStatus,
   getCardViewHandKeyForBox,
   getCardViewHeroBoxId,
@@ -50,12 +43,14 @@ import {
   showEvenMoneyControls,
   showInsuranceControls,
   canShowPlayerDecisionControls,
+  resolveViewerActionPermission,
+  getActiveTurnBoxId,
 } from "./blackjackViewPhase";
+import { getDisplayedHandValue, getVisibleHandCardIds } from "../engine/blackjack/dealing/cardRevealDisplay";
 
 import { getBoxCallerDisplayName } from "./boxCallerDisplay";
 import { sortBoxSlotsForCardViewDisplay, type DeviceView } from "./tableViewContract";
-
-import { isOnlineModeEnabled } from "../api/config";
+import { TABLE_UX } from "./tableUxContract";
 
 import { StakeChips, type ChipValue } from "./ChipStack";
 
@@ -172,7 +167,6 @@ export function BlackjackCardView({
   const isPlayerPhase = isPlayerTurnPhase(protocolPhase);
 
   const turnHandKey = isPlayerPhase ? (round?.activeHandKey ?? null) : null;
-  const turnBoxId = turnHandKey ? parseBlackjackHandKey(turnHandKey).playerId : null;
   const heroBoxId = getCardViewHeroBoxId(
     protocolPhase,
     activeBoxId,
@@ -185,13 +179,18 @@ export function BlackjackCardView({
   const viewerPersonId =
     viewerPersonIdProp ??
     resolveViewerPersonIdForTable(logicalGameState, onlineTableId, viewerAuth);
-  const callerPersonId = turnBoxId ? getCallerPersonIdForBox(gameState, turnBoxId) : null;
-  const caller = callerPersonId ? players[callerPersonId] : null;
-  const callerName = caller?.controllerName?.trim() || caller?.displayName || "caller";
-  const isCaller =
-    turnBoxId !== null &&
-    viewerPersonId !== null &&
-    canControllerCallBox(gameState, turnBoxId, viewerPersonId);
+
+  const activeTurnBoxId = getActiveTurnBoxId(logicalGameState, protocolPhase);
+  const actionPermission = resolveViewerActionPermission(
+    logicalGameState,
+    viewerPersonId,
+    { cardViewHeroBoxId: heroBoxId },
+  );
+  const isActiveTurn = actionPermission.canAct;
+  const actionableHandKey = actionPermission.actionable?.handKey ?? null;
+  const activeSlotNum = actionPermission.activeBoxId
+    ? session.boxSlotNumbers?.[actionPermission.activeBoxId]
+    : null;
 
   const logicalHand =
     heroHandKey && logicalRound?.playerHands[heroHandKey]
@@ -202,31 +201,24 @@ export function BlackjackCardView({
       ? round.playerHands[heroHandKey]
       : undefined;
 
-  // Canonical gate shared with Full Table: the hero box is actionable only when
-  // it owns the server-authoritative active hand and the viewer may call it.
-  const actionable = getActionableHandForView(
-    logicalGameState,
-    viewerPersonId,
-    isOnlineModeEnabled(),
+  const canHit = Boolean(
+    isActiveTurn && actionableHandKey && round && canHitBlackjack(round, actionableHandKey),
   );
-  const isActiveTurn =
-    actionable !== null &&
-    heroBoxId !== null &&
-    actionable.boxId === heroBoxId;
 
-  const activeSlotNum = turnBoxId
-    ? session.boxSlotNumbers?.[turnBoxId]
-    : null;
+  const canStand = Boolean(
+    isActiveTurn &&
+    actionableHandKey &&
+    round &&
+    canStandBlackjack(round, actionableHandKey),
+  );
 
   const logicalCardIds = (logicalHand?.cardIds ?? []).filter((id) => id.length > 0);
   const visualCardIds = (visualHand?.cardIds ?? []).filter((id) => id.length > 0);
   /** Reveal may lag authoritative state — show dealt cards once engine has them. */
-  const heroCardIds =
-    visualCardIds.length > 0 ? visualCardIds : logicalCardIds;
+  const heroCardIds = visualCardIds;
 
-  const cards = deck ? cardsFromIds(deck, heroCardIds) : [];
-
-  const { value } = getBlackjackHandValue(cards);
+  const heroDisplayValue =
+    heroHandKey !== null ? getDisplayedHandValue(deck, round, heroHandKey) : null;
 
   const slots = sortBoxSlotsForCardViewDisplay(gameState.tableMeta.boxSlots, deviceView);
 
@@ -239,17 +231,6 @@ export function BlackjackCardView({
   );
   const showSideControls =
     stitchedActionsActive && !evenMoneyActive && !insuranceActive;
-
-  const canHit = Boolean(
-    isActiveTurn && turnHandKey && round && canHitBlackjack(round, turnHandKey),
-  );
-
-  const canStand = Boolean(
-    isActiveTurn &&
-    turnHandKey &&
-    round &&
-    canStandBlackjack(round, turnHandKey),
-  );
 
   function getActionDisabledReason(): string | null {
     if (isBettingPhase(protocolPhase)) {
@@ -276,10 +257,12 @@ export function BlackjackCardView({
       return "Dealing…";
     }
 
-    if (isPlayerPhase && turnHandKey && !isCaller) {
-      return activeSlotNum
-        ? `Box ${activeSlotNum} — waiting for ${callerName} to call.`
-        : `Waiting for ${callerName} to call.`;
+    if (isPlayerPhase && actionPermission.blockReason === 'not-decision-owner' && actionPermission.waitMessage) {
+      return actionPermission.waitMessage;
+    }
+
+    if (isPlayerPhase && actionPermission.blockReason === 'wrong-hero-box' && actionPermission.waitMessage) {
+      return actionPermission.waitMessage;
     }
 
     if (isPlayerPhase && !isActiveTurn) {
@@ -288,7 +271,7 @@ export function BlackjackCardView({
         : "Waiting for turn…";
     }
 
-    if (isPlayerPhase && isActiveTurn && !turnHandKey) {
+    if (isPlayerPhase && isActiveTurn && !actionableHandKey) {
       return "No active hand";
     }
 
@@ -322,6 +305,12 @@ export function BlackjackCardView({
 
       isActiveTurn,
 
+      actionPermission: {
+        canAct: actionPermission.canAct,
+        blockReason: actionPermission.blockReason,
+        decisionOwnerId: actionPermission.decisionOwnerId,
+      },
+
       logicalCardIds,
       heroCardIds,
 
@@ -347,6 +336,10 @@ export function BlackjackCardView({
     activeBoxId,
 
     isActiveTurn,
+
+    actionPermission.canAct,
+    actionPermission.blockReason,
+    actionPermission.decisionOwnerId,
 
     logicalCardIds,
     heroCardIds,
@@ -433,9 +426,11 @@ export function BlackjackCardView({
   }
 
   function handleTouchEnd(e: TouchEvent) {
-    if (!isPlayerPhase || !turnHandKey || !round) {
+    if (!showSideControls || !actionPermission.canAct || !actionPermission.actionable || !round) {
       return;
     }
+
+    const swipeHandKey = actionPermission.actionable.handKey;
 
     const start = touchStart.current;
 
@@ -460,26 +455,26 @@ export function BlackjackCardView({
     if (dx > SWIPE_THRESHOLD) {
       logSwipe(
         "right",
-        canHitBlackjack(round, turnHandKey) ? "hit" : null,
+        canHitBlackjack(round, swipeHandKey) ? "hit" : null,
         beforeHandCards,
       );
 
-      if (canHitBlackjack(round, turnHandKey)) {
+      if (canHitBlackjack(round, swipeHandKey)) {
         setSwipeHint("Hit");
 
-        onCard(turnHandKey);
+        onCard(swipeHandKey);
       }
     } else if (dx < -SWIPE_THRESHOLD) {
       logSwipe(
         "left",
-        canStandBlackjack(round, turnHandKey) ? "stay" : null,
+        canStandBlackjack(round, swipeHandKey) ? "stay" : null,
         beforeHandCards,
       );
 
-      if (canStandBlackjack(round, turnHandKey)) {
+      if (canStandBlackjack(round, swipeHandKey)) {
         setSwipeHint("Stay");
 
-        onStay(turnHandKey);
+        onStay(swipeHandKey);
       }
     }
 
@@ -487,7 +482,7 @@ export function BlackjackCardView({
   }
 
   function handleStayClick() {
-    if (!turnHandKey || !canStand) {
+    if (!actionableHandKey || !canStand) {
       return;
     }
 
@@ -495,17 +490,17 @@ export function BlackjackCardView({
       console.log("[SXMCards] cardViewAction", {
         actionTriggered: "stay",
 
-        activeHandKey: turnHandKey,
+        activeHandKey: actionableHandKey,
 
         beforeHandCards: logicalCardIds,
       });
     }
 
-    onStay(turnHandKey);
+    onStay(actionableHandKey);
   }
 
   function handleHitClick() {
-    if (!turnHandKey || !canHit) {
+    if (!actionableHandKey || !canHit) {
       return;
     }
 
@@ -513,23 +508,23 @@ export function BlackjackCardView({
       console.log("[SXMCards] cardViewAction", {
         actionTriggered: "hit",
 
-        activeHandKey: turnHandKey,
+        activeHandKey: actionableHandKey,
 
         beforeHandCards: logicalCardIds,
       });
     }
 
-    onCard(turnHandKey);
+    onCard(actionableHandKey);
   }
 
   function handleAid() {
-    if (!round || !deck || !turnHandKey) {
+    if (!round || !deck || !actionableHandKey || !isActiveTurn) {
       return;
     }
 
     const advice = getAidAdvice(
       round,
-      turnHandKey,
+      actionableHandKey,
       deck,
       blackjackFlowSettings,
       gameState,
@@ -543,19 +538,17 @@ export function BlackjackCardView({
 
   function renderMiniHandBox(slotNumber: number, boxId: string) {
     const handKey = getCardViewHandKeyForBox(protocolPhase, logicalRound, boxId);
-    const logicalBoxHand = logicalRound?.playerHands[handKey];
-    const ids = (logicalBoxHand?.cardIds ?? []).filter(Boolean);
-    const miniCards = deck ? cardsFromIds(deck, ids) : [];
-    const miniTotal =
-      miniCards.length > 0 ? getBlackjackHandValue(miniCards).value : null;
+    const displayBoxHand = round?.playerHands[handKey];
+    const ids = getVisibleHandCardIds(round, handKey);
+    const miniTotal = getDisplayedHandValue(deck, round, handKey);
     const openStake = getStakeForBox(gameState, boxId);
     const stakeChips = getStakeChipsForBox(gameState, boxId);
-    const wager = bettingMainStage ? openStake : (logicalBoxHand?.currentBet ?? openStake);
+    const wager = bettingMainStage ? openStake : (displayBoxHand?.currentBet ?? openStake);
     const showBetStakeChips = bettingMainStage && openStake > 0 && stakeChips.length > 0;
-    const isTurnBox = boxId === heroBoxId;
+    const isTurnBox = activeTurnBoxId === boxId;
     const isActiveBox = bettingMainStage
       ? boxId === selectedId
-      : isPlayerPhase && boxId === activeBoxId;
+      : isPlayerPhase && activeTurnBoxId === boxId;
     const status = getCardViewBoxStatus(
       protocolPhase,
       gameEnded,
@@ -749,7 +742,7 @@ export function BlackjackCardView({
     const { playerId, maxBet, canAfford, slotNumber } = action;
 
     return (
-      <div className="bj-phone-view__phase-actions bj-phone-view__phase-actions--insurance" aria-live="polite">
+      <div className={`${TABLE_UX.playerActions} bj-phone-view__phase-actions bj-phone-view__phase-actions--insurance`} aria-live="polite">
         <div className="bj-phone-view__ins-row">
           <span className="bj-phone-view__ins-label">
             Box {slotNumber ?? "?"} — up to {maxBet}c
@@ -762,6 +755,7 @@ export function BlackjackCardView({
                 "ds-btn",
                 "ds-btn--secondary",
                 "bj-phone-view__ins-btn",
+                "bj-table-actions__btn--legal",
                 "bj-phone-view__extra-btn--legal",
               ]
                 .filter(Boolean)
@@ -789,11 +783,17 @@ export function BlackjackCardView({
     }
 
     if (!canCallEvenMoney) {
-      return null;
+      const { playerId } = parseBlackjackHandKey(evenMoneyHandKey);
+      const slotNum = session.boxSlotNumbers?.[playerId];
+      return (
+        <p className={`${TABLE_UX.playerActions} bj-phone-view__phase-actions bj-phone-view__phase-actions--wait`}>
+          Box {slotNum ?? "?"} — even-money decision pending…
+        </p>
+      );
     }
 
     return (
-      <div className="bj-phone-view__phase-actions bj-phone-view__phase-actions--even-money" aria-live="polite">
+      <div className={`${TABLE_UX.playerActions} bj-phone-view__phase-actions bj-phone-view__phase-actions--even-money`} aria-live="polite">
         <div className="bj-phone-view__even-money-actions">
           <button
             type="button"
@@ -904,9 +904,18 @@ export function BlackjackCardView({
               )}
             </div>
             <div className="bj-phone-view__hand-meta">
-              <div className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero">
-                Total {value}
-              </div>
+              {heroDisplayValue !== null ? (
+                <div className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero">
+                  Total {heroDisplayValue}
+                </div>
+              ) : (
+                <div
+                  className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero bj-phone-view__total--placeholder"
+                  aria-hidden="true"
+                >
+                  &nbsp;
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -917,15 +926,15 @@ export function BlackjackCardView({
   function renderActionBar() {
     const canDoubleNow =
       isActiveTurn &&
-      turnHandKey &&
+      actionableHandKey &&
       blackjackSettings.allowDoubleDown &&
-      canDoubleBlackjackForState(logicalGameState, turnHandKey);
+      canDoubleBlackjackForState(logicalGameState, actionableHandKey);
     const canSplitNow =
       isActiveTurn &&
-      turnHandKey &&
+      actionableHandKey &&
       blackjackSettings.allowSplit &&
       deck &&
-      canSplitBlackjackForState(gameState, turnHandKey);
+      canSplitBlackjackForState(gameState, actionableHandKey);
     const showDouble = blackjackSettings.allowDoubleDown;
     const showSplit = blackjackSettings.allowSplit && Boolean(deck);
     const showAid = blackjackFlowSettings.adviceEnabled;
@@ -948,8 +957,25 @@ export function BlackjackCardView({
       );
     }
 
+    if (!isActiveTurn && disabledReason) {
+      return (
+        <p className={`${TABLE_UX.playerActions} bj-phone-view__action-bar bj-phone-view__action-bar--wait`} aria-live="polite">
+          {disabledReason}
+        </p>
+      );
+    }
+
+    if (!isActiveTurn) {
+      return (
+        <div
+          className="bj-phone-view__action-bar bj-phone-view__action-bar--play-placeholder"
+          aria-hidden="true"
+        />
+      );
+    }
+
     return (
-      <div className="bj-phone-view__action-bar bj-phone-view__action-bar--playing" aria-label="Player actions">
+      <div className={`${TABLE_UX.playerActions} bj-phone-view__action-bar bj-phone-view__action-bar--playing`} aria-label="Player actions">
         <div className="bj-phone-view__action-bar-row bj-phone-view__action-bar-row--primary">
           <button
             type="button"
@@ -996,7 +1022,7 @@ export function BlackjackCardView({
                 .filter(Boolean)
                 .join(" ")}
               disabled={!canDoubleNow}
-              onClick={() => turnHandKey && onDouble(turnHandKey)}
+              onClick={() => actionableHandKey && onDouble(actionableHandKey)}
             >
               2×
             </button>
@@ -1014,7 +1040,7 @@ export function BlackjackCardView({
                 .filter(Boolean)
                 .join(" ")}
               disabled={!canSplitNow}
-              onClick={() => turnHandKey && onSplit(turnHandKey)}
+              onClick={() => actionableHandKey && onSplit(actionableHandKey)}
             >
               Split
             </button>
@@ -1038,7 +1064,7 @@ export function BlackjackCardView({
   }
 
   return (
-    <div className="bj-phone-view">
+    <div className={`bj-phone-view ${TABLE_UX.columnSurface}`}>
       {!bettingMainStage && renderInsuranceActions()}
       {!bettingMainStage && renderEvenMoneyActions()}
 

@@ -12,7 +12,6 @@ import {
 import {
   bankTurn,
   completeDiceRoll,
-  confirmStarter,
   keepCombination,
   randomiseStarter,
   rollDice,
@@ -63,7 +62,7 @@ describe('ZilchPanel acceptance', () => {
 
   it('markup includes dice table and roll button', () => {
     let state = zilchReadyState();
-    let zilch = confirmStarter(randomiseStarter(state.zilch!, () => 0));
+    let zilch = randomiseStarter(state.zilch!, () => 0);
     state = { ...state, zilch };
     const html = renderToStaticMarkup(
       <ZilchPanel gameState={state} onGameStateChange={() => {}} />,
@@ -73,7 +72,7 @@ describe('ZilchPanel acceptance', () => {
   });
 
   it('banking adds turn score to total', () => {
-    let zilch = confirmStarter(randomiseStarter(zilchReadyState().zilch!, () => 0));
+    let zilch = randomiseStarter(zilchReadyState().zilch!, () => 0);
     const pid = zilch.currentPlayerId!;
     zilch = {
       ...zilch,
@@ -88,7 +87,7 @@ describe('ZilchPanel acceptance', () => {
   });
 
   it('zilch roll ends turn with zero turn score', () => {
-    let zilch = confirmStarter(randomiseStarter(zilchReadyState().zilch!, () => 0));
+    let zilch = randomiseStarter(zilchReadyState().zilch!, () => 0);
     const pid = zilch.currentPlayerId!;
     zilch = rollDice(
       {
@@ -112,7 +111,7 @@ describe('ZilchPanel acceptance', () => {
   });
 
   it('player may choose lower scoring option', () => {
-    let zilch = confirmStarter(randomiseStarter(zilchReadyState().zilch!, () => 0));
+    let zilch = randomiseStarter(zilchReadyState().zilch!, () => 0);
     zilch = {
       ...zilch,
       phase: 'awaiting-keep-selection',
@@ -144,7 +143,7 @@ describe('ZilchPanel acceptance', () => {
   });
 
   it('cannot bank during zilch phase', () => {
-    let zilch = confirmStarter(randomiseStarter(zilchReadyState().zilch!, () => 0));
+    let zilch = randomiseStarter(zilchReadyState().zilch!, () => 0);
     zilch = {
       ...zilch,
       phase: 'zilch',

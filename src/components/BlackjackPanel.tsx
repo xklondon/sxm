@@ -8,7 +8,6 @@ import {
   releaseBoxSlot,
   resolveControllerPersonId,
   canControllerCallBox,
-  getCallerPersonIdForBox,
 } from '../engine/session';
 import { isJoinAssignedHighlight } from '../engine/session/inviteJoin';
 import {
@@ -17,10 +16,8 @@ import {
   canHitBlackjack,
   canSplitBlackjackForState,
   canStandBlackjack,
-  cardsFromIds,
   doubleDownBlackjackOnState,
   getAidAdvice,
-  getBlackjackHandValue,
   getShoeDeckCount,
   hitBlackjackOnState,
   isInsufficientChipsMessage,
@@ -50,7 +47,9 @@ import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBl
 import { getBoxCallerDisplayName } from './boxCallerDisplay';
 import { LocalProfileSetup } from './LocalProfileSetup';
 import { PlayLedgerModal } from './LedgerModals';
+import { TableSideRailShell } from './TableSideRailShell';
 import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
+import { TABLE_UX } from './tableUxContract';
 import { TableDetailsPanelContent } from './TableDetailsPanel';
 import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
@@ -93,9 +92,12 @@ import {
 } from '../engine/blackjack';
 import {
   canShowPlayerDecisionControls,
-  getActionableHandForView,
+  resolveViewerActionPermission,
+  formatDecisionOwnerWaitMessage,
   getInsuranceActionsForController,
+  getActiveTurnBoxId,
 } from './blackjackViewPhase';
+import { getDisplayedHandValue } from '../engine/blackjack/dealing/cardRevealDisplay';
 import {
   buildViewerIdentityHints,
   resolveViewerPersonIdForTable,
@@ -244,8 +246,7 @@ export function BlackjackPanel({
   const canChangeDealSpeed = tableOwner && canChangeMinimumBet(gameState);
   const canResetTable = canUserResetTable(gameState, controllerName);
   const activeProtocol = getBlackjackProtocolForState(gameState);
-  const activeBoxId =
-    round?.activeHandKey != null ? parseBlackjackHandKey(round.activeHandKey).playerId : null;
+  const activeBoxId = getActiveTurnBoxId(gameState, protocolPhase);
 
   useEffect(() => {
     if (gameState.tableMeta.gameStatus === 'ended') {
@@ -724,14 +725,14 @@ export function BlackjackPanel({
 
     if (!isCaller) {
       return (
-        <p className="bj-table-actions bj-table-actions--wait">
+        <p className={`${TABLE_UX.playerActions} bj-table-actions bj-table-actions--wait`}>
           Box {activeSlotNum ?? '?'} — even-money decision pending…
         </p>
       );
     }
 
     return (
-      <div className="bj-table-actions bj-table-actions--even-money" aria-live="polite">
+      <div className={`${TABLE_UX.playerActions} bj-table-actions bj-table-actions--even-money`} aria-live="polite">
         <div className="bj-table-actions__row">
           <button
             type="button"
@@ -768,52 +769,46 @@ export function BlackjackPanel({
     if (!activeRound.activeHandKey) {
       return null;
     }
-    const activeHandKey: string = activeRound.activeHandKey;
-    const { playerId } = parseBlackjackHandKey(activeHandKey);
-    const activeSlotNum = session.boxSlotNumbers?.[playerId];
-    const isCaller =
-      viewerPersonId !== null &&
-      canControllerCallBox(gameState, playerId, viewerPersonId);
+    const { playerId } = parseBlackjackHandKey(activeRound.activeHandKey);
 
-    if (!isCaller) {
-      const callerId = getCallerPersonIdForBox(gameState, playerId);
-      const caller = callerId ? gameState.players[callerId] : null;
-      const callerName = caller?.controllerName?.trim() || caller?.displayName || 'caller';
+    const actionPermission = resolveViewerActionPermission(gameState, viewerPersonId);
+    if (!actionPermission.canAct) {
+      const waitMessage =
+        actionPermission.waitMessage ??
+        formatDecisionOwnerWaitMessage(gameState, playerId);
       return (
-        <p className="bj-table-actions bj-table-actions--wait">
-          Box {activeSlotNum ?? '?'} — waiting for {callerName} to call.
+        <p className={`${TABLE_UX.playerActions} bj-table-actions bj-table-actions--wait`}>
+          {waitMessage}
         </p>
       );
     }
 
-    // Canonical gate: controls enabled only when this viewer may act on the
-    // server-authoritative active hand. Shared with Card View.
-    const actionable = getActionableHandForView(gameState, viewerPersonId, isOnlineModeEnabled());
-    const canHit = Boolean(actionable) && canHitBlackjack(activeRound, activeHandKey);
-    const canStand = Boolean(actionable) && canStandBlackjack(activeRound, activeHandKey);
+    const actionable = actionPermission.actionable!;
+    const canHit = canHitBlackjack(activeRound, actionable.handKey);
+    const canStand = canStandBlackjack(activeRound, actionable.handKey);
 
     const canDouble =
-      Boolean(actionable) && Boolean(deck) && canDoubleBlackjackForState(gameState, activeHandKey);
-    const canSplit = Boolean(actionable) && canSplitBlackjackForState(gameState, activeHandKey);
+      Boolean(deck) && canDoubleBlackjackForState(gameState, actionable.handKey);
+    const canSplit = canSplitBlackjackForState(gameState, actionable.handKey);
 
     function handleTableAid() {
       if (!deck) {
         return;
       }
-      const advice = getAidAdvice(activeRound, activeHandKey, deck, flowSettings, gameState, ledger);
+      const advice = getAidAdvice(activeRound, actionable.handKey, deck, flowSettings, gameState, ledger);
       if (advice) {
         setTableAidTip(advice.text);
       }
     }
 
     return (
-      <div className="bj-table-actions" aria-live="polite">
+      <div className={`${TABLE_UX.playerActions} bj-table-actions`} aria-live="polite">
         <div className="bj-table-actions__row">
           <button
             type="button"
             className="ds-btn ds-btn--stand bj-table-actions__btn"
             disabled={!canStand}
-            onClick={() => run((s) => standBlackjackOnState(s, activeHandKey), { type: 'stand', payload: {} })}
+            onClick={() => run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} })}
           >
             Stay
           </button>
@@ -821,7 +816,7 @@ export function BlackjackPanel({
             type="button"
             className="ds-btn ds-btn--hit bj-table-actions__btn"
             disabled={!canHit}
-            onClick={() => run((s) => hitBlackjackOnState(s, activeHandKey), { type: 'hit', payload: {} })}
+            onClick={() => run((s) => hitBlackjackOnState(s, actionable.handKey), { type: 'hit', payload: {} })}
           >
             Hit
           </button>
@@ -838,7 +833,7 @@ export function BlackjackPanel({
                 .filter(Boolean)
                 .join(' ')}
               disabled={!canDouble}
-              onClick={() => run((s) => doubleDownBlackjackOnState(s, activeHandKey), { type: 'double', payload: {} })}
+              onClick={() => run((s) => doubleDownBlackjackOnState(s, actionable.handKey), { type: 'double', payload: {} })}
             >
               2×
             </button>
@@ -856,7 +851,7 @@ export function BlackjackPanel({
                 .filter(Boolean)
                 .join(' ')}
               disabled={!canSplit}
-              onClick={() => run((s) => splitBlackjackOnState(s, activeHandKey), { type: 'split', payload: {} })}
+              onClick={() => run((s) => splitBlackjackOnState(s, actionable.handKey), { type: 'split', payload: {} })}
             >
               Split
             </button>
@@ -883,7 +878,7 @@ export function BlackjackPanel({
     }
 
     return (
-      <div className="bj-table-actions bj-table-actions--insurance" aria-live="polite">
+      <div className={`${TABLE_UX.playerActions} bj-table-actions bj-table-actions--insurance`} aria-live="polite">
         {actions.map(({ playerId, maxBet, canAfford, slotNumber }) => (
           <div key={playerId} className="bj-table-actions__ins-row">
             <span className="bj-table-actions__ins-label">
@@ -925,7 +920,7 @@ export function BlackjackPanel({
 
   function renderArcSlot(boxId: string, slotNumber: number) {
     const isSelected = effectiveBoxId === boxId;
-    const isTurn = activeBoxId === boxId && round?.status === 'player-turns';
+    const isTurn = activeBoxId === boxId;
     const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
     const callerDisplayName = getBoxCallerDisplayName(gameState, boxId);
     let handKeys = handKeysByBox.get(boxId) ?? [];
@@ -963,13 +958,14 @@ export function BlackjackPanel({
               if (cardIds.length === 0) {
                 return null;
               }
-              const cards = visualDeck ? cardsFromIds(visualDeck, cardIds) : [];
-              const { value } = getBlackjackHandValue(cards);
+              const displayValue = getDisplayedHandValue(visualDeck, visualRound, handKey);
               const isBusted = hand?.actionStatus === 'busted';
               return (
                 <div key={handKey} className="bj-arc__hand">
                   {isBusted && <span className="bj-arc__bust" aria-label="Busted">BUST</span>}
-                  <span className="bj-arc__total-lg">{value}</span>
+                  {displayValue !== null && (
+                    <span className="bj-arc__total-lg">{displayValue}</span>
+                  )}
                   <div className="bj-cards-fan">
                     {cardIds.map((id, index) => renderCard(id, false, true, `${handKey}-${index}`))}
                   </div>
@@ -1058,27 +1054,30 @@ export function BlackjackPanel({
     if (!sideRailPanel) {
       return null;
     }
+    const title = sideRailPanel === 'thisTable' ? 'This Table' : 'Table Details';
     return (
       <div
-        className={`bj-casino__this-table bj-casino__this-table--${variant}`}
+        className={`${TABLE_UX.sideRailPlacement} bj-casino__this-table--${variant}`}
         data-panel-placement={variant}
         data-side-panel={sideRailPanel}
       >
-        {sideRailPanel === 'thisTable' ? (
-          <TableAccountsPanel
-            gameState={gameState}
-            showAssignButton={canAssignChips}
-            onAssignChips={() => setAssignChipsOpen(true)}
-            onInvite={onInviteTable}
-            onSaveTable={onSaveTable}
-            showPlayerOrderControls={tableOwner && bettingOpen}
-            onMovePlayer={handleMovePlayer}
-            onPlayFlowChange={handlePlayFlowChange}
-            variant="inline"
-          />
-        ) : (
-          <TableDetailsPanelContent {...tableDetailsProps} />
-        )}
+        <TableSideRailShell title={title} onClose={() => setSideRailPanel(null)}>
+          {sideRailPanel === 'thisTable' ? (
+            <TableAccountsPanel
+              gameState={gameState}
+              showAssignButton={canAssignChips}
+              onAssignChips={() => setAssignChipsOpen(true)}
+              onInvite={onInviteTable}
+              onSaveTable={onSaveTable}
+              showPlayerOrderControls={tableOwner && bettingOpen}
+              onMovePlayer={handleMovePlayer}
+              onPlayFlowChange={handlePlayFlowChange}
+              variant="inline"
+            />
+          ) : (
+            <TableDetailsPanelContent {...tableDetailsProps} />
+          )}
+        </TableSideRailShell>
       </div>
     );
   }
@@ -1190,9 +1189,9 @@ export function BlackjackPanel({
         <FullTableMobileFallback onSwitchToCardView={() => setViewMode('card')} />
       ) : (
       <div className="bj-casino__rail-wrap">
-        <div className="bj-casino__rail">
-        <div
-          className={`bj-casino__felt${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}
+        <div className={`bj-casino__rail ${TABLE_UX.rail}`}>
+          <div
+            className={`bj-casino__felt ${TABLE_UX.surface}${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}
         >
           {viewMode === 'full' && (
             <>

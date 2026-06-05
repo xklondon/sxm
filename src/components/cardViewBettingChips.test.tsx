@@ -148,6 +148,6 @@ describe('Card View betting chips and layout', () => {
       /\.bj-casino\[data-device-view='desktop'\]\.bj-view-card-desktop \.bj-casino__this-table--float[\s\S]*max-width:/,
     );
     expect(cardCss).toMatch(/\.bj-phone-view[\s\S]*overflow-x:\s*hidden/);
-    expect(panelCss).toMatch(/\.bj-view-card-desktop \.dealer-block[\s\S]*padding:\s*0\.1rem/);
+    expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.dealer-block[\s\S]*padding:\s*0\.1rem/);
   });
 });

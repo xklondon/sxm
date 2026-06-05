@@ -112,29 +112,18 @@
   }
 }
 
-/* Outer rail + felt */
+/* Outer rail + felt — surface tokens live in bj-table-shared.css (.bj-table-rail / .bj-table-surface) */
 .bj-casino__rail {
   flex: 1;
-  background: linear-gradient(180deg, var(--ds-color-rail) 0%, #1a1008 100%);
-  border-radius: 50% / 22%;
   padding: 0.55rem 0.65rem 0.75rem;
-  box-shadow:
-    inset 0 2px 0 rgb(255 255 255 / 0.06),
-    var(--ds-shadow-lg);
 }
 
 .bj-casino__felt {
-  background:
-    radial-gradient(ellipse 100% 70% at 50% 20%, rgb(251 191 36 / 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at center, var(--ds-color-felt-mid) 0%, var(--ds-color-felt) 45%, var(--ds-color-felt-dark) 100%);
-  border-radius: 50% / 20%;
-  min-height: min(58dvh, 28rem);
   padding: 0.65rem 0.5rem 0.85rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
-  border: 1px solid rgb(251 191 36 / 0.08);
 }
 
 .bj-casino__felt-main {
@@ -271,13 +260,8 @@
   z-index: 12;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 0.35rem 0.3rem 0.5rem;
   box-sizing: border-box;
   pointer-events: auto;
-  border: 1px solid rgb(255 255 255 / 0.14);
-  border-radius: var(--ds-radius-md);
-  background: linear-gradient(180deg, rgb(12 28 22 / 0.97) 0%, rgb(6 16 12 / 0.98) 100%);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
 }
 
 @supports (position-anchor: --this-table-nav) {
@@ -315,7 +299,6 @@
   flex: 1;
   min-height: 0;
   padding: 0;
-  border-radius: var(--ds-radius-lg);
   border: none;
   background: transparent;
 }
@@ -324,8 +307,6 @@
   flex: 1;
   min-height: 0;
   padding: 0.25rem;
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-color-felt-dark);
 }
 
 .bj-casino__felt-main--card {
@@ -365,18 +346,6 @@
   flex-direction: column;
   align-items: center;
   gap: 0.35rem;
-}
-
-.bj-center-status {
-  text-align: center;
-  white-space: pre-line;
-  margin: 0.35rem auto 0.65rem;
-  padding: var(--ds-space-2) var(--ds-space-4);
-  font-family: var(--ds-font-mono);
-  font-size: var(--ds-text-sm);
-  font-weight: var(--ds-weight-semibold);
-  color: var(--ds-color-success);
-  max-width: 24rem;
 }
 
 .sr-only {
@@ -443,20 +412,10 @@
 
 .bj-arc__slot--owned {
   background: rgb(0 0 0 / 0.12);
-  border-radius: 8px;
   padding: 0.15rem;
 }
 
-.bj-arc__slot--empty {
-  background: transparent;
-  border: 2px dashed rgb(255 255 255 / 0.22);
-  border-radius: 50%;
-  width: 3.5rem;
-  height: 3.5rem;
-  min-height: 3.5rem;
-  cursor: pointer;
-  padding: 0;
-}
+/* Empty join slot + bet zone shell: bj-table-shared.css */
 
 .bj-arc__initials {
   display: flex;
@@ -469,15 +428,6 @@
   background: rgb(0 0 0 / 0.35);
   font-size: 0.58rem;
   font-weight: 700;
-}
-
-.bj-arc__box-label {
-  display: block;
-  font-size: 0.5rem;
-  font-weight: 700;
-  text-align: center;
-  opacity: 0.9;
-  line-height: 1.1;
 }
 
 .bj-arc__play-zone {
@@ -494,33 +444,12 @@
   width: 100%;
 }
 
-.bj-arc__total-lg {
-  display: block;
-  font-family: var(--ds-font-mono);
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--ds-color-gold);
-  line-height: 1;
-  margin-bottom: 0.12rem;
-  text-align: center;
-}
-
 .bj-arc__slot-foot {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-top: 0.1rem;
   gap: 0.05rem;
-}
-
-.bj-arc__controller {
-  display: block;
-  font-size: 0.45rem;
-  text-align: center;
-  max-width: 4.5rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .bj-arc__balance {
@@ -704,25 +633,6 @@
   transition: filter 0.12s ease;
 }
 
-.bj-arc__slot--turn {
-  filter: drop-shadow(0 0 10px var(--ds-color-gold-glow));
-  animation: bj-turn-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes bj-turn-pulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 6px var(--ds-color-gold-glow));
-  }
-  50% {
-    filter: drop-shadow(0 0 14px var(--ds-color-gold-glow));
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bj-arc__slot--turn {
-    animation: none;
-  }
-}
 
 .bj-arc__turn-badge {
   font-size: 0.45rem;
@@ -764,11 +674,6 @@
   text-align: center;
 }
 
-.bj-arc__slot--assigned .bj-bet-zone {
-  border-color: #7dd3fc;
-  box-shadow: 0 0 0 2px rgb(125 211 252 / 0.35);
-}
-
 .bj-arc__slot--assigned .bj-arc__box-label::after {
   content: ' · joined';
   font-size: 0.42rem;
@@ -777,21 +682,9 @@
   letter-spacing: 0.04em;
 }
 
-.bj-arc__slot--selected .bj-bet-zone {
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 1px var(--color-gold);
-}
-
 .bj-arc__cards {
   min-height: 2rem;
   margin-bottom: 0.08rem;
-}
-
-.bj-arc__val {
-  display: block;
-  font-size: 0.55rem;
-  text-align: center;
-  opacity: 0.85;
 }
 
 .bj-casino__accounts-btn {
@@ -804,17 +697,9 @@
   }
 }
 
-/* Full Table player action panel */
+/* Full Table player action panel — chrome in bj-table-shared.css */
 .bj-table-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
   margin: 0.15rem auto 0.35rem;
-  padding: 0.35rem 0.5rem;
-  background: rgb(0 0 0 / 0.28);
-  border: 1px solid rgb(110 231 183 / 0.35);
-  border-radius: var(--ds-radius-md);
   max-width: 22rem;
   width: 100%;
 }
@@ -824,7 +709,6 @@
   font-size: 0.62rem;
   color: var(--ds-color-text-muted);
   text-align: center;
-  padding: 0.25rem 0.5rem;
 }
 
 .bj-table-actions__label {
@@ -848,27 +732,13 @@
   flex: 1 1 auto;
   min-width: 3.5rem;
   padding: 0.35rem 0.5rem;
-  font-size: 0.68rem;
   font-weight: var(--ds-weight-bold);
 }
 
 .bj-table-actions__btn--sm {
   flex: 0 0 auto;
   min-width: 2rem;
-  font-size: 0.58rem;
   padding: 0.3rem 0.4rem;
-}
-
-.bj-table-actions__btn--legal:not(:disabled) {
-  background: var(--ds-color-gold, #fbbf24);
-  color: #1a1a1a;
-  border-color: rgb(251 191 36 / 0.55);
-  font-weight: var(--ds-weight-bold, 700);
-  box-shadow: 0 0 10px rgb(251 191 36 / 0.25);
-}
-
-.bj-table-actions__btn--legal:not(:disabled):hover {
-  filter: brightness(1.06);
 }
 
 .bj-table-actions__aid {
@@ -952,23 +822,7 @@
   padding: 0.05rem 0.25rem;
 }
 
-/* Betting circle */
-.bj-bet-zone {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 50%;
-  border: 2px solid rgb(255 255 255 / 0.35);
-  background: rgb(0 0 0 / 0.15);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  margin: 0.1rem 0;
-  transition: border-color 0.12s ease, background 0.12s ease;
-  overflow: visible;
-}
-
+/* Betting zone — seat shell from bj-table-shared.css; states below */
 .bj-bet-zone--has-chips .bj-bet-zone__amount {
   position: absolute;
   top: 50%;
@@ -996,17 +850,13 @@
 }
 
 .bj-bet-zone--open {
-  border-style: dashed;
+  border: var(--bj-seat-empty-border);
   opacity: 0.65;
 }
 
 .bj-arc__slot--drop .bj-bet-zone {
   border-color: #6ee7b7;
   background: rgb(110 231 183 / 0.12);
-}
-
-.bj-arc__slot--empty {
-  cursor: pointer;
 }
 
 .bj-bet-zone__actions {
@@ -1160,12 +1010,6 @@
   color: #fca5a5;
   text-align: center;
   max-width: 16rem;
-}
-
-.bj-center-status--game-over {
-  white-space: pre-line;
-  font-size: 0.85rem;
-  line-height: 1.35;
 }
 
 .bj-arc__bust {
@@ -1371,7 +1215,7 @@
 
   .bj-bet-zone {
     width: 3rem;
-    height: 3rem;
+    min-height: 3rem;
   }
 
   .bj-casino__felt {
@@ -1400,20 +1244,6 @@
    View-specific styling lives under the four bj-view-* roots so it
    cannot leak between Full Table and Card View / desktop and mobile.
    ============================================================ */
-
-/* Desktop Full Table + Card View: status/comment/result in a top-left corner box. */
-.bj-view-full-desktop .bj-center-status,
-.bj-view-card-desktop .bj-center-status {
-  order: -1;
-  align-self: flex-start;
-  text-align: left;
-  max-width: 18rem;
-  margin: 0 0 0.45rem;
-  padding: 0.3rem 0.6rem;
-  background: rgb(0 0 0 / 0.3);
-  border: 1px solid rgb(255 255 255 / 0.12);
-  border-radius: var(--ds-radius-md);
-}
 
 /* Mobile Card View: stack felt column; page never scrolls sideways. */
 .bj-view-card-mobile {
@@ -1465,14 +1295,6 @@
 .bj-view-full-mobile .bj-table-wide-panel {
   width: 100%;
   max-width: none;
-}
-
-/* Compact, centered status/result strip on phones. */
-.bj-view-card-mobile .bj-center-status {
-  margin: 0.15rem auto 0.25rem;
-  padding: 0.2rem 0.5rem;
-  max-width: 100%;
-  font-size: 0.62rem;
 }
 
 /* Card View — desktop hero cards (same phone-view structure, larger stage). */
@@ -1579,31 +1401,6 @@
 
 .bj-view-card-desktop .bj-casino__rail:has(.bj-casino__felt--card-view) {
   padding: 0.3rem 0.45rem 0.4rem;
-}
-
-.bj-view-card-desktop .dealer-block {
-  padding: 0.1rem 0.28rem 0.08rem;
-  margin-bottom: 0.08rem;
-}
-
-.bj-view-card-desktop .dealer-block__center-col {
-  padding: 0.12rem 0.22rem 0.1rem;
-  gap: 0.08rem;
-}
-
-.bj-view-card-desktop .dealer-block__cards-slot {
-  min-height: 2.15rem;
-}
-
-.bj-view-card-desktop .dealer-block__action-slot,
-.bj-view-card-desktop .dealer-block__action-spacer {
-  min-height: 1.55rem;
-}
-
-.bj-view-card-desktop .dealer-block__command {
-  min-height: 1.45rem;
-  max-height: 2.75rem;
-  padding: 0.06rem 0.3rem 0.04rem;
 }
 
 .bj-view-card-desktop .bj-casino__felt--card-view {
@@ -1764,13 +1561,6 @@
   box-sizing: border-box;
 }
 
-.bj-view-full-mobile .bj-center-status {
-  margin: 0.08rem auto 0.2rem;
-  padding: 0.16rem 0.4rem;
-  max-width: 100%;
-  font-size: 0.62rem;
-}
-
 .bj-view-full-mobile .bj-arc-separator {
   flex: 1 1 auto;
   min-height: min(12dvh, 3.5rem);
@@ -1808,10 +1598,6 @@
   overflow: visible;
 }
 
-.bj-view-full-mobile .bj-arc__total-lg {
-  font-size: 0.72rem;
-}
-
 .bj-view-full-mobile .bj-arc__cards {
   min-height: 1.25rem;
 }
@@ -1831,10 +1617,6 @@
 
 .bj-view-full-mobile .bj-arc__bust {
   font-size: 0.48rem;
-}
-
-.bj-view-full-mobile .bj-arc__box-label {
-  font-size: 0.4rem;
 }
 
 .bj-view-full-mobile .bj-arc__initials {
@@ -1933,29 +1715,6 @@
 .bj-view-card-mobile .bj-phone-view__box-value {
   display: block;
   order: -1;
-  font-family: var(--ds-font-mono);
-  font-size: 0.95rem;
-  font-weight: var(--ds-weight-extrabold);
-  line-height: 1;
-  color: var(--ds-color-text);
-}
-
-.bj-view-card-mobile .bj-phone-view__box-value--bust {
-  font-size: 0.72rem;
-  color: var(--ds-color-danger);
-}
-
-.bj-view-card-mobile .bj-phone-view__mini-hand-box {
-  font-size: 0.4rem;
-}
-
-.bj-view-card-mobile .bj-phone-view__mini-hand-name {
-  font-size: 0.44rem;
-  font-weight: var(--ds-weight-semibold, 600);
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .bj-view-card-mobile .bj-phone-view__mini-hand-cards {
@@ -1966,10 +1725,6 @@
 
 .bj-view-card-mobile .bj-phone-view__mini-card + .bj-phone-view__mini-card {
   margin-left: -0.5rem;
-}
-
-.bj-view-card-mobile .bj-phone-view__mini-hand-meta {
-  display: none;
 }
 
 /* Keep elliptical full-table felt on narrow phones (override generic flatten rules). */

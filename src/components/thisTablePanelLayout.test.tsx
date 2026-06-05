@@ -97,12 +97,17 @@ describe('This Table panel placement', () => {
     expect(html).not.toContain('bj-casino__rail--with-this-table');
     expect(html).not.toMatch(/bj-table-slide-overlay[^>]*>[\s\S]*This Table/);
     expect(html).toContain('bj-accounts-panel');
+    expect(html).toContain('bj-side-rail-shell');
+    expect(html).toContain('bj-side-rail-shell__title');
     const css = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     expect(css).toContain('.bj-casino__this-table--float');
     expect(css).toContain('position: absolute');
     expect(css).toContain('max-width: 13rem');
     expect(css).toContain('anchor-name: --this-table-nav');
     expect(css).not.toContain('.bj-casino__rail--with-this-table');
+    expect(sharedCss).toContain('.bj-casino__this-table');
+    expect(sharedCss).toContain('.bj-side-rail-shell');
     expect(html.indexOf('bj-casino__toolbar')).toBeLessThan(html.indexOf('bj-casino__this-table--float'));
   });
 

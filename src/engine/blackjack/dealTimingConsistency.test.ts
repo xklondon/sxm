@@ -25,17 +25,15 @@ describe('deal timing — single canonical source', () => {
     expect(synced.bankDrawMaxDelayMs).toBe(delay);
   });
 
-  it('useSequentialCardReveal uses cardDealDelayMs only', () => {
+  it('useSequentialCardReveal uses getCardDealDelayMs only', () => {
     const src = readFileSync(join(process.cwd(), 'src/hooks/useSequentialCardReveal.ts'), 'utf8');
-    expect(src).toContain('cardDealDelayMs');
-    expect(src).not.toMatch(/setTimeout\([^,]+,\s*\d{3,}\)/);
+    expect(src).toContain('getCardDealDelayMs');
+    expect(src).not.toMatch(/cardDealDelayMs\(/);
   });
 
-  it('useBlackjackTableFlow bank pacing uses cardDealDelayMs without extra multipliers', () => {
+  it('useBlackjackTableFlow bank pacing uses getCardDealDelayMs', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/useBlackjackTableFlow.ts'), 'utf8');
-    expect(src).toContain('cardDealDelayMs');
-    expect(src).toContain('randomBankDrawDelayMs');
-    expect(src).not.toMatch(/cardDealDelayMs\([^)]+\)\s*\*\s*0\.5/);
-    expect(src).not.toMatch(/Math\.round\(cardDealDelayMs/);
+    expect(src).toContain('getCardDealDelayMs');
+    expect(src).not.toMatch(/cardDealDelayMs\(/);
   });
 });

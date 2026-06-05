@@ -6,7 +6,6 @@ import {
   canBank,
   canRollDice,
   completeDiceRoll,
-  confirmStarter,
 } from '../engine/zilch';
 import { beginZilchPlay } from '../engine/session';
 
@@ -79,22 +78,18 @@ export function useZilchTableFlow({
     }
   }, [gameState, onGameStateChange]);
 
-  const handleRandomiseStarter = useCallback(() => {
-    void dispatch('zilchRandomiseStarter', {});
-  }, [dispatch]);
-
-  const handleConfirmStarter = useCallback(() => {
+  /** Authoritative starter selection — completes in one reducer step. Returns starter id when applied locally. */
+  const handleRandomiseStarter = useCallback((): string | null => {
     if (onlineDispatch) {
-      void dispatch('zilchConfirmStarter', {});
-      return;
+      void dispatch('zilchRandomiseStarter', {});
+      return null;
     }
     if (!gameState.zilch) {
-      return;
+      return null;
     }
-    onGameStateChange({
-      ...gameState,
-      zilch: confirmStarter(gameState.zilch),
-    });
+    const next = applyZilchActionToState(gameState, 'zilchRandomiseStarter', {});
+    onGameStateChange(next);
+    return next.zilch?.starterPlayerId ?? null;
   }, [dispatch, gameState, onGameStateChange, onlineDispatch]);
 
   const handleRollDice = useCallback(() => {
@@ -125,7 +120,6 @@ export function useZilchTableFlow({
   return {
     handleStartGame,
     handleRandomiseStarter,
-    handleConfirmStarter,
     handleRollDice,
     handleKeepCombination,
     handleBank,

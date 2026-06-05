@@ -27,10 +27,6 @@
 
   color: var(--ds-color-text);
 
-  background:
-    radial-gradient(ellipse 120% 80% at 50% 0%, rgb(251 191 36 / 0.06) 0%, transparent 55%),
-    linear-gradient(180deg, var(--ds-color-felt-dark) 0%, var(--ds-color-felt) 42%, var(--ds-color-felt-mid) 100%);
-
 }
 
 
@@ -106,9 +102,6 @@
   justify-content: flex-start;
   gap: 0.08rem;
   padding: 0.2rem 0.28rem 0.15rem;
-  border-radius: var(--ds-radius-sm);
-  border: 1px solid var(--ds-color-border-subtle);
-  background: rgb(0 0 0 / 0.22);
   color: inherit;
   font: inherit;
   cursor: pointer;
@@ -128,16 +121,11 @@
   width: 100%;
 }
 
-.bj-phone-view__mini-hand-box {
-  font-size: 0.42rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ds-color-gold);
-}
-
 .bj-phone-view__mini-hand-name {
-  font-size: 0.48rem;
-  font-weight: var(--ds-weight-bold);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bj-phone-view__mini-hand-card-stack {
@@ -170,9 +158,12 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.15rem;
-  font-size: 0.42rem;
-  font-family: var(--ds-font-mono);
   color: var(--ds-color-text-muted);
+}
+
+.bj-phone-view__mini-hand-status {
+  font-size: var(--bj-seat-meta-size);
+  font-family: var(--ds-font-mono);
 }
 
 .bj-phone-view__mini-hand-status--playing {
@@ -553,25 +544,14 @@
 
 
 .bj-phone-view__center-status {
-
   flex: 0 0 auto;
-
   margin: 0;
-
   padding: 0.15rem var(--ds-space-2);
-
   text-align: center;
-
   font-family: var(--ds-font-mono);
-
-  font-size: 0.58rem;
-
   font-weight: var(--ds-weight-semibold);
-
   color: var(--ds-color-success);
-
   line-height: 1.2;
-
 }
 
 .bj-phone-view__center-status--game-over {
@@ -685,7 +665,6 @@
   justify-content: center;
   gap: 0.12rem;
   min-height: 4rem;
-  padding: 0.12rem 0.35rem 0.18rem;
 }
 
 .bj-phone-view__action-bar-row {
@@ -739,11 +718,7 @@
   min-width: 2.05rem;
   min-height: 2.05rem;
   padding: 0.2rem 0.35rem;
-  border-radius: var(--ds-radius-sm);
-  border: 1px solid var(--ds-color-border-subtle);
-  background: rgb(0 0 0 / 0.22);
   font: inherit;
-  font-size: 0.58rem;
   font-weight: var(--ds-weight-bold);
   letter-spacing: 0.04em;
   color: var(--ds-color-text-muted);
@@ -753,9 +728,6 @@
 
 .bj-phone-view__action-bar-extra--legal {
   opacity: 1;
-  color: var(--ds-color-gold);
-  border-color: rgb(251 191 36 / 0.45);
-  box-shadow: 0 0 8px rgb(251 191 36 / 0.2);
 }
 
 .bj-phone-view__action-bar-extra--placeholder {
@@ -768,9 +740,7 @@
   max-width: 8.5rem;
   min-height: 2.15rem;
   padding: 0.35rem 0.55rem;
-  border-radius: var(--ds-radius-md);
   font: inherit;
-  font-size: 0.68rem;
   font-weight: var(--ds-weight-extrabold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -780,14 +750,6 @@
 
 .bj-phone-view__action-bar-btn--live {
   opacity: 1;
-}
-
-.bj-phone-view__action-bar-btn--live:not(:disabled) {
-  box-shadow: var(--ds-glow-gold);
-}
-
-.bj-phone-view__action-bar-btn.ds-btn--stand:not(:disabled).bj-phone-view__action-bar-btn--live {
-  box-shadow: 0 0 12px rgb(110 231 183 / 0.45);
 }
 
 .bj-phone-view__action-bar-btn--stand {
@@ -1778,7 +1740,6 @@
 
 .bj-phone-view__phase-actions {
   flex: 0 0 auto;
-  padding: 0.25rem var(--ds-space-2);
   text-align: center;
 }
 
@@ -1918,35 +1879,7 @@
   display: none;
 }
 
-/* Active box highlight — canonical in BOTH mobile and desktop Card View. */
-.bj-phone-view__mini-hand--active {
-  border-color: var(--ds-color-gold);
-  background: rgb(251 191 36 / 0.16);
-  box-shadow:
-    0 0 0 1px var(--ds-color-gold),
-    0 0 14px var(--ds-color-gold-glow);
-  animation: bj-turn-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes bj-turn-pulse {
-  0%, 100% {
-    box-shadow:
-      0 0 0 1px var(--ds-color-gold),
-      0 0 8px var(--ds-color-gold-glow);
-  }
-  50% {
-    box-shadow:
-      0 0 0 1px var(--ds-color-gold),
-      0 0 16px var(--ds-color-gold-glow);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bj-phone-view__mini-hand--active {
-    animation: none;
-  }
-}
-
+/* Active box highlight — canonical pulse in bj-table-shared.css (.bj-phone-view__mini-hand--active) */
 
 /* Desktop Card View betting — ordered horizontal row, uniform boxes, no hero placeholder. */
 .bj-phone-view__betting-stage--row {
@@ -1966,25 +1899,6 @@
   .bj-phone-view__box-value {
     display: block;
     order: -1;
-    font-family: var(--ds-font-mono);
-    font-size: 1.6rem;
-    font-weight: var(--ds-weight-extrabold);
-    line-height: 1;
-    color: var(--ds-color-text);
-  }
-
-  .bj-phone-view__box-value--bust {
-    font-size: 1.25rem;
-    color: var(--ds-color-danger);
-  }
-
-  /* Value dominates over box number and player name. */
-  .bj-phone-view__mini-hand-box {
-    font-size: 0.5rem;
-  }
-
-  .bj-phone-view__mini-hand-name {
-    font-size: 0.6rem;
   }
 }
 
@@ -1992,7 +1906,6 @@
 @media (max-width: 720px) {
   .bj-phone-view__action-bar--playing {
     min-height: 3.35rem;
-    padding: 0.1rem 0.3rem 0.12rem;
     gap: 0.08rem;
   }
 
@@ -2000,14 +1913,12 @@
     min-height: 1.65rem;
     max-width: 5rem;
     padding: 0.22rem 0.4rem;
-    font-size: 0.58rem;
   }
 
   .bj-phone-view__action-bar-row--secondary .bj-phone-view__action-bar-extra {
     min-width: 1.65rem;
     min-height: 1.55rem;
     padding: 0.14rem 0.28rem;
-    font-size: 0.5rem;
   }
 
   .bj-phone-view__slot--actions {

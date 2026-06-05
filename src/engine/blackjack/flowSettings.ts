@@ -1,5 +1,6 @@
 /** Front-end Blackjack flow controls — persisted via settingsStorage. */
 
+import type { GameState } from '../../types';
 import {
   migrateInitialDealMode,
   type InitialDealMode,
@@ -91,6 +92,24 @@ export function syncDealTimingFromPreset(settings: BlackjackFlowSettings): Black
 
 export function cardDealDelayMs(settings: BlackjackFlowSettings): number {
   return dealDelayMsForPreset(settings.dealSpeedPreset);
+}
+
+export type CardDealDelayContext =
+  | 'initial-deal'
+  | 'hit'
+  | 'split'
+  | 'double'
+  | 'dealer'
+  | 'bank-pause'
+  | 'hydration';
+
+/** Single timing source for every card reveal / bank pacing delay. */
+export function getCardDealDelayMs(
+  state: Pick<GameState, 'blackjackFlowSettings'>,
+  _context: CardDealDelayContext = 'initial-deal',
+): number {
+  void _context;
+  return cardDealDelayMs(state.blackjackFlowSettings);
 }
 
 /** Bank draw pacing — uses the same deal-speed delay as player cards. */

@@ -1,0 +1,353 @@
+/**
+ * Shared blackjack table surface, seat, action, and side-rail panel tokens.
+ * Full Table + Card View (desktop + mobile) consume these — view roots only tweak proportions.
+ */
+
+:root {
+  --bj-table-rail-radius: 50% / 22%;
+  --bj-table-felt-radius: 50% / 20%;
+  --bj-table-felt-min-height: min(58dvh, 28rem);
+  --bj-table-felt-border: 1px solid rgb(251 191 36 / 0.08);
+  --bj-table-felt-bg:
+    radial-gradient(ellipse 100% 70% at 50% 20%, rgb(251 191 36 / 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at center, var(--ds-color-felt-mid) 0%, var(--ds-color-felt) 45%, var(--ds-color-felt-dark) 100%);
+  --bj-table-rail-bg: linear-gradient(180deg, var(--ds-color-rail) 0%, #1a1008 100%);
+
+  --bj-seat-radius: var(--ds-radius-md);
+  --bj-seat-border: 1px solid var(--ds-color-border-subtle);
+  --bj-seat-bg: rgb(0 0 0 / 0.22);
+  --bj-seat-empty-border: 1px dashed var(--ds-color-border-subtle);
+  --bj-seat-active-border: var(--ds-color-gold);
+  --bj-seat-active-bg: rgb(251 191 36 / 0.16);
+  --bj-seat-selected-border: var(--bj-seat-active-border);
+  --bj-seat-selected-bg: rgb(251 191 36 / 0.1);
+  --bj-seat-assigned-border: rgb(125 211 252 / 0.45);
+  --bj-seat-assigned-bg: rgb(125 211 252 / 0.08);
+
+  --bj-seat-label-size: 0.42rem;
+  --bj-seat-name-size: 0.48rem;
+  --bj-seat-total-size: 1.25rem;
+  --bj-seat-meta-size: 0.42rem;
+
+  --bj-actions-panel-bg: rgb(0 0 0 / 0.28);
+  --bj-actions-panel-border: 1px solid rgb(110 231 183 / 0.35);
+  --bj-actions-panel-radius: var(--ds-radius-md);
+  --bj-actions-panel-padding: 0.35rem 0.5rem;
+  --bj-actions-btn-radius: var(--ds-radius-md);
+  --bj-actions-btn-font-size: 0.68rem;
+  --bj-actions-btn-sm-font-size: 0.58rem;
+  --bj-actions-legal-bg: var(--ds-color-gold, #fbbf24);
+  --bj-actions-legal-color: #1a1a1a;
+  --bj-actions-legal-border: rgb(251 191 36 / 0.55);
+  --bj-actions-legal-shadow: 0 0 10px rgb(251 191 36 / 0.25);
+
+  --bj-side-rail-bg: linear-gradient(180deg, rgb(12 28 22 / 0.97) 0%, rgb(6 16 12 / 0.98) 100%);
+  --bj-side-rail-border: 1px solid rgb(255 255 255 / 0.14);
+  --bj-side-rail-radius: var(--ds-radius-md);
+  --bj-side-rail-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+  --bj-side-rail-header-bg: rgb(0 0 0 / 0.28);
+}
+
+@media (max-width: 720px) {
+  :root {
+    --bj-seat-total-size: 0.72rem;
+    --bj-actions-btn-font-size: 0.58rem;
+    --bj-actions-btn-sm-font-size: 0.5rem;
+    --bj-actions-panel-padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Canonical felt surface (Full Table .bj-casino__felt + Card View column) */
+.bj-table-surface,
+.bj-table-column-surface {
+  background: var(--bj-table-felt-bg);
+}
+
+.bj-table-surface {
+  border: var(--bj-table-felt-border);
+  border-radius: var(--bj-table-felt-radius);
+  min-height: var(--bj-table-felt-min-height);
+}
+
+/* Canonical rail wrapper */
+.bj-table-rail {
+  background: var(--bj-table-rail-bg);
+  border-radius: var(--bj-table-rail-radius);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.06),
+    var(--ds-shadow-lg);
+}
+
+/* Player seat shell — Card View mini box, Full Table play zone + bet zone */
+.bj-seat-shell,
+.bj-phone-view__mini-hand,
+.bj-arc__play-zone,
+.bj-bet-zone {
+  border: var(--bj-seat-border);
+  border-radius: var(--bj-seat-radius);
+  background: var(--bj-seat-bg);
+  box-sizing: border-box;
+}
+
+.bj-arc__play-zone {
+  padding: 0.15rem 0.2rem 0.1rem;
+}
+
+.bj-bet-zone {
+  width: 3.5rem;
+  min-height: 3.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 0.1rem 0;
+  transition: border-color 0.12s ease, background 0.12s ease;
+  overflow: visible;
+}
+
+.bj-arc__slot--empty {
+  border: var(--bj-seat-empty-border);
+  border-radius: var(--bj-seat-radius);
+  background: transparent;
+  width: 3.5rem;
+  min-height: 3.25rem;
+  cursor: pointer;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.bj-arc__slot--owned {
+  border-radius: var(--bj-seat-radius);
+}
+
+.bj-arc__slot--assigned .bj-bet-zone {
+  border-color: var(--bj-seat-assigned-border);
+  background: var(--bj-seat-assigned-bg);
+}
+
+.bj-arc__slot--selected .bj-bet-zone,
+.bj-arc__slot--selected .bj-arc__play-zone {
+  border-color: var(--bj-seat-selected-border);
+  background: var(--bj-seat-selected-bg);
+}
+
+/* Seat typography — shared hierarchy across Full Table arc + Card View mini row */
+.bj-arc__box-label,
+.bj-phone-view__mini-hand-box {
+  font-size: var(--bj-seat-label-size);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-color-gold);
+}
+
+.bj-arc__box-label {
+  display: block;
+  font-weight: 700;
+  text-align: center;
+  opacity: 0.9;
+  line-height: 1.1;
+}
+
+.bj-arc__controller,
+.bj-phone-view__mini-hand-name {
+  font-size: var(--bj-seat-name-size);
+  font-weight: var(--ds-weight-bold);
+}
+
+.bj-arc__controller {
+  display: block;
+  text-align: center;
+  max-width: 4.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bj-arc__total-lg,
+.bj-phone-view__box-value {
+  font-family: var(--ds-font-mono);
+  font-size: var(--bj-seat-total-size);
+  font-weight: var(--ds-weight-extrabold, 800);
+  line-height: 1;
+  color: var(--ds-color-gold);
+}
+
+.bj-arc__total-lg {
+  display: block;
+  text-align: center;
+  margin-bottom: 0.12rem;
+}
+
+.bj-arc__val,
+.bj-phone-view__mini-hand-meta {
+  font-size: var(--bj-seat-meta-size);
+  font-family: var(--ds-font-mono);
+}
+
+.bj-arc__val {
+  display: block;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.bj-phone-view__box-value--bust {
+  font-size: calc(var(--bj-seat-total-size) * 0.85);
+  color: var(--ds-color-danger);
+}
+
+/* Active / turn highlight — one animation for all views */
+@keyframes bj-turn-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 6px var(--ds-color-gold-glow));
+    box-shadow:
+      0 0 0 1px var(--bj-seat-active-border),
+      0 0 8px var(--ds-color-gold-glow);
+  }
+
+  50% {
+    filter: drop-shadow(0 0 14px var(--ds-color-gold-glow));
+    box-shadow:
+      0 0 0 1px var(--bj-seat-active-border),
+      0 0 16px var(--ds-color-gold-glow);
+  }
+}
+
+.bj-seat-shell--active,
+.bj-arc__slot--turn .bj-arc__play-zone,
+.bj-phone-view__mini-hand--active {
+  border-color: var(--bj-seat-active-border);
+  background: var(--bj-seat-active-bg);
+  animation: bj-turn-pulse 1.6s ease-in-out infinite;
+}
+
+.bj-arc__slot--turn {
+  animation: none;
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bj-seat-shell--active,
+  .bj-arc__slot--turn .bj-arc__play-zone,
+  .bj-phone-view__mini-hand--active {
+    animation: none;
+  }
+}
+
+/* Player action panels — Full Table + Card View share chrome and button tokens */
+.bj-player-actions,
+.bj-table-actions,
+.bj-phone-view__action-bar--playing,
+.bj-phone-view__phase-actions--insurance,
+.bj-phone-view__phase-actions--even-money {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  box-sizing: border-box;
+  background: var(--bj-actions-panel-bg);
+  border: var(--bj-actions-panel-border);
+  border-radius: var(--bj-actions-panel-radius);
+  padding: var(--bj-actions-panel-padding);
+}
+
+.bj-table-actions__btn,
+.bj-phone-view__action-bar-btn,
+.bj-phone-view__action-bar-extra,
+.bj-phone-view__ins-btn {
+  border-radius: var(--bj-actions-btn-radius);
+  font-size: var(--bj-actions-btn-font-size);
+}
+
+.bj-table-actions__btn--sm,
+.bj-phone-view__action-bar-row--secondary .bj-phone-view__action-bar-extra {
+  font-size: var(--bj-actions-btn-sm-font-size);
+}
+
+.bj-table-actions__btn--legal:not(:disabled),
+.bj-phone-view__action-bar-extra--legal,
+.bj-phone-view__extra-btn--legal {
+  background: var(--bj-actions-legal-bg);
+  color: var(--bj-actions-legal-color);
+  border-color: var(--bj-actions-legal-border);
+  font-weight: var(--ds-weight-bold, 700);
+  box-shadow: var(--bj-actions-legal-shadow);
+  opacity: 1;
+}
+
+.bj-phone-view__action-bar-btn--live:not(:disabled) {
+  opacity: 1;
+  box-shadow: var(--bj-actions-legal-shadow);
+}
+
+.bj-table-actions__btn--legal:not(:disabled):hover,
+.bj-phone-view__action-bar-extra--legal:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+/* Side-rail panel shell (This Table + Table Details) */
+.bj-side-rail-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bj-side-rail-shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  margin: 0 0 0.4rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: var(--ds-radius-sm);
+  background: var(--bj-side-rail-header-bg);
+  border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.bj-side-rail-shell__title {
+  margin: 0;
+  font-size: 0.58rem;
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-color-gold);
+}
+
+.bj-side-rail-shell__close {
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.bj-side-rail-shell__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.bj-casino__this-table {
+  border: var(--bj-side-rail-border);
+  border-radius: var(--bj-side-rail-radius);
+  background: var(--bj-side-rail-bg);
+  box-shadow: var(--bj-side-rail-shadow);
+  box-sizing: border-box;
+  padding: 0.35rem 0.3rem 0.5rem;
+}
+
+.bj-casino__this-table .bj-accounts-panel,
+.bj-casino__this-table .table-details-panel {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}

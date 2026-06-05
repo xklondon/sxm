@@ -116,6 +116,22 @@ export {
   getCallerInitials,
   isSinglePlayerTable,
 } from './playerAssignment';
+export {
+  assignTemporaryBoxOwnerOnFirstBet,
+  formatDecisionOwnerWaitMessage,
+  getActionableHandForView,
+  getBoxDecisionOwner,
+  getCanonicalBoxAssignment,
+  getViewerCanActOnActiveHand,
+  getViewerCanActOnBox,
+  logNativeBoxAssignments,
+  resolveViewerActionPermission,
+  type ActionableHandForView,
+  type CanonicalBoxAssignment,
+  type ResolveViewerActionPermissionOptions,
+  type ViewerActionBlockReason,
+  type ViewerActionPermission,
+} from './boxDecisionOwnership';
 export type { ViewerIdentityHints } from './playerAssignment';
 export { getTableWagerDisplay } from './wagerDisplay';
 export {
