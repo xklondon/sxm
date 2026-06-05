@@ -44,10 +44,16 @@ describe('TABLE_UX class contract', () => {
     expect(css).toContain('.bj-table-rail');
     expect(css).toContain('.bj-table-desktop-shell');
     expect(css).toContain('--bj-desktop-table-height: min(72vh, 46rem)');
+    expect(css).toContain('--bj-desktop-table-max-width: min(96vw, 72rem)');
+    expect(css).toContain('--bj-desktop-seat-width: 5.25rem');
+    expect(css).toContain('--bj-desktop-mini-hand-width: 5.5rem');
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-casino__felt,\s*\n\s*\.bj-view-card-desktop \.bj-casino__felt/);
+    expect(css).toMatch(/background:\s*var\(--bj-desktop-felt-bg\)/);
+    expect(css).not.toMatch(/--bj-desktop-felt-bg:[\s\S]*felt-mid/);
+    expect(css).toMatch(/\.bj-view-card-desktop \.bj-phone-view\.bj-table-column-surface[\s\S]*background:\s*transparent/);
     expect(css).toMatch(/\.bj-table-desktop-shell[\s\S]*height:\s*var\(--bj-desktop-table-height\)/);
     expect(css).toMatch(/\.bj-table-desktop-shell[\s\S]*overflow:\s*hidden/);
-    expect(css).not.toContain('--bj-desktop-mini-row-height');
+    expect(css).toContain('--bj-desktop-mini-row-height: 5.5rem');
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.bj-phone-view__hero-stage[\s\S]*min-height:\s*11\.5rem/);
     expect(css).toContain('.bj-table-column-surface');
     expect(css).toContain('.bj-seat-shell');
@@ -186,9 +192,14 @@ describe('TABLE_UX markup across views', () => {
     const css = readSrc('src/styles/bj-table-shared.css');
     const panelCss = readSrc('src/components/BlackjackPanel.css');
     expect(css).toContain('--bj-desktop-table-height: min(72vh, 46rem)');
+    expect(css).toContain('--bj-desktop-table-max-width: min(96vw, 72rem)');
     expect((css.match(/--bj-desktop-table-height:/g) ?? []).length).toBe(1);
+    expect((css.match(/--bj-desktop-table-max-width:/g) ?? []).length).toBe(1);
+    expect(css).toMatch(/\.bj-view-full-desktop \.bj-bet-zone[\s\S]*--bj-desktop-seat-width/);
+    expect(css).toMatch(/\.bj-view-card-desktop \.bj-phone-view__mini-hand[\s\S]*--bj-desktop-mini-hand-width/);
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.bj-phone-view__hero-stage[\s\S]*min-height:\s*11\.5rem/);
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.bj-phone-view__cards-slot[\s\S]*min-height:\s*10\.5rem/);
+    expect(panelCss).not.toMatch(/@media \(min-width: 721px\)[\s\S]*\.bj-view-card-desktop[\s\S]*--bj-desktop-table-max-width/);
   });
 
   it('BLACKJACK title renders in toolbar outside felt border', () => {

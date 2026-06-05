@@ -49,8 +49,17 @@
 
   /* One desktop table shell — same size for Full Table + Card View. */
   --bj-desktop-table-height: min(72vh, 46rem);
-  --bj-desktop-table-max-width: min(100%, 52rem);
+  --bj-desktop-table-max-width: min(96vw, 72rem);
   --bj-desktop-rail-padding: 0.35rem 0.5rem 0.45rem;
+  /* Flat felt on desktop — no felt-mid band; subtle top highlight only. */
+  --bj-desktop-felt-bg:
+    radial-gradient(ellipse 120% 55% at 50% 0%, rgb(251 191 36 / 0.05) 0%, transparent 42%),
+    linear-gradient(180deg, var(--ds-color-felt-dark) 0%, var(--ds-color-felt) 100%);
+  --bj-desktop-seat-width: 5.25rem;
+  --bj-desktop-seat-min-height: 4.15rem;
+  --bj-desktop-mini-hand-width: 5.5rem;
+  --bj-desktop-mini-hand-height: 5.15rem;
+  --bj-desktop-mini-row-height: 5.5rem;
 }
 
 @media (max-width: 720px) {
@@ -416,16 +425,31 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    padding: 0.3rem 0.4rem 0.35rem;
+    padding: 0.3rem 0.45rem 0.35rem;
     box-sizing: border-box;
-    background: var(--bj-table-felt-bg);
-    border: var(--bj-table-felt-border);
-    border-radius: var(--bj-table-felt-radius);
+    background: var(--bj-desktop-felt-bg);
+    border: none;
+    border-radius: inherit;
   }
 
   .bj-view-full-desktop .bj-casino__felt.bj-table-surface,
   .bj-view-card-desktop .bj-casino__felt.bj-table-surface {
     min-height: 0;
+  }
+
+  .bj-view-full-desktop .bj-phone-view.bj-table-column-surface,
+  .bj-view-card-desktop .bj-phone-view.bj-table-column-surface {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+  }
+
+  .bj-view-full-desktop .dealer-block__center-col,
+  .bj-view-card-desktop .dealer-block__center-col {
+    border: none;
+    background: transparent;
+    padding: 0.1rem 0.2rem 0.08rem;
   }
 
   .bj-view-full-desktop .bj-casino__felt-main,
@@ -451,15 +475,25 @@
     flex: 0 0 auto;
     margin-top: auto;
     align-items: flex-end;
+    width: 100%;
+    justify-content: space-evenly;
+    gap: 0.2rem 0.35rem;
+    padding: 0 0.35rem 0.12rem;
+  }
+
+  .bj-view-full-desktop .bj-arc__slot {
+    width: var(--bj-desktop-seat-width);
+  }
+
+  .bj-view-full-desktop .bj-bet-zone,
+  .bj-view-full-desktop .bj-arc__slot--empty {
+    width: var(--bj-desktop-seat-width);
+    min-height: var(--bj-desktop-seat-min-height);
   }
 
   .bj-view-full-desktop .bj-casino__tray-wrap {
     flex: 0 0 auto;
     margin-top: auto;
-  }
-
-  .bj-view-card-desktop .bj-phone-view.bj-table-column-surface {
-    background: transparent;
   }
 
   .bj-view-card-desktop .bj-phone-view {
@@ -501,19 +535,30 @@
 
   .bj-view-card-desktop .bj-phone-view__slot--boxes {
     flex: 0 0 auto;
-    min-height: 4.5rem;
-    max-height: 4.75rem;
+    min-height: var(--bj-desktop-mini-row-height);
+    max-height: var(--bj-desktop-mini-row-height);
   }
 
   .bj-view-card-desktop .bj-phone-view__mini-row {
-    min-height: 4.5rem;
-    max-height: 4.75rem;
+    min-height: var(--bj-desktop-mini-row-height);
+    max-height: var(--bj-desktop-mini-row-height);
+    width: 100%;
+    justify-content: space-evenly;
+    gap: 0.22rem;
     overflow-x: auto;
     overflow-y: hidden;
   }
 
   .bj-view-card-desktop .bj-phone-view__mini-hand {
-    min-height: 4.25rem;
-    height: 4.25rem;
+    min-width: var(--bj-desktop-mini-hand-width);
+    max-width: calc(var(--bj-desktop-mini-hand-width) + 0.65rem);
+    min-height: var(--bj-desktop-mini-hand-height);
+    height: var(--bj-desktop-mini-hand-height);
+  }
+
+  .bj-view-card-desktop .bj-phone-view__mini-hand-card-stack {
+    flex: 0 0 1.65rem;
+    min-height: 1.65rem;
+    height: 1.65rem;
   }
 }

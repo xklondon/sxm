@@ -299,6 +299,13 @@
   min-width: 0;
 }
 
+@media (min-width: 721px) {
+  .bj-view-full-desktop .bj-casino__felt-main {
+    max-width: none;
+    width: 100%;
+  }
+}
+
 .bj-casino__felt--card-view {
   flex: 1;
   min-height: 0;
