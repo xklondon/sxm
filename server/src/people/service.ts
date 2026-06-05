@@ -17,12 +17,16 @@ export class PeopleService {
   constructor(private readonly store: Store) {}
 
   /** Resolve session userId after store reset — prefer id, then email, then create. */
-  resolveSessionUser(userId: string, sessionEmail?: string, route = 'internal'): UserRecord {
-    const byId = this.store.getUserById(userId);
+  async resolveSessionUser(
+    userId: string,
+    sessionEmail?: string,
+    route = 'internal',
+  ): Promise<UserRecord> {
+    const byId = await this.store.getUserById(userId);
     if (byId) {
       logAuthProvision(route, 'resolve-by-id', sessionEmail, {
         userId: byId.id,
-        personFound: Boolean(this.getPersonForUser(byId.id)),
+        personFound: Boolean(await this.getPersonForUser(byId.id)),
       });
       return byId;
     }
@@ -30,16 +34,16 @@ export class PeopleService {
       throw new PeopleAuthError('SESSION_INVALID', 'Session expired — sign in again');
     }
     const normalized = normalizeEmail(sessionEmail);
-    const byEmail = this.store.getUserByEmail(normalized);
+    const byEmail = await this.store.getUserByEmail(normalized);
     if (byEmail) {
       logAuthProvision(route, 'resolve-by-email', sessionEmail, {
         sessionUserId: userId,
         resolvedUserId: byEmail.id,
-        personFound: Boolean(this.getPersonForUser(byEmail.id)),
+        personFound: Boolean(await this.getPersonForUser(byEmail.id)),
       });
       return byEmail;
     }
-    const created = this.store.createUser(normalized, normalized.split('@')[0]!);
+    const created = await this.store.createUser(normalized, normalized.split('@')[0]!);
     logAuthProvision(route, 'create-user', sessionEmail, {
       sessionUserId: userId,
       resolvedUserId: created.id,
@@ -47,28 +51,33 @@ export class PeopleService {
     return created;
   }
 
-  listPeople(): PersonRecord[] {
-    return this.store.listPeople().sort((a, b) => a.email.localeCompare(b.email));
+  async listPeople(): Promise<PersonRecord[]> {
+    const people = await this.store.listPeople();
+    return people.sort((a, b) => a.email.localeCompare(b.email));
   }
 
-  getPersonByEmail(email: string): PersonRecord | null {
+  async getPersonByEmail(email: string): Promise<PersonRecord | null> {
     return this.store.getPersonByEmail(email);
   }
 
-  getPersonForUser(userId: string): PersonRecord | null {
-    const byUser = this.store.getPersonByUserId(userId);
-    if (byUser) return byUser;
-    const user = this.store.getUserById(userId);
-    if (!user) return null;
+  async getPersonForUser(userId: string): Promise<PersonRecord | null> {
+    const byUser = await this.store.getPersonByUserId(userId);
+    if (byUser) {
+      return byUser;
+    }
+    const user = await this.store.getUserById(userId);
+    if (!user) {
+      return null;
+    }
     return this.store.getPersonByEmail(user.email);
   }
 
-  canRequestMagicLink(email: string): boolean {
+  async canRequestMagicLink(email: string): Promise<boolean> {
     const normalized = normalizeEmail(email);
     if (isRootEmail(normalized)) {
       return true;
     }
-    const person = this.store.getPersonByEmail(normalized);
+    const person = await this.store.getPersonByEmail(normalized);
     if (!person) {
       return !config.inviteOnlyMode;
     }
@@ -78,14 +87,14 @@ export class PeopleService {
     return person.canLogin && (person.status === 'active' || person.status === 'invited');
   }
 
-  ensurePersonOnLogin(email: string, userId: string): PersonRecord {
+  async ensurePersonOnLogin(email: string, userId: string): Promise<PersonRecord> {
     const normalized = normalizeEmail(email);
-    let person = this.store.getPersonByEmail(normalized);
+    let person = await this.store.getPersonByEmail(normalized);
     const now = new Date().toISOString();
 
     if (isRootEmail(normalized)) {
       if (!person) {
-        person = this.store.createPerson({
+        person = await this.store.createPerson({
           id: randomUUID(),
           email: normalized,
           displayName: normalized.split('@')[0]!,
@@ -99,13 +108,13 @@ export class PeopleService {
           userId,
         });
       } else {
-        person = this.store.updatePerson(person.id, {
+        person = (await this.store.updatePerson(person.id, {
           role: 'root',
           status: 'active',
           ...permissionsForRole('root'),
           lastLoginAt: now,
           userId,
-        })!;
+        }))!;
       }
       return person;
     }
@@ -114,7 +123,7 @@ export class PeopleService {
       if (config.inviteOnlyMode) {
         throw new Error('Person record missing after authorized login');
       }
-      person = this.store.createPerson({
+      person = await this.store.createPerson({
         id: randomUUID(),
         email: normalized,
         displayName: normalized.split('@')[0]!,
@@ -134,26 +143,26 @@ export class PeopleService {
     if (person.status === 'invited') {
       updates.status = 'active';
     }
-    return this.store.updatePerson(person.id, updates)!;
+    return (await this.store.updatePerson(person.id, updates))!;
   }
 
-  addPerson(params: {
+  async addPerson(params: {
     email: string;
     displayName?: string;
     role?: PersonRole;
     invitedByEmail: string;
-  }): PersonRecord {
+  }): Promise<PersonRecord> {
     const normalized = normalizeEmail(params.email);
     if (isRootEmail(normalized)) {
       throw new Error('Cannot add root user via people API');
     }
-    const existing = this.store.getPersonByEmail(normalized);
+    const existing = await this.store.getPersonByEmail(normalized);
     if (existing) {
       throw new Error('Person already exists');
     }
     const role = params.role ?? 'player';
     const now = new Date().toISOString();
-    const person = this.store.createPerson({
+    const person = await this.store.createPerson({
       id: randomUUID(),
       email: normalized,
       displayName: params.displayName?.trim() || normalized.split('@')[0]!,
@@ -167,7 +176,7 @@ export class PeopleService {
       lastLoginAt: null,
       userId: null,
     });
-    this.store.appendAuditLog({
+    await this.store.appendAuditLog({
       id: randomUUID(),
       at: now,
       actorEmail: params.invitedByEmail,
@@ -178,7 +187,7 @@ export class PeopleService {
     return person;
   }
 
-  updatePerson(
+  async updatePerson(
     personId: string,
     patches: Partial<
       Pick<
@@ -193,14 +202,14 @@ export class PeopleService {
       >
     >,
     actorEmail: string,
-  ): PersonRecord {
-    const person = this.store.getPersonById(personId);
+  ): Promise<PersonRecord> {
+    const person = await this.store.getPersonById(personId);
     if (!person) {
       throw new Error('Person not found');
     }
     if (isRootPerson(person)) {
       if (
-        patches.role !== undefined && patches.role !== 'root' ||
+        (patches.role !== undefined && patches.role !== 'root') ||
         patches.status === 'disabled' ||
         patches.canLogin === false
       ) {
@@ -213,18 +222,18 @@ export class PeopleService {
       if (Object.keys(allowed).length === 0 && Object.keys(patches).length > 0) {
         throw new Error('Root user permissions are immutable');
       }
-      return this.store.updatePerson(personId, allowed) ?? person;
+      return (await this.store.updatePerson(personId, allowed)) ?? person;
     }
 
     const next: Partial<PersonRecord> = { ...patches };
     if (patches.role !== undefined) {
       Object.assign(next, permissionsForRole(patches.role));
     }
-    const updated = this.store.updatePerson(personId, next);
+    const updated = await this.store.updatePerson(personId, next);
     if (!updated) {
       throw new Error('Update failed');
     }
-    this.store.appendAuditLog({
+    await this.store.appendAuditLog({
       id: randomUUID(),
       at: new Date().toISOString(),
       actorEmail,
@@ -235,30 +244,38 @@ export class PeopleService {
     return updated;
   }
 
-  assertCanOwnTables(userId: string, sessionEmail?: string, route = 'tables.create'): PersonRecord {
-    const person = this.requireActivePerson(userId, sessionEmail, route);
+  async assertCanOwnTables(
+    userId: string,
+    sessionEmail?: string,
+    route = 'tables.create',
+  ): Promise<PersonRecord> {
+    const person = await this.requireActivePerson(userId, sessionEmail, route);
     if (!person.canOwnTables && !isRootPerson(person)) {
       throw new Error('You do not have permission to create tables');
     }
     return person;
   }
 
-  assertCanInvite(userId: string, sessionEmail?: string, route = 'tables.invite'): PersonRecord {
-    const person = this.requireActivePerson(userId, sessionEmail, route);
+  async assertCanInvite(
+    userId: string,
+    sessionEmail?: string,
+    route = 'tables.invite',
+  ): Promise<PersonRecord> {
+    const person = await this.requireActivePerson(userId, sessionEmail, route);
     if (!person.canInvite && !isRootPerson(person)) {
       throw new Error('You do not have permission to invite others');
     }
     return person;
   }
 
-  assertCanJoinTable(
+  async assertCanJoinTable(
     userId: string,
     invite: TableInviteRecord | null,
     sessionEmail?: string,
     route = 'tables.join',
-  ): PersonRecord {
-    const user = this.resolveSessionUser(userId, sessionEmail, route);
-    const person = this.getPersonForUser(user.id);
+  ): Promise<PersonRecord> {
+    const user = await this.resolveSessionUser(userId, sessionEmail, route);
+    const person = await this.getPersonForUser(user.id);
     if (person && (person.canPlay || isRootPerson(person))) {
       return person;
     }
@@ -272,19 +289,19 @@ export class PeopleService {
     throw new Error('You do not have permission to join this table');
   }
 
-  ensureInvitedPersonForTable(params: {
+  async ensureInvitedPersonForTable(params: {
     email: string;
     displayName: string;
     inviterEmail: string;
     role?: PersonRole;
-  }): PersonRecord {
+  }): Promise<PersonRecord> {
     const normalized = normalizeEmail(params.email);
     const tablePerms = permissionsForTableInvite();
-    let person = this.store.getPersonByEmail(normalized);
+    let person = await this.store.getPersonByEmail(normalized);
     if (!person) {
       const role = params.role ?? 'player';
       const now = new Date().toISOString();
-      person = this.store.createPerson({
+      person = await this.store.createPerson({
         id: randomUUID(),
         email: normalized,
         displayName: params.displayName.trim() || normalized.split('@')[0]!,
@@ -301,43 +318,47 @@ export class PeopleService {
       if (person.status === 'disabled') {
         throw new Error('Account disabled');
       }
-      person = this.store.updatePerson(person.id, {
+      person = (await this.store.updatePerson(person.id, {
         ...tablePerms,
         canLogin: true,
         status: 'invited',
         invitedAt: person.invitedAt ?? new Date().toISOString(),
         invitedBy: params.inviterEmail,
-      })!;
+      }))!;
     }
     return person;
   }
 
-  assertPeopleAdmin(userId: string, sessionEmail?: string, route = 'people.admin'): PersonRecord {
-    const user = this.resolveSessionUser(userId, sessionEmail, route);
+  async assertPeopleAdmin(
+    userId: string,
+    sessionEmail?: string,
+    route = 'people.admin',
+  ): Promise<PersonRecord> {
+    const user = await this.resolveSessionUser(userId, sessionEmail, route);
     if (isRootEmail(user.email)) {
       logAuthProvision(route, 'ensure-root', sessionEmail, { resolvedUserId: user.id });
       return this.ensurePersonOnLogin(user.email, user.id);
     }
-    const person = this.getPersonForUser(user.id);
+    const person = await this.getPersonForUser(user.id);
     if (!isPeopleAdmin(person, user.email)) {
       throw new Error('Admin access required');
     }
     return person!;
   }
 
-  getAuthProfile(userId: string, emailFromSession?: string) {
-    const user = this.resolveSessionUser(userId, emailFromSession, 'GET /api/auth/me');
-    let person = this.getPersonForUser(user.id);
+  async getAuthProfile(userId: string, emailFromSession?: string) {
+    const user = await this.resolveSessionUser(userId, emailFromSession, 'GET /api/auth/me');
+    let person = await this.getPersonForUser(user.id);
     if (!person && isRootEmail(user.email)) {
       logAuthProvision('GET /api/auth/me', 'ensure-root', emailFromSession, {
         resolvedUserId: user.id,
       });
-      person = this.ensurePersonOnLogin(user.email, user.id);
+      person = await this.ensurePersonOnLogin(user.email, user.id);
     } else if (!person && emailFromSession && !config.inviteOnlyMode) {
       logAuthProvision('GET /api/auth/me', 'ensure-person-login', emailFromSession, {
         resolvedUserId: user.id,
       });
-      person = this.ensurePersonOnLogin(emailFromSession, user.id);
+      person = await this.ensurePersonOnLogin(emailFromSession, user.id);
     }
     logAuthProvision('GET /api/auth/me', 'get-auth-profile', emailFromSession, {
       resolvedUserId: user.id,
@@ -362,17 +383,17 @@ export class PeopleService {
     };
   }
 
-  private requireActivePerson(
+  private async requireActivePerson(
     userId: string,
     sessionEmail?: string,
     route = 'people.require-active',
-  ): PersonRecord {
-    const user = this.resolveSessionUser(userId, sessionEmail, route);
+  ): Promise<PersonRecord> {
+    const user = await this.resolveSessionUser(userId, sessionEmail, route);
     if (isRootEmail(user.email)) {
       logAuthProvision(route, 'ensure-root', sessionEmail, { resolvedUserId: user.id });
       return this.ensurePersonOnLogin(user.email, user.id);
     }
-    const person = this.getPersonForUser(user.id);
+    const person = await this.getPersonForUser(user.id);
     if (!person) {
       throw new PeopleAuthError(
         'NOT_REGISTERED',
@@ -385,7 +406,7 @@ export class PeopleService {
     return person;
   }
 
-  private ensureInvitedGuestOnJoin(email: string, userId: string): PersonRecord {
+  private async ensureInvitedGuestOnJoin(email: string, userId: string): Promise<PersonRecord> {
     const normalized = normalizeEmail(email);
     const now = new Date().toISOString();
     return this.store.createPerson({

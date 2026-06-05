@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @db.Uuid
+  email       String   @unique
+  displayName String
+  createdAt   DateTime @db.Timestamptz(3)
+  people      Person[]
+}
+
+model Person {
+  id           String    @id @db.Uuid
+  email        String    @unique
+  displayName  String
+  status       String
+  role         String
+  canLogin     Boolean
+  canOwnTables Boolean
+  canPlay      Boolean
+  canInvite    Boolean
+  createdAt    DateTime  @db.Timestamptz(3)
+  invitedAt    DateTime? @db.Timestamptz(3)
+  invitedBy    String?
+  lastLoginAt  DateTime? @db.Timestamptz(3)
+  userId       String?   @db.Uuid
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model MagicLink {
+  token     String    @id
+  email     String
+  createdAt DateTime  @db.Timestamptz(3)
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+
+  @@index([email])
+}
+
+model MagicLinkCooldown {
+  email  String   @id
+  lastAt DateTime @db.Timestamptz(3)
+}
+
+model TableInvite {
+  id            String   @id @db.Uuid
+  tableId       String
+  token         String   @unique
+  invitedEmail  String
+  invitedName   String
+  inviterUserId String   @db.Uuid
+  status        String
+  createdAt     DateTime @db.Timestamptz(3)
+  expiresAt     DateTime @db.Timestamptz(3)
+
+  @@unique([tableId, id])
+  @@index([tableId])
+}
+
+model AuditLog {
+  id             String   @id @db.Uuid
+  at             DateTime @db.Timestamptz(3)
+  actorEmail     String
+  action         String
+  targetPersonId String
+  detail         String
+
+  @@index([at(sort: Desc)])
+}

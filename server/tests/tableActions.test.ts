@@ -27,34 +27,34 @@ describe('table deal flow', () => {
     tables = new TableService(store, people);
   });
 
-  it('place valid bet → shuffle → dealCards deals cards', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+  it('place valid bet → shuffle → dealCards deals cards', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const member = store.getMember(table.id, host.id)!;
     const boxId = Object.keys(table.state.players).find(
       (id) => table.state.players[id]?.role === 'box',
     )!;
 
-    tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, table.version);
-    const shuffled = tables.applyAction(table.id, host.id, 'shuffleToStart', {}, table.version + 1);
+    await tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, table.version);
+    const shuffled = await tables.applyAction(table.id, host.id, 'shuffleToStart', {}, table.version + 1);
     expect(shuffled.state.tableMeta.shoeStarted).toBe(true);
 
-    const dealt = tables.applyAction(table.id, host.id, 'dealCards', {}, shuffled.version);
+    const dealt = await tables.applyAction(table.id, host.id, 'dealCards', {}, shuffled.version);
     expect(dealt.state.blackjack?.dealerCardIds.length).toBeGreaterThan(0);
     expect(Object.keys(dealt.state.blackjack?.playerHands ?? {}).length).toBeGreaterThan(0);
   });
 
-  it('online round settles server-side and nextRound resets stakes', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+  it('online round settles server-side and nextRound resets stakes', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const boxId = Object.keys(table.state.players).find(
       (id) => table.state.players[id]?.role === 'box',
     )!;
 
     let v = table.version;
-    v = tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, v).version;
-    v = tables.applyAction(table.id, host.id, 'shuffleToStart', {}, v).version;
-    let res = tables.applyAction(table.id, host.id, 'dealCards', {}, v);
+    v = (await tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, v)).version;
+    v = (await tables.applyAction(table.id, host.id, 'shuffleToStart', {}, v)).version;
+    let res = await tables.applyAction(table.id, host.id, 'dealCards', {}, v);
     v = res.version;
 
     let guard = 0;
@@ -62,12 +62,12 @@ describe('table deal flow', () => {
       guard += 1;
       const phase = getBlackjackProtocolPhase(res.state);
       if (phase === 'insurance') {
-        res = tables.applyAction(table.id, host.id, 'declineInsurance', { playerId: boxId }, v);
+        res = await tables.applyAction(table.id, host.id, 'declineInsurance', { playerId: boxId }, v);
         v = res.version;
         continue;
       }
       if (phase === 'player') {
-        res = tables.applyAction(table.id, host.id, 'stand', {}, v);
+        res = await tables.applyAction(table.id, host.id, 'stand', {}, v);
         v = res.version;
         continue;
       }
@@ -78,16 +78,16 @@ describe('table deal flow', () => {
     expect(res.state.blackjack?.status).toBe('resolved');
     expect(res.state.tableMeta.awaitingNextRound).toBe(true);
 
-    const next = tables.applyAction(table.id, host.id, 'nextRound', {}, v);
+    const next = await tables.applyAction(table.id, host.id, 'nextRound', {}, v);
     expect(next.state.tableMeta.awaitingNextRound).toBe(false);
     expect(next.state.tableMeta.bettingLocked).toBe(false);
     expect(next.state.tableMeta.boxStakes).toEqual({});
   });
 
-  it('non-host cannot advance to next round', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
-    const guest = store.createUser('guest@example.com', 'Guest');
+  it('non-host cannot advance to next round', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    const guest = await store.createUser('guest@example.com', 'Guest');
     store.addMember({
       tableId: table.id,
       userId: guest.id,
@@ -102,21 +102,19 @@ describe('table deal flow', () => {
     } as typeof table.state;
     store.updateTable(table.id, awaiting, table.version);
 
-    expect(() =>
-      tables.applyAction(table.id, guest.id, 'nextRound', {}),
-    ).toThrow(/host/i);
+    await expect(tables.applyAction(table.id, guest.id, 'nextRound', {})).rejects.toThrow(/host/i);
   });
 
-  it('unauthorized player cannot deal', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+  it('unauthorized player cannot deal', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const member = store.getMember(table.id, host.id)!;
     const boxId = Object.keys(table.state.players).find(
       (id) => table.state.players[id]?.role === 'box',
     )!;
-    tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, table.version);
-    const shuffled = tables.applyAction(table.id, host.id, 'shuffleToStart', {}, table.version + 1);
-    const guest = store.createUser('guest@example.com', 'Guest');
+    await tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, table.version);
+    const shuffled = await tables.applyAction(table.id, host.id, 'shuffleToStart', {}, table.version + 1);
+    const guest = await store.createUser('guest@example.com', 'Guest');
     store.addMember({
       tableId: table.id,
       userId: guest.id,
@@ -124,30 +122,28 @@ describe('table deal flow', () => {
       role: 'player',
       joinedAt: new Date().toISOString(),
     });
-    expect(() =>
-      tables.applyAction(table.id, guest.id, 'dealCards', {}, shuffled.version),
-    ).toThrow(/host/i);
+    await expect(tables.applyAction(table.id, guest.id, 'dealCards', {}, shuffled.version)).rejects.toThrow(/host/i);
   });
 
-  it('deal rejected without eligible bet', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
-    expect(() => tables.applyAction(table.id, host.id, 'dealCards', {}, table.version)).toThrow();
+  it('deal rejected without eligible bet', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    await expect(tables.applyAction(table.id, host.id, 'dealCards', {}, table.version)).rejects.toThrow();
   });
 
-  it('hosted online table skips stake setup overlay', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+  it('hosted online table skips stake setup overlay', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     expect(table.state.tableMeta.showStakeSetup).toBe(false);
     expect(table.state.tableMeta.agreement).toBeTruthy();
   });
 
-  it('host can claim free box by first bet on empty slot', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+  it('host can claim free box by first bet on empty slot', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const emptySlot = table.state.tableMeta.boxSlots.find((s) => !s.playerId)!;
 
-    const bet = tables.applyAction(
+    const bet = await tables.applyAction(
       table.id,
       host.id,
       'placeBet',
@@ -159,10 +155,10 @@ describe('table deal flow', () => {
     expect(bet.state.tableMeta.boxStakes[slot!.playerId!]?.amount).toBe(10);
   });
 
-  it('allows shared betting on another player occupied box', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
-    const guest = store.createUser('guest@example.com', 'Guest');
+  it('allows shared betting on another player occupied box', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    const guest = await store.createUser('guest@example.com', 'Guest');
     let state = addSeatAtTable(table.state, {
       displayName: 'Guest',
       controllerName: 'Guest',
@@ -182,7 +178,7 @@ describe('table deal flow', () => {
     const guestBoxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === guestSlot.slotNumber)!.playerId!;
     store.updateTable(table.id, state, table.version);
 
-    const bet = tables.applyAction(
+    const bet = await tables.applyAction(
       table.id,
       host.id,
       'placeBet',
@@ -204,8 +200,8 @@ describe('invite accept flow', () => {
     const store = createMemoryStore();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -213,12 +209,12 @@ describe('invite accept flow', () => {
       invitedName: 'Guest',
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
-    const result = tables.acceptInviteByToken(token);
+    const result = await tables.acceptInviteByToken(token);
     expect(result.tableId).toBe(table.id);
     expect(result.boxAssigned).toBe(true);
-    const guest = store.getUserByEmail('guest@example.com')!;
+    const guest = await store.getUserByEmail('guest@example.com')!;
     expect(store.getMember(table.id, guest.id)).toBeTruthy();
-    const person = store.getPersonByEmail('guest@example.com')!;
+    const person = (await store.getPersonByEmail('guest@example.com'))!;
     expect(person.canPlay).toBe(true);
     expect(person.canOwnTables).toBe(true);
     expect(person.canInvite).toBe(true);
@@ -228,9 +224,9 @@ describe('invite accept flow', () => {
     const store = createMemoryStore();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
-    seedPerson(store, { email: 'guest@example.com', role: 'player', status: 'invited' });
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    await seedPerson(store, { email: 'guest@example.com', role: 'player', status: 'invited' });
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -238,17 +234,17 @@ describe('invite accept flow', () => {
       invitedName: 'Guest',
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
-    tables.acceptInviteByToken(token);
-    expect(() => tables.acceptInviteByToken(token)).toThrow(/already used/i);
+    await tables.acceptInviteByToken(token);
+    await expect(tables.acceptInviteByToken(token)).rejects.toThrow(/already used/i);
   });
 
   it('wrong-session user id still accepts invite as invitee', async () => {
     const store = createMemoryStore();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
-    const other = store.createUser('other@example.com', 'Other');
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    const other = await store.createUser('other@example.com', 'Other');
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -256,9 +252,9 @@ describe('invite accept flow', () => {
       invitedName: 'Guest',
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
-    const result = tables.acceptInviteByToken(token, other.id);
+    const result = await tables.acceptInviteByToken(token, other.id);
     expect(result.tableId).toBe(table.id);
-    const guest = store.getUserByEmail('guest@example.com')!;
+    const guest = await store.getUserByEmail('guest@example.com')!;
     expect(guest.id).not.toBe(other.id);
     expect(store.getMember(table.id, guest.id)).toBeTruthy();
   });
@@ -267,8 +263,8 @@ describe('invite accept flow', () => {
     const { app, store } = createApp();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -276,7 +272,7 @@ describe('invite accept flow', () => {
       invitedName: 'Guest',
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
-    tables.acceptInviteByToken(token);
+    await tables.acceptInviteByToken(token);
     const res = await request(app)
       .get(`/api/tables/invites/accept?token=${encodeURIComponent(token)}`)
       .redirects(0);
@@ -290,8 +286,8 @@ describe('invite accept flow', () => {
     const store = createMemoryStore();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -299,20 +295,20 @@ describe('invite accept flow', () => {
       invitedName: 'Guest',
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
-    const invite = store.getInviteByToken(token)!;
+    const invite = (await store.getInviteByToken(token))!;
     store.createInvite({
       ...invite,
       expiresAt: new Date(Date.now() - 1000).toISOString(),
     });
-    expect(() => tables.acceptInviteByToken(token)).toThrow(/expired/i);
+    await expect(tables.acceptInviteByToken(token)).rejects.toThrow(/expired/i);
   });
 
   it('HTTP accept sets session and redirects', async () => {
     const { app, store } = createApp();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -332,8 +328,8 @@ describe('invite accept flow', () => {
     const { app, store } = createApp();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -349,7 +345,7 @@ describe('invite accept flow', () => {
     expect(res.status).toBe(302);
     expect(res.headers.location).toContain(`table=${encodeURIComponent(table.id)}`);
     expect(res.headers.location).not.toContain('/login');
-    const guest = store.getUserByEmail('guest@example.com')!;
+    const guest = await store.getUserByEmail('guest@example.com')!;
     expect(store.getMember(table.id, guest.id)).toBeTruthy();
   });
 
@@ -357,8 +353,8 @@ describe('invite accept flow', () => {
     const { app, store } = createApp();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const boxId = Object.keys(table.state.players).find(
       (id) => table.state.players[id]?.role === 'box',
     )!;
@@ -396,8 +392,8 @@ describe('invite accept flow', () => {
     const store = createMemoryStore();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -418,18 +414,16 @@ describe('placeBet target resolution (server)', () => {
     tables = new TableService(store, people);
   });
 
-  it('rejects placeBet with unknown boxId (Box not found regression)', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
-    expect(() =>
-      tables.applyAction(table.id, host.id, 'placeBet', { boxId: 'nonexistent-box-id', amount: 10 }, table.version),
-    ).toThrow(/Box not found/);
+  it('rejects placeBet with unknown boxId (Box not found regression)', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    await expect(tables.applyAction(table.id, host.id, 'placeBet', { boxId: 'nonexistent-box-id', amount: 10 }, table.version)).rejects.toThrow(/Box not found/);
   });
 
-  it('accepts placeBet on empty slot via slotNumber and materializes the box', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
-    const result = tables.applyAction(
+  it('accepts placeBet on empty slot via slotNumber and materializes the box', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    const result = await tables.applyAction(
       table.id,
       host.id,
       'placeBet',

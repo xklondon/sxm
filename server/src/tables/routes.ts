@@ -11,20 +11,20 @@ import { respondPeopleAuthError } from '../people/httpErrors.js';
 export function createTableRouter(tables: TableService, io: SocketServer): Router {
   const router = Router();
 
-  router.get('/invites/preview', (req, res) => {
+  router.get('/invites/preview', async (req, res) => {
     try {
-      const preview = tables.previewInviteByToken(String(req.query.token ?? ''));
+      const preview = await tables.previewInviteByToken(String(req.query.token ?? ''));
       res.json({ preview });
     } catch (err) {
       res.status(400).json({ error: err instanceof Error ? err.message : 'Invalid invite' });
     }
   });
 
-  router.get('/invites/accept', (req, res) => {
+  router.get('/invites/accept', async (req, res) => {
     const token = String(req.query.token ?? '');
     const origin = resolveRequestOrigin(req);
     try {
-      const preview = tables.previewInviteByToken(token);
+      const preview = await tables.previewInviteByToken(token);
       const raw = readSessionToken(req);
       const session = raw ? verifySessionToken(raw) : null;
       let sessionUserId: string | undefined;
@@ -39,13 +39,13 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         }
       }
 
-      const result = tables.acceptInviteByToken(token, sessionUserId);
+      const result = await tables.acceptInviteByToken(token, sessionUserId);
       setSessionCookie(res, result.sessionToken, { req });
       const spectator = result.spectator ? '&spectator=1' : '';
       res.redirect(`${origin}/?table=${encodeURIComponent(result.tableId)}${spectator}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Invite accept failed';
-      const tableId = tables.lookupInviteTableId(token);
+      const tableId = await tables.lookupInviteTableId(token);
       const query = tableId
         ? `?table=${encodeURIComponent(tableId)}&inviteError=${encodeURIComponent(message)}`
         : `?inviteError=${encodeURIComponent(message)}`;
@@ -53,10 +53,11 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
     }
   });
 
-  router.post('/', requireAuth, (req: AuthedRequest, res) => {    try {
+  router.post('/', requireAuth, async (req: AuthedRequest, res) => {
+    try {
       const displayName = String(req.body?.displayName ?? req.auth!.email.split('@')[0]);
       const tableName = req.body?.name ? String(req.body.name) : undefined;
-      const table = tables.createTable(
+      const table = await tables.createTable(
         req.auth!.userId,
         displayName,
         tableName,
@@ -75,9 +76,9 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
     }
   });
 
-  router.get('/:tableId', requireAuth, (req: AuthedRequest, res) => {
+  router.get('/:tableId', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      const table = tables.getTableForUser(
+      const table = await tables.getTableForUser(
         req.params.tableId!,
         req.auth!.userId,
         req.auth!.email,
@@ -142,9 +143,9 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
     }
   });
 
-  router.post('/join', requireAuth, (req: AuthedRequest, res) => {
+  router.post('/join', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      const table = tables.joinTable({
+      const table = await tables.joinTable({
         userId: req.auth!.userId,
         displayName: String(req.body?.displayName ?? req.auth!.email.split('@')[0]),
         tableId: String(req.body?.tableId ?? ''),
@@ -161,13 +162,13 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
     }
   });
 
-  router.post('/:tableId/actions', requireAuth, (req: AuthedRequest, res) => {
+  router.post('/:tableId/actions', requireAuth, async (req: AuthedRequest, res) => {
     try {
       const type = String(req.body?.type ?? '') as TableActionType;
       const payload = (req.body?.payload ?? {}) as Record<string, unknown>;
       const expectedVersion =
         req.body?.expectedVersion !== undefined ? Number(req.body.expectedVersion) : undefined;
-      const result = tables.applyAction(
+      const result = await tables.applyAction(
         req.params.tableId!,
         req.auth!.userId,
         type,

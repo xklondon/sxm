@@ -30,8 +30,8 @@ describe('multiplayer ownership (server authority)', () => {
   });
 
   it('invited player accept assigns next free box', async () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -39,10 +39,10 @@ describe('multiplayer ownership (server authority)', () => {
       invitedName: 'Guest',
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
-    const result = tables.acceptInviteByToken(token);
+    const result = await tables.acceptInviteByToken(token);
     expect(result.boxAssigned).toBe(true);
 
-    const guest = store.getUserByEmail('guest@example.com')!;
+    const guest = await store.getUserByEmail('guest@example.com')!;
     const member = store.getMember(table.id, guest.id)!;
     const updated = store.getTable(table.id)!;
     const assignedSlot = updated.state.tableMeta.boxSlots.find(
@@ -56,7 +56,7 @@ describe('multiplayer ownership (server authority)', () => {
     expect(updated.state.tableMeta.tableNotice?.message).toMatch(/Guest joined the table on Box \d+\./);
 
     const boxId = assignedSlot!.playerId!;
-    const bet = tables.applyAction(
+    const bet = await tables.applyAction(
       table.id,
       guest.id,
       'placeBet',
@@ -68,8 +68,8 @@ describe('multiplayer ownership (server authority)', () => {
   });
 
   it('host assignChips syncs balance used for betting', async () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -77,12 +77,12 @@ describe('multiplayer ownership (server authority)', () => {
       invitedName: 'Low',
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
-    tables.acceptInviteByToken(token);
-    const guest = store.getUserByEmail('low@example.com')!;
+    await tables.acceptInviteByToken(token);
+    const guest = await store.getUserByEmail('low@example.com')!;
     let current = store.getTable(table.id)!;
     const guestPersonId = store.getMember(table.id, guest.id)!.personId;
 
-    current = tables.applyAction(
+    current = await tables.applyAction(
       table.id,
       host.id,
       'assignChips',
@@ -94,7 +94,7 @@ describe('multiplayer ownership (server authority)', () => {
     const boxId = current.state.tableMeta.boxSlots.find(
       (s) => s.nativeAssignedPersonId === guestPersonId,
     )!.playerId!;
-    const bet = tables.applyAction(
+    const bet = await tables.applyAction(
       table.id,
       guest.id,
       'placeBet',
@@ -104,15 +104,15 @@ describe('multiplayer ownership (server authority)', () => {
     expect(bet.state.tableMeta.boxStakes[boxId]?.amount).toBe(10);
   });
 
-  it('assigned box: non-owner can bet but cannot hit', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+  it('assigned box: non-owner can bet but cannot hit', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const hostPersonId = store.getMember(table.id, host.id)!.personId;
     const hostBoxId = Object.keys(table.state.players).find(
       (id) => table.state.players[id]?.role === 'box',
     )!;
 
-    const guest = store.createUser('guest@example.com', 'Guest');
+    const guest = await store.createUser('guest@example.com', 'Guest');
     let state = addSeatAtTable(table.state, {
       displayName: 'Guest',
       controllerName: 'Guest',
@@ -135,7 +135,7 @@ describe('multiplayer ownership (server authority)', () => {
     });
     store.updateTable(table.id, state, table.version);
 
-    const betResult = tables.applyAction(
+    const betResult = await tables.applyAction(
       table.id,
       guest.id,
       'placeBet',
@@ -179,17 +179,17 @@ describe('multiplayer ownership (server authority)', () => {
 
     expect(getBlackjackProtocolPhase(updated.state)).toBe('player');
 
-    expect(() => tables.applyAction(table.id, guest.id, 'hit', {}, updated.version)).toThrow(
+    await expect(tables.applyAction(table.id, guest.id, 'hit', {}, updated.version)).rejects.toThrow(
       /Not box owner/i,
     );
   });
 
-  it('unassigned box: second bettor cannot take insurance for the box', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
+  it('unassigned box: second bettor cannot take insurance for the box', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
     const hostPersonId = store.getMember(table.id, host.id)!.personId;
 
-    const guest = store.createUser('guest@example.com', 'Guest');
+    const guest = await store.createUser('guest@example.com', 'Guest');
     let state = addSeatAtTable(table.state, {
       displayName: 'Guest',
       controllerName: 'Guest',
@@ -226,15 +226,13 @@ describe('multiplayer ownership (server authority)', () => {
     store.updateTable(table.id, state, table.version);
 
     let v = store.getTable(table.id)!.version;
-    v = tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, v).version;
-    v = tables.applyAction(table.id, guest.id, 'placeBet', { boxId, amount: 5 }, v).version;
-    v = tables.applyAction(table.id, host.id, 'shuffleToStart', {}, v).version;
-    const dealt = tables.applyAction(table.id, host.id, 'dealCards', {}, v);
+    v = (await tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, v)).version;
+    v = (await tables.applyAction(table.id, guest.id, 'placeBet', { boxId, amount: 5 }, v)).version;
+    v = (await tables.applyAction(table.id, host.id, 'shuffleToStart', {}, v)).version;
+    const dealt = await tables.applyAction(table.id, host.id, 'dealCards', {}, v);
 
     if (getBlackjackProtocolPhase(dealt.state) === 'insurance') {
-      expect(() =>
-        tables.applyAction(table.id, guest.id, 'takeInsurance', { playerId: boxId }, dealt.version),
-      ).toThrow(/Not authorized/i);
+      await expect(tables.applyAction(table.id, guest.id, 'takeInsurance', { playerId: boxId }, dealt.version)).rejects.toThrow(/Not authorized/i);
     }
   });
 });

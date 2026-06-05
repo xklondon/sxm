@@ -22,10 +22,10 @@ describe('resetTable action', () => {
     tables = new TableService(store, people);
   });
 
-  it('host can reset mid-game; non-host receives 403', () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
-    const guest = store.createUser('guest@example.com', 'Guest');
+  it('host can reset mid-game; non-host receives 403', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    const guest = await store.createUser('guest@example.com', 'Guest');
     store.addMember({
       tableId: table.id,
       userId: guest.id,
@@ -34,14 +34,12 @@ describe('resetTable action', () => {
       joinedAt: new Date().toISOString(),
     });
 
-    const hostView = tables.getTableForUser(table.id, host.id);
+    const hostView = await tables.getTableForUser(table.id, host.id);
     const boxId = Object.keys(hostView.state.players).find(
       (id) => hostView.state.players[id]?.role === 'box',
     )!;
     let v = hostView.version;
-    v = tables
-      .applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, v)
-      .version;
+    v = (await tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, v)).version;
 
     const payload = {
       stakeDescription: 'Rematch',
@@ -58,7 +56,7 @@ describe('resetTable action', () => {
       bankDrawAuto: true,
     };
 
-    const reset = tables.applyAction(table.id, host.id, 'resetTable', payload, v);
+    const reset = await tables.applyAction(table.id, host.id, 'resetTable', payload, v);
     expect(reset.state.session.id).toBe(table.id);
     expect(reset.state.blackjack).toBeNull();
     expect(reset.state.deck).toBeNull();
@@ -68,8 +66,6 @@ describe('resetTable action', () => {
     ).toBe(true);
     expect(hasPersonalLedgerEntryForTable(reset.state.session.id)).toBe(false);
 
-    expect(() =>
-      tables.applyAction(table.id, guest.id, 'resetTable', payload, reset.version),
-    ).toThrow(/host/i);
+    await expect(tables.applyAction(table.id, guest.id, 'resetTable', payload, reset.version)).rejects.toThrow(/host/i);
   });
 });

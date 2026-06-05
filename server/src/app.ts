@@ -15,6 +15,8 @@ import {
 } from './config.js';
 import { getJoinAddress, renderQrDataUrl } from './host.js';
 import { createMemoryStore } from './store/memoryStore.js';
+import type { Store } from './store/types.js';
+import type { StoreType } from './store/types.js';
 import { AuthService } from './auth/service.js';
 import { createAuthRouter } from './auth/routes.js';
 import { PeopleService } from './people/service.js';
@@ -28,10 +30,16 @@ import { createApiErrorHandler } from './middleware/apiErrorHandler.js';
 import { verifySessionToken } from './auth/tokens.js';
 import { readSessionToken } from './auth/middleware.js';
 
-export function createApp() {
+export interface CreateAppOptions {
+  store?: Store;
+  storeType?: StoreType;
+}
+
+export function createApp(options: CreateAppOptions = {}) {
   assertProductionOrigin();
   const startedAt = Date.now();
-  const store = createMemoryStore();
+  const store = options.store ?? createMemoryStore();
+  const storeType = options.storeType ?? 'memory';
   const people = new PeopleService(store);
   const auth = new AuthService(store, people);
   const tables = new TableService(store, people);
@@ -93,7 +101,7 @@ export function createApp() {
 
   const debugRouter = express.Router();
   debugRouter.use(createEmailDebugRouter());
-  debugRouter.use(createRuntimeDebugRouter({ store, io, startedAt }));
+  debugRouter.use(createRuntimeDebugRouter({ store, io, startedAt, storeType }));
   app.use('/api/debug', debugRouter);
   app.use('/api/auth', createAuthRouter(auth, people));
   app.use('/api/people', createPeopleRouter(people, auth));
@@ -196,5 +204,5 @@ export function createApp() {
     });
   });
 
-  return { app, httpServer, io, store, tables, auth, people };
+  return { app, httpServer, io, store, storeType, tables, auth, people };
 }

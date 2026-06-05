@@ -4,7 +4,7 @@ import { createApp } from '../src/app.js';
 
 describe('debug runtime endpoints', () => {
   it('GET /api/debug/health returns JSON with uptime and store type', async () => {
-    const { app } = createApp();
+    const { app } = createApp({ storeType: 'memory' });
     const res = await request(app).get('/api/debug/health');
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/json/);
@@ -15,7 +15,7 @@ describe('debug runtime endpoints', () => {
   });
 
   it('GET /api/debug/runtime returns counts without secrets', async () => {
-    const { app } = createApp();
+    const { app } = createApp({ storeType: 'memory' });
     const res = await request(app).get('/api/debug/runtime');
     expect(res.status).toBe(200);
     expect(res.body.tables).toBe(0);
@@ -27,7 +27,7 @@ describe('debug runtime endpoints', () => {
   });
 
   it('GET /api/auth/me without cookie returns 401 JSON', async () => {
-    const { app } = createApp();
+    const { app } = createApp({ storeType: 'memory' });
     const res = await request(app).get('/api/auth/me');
     expect(res.status).toBe(401);
     expect(res.headers['content-type']).toMatch(/json/);

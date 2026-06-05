@@ -33,7 +33,7 @@ describe('SXMCards multiplayer API', () => {
 
 
 
-  beforeEach(() => {
+  beforeEach(async () => {
 
     store = createMemoryStore();
 
@@ -43,7 +43,7 @@ describe('SXMCards multiplayer API', () => {
 
     tables = new TableService(store, people);
 
-    seedPerson(store, { email: 'player@example.com', role: 'player', status: 'invited' });
+    await seedPerson(store, { email: 'player@example.com', role: 'player', status: 'invited' });
 
   });
 
@@ -57,7 +57,7 @@ describe('SXMCards multiplayer API', () => {
 
     const token = new URL(devLink!, 'http://localhost:5173').searchParams.get('token')!;
 
-    const session = auth.verifyMagicLink(token);
+    const session = await auth.verifyMagicLink(token);
 
     expect(createSessionToken({ userId: 'x', email: 'player@example.com' })).toBeTruthy();
 
@@ -68,22 +68,22 @@ describe('SXMCards multiplayer API', () => {
 
 
   it('expired/used token rejected', async () => {
-    seedPerson(store, { email: 'a@example.com', role: 'player', status: 'invited' });
+    await seedPerson(store, { email: 'a@example.com', role: 'player', status: 'invited' });
     const { devLink } = await auth.requestMagicLink('a@example.com');
     const token = new URL(devLink!, 'http://localhost:5173').searchParams.get('token')!;
 
-    auth.verifyMagicLink(token);
+    await auth.verifyMagicLink(token);
 
-    expect(() => auth.verifyMagicLink(token)).toThrow(/already used/i);
+    await expect(auth.verifyMagicLink(token)).rejects.toThrow(/already used/i);
 
   });
 
 
 
   it('invite link joins correct table after login flow', async () => {
-    const host = seedHostUser(store);
-    const table = tables.createTable(host.id, 'Host');
-    seedPerson(store, { email: 'guest@example.com', role: 'player', status: 'invited' });
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    await seedPerson(store, { email: 'guest@example.com', role: 'player', status: 'invited' });
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -91,9 +91,9 @@ describe('SXMCards multiplayer API', () => {
       invitedName: 'Guest',
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
-    const invite = store.getInviteByToken(token)!;
-    const guest = store.createUser('guest@example.com', 'Guest');
-    const join = tables.joinTable({
+    const invite = (await store.getInviteByToken(token))!;
+    const guest = await store.createUser('guest@example.com', 'Guest');
+    const join = await tables.joinTable({
       userId: guest.id,
       displayName: 'Guest',
       tableId: table.id,
@@ -109,11 +109,11 @@ describe('SXMCards multiplayer API', () => {
 
 
 
-  it('non-member cannot placeBet on host box', () => {
+  it('non-member cannot placeBet on host box', async () => {
 
-    const host = seedHostUser(store, 'host@example.com');
+    const host = await seedHostUser(store, 'host@example.com');
 
-    const table = tables.createTable(host.id, 'Host');
+    const table = await tables.createTable(host.id, 'Host');
 
     const hostBoxId = Object.keys(table.state.players).find(
 
@@ -139,27 +139,22 @@ describe('SXMCards multiplayer API', () => {
 
 
 
-    expect(() =>
-
+    await expect(
       tables.applyAction(table.id, 'other-user', 'placeBet', {
-
         boxId: hostBoxId,
-
         amount: 10,
-
       }),
-
-    ).toThrow(/Not authorized/i);
+    ).rejects.toThrow(/Not authorized/i);
 
   });
 
 
 
-  it('ignores client-sent handKey and resolves on the authoritative active hand', () => {
+  it('ignores client-sent handKey and resolves on the authoritative active hand', async () => {
 
-    const host = seedHostUser(store, 'host@example.com');
+    const host = await seedHostUser(store, 'host@example.com');
 
-    const table = tables.createTable(host.id, 'Host');
+    const table = await tables.createTable(host.id, 'Host');
 
     let state = table.state;
 
@@ -221,51 +216,34 @@ describe('SXMCards multiplayer API', () => {
 
     // with a render-time "stale turn" error.
 
-    expect(() =>
-
-      tables.applyAction(table.id, host.id, 'hit', { handKey: 'box-b:0' }),
-
-    ).toThrow(/Not box owner/i);
-
-
-
-    expect(() =>
-
-      tables.applyAction(table.id, host.id, 'hit', { handKey: 'box-b:0' }),
-
-    ).not.toThrow(/Stale turn/i);
-
+    await expect(tables.applyAction(table.id, host.id, 'hit', { handKey: 'box-b:0' })).rejects.toThrow(
+      /Not box owner/i,
+    );
   });
 
 
 
-  it('stale table version rejected', () => {
+  it('stale table version rejected', async () => {
 
-    const host = seedHostUser(store, 'host@example.com');
+    const host = await seedHostUser(store, 'host@example.com');
 
-    const table = tables.createTable(host.id, 'Host');
+    const table = await tables.createTable(host.id, 'Host');
 
-    expect(() =>
-
+    await expect(
       tables.applyAction(table.id, host.id, 'placeBet', { slotNumber: 1, amount: 10 }, 9999),
-
-    ).toThrow(/Stale table version/i);
+    ).rejects.toThrow(/Stale table version/i);
 
   });
 
 
 
-  it('rejects personal ledger before game end', () => {
+  it('rejects personal ledger before game end', async () => {
 
-    const host = seedHostUser(store, 'host@example.com');
+    const host = await seedHostUser(store, 'host@example.com');
 
-    const table = tables.createTable(host.id, 'Host');
+    const table = await tables.createTable(host.id, 'Host');
 
-    expect(() =>
-
-      tables.applyAction(table.id, host.id, 'addGameToPersonalLedger', {}),
-
-    ).toThrow(/Game must end/i);
+    await expect(tables.applyAction(table.id, host.id, 'addGameToPersonalLedger', {})).rejects.toThrow(/Game must end/i);
 
   });
 

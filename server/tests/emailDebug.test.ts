@@ -1,41 +1,87 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 
 const envBackup = { ...process.env };
 
-afterEach(() => {
+/** Env keys that affect email provider selection — must not leak from local .env. */
+const EMAIL_ENV_KEYS = [
+  'EMAIL_PROVIDER',
+  'RESEND_API_KEY',
+  'RESEND_FROM',
+  'SMTP_HOST',
+  'SMTP_PORT',
+  'SMTP_SECURE',
+  'SMTP_USER',
+  'SMTP_PASS',
+  'EMAIL_FROM',
+  'SMTP_TCP_REACHABLE',
+] as const;
+
+function clearEmailEnv(): void {
+  for (const key of EMAIL_ENV_KEYS) {
+    delete process.env[key];
+  }
+}
+
+function restoreBaseEnv(): void {
   process.env = { ...envBackup };
   vi.resetModules();
+}
+
+beforeEach(() => {
+  restoreBaseEnv();
 });
 
-async function createApp(opts?: { smtp?: boolean }) {
+afterEach(() => {
+  restoreBaseEnv();
+  vi.unstubAllGlobals();
+});
+
+type EmailFixture =
+  /** Production: Gmail SMTP vars present but unreachable; no Resend — not configured for send. */
+  | 'production-smtp-unreachable-no-resend'
+  /** No SMTP or Resend — email not configured. */
+  | 'unconfigured'
+  /** Resend API key + verified FROM — configured for send. */
+  | 'resend-configured';
+
+async function createApp(opts?: { email?: EmailFixture; debugEmailTest?: boolean }) {
+  clearEmailEnv();
+  delete process.env.DEBUG_EMAIL_TEST;
   process.env.NODE_ENV = 'production';
   process.env.PUBLIC_ORIGIN = 'https://sxm-production.up.railway.app';
   process.env.CORS_ORIGIN = 'https://sxm-production.up.railway.app';
   process.env.SESSION_SECRET = 'test-secret';
   process.env.INVITE_ONLY_MODE = 'true';
   process.env.ROOT_USER_EMAIL = 'root@example.com';
-  if (opts?.smtp !== false) {
+
+  const email = opts?.email ?? 'production-smtp-unreachable-no-resend';
+
+  if (email === 'production-smtp-unreachable-no-resend') {
     process.env.SMTP_HOST = 'smtp.gmail.com';
     process.env.SMTP_PORT = '587';
     process.env.SMTP_SECURE = 'false';
     process.env.SMTP_USER = 'user@gmail.com';
     process.env.SMTP_PASS = 'app-password';
     process.env.EMAIL_FROM = 'SXM Casino <user@gmail.com>';
-  } else {
-    delete process.env.SMTP_HOST;
-    delete process.env.SMTP_USER;
-    delete process.env.SMTP_PASS;
-    delete process.env.EMAIL_FROM;
+  } else if (email === 'resend-configured') {
+    process.env.EMAIL_PROVIDER = 'resend';
+    process.env.RESEND_API_KEY = 're_test_key';
+    process.env.RESEND_FROM = 'SXM Casino <notify@verified.example.com>';
   }
+
+  if (opts?.debugEmailTest) {
+    process.env.DEBUG_EMAIL_TEST = 'true';
+  }
+
   vi.resetModules();
-  const { createApp } = await import('../src/app.js');
-  return createApp();
+  const { createApp: buildApp } = await import('../src/app.js');
+  return buildApp();
 }
 
 describe('GET /api/debug/email-config', () => {
-  it('returns sanitized SMTP snapshot as JSON (not SPA HTML)', async () => {
-    const { app } = await createApp();
+  it('returns sanitized snapshot when SMTP present but Resend not configured (production auto)', async () => {
+    const { app } = await createApp({ email: 'production-smtp-unreachable-no-resend' });
     const res = await request(app).get('/api/debug/email-config');
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/json/);
@@ -55,7 +101,24 @@ describe('GET /api/debug/email-config', () => {
       resendConfigured: false,
     });
     expect(res.body.smtpPass).toBeUndefined();
+    expect(res.body.resendApiKeyPresent).toBe(false);
     expect(String(res.text).toLowerCase()).not.toContain('<!doctype');
+  });
+
+  it('returns configured snapshot when Resend is explicitly configured', async () => {
+    const { app } = await createApp({ email: 'resend-configured' });
+    const res = await request(app).get('/api/debug/email-config');
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      env: 'production',
+      emailProvider: 'resend',
+      emailConfigured: true,
+      resendConfigured: true,
+      resendApiKeyPresent: true,
+      smtpConfigured: false,
+    });
+    expect(res.body.smtpPass).toBeUndefined();
+    expect(String(res.text)).not.toMatch(/re_test_key/);
   });
 });
 
@@ -74,37 +137,30 @@ describe('SMTP timeout helpers', () => {
 
 describe('POST /api/debug/send-test-email', () => {
   it('returns 404 when DEBUG_EMAIL_TEST is not enabled', async () => {
-    delete process.env.DEBUG_EMAIL_TEST;
-    const { app } = await createApp();
+    const { app } = await createApp({ email: 'resend-configured' });
     const res = await request(app)
       .post('/api/debug/send-test-email')
       .send({ email: 'test@example.com' });
     expect(res.status).toBe(404);
   });
 
-  it('returns 503 when SMTP is not configured', async () => {
-    process.env.DEBUG_EMAIL_TEST = 'true';
-    const { app } = await createApp({ smtp: false });
+  it('returns 503 when email is not configured', async () => {
+    const { app } = await createApp({ email: 'unconfigured', debugEmailTest: true });
     const res = await request(app)
       .post('/api/debug/send-test-email')
       .send({ email: 'test@example.com' });
     expect(res.status).toBe(503);
     expect(res.body.emailConfigured).toBe(false);
+    expect(res.body.resendConfigured).toBe(false);
+    expect(res.body.smtpConfigured).toBe(false);
   });
 
   it('sends test email via Resend API when EMAIL_PROVIDER=resend', async () => {
-    process.env.DEBUG_EMAIL_TEST = 'true';
-    process.env.EMAIL_PROVIDER = 'resend';
-    process.env.RESEND_API_KEY = 're_test_key';
-    process.env.RESEND_FROM = 'SXM Casino <onboarding@resend.dev>';
-    delete process.env.SMTP_HOST;
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () =>
-        Response.json({ id: 'msg-resend-1' }, { status: 200 }),
-      ),
+      vi.fn(async () => Response.json({ id: 'msg-resend-1' }, { status: 200 })),
     );
-    const { app } = await createApp({ smtp: false });
+    const { app } = await createApp({ email: 'resend-configured', debugEmailTest: true });
     const res = await request(app)
       .post('/api/debug/send-test-email')
       .send({ email: 'test@example.com' });
@@ -120,13 +176,12 @@ describe('POST /api/debug/send-test-email', () => {
         }),
       }),
     );
-    vi.unstubAllGlobals();
   });
 });
 
 describe('SPA fallback does not swallow /api/debug', () => {
   it('GET /debug/client-config may be HTML but /api/debug/email-config is JSON', async () => {
-    const { app } = await createApp();
+    const { app } = await createApp({ email: 'production-smtp-unreachable-no-resend' });
     const client = await request(app).get('/debug/client-config');
     const api = await request(app).get('/api/debug/email-config');
     expect(api.headers['content-type']).toMatch(/json/);

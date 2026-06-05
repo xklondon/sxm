@@ -1,5 +1,8 @@
 import type { GameState } from '../../../src/types/index.js';
 
+export type MaybePromise<T> = T | Promise<T>;
+export type StoreType = 'memory' | 'postgres';
+
 export type PersonStatus = 'invited' | 'active' | 'disabled';
 export type PersonRole = 'root' | 'admin' | 'host' | 'player' | 'guest';
 
@@ -75,15 +78,15 @@ export interface AuditLogRecord {
 }
 
 export interface Store {
-  createUser(email: string, displayName: string): UserRecord;
-  getUserByEmail(email: string): UserRecord | null;
-  getUserById(id: string): UserRecord | null;
+  createUser(email: string, displayName: string): MaybePromise<UserRecord>;
+  getUserByEmail(email: string): MaybePromise<UserRecord | null>;
+  getUserById(id: string): MaybePromise<UserRecord | null>;
 
-  createMagicLink(email: string, token: string, expiresAt: string): MagicLinkRecord;
-  getMagicLink(token: string): MagicLinkRecord | null;
-  markMagicLinkUsed(token: string): void;
-  lastMagicLinkRequestAt(email: string): string | null;
-  setLastMagicLinkRequestAt(email: string, at: string): void;
+  createMagicLink(email: string, token: string, expiresAt: string): MaybePromise<MagicLinkRecord>;
+  getMagicLink(token: string): MaybePromise<MagicLinkRecord | null>;
+  markMagicLinkUsed(token: string): MaybePromise<void>;
+  lastMagicLinkRequestAt(email: string): MaybePromise<string | null>;
+  setLastMagicLinkRequestAt(email: string, at: string): MaybePromise<void>;
 
   createTable(record: TableRecord): void;
   getTable(id: string): TableRecord | null;
@@ -93,25 +96,29 @@ export interface Store {
   getMembers(tableId: string): TableMemberRecord[];
   getMember(tableId: string, userId: string): TableMemberRecord | null;
 
-  createInvite(invite: TableInviteRecord): void;
-  getInvite(tableId: string, inviteId: string): TableInviteRecord | null;
-  getInviteByToken(token: string): TableInviteRecord | null;
-  updateInviteStatus(tableId: string, inviteId: string, status: TableInviteRecord['status']): void;
+  createInvite(invite: TableInviteRecord): MaybePromise<void>;
+  getInvite(tableId: string, inviteId: string): MaybePromise<TableInviteRecord | null>;
+  getInviteByToken(token: string): MaybePromise<TableInviteRecord | null>;
+  updateInviteStatus(
+    tableId: string,
+    inviteId: string,
+    status: TableInviteRecord['status'],
+  ): MaybePromise<void>;
 
-  createPerson(record: PersonRecord): PersonRecord;
-  getPersonById(id: string): PersonRecord | null;
-  getPersonByEmail(email: string): PersonRecord | null;
-  getPersonByUserId(userId: string): PersonRecord | null;
-  listPeople(): PersonRecord[];
-  updatePerson(id: string, patches: Partial<PersonRecord>): PersonRecord | null;
+  createPerson(record: PersonRecord): MaybePromise<PersonRecord>;
+  getPersonById(id: string): MaybePromise<PersonRecord | null>;
+  getPersonByEmail(email: string): MaybePromise<PersonRecord | null>;
+  getPersonByUserId(userId: string): MaybePromise<PersonRecord | null>;
+  listPeople(): MaybePromise<PersonRecord[]>;
+  updatePerson(id: string, patches: Partial<PersonRecord>): MaybePromise<PersonRecord | null>;
 
-  appendAuditLog(entry: AuditLogRecord): void;
-  listAuditLogs(limit?: number): AuditLogRecord[];
+  appendAuditLog(entry: AuditLogRecord): MaybePromise<void>;
+  listAuditLogs(limit?: number): MaybePromise<AuditLogRecord[]>;
 
-  getRuntimeStats(): {
+  getRuntimeStats(): MaybePromise<{
     tables: number;
     users: number;
     people: number;
     invites: number;
-  };
+  }>;
 }

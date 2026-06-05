@@ -53,9 +53,9 @@ describe('magic-link email (auth + people)', () => {
     const { createApp } = await import('../src/app.js');
     const { PeopleService } = await import('../src/people/service.js');
     const { app, store, auth } = createApp();
-    const root = store.createUser('root@example.com', 'Root');
+    const root = await store.createUser('root@example.com', 'Root');
     const people = new PeopleService(store);
-    people.ensurePersonOnLogin('root@example.com', root.id);
+    await people.ensurePersonOnLogin('root@example.com', root.id);
 
     const res = await request(app)
       .post('/api/auth/request-magic-link')

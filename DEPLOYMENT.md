@@ -50,6 +50,7 @@ Configure App Runner / load balancer health checks against `/health`.
 | `PUBLIC_ORIGIN` | yes | Public app URL (no localhost/LAN) |
 | `CORS_ORIGIN` | yes | Same as public origin if single-host |
 | `SESSION_SECRET` | yes | Strong random secret |
+| `DATABASE_URL` | yes (production) | Postgres URL — durable people, users, magic links, invites. Omit locally for MemoryStore. |
 | `SMTP_HOST`, `EMAIL_FROM` | yes | Magic links + email invites |
 | `ROOT_USER_EMAIL` | yes | Bootstrap admin; always allowed to sign in |
 | `INVITE_ONLY_MODE` | optional | Default `true` — reject unknown emails at magic-link request |

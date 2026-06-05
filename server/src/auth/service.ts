@@ -1,9 +1,8 @@
 import type { Store } from '../store/types.js';
 import type { PeopleService } from '../people/service.js';
-import { config, getEffectivePublicOrigin } from '../config.js';
+import { config, getEffectivePublicOrigin, isEmailConfigured } from '../config.js';
 import { createMagicLinkToken, createSessionToken } from './tokens.js';
 import { sendMagicLinkEmail } from '../email/mailer.js';
-import { isEmailConfigured } from '../config.js';
 import { logSmtpContext, sanitizeEmail } from '../email/smtp.js';
 
 export class AuthService {
@@ -18,11 +17,11 @@ export class AuthService {
       throw new Error('Valid email required');
     }
 
-    if (!this.people.canRequestMagicLink(normalized)) {
+    if (!(await this.people.canRequestMagicLink(normalized))) {
       throw new Error('This email is not registered or authorised. Ask an admin for an invite.');
     }
 
-    const last = this.store.lastMagicLinkRequestAt(normalized);
+    const last = await this.store.lastMagicLinkRequestAt(normalized);
     if (last) {
       const elapsed = Date.now() - new Date(last).getTime();
       if (elapsed < config.magicLinkResendCooldownMs) {
@@ -36,8 +35,8 @@ export class AuthService {
 
     const token = createMagicLinkToken();
     const expiresAt = new Date(Date.now() + config.magicLinkTtlMs).toISOString();
-    this.store.createMagicLink(normalized, token, expiresAt);
-    this.store.setLastMagicLinkRequestAt(normalized, new Date().toISOString());
+    await this.store.createMagicLink(normalized, token, expiresAt);
+    await this.store.setLastMagicLinkRequestAt(normalized, new Date().toISOString());
 
     const rememberParam = rememberMe ? 'remember=1' : 'remember=0';
     const verifyPath = `/api/auth/verify?token=${encodeURIComponent(token)}&${rememberParam}`;
@@ -65,8 +64,8 @@ export class AuthService {
     };
   }
 
-  verifyMagicLink(token: string, options?: { persistent?: boolean }): string {
-    const link = this.store.getMagicLink(token);
+  async verifyMagicLink(token: string, options?: { persistent?: boolean }): Promise<string> {
+    const link = await this.store.getMagicLink(token);
     if (!link) {
       throw new Error('Invalid or unknown token');
     }
@@ -77,9 +76,9 @@ export class AuthService {
       throw new Error('Token expired');
     }
 
-    this.store.markMagicLinkUsed(token);
-    const user = this.store.createUser(link.email, link.email.split('@')[0]!);
-    this.people.ensurePersonOnLogin(link.email, user.id);
+    await this.store.markMagicLinkUsed(token);
+    const user = await this.store.createUser(link.email, link.email.split('@')[0]!);
+    await this.people.ensurePersonOnLogin(link.email, user.id);
     const persistent = options?.persistent !== false;
     return createSessionToken({ userId: user.id, email: user.email, persistent });
   }

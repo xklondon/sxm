@@ -67,7 +67,7 @@ describe('host-mode session cookies', () => {
 
   it('GET /api/auth/me refreshes a persistent session cookie', async () => {
     const { app, store } = await createHostApp();
-    const user = store.createUser('root@example.com', 'Root');
+    const user = await store.createUser('root@example.com', 'Root');
     const token = createSessionToken({
       userId: user.id,
       email: user.email,

@@ -69,7 +69,7 @@ describe('auth API routes in production build', () => {
     expect(res.status).toBe(200);
     expect(res.body.user.email).toBe('root@example.com');
     expect(store.getUserById('stale-user-id')).toBeNull();
-    expect(store.getUserByEmail('root@example.com')).toBeTruthy();
+    expect(await store.getUserByEmail('root@example.com')).toBeTruthy();
   });
 
   it('GET /api/debug/auth-provision documents provisioning logs', async () => {

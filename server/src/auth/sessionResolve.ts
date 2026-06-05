@@ -6,15 +6,15 @@ import { respondPeopleAuthError } from '../people/httpErrors.js';
 import { isPeopleAuthError } from '../people/errors.js';
 
 /** Resolve stale session userId from email; refresh cookie when id changes. */
-export function resolveAuthForRequest(
+export async function resolveAuthForRequest(
   people: PeopleService,
   auth: SessionPayload,
   res: Response,
   req: Request,
   route: string,
-): SessionPayload | null {
+): Promise<SessionPayload | null> {
   try {
-    const user = people.resolveSessionUser(auth.userId, auth.email, route);
+    const user = await people.resolveSessionUser(auth.userId, auth.email, route);
     if (user.id !== auth.userId) {
       const next: SessionPayload = { ...auth, userId: user.id };
       refreshSessionCookie(res, next, req);

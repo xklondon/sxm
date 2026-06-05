@@ -20,10 +20,10 @@ function smtpEnv() {
 
 async function rootAdminCookie(store: { createUser: (email: string, name: string) => { id: string } }) {
   const { createSessionToken } = await import('../src/auth/tokens.js');
-  const root = store.createUser('root@example.com', 'Root');
+  const root = await store.createUser('root@example.com', 'Root');
   const { PeopleService } = await import('../src/people/service.js');
   const people = new PeopleService(store);
-  people.ensurePersonOnLogin('root@example.com', root.id);
+  await people.ensurePersonOnLogin('root@example.com', root.id);
   const token = createSessionToken({ userId: root.id, email: 'root@example.com' });
   return {
     root,
@@ -57,7 +57,7 @@ describe('POST /api/people add + invite email', () => {
     expect(res.status).toBe(201);
     expect(res.body.person.email).toBe('newplayer@example.com');
     expect(res.body.devLink).toBeTruthy();
-    expect(store.getPersonByEmail('newplayer@example.com')).toBeTruthy();
+    expect(await store.getPersonByEmail('newplayer@example.com')).toBeTruthy();
   });
 
   it('returns structured 502 when invite email fails but person is created', async () => {
@@ -91,7 +91,7 @@ describe('POST /api/people add + invite email', () => {
     expect(res.body.code).toBe('invite_email_failed');
     expect(res.body.person.email).toBe('failmail@example.com');
     expect(res.body.error).not.toMatch(/config is not defined/i);
-    expect(store.getPersonByEmail('failmail@example.com')).toBeTruthy();
+    expect(await store.getPersonByEmail('failmail@example.com')).toBeTruthy();
   });
 
   it('send-invite endpoint returns sanitized error on email failure', async () => {
@@ -112,7 +112,7 @@ describe('POST /api/people add + invite email', () => {
     const { createApp } = await import('../src/app.js');
     const { app, store } = createApp();
     const { cookie } = await rootAdminCookie(store);
-    const person = seedPerson(store, {
+    const person = await seedPerson(store, {
       email: 'resent@example.com',
       role: 'player',
       status: 'invited',

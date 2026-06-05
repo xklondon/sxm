@@ -54,7 +54,7 @@ describe('auth user provisioning', () => {
   it('GET /api/auth/me returns 403 JSON for invite-only stranger with session', async () => {
     const { app, store } = await createInviteOnlyApp();
     const email = 'stranger@example.com';
-    const user = store.createUser(email, 'Stranger');
+    const user = await store.createUser(email, 'Stranger');
     const { createSessionToken } = await import('../src/auth/tokens.js');
     const token = createSessionToken({ userId: user.id, email, persistent: true });
     const cookie = `${process.env.SESSION_COOKIE_NAME ?? 'sxmcards_session'}=${token}`;
@@ -76,9 +76,9 @@ describe('auth user provisioning', () => {
     const { TableService } = await import('../src/tables/service.js');
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
-    const root = store.createUser('root@example.com', 'Root');
-    people.ensurePersonOnLogin('root@example.com', root.id);
-    const table = tables.createTable(root.id, 'Root', undefined, 'root@example.com');
+    const root = await store.createUser('root@example.com', 'Root');
+    await people.ensurePersonOnLogin('root@example.com', root.id);
+    const table = await tables.createTable(root.id, 'Root', undefined, 'root@example.com');
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: root.id,
@@ -87,11 +87,11 @@ describe('auth user provisioning', () => {
       sessionEmail: 'root@example.com',
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
-    const result = tables.acceptInviteByToken(token, 'stale-guest-session-id');
+    const result = await tables.acceptInviteByToken(token, 'stale-guest-session-id');
     expect(result.tableId).toBe(table.id);
-    const guest = store.getUserByEmail('guest@example.com');
+    const guest = await store.getUserByEmail('guest@example.com');
     expect(guest).toBeTruthy();
-    expect(store.getPersonByEmail('guest@example.com')).toBeTruthy();
+    expect(await store.getPersonByEmail('guest@example.com')).toBeTruthy();
     expect(store.getMember(table.id, guest!.id)).toBeTruthy();
   });
 });

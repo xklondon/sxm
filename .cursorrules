@@ -44,6 +44,7 @@ Aligned env keys (same LAN host, no localhost in links):
 - **Engine:** pure TypeScript in `src/engine/` — deterministic, no React
 - **UI:** `src/components/`, `src/screens/`
 - **Server:** `server/src/` — Express + Socket.IO, applies engine actions with authority checks
+- **Store:** `server/src/store/` — `createStore()` picks Postgres (`DATABASE_URL`) or MemoryStore (dev/tests). People/users/auth persist in Postgres; active table game state stays in-memory per process.
 - **Online mode:** `VITE_ONLINE_MODE=true` — magic-link auth, multiplayer tables, WebSocket sync
 - **Offline mode:** `VITE_ONLINE_MODE=false` — single-browser local play still works
 

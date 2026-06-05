@@ -12,9 +12,10 @@ No separate frontend host. Leave `VITE_API_URL` and `VITE_TABLE_HOST` **blank** 
 
 | Topic | Current behavior |
 |--------|------------------|
-| **Instances** | Use **one Railway service instance** only. Table sessions, people, and magic links live in **in-memory** store — data is not shared across replicas. |
-| **Redis** | Not used yet. Restart or redeploy clears in-memory state unless you add external persistence later. |
-| **Autoscaling** | Do not enable horizontal autoscaling until shared storage exists. Multiple instances will split users across disjoint game state. |
+| **Instances** | Use **one Railway service instance** for table game state (still in-memory per process). |
+| **Database** | Add **Railway Postgres** and set `DATABASE_URL` so people, users, magic links, and table invites survive redeploy. Without it, the server falls back to **MemoryStore** (dev-only; data lost on restart). |
+| **Redis** | Not used. Active table sessions remain in process memory — a restart clears open tables, not the people directory when Postgres is configured. |
+| **Autoscaling** | Do not enable horizontal autoscaling until table game state has shared storage. Multiple instances would split users across disjoint in-progress tables. |
 
 ## 1. Create the Railway project
 
@@ -33,8 +34,8 @@ In the service **Settings** → **Deploy**:
 
 What this does:
 
-- **Build:** Typecheck + `vite build` → `dist/` (client bundle).
-- **Start:** `tsx server/src/index.ts` — Express + Socket.IO on `process.env.PORT` (Railway sets `PORT` automatically; do not hardcode it in env unless you know why).
+- **Build:** `prisma generate` + typecheck + `vite build` → `dist/` (client bundle).
+- **Start:** `tsx server/src/index.ts` — on boot, if `DATABASE_URL` is set, runs **`prisma migrate deploy`** (additive only, never reset), then connects Postgres for people/users/auth. Express + Socket.IO on `process.env.PORT`.
 
 `NODE_ENV=production` turns on static serving from `dist/`, `0.0.0.0` bind, and production cookie/CORS rules.
 
@@ -72,6 +73,7 @@ Replace placeholders. Do not commit secrets to git.
 | Variable | Example / notes |
 |----------|-----------------|
 | `NODE_ENV` | `production` |
+| `DATABASE_URL` | From **Railway Postgres** plugin (see §6) — **required for durable People Management** |
 | `PUBLIC_ORIGIN` | `https://<railway-domain>` — magic links and redirects (no trailing slash) |
 | `CORS_ORIGIN` | `https://<railway-domain>` — same as `PUBLIC_ORIGIN` for single-host deploy |
 | `SESSION_SECRET` | Long random string (rotate from dev default) |
@@ -114,6 +116,7 @@ Replace placeholders. Do not commit secrets to git.
 
 ```env
 NODE_ENV=production
+DATABASE_URL=${{Postgres.DATABASE_URL}}
 PUBLIC_ORIGIN=https://<railway-domain>
 CORS_ORIGIN=https://<railway-domain>
 SESSION_SECRET=<long-random-secret>
@@ -133,7 +136,26 @@ EMAIL_FROM=SXM Casino <xklondon@gmail.com>
 
 After changing `VITE_*`, trigger a **redeploy** so `npm run build` bakes the new values into `dist/`.
 
-## 6. Verify deploy
+## 6. Postgres (durable people / auth)
+
+People Management, users, magic links, and table invites are stored in Postgres when `DATABASE_URL` is set. Without it, the server logs `Using in-memory store` and **all people/users are lost on every deploy**.
+
+1. Railway project → **+ New** → **Database** → **PostgreSQL**.
+2. Open the Postgres service → **Connect** → copy **`DATABASE_URL`** (or reference it from the app service).
+3. On the **app** service → **Variables** → add `DATABASE_URL` (Railway can link the plugin variable automatically).
+4. Redeploy the app. Startup runs **`npm run db:migrate`** equivalent (`prisma migrate deploy`) — additive migrations only; never `migrate reset` or `db push --force-reset`.
+
+Verify persistence after deploy:
+
+```bash
+curl -sS "https://<railway-domain>/api/debug/runtime"
+```
+
+Expect JSON including `"storeType":"postgres"`, plus `people` and `users` counts (no credentials).
+
+**Local dev:** omit `DATABASE_URL` to use MemoryStore, or point at a local Postgres URL. Optional `TEST_DATABASE_URL` enables postgres persistence tests (`npm run test:server`).
+
+## 7. Verify deploy
 
 ### Automated / CLI
 

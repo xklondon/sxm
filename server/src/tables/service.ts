@@ -27,14 +27,14 @@ export class TableService {
     private readonly people: PeopleService,
   ) {}
 
-  createTable(
+  async createTable(
     userId: string,
     displayName: string,
     tableName?: string,
     sessionEmail?: string,
-  ): TableRecord {
-    const user = this.people.resolveSessionUser(userId, sessionEmail, 'POST /api/tables');
-    this.people.assertCanOwnTables(user.id, sessionEmail, 'POST /api/tables');
+  ): Promise<TableRecord> {
+    const user = await this.people.resolveSessionUser(userId, sessionEmail, 'POST /api/tables');
+    await this.people.assertCanOwnTables(user.id, sessionEmail, 'POST /api/tables');
     let state = createHostedTableState(displayName);
     state = setTableOwner(state, displayName, '');
     state = ensureTableOwnerPersonBankroll(state);
@@ -65,9 +65,13 @@ export class TableService {
     return record;
   }
 
-  getTableForUser(tableId: string, userId: string, sessionEmail?: string): TableRecord {
+  async getTableForUser(
+    tableId: string,
+    userId: string,
+    sessionEmail?: string,
+  ): Promise<TableRecord> {
     const resolvedUserId = sessionEmail
-      ? this.people.resolveSessionUser(userId, sessionEmail, 'GET /api/tables/:id').id
+      ? (await this.people.resolveSessionUser(userId, sessionEmail, 'GET /api/tables/:id')).id
       : userId;
     const table = this.store.getTable(tableId);
     if (!table) {
@@ -80,33 +84,35 @@ export class TableService {
     return table;
   }
 
-  joinTable(params: {
+  async joinTable(params: {
     userId: string;
     displayName: string;
     tableId: string;
     inviteId: string;
     token: string;
     sessionEmail?: string;
-  }): TableRecord {
-    const invite = this.store.getInvite(params.tableId, params.inviteId);
+  }): Promise<TableRecord> {
+    const invite = await this.store.getInvite(params.tableId, params.inviteId);
     if (!invite || invite.token !== params.token) {
       throw new Error('Invalid invite');
     }
-    return this.joinWithInvite({
-      userId: params.userId,
-      displayName: params.displayName,
-      invite,
-      sessionEmail: params.sessionEmail,
-    }).table;
+    return (
+      await this.joinWithInvite({
+        userId: params.userId,
+        displayName: params.displayName,
+        invite,
+        sessionEmail: params.sessionEmail,
+      })
+    ).table;
   }
 
-  previewInviteByToken(token: string): {
+  async previewInviteByToken(token: string): Promise<{
     invitedEmail: string;
     invitedName: string;
     tableId: string;
     tableName: string;
-  } {
-    const invite = this.requireValidInvite(token);
+  }> {
+    const invite = await this.requireValidInvite(token);
     const table = this.store.getTable(invite.tableId);
     if (!table) {
       throw new Error('Table not found');
@@ -119,26 +125,26 @@ export class TableService {
     };
   }
 
-  lookupInviteTableId(token: string): string | undefined {
-    return this.store.getInviteByToken(token)?.tableId;
+  async lookupInviteTableId(token: string): Promise<string | undefined> {
+    return (await this.store.getInviteByToken(token))?.tableId;
   }
 
-  acceptInviteByToken(
+  async acceptInviteByToken(
     token: string,
     sessionUserId?: string,
-  ): {
+  ): Promise<{
     tableId: string;
     sessionToken: string;
     boxAssigned: boolean;
     spectator: boolean;
-  } {
-    const invite = this.requireValidInvite(token);
+  }> {
+    const invite = await this.requireValidInvite(token);
     const normalizedEmail = invite.invitedEmail.trim().toLowerCase();
 
     let userId = sessionUserId;
     if (userId) {
       try {
-        const user = this.people.resolveSessionUser(
+        const user = await this.people.resolveSessionUser(
           userId,
           normalizedEmail,
           'GET /api/tables/invites/accept',
@@ -149,21 +155,21 @@ export class TableService {
       }
     }
     if (!userId) {
-      const inviter = this.store.getUserById(invite.inviterUserId);
-      this.people.ensureInvitedPersonForTable({
+      const inviter = await this.store.getUserById(invite.inviterUserId);
+      await this.people.ensureInvitedPersonForTable({
         email: normalizedEmail,
         displayName: invite.invitedName,
         inviterEmail: inviter?.email ?? 'host',
         role: 'player',
       });
       const user =
-        this.store.getUserByEmail(normalizedEmail) ??
-        this.store.createUser(normalizedEmail, invite.invitedName);
+        (await this.store.getUserByEmail(normalizedEmail)) ??
+        (await this.store.createUser(normalizedEmail, invite.invitedName));
       userId = user.id;
-      this.people.ensurePersonOnLogin(normalizedEmail, userId);
+      await this.people.ensurePersonOnLogin(normalizedEmail, userId);
     }
 
-    const joined = this.joinWithInvite({
+    const joined = await this.joinWithInvite({
       userId,
       displayName: invite.invitedName || normalizedEmail.split('@')[0]!,
       invite,
@@ -179,8 +185,8 @@ export class TableService {
     };
   }
 
-  private requireValidInvite(token: string): TableInviteRecord {
-    const invite = this.store.getInviteByToken(token);
+  private async requireValidInvite(token: string): Promise<TableInviteRecord> {
+    const invite = await this.store.getInviteByToken(token);
     if (!invite) {
       throw new Error('Invalid invite link');
     }
@@ -193,23 +199,23 @@ export class TableService {
     return invite;
   }
 
-  private joinWithInvite(params: {
+  private async joinWithInvite(params: {
     userId: string;
     displayName: string;
     invite: TableInviteRecord;
     sessionEmail?: string;
-  }): { table: TableRecord; boxAssigned: boolean; spectator: boolean } {
+  }): Promise<{ table: TableRecord; boxAssigned: boolean; spectator: boolean }> {
     const table = this.store.getTable(params.invite.tableId);
     if (!table) {
       throw new Error('Table not found');
     }
 
-    const user = this.people.resolveSessionUser(
+    const user = await this.people.resolveSessionUser(
       params.userId,
       params.sessionEmail,
       'POST /api/tables/join',
     );
-    this.people.assertCanJoinTable(
+    await this.people.assertCanJoinTable(
       user.id,
       params.invite,
       params.sessionEmail,
@@ -254,7 +260,7 @@ export class TableService {
     });
 
     this.store.updateTable(params.invite.tableId, state, table.version + 1);
-    this.store.updateInviteStatus(params.invite.tableId, params.invite.id, 'accepted');
+    await this.store.updateInviteStatus(params.invite.tableId, params.invite.id, 'accepted');
 
     return {
       table: this.store.getTable(params.invite.tableId)!,
@@ -270,13 +276,13 @@ export class TableService {
     invitedName: string;
     sessionEmail?: string;
   }): Promise<{ inviteId: string; joinUrl: string; emailSent: boolean }> {
-    const host = this.people.resolveSessionUser(
+    const host = await this.people.resolveSessionUser(
       params.userId,
       params.sessionEmail,
       'POST /api/tables/:id/invites',
     );
-    this.people.assertCanInvite(host.id, params.sessionEmail, 'POST /api/tables/:id/invites');
-    const table = this.getTableForUser(params.tableId, host.id, params.sessionEmail);
+    await this.people.assertCanInvite(host.id, params.sessionEmail, 'POST /api/tables/:id/invites');
+    const table = await this.getTableForUser(params.tableId, host.id, params.sessionEmail);
     if (table.hostUserId !== host.id) {
       const member = this.store.getMember(params.tableId, host.id);
       if (member?.role !== 'host') {
@@ -287,7 +293,7 @@ export class TableService {
     const inviteId = randomUUID();
     const token = createInviteToken();
     const now = new Date().toISOString();
-    this.store.createInvite({
+    await this.store.createInvite({
       id: inviteId,
       tableId: params.tableId,
       token,
@@ -302,7 +308,7 @@ export class TableService {
     const inviter = host;
     let emailSent = false;
     if (invitedEmail) {
-      const existingPerson = this.store.getPersonByEmail(invitedEmail);
+      const existingPerson = await this.store.getPersonByEmail(invitedEmail);
       // eslint-disable-next-line no-console
       console.log(
         `[SXM][tables] createInvite target=${invitedEmail} registered=${Boolean(existingPerson)} status=${existingPerson?.status ?? 'none'}`,
@@ -326,14 +332,18 @@ export class TableService {
     role?: import('../store/types.js').PersonRole;
     sessionEmail?: string;
   }): Promise<{ inviteId: string; joinUrl: string; personId: string; emailSent: boolean }> {
-    const inviter = this.people.resolveSessionUser(
+    const inviter = await this.people.resolveSessionUser(
       params.userId,
       params.sessionEmail,
       'POST /api/tables/:id/invite-person',
     );
-    this.people.assertCanInvite(inviter.id, params.sessionEmail, 'POST /api/tables/:id/invite-person');
+    await this.people.assertCanInvite(
+      inviter.id,
+      params.sessionEmail,
+      'POST /api/tables/:id/invite-person',
+    );
     const normalizedEmail = params.email.trim().toLowerCase();
-    const person = this.people.ensureInvitedPersonForTable({
+    const person = await this.people.ensureInvitedPersonForTable({
       email: normalizedEmail,
       displayName: params.displayName,
       inviterEmail: inviter.email,
@@ -349,18 +359,19 @@ export class TableService {
     return { inviteId, joinUrl, personId: person.id, emailSent };
   }
 
-  applyAction(
+  async applyAction(
     tableId: string,
     userId: string,
     action: TableActionType,
     payload: Record<string, unknown>,
     expectedVersion?: number,
     sessionEmail?: string,
-  ): { state: GameState; version: number } {
+  ): Promise<{ state: GameState; version: number }> {
     const resolvedUserId = sessionEmail
-      ? this.people.resolveSessionUser(userId, sessionEmail, 'POST /api/tables/:id/actions').id
+      ? (await this.people.resolveSessionUser(userId, sessionEmail, 'POST /api/tables/:id/actions'))
+          .id
       : userId;
-    const table = this.getTableForUser(tableId, userId, sessionEmail);
+    const table = await this.getTableForUser(tableId, userId, sessionEmail);
     if (expectedVersion !== undefined && expectedVersion !== table.version) {
       throw new Error('Stale table version');
     }

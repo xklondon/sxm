@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { PersonRole, Store } from '../src/store/types.js';
 import { permissionsForRole } from '../src/people/permissions.js';
 
-export function seedPerson(
+export async function seedPerson(
   store: Store,
   params: {
     userId?: string | null;
@@ -37,8 +37,8 @@ export function seedPerson(
   });
 }
 
-export function seedHostUser(store: Store, email = 'host@example.com') {
-  const user = store.createUser(email, 'Host');
-  seedPerson(store, { userId: user.id, email, role: 'host' });
+export async function seedHostUser(store: Store, email = 'host@example.com') {
+  const user = await store.createUser(email, 'Host');
+  await seedPerson(store, { userId: user.id, email, role: 'host' });
   return user;
 }

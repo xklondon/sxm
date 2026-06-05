@@ -9,10 +9,10 @@ import { clientEmailErrorMessage } from '../email/smtp.js';
 export function createPeopleRouter(people: PeopleService, auth: AuthService): Router {
   const router = Router();
 
-  router.get('/', requireAuth, (req: AuthedRequest, res) => {
+  router.get('/', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'GET /api/people');
-      res.json({ people: people.listPeople() });
+      await people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'GET /api/people');
+      res.json({ people: await people.listPeople() });
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
         return;
@@ -23,8 +23,8 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
 
   router.post('/', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'POST /api/people');
-      const person = people.addPerson({
+      await people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'POST /api/people');
+      const person = await people.addPerson({
         email: String(req.body?.email ?? ''),
         displayName: req.body?.displayName ? String(req.body.displayName) : undefined,
         role: req.body?.role as PersonRole | undefined,
@@ -51,9 +51,9 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
     }
   });
 
-  router.patch('/:personId', requireAuth, (req: AuthedRequest, res) => {
+  router.patch('/:personId', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'PATCH /api/people/:id');
+      await people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'PATCH /api/people/:id');
       const patches: Partial<import('../store/types.js').PersonRecord> = {};
       if (req.body?.displayName !== undefined) patches.displayName = String(req.body.displayName);
       if (req.body?.role !== undefined) patches.role = req.body.role;
@@ -62,7 +62,7 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
       if (req.body?.canPlay !== undefined) patches.canPlay = Boolean(req.body.canPlay);
       if (req.body?.canInvite !== undefined) patches.canInvite = Boolean(req.body.canInvite);
       if (req.body?.canLogin !== undefined) patches.canLogin = Boolean(req.body.canLogin);
-      const person = people.updatePerson(req.params.personId!, patches, req.auth!.email);
+      const person = await people.updatePerson(req.params.personId!, patches, req.auth!.email);
       res.json({ person });
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
@@ -75,8 +75,8 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
 
   router.post('/:personId/send-invite', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'POST /api/people/:id/send-invite');
-      const target = people.listPeople().find((p) => p.id === req.params.personId);
+      await people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'POST /api/people/:id/send-invite');
+      const target = (await people.listPeople()).find((p) => p.id === req.params.personId);
       if (!target) {
         res.status(404).json({ error: 'Person not found' });
         return;

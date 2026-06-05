@@ -66,7 +66,7 @@ describe('public auth endpoints', () => {
 
   it('root email can request magic link without person record', async () => {
     const { app, store } = await createTestApp();
-    expect(store.getPersonByEmail('root@example.com')).toBeNull();
+    expect(await store.getPersonByEmail('root@example.com')).toBeNull();
     const res = await request(app)
       .post('/api/auth/request-magic-link')
       .send({ email: 'root@example.com' });
@@ -85,7 +85,7 @@ describe('public auth endpoints', () => {
 
   it('invited person can request magic link', async () => {
     const { app, store } = await createTestApp();
-    seedPerson(store, { email: 'invited@example.com', role: 'player', status: 'invited' });
+    await seedPerson(store, { email: 'invited@example.com', role: 'player', status: 'invited' });
     const res = await request(app)
       .post('/api/auth/request-magic-link')
       .send({ email: 'invited@example.com' });
@@ -94,7 +94,7 @@ describe('public auth endpoints', () => {
 
   it('GET /api/auth/me succeeds with valid session', async () => {
     const { app, store } = await createTestApp();
-    const user = store.createUser('root@example.com', 'Root');
+    const user = await store.createUser('root@example.com', 'Root');
     const cookie = `${process.env.SESSION_COOKIE_NAME ?? 'sxmcards_session'}=${createSessionToken({ userId: user.id, email: user.email, persistent: true })}`;
     const res = await request(app).get('/api/auth/me').set('Cookie', cookie);
     expect(res.status).toBe(200);

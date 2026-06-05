@@ -1,0 +1,135 @@
+import { buildInitialDealPlanFromHandKeys } from '../initialDeal';
+export function countVisibleCards(round) {
+    if (!round) {
+        return { dealer: 0, hands: {} };
+    }
+    const hands = {};
+    for (const [handKey, hand] of Object.entries(round.playerHands)) {
+        hands[handKey] = hand.cardIds.filter(Boolean).length;
+    }
+    return {
+        dealer: round.dealerCardIds.filter(Boolean).length,
+        hands,
+    };
+}
+export function totalCardCount(counts) {
+    let n = counts.dealer;
+    for (const v of Object.values(counts.hands)) {
+        n += v;
+    }
+    return n;
+}
+function handKeysForRound(round) {
+    if (round.initialDealHandKeys?.length) {
+        return round.initialDealHandKeys;
+    }
+    return Object.keys(round.playerHands);
+}
+/** True when visibility targets are still within the two-card initial deal. */
+export function isInitialDealVisibilityCounts(target) {
+    if (target.dealer > 2) {
+        return false;
+    }
+    for (const count of Object.values(target.hands)) {
+        if (count > 2) {
+            return false;
+        }
+    }
+    return true;
+}
+/** Steps to reveal when authoritative state already has all initial-deal cards. */
+export function buildInitialRevealSteps(round) {
+    const handKeys = handKeysForRound(round);
+    const holeLast = !round.dealerCardIds[1];
+    return buildInitialDealPlanFromHandKeys(handKeys, holeLast);
+}
+function maskRound(round, counts) {
+    const playerHands = { ...round.playerHands };
+    for (const [handKey, hand] of Object.entries(playerHands)) {
+        const visible = counts.hands[handKey] ?? 0;
+        playerHands[handKey] = {
+            ...hand,
+            cardIds: hand.cardIds.slice(0, visible),
+        };
+    }
+    return {
+        ...round,
+        dealerCardIds: round.dealerCardIds.slice(0, counts.dealer),
+        playerHands,
+    };
+}
+export function applyCardVisibility(state, counts) {
+    if (!state.blackjack) {
+        return state;
+    }
+    return {
+        ...state,
+        blackjack: maskRound(state.blackjack, counts),
+    };
+}
+/** Apply one initial-deal step onto visibility counts. */
+export function applyRevealStep(counts, step) {
+    if (step.type === 'dealer') {
+        return { ...counts, dealer: step.cardIndex + 1 };
+    }
+    const prev = counts.hands[step.handKey] ?? 0;
+    return {
+        ...counts,
+        hands: {
+            ...counts.hands,
+            [step.handKey]: Math.max(prev, step.cardIndex + 1),
+        },
+    };
+}
+export function countsFromRevealSteps(steps) {
+    let counts = { dealer: 0, hands: {} };
+    for (const step of steps) {
+        counts = applyRevealStep(counts, step);
+    }
+    return counts;
+}
+export function maxVisibilityForRound(round) {
+    return countVisibleCards(round);
+}
+/** Stable key for per-table, per-round visual hydration. */
+export function cardRevealScopeKey(sessionId, roundNumber) {
+    return `${sessionId}:${roundNumber}`;
+}
+export function shouldHydrateCardRevealScope(previousScope, nextScope, hasHydrated) {
+    return !hasHydrated || previousScope !== nextScope;
+}
+/** Reveal one gameplay card (hit, double, bank draw) toward target visibility. */
+export function nextGameplayRevealStep(visible, target) {
+    if (visible.dealer < target.dealer) {
+        return { ...visible, dealer: visible.dealer + 1 };
+    }
+    const handKeys = [
+        ...new Set([...Object.keys(visible.hands), ...Object.keys(target.hands)]),
+    ];
+    for (const handKey of handKeys) {
+        const cur = visible.hands[handKey] ?? 0;
+        const tgt = target.hands[handKey] ?? 0;
+        if (cur < tgt) {
+            return {
+                ...visible,
+                hands: { ...visible.hands, [handKey]: cur + 1 },
+            };
+        }
+    }
+    return null;
+}
+export function hasPendingCardReveal(visible, target) {
+    return totalCardCount(target) > totalCardCount(visible);
+}
+/** Ordered initial-deal reveal while catching up the first two cards per hand. */
+export function shouldUseOrderedInitialReveal(roundStatus, visible, target) {
+    if (!hasPendingCardReveal(visible, target) || !isInitialDealVisibilityCounts(target)) {
+        return false;
+    }
+    if (roundStatus === 'bank-turn' ||
+        roundStatus === 'banking' ||
+        roundStatus === 'resolved') {
+        return false;
+    }
+    return true;
+}

@@ -80,12 +80,12 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
     }
   });
 
-  router.get('/verify', (req, res) => {
+  router.get('/verify', async (req, res) => {
     const origin = resolveRequestOrigin(req);
     try {
       const token = String(req.query.token ?? '');
       const persistent = parseRememberQuery(req.query.remember);
-      const sessionToken = auth.verifyMagicLink(token, { persistent });
+      const sessionToken = await auth.verifyMagicLink(token, { persistent });
       setSessionCookie(res, sessionToken, { persistent, req });
       const wantsNewTable = req.query.newTable === '1';
       const redirectUrl = wantsNewTable ? `${origin}/?newTable=1` : `${origin}/`;
@@ -112,14 +112,14 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
     }
   });
 
-  router.get('/me', requireAuth, (req: AuthedRequest, res) => {
+  router.get('/me', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      const auth = resolveAuthForRequest(people, req.auth!, res, req, 'GET /api/auth/me');
-      if (!auth) {
+      const authPayload = await resolveAuthForRequest(people, req.auth!, res, req, 'GET /api/auth/me');
+      if (!authPayload) {
         return;
       }
-      const user = people.getAuthProfile(auth.userId, auth.email);
-      refreshSessionCookie(res, { ...auth, userId: user.userId }, req);
+      const user = await people.getAuthProfile(authPayload.userId, authPayload.email);
+      refreshSessionCookie(res, { ...authPayload, userId: user.userId }, req);
       res.json({ user });
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
