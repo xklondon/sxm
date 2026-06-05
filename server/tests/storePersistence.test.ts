@@ -134,12 +134,16 @@ describe('store persistence', () => {
 
     it('createStore selects postgres when DATABASE_URL is set', async () => {
       const saved = process.env.DATABASE_URL;
+      const savedPrivate = process.env.DATABASE_PRIVATE_URL;
       process.env.DATABASE_URL = testDbUrl!;
+      delete process.env.DATABASE_PRIVATE_URL;
       const bundle = await createStore();
       expect(bundle.storeType).toBe('postgres');
       await bundle.disconnect?.();
       if (saved) process.env.DATABASE_URL = saved;
       else delete process.env.DATABASE_URL;
+      if (savedPrivate) process.env.DATABASE_PRIVATE_URL = savedPrivate;
+      else delete process.env.DATABASE_PRIVATE_URL;
     });
   });
 });
