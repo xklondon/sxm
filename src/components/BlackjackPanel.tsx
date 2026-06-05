@@ -1099,6 +1099,7 @@ export function BlackjackPanel({
           <button type="button" className={viewMode === 'full' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('full')}>Full Table</button>
           <button type="button" className={viewMode === 'card' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('card')}>Card View</button>
         </div>
+        <h1 className={TABLE_UX.pageTitle}>BLACKJACK</h1>
         <div className="bj-casino__table-nav">
           <button
             type="button"
@@ -1188,7 +1189,14 @@ export function BlackjackPanel({
       {shouldShowMobileFullTableFallback(isUltraNarrowViewport, viewMode) ? (
         <FullTableMobileFallback onSwitchToCardView={() => setViewMode('card')} />
       ) : (
-      <div className="bj-casino__rail-wrap">
+      <div
+        className={[
+          'bj-casino__rail-wrap',
+          deviceView === 'desktop' ? TABLE_UX.desktopTableShell : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <div className={`bj-casino__rail ${TABLE_UX.rail}`}>
           <div
             className={`bj-casino__felt ${TABLE_UX.surface}${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}

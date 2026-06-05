@@ -190,7 +190,6 @@ export function DealerBlock({
         </div>
 
         <div className="dealer-block__center-col">
-          <p className="dealer-block__brand">Blackjack</p>
           <div className="dealer-block__stack">
             <div className="dealer-block__cards-slot">{cardsSlot}</div>
             <div className="dealer-block__action-slot">

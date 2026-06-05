@@ -23,6 +23,9 @@ describe('TABLE_UX class contract', () => {
   it('exports stable canonical class names', () => {
     expect(TABLE_UX.surface).toBe('bj-table-surface');
     expect(TABLE_UX.rail).toBe('bj-table-rail');
+    expect(TABLE_UX.desktopTableShell).toBe('bj-table-desktop-shell');
+    expect(TABLE_UX.pageTitle).toBe('bj-casino__title');
+    expect(TABLE_UX.cardViewBareActions).toBe('bj-phone-view__action-bar--bare');
     expect(TABLE_UX.columnSurface).toBe('bj-table-column-surface');
     expect(TABLE_UX.sideRailShell).toBe('bj-side-rail-shell');
     expect(TABLE_UX.sideRailPlacement).toBe('bj-casino__this-table');
@@ -38,6 +41,8 @@ describe('TABLE_UX class contract', () => {
     const css = readSrc('src/styles/bj-table-shared.css');
     expect(css).toContain('.bj-table-surface');
     expect(css).toContain('.bj-table-rail');
+    expect(css).toContain('.bj-table-desktop-shell');
+    expect(css).toContain('--bj-desktop-table-height');
     expect(css).toContain('.bj-table-column-surface');
     expect(css).toContain('.bj-seat-shell');
     expect(css).toContain('.bj-phone-view__mini-hand');
@@ -47,10 +52,12 @@ describe('TABLE_UX class contract', () => {
     expect(css).toContain('.bj-side-rail-shell');
     expect(css).toContain('.bj-casino__this-table');
     expect(css).toContain('.bj-player-actions');
+    expect(css).toContain('.bj-phone-view__action-bar--bare');
     expect(css).not.toContain('--bj-table-column-bg');
     expect(css).toMatch(/\.bj-table-column-surface[\s\S]*var\(--bj-table-felt-bg\)/);
     expect(css).toMatch(/\.bj-bet-zone[\s\S]*--bj-seat-radius/);
     expect(css).toMatch(/\.bj-table-actions[\s\S]*--bj-actions-panel-bg/);
+    expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc[\s\S]*margin-top:\s*auto/);
   });
 
   it('exports bet zone and player action class names', () => {
@@ -62,14 +69,18 @@ describe('TABLE_UX class contract', () => {
     const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
     expect(panelSrc).toContain('TABLE_UX.rail');
     expect(panelSrc).toContain('TABLE_UX.surface');
+    expect(panelSrc).toContain('TABLE_UX.desktopTableShell');
+    expect(panelSrc).toContain('TABLE_UX.pageTitle');
     expect(panelSrc).toContain('TABLE_UX.playerActions');
     expect(panelSrc).toContain('TableSideRailShell');
   });
 
-  it('BlackjackCardView applies shared column surface and player action shell', () => {
+  it('BlackjackCardView applies shared column surface and bare action shell', () => {
     const cardSrc = readSrc('src/components/BlackjackCardView.tsx');
     expect(cardSrc).toContain('TABLE_UX.columnSurface');
     expect(cardSrc).toContain('TABLE_UX.playerActions');
+    expect(cardSrc).toContain('TABLE_UX.cardViewBareActions');
+    expect(cardSrc).toContain('getVisibleHandCardIds');
   });
 });
 
@@ -152,6 +163,44 @@ describe('TABLE_UX markup across views', () => {
       }
       expect(card).toContain('bj-table-column-surface');
     }
+  });
+
+  it('desktop Full Table and Card View share canonical desktop table shell', () => {
+    const full = renderAt(1280, 'full');
+    const card = renderAt(1280, 'card');
+    expect(full).toContain('bj-table-desktop-shell');
+    expect(card).toContain('bj-table-desktop-shell');
+    expect(full).toContain('bj-table-rail');
+    expect(card).toContain('bj-table-rail');
+  });
+
+  it('BLACKJACK title renders in toolbar outside felt border', () => {
+    for (const mode of ['full', 'card'] as const) {
+      const html = renderAt(1280, mode);
+      const titleIdx = html.indexOf('bj-casino__title');
+      const railIdx = html.indexOf('bj-table-rail');
+      const toolbarIdx = html.indexOf('bj-casino__toolbar');
+      expect(titleIdx).toBeGreaterThan(-1);
+      expect(html).toContain('BLACKJACK');
+      expect(toolbarIdx).toBeGreaterThan(-1);
+      expect(titleIdx).toBeGreaterThan(toolbarIdx);
+      expect(railIdx).toBeGreaterThan(titleIdx);
+      expect(html).not.toContain('dealer-block__brand');
+    }
+  });
+
+  it('Card View playing actions use bare shell without panel chrome class pairing', () => {
+    const card = renderAt(1280, 'card');
+    expect(card).toContain('bj-phone-view__action-bar--bare');
+    expect(card).toContain('bj-phone-view__action-bar--playing');
+    expect(card).toMatch(/bj-phone-view__action-bar--bare[\s\S]*Stand/);
+  });
+
+  it('Card View bottom boxes render visible mini-cards for dealt hands', () => {
+    const card = renderAt(1280, 'card');
+    expect(card).toContain('bj-phone-view__mini-hand-card-stack');
+    expect(card).toContain('bj-phone-view__mini-card');
+    expect(card).toContain('playing-card');
   });
 
   it('player action panels use shared bj-player-actions shell', () => {

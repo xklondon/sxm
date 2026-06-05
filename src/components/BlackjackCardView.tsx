@@ -975,7 +975,10 @@ export function BlackjackCardView({
     }
 
     return (
-      <div className={`${TABLE_UX.playerActions} bj-phone-view__action-bar bj-phone-view__action-bar--playing`} aria-label="Player actions">
+      <div
+        className={`${TABLE_UX.playerActions} ${TABLE_UX.cardViewBareActions} bj-phone-view__action-bar bj-phone-view__action-bar--playing`}
+        aria-label="Player actions"
+      >
         <div className="bj-phone-view__action-bar-row bj-phone-view__action-bar-row--primary">
           <button
             type="button"
