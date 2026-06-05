@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
+import { TABLE_UX } from './tableUxContract';
 import {
   tableAfterStartPlaying,
   boxPlayerId,
@@ -89,10 +90,12 @@ function renderAt(width: number, state: GameState): string {
 }
 
 describe('This Table panel placement', () => {
-  it('desktop: floating side panel does not reflow felt', () => {
+  it('desktop: side panel docks right of table shell without felt overlay', () => {
     const html = renderAt(1280, playingState());
-    expect(html).toContain('bj-casino__this-table--float');
+    expect(html).toContain(TABLE_UX.sideRailDock);
+    expect(html).not.toContain('bj-casino__this-table--float');
     expect(html).not.toContain('bj-casino__this-table--below');
+    expect(html).toContain(TABLE_UX.desktopStage);
     expect(html).toContain('bj-casino__rail-wrap');
     expect(html).not.toContain('bj-casino__rail--with-this-table');
     expect(html).not.toMatch(/bj-table-slide-overlay[^>]*>[\s\S]*This Table/);
@@ -101,20 +104,26 @@ describe('This Table panel placement', () => {
     expect(html).toContain('bj-side-rail-shell__title');
     const css = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-    expect(css).toContain('.bj-casino__this-table--float');
-    expect(css).toContain('position: absolute');
-    expect(css).toContain('max-width: 13rem');
-    expect(css).toContain('anchor-name: --this-table-nav');
+    expect(css).not.toContain('.bj-casino__this-table--float');
+    expect(sharedCss).toContain('.bj-casino__this-table--dock');
+    expect(sharedCss).toMatch(/\.bj-casino__desktop-stage[\s\S]*display:\s*flex/);
+    expect(sharedCss).toMatch(/\.bj-casino__this-table--dock[\s\S]*flex:\s*0\s*0\s*12\.5rem/);
     expect(css).not.toContain('.bj-casino__rail--with-this-table');
     expect(sharedCss).toContain('.bj-casino__this-table');
     expect(sharedCss).toContain('.bj-side-rail-shell');
-    expect(html.indexOf('bj-casino__toolbar')).toBeLessThan(html.indexOf('bj-casino__this-table--float'));
+    const stageIdx = html.indexOf(TABLE_UX.desktopStage);
+    const railIdx = html.indexOf('bj-casino__rail-wrap');
+    const dockIdx = html.indexOf(TABLE_UX.sideRailDock);
+    expect(stageIdx).toBeGreaterThan(-1);
+    expect(railIdx).toBeGreaterThan(stageIdx);
+    expect(dockIdx).toBeGreaterThan(railIdx);
   });
 
   it('mobile: below chips, not slide overlay', () => {
     const html = renderAt(390, playingState());
     expect(html).toContain('bj-casino__this-table--below');
     expect(html).not.toContain('bj-casino__this-table--side');
+    expect(html).not.toContain(TABLE_UX.sideRailDock);
     expect(html).not.toMatch(/bj-table-slide-overlay[^>]*>[\s\S]*bj-accounts-panel/);
     expect(html).toContain('bj-accounts-panel');
   });
@@ -131,7 +140,7 @@ describe('This Table panel placement', () => {
     expect(panelSrc).not.toContain('TableDetailsSlidePanel');
     const html = renderAt(1280, playingState());
     expect(html).not.toContain('bj-table-slide-overlay--details');
-    expect(html).toContain('bj-casino__this-table--float');
+    expect(html).toContain(TABLE_UX.sideRailDock);
     expect(html).toContain('data-side-panel="thisTable"');
   });
 

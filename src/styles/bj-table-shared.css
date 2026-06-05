@@ -51,10 +51,8 @@
   --bj-desktop-table-height: min(72vh, 46rem);
   --bj-desktop-table-max-width: min(96vw, 72rem);
   --bj-desktop-rail-padding: 0.35rem 0.5rem 0.45rem;
-  /* Flat felt on desktop — no felt-mid band; subtle top highlight only. */
-  --bj-desktop-felt-bg:
-    radial-gradient(ellipse 120% 55% at 50% 0%, rgb(251 191 36 / 0.05) 0%, transparent 42%),
-    linear-gradient(180deg, var(--ds-color-felt-dark) 0%, var(--ds-color-felt) 100%);
+  /* Flat felt on desktop — one continuous surface, no mid-tone band. */
+  --bj-desktop-felt-bg: var(--ds-color-felt);
   --bj-desktop-seat-width: 5.25rem;
   --bj-desktop-seat-min-height: 4.15rem;
   --bj-desktop-mini-hand-width: 5.5rem;
@@ -68,6 +66,79 @@
     --bj-actions-btn-font-size: 0.58rem;
     --bj-actions-btn-sm-font-size: 0.5rem;
     --bj-actions-panel-padding: 0.25rem 0.5rem;
+    --bj-mobile-mini-hand-width: 2.55rem;
+    --bj-mobile-mini-hand-max-width: 2.85rem;
+    --bj-mobile-mini-hand-height: 2.45rem;
+    --bj-mobile-felt-min-height: min(52dvh, 22rem);
+    --bj-mobile-rail-padding: 0.28rem 0.55rem 0.4rem;
+  }
+
+  /* Mobile Full Table + Card View — one felt/rail/box visual system. */
+  .bj-view-full-mobile .bj-casino__rail,
+  .bj-view-card-mobile .bj-casino__rail {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: var(--bj-mobile-rail-padding);
+    border-radius: 50% / 18%;
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-casino__felt,
+  .bj-view-card-mobile .bj-casino__felt {
+    flex: 1 1 auto;
+    border-radius: 50% / 16%;
+    min-height: var(--bj-mobile-felt-min-height);
+    padding: 0.28rem 0.85rem 0.32rem;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--bj-table-felt-bg);
+    border: var(--bj-table-felt-border);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bj-view-full-mobile .bj-phone-view__mini-hand,
+  .bj-view-card-mobile .bj-phone-view__mini-hand {
+    flex: 0 0 auto;
+    min-width: var(--bj-mobile-mini-hand-width);
+    max-width: var(--bj-mobile-mini-hand-max-width);
+    min-height: var(--bj-mobile-mini-hand-height);
+    height: var(--bj-mobile-mini-hand-height);
+    padding: 0.12rem 0.08rem;
+  }
+
+  .bj-view-full-mobile .bj-phone-view__box-value,
+  .bj-view-card-mobile .bj-phone-view__box-value {
+    display: block;
+    order: -1;
+  }
+
+  .bj-view-full-mobile .bj-arc__slot {
+    width: var(--bj-mobile-mini-hand-width);
+  }
+
+  .bj-view-full-mobile .bj-arc-separator {
+    flex: 1 1 auto;
+    min-height: min(12dvh, 3.5rem);
+    width: 100%;
+    height: 0;
+    margin: 0;
+    background: none;
+    border: none;
+  }
+
+  .bj-view-full-mobile .bj-arc__slot--owned {
+    background: none;
+    padding: 0;
+  }
+
+  .bj-phone-view__mini-hand-shell--drop .bj-phone-view__mini-hand,
+  .bj-arc__slot--drop .bj-phone-view__mini-hand {
+    border-color: var(--bj-seat-active-border);
+    box-shadow: 0 0 8px var(--ds-color-gold-glow);
   }
 }
 
@@ -135,13 +206,15 @@
   border-radius: var(--bj-seat-radius);
 }
 
-.bj-arc__slot--assigned .bj-bet-zone {
+.bj-arc__slot--assigned .bj-bet-zone,
+.bj-arc__slot--assigned .bj-phone-view__mini-hand {
   border-color: var(--bj-seat-assigned-border);
   background: var(--bj-seat-assigned-bg);
 }
 
 .bj-arc__slot--selected .bj-bet-zone,
-.bj-arc__slot--selected .bj-arc__play-zone {
+.bj-arc__slot--selected .bj-arc__play-zone,
+.bj-arc__slot--selected .bj-phone-view__mini-hand {
   border-color: var(--bj-seat-selected-border);
   background: var(--bj-seat-selected-bg);
 }
@@ -208,6 +281,93 @@
 .bj-phone-view__box-value--bust {
   font-size: calc(var(--bj-seat-total-size) * 0.85);
   color: var(--ds-color-danger);
+}
+
+/* Shared mini-hand box layout — Card View row + Full Table arc seats. */
+.bj-phone-view__mini-hand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.08rem;
+  padding: 0.2rem 0.28rem 0.15rem;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  min-width: 3.6rem;
+  max-width: 4.85rem;
+  min-height: 5.5rem;
+  height: 5.5rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.bj-phone-view__mini-hand--empty {
+  border: var(--bj-seat-empty-border);
+  background: transparent;
+}
+
+.bj-phone-view__mini-hand-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  width: 100%;
+}
+
+.bj-phone-view__mini-hand-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bj-phone-view__mini-stake-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.35rem;
+  pointer-events: auto;
+}
+
+.bj-phone-view__mini-stake-slot .stake-chips--bet {
+  transform: scale(0.52);
+  transform-origin: center center;
+}
+
+.bj-phone-view__mini-hand-card-stack {
+  position: relative;
+  flex: 0 0 1.55rem;
+  width: 100%;
+  min-height: 1.55rem;
+  height: 1.55rem;
+  margin-top: 0.05rem;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  margin-left: 0;
+  transform: translateX(calc(-50% + var(--mini-card-i, 0) * 0.38rem)) scale(0.44);
+  transform-origin: bottom center;
+}
+
+.bj-phone-view__mini-card {
+  display: block;
+  line-height: 0;
+}
+
+.bj-phone-view__box-value {
+  display: none;
+}
+
+.bj-phone-view__mini-hand--has-stake {
+  max-width: 4.85rem;
 }
 
 /* Active / turn highlight — one animation for all views */
@@ -435,6 +595,100 @@
   .bj-view-full-desktop .bj-casino__felt.bj-table-surface,
   .bj-view-card-desktop .bj-casino__felt.bj-table-surface {
     min-height: 0;
+    background: var(--ds-color-felt);
+    background-image: none;
+  }
+
+  /* Flex spacer only — no painted middle band on Full Table. */
+  .bj-view-full-desktop .bj-arc-separator {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    height: 0;
+    margin: 0;
+    background: none;
+    border: none;
+  }
+
+  .bj-view-full-desktop .bj-arc__slot--owned {
+    background: none;
+    padding: 0;
+  }
+
+  .bj-view-full-desktop .bj-arc__slot .bj-phone-view__mini-hand {
+    width: 100%;
+    min-width: var(--bj-desktop-mini-hand-width);
+    max-width: calc(var(--bj-desktop-mini-hand-width) + 0.65rem);
+    min-height: var(--bj-desktop-mini-hand-height);
+    height: var(--bj-desktop-mini-hand-height);
+  }
+
+  .bj-view-full-desktop .bj-arc__slot .bj-phone-view__mini-hand-card-stack {
+    flex: 0 0 1.65rem;
+    min-height: 1.65rem;
+    height: 1.65rem;
+  }
+
+  .bj-view-full-desktop .bj-arc__slot {
+    width: var(--bj-desktop-mini-hand-width);
+  }
+
+  .bj-view-full-desktop .bj-arc__slot--empty:has(.bj-phone-view__mini-hand--empty) {
+    border: none;
+    background: transparent;
+    padding: 0;
+    width: var(--bj-desktop-mini-hand-width);
+    min-height: var(--bj-desktop-mini-hand-height);
+  }
+
+  .bj-arc__slot--assigned .bj-phone-view__mini-hand {
+    border-color: var(--bj-seat-assigned-border);
+    background: var(--bj-seat-assigned-bg);
+  }
+
+  .bj-arc__slot--selected .bj-phone-view__mini-hand {
+    border-color: var(--bj-seat-selected-border);
+    background: var(--bj-seat-selected-bg);
+  }
+
+  /* Desktop stage: table shell + right-docked side rail (no overlay on play area). */
+  .bj-casino__desktop-stage {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    max-width: calc(var(--bj-desktop-table-max-width) + 13.5rem);
+    margin-inline: auto;
+    gap: 0.5rem;
+    box-sizing: border-box;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .bj-casino__desktop-stage .bj-table-desktop-shell {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-inline: 0;
+    max-width: var(--bj-desktop-table-max-width);
+  }
+
+  .bj-casino__this-table--dock {
+    position: relative;
+    flex: 0 0 12.5rem;
+    width: 12.5rem;
+    max-width: 12.5rem;
+    max-height: var(--bj-desktop-table-height);
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-self: flex-start;
+    z-index: 1;
+    box-sizing: border-box;
+  }
+
+  .bj-phone-view__box-value {
+    display: block;
+    order: -1;
   }
 
   .bj-view-full-desktop .bj-phone-view.bj-table-column-surface,
@@ -465,12 +719,6 @@
     align-items: stretch;
   }
 
-  .bj-view-full-desktop .bj-arc-separator {
-    flex: 1 1 auto;
-    min-height: 0;
-    margin: 0.08rem 0 0.2rem;
-  }
-
   .bj-view-full-desktop .bj-arc {
     flex: 0 0 auto;
     margin-top: auto;
@@ -481,14 +729,13 @@
     padding: 0 0.35rem 0.12rem;
   }
 
-  .bj-view-full-desktop .bj-arc__slot {
-    width: var(--bj-desktop-seat-width);
-  }
-
-  .bj-view-full-desktop .bj-bet-zone,
-  .bj-view-full-desktop .bj-arc__slot--empty {
-    width: var(--bj-desktop-seat-width);
-    min-height: var(--bj-desktop-seat-min-height);
+  .bj-view-full-desktop .bj-arc__slot .bj-bet-zone {
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    padding: 0;
   }
 
   .bj-view-full-desktop .bj-casino__tray-wrap {

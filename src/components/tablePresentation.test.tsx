@@ -70,7 +70,7 @@ describe('Table View presentation', () => {
 
   it('keeps a busted hand visible with a prominent BUST label', () => {
     const html = renderPanel(playerTurnsState());
-    expect(html).toContain('bj-arc__bust');
+    expect(html).toContain('bj-phone-view__box-value--bust');
     expect(html).toContain('BUST');
   });
 });

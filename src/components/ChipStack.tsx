@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { CHIP_VALUES, chipValuesForMinimumBet, type ChipValue } from './chipUtils';
 import { setChipDragData } from './chipDrag';
 import './ChipStack.css';
@@ -144,11 +144,12 @@ export function ChipStack({
   );
 }
 
-export function ChipButton({ value, onClick, disabled, draggable = false }: {
+export function ChipButton({ value, onClick, disabled, draggable = false, onPointerDragStart }: {
   value: ChipValue;
   onClick: () => void;
   disabled?: boolean;
   draggable?: boolean;
+  onPointerDragStart?: (value: ChipValue, e: ReactPointerEvent<HTMLButtonElement>) => void;
 }) {
   return (
     <button
@@ -164,6 +165,12 @@ export function ChipButton({ value, onClick, disabled, draggable = false }: {
         }
         setChipDragData(e.dataTransfer, value);
       }}
+      onPointerDown={(e) => {
+        if (disabled || !onPointerDragStart) {
+          return;
+        }
+        onPointerDragStart(value, e);
+      }}
       aria-label={`Add ${value} to bet`}
     >
       {value}
@@ -173,10 +180,12 @@ export function ChipButton({ value, onClick, disabled, draggable = false }: {
 
 export function ChipTray({
   onChipClick,
+  onChipPointerDown,
   disabled,
   minimumBet = 1,
 }: {
   onChipClick: (value: ChipValue) => void;
+  onChipPointerDown?: (value: ChipValue, e: ReactPointerEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
   minimumBet?: number;
 }) {
@@ -191,6 +200,7 @@ export function ChipTray({
             value={v}
             disabled={disabled}
             draggable={!disabled}
+            onPointerDragStart={onChipPointerDown}
             onClick={() => onChipClick(v)}
           />
         ))}

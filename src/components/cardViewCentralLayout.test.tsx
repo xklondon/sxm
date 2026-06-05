@@ -158,8 +158,9 @@ describe('Card View central layout', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).toContain('bj-phone-view__action-bar-row--primary');
     expect(html).toContain('bj-phone-view__action-bar-row--secondary');
-    expect(html).not.toContain('bj-phone-view__side-action--stand');
-    expect(html).not.toContain('bj-phone-view__side-action--hit');
+    expect(html).toContain('bj-phone-view__side-action--stand');
+    expect(html).toContain('bj-phone-view__side-action--hit');
+    expect(html).toContain('bj-phone-view__side-action--live');
     const primaryIdx = html.indexOf('bj-phone-view__action-bar-row--primary');
     const extrasIdx = html.indexOf('bj-phone-view__action-bar-row--secondary');
     expect(extrasIdx).toBeGreaterThan(primaryIdx);

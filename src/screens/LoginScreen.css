@@ -82,3 +82,22 @@
   word-break: break-all;
   color: var(--ds-color-gold);
 }
+
+.login-screen__sent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.login-screen__sent-email {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: var(--ds-weight-bold, 700);
+  word-break: break-all;
+}
+
+.login-screen__sent-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

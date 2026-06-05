@@ -1,26 +1,67 @@
-import { describe, expect, it } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
+// @vitest-environment happy-dom
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { LoginScreen } from '../screens/LoginScreen';
+
+vi.mock('../api/client', () => ({
+  requestMagicLink: vi.fn(),
+}));
+
+import { requestMagicLink } from '../api/client';
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
 
 describe('LoginScreen', () => {
   it('renders email input when unauthenticated', () => {
-    const html = renderToStaticMarkup(<LoginScreen />);
-    expect(html).toContain('type="email"');
-    expect(html).toContain('Send magic link');
-    expect(html).toContain('SXMCARDS');
+    render(<LoginScreen />);
+    expect(screen.getByLabelText(/^email$/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /send magic link/i })).toBeTruthy();
+    expect(screen.getByText('SXMCARDS')).toBeTruthy();
   });
 
   it('does not show session failure warning for normal unauthenticated state', () => {
-    const html = renderToStaticMarkup(<LoginScreen sessionWarning={null} />);
-    expect(html).not.toContain('Session check failed');
-    expect(html).not.toContain('Could not reach the server');
+    render(<LoginScreen sessionWarning={null} />);
+    expect(screen.queryByText(/Session check failed/i)).toBeNull();
+    expect(screen.queryByText(/Could not reach the server/i)).toBeNull();
   });
 
   it('shows invited table context on login when preview available', () => {
-    const html = renderToStaticMarkup(
-      <LoginScreen invitedEmail="guest@example.com" inviteTableName="Friday Night" />,
-    );
-    expect(html).toContain('Friday Night');
-    expect(html).toContain('guest@example.com');
+    render(<LoginScreen invitedEmail="guest@example.com" inviteTableName="Friday Night" />);
+    expect(screen.getByText(/Friday Night/)).toBeTruthy();
+    expect(screen.getByDisplayValue('guest@example.com')).toBeTruthy();
+  });
+
+  it('success state hides email input and shows done option', async () => {
+    vi.mocked(requestMagicLink).mockResolvedValueOnce({});
+    render(<LoginScreen />);
+    fireEvent.change(screen.getByLabelText(/^email$/i), {
+      target: { value: 'player@example.com' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /send magic link/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText(/^email$/i)).toBeNull();
+    });
+    expect(screen.getByText('player@example.com')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /done/i })).toBeTruthy();
+    expect(document.querySelector('[data-login-phase="sent"]')).toBeTruthy();
+  });
+
+  it('error state keeps email input for retry', async () => {
+    vi.mocked(requestMagicLink).mockRejectedValueOnce(new Error('Network error'));
+    render(<LoginScreen />);
+    fireEvent.change(screen.getByLabelText(/^email$/i), {
+      target: { value: 'retry@example.com' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /send magic link/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Network error')).toBeTruthy();
+    });
+    expect(screen.getByLabelText(/^email$/i)).toBeTruthy();
+    expect(document.querySelector('[data-login-phase="request"]')).toBeTruthy();
   });
 });

@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, type CSSProperties } from 'react';
+import { useRef, useState, useEffect, useMemo, type CSSProperties } from 'react';
 import type { GameState, TableViewMode } from '../types';
 import {
   claimBoxSlot,
@@ -37,6 +37,13 @@ import {
 } from '../engine/blackjack';
 import { getCardById, getRemainingCardCount } from '../engine/deck';
 import { readChipDragValue } from './chipDrag';
+import {
+  CHIP_DROP_BOX_ATTR,
+  CHIP_DROP_SLOT_ATTR,
+  chipDropKey,
+  createChipPointerDragHandlers,
+  type ChipDropTarget,
+} from './chipPointerDrag';
 import { ChipTray, StakeChips, type ChipValue } from './ChipStack';
 import { PlayingCard } from './PlayingCard';
 import { useBlackjackTableFlow } from './useBlackjackTableFlow';
@@ -97,7 +104,13 @@ import {
   getInsuranceActionsForController,
   getActiveTurnBoxId,
 } from './blackjackViewPhase';
-import { getDisplayedHandValue } from '../engine/blackjack/dealing/cardRevealDisplay';
+import { getDisplayedHandValue, getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
+import {
+  BOX_CARD_VALUE,
+  BOX_CARD_VALUE_BUST,
+  getBoxCardClassName,
+  getBetBoxPulseClassName,
+} from './cardViewBox';
 import {
   buildViewerIdentityHints,
   resolveViewerPersonIdForTable,
@@ -531,6 +544,21 @@ export function BlackjackPanel({
   }
 
   const inBetting = bettingOpen;
+  const chipPointerDrag = useMemo(
+    () =>
+      createChipPointerDragHandlers({
+        enabled: inBetting,
+        onHighlight: setDropTargetId,
+        onDrop: (value, target: ChipDropTarget) => {
+          if (!bettingOpen) {
+            return;
+          }
+          const placementTarget = getChipPlacementTarget(gameStateRef.current, target);
+          placeBetAtTarget(placementTarget, value);
+        },
+      }),
+    [inBetting, bettingOpen],
+  );
   const displayError = error ?? flowError;
   const activeBoxStakeMessage = effectiveBoxId
     ? getStakeBetValidationMessage(gameState, effectiveBoxId)
@@ -655,6 +683,10 @@ export function BlackjackPanel({
           hasStake ? 'bj-bet-zone--has-chips' : '',
           belowMin ? 'bj-bet-zone--below-min' : '',
         ].filter(Boolean).join(' ')}
+        {...{
+          [CHIP_DROP_SLOT_ATTR]: slotNumber,
+          [CHIP_DROP_BOX_ATTR]: boxId,
+        }}
         onDragOver={handleDragOver}
         onDragEnter={(e) => {
           e.stopPropagation();
@@ -921,6 +953,7 @@ export function BlackjackPanel({
   function renderArcSlot(boxId: string, slotNumber: number) {
     const isSelected = effectiveBoxId === boxId;
     const isTurn = activeBoxId === boxId;
+    const isActiveBox = isSelected || isTurn;
     const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
     const callerDisplayName = getBoxCallerDisplayName(gameState, boxId);
     let handKeys = handKeysByBox.get(boxId) ?? [];
@@ -931,6 +964,23 @@ export function BlackjackPanel({
         handKeys = [primaryKey];
       }
     }
+    const primaryHandKey = handKeys[0];
+    const cardIds = primaryHandKey ? getVisibleHandCardIds(visualRound, primaryHandKey) : [];
+    const displayValue = primaryHandKey
+      ? getDisplayedHandValue(visualDeck, visualRound, primaryHandKey)
+      : null;
+    const primaryHand = primaryHandKey ? visualRound?.playerHands[primaryHandKey] : null;
+    const isBusted = primaryHand?.actionStatus === 'busted';
+    const valueLabel = isBusted
+      ? 'BUST'
+      : displayValue !== null && displayValue > 0
+        ? String(displayValue)
+        : '';
+    const openStake = getStakeForBox(gameState, boxId);
+    const stakeChips = getStakeChipsForBox(gameState, boxId);
+    const showBetStakeChips = inBetting && openStake > 0 && stakeChips.length > 0;
+    const dropKey = chipDropKey({ slotNumber, boxId });
+    const isDrop = dropTargetId === dropKey;
     const visualIdx = arcVisualIndex(slotNumber);
     const rotation = ARC_ROTATIONS[visualIdx] ?? 0;
 
@@ -945,41 +995,86 @@ export function BlackjackPanel({
           isJoinAssigned ? 'bj-arc__slot--assigned' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
-        role="button"
-        tabIndex={0}
-        onClick={() => selectBox(boxId)}
-        onKeyDown={(e) => e.key === 'Enter' && selectBox(boxId)}
       >
-        <div className="bj-arc__play-zone">
-          <div className="bj-arc__cards">
-            {handKeys.map((handKey) => {
-              const hand = visualRound?.playerHands[handKey];
-              const cardIds = (hand?.cardIds ?? []).filter(Boolean);
-              if (cardIds.length === 0) {
-                return null;
-              }
-              const displayValue = getDisplayedHandValue(visualDeck, visualRound, handKey);
-              const isBusted = hand?.actionStatus === 'busted';
-              return (
-                <div key={handKey} className="bj-arc__hand">
-                  {isBusted && <span className="bj-arc__bust" aria-label="Busted">BUST</span>}
-                  {displayValue !== null && (
-                    <span className="bj-arc__total-lg">{displayValue}</span>
-                  )}
-                  <div className="bj-cards-fan">
-                    {cardIds.map((id, index) => renderCard(id, false, true, `${handKey}-${index}`))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {renderBetZone(boxId, slotNumber)}
-        </div>
-
-        <div className="bj-arc__slot-foot">
-          <span className="bj-arc__box-label">Box {slotNumber}</span>
-          <span className="bj-arc__played-by">{callerDisplayName}</span>
+        <div
+          className={[
+            getBoxCardClassName(isActiveBox),
+            getBetBoxPulseClassName(bettingOpen, true),
+            showBetStakeChips ? 'bj-phone-view__mini-hand--has-stake' : '',
+            isDrop ? 'bj-bet-zone--drop' : '',
+          ].filter(Boolean).join(' ')}
+          {...{
+            [CHIP_DROP_SLOT_ATTR]: slotNumber,
+            [CHIP_DROP_BOX_ATTR]: boxId,
+          }}
+          role="button"
+          tabIndex={0}
+          onClick={() => selectBox(boxId)}
+          onKeyDown={(e) => e.key === 'Enter' && selectBox(boxId)}
+          onDragOver={inBetting ? handleDragOver : undefined}
+          onDragEnter={
+            inBetting
+              ? (e) => {
+                  e.stopPropagation();
+                  setDropTargetId(dropKey);
+                }
+              : undefined
+          }
+          onDragLeave={
+            inBetting
+              ? (e) => {
+                  e.stopPropagation();
+                  setDropTargetId(null);
+                }
+              : undefined
+          }
+          onDrop={inBetting ? (e) => handleBetZoneDrop(boxId, slotNumber, e) : undefined}
+        >
+          {valueLabel && (
+            <span
+              className={[
+                BOX_CARD_VALUE,
+                isBusted ? BOX_CARD_VALUE_BUST : '',
+              ].filter(Boolean).join(' ')}
+            >
+              {valueLabel}
+            </span>
+          )}
+          <span className="bj-phone-view__mini-hand-head">
+            <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
+            <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
+          </span>
+          <span
+            className="bj-phone-view__mini-stake-slot"
+            aria-hidden={!showBetStakeChips && !inBetting}
+          >
+            {showBetStakeChips ? (
+              <StakeChips
+                chips={stakeChips}
+                variant="bet"
+                removable={inBetting}
+                onRemoveTopChip={() => removeLastChipFromBox(boxId)}
+              />
+            ) : inBetting ? (
+              renderBetZone(boxId, slotNumber)
+            ) : null}
+          </span>
+          <span
+            className="bj-phone-view__mini-hand-card-stack"
+            aria-hidden={cardIds.length === 0}
+          >
+            {cardIds.length > 0 && visualDeck
+              ? cardIds.slice(0, 3).map((id, i) => (
+                  <span
+                    key={id}
+                    className="bj-phone-view__mini-card"
+                    style={{ '--mini-card-i': i } as CSSProperties}
+                  >
+                    <PlayingCard card={getCardById(visualDeck, id)!} compact />
+                  </span>
+                ))
+              : null}
+          </span>
         </div>
 
         <button
@@ -1010,23 +1105,30 @@ export function BlackjackPanel({
           isDrop ? 'bj-arc__slot--drop' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
-        role="button"
-        tabIndex={0}
-        onClick={() => handleClaimOrSelectSlot(slotNumber)}
-        onKeyDown={(e) => e.key === 'Enter' && handleClaimOrSelectSlot(slotNumber)}
-        onDragOver={handleDragOver}
-        onDragEnter={() => inBetting && setDropTargetId(dropKey)}
-        onDragLeave={() => setDropTargetId(null)}
-        onDrop={(e) => inBetting && handleSlotChipDrop(slotNumber, null, e)}
       >
         <div
           className={[
-            'bj-bet-zone',
-            'bj-bet-zone--open',
+            'bj-phone-view__mini-hand',
+            'bj-phone-view__mini-hand--empty',
             isDrop ? 'bj-bet-zone--drop' : '',
           ].filter(Boolean).join(' ')}
-          aria-label="Open box — drop chips to claim"
-        />
+          {...{
+            [CHIP_DROP_SLOT_ATTR]: slotNumber,
+            [CHIP_DROP_BOX_ATTR]: '',
+          }}
+          role="button"
+          tabIndex={0}
+          onClick={() => handleClaimOrSelectSlot(slotNumber)}
+          onKeyDown={(e) => e.key === 'Enter' && handleClaimOrSelectSlot(slotNumber)}
+          onDragOver={handleDragOver}
+          onDragEnter={() => inBetting && setDropTargetId(dropKey)}
+          onDragLeave={() => setDropTargetId(null)}
+          onDrop={(e) => inBetting && handleSlotChipDrop(slotNumber, null, e)}
+          aria-label={`Join box ${slotNumber}`}
+        >
+          <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
+          <span className="bj-phone-view__mini-hand-name">Join</span>
+        </div>
       </div>
     );
   }
@@ -1050,7 +1152,7 @@ export function BlackjackPanel({
 
   const thisTableInline = deviceView === 'desktop';
 
-  function renderSideRailPanel(variant: 'float' | 'below') {
+  function renderSideRailPanel(variant: 'dock' | 'below') {
     if (!sideRailPanel) {
       return null;
     }
@@ -1139,8 +1241,6 @@ export function BlackjackPanel({
         </div>
       </div>
 
-      {thisTableInline && renderSideRailPanel('float')}
-
       {activeTablePanel === 'playLedger' && (
         <PlayLedgerModal
           open
@@ -1191,6 +1291,16 @@ export function BlackjackPanel({
       ) : (
       <div
         className={[
+          deviceView === 'desktop' ? TABLE_UX.desktopStage : '',
+          deviceView === 'desktop' && sideRailPanel
+            ? 'bj-casino__desktop-stage--with-rail'
+            : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+      <div
+        className={[
           'bj-casino__rail-wrap',
           deviceView === 'desktop' ? TABLE_UX.desktopTableShell : '',
         ]
@@ -1236,6 +1346,7 @@ export function BlackjackPanel({
                   <div className="bj-casino__tray">
                     <ChipTray
                       onChipClick={handleChipTrayClick}
+                      onChipPointerDown={chipPointerDrag.onChipPointerDown}
                       disabled={!bettingOpen}
                       minimumBet={minimumBet}
                     />
@@ -1289,6 +1400,7 @@ export function BlackjackPanel({
                   onClearStake={clearBoxStakeOnBox}
                   onRemoveLastChip={removeLastChipFromBox}
                   onSlotChipDrop={handleSlotChipDrop}
+                  dropTargetId={dropTargetId}
                   onStay={(hk) => run((s) => standBlackjackOnState(s, hk), { type: 'stand', payload: {} })}
                   onCard={(hk) => run((s) => hitBlackjackOnState(s, hk), { type: 'hit', payload: {} })}
                   onDouble={(hk) => run((s) => doubleDownBlackjackOnState(s, hk), { type: 'double', payload: {} })}
@@ -1305,6 +1417,7 @@ export function BlackjackPanel({
                     <div className="bj-casino__tray">
                       <ChipTray
                       onChipClick={handleChipTrayClick}
+                      onChipPointerDown={chipPointerDrag.onChipPointerDown}
                       disabled={!bettingOpen}
                       minimumBet={minimumBet}
                     />
@@ -1320,6 +1433,8 @@ export function BlackjackPanel({
         </div>
         </div>
         {!thisTableInline && renderSideRailPanel('below')}
+      </div>
+      {thisTableInline && sideRailPanel && renderSideRailPanel('dock')}
       </div>
       )}
     </div>

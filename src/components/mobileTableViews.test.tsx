@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { GameState, TableViewMode } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
 import { BlackjackPanel } from './BlackjackPanel';
+import { TABLE_UX } from './tableUxContract';
 import {
   tableAfterStartPlaying,
   boxPlayerId,
@@ -112,7 +113,7 @@ function bettingState(): GameState {
 }
 
 function arcBoxOrder(html: string): string[] {
-  return [...html.matchAll(/class="bj-arc__box-label">Box (\d)/g)].map((m) => m[1]!);
+  return [...html.matchAll(/class="bj-phone-view__mini-hand-box">Box (\d)/g)].map((m) => m[1]!);
 }
 
 function cardViewMiniBoxOrder(html: string): string[] {
@@ -242,7 +243,7 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     expect(html).toContain('bj-casino__rail');
     expect(html).toContain('bj-arc');
     expect(html).not.toContain('bj-phone-view__betting-stage');
-    expect(html).toContain('class="bj-arc__box-label">Box');
+    expect(html).toContain('class="bj-phone-view__mini-hand-box">Box');
   });
 
   it('shows dealer block, status/summary slot, actions, and the This Table bar', () => {
@@ -278,7 +279,7 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
 
   it('keeps a busted box visible with a BUST label', () => {
     const html = renderPanelAt(390, withView(playingState(), 'full'));
-    expect(html).toContain('bj-arc__bust');
+    expect(html).toContain('bj-phone-view__box-value--bust');
     expect(html).toContain('BUST');
   });
 
@@ -302,8 +303,11 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
 
   it('mobile Full Table vertical spacing aligns with Card View (tall felt, boxes at bottom)', () => {
     const css = mobileFullTableCss();
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__felt[\s\S]*flex:\s*1\s+1\s+auto/);
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__felt[\s\S]*min-height:\s*min\(52dvh,\s*22rem\)/);
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    expect(sharedCss).toContain('--bj-mobile-felt-min-height: min(52dvh, 22rem)');
+    expect(sharedCss).toMatch(
+      /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*min-height:\s*var\(--bj-mobile-felt-min-height\)/,
+    );
     expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*min-height:\s*min\(42dvh,\s*18rem\)/);
     expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*margin-top:\s*auto/);
     expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__slot--stage[\s\S]*max-height:\s*min\(42dvh,\s*14rem\)/);
@@ -401,7 +405,7 @@ describe('Table Details side rail (same slot as This Table)', () => {
     const desktop = renderPanelAt(1280, withView(playingState(), 'card'));
     expect(mobile).toContain('bj-casino__this-table--below');
     expect(mobile).toContain('data-side-panel="thisTable"');
-    expect(desktop).toContain('bj-casino__this-table--float');
+    expect(desktop).toContain(TABLE_UX.sideRailDock);
     expect(desktop).toContain('data-side-panel="thisTable"');
     expect(mobile).not.toMatch(/bj-table-slide-overlay[^>]*>[\s\S]*table-details-panel/);
     for (const html of [mobile, desktop]) {

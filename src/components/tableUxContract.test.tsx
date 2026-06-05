@@ -24,6 +24,8 @@ describe('TABLE_UX class contract', () => {
     expect(TABLE_UX.surface).toBe('bj-table-surface');
     expect(TABLE_UX.rail).toBe('bj-table-rail');
     expect(TABLE_UX.desktopTableShell).toBe('bj-table-desktop-shell');
+    expect(TABLE_UX.desktopStage).toBe('bj-casino__desktop-stage');
+    expect(TABLE_UX.sideRailDock).toBe('bj-casino__this-table--dock');
     expect(TABLE_UX.pageTitle).toBe('bj-casino__title');
     expect(TABLE_UX.cardViewBareActions).toBe('bj-phone-view__action-bar--bare');
     expect(TABLE_UX.columnSurface).toBe('bj-table-column-surface');
@@ -49,7 +51,12 @@ describe('TABLE_UX class contract', () => {
     expect(css).toContain('--bj-desktop-mini-hand-width: 5.5rem');
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-casino__felt,\s*\n\s*\.bj-view-card-desktop \.bj-casino__felt/);
     expect(css).toMatch(/background:\s*var\(--bj-desktop-felt-bg\)/);
+    expect(css).toMatch(/--bj-desktop-felt-bg:\s*var\(--ds-color-felt\)/);
     expect(css).not.toMatch(/--bj-desktop-felt-bg:[\s\S]*felt-mid/);
+    expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc-separator[\s\S]*background:\s*none/);
+    expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc__slot \.bj-phone-view__mini-hand/);
+    expect(css).toMatch(/\.bj-view-card-desktop \.bj-phone-view__mini-hand[\s\S]*--bj-desktop-mini-hand-width/);
+    expect(css).toMatch(/\.bj-casino__this-table--dock[\s\S]*flex:\s*0\s*0\s*12\.5rem/);
     expect(css).toMatch(/\.bj-view-card-desktop \.bj-phone-view\.bj-table-column-surface[\s\S]*background:\s*transparent/);
     expect(css).toMatch(/\.bj-table-desktop-shell[\s\S]*height:\s*var\(--bj-desktop-table-height\)/);
     expect(css).toMatch(/\.bj-table-desktop-shell[\s\S]*overflow:\s*hidden/);
@@ -82,6 +89,9 @@ describe('TABLE_UX class contract', () => {
     expect(panelSrc).toContain('TABLE_UX.rail');
     expect(panelSrc).toContain('TABLE_UX.surface');
     expect(panelSrc).toContain('TABLE_UX.desktopTableShell');
+    expect(panelSrc).toContain('TABLE_UX.desktopStage');
+    expect(panelSrc).toContain('getBoxCardClassName');
+    expect(panelSrc).toContain('bj-phone-view__mini-hand');
     expect(panelSrc).toContain('TABLE_UX.pageTitle');
     expect(panelSrc).toContain('TABLE_UX.playerActions');
     expect(panelSrc).toContain('TableSideRailShell');
@@ -195,7 +205,7 @@ describe('TABLE_UX markup across views', () => {
     expect(css).toContain('--bj-desktop-table-max-width: min(96vw, 72rem)');
     expect((css.match(/--bj-desktop-table-height:/g) ?? []).length).toBe(1);
     expect((css.match(/--bj-desktop-table-max-width:/g) ?? []).length).toBe(1);
-    expect(css).toMatch(/\.bj-view-full-desktop \.bj-bet-zone[\s\S]*--bj-desktop-seat-width/);
+    expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc__slot \.bj-phone-view__mini-hand[\s\S]*--bj-desktop-mini-hand-width/);
     expect(css).toMatch(/\.bj-view-card-desktop \.bj-phone-view__mini-hand[\s\S]*--bj-desktop-mini-hand-width/);
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.bj-phone-view__hero-stage[\s\S]*min-height:\s*11\.5rem/);
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.bj-phone-view__cards-slot[\s\S]*min-height:\s*10\.5rem/);
@@ -239,9 +249,44 @@ describe('TABLE_UX markup across views', () => {
     expect(card).toContain('bj-phone-view__action-bar--playing');
   });
 
-  it('bet zones use rectangular seat shell class', () => {
-    const html = renderAt(1280, 'full');
-    expect(html).toContain('bj-bet-zone');
+  it('mobile Full Table and Card View share unified mobile felt + mini-hand tokens', () => {
+    const css = readSrc('src/styles/bj-table-shared.css');
+    expect(css).toContain('--bj-mobile-mini-hand-width: 2.55rem');
+    expect(css).toMatch(
+      /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt/,
+    );
+    expect(css).toMatch(
+      /\.bj-view-full-mobile \.bj-phone-view__mini-hand,\s*\n\s*\.bj-view-card-mobile \.bj-phone-view__mini-hand/,
+    );
+    expect(css).toMatch(
+      /\.bj-view-full-mobile \.bj-phone-view__box-value,\s*\n\s*\.bj-view-card-mobile \.bj-phone-view__box-value/,
+    );
+  });
+
+  it('mobile Full/Card player boxes share mini-hand class family on render', () => {
+    for (const mode of ['full', 'card'] as const) {
+      const html = renderAt(390, mode);
+      expect(html).toContain('bj-phone-view__mini-hand');
+      expect(html).toContain('bj-phone-view__mini-hand-box');
+      expect(html).toContain('bj-table-surface');
+      expect(html).toContain('bj-table-rail');
+    }
+  });
+
+  it('Full Table arc seats use Card View mini-hand box class family', () => {
+    const full = renderAt(1280, 'full');
+    expect(full).toContain('bj-phone-view__mini-hand');
+    expect(full).toContain('bj-phone-view__mini-hand-box');
+    expect(full).toContain('bj-phone-view__mini-hand-name');
+    expect(full).toContain('bj-phone-view__mini-hand-card-stack');
+    expect(full).not.toContain('bj-arc__play-zone');
+    expect(full).toContain('bj-phone-view__box-value');
+  });
+
+  it('bet zones use rectangular seat shell class during betting', () => {
+    const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
+    expect(panelSrc).toContain("'bj-bet-zone'");
+    expect(readSrc('src/styles/bj-table-shared.css')).toMatch(/\.bj-bet-zone[\s\S]*--bj-seat-radius/);
   });
 });
 

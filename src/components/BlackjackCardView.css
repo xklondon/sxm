@@ -1066,6 +1066,14 @@
   line-height: 1.1;
 }
 
+.bj-phone-view__swipe-guide {
+  margin: 0.15rem 0 0;
+  font-size: 0.48rem;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+  text-transform: uppercase;
+}
+
 
 
 .bj-phone-view__cards--fan {

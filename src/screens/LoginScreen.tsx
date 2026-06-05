@@ -10,6 +10,8 @@ interface LoginScreenProps {
   inviteTableName?: string | null;
 }
 
+type LoginPhase = 'request' | 'sent';
+
 export function LoginScreen({
   error: initialError,
   sessionWarning = null,
@@ -17,7 +19,9 @@ export function LoginScreen({
   invitedEmail = null,
   inviteTableName = null,
 }: LoginScreenProps) {
+  const [phase, setPhase] = useState<LoginPhase>('request');
   const [email, setEmail] = useState(invitedEmail ?? '');
+  const [sentEmail, setSentEmail] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [devLink, setDevLink] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -33,6 +37,8 @@ export function LoginScreen({
     setDevLink(null);
     try {
       const result = await requestMagicLink(email, rememberMe);
+      setSentEmail(email.trim());
+      setPhase('sent');
       if (isDev) {
         setMessage('Magic link sent. Check your email.');
       } else {
@@ -49,10 +55,29 @@ export function LoginScreen({
         }
       }
     } catch (err) {
+      setPhase('request');
       setError(err instanceof Error ? err.message : 'Request failed');
     } finally {
       setBusy(false);
     }
+  }
+
+  function handleUseDifferentEmail() {
+    setPhase('request');
+    setError(null);
+    setMessage(null);
+    setDevLink(null);
+    if (!invitedEmail) {
+      setEmail('');
+    }
+  }
+
+  function handleDone() {
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    window.close();
   }
 
   return (
@@ -60,47 +85,69 @@ export function LoginScreen({
       <div className="login-screen__card">
         <p className="login-screen__eyebrow">SXM Casino</p>
         <h1>SXMCARDS</h1>
-        <p className="login-screen__lead">
-          {inviteTableName
-            ? `You have been invited to ${inviteTableName}. Confirm your email to join.`
-            : invitedEmail
-              ? `You have been invited. Confirm ${invitedEmail} to join.`
-              : 'Enter your email to receive a magic sign-in link.'}
-        </p>
-        {checkingSession && <p className="login-screen__hint">Checking session…</p>}
-        {sessionWarning && <p className="login-screen__warn">{sessionWarning}</p>}
-        <form onSubmit={handleSubmit}>
-          <label className="login-screen__field">
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              autoComplete="email"
-              readOnly={Boolean(invitedEmail)}
-            />
-          </label>
-          <label className="login-screen__remember">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />
-            Remember me on this device
-          </label>
-          {error && <p className="login-screen__error">{error}</p>}
-          {message && <p className="login-screen__msg">{message}</p>}
-          {devLink && (
-            <p className="login-screen__dev">
-              Dev sign-in link: <a href={devLink}>{devLink}</a>
+        {phase === 'sent' ? (
+          <div className="login-screen__sent" data-login-phase="sent">
+            <p className="login-screen__lead">
+              {message ?? 'Check your email for a sign-in link.'}
             </p>
-          )}
-          <button type="submit" className="ds-btn ds-btn--primary" disabled={busy}>
-            {busy ? 'Sending…' : 'Send magic link'}
-          </button>
-        </form>
+            <p className="login-screen__sent-email">{sentEmail}</p>
+            {devLink && (
+              <p className="login-screen__dev">
+                Dev sign-in link: <a href={devLink}>{devLink}</a>
+              </p>
+            )}
+            <div className="login-screen__sent-actions">
+              <button type="button" className="ds-btn ds-btn--primary" onClick={handleDone}>
+                Done
+              </button>
+              <button
+                type="button"
+                className="ds-btn ds-btn--ghost"
+                onClick={handleUseDifferentEmail}
+              >
+                Use a different email
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="login-screen__lead" data-login-phase="request">
+              {inviteTableName
+                ? `You have been invited to ${inviteTableName}. Confirm your email to join.`
+                : invitedEmail
+                  ? `You have been invited. Confirm ${invitedEmail} to join.`
+                  : 'Enter your email to receive a magic sign-in link.'}
+            </p>
+            {checkingSession && <p className="login-screen__hint">Checking session…</p>}
+            {sessionWarning && <p className="login-screen__warn">{sessionWarning}</p>}
+            <form onSubmit={handleSubmit}>
+              <label className="login-screen__field">
+                Email
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  autoComplete="email"
+                  readOnly={Boolean(invitedEmail)}
+                />
+              </label>
+              <label className="login-screen__remember">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                Remember me on this device
+              </label>
+              {error && <p className="login-screen__error">{error}</p>}
+              <button type="submit" className="ds-btn ds-btn--primary" disabled={busy}>
+                {busy ? 'Sending…' : 'Send magic link'}
+              </button>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );

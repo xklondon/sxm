@@ -51,6 +51,11 @@ import { getDisplayedHandValue, getVisibleHandCardIds } from "../engine/blackjac
 import { getBoxCallerDisplayName } from "./boxCallerDisplay";
 import { sortBoxSlotsForCardViewDisplay, type DeviceView } from "./tableViewContract";
 import { TABLE_UX } from "./tableUxContract";
+import {
+  CHIP_DROP_BOX_ATTR,
+  CHIP_DROP_SLOT_ATTR,
+  chipDropKey,
+} from "./chipPointerDrag";
 
 import { StakeChips, type ChipValue } from "./ChipStack";
 
@@ -93,6 +98,7 @@ interface BlackjackCardViewProps {
     boxId: string | null,
     e: React.DragEvent,
   ) => void;
+  dropTargetId?: string | null;
   onStay: (handKey: string) => void;
   onCard: (handKey: string) => void;
   onDouble: (handKey: string) => void;
@@ -127,6 +133,7 @@ export function BlackjackCardView({
   onClearStake: _onClearStake,
   onRemoveLastChip,
   onSlotChipDrop,
+  dropTargetId = null,
   onStay,
   onCard,
   onDouble,
@@ -640,10 +647,21 @@ export function BlackjackCardView({
     );
 
     if (bettingMainStage && bettingOpen) {
+      const dropKey = chipDropKey({ slotNumber, boxId });
+      const isDrop = dropTargetId === dropKey;
       return (
         <div
           key={boxId}
-          className="bj-phone-view__mini-hand-shell"
+          className={[
+            "bj-phone-view__mini-hand-shell",
+            isDrop ? "bj-phone-view__mini-hand-shell--drop" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          {...{
+            [CHIP_DROP_SLOT_ATTR]: slotNumber,
+            [CHIP_DROP_BOX_ATTR]: boxId,
+          }}
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = "copy";
@@ -698,10 +716,21 @@ export function BlackjackCardView({
     );
 
     if (bettingMainStage && bettingOpen) {
+      const dropKey = chipDropKey({ slotNumber, boxId: null });
+      const isDrop = dropTargetId === dropKey;
       return (
         <div
           key={`mini-empty-${slotNumber}`}
-          className="bj-phone-view__mini-hand-shell"
+          className={[
+            "bj-phone-view__mini-hand-shell",
+            isDrop ? "bj-phone-view__mini-hand-shell--drop" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          {...{
+            [CHIP_DROP_SLOT_ATTR]: slotNumber,
+            [CHIP_DROP_BOX_ATTR]: "",
+          }}
           onDragOver={(e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = "copy";
@@ -840,6 +869,58 @@ export function BlackjackCardView({
     );
   }
 
+  function renderMobileStandControl() {
+    if (deviceView !== "mobile" || !showSideControls || !isActiveTurn) {
+      return null;
+    }
+
+    return (
+      <button
+        type="button"
+        className={[
+          "bj-phone-view__side-action",
+          "bj-phone-view__side-action--stand",
+          "ds-btn",
+          "ds-btn--stand",
+          canStand ? "bj-phone-view__side-action--live" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        disabled={!canStand}
+        onClick={handleStayClick}
+        aria-label="Stand — swipe left"
+      >
+        <span className="bj-phone-view__side-action-label">Stand</span>
+      </button>
+    );
+  }
+
+  function renderMobileHitControl() {
+    if (deviceView !== "mobile" || !showSideControls || !isActiveTurn) {
+      return null;
+    }
+
+    return (
+      <button
+        type="button"
+        className={[
+          "bj-phone-view__side-action",
+          "bj-phone-view__side-action--hit",
+          "ds-btn",
+          "ds-btn--hit",
+          canHit ? "bj-phone-view__side-action--live" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        disabled={!canHit}
+        onClick={handleHitClick}
+        aria-label="Hit — swipe right"
+      >
+        <span className="bj-phone-view__side-action-label">Hit</span>
+      </button>
+    );
+  }
+
   function renderStageContent() {
     if (protocolPhase === "banking" || gameEnded) {
       const results = round?.resultMessages ?? {};
@@ -872,6 +953,52 @@ export function BlackjackCardView({
 
     const heroBusted = logicalHand?.actionStatus === 'busted';
 
+    const heroCenter = (
+      <div className="bj-phone-view__hero-center">
+        <div className="bj-phone-view__cards-slot">
+          {heroCardIds.length > 0 ? (
+            <div className="bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched">
+              {heroCardIds.map((id, i) => (
+                <div
+                  key={`${heroHandKey}-${i}-${id}`}
+                  className="bj-phone-view__card-wrap"
+                  style={{ "--card-i": i } as CSSProperties}
+                >
+                  {renderHugeCard(
+                    id,
+                    false,
+                    "hero",
+                    `${heroHandKey}-${i}-${id}`,
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bj-phone-view__cards-placeholder" aria-hidden="true" />
+          )}
+        </div>
+        <div className="bj-phone-view__hand-meta">
+          {heroDisplayValue !== null ? (
+            <div className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero">
+              Total {heroDisplayValue}
+            </div>
+          ) : (
+            <div
+              className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero bj-phone-view__total--placeholder"
+              aria-hidden="true"
+            >
+              &nbsp;
+            </div>
+          )}
+        </div>
+        {deviceView === "mobile" && showSideControls && isActiveTurn && (
+          <p className="bj-phone-view__swipe-guide" aria-hidden="true">
+            ← Stand · Hit →
+          </p>
+        )}
+      </div>
+    );
+
     return (
       <div className="bj-phone-view__hand">
         {heroBusted && (
@@ -880,43 +1007,19 @@ export function BlackjackCardView({
           </span>
         )}
         <div className="bj-phone-view__hero-stage">
-          <div className="bj-phone-view__hero-center">
-            <div className="bj-phone-view__cards-slot">
-              {heroCardIds.length > 0 ? (
-                <div className="bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched">
-                  {heroCardIds.map((id, i) => (
-                    <div
-                      key={`${heroHandKey}-${i}-${id}`}
-                      className="bj-phone-view__card-wrap"
-                      style={{ "--card-i": i } as CSSProperties}
-                    >
-                      {renderHugeCard(
-                        id,
-                        false,
-                        "hero",
-                        `${heroHandKey}-${i}-${id}`,
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="bj-phone-view__cards-placeholder" aria-hidden="true" />
-              )}
-            </div>
-            <div className="bj-phone-view__hand-meta">
-              {heroDisplayValue !== null ? (
-                <div className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero">
-                  Total {heroDisplayValue}
-                </div>
-              ) : (
-                <div
-                  className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero bj-phone-view__total--placeholder"
-                  aria-hidden="true"
-                >
-                  &nbsp;
-                </div>
-              )}
-            </div>
+          <div
+            className={[
+              "bj-phone-view__play-area",
+              deviceView === "mobile" && showSideControls && isActiveTurn
+                ? "bj-phone-view__play-area--controls"
+                : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {renderMobileStandControl()}
+            {heroCenter}
+            {renderMobileHitControl()}
           </div>
         </div>
       </div>

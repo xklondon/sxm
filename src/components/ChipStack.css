@@ -72,7 +72,8 @@
 }
 
 .chip-token--btn {
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
   padding: 0;
   font: inherit;
   transition: transform 0.1s ease;
