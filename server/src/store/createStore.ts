@@ -1,5 +1,4 @@
-import { execFileSync } from 'node:child_process';
-import fs from 'node:fs';
+import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
@@ -42,28 +41,17 @@ function ensureDatabaseUrlForPrisma(resolvedUrl: string): void {
   }
 }
 
-function getPrismaMigrateCommand(): { command: string; args: string[] } {
-  const localBin = path.join(
-    repoRoot,
-    'node_modules',
-    '.bin',
-    process.platform === 'win32' ? 'prisma.cmd' : 'prisma',
-  );
-  if (fs.existsSync(localBin)) {
-    return { command: localBin, args: ['migrate', 'deploy'] };
-  }
-  return {
-    command: process.platform === 'win32' ? 'npx.cmd' : 'npx',
-    args: ['prisma', 'migrate', 'deploy'],
-  };
+/** Cross-platform shell command — avoids execFile on node_modules/.bin/prisma.cmd (EINVAL on Windows/Node 24). */
+export function getPrismaMigrateShellCommand(): string {
+  return 'npx prisma migrate deploy';
 }
 
 export function runMigrationsSafe(): void {
-  const { command, args } = getPrismaMigrateCommand();
-  execFileSync(command, args, {
+  execSync(getPrismaMigrateShellCommand(), {
     cwd: repoRoot,
     env: process.env,
     stdio: ['ignore', 'pipe', 'pipe'],
+    shell: true,
   });
 }
 

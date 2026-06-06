@@ -57,6 +57,8 @@ import { PlayLedgerModal } from './LedgerModals';
 import { TableSideRailShell } from './TableSideRailShell';
 import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
 import { TABLE_UX } from './tableUxContract';
+import { TableInfoBar } from './TableInfoBar';
+import { buildTableInfoDisplay } from './tableInfoDisplay';
 import { TableDetailsPanelContent } from './TableDetailsPanel';
 import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
@@ -623,9 +625,14 @@ export function BlackjackPanel({
       : undefined,
   };
 
+  const dealerBankInfo = viewMode === 'full' ? (
+    <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="dealer" />
+  ) : undefined;
+
   const dealerBlockProps = {
     awaitingNextRound,
     gameEnded,
+    bankInfo: dealerBankInfo,
     onNewGame:
       gameEnded && onBeginTableReset
         ? () => onBeginTableReset('newGame')
@@ -663,6 +670,107 @@ export function BlackjackPanel({
       <p className="bj-table-alert" role="alert">
         {tableAlert}
       </p>
+    );
+  }
+
+  function renderSummaryZone() {
+    const alert = renderTableAlert();
+    return (
+      <div className={`bj-table-zone ${TABLE_UX.tableZoneSummary}`}>
+        {alert ?? (
+          <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />
+        )}
+        {showPersonalLedgerOffer ? (
+          <div className="bj-personal-ledger-offer">
+            <button
+              type="button"
+              className="ds-btn ds-btn--secondary"
+              disabled={personalLedgerAdded}
+              onClick={handleAddToPersonalLedger}
+            >
+              {personalLedgerAdded ? 'Added to personal ledger' : 'Add game to personal ledger'}
+            </button>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  function renderActionsZone() {
+    const insurance = renderInsuranceActions();
+    const playerActions = renderTablePlayerActions();
+    const content = insurance ?? playerActions;
+    return (
+      <div className={`bj-table-zone ${TABLE_UX.tableZoneActions}`}>
+        {content ?? (
+          <div className={TABLE_UX.actionsPlaceholder} aria-hidden="true" />
+        )}
+      </div>
+    );
+  }
+
+  function renderCardViewSummaryExtras() {
+    const alert = renderTableAlert();
+    return (
+      <>
+        {alert}
+        {showPersonalLedgerOffer ? (
+          <div className="bj-personal-ledger-offer">
+            <button
+              type="button"
+              className="ds-btn ds-btn--secondary"
+              disabled={personalLedgerAdded}
+              onClick={handleAddToPersonalLedger}
+            >
+              {personalLedgerAdded ? 'Added to personal ledger' : 'Add game to personal ledger'}
+            </button>
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
+  function renderTrayInner() {
+    const { playerAvailable } = buildTableInfoDisplay(gameState, viewerPersonId);
+    return (
+      <div className="bj-casino__tray-wrap">
+        <div
+          className={[
+            'bj-casino__tray',
+            inBetting ? '' : TABLE_UX.trayReserved,
+          ].filter(Boolean).join(' ')}
+        >
+          {inBetting && (
+            <ChipTray
+              onChipClick={handleChipTrayClick}
+              onChipPointerDown={chipPointerDrag.onChipPointerDown}
+              disabled={!bettingOpen}
+              minimumBet={minimumBet}
+            />
+          )}
+        </div>
+        {inBetting && chipTrayHint && (
+          <p className="bj-casino__tray-hint" role="status">{chipTrayHint}</p>
+        )}
+        <p
+          className={[
+            'bj-casino__player-balance',
+            playerAvailable === null ? 'bj-casino__player-balance--placeholder' : '',
+          ].filter(Boolean).join(' ')}
+          aria-label={playerAvailable !== null ? `Available ${playerAvailable} chips` : undefined}
+          aria-hidden={playerAvailable === null}
+        >
+          {playerAvailable !== null ? `You: ${playerAvailable}` : '\u00a0'}
+        </p>
+      </div>
+    );
+  }
+
+  function renderBottomTrayZone() {
+    return (
+      <div className={`bj-table-zone ${TABLE_UX.tableZoneBottom}`}>
+        {renderTrayInner()}
+      </div>
     );
   }
 
@@ -946,9 +1054,6 @@ export function BlackjackPanel({
     );
   }
 
-  function renderWaitingForTurn() {
-    return null;
-  }
 
   function renderArcSlot(boxId: string, slotNumber: number) {
     const isSelected = effectiveBoxId === boxId;
@@ -978,7 +1083,15 @@ export function BlackjackPanel({
         : '';
     const openStake = getStakeForBox(gameState, boxId);
     const stakeChips = getStakeChipsForBox(gameState, boxId);
-    const showBetStakeChips = inBetting && openStake > 0 && stakeChips.length > 0;
+    const wager = inBetting ? openStake : (primaryHand?.currentBet ?? openStake);
+    const showBettingChips = inBetting && openStake > 0 && stakeChips.length > 0;
+    const showPlayChips = !inBetting && wager > 0;
+    const displayChips = showBettingChips
+      ? stakeChips
+      : showPlayChips
+        ? (stakeChips.length > 0 ? stakeChips : [wager])
+        : [];
+    const showStakeContent = inBetting || displayChips.length > 0;
     const dropKey = chipDropKey({ slotNumber, boxId });
     const isDrop = dropTargetId === dropKey;
     const visualIdx = arcVisualIndex(slotNumber);
@@ -999,8 +1112,9 @@ export function BlackjackPanel({
         <div
           className={[
             getBoxCardClassName(isActiveBox),
+            TABLE_UX.fullArcBox,
             getBetBoxPulseClassName(bettingOpen, true),
-            showBetStakeChips ? 'bj-phone-view__mini-hand--has-stake' : '',
+            showBettingChips ? 'bj-phone-view__mini-hand--has-stake' : '',
             isDrop ? 'bj-bet-zone--drop' : '',
           ].filter(Boolean).join(' ')}
           {...{
@@ -1030,7 +1144,7 @@ export function BlackjackPanel({
           }
           onDrop={inBetting ? (e) => handleBetZoneDrop(boxId, slotNumber, e) : undefined}
         >
-          {valueLabel && (
+          {valueLabel ? (
             <span
               className={[
                 BOX_CARD_VALUE,
@@ -1039,41 +1153,46 @@ export function BlackjackPanel({
             >
               {valueLabel}
             </span>
+          ) : (
+            <span className={`${BOX_CARD_VALUE} ${BOX_CARD_VALUE}--placeholder`} aria-hidden="true">
+              &nbsp;
+            </span>
           )}
           <span className="bj-phone-view__mini-hand-head">
             <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
             <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
           </span>
+          <div
+            className={[
+              TABLE_UX.arcCards,
+              cardIds.length === 0 ? `${TABLE_UX.arcCards}--empty` : '',
+            ].filter(Boolean).join(' ')}
+            aria-hidden={cardIds.length === 0}
+          >
+            {cardIds.length > 0 && visualDeck ? (
+              <div className={TABLE_UX.cardsFan}>
+                {cardIds.map((id) => renderCard(id, false, deviceView === 'mobile', id))}
+              </div>
+            ) : null}
+          </div>
           <span
             className="bj-phone-view__mini-stake-slot"
-            aria-hidden={!showBetStakeChips && !inBetting}
+            aria-hidden={!showStakeContent}
           >
-            {showBetStakeChips ? (
+            {displayChips.length > 0 ? (
               <StakeChips
-                chips={stakeChips}
+                chips={displayChips}
                 variant="bet"
-                removable={inBetting}
+                removable={inBetting && showBettingChips}
                 onRemoveTopChip={() => removeLastChipFromBox(boxId)}
               />
             ) : inBetting ? (
               renderBetZone(boxId, slotNumber)
-            ) : null}
-          </span>
-          <span
-            className="bj-phone-view__mini-hand-card-stack"
-            aria-hidden={cardIds.length === 0}
-          >
-            {cardIds.length > 0 && visualDeck
-              ? cardIds.slice(0, 3).map((id, i) => (
-                  <span
-                    key={id}
-                    className="bj-phone-view__mini-card"
-                    style={{ '--mini-card-i': i } as CSSProperties}
-                  >
-                    <PlayingCard card={getCardById(visualDeck, id)!} compact />
-                  </span>
-                ))
-              : null}
+            ) : (
+              <span className={TABLE_UX.stakeSlotReserved} aria-hidden="true">
+                &nbsp;
+              </span>
+            )}
           </span>
         </div>
 
@@ -1184,6 +1303,60 @@ export function BlackjackPanel({
     );
   }
 
+  function renderTableHeader() {
+    return (
+      <header className={TABLE_UX.tableHeader}>
+        <div className="bj-casino__toolbar">
+          <div className="bj-casino__view-toggle">
+            <button type="button" className={viewMode === 'full' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('full')}>Full Table</button>
+            <button type="button" className={viewMode === 'card' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('card')}>Card View</button>
+          </div>
+          <h1 className={TABLE_UX.pageTitle}>BLACKJACK</h1>
+          <div className="bj-casino__table-nav">
+            <button
+              type="button"
+              className={
+                sideRailPanel === 'thisTable'
+                  ? 'bj-casino__nav-btn bj-casino__nav-btn--this-table bj-casino__nav-btn--active'
+                  : 'bj-casino__nav-btn bj-casino__nav-btn--this-table'
+              }
+              onClick={() => {
+                setActiveTablePanel(null);
+                setSideRailPanel((current) => toggleSideRailPanel(current, 'thisTable'));
+              }}
+              aria-expanded={sideRailPanel === 'thisTable'}
+            >
+              This Table
+            </button>
+            <button
+              type="button"
+              className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+              onClick={() => {
+                setSideRailPanel(null);
+                setActiveTablePanel('playLedger');
+              }}
+            >
+              Play Ledger
+            </button>
+            <button
+              type="button"
+              className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+              onClick={() => {
+                setSideRailPanel(null);
+                setActiveTablePanel('settings');
+              }}
+            >
+              Settings
+            </button>
+          </div>
+        </div>
+        {viewMode === 'card' && (
+          <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="header" />
+        )}
+      </header>
+    );
+  }
+
   return (
     <div
       className={`bj-casino ${viewRootClass}`}
@@ -1195,51 +1368,6 @@ export function BlackjackPanel({
       {tableMeta.showBankerSetup && tableMeta.agreement && (
         <BankerSetupPanel gameState={gameState} onConfirm={onGameStateChange} />
       )}
-
-      <div className="bj-casino__toolbar">
-        <div className="bj-casino__view-toggle">
-          <button type="button" className={viewMode === 'full' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('full')}>Full Table</button>
-          <button type="button" className={viewMode === 'card' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('card')}>Card View</button>
-        </div>
-        <h1 className={TABLE_UX.pageTitle}>BLACKJACK</h1>
-        <div className="bj-casino__table-nav">
-          <button
-            type="button"
-            className={
-              sideRailPanel === 'thisTable'
-                ? 'bj-casino__nav-btn bj-casino__nav-btn--this-table bj-casino__nav-btn--active'
-                : 'bj-casino__nav-btn bj-casino__nav-btn--this-table'
-            }
-            onClick={() => {
-              setActiveTablePanel(null);
-              setSideRailPanel((current) => toggleSideRailPanel(current, 'thisTable'));
-            }}
-            aria-expanded={sideRailPanel === 'thisTable'}
-          >
-            This Table
-          </button>
-          <button
-            type="button"
-            className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-            onClick={() => {
-              setSideRailPanel(null);
-              setActiveTablePanel('playLedger');
-            }}
-          >
-            Play Ledger
-          </button>
-          <button
-            type="button"
-            className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-            onClick={() => {
-              setSideRailPanel(null);
-              setActiveTablePanel('settings');
-            }}
-          >
-            Settings
-          </button>
-        </div>
-      </div>
 
       {activeTablePanel === 'playLedger' && (
         <PlayLedgerModal
@@ -1307,32 +1435,23 @@ export function BlackjackPanel({
           .filter(Boolean)
           .join(' ')}
       >
-        <div className={`bj-casino__rail ${TABLE_UX.rail}`}>
+      {renderTableHeader()}
+      <div className={`bj-casino__rail ${TABLE_UX.rail}`}>
           <div
             className={`bj-casino__felt ${TABLE_UX.surface}${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}
         >
           {viewMode === 'full' && (
             <>
               <div className="bj-casino__felt-main">
+              <div className={`bj-table-zone ${TABLE_UX.tableZoneDealer}`}>
               <DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} />
-              {renderTableAlert()}
-              {showPersonalLedgerOffer && (
-                <div className="bj-personal-ledger-offer">
-                  <button
-                    type="button"
-                    className="ds-btn ds-btn--secondary"
-                    disabled={personalLedgerAdded}
-                    onClick={handleAddToPersonalLedger}
-                  >
-                    {personalLedgerAdded ? 'Added to personal ledger' : 'Add game to personal ledger'}
-                  </button>
-                </div>
-              )}
+              </div>
 
-              {renderInsuranceActions()}
-              {renderTablePlayerActions()}
-              {renderWaitingForTurn()}
+              {renderSummaryZone()}
 
+              {renderActionsZone()}
+
+              <div className={`bj-table-zone ${TABLE_UX.tableZonePlay}`}>
               <div className="bj-arc-separator" aria-hidden="true" />
 
               <div className="bj-arc bj-arc--rtl" style={{ '--slot-count': MAX_BOXES } as CSSProperties}>
@@ -1340,47 +1459,19 @@ export function BlackjackPanel({
                   slot.playerId ? renderArcSlot(slot.playerId, slot.slotNumber) : renderEmptySlot(slot.slotNumber),
                 )}
               </div>
+              </div>
 
-              {inBetting && (
-                <div className="bj-casino__tray-wrap">
-                  <div className="bj-casino__tray">
-                    <ChipTray
-                      onChipClick={handleChipTrayClick}
-                      onChipPointerDown={chipPointerDrag.onChipPointerDown}
-                      disabled={!bettingOpen}
-                      minimumBet={minimumBet}
-                    />
-                  </div>
-                  {chipTrayHint && (
-                    <p className="bj-casino__tray-hint" role="status">{chipTrayHint}</p>
-                  )}
-                </div>
-              )}
+              {renderBottomTrayZone()}
               </div>
             </>
           )}
 
           {viewMode === 'card' && (
-            <>
-              <div className="bj-casino__felt-main bj-casino__felt-main--card">
-                <DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} />
-                {renderTableAlert()}
-
-                {showPersonalLedgerOffer && (
-                  <div className="bj-personal-ledger-offer">
-                    <button
-                      type="button"
-                      className="ds-btn ds-btn--secondary"
-                      disabled={personalLedgerAdded}
-                      onClick={handleAddToPersonalLedger}
-                    >
-                      {personalLedgerAdded ? 'Added to personal ledger' : 'Add game to personal ledger'}
-                    </button>
-                  </div>
-                )}
-
-                <BlackjackCardView
-                  gameState={tableVisualState}
+            <BlackjackCardView
+              dealer={<DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} />}
+              tray={renderTrayInner()}
+              summaryExtras={renderCardViewSummaryExtras()}
+              gameState={tableVisualState}
                   logicalGameState={gameState}
                   viewerPersonId={viewerPersonId}
                   onlineTableId={onlineTableId}
@@ -1410,25 +1501,7 @@ export function BlackjackPanel({
                   onTakeInsurance={(pid) => run((s) => takeInsuranceOnState(s, pid), { type: 'takeInsurance', payload: { playerId: pid } })}
                   onDeclineInsurance={(pid) => run((s) => declineInsuranceOnState(s, pid), { type: 'declineInsurance', payload: { playerId: pid } })}
                   onBack={() => setViewMode('full')}
-                />
-
-                {inBetting && (
-                  <div className="bj-casino__tray-wrap">
-                    <div className="bj-casino__tray">
-                      <ChipTray
-                      onChipClick={handleChipTrayClick}
-                      onChipPointerDown={chipPointerDrag.onChipPointerDown}
-                      disabled={!bettingOpen}
-                      minimumBet={minimumBet}
-                    />
-                    </div>
-                    {chipTrayHint && (
-                      <p className="bj-casino__tray-hint" role="status">{chipTrayHint}</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </>
+            />
           )}
         </div>
         </div>

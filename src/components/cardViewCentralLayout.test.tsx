@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { GameState, TableViewMode } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
 import { BlackjackPanel } from './BlackjackPanel';
+import { TABLE_UX } from './tableUxContract';
 import {
   tableAfterStartPlaying,
   boxPlayerId,
@@ -101,7 +102,7 @@ function playingState(): GameState {
 }
 
 function boxSlotIndex(html: string): number {
-  return html.indexOf('bj-phone-view__slot--boxes');
+  return html.indexOf(TABLE_UX.cardLayoutBoxes);
 }
 
 describe('Card View central layout', () => {
@@ -138,9 +139,9 @@ describe('Card View central layout', () => {
     const betting = renderPanelAt(390, withView(bettingState(), 'card'));
     const playing = renderPanelAt(390, withView(playingState(), 'card'));
     for (const html of [betting, playing]) {
-      expect(html).toContain('bj-phone-view__slot--stage');
-      expect(html).toContain('bj-phone-view__slot--actions');
-      expect(html).toContain('bj-phone-view__slot--boxes');
+      expect(html).toContain(TABLE_UX.cardLayoutHero);
+      expect(html).toContain(TABLE_UX.cardLayoutActions);
+      expect(html).toContain(TABLE_UX.cardLayoutBoxes);
       expect(html).toContain('bj-phone-view__mini-row');
       expect(html).toContain('bj-phone-view__axis');
       expect(html).not.toContain('bj-phone-view__slot--betting');
@@ -150,8 +151,8 @@ describe('Card View central layout', () => {
     expect(betting).toContain('bj-phone-view__action-bar--play-placeholder');
     expect(boxSlotIndex(betting)).toBeGreaterThan(-1);
     expect(boxSlotIndex(playing)).toBeGreaterThan(-1);
-    expect(betting.indexOf('bj-phone-view__slot--actions')).toBeLessThan(boxSlotIndex(betting));
-    expect(playing.indexOf('bj-phone-view__slot--actions')).toBeLessThan(boxSlotIndex(playing));
+    expect(betting.indexOf(TABLE_UX.cardLayoutActions)).toBeLessThan(boxSlotIndex(betting));
+    expect(playing.indexOf(TABLE_UX.cardLayoutActions)).toBeLessThan(boxSlotIndex(playing));
   });
 
   it('central action rows: Stand/Hit then 2x/Split/AID', () => {
@@ -169,11 +170,9 @@ describe('Card View central layout', () => {
     expect(html).toMatch(/bj-phone-view__action-bar-row--secondary[\s\S]*2×/);
   });
 
-  it('hero cards remain overflow-visible on central axis', () => {
-    const css = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
-    expect(css).toMatch(/\.bj-phone-view__axis[\s\S]*align-items:\s*center/);
-    expect(css).toMatch(/\.bj-phone-view__cards-slot[\s\S]*overflow:\s*visible/);
-    expect(css).toMatch(/\.bj-phone-view__hero-stage[\s\S]*overflow:\s*visible/);
-    expect(css).toMatch(/\.bj-phone-view__slot--stage[\s\S]*overflow:\s*visible/);
+  it('hero content is contained inside the hero grid row', () => {
+    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    expect(layoutCss).toMatch(/\.bj-card-layout__hero\s*\{[\s\S]*overflow:\s*hidden/);
+    expect(layoutCss).toMatch(/\.bj-card-layout__hero \.bj-phone-view__hand[\s\S]*max-height:\s*100%/);
   });
 });

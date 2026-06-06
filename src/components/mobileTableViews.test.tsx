@@ -120,7 +120,10 @@ function cardViewMiniBoxOrder(html: string): string[] {
   if (!html.includes('bj-phone-view__mini-row')) {
     return [];
   }
-  return [...html.matchAll(/class="bj-phone-view__mini-hand-box">Box (\d)/g)].map((m) => m[1]!);
+  const start = html.indexOf('bj-phone-view__mini-row');
+  const end = html.indexOf('bj-card-layout__tray', start);
+  const section = end > start ? html.slice(start, end) : html.slice(start);
+  return [...section.matchAll(/aria-label="(?:Join )?[Bb]ox (\d)/g)].map((m) => m[1]!);
 }
 
 function mobileFullTableCss(): string {
@@ -159,9 +162,9 @@ const CARD_VIEW_PLAYING_SECTIONS = [
   'dealer-block__status',
   'dealer-block__command',
   'dealer-block__stack',
-  'bj-phone-view__slot--stage',
-  'bj-phone-view__slot--actions',
-  'bj-phone-view__slot--boxes',
+  'bj-card-layout__hero',
+  'bj-card-layout__actions',
+  'bj-card-layout__boxes',
   'bj-phone-view__action-bar',
   'bj-phone-view__action-bar-row--primary',
   'bj-phone-view__action-bar-row--secondary',
@@ -172,8 +175,8 @@ const CARD_VIEW_PLAYING_SECTIONS = [
 const CARD_VIEW_BETTING_SECTIONS = [
   ...CARD_VIEW_SECTIONS,
   'dealer-block__stack',
-  'bj-phone-view__slot--stage',
-  'bj-phone-view__slot--boxes',
+  'bj-card-layout__hero',
+  'bj-card-layout__boxes',
   'bj-phone-view__hand--waiting',
   'bj-phone-view__cards-placeholder',
   'bj-phone-view__mini-row',
@@ -310,7 +313,8 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     );
     expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*min-height:\s*min\(42dvh,\s*18rem\)/);
     expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*margin-top:\s*auto/);
-    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__slot--stage[\s\S]*max-height:\s*min\(42dvh,\s*14rem\)/);
+    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    expect(layoutCss).toMatch(/\.bj-card-layout__hero\s*\{[\s\S]*min-height:\s*var\(--bj-card-row-hero-min\)/);
   });
 
   it('falls back only on ultra-narrow widths (< 360px)', () => {

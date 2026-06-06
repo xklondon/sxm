@@ -3,6 +3,7 @@ import {
   useState,
   useEffect,
   type CSSProperties,
+  type ReactNode,
   type TouchEvent,
 } from "react";
 
@@ -66,13 +67,23 @@ import {
   getBoxCardClassName,
   getBoxCardValueLabel,
   BOX_CARD_VALUE,
+  BOX_CARD_VALUE_ABOVE,
   BOX_CARD_VALUE_BUST,
+  BOX_CARD_COLUMN,
+  BOX_CARD_STAKE,
+  BOX_CARD_STAKE_LABEL,
 } from "./cardViewBox";
 
 
 import "./BlackjackCardView.css";
 
 interface BlackjackCardViewProps {
+  /** Dealer zone content — rendered in bj-card-layout__dealer only. */
+  dealer: ReactNode;
+  /** Tray + balance row — rendered in bj-card-layout__tray only. */
+  tray: ReactNode;
+  /** Panel summary extras (alerts, ledger offer) above insurance/even-money. */
+  summaryExtras?: ReactNode;
   /** Display state (may mask card visibility during natural dealing). */
   gameState: GameState;
   /** Authoritative engine state for hand keys, totals, and hero visibility. */
@@ -118,6 +129,9 @@ interface BlackjackCardViewProps {
 const SWIPE_THRESHOLD = 48;
 
 export function BlackjackCardView({
+  dealer,
+  tray,
+  summaryExtras,
   gameState,
   logicalGameState: logicalGameStateProp,
   deviceView = "mobile",
@@ -566,84 +580,80 @@ export function BlackjackCardView({
     );
     const valueLabel = getBoxCardValueLabel(miniTotal, status);
     const callerDisplayName = getBoxCallerDisplayName(gameState, boxId);
+    const aboveLabel =
+      valueLabel ||
+      (status !== "betting" && status !== "waiting" ? formatCardViewBoxStatus(status) : "");
+    const showStakeRow = wager > 0 || showBetStakeChips;
+    const showHeadInTile = ids.length === 0 && bettingMainStage;
 
     const handTile = (
-      <button
-        type="button"
-        className={[
-          getBoxCardClassName(isActiveBox),
-          getBetBoxPulseClassName(bettingOpen, true),
-          showBetStakeChips ? "bj-phone-view__mini-hand--has-stake" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        onClick={() => onSelectBox(boxId)}
-        aria-label={`Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`}
-        aria-current={isActiveBox ? "true" : undefined}
-      >
-        {valueLabel && (
+      <div className={BOX_CARD_COLUMN}>
+        {aboveLabel ? (
           <span
             className={[
               BOX_CARD_VALUE,
+              BOX_CARD_VALUE_ABOVE,
               status === "bust" ? BOX_CARD_VALUE_BUST : "",
             ]
               .filter(Boolean)
               .join(" ")}
           >
-            {valueLabel}
+            {aboveLabel}
           </span>
-        )}
-        <span className="bj-phone-view__mini-hand-head">
-          <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
-          <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
-        </span>
-        <span
-          className="bj-phone-view__mini-stake-slot"
-          aria-hidden={!showBetStakeChips}
+        ) : null}
+        <button
+          type="button"
+          className={[
+            getBoxCardClassName(isActiveBox),
+            TABLE_UX.cardViewCompactBox,
+            getBetBoxPulseClassName(bettingOpen, true),
+            showBetStakeChips ? "bj-phone-view__mini-hand--has-stake" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          onClick={() => onSelectBox(boxId)}
+          aria-label={`Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`}
+          aria-current={isActiveBox ? "true" : undefined}
         >
-          {showBetStakeChips ? (
-            <StakeChips
-              chips={stakeChips}
-              variant="bet"
-              removable={bettingOpen}
-              onRemoveTopChip={() => onRemoveLastChip(boxId)}
-            />
+          {showHeadInTile ? (
+            <span className="bj-phone-view__mini-hand-head">
+              <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
+              <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
+            </span>
           ) : null}
-        </span>
-        <span
-          className="bj-phone-view__mini-hand-card-stack"
-          aria-hidden={ids.length === 0}
-        >
-          {ids.length > 0 && deck
-            ? ids.slice(0, 3).map((id, i) => (
-                <span
-                  key={id}
-                  className="bj-phone-view__mini-card"
-                  style={{ "--mini-card-i": i } as CSSProperties}
-                >
-                  <PlayingCard card={getCardById(deck, id)!} compact />
-                </span>
-              ))
-            : null}
-        </span>
-        <span className="bj-phone-view__mini-hand-meta">
-          {miniTotal !== null && <span>T {miniTotal}</span>}
-          {wager > 0 && !showBetStakeChips && <span>W {wager}c</span>}
-          {status !== 'betting' && (
-            <span className={`bj-phone-view__mini-hand-status bj-phone-view__mini-hand-status--${status}`}>
-              {formatCardViewBoxStatus(status)}
-            </span>
-          )}
-          {status === 'betting' && (
-            <span
-              className="bj-phone-view__mini-hand-status bj-phone-view__mini-hand-status--betting bj-phone-view__mini-hand-status--reserved"
-              aria-hidden="true"
-            >
-              &nbsp;
-            </span>
-          )}
-        </span>
-      </button>
+          <span
+            className="bj-phone-view__mini-hand-card-stack"
+            aria-hidden={ids.length === 0}
+          >
+            {ids.length > 0 && deck
+              ? ids.slice(0, 3).map((id, i) => (
+                  <span
+                    key={id}
+                    className="bj-phone-view__mini-card"
+                    style={{ "--mini-card-i": i } as CSSProperties}
+                  >
+                    <PlayingCard card={getCardById(deck, id)!} compact />
+                  </span>
+                ))
+              : null}
+          </span>
+        </button>
+        {showStakeRow ? (
+          <div className={BOX_CARD_STAKE}>
+            {wager > 0 ? (
+              <span className={BOX_CARD_STAKE_LABEL}>Bet: {wager}</span>
+            ) : null}
+            {showBetStakeChips ? (
+              <StakeChips
+                chips={stakeChips}
+                variant="bet"
+                removable={bettingOpen}
+                onRemoveTopChip={() => onRemoveLastChip(boxId)}
+              />
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     );
 
     if (bettingMainStage && bettingOpen) {
@@ -686,7 +696,7 @@ export function BlackjackCardView({
             </div>
             <div className="bj-phone-view__hand-meta">
               <div
-                className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero bj-phone-view__total--placeholder"
+                className={`ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero ${TABLE_UX.cardViewTotalCompact} bj-phone-view__total--placeholder`}
                 aria-hidden="true"
               >
                 &nbsp;
@@ -706,7 +716,7 @@ export function BlackjackCardView({
     const joinTile = (
       <button
         type="button"
-        className="bj-phone-view__mini-hand bj-phone-view__mini-hand--empty"
+        className={`bj-phone-view__mini-hand bj-phone-view__mini-hand--empty ${TABLE_UX.cardViewCompactBox}`}
         onClick={() => onClaimSlot(slotNumber)}
         aria-label={`Join box ${slotNumber}`}
       >
@@ -853,7 +863,7 @@ export function BlackjackCardView({
             </div>
             <div className="bj-phone-view__hand-meta">
               <div
-                className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero bj-phone-view__total--placeholder"
+                className={`ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero ${TABLE_UX.cardViewTotalCompact} bj-phone-view__total--placeholder`}
                 aria-hidden="true"
               >
                 &nbsp;
@@ -979,12 +989,12 @@ export function BlackjackCardView({
         </div>
         <div className="bj-phone-view__hand-meta">
           {heroDisplayValue !== null ? (
-            <div className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero">
+            <div className={`ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero ${TABLE_UX.cardViewTotalCompact}`}>
               Total {heroDisplayValue}
             </div>
           ) : (
             <div
-              className="ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero bj-phone-view__total--placeholder"
+              className={`ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero ${TABLE_UX.cardViewTotalCompact} bj-phone-view__total--placeholder`}
               aria-hidden="true"
             >
               &nbsp;
@@ -1122,6 +1132,7 @@ export function BlackjackCardView({
               type="button"
               className={[
                 "bj-phone-view__action-bar-extra",
+                TABLE_UX.cardViewActionCompact,
                 "bj-phone-view__action-btn--tappable",
                 canDoubleNow ? "bj-phone-view__action-bar-extra--legal" : "",
               ]
@@ -1140,6 +1151,7 @@ export function BlackjackCardView({
               type="button"
               className={[
                 "bj-phone-view__action-bar-extra",
+                TABLE_UX.cardViewActionCompact,
                 "bj-phone-view__action-btn--tappable",
                 canSplitNow ? "bj-phone-view__action-bar-extra--legal" : "",
               ]
@@ -1156,7 +1168,7 @@ export function BlackjackCardView({
           {showAid ? (
             <button
               type="button"
-              className="bj-phone-view__action-bar-extra bj-phone-view__action-btn--tappable bj-phone-view__action-bar-extra--aid"
+              className={`bj-phone-view__action-bar-extra ${TABLE_UX.cardViewActionCompact} bj-phone-view__action-btn--tappable bj-phone-view__action-bar-extra--aid`}
               onClick={handleAid}
             >
               AID
@@ -1169,20 +1181,27 @@ export function BlackjackCardView({
     );
   }
 
-  return (
-    <div className={`bj-phone-view ${TABLE_UX.columnSurface}`}>
-      {!bettingMainStage && renderInsuranceActions()}
-      {!bettingMainStage && renderEvenMoneyActions()}
+  function renderSummaryZoneContent() {
+    if (bettingMainStage) {
+      return <div className={TABLE_UX.cardLayoutSummaryPlaceholder} aria-hidden="true" />;
+    }
+    const insurance = renderInsuranceActions();
+    const evenMoney = renderEvenMoneyActions();
+    const content = insurance ?? evenMoney;
+    return content ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />;
+  }
 
-      <div
-        className={[
-          "bj-phone-view__slot",
-          "bj-phone-view__slot--stage",
-          bettingMainStage ? "bj-phone-view__slot--stage-betting" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
+  /** Card View uses fixed grid rows. Do not position boxes with flex or phase-dependent margins. */
+  return (
+    <div className={`${TABLE_UX.cardLayout} bj-phone-view ${TABLE_UX.columnSurface}`}>
+      <div className={TABLE_UX.cardLayoutDealer}>{dealer}</div>
+
+      <div className={TABLE_UX.cardLayoutSummary}>
+        {summaryExtras}
+        {renderSummaryZoneContent()}
+      </div>
+
+      <div className={TABLE_UX.cardLayoutHero}>
         <div className="bj-phone-view__axis">
           <div className="bj-phone-view__play-stack">
             <div
@@ -1202,13 +1221,15 @@ export function BlackjackCardView({
         </div>
       </div>
 
-      <div className="bj-phone-view__slot bj-phone-view__slot--actions">
+      <div className={TABLE_UX.cardLayoutActions}>
         {renderActionBar()}
       </div>
 
-      <div className="bj-phone-view__slot bj-phone-view__slot--boxes">
+      <div className={TABLE_UX.cardLayoutBoxes}>
         {renderMiniBoxesRow()}
       </div>
+
+      <div className={TABLE_UX.cardLayoutTray}>{tray}</div>
     </div>
   );
 }

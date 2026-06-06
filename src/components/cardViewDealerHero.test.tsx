@@ -12,6 +12,8 @@ const noop = () => {};
 function renderCardView(state: GameState): string {
   return renderToStaticMarkup(
     <BlackjackCardView
+      dealer={<div className="dealer-block" />}
+      tray={<div className="bj-casino__tray-wrap" />}
       gameState={state}
       activeBoxId={state.blackjack?.activePlayerId ?? null}
       showHoleHidden={false}
@@ -83,6 +85,8 @@ describe('Card View dealer vs hero', () => {
     state = { ...state, selectedSeatId: boxId };
     const html = renderToStaticMarkup(
       <BlackjackCardView
+        dealer={<div className="dealer-block" />}
+        tray={<div className="bj-casino__tray-wrap" />}
         gameState={state}
         activeBoxId={null}
         showHoleHidden={false}

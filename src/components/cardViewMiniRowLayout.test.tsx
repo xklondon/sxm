@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { GameState } from '../types';
 import { BlackjackCardView } from './BlackjackCardView';
+import { TABLE_UX } from './tableUxContract';
 import { createNewBlackjackTable } from '../engine/session';
 import { allocateChipsToBankrollOwner } from '../engine/session/allocation';
 import { addChipToBoxStake } from '../engine/blackjack/stakes';
@@ -73,6 +74,8 @@ function bettingState(stakeChips: number[]): GameState {
 function render(state: GameState): string {
   return renderToStaticMarkup(
     <BlackjackCardView
+      dealer={<div className="dealer-block" />}
+      tray={<div className="bj-casino__tray-wrap" />}
       gameState={state}
       focusBoxId="box-test"
       activeBoxId={null}
@@ -97,22 +100,28 @@ function render(state: GameState): string {
 }
 
 describe('Card View mini row layout contract', () => {
-  it('reserves stake slot on every mini tile before and after chips', () => {
+  it('renders stake under the tile when chips are placed', () => {
     const before = render(bettingState([]));
     const after = render(bettingState([10, 5]));
-    expect(before).toContain('bj-phone-view__mini-stake-slot');
-    expect(after).toContain('bj-phone-view__mini-stake-slot');
-    const slotCountBefore = (before.match(/bj-phone-view__mini-stake-slot/g) ?? []).length;
-    const slotCountAfter = (after.match(/bj-phone-view__mini-stake-slot/g) ?? []).length;
-    expect(slotCountBefore).toBe(slotCountAfter);
-    expect(slotCountBefore).toBeGreaterThan(0);
+    expect(before).toContain(TABLE_UX.cardViewBoxColumn);
+    expect(before).not.toContain(TABLE_UX.cardViewBoxStake);
+    expect(after).toContain(TABLE_UX.cardViewBoxStake);
+    expect(after).toContain(TABLE_UX.cardViewBoxStakeLabel);
+    expect(after).toContain('Bet: 15');
+    expect(after).toContain('stake-chips--bet');
+    const columnCountBefore = (before.match(/bj-phone-view__mini-hand-column/g) ?? []).length;
+    const columnCountAfter = (after.match(/bj-phone-view__mini-hand-column/g) ?? []).length;
+    expect(columnCountBefore).toBe(columnCountAfter);
+    expect(columnCountBefore).toBeGreaterThan(0);
   });
 
-  it('CSS fixes mini tile and row height so chips do not expand layout', () => {
-    const css = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
-    expect(css).toMatch(/\.bj-phone-view__mini-hand[\s\S]*min-height:\s*5\.5rem/);
-    expect(css).toMatch(/\.bj-phone-view__mini-stake-slot[\s\S]*min-height:\s*2\.35rem/);
-    expect(css).toMatch(/\.bj-phone-view__mini-row[\s\S]*min-height:\s*6\.25rem/);
-    expect(css).not.toMatch(/\.bj-phone-view__mini-hand--has-stake[\s\S]*min-height:\s*4\.25rem/);
+  it('CSS fixes mini tile height in the grid boxes row so stake does not expand layout', () => {
+    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    expect(layoutCss).toContain('--bj-card-row-boxes: 9rem');
+    expect(layoutCss).toMatch(
+      /\.bj-card-layout__boxes \.bj-phone-view__mini-hand[\s\S]*max-height:\s*var\(--bj-cardview-desktop-mini-hand-height/,
+    );
+    expect(layoutCss).toMatch(/\.bj-card-layout__boxes \.bj-phone-view__box-stake[\s\S]*flex:\s*0 0 auto/);
+    expect(layoutCss).toMatch(/\.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*max-height:\s*100%/);
   });
 });

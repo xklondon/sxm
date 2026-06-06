@@ -74,6 +74,20 @@
   justify-content: center;
 }
 
+.dealer-block__bank-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.55rem;
+  flex: 0 0 auto;
+}
+
+.dealer-block__bank-info--placeholder {
+  visibility: hidden;
+}
+
 .dealer-block__action-slot {
   display: flex;
   justify-content: center;
@@ -233,6 +247,15 @@
 
 .dealer-block__action--cards {
   min-width: 6.25rem;
+}
+
+.dealer-block__action--reserved {
+  min-width: 6.25rem;
+  min-height: 1.85rem;
+}
+
+.dealer-block__action--disabled:disabled {
+  opacity: 0.5;
 }
 
 .dealer-block__action:disabled {

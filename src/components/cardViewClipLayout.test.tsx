@@ -9,17 +9,18 @@ describe('Card View — full card visibility', () => {
     'utf8',
   );
 
-  it('hero cards slot does not clip with a low max-height', () => {
-    expect(cardCss).toMatch(/\.bj-phone-view__cards-slot[\s\S]*overflow:\s*visible/);
+  it('hero cards fit inside the hero grid row without a low max-height clip', () => {
+    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    expect(layoutCss).toMatch(/\.bj-card-layout__hero \.bj-phone-view__cards[\s\S]*max-height:\s*100%/);
     expect(cardCss).not.toMatch(
       /\.bj-phone-view__cards-slot[\s\S]*max-height:\s*6\.75rem/,
     );
-    expect(cardCss).toMatch(/\.bj-phone-view__hero-stage[\s\S]*overflow:\s*visible/);
   });
 
-  it('play stage allows overflow for tall hero cards', () => {
-    expect(cardCss).toMatch(/\.bj-phone-view__slot--stage[\s\S]*overflow:\s*visible/);
-    expect(cardCss).toMatch(/\.bj-phone-view__stage[\s\S]*overflow:\s*visible/);
+  it('play stage is contained inside the hero grid row', () => {
+    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    expect(layoutCss).toMatch(/\.bj-card-layout__hero[\s\S]*overflow:\s*hidden/);
+    expect(layoutCss).toMatch(/\.bj-card-layout__hero \.bj-phone-view__stage[\s\S]*max-height:\s*100%/);
     expect(cardCss).toMatch(/\.bj-phone-view__hero-stage[\s\S]*min-height:/);
   });
 
@@ -29,9 +30,11 @@ describe('Card View — full card visibility', () => {
     expect(cardCss).toMatch(/\.bj-phone-view__hero-center[\s\S]*align-items:\s*center/);
   });
 
-  it('hero total badge is compact', () => {
-    expect(cardCss).toMatch(/\.bj-phone-view__total--hero[\s\S]*min-height:\s*1\.25rem/);
-    expect(cardCss).toMatch(/\.bj-phone-view__total--hero[\s\S]*font-size:\s*0\.68rem/);
+  it('hero total badge is compact via layout tokens', () => {
+    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    expect(layoutCss).toContain('--bj-card-total-font-size: 0.56rem');
+    expect(layoutCss).toContain('--bj-card-total-min-height: 0.95rem');
+    expect(layoutCss).toMatch(/\.bj-card-layout__hero \.bj-phone-view__total--compact[\s\S]*font-size:\s*var\(--bj-card-total-font-size\)/);
   });
 
   it('dealer/command header block uses compact spacing', () => {

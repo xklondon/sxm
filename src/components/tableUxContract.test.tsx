@@ -41,26 +41,27 @@ describe('TABLE_UX class contract', () => {
 
   it('shared CSS defines one table surface, seat shell, and side-rail shell', () => {
     const css = readSrc('src/styles/bj-table-shared.css');
+    const layoutCss = readSrc('src/styles/bj-card-layout.css');
     const panelCss = readSrc('src/components/BlackjackPanel.css');
     expect(css).toContain('.bj-table-surface');
     expect(css).toContain('.bj-table-rail');
     expect(css).toContain('.bj-table-desktop-shell');
     expect(css).toContain('--bj-desktop-table-height: min(72vh, 46rem)');
-    expect(css).toContain('--bj-desktop-table-max-width: min(96vw, 72rem)');
-    expect(css).toContain('--bj-desktop-seat-width: 5.25rem');
-    expect(css).toContain('--bj-desktop-mini-hand-width: 5.5rem');
+    expect(css).toContain('--bj-desktop-table-max-width: min(98vw, 86rem)');
+    expect(css).toContain('--bj-desktop-seat-width: 5.75rem');
+    expect(css).toContain('--bj-desktop-mini-hand-width: 6rem');
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-casino__felt,\s*\n\s*\.bj-view-card-desktop \.bj-casino__felt/);
     expect(css).toMatch(/background:\s*var\(--bj-desktop-felt-bg\)/);
     expect(css).toMatch(/--bj-desktop-felt-bg:\s*var\(--ds-color-felt\)/);
     expect(css).not.toMatch(/--bj-desktop-felt-bg:[\s\S]*felt-mid/);
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc-separator[\s\S]*background:\s*none/);
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc__slot \.bj-phone-view__mini-hand/);
-    expect(css).toMatch(/\.bj-view-card-desktop \.bj-phone-view__mini-hand[\s\S]*--bj-desktop-mini-hand-width/);
+    expect(layoutCss).toMatch(/\.bj-view-card-desktop \.bj-card-layout__boxes \.bj-phone-view__mini-hand--card-compact[\s\S]*--bj-cardview-desktop-mini-hand-width/);
     expect(css).toMatch(/\.bj-casino__this-table--dock[\s\S]*flex:\s*0\s*0\s*12\.5rem/);
     expect(css).toMatch(/\.bj-view-card-desktop \.bj-phone-view\.bj-table-column-surface[\s\S]*background:\s*transparent/);
     expect(css).toMatch(/\.bj-table-desktop-shell[\s\S]*height:\s*var\(--bj-desktop-table-height\)/);
     expect(css).toMatch(/\.bj-table-desktop-shell[\s\S]*overflow:\s*hidden/);
-    expect(css).toContain('--bj-desktop-mini-row-height: 5.5rem');
+    expect(css).toContain('--bj-desktop-mini-row-height: 7.25rem');
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.bj-phone-view__hero-stage[\s\S]*min-height:\s*11\.5rem/);
     expect(css).toContain('.bj-table-column-surface');
     expect(css).toContain('.bj-seat-shell');
@@ -200,29 +201,32 @@ describe('TABLE_UX markup across views', () => {
 
   it('desktop shell CSS uses one height token for both views without divergent overrides', () => {
     const css = readSrc('src/styles/bj-table-shared.css');
+    const layoutCss = readSrc('src/styles/bj-card-layout.css');
     const panelCss = readSrc('src/components/BlackjackPanel.css');
     expect(css).toContain('--bj-desktop-table-height: min(72vh, 46rem)');
-    expect(css).toContain('--bj-desktop-table-max-width: min(96vw, 72rem)');
+    expect(css).toContain('--bj-desktop-table-max-width: min(98vw, 86rem)');
     expect((css.match(/--bj-desktop-table-height:/g) ?? []).length).toBe(1);
     expect((css.match(/--bj-desktop-table-max-width:/g) ?? []).length).toBe(1);
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc__slot \.bj-phone-view__mini-hand[\s\S]*--bj-desktop-mini-hand-width/);
-    expect(css).toMatch(/\.bj-view-card-desktop \.bj-phone-view__mini-hand[\s\S]*--bj-desktop-mini-hand-width/);
+    expect(layoutCss).toMatch(/\.bj-view-card-desktop \.bj-card-layout__boxes \.bj-phone-view__mini-hand--card-compact[\s\S]*--bj-cardview-desktop-mini-hand-width/);
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.bj-phone-view__hero-stage[\s\S]*min-height:\s*11\.5rem/);
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.bj-phone-view__cards-slot[\s\S]*min-height:\s*10\.5rem/);
     expect(panelCss).not.toMatch(/@media \(min-width: 721px\)[\s\S]*\.bj-view-card-desktop[\s\S]*--bj-desktop-table-max-width/);
   });
 
-  it('BLACKJACK title renders in toolbar outside felt border', () => {
+  it('BLACKJACK title renders in table header inside shell, outside felt border', () => {
     for (const mode of ['full', 'card'] as const) {
       const html = renderAt(1280, mode);
+      const headerIdx = html.indexOf(TABLE_UX.tableHeader);
       const titleIdx = html.indexOf('bj-casino__title');
       const railIdx = html.indexOf('bj-table-rail');
-      const toolbarIdx = html.indexOf('bj-casino__toolbar');
-      expect(titleIdx).toBeGreaterThan(-1);
+      const shellIdx = html.indexOf('bj-table-desktop-shell');
+      expect(headerIdx).toBeGreaterThan(-1);
+      expect(titleIdx).toBeGreaterThan(headerIdx);
       expect(html).toContain('BLACKJACK');
-      expect(toolbarIdx).toBeGreaterThan(-1);
-      expect(titleIdx).toBeGreaterThan(toolbarIdx);
-      expect(railIdx).toBeGreaterThan(titleIdx);
+      expect(shellIdx).toBeGreaterThan(-1);
+      expect(headerIdx).toBeGreaterThan(shellIdx);
+      expect(railIdx).toBeGreaterThan(headerIdx);
       expect(html).not.toContain('dealer-block__brand');
     }
   });
@@ -249,15 +253,15 @@ describe('TABLE_UX markup across views', () => {
     expect(card).toContain('bj-phone-view__action-bar--playing');
   });
 
-  it('mobile Full Table and Card View share unified mobile felt + mini-hand tokens', () => {
+  it('mobile Full Table and Card View share felt tokens with view-specific box sizing', () => {
     const css = readSrc('src/styles/bj-table-shared.css');
     expect(css).toContain('--bj-mobile-mini-hand-width: 2.55rem');
+    expect(css).toContain('--bj-cardview-mobile-mini-hand-width: 2.3rem');
     expect(css).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt/,
     );
-    expect(css).toMatch(
-      /\.bj-view-full-mobile \.bj-phone-view__mini-hand,\s*\n\s*\.bj-view-card-mobile \.bj-phone-view__mini-hand/,
-    );
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc__slot \.bj-phone-view__mini-hand/);
+    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-hand--card-compact/);
     expect(css).toMatch(
       /\.bj-view-full-mobile \.bj-phone-view__box-value,\s*\n\s*\.bj-view-card-mobile \.bj-phone-view__box-value/,
     );
@@ -273,12 +277,14 @@ describe('TABLE_UX markup across views', () => {
     }
   });
 
-  it('Full Table arc seats use Card View mini-hand box class family', () => {
+  it('Full Table arc seats use card fan + shared box class family', () => {
     const full = renderAt(1280, 'full');
     expect(full).toContain('bj-phone-view__mini-hand');
+    expect(full).toContain(TABLE_UX.fullArcBox);
     expect(full).toContain('bj-phone-view__mini-hand-box');
     expect(full).toContain('bj-phone-view__mini-hand-name');
-    expect(full).toContain('bj-phone-view__mini-hand-card-stack');
+    expect(full).toContain(TABLE_UX.arcCards);
+    expect(full).toContain(TABLE_UX.cardsFan);
     expect(full).not.toContain('bj-arc__play-zone');
     expect(full).toContain('bj-phone-view__box-value');
   });

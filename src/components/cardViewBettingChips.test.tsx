@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { GameState } from '../types';
 import { BlackjackCardView } from './BlackjackCardView';
+import { TABLE_UX } from './tableUxContract';
 import { createNewBlackjackTable } from '../engine/session';
 import { allocateChipsToBankrollOwner } from '../engine/session/allocation';
 import { addChipToBoxStake } from '../engine/blackjack/stakes';
@@ -70,6 +71,8 @@ function bettingCardViewWithStake(): { state: GameState; boxId: string; html: st
 
   const html = renderToStaticMarkup(
     <BlackjackCardView
+      dealer={<div className="dealer-block" />}
+      tray={<div className="bj-casino__tray-wrap" />}
       gameState={state}
       focusBoxId={boxId}
       activeBoxId={null}
@@ -99,14 +102,15 @@ describe('Card View betting chips and layout', () => {
   it('renders chip stack on selected bottom box tile', () => {
     const { html } = bettingCardViewWithStake();
     expect(html).toContain('stake-chips--bet');
-    expect(html).toContain('bj-phone-view__mini-stake-slot');
+    expect(html).toContain(TABLE_UX.cardViewBoxStake);
+    expect(html).toContain(TABLE_UX.cardViewBoxStakeLabel);
+    expect(html).toContain('Bet:');
     expect(html).toContain('bj-phone-view__mini-hand--has-stake');
     expect(html).toContain('bj-phone-view__mini-hand--active');
     expect(html).toContain('aria-current="true"');
-    expect(html.indexOf('bj-phone-view__mini-stake-slot')).toBeGreaterThan(-1);
-    expect(html.indexOf('bj-phone-view__mini-hand--active')).toBeLessThan(
-      html.indexOf('bj-phone-view__mini-stake-slot'),
-    );
+    const stakeIdx = html.indexOf(TABLE_UX.cardViewBoxStake);
+    const activeIdx = html.indexOf('bj-phone-view__mini-hand--active');
+    expect(stakeIdx).toBeGreaterThan(activeIdx);
     expect(html).not.toContain('bj-phone-view__bet-chip-wrap--main');
     expect(html).not.toContain('bj-phone-view__bet-chip--hero');
   });
@@ -114,6 +118,7 @@ describe('Card View betting chips and layout', () => {
   it('reserves hero total slot without Betting/Bet label text', () => {
     const { html } = bettingCardViewWithStake();
     expect(html).toContain('bj-phone-view__total--placeholder');
+    expect(html).toContain(TABLE_UX.cardViewTotalCompact);
     expect(html).toContain('bj-phone-view__hand-meta');
     expect(html).not.toMatch(/>Betting</);
     expect(html).not.toMatch(/>Bet \d+</);
@@ -124,11 +129,11 @@ describe('Card View betting chips and layout', () => {
   it('betting and playing share hero/total/box-strip slots', () => {
     const betting = bettingCardViewWithStake().html;
     const slots = [
-      'bj-phone-view__slot--stage',
+      TABLE_UX.cardLayoutHero,
       'bj-phone-view__hand-meta',
       'bj-phone-view__cards-slot',
-      'bj-phone-view__slot--actions',
-      'bj-phone-view__slot--boxes',
+      TABLE_UX.cardLayoutActions,
+      TABLE_UX.cardLayoutBoxes,
       'bj-phone-view__mini-row',
     ];
     for (const slot of slots) {
@@ -137,13 +142,14 @@ describe('Card View betting chips and layout', () => {
   });
 
   it('desktop Card View has no horizontal overflow contract', () => {
+    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
     const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     const cardCss = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
     expect(sharedCss).toMatch(/\.bj-casino\.bj-view-card-desktop[\s\S]*overflow:\s*hidden/);
     expect(sharedCss).toMatch(/\.bj-table-desktop-shell[\s\S]*overflow:\s*hidden/);
-    expect(sharedCss).toMatch(
-      /\.bj-view-card-desktop \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*auto/,
+    expect(layoutCss).toMatch(
+      /\.bj-view-card-desktop \.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*auto/,
     );
     expect(sharedCss).toMatch(/\.bj-casino__this-table--dock[\s\S]*max-width:\s*12\.5rem/);
     expect(cardCss).toMatch(/\.bj-phone-view[\s\S]*overflow-x:\s*hidden/);

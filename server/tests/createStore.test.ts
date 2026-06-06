@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   databaseEnvPresence,
+  getPrismaMigrateShellCommand,
   resolveDatabaseUrl,
 } from '../src/store/createStore.js';
 
@@ -8,6 +9,15 @@ const envBackup = { ...process.env };
 
 afterEach(() => {
   process.env = { ...envBackup };
+});
+
+describe('getPrismaMigrateShellCommand', () => {
+  it('uses npx prisma migrate deploy without hardcoded .cmd or node_modules paths', () => {
+    const command = getPrismaMigrateShellCommand();
+    expect(command).toBe('npx prisma migrate deploy');
+    expect(command).not.toContain('.cmd');
+    expect(command).not.toContain('node_modules');
+  });
 });
 
 describe('resolveDatabaseUrl', () => {

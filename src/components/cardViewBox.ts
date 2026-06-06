@@ -4,7 +4,11 @@ import type { CardViewBoxStatus } from './blackjackViewPhase';
 export const BOX_CARD_BASE = 'bj-phone-view__mini-hand';
 export const BOX_CARD_ACTIVE = 'bj-phone-view__mini-hand--active';
 export const BOX_CARD_VALUE = 'bj-phone-view__box-value';
+export const BOX_CARD_VALUE_ABOVE = 'bj-phone-view__box-value--above';
 export const BOX_CARD_VALUE_BUST = 'bj-phone-view__box-value--bust';
+export const BOX_CARD_COLUMN = 'bj-phone-view__mini-hand-column';
+export const BOX_CARD_STAKE = 'bj-phone-view__box-stake';
+export const BOX_CARD_STAKE_LABEL = 'bj-phone-view__box-stake-label';
 export const BET_BOX_PULSE = 'bj-phone-view__bet-chip--pulse';
 
 /**

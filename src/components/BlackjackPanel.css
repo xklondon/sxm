@@ -20,15 +20,30 @@
 }
 
 .bj-casino__toolbar {
+  position: relative;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 0.35rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0;
   width: 100%;
-  max-width: var(--bj-desktop-table-max-width, 100%);
-  margin-inline: auto;
   box-sizing: border-box;
+  min-height: 1.85rem;
+}
+
+.bj-casino__table-header {
+  flex: 0 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.08rem;
+  margin-bottom: 0.2rem;
+  box-sizing: border-box;
+}
+
+.bj-table-desktop-shell > .bj-casino__table-header {
+  padding-inline: 0.1rem;
 }
 
 .bj-casino__view-toggle {
@@ -249,6 +264,15 @@
   width: 100%;
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.bj-casino__rail-wrap > .bj-casino__rail {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .bj-casino__this-table--below {
@@ -284,15 +308,7 @@
   min-height: 0;
 }
 
-.bj-casino__felt-main--card {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-  max-width: none;
-  width: 100%;
-}
-
-.bj-casino__felt-main--card .bj-phone-view {
+.bj-casino__felt--card-view > .bj-card-layout {
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -479,7 +495,9 @@
 
 .bj-casino__title {
   margin: 0;
+  grid-column: 2;
   justify-self: center;
+  text-align: center;
   font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.2em;
@@ -1241,7 +1259,7 @@
   margin-bottom: 0.2rem;
 }
 
-.bj-view-card-mobile .bj-casino__felt-main--card,
+.bj-view-card-mobile .bj-casino__felt--card-view,
 .bj-view-card-mobile .bj-casino__felt-main {
   min-width: 0;
   max-width: 100%;

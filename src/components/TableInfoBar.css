@@ -1,0 +1,56 @@
+.bj-table-info-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.75rem;
+  width: 100%;
+  min-height: 1.15rem;
+  margin: 0;
+  padding: 0.04rem 0.35rem 0.1rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.bj-table-info-bar__item {
+  font-family: var(--ds-font-mono);
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.04em;
+  color: var(--ds-color-gold);
+  white-space: nowrap;
+}
+
+.bj-table-info-bar__bank-value {
+  color: var(--ds-color-text, #f5f5f4);
+}
+
+.bj-table-info-bar__bank-chips {
+  opacity: 0.92;
+}
+
+.bj-table-info-bar__item--placeholder {
+  visibility: hidden;
+  min-width: 4.5rem;
+}
+
+.bj-table-info-bar--header {
+  flex-direction: row;
+  gap: 0.5rem 1rem;
+  padding: 0.02rem 0.35rem 0.12rem;
+  min-height: 1.35rem;
+}
+
+.bj-casino__player-balance {
+  margin: 0;
+  font-family: var(--ds-font-mono);
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-color-gold);
+  text-align: center;
+  min-height: 1rem;
+}
+
+.bj-casino__player-balance--placeholder {
+  visibility: hidden;
+}

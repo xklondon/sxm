@@ -1,6 +1,8 @@
+import type { ReactNode } from 'react';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
 import { isTableInstructionMessage } from './tableCommandDisplay';
+import { TABLE_UX } from './tableUxContract';
 import './DealerBlock.css';
 
 interface DealerBlockProps {
@@ -20,6 +22,8 @@ interface DealerBlockProps {
   canStartNewGame?: boolean;
   newGameDisabledReason?: string | null;
   dealerCards: React.ReactNode;
+  /** Bank value + chip balance — rendered under dealer cards. */
+  bankInfo?: ReactNode;
   protocolPhase: BlackjackProtocolPhase;
   bankerReady: boolean;
   shoeStarted: boolean;
@@ -49,6 +53,7 @@ export function DealerBlock({
   canStartNewGame = false,
   newGameDisabledReason = null,
   dealerCards,
+  bankInfo,
   protocolPhase,
   bankerReady,
   shoeStarted,
@@ -66,99 +71,98 @@ export function DealerBlock({
 }: DealerBlockProps) {
   const status = engineStatus;
 
-  function renderInPlayAction() {
-    if (gameEnded) {
-      return null;
+  function resolvePrimaryAction(): {
+    label: string;
+    disabled: boolean;
+    onClick: () => void;
+    cardsVariant?: boolean;
+    hint?: string | null;
+  } {
+    if (gameEnded && onNewGame) {
+      return {
+        label: 'New Game',
+        disabled: !canStartNewGame,
+        onClick: onNewGame,
+        hint: !canStartNewGame ? newGameDisabledReason : null,
+      };
     }
-    if (status === 'initial-deal' && initialDealManual) {
-      return (
-        <button type="button" className="dealer-block__action dealer-block__action--primary" onClick={onDealNextCard}>
-          Card
-        </button>
-      );
+
+    if (protocolPhase === 'round-complete' && awaitingNextRound) {
+      return {
+        label: 'Next Round',
+        disabled: false,
+        onClick: onNextRound,
+      };
     }
-    if (status === 'bank-turn' && bankDrawManual) {
-      return (
-        <button type="button" className="dealer-block__action dealer-block__action--primary" onClick={onDrawBank}>
-          Draw
-        </button>
-      );
+
+    if (protocolPhase !== 'betting') {
+      if (status === 'initial-deal' && initialDealManual) {
+        return {
+          label: 'Card',
+          disabled: false,
+          onClick: onDealNextCard,
+        };
+      }
+      if (status === 'bank-turn' && bankDrawManual) {
+        return {
+          label: 'Draw',
+          disabled: false,
+          onClick: onDrawBank,
+        };
+      }
+      return {
+        label: 'Deal Cards',
+        disabled: true,
+        onClick: onDealCards,
+        cardsVariant: true,
+      };
     }
-    return null;
+
+    if (!shoeStarted) {
+      return {
+        label: 'Shuffle to start',
+        disabled: !bankerReady || !hasStakes || dealActionPending,
+        onClick: onShuffleToStart,
+      };
+    }
+
+    return {
+      label: dealActionPending ? 'Dealing…' : 'Deal Cards',
+      disabled: !canDeal || !bettingOpen || !bankerReady || dealActionPending,
+      onClick: onDealCards,
+      cardsVariant: true,
+    };
   }
 
-  function renderGameEndedAction() {
-    if (!gameEnded || !onNewGame) {
-      return null;
-    }
+  function renderPrimaryAction() {
+    const { label, disabled, onClick, cardsVariant, hint } = resolvePrimaryAction();
     return (
       <>
         <button
           type="button"
-          className="dealer-block__action dealer-block__action--primary"
-          onClick={onNewGame}
-          disabled={!canStartNewGame}
+          className={[
+            'dealer-block__action',
+            'dealer-block__action--primary',
+            TABLE_UX.dealerActionReserved,
+            cardsVariant ? 'dealer-block__action--cards' : '',
+            disabled ? 'dealer-block__action--disabled' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          onClick={onClick}
+          disabled={disabled}
+          aria-disabled={disabled}
         >
-          New Game
+          {label}
         </button>
-        {!canStartNewGame && newGameDisabledReason ? (
-          <p className="dealer-block__hint dealer-block__hint--new-game">{newGameDisabledReason}</p>
+        {hint ? (
+          <p className="dealer-block__hint dealer-block__hint--new-game">{hint}</p>
         ) : null}
       </>
     );
   }
 
-  function renderBettingActions() {
-    if (gameEnded) {
-      return renderGameEndedAction();
-    }
-
-    if (protocolPhase === 'round-complete' && awaitingNextRound) {
-      return (
-        <button
-          type="button"
-          className="dealer-block__action dealer-block__action--primary"
-          onClick={onNextRound}
-        >
-          Next Round
-        </button>
-      );
-    }
-
-    if (protocolPhase !== 'betting') {
-      return renderInPlayAction();
-    }
-
-    if (!shoeStarted) {
-      return (
-        <button
-          type="button"
-          className="dealer-block__action dealer-block__action--primary"
-          onClick={onShuffleToStart}
-          disabled={!bankerReady || !hasStakes || dealActionPending}
-        >
-          Shuffle to start
-        </button>
-      );
-    }
-
-    if (canDeal && bettingOpen) {
-      return (
-        <button
-          type="button"
-          className="dealer-block__action dealer-block__action--primary dealer-block__action--cards"
-          onClick={onDealCards}
-          disabled={!bankerReady || dealActionPending}
-        >
-          {dealActionPending ? 'Dealing…' : 'Deal Cards'}
-        </button>
-      );
-    }
-
-    return null;
-  }
-
-  const primaryAction = renderBettingActions();
+  const primaryAction = renderPrimaryAction();
 
   const cardsSlot = dealerCards ? (
     <div className="dealer-block__cards">{dealerCards}</div>
@@ -192,9 +196,12 @@ export function DealerBlock({
         <div className="dealer-block__center-col">
           <div className="dealer-block__stack">
             <div className="dealer-block__cards-slot">{cardsSlot}</div>
-            <div className="dealer-block__action-slot">
-              {primaryAction ?? <span className="dealer-block__action-spacer" aria-hidden="true" />}
-            </div>
+            {bankInfo ?? (
+              <div className="dealer-block__bank-info dealer-block__bank-info--placeholder" aria-hidden="true">
+                &nbsp;
+              </div>
+            )}
+            <div className="dealer-block__action-slot">{primaryAction}</div>
             {onOpenTableDetails && (
               <button
                 type="button"

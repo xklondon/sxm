@@ -89,6 +89,8 @@ describe('DealerBlock New Game', () => {
       bettingOpen: false,
       shoeStarted: true,
     });
+    expect(playing).toContain('Deal Cards');
+    expect(playing).toContain('disabled');
     expect(playing).not.toContain('New Game');
   });
 });

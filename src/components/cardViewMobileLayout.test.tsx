@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { GameState, TableViewMode } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
 import { BlackjackPanel } from './BlackjackPanel';
+import { TABLE_UX } from './tableUxContract';
 import {
   tableAfterStartPlaying,
   boxPlayerId,
@@ -111,9 +112,9 @@ describe('mobile Card View layout contract', () => {
     const betting = renderPanelAt(390, withView(bettingState(), 'card'));
     const playing = renderPanelAt(390, withView(playingState(), 'card'));
     for (const html of [betting, playing]) {
-      expect(html).toContain('bj-phone-view__slot--stage');
-      expect(html).toContain('bj-phone-view__slot--actions');
-      expect(html).toContain('bj-phone-view__slot--boxes');
+      expect(html).toContain(TABLE_UX.cardLayoutHero);
+      expect(html).toContain(TABLE_UX.cardLayoutActions);
+      expect(html).toContain(TABLE_UX.cardLayoutBoxes);
       expect(html).toContain('bj-phone-view__mini-row');
       expect(html).not.toContain('bj-phone-view__slot--betting');
     }

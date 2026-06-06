@@ -25,6 +25,8 @@ function renderCardView(
 ): string {
   return renderToStaticMarkup(
     <BlackjackCardView
+      dealer={<div className="dealer-block" />}
+      tray={<div className="bj-casino__tray-wrap" />}
       gameState={state}
       logicalGameState={opts.logicalGameState ?? state}
       activeBoxId={opts.activeBoxId ?? state.blackjack?.activePlayerId ?? null}

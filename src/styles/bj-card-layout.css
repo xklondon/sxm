@@ -1,0 +1,400 @@
+/**
+ * Card View vertical layout — fixed CSS grid rows.
+ * Card View uses fixed grid rows. Do not position boxes with flex or phase-dependent margins.
+ */
+
+:root {
+  --bj-card-row-dealer: 8rem;
+  --bj-card-row-summary: 2.75rem;
+  --bj-card-row-hero-min: 11rem;
+  --bj-card-row-actions: 3.75rem;
+  --bj-card-row-boxes: 9rem;
+  --bj-card-row-tray: 2.75rem;
+  --bj-card-boxes-padding-bottom: 0.35rem;
+  --bj-card-boxes-padding-inline: 0.4rem;
+  --bj-card-desktop-table-height: min(88vh, 56rem);
+  --bj-card-hero-card-width: min(18vw, 7.25rem);
+  --bj-card-hero-card-max-height: min(24vw, 9.5rem);
+  --bj-card-total-font-size: 0.56rem;
+  --bj-card-total-min-height: 0.95rem;
+  --bj-cardview-desktop-mini-hand-height: 4.35rem;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --bj-card-row-dealer: 7rem;
+    --bj-card-row-summary: 2.25rem;
+    --bj-card-row-hero-min: 10rem;
+    --bj-card-row-actions: 3.45rem;
+    --bj-card-row-boxes: 7.5rem;
+    --bj-card-row-tray: 2.5rem;
+    --bj-card-boxes-padding-bottom: 0.3rem;
+    --bj-card-desktop-table-height: min(84vh, 50rem);
+    --bj-card-hero-card-width: min(22vw, 6.5rem);
+    --bj-card-hero-card-max-height: min(28vw, 8.75rem);
+  }
+}
+
+.bj-card-layout {
+  height: 100%;
+  display: grid;
+  grid-template-rows:
+    var(--bj-card-row-dealer)
+    var(--bj-card-row-summary)
+    minmax(var(--bj-card-row-hero-min), 1fr)
+    var(--bj-card-row-actions)
+    var(--bj-card-row-boxes)
+    var(--bj-card-row-tray);
+  width: 100%;
+  min-height: 0;
+  max-height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.bj-card-layout.bj-phone-view {
+  overflow: hidden;
+}
+
+.bj-card-layout__dealer,
+.bj-card-layout__summary,
+.bj-card-layout__hero,
+.bj-card-layout__actions,
+.bj-card-layout__boxes,
+.bj-card-layout__tray {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  position: static;
+}
+
+.bj-card-layout__dealer {
+  grid-row: 1;
+  height: var(--bj-card-row-dealer);
+  min-height: var(--bj-card-row-dealer);
+  max-height: var(--bj-card-row-dealer);
+  overflow: visible;
+}
+
+.bj-card-layout__summary {
+  grid-row: 2;
+  height: var(--bj-card-row-summary);
+  min-height: var(--bj-card-row-summary);
+  max-height: var(--bj-card-row-summary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bj-card-layout__summary-placeholder {
+  width: 100%;
+  min-height: calc(var(--bj-card-row-summary) - 0.35rem);
+  visibility: hidden;
+}
+
+.bj-card-layout__hero {
+  grid-row: 3;
+  min-height: var(--bj-card-row-hero-min);
+  max-height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.bj-card-layout__actions {
+  grid-row: 4;
+  height: var(--bj-card-row-actions);
+  min-height: var(--bj-card-row-actions);
+  max-height: var(--bj-card-row-actions);
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bj-card-layout__actions-placeholder {
+  width: 100%;
+  min-height: calc(var(--bj-card-row-actions) - 0.5rem);
+  visibility: hidden;
+}
+
+.bj-card-layout__boxes {
+  grid-row: 5;
+  height: var(--bj-card-row-boxes);
+  min-height: var(--bj-card-row-boxes);
+  max-height: var(--bj-card-row-boxes);
+  overflow: visible;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.12rem var(--bj-card-boxes-padding-inline) var(--bj-card-boxes-padding-bottom);
+  box-sizing: border-box;
+}
+
+.bj-card-layout__tray {
+  grid-row: 6;
+  height: var(--bj-card-row-tray);
+  min-height: var(--bj-card-row-tray);
+  max-height: var(--bj-card-row-tray);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: visible;
+  padding: 0 0.35rem 0.2rem;
+  box-sizing: border-box;
+}
+
+.bj-card-layout__tray-placeholder {
+  width: 100%;
+  min-height: calc(var(--bj-card-row-tray) - 0.75rem);
+  visibility: hidden;
+}
+
+/* Card View felt hosts the grid at full height. */
+.bj-casino__felt--card-view {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bj-casino__felt--card-view > .bj-card-layout {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (min-width: 721px) {
+  .bj-view-card-desktop .bj-table-desktop-shell {
+    height: var(--bj-card-desktop-table-height);
+    max-height: var(--bj-card-desktop-table-height);
+  }
+
+  .bj-view-card-desktop .bj-card-layout__boxes .bj-phone-view__mini-row {
+    min-height: 0;
+    max-height: 100%;
+    width: 100%;
+    justify-content: space-evenly;
+    align-items: flex-end;
+    gap: 0.18rem;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 0;
+  }
+
+  .bj-view-card-desktop .bj-card-layout__boxes .bj-phone-view__mini-hand,
+  .bj-view-card-desktop .bj-card-layout__boxes .bj-phone-view__mini-hand--card-compact {
+    min-width: var(--bj-cardview-desktop-mini-hand-width, 4.65rem);
+    max-width: calc(var(--bj-cardview-desktop-mini-hand-width, 4.65rem) + 0.35rem);
+    min-height: var(--bj-cardview-desktop-mini-hand-height, 4.35rem);
+    height: var(--bj-cardview-desktop-mini-hand-height, 4.35rem);
+    max-height: var(--bj-cardview-desktop-mini-hand-height, 4.35rem);
+  }
+}
+
+/**
+ * Legacy class reset — hero/actions/boxes/tray content must stay inside grid rows.
+ * Do not reintroduce min-height, absolute, translateY, or negative margins here.
+ */
+.bj-card-layout__hero .bj-phone-view__axis,
+.bj-card-layout__hero .bj-phone-view__play-stack,
+.bj-card-layout__hero .bj-phone-view__stage,
+.bj-card-layout__hero .bj-phone-view__hand,
+.bj-card-layout__hero .bj-phone-view__bank-hero,
+.bj-card-layout__hero .bj-phone-view__hero-stage,
+.bj-card-layout__hero .bj-phone-view__hero-center,
+.bj-card-layout__hero .bj-phone-view__play-area,
+.bj-card-layout__hero .bj-phone-view__hand-meta,
+.bj-card-layout__hero .bj-phone-view__cards-slot {
+  min-height: 0;
+  max-height: 100%;
+  flex: 1 1 auto;
+  overflow: hidden;
+  position: static;
+  transform: none;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.bj-card-layout__hero .bj-phone-view__total,
+.bj-card-layout__hero .bj-phone-view__total--hero,
+.bj-card-layout__hero .bj-phone-view__total--compact {
+  flex: 0 0 auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  position: static;
+  transform: none;
+  font-size: var(--bj-card-total-font-size);
+  min-height: var(--bj-card-total-min-height);
+  padding: 0.06rem 0.42rem;
+  line-height: 1;
+}
+
+.bj-card-layout__hero .bj-phone-view__cards {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bj-card-layout__hero .bj-phone-view__cards .playing-card.bj-phone-card--hero {
+  width: var(--bj-card-hero-card-width);
+  min-height: 0;
+  max-height: var(--bj-card-hero-card-max-height);
+  font-size: 1.25rem;
+}
+
+.bj-card-layout__hero .bj-phone-view__hand,
+.bj-card-layout__hero .bj-phone-view__hero-stage {
+  min-height: 0;
+  max-height: 100%;
+}
+
+.bj-card-layout__actions .bj-phone-view__action-bar,
+.bj-card-layout__actions .bj-phone-view__action-bar--playing,
+.bj-card-layout__actions .bj-player-actions {
+  min-height: 0;
+  max-height: 100%;
+  width: 100%;
+  position: static;
+  transform: none;
+  margin-top: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+  gap: 0.06rem;
+  padding: 0.08rem 0.25rem;
+}
+
+.bj-card-layout__actions .bj-phone-view__action-bar-row--primary .bj-phone-view__action-bar-btn {
+  min-height: 1.65rem;
+  max-width: 5.25rem;
+  padding: 0.16rem 0.38rem;
+  font-size: 0.62rem;
+}
+
+.bj-card-layout__actions .bj-phone-view__action-bar-extra,
+.bj-card-layout__actions .bj-phone-view__action-bar-extra--compact {
+  min-height: 1.35rem;
+  min-width: 1.65rem;
+  padding: 0.08rem 0.26rem;
+  font-size: 0.52rem;
+}
+
+.bj-card-layout__actions .bj-phone-view__action-bar-row {
+  flex: 0 0 auto;
+}
+
+.bj-card-layout__boxes .bj-phone-view__mini-row {
+  min-height: 0;
+  max-height: 100%;
+  width: 100%;
+  height: auto;
+  flex: 0 1 auto;
+  position: static;
+  transform: none;
+  margin-top: 0;
+  margin-bottom: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  align-items: flex-end;
+  justify-content: space-evenly;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.bj-card-layout__boxes .bj-phone-view__mini-hand,
+.bj-card-layout__boxes .bj-phone-view__mini-hand--card-compact,
+.bj-card-layout__boxes .bj-phone-view__mini-hand--empty {
+  max-height: var(--bj-cardview-desktop-mini-hand-height, 4.35rem);
+  flex-shrink: 0;
+}
+
+.bj-card-layout__boxes .bj-phone-view__mini-hand-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.08rem;
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: 100%;
+}
+
+.bj-card-layout__boxes .bj-phone-view__box-value--above {
+  display: block;
+  flex: 0 0 auto;
+  font-family: var(--ds-font-mono);
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-bold);
+  line-height: 1;
+  text-align: center;
+  color: var(--ds-color-text);
+}
+
+.bj-card-layout__boxes .bj-phone-view__box-value--above.bj-phone-view__box-value--bust {
+  color: var(--ds-color-danger);
+}
+
+.bj-card-layout__boxes .bj-phone-view__mini-hand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.1rem 0.08rem 0.06rem;
+  overflow: visible;
+}
+
+.bj-card-layout__boxes .bj-phone-view__mini-hand-card-stack {
+  order: -1;
+  flex: 0 0 auto;
+  margin-top: 0;
+  align-self: center;
+}
+
+.bj-card-layout__boxes .bj-phone-view__box-stake {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.04rem;
+  flex: 0 0 auto;
+  min-height: 0.85rem;
+  width: 100%;
+  text-align: center;
+}
+
+.bj-card-layout__boxes .bj-phone-view__box-stake-label {
+  font-family: var(--ds-font-mono);
+  font-size: 0.52rem;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-color-gold);
+  line-height: 1.1;
+}
+
+.bj-card-layout__boxes .bj-phone-view__box-stake .stake-chips--bet {
+  transform: scale(0.44);
+  transform-origin: center center;
+}
+
+.bj-card-layout__tray .bj-casino__tray-wrap {
+  width: 100%;
+  gap: 0.08rem;
+}
+
+.bj-card-layout__tray .bj-casino__tray-wrap,
+.bj-card-layout__tray .bj-casino__tray,
+.bj-card-layout__tray .bj-casino__player-balance {
+  position: static;
+  transform: none;
+  margin-top: 0;
+  margin-bottom: 0;
+}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { BlackjackCardView } from './BlackjackCardView';
+import { TABLE_UX } from './tableUxContract';
 import { createNewBlackjackTable } from '../engine/session';
 import { allocateChipsToBankrollOwner } from '../engine/session/allocation';
 import { addChipToBoxStake } from '../engine/blackjack/stakes';
@@ -74,6 +75,8 @@ function bettingTableWithBox(): { state: GameState; boxId: string } {
 function renderBettingCardView(state: GameState, boxId: string): string {
   return renderToStaticMarkup(
     <BlackjackCardView
+      dealer={<div className="dealer-block" />}
+      tray={<div className="bj-casino__tray-wrap" />}
       gameState={state}
       focusBoxId={boxId}
       activeBoxId={null}
@@ -111,7 +114,7 @@ describe('mobile Card View render contract', () => {
     expect(html).toContain('bj-phone-view__hand--waiting');
     expect(html).toContain('bj-phone-view__cards-placeholder');
     expect(html).toContain('bj-phone-view__mini-row');
-    expect(html).toContain('bj-phone-view__slot--boxes');
+    expect(html).toContain(TABLE_UX.cardLayoutBoxes);
     expect(html).not.toContain('bj-phone-view__betting-center');
     expect(html).not.toContain('bj-phone-view__bet-chip-wrap--main');
     expect(html).not.toContain('bj-phone-view__betting-stage--row');
@@ -134,6 +137,8 @@ describe('mobile Card View render contract', () => {
     const { state, boxId } = bettingTableWithBox();
     const html = renderToStaticMarkup(
       <BlackjackCardView
+        dealer={<div className="dealer-block" />}
+        tray={<div className="bj-casino__tray-wrap" />}
         gameState={state}
         focusBoxId={boxId}
         activeBoxId={null}

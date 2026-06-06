@@ -4,18 +4,21 @@
  */
 
 :root {
-  --bj-table-rail-radius: 50% / 22%;
-  --bj-table-felt-radius: 50% / 20%;
+  --bj-table-rail-radius: var(--ds-radius-lg);
+  --bj-table-felt-radius: calc(var(--ds-radius-lg) - 0.15rem);
   --bj-table-felt-min-height: min(58dvh, 28rem);
-  --bj-table-felt-border: 1px solid rgb(251 191 36 / 0.08);
+  --bj-table-felt-border: 1px solid rgb(251 191 36 / 0.12);
   --bj-table-felt-bg:
     radial-gradient(ellipse 100% 70% at 50% 20%, rgb(251 191 36 / 0.04) 0%, transparent 50%),
     radial-gradient(ellipse at center, var(--ds-color-felt-mid) 0%, var(--ds-color-felt) 45%, var(--ds-color-felt-dark) 100%);
   --bj-table-rail-bg: linear-gradient(180deg, var(--ds-color-rail) 0%, #1a1008 100%);
 
   --bj-seat-radius: var(--ds-radius-md);
-  --bj-seat-border: 1px solid var(--ds-color-border-subtle);
-  --bj-seat-bg: rgb(0 0 0 / 0.22);
+  --bj-seat-border: 1.5px solid rgb(251 191 36 / 0.38);
+  --bj-seat-bg: rgb(0 0 0 / 0.32);
+  --bj-seat-frame-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 2px 10px rgb(0 0 0 / 0.35);
   --bj-seat-empty-border: 1px dashed var(--ds-color-border-subtle);
   --bj-seat-active-border: var(--ds-color-gold);
   --bj-seat-active-bg: rgb(251 191 36 / 0.16);
@@ -49,15 +52,30 @@
 
   /* One desktop table shell — same size for Full Table + Card View. */
   --bj-desktop-table-height: min(72vh, 46rem);
-  --bj-desktop-table-max-width: min(96vw, 72rem);
+  --bj-desktop-table-max-width: min(98vw, 86rem);
   --bj-desktop-rail-padding: 0.35rem 0.5rem 0.45rem;
   /* Flat felt on desktop — one continuous surface, no mid-tone band. */
   --bj-desktop-felt-bg: var(--ds-color-felt);
-  --bj-desktop-seat-width: 5.25rem;
+  --bj-desktop-seat-width: 5.75rem;
   --bj-desktop-seat-min-height: 4.15rem;
-  --bj-desktop-mini-hand-width: 5.5rem;
-  --bj-desktop-mini-hand-height: 5.15rem;
-  --bj-desktop-mini-row-height: 5.5rem;
+  --bj-desktop-mini-hand-width: 6rem;
+  --bj-desktop-mini-hand-height: 7.25rem;
+  --bj-desktop-mini-row-height: 7.25rem;
+  --bj-table-zone-dealer-min-height: 6.75rem;
+  --bj-table-zone-summary-min-height: 1.75rem;
+  --bj-table-zone-actions-min-height: 3.15rem;
+  --bj-table-zone-tray-min-height: 3.35rem;
+  --bj-table-zone-play-min-height: 8rem;
+  --bj-cardview-zone-summary-height: 2.5rem;
+  --bj-cardview-zone-actions-height: 4rem;
+  --bj-cardview-zone-boxes-height: 4.35rem;
+  /* Card View — compact bottom boxes (smaller than Full Table arc seats). */
+  --bj-cardview-desktop-mini-hand-width: 4.65rem;
+  --bj-cardview-desktop-mini-hand-height: 4.75rem;
+  --bj-cardview-desktop-mini-row-height: 4.85rem;
+  --bj-cardview-mobile-mini-hand-width: 2.3rem;
+  --bj-cardview-mobile-mini-hand-max-width: 2.55rem;
+  --bj-cardview-mobile-mini-hand-height: 2.2rem;
 }
 
 @media (max-width: 720px) {
@@ -81,14 +99,14 @@
     display: flex;
     flex-direction: column;
     padding: var(--bj-mobile-rail-padding);
-    border-radius: 50% / 18%;
-    overflow: hidden;
+    border-radius: var(--bj-table-rail-radius);
+    overflow: visible;
   }
 
   .bj-view-full-mobile .bj-casino__felt,
   .bj-view-card-mobile .bj-casino__felt {
     flex: 1 1 auto;
-    border-radius: 50% / 16%;
+    border-radius: var(--bj-table-felt-radius);
     min-height: var(--bj-mobile-felt-min-height);
     padding: 0.28rem 0.85rem 0.32rem;
     width: 100%;
@@ -98,16 +116,27 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    overflow: visible;
   }
 
   .bj-view-full-mobile .bj-phone-view__mini-hand,
-  .bj-view-card-mobile .bj-phone-view__mini-hand {
+  .bj-view-full-mobile .bj-arc__slot .bj-phone-view__mini-hand {
     flex: 0 0 auto;
     min-width: var(--bj-mobile-mini-hand-width);
     max-width: var(--bj-mobile-mini-hand-max-width);
     min-height: var(--bj-mobile-mini-hand-height);
     height: var(--bj-mobile-mini-hand-height);
     padding: 0.12rem 0.08rem;
+  }
+
+  .bj-view-card-mobile .bj-phone-view__mini-hand,
+  .bj-view-card-mobile .bj-phone-view__mini-hand--card-compact {
+    flex: 0 0 auto;
+    min-width: var(--bj-cardview-mobile-mini-hand-width);
+    max-width: var(--bj-cardview-mobile-mini-hand-max-width);
+    min-height: var(--bj-cardview-mobile-mini-hand-height);
+    height: var(--bj-cardview-mobile-mini-hand-height);
+    padding: 0.1rem 0.06rem;
   }
 
   .bj-view-full-mobile .bj-phone-view__box-value,
@@ -171,6 +200,7 @@
   border: var(--bj-seat-border);
   border-radius: var(--bj-seat-radius);
   background: var(--bj-seat-bg);
+  box-shadow: var(--bj-seat-frame-shadow);
   box-sizing: border-box;
 }
 
@@ -300,7 +330,7 @@
   min-height: 5.5rem;
   height: 5.5rem;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .bj-phone-view__mini-hand--empty {
@@ -364,6 +394,168 @@
 
 .bj-phone-view__box-value {
   display: none;
+}
+
+.bj-phone-view__box-value--placeholder {
+  visibility: hidden;
+  min-height: 1em;
+}
+
+/* Canonical felt zones — stable shell across betting/dealing/player/round-complete. */
+.bj-table-zone {
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bj-table-zone--dealer {
+  min-height: var(--bj-table-zone-dealer-min-height, 6.5rem);
+}
+
+.bj-table-zone--summary {
+  flex: 0 0 auto;
+  min-height: var(--bj-table-zone-summary-min-height, 1.75rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.bj-table-zone__summary-placeholder {
+  width: 100%;
+  min-height: calc(var(--bj-table-zone-summary-min-height, 1.75rem) - 0.35rem);
+}
+
+.bj-table-zone--hero {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bj-table-info-bar--dealer {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.04rem;
+  margin: 0;
+  padding: 0.04rem 0.2rem 0.06rem;
+  min-height: 1.55rem;
+}
+
+.bj-table-info-bar--dealer .bj-table-info-bar__item--placeholder {
+  min-width: 5rem;
+  min-height: 0.65rem;
+}
+
+.bj-table-zone--actions {
+  min-height: var(--bj-table-zone-actions-min-height, 3rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bj-table-zone__actions-placeholder {
+  width: 100%;
+  max-width: 22rem;
+  min-height: calc(var(--bj-table-zone-actions-min-height, 3rem) - 0.5rem);
+}
+
+.bj-table-zone--play {
+  flex: 1 1 auto;
+  min-height: var(--bj-table-zone-play-min-height, 7rem);
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.bj-table-zone--bottom {
+  flex: 0 0 auto;
+  min-height: var(--bj-table-zone-tray-min-height, 3rem);
+}
+
+.bj-casino__tray--reserved {
+  min-height: calc(var(--bj-table-zone-tray-min-height, 3rem) - 0.75rem);
+  width: 100%;
+}
+
+/* Full Table arc seats — value → cards → chips inside the box. */
+.bj-phone-view__mini-hand--full-arc {
+  justify-content: flex-start;
+  gap: 0.05rem;
+}
+
+.bj-phone-view__mini-hand--full-arc .bj-phone-view__box-value,
+.bj-phone-view__mini-hand--full-arc .bj-phone-view__box-value--placeholder {
+  order: 1;
+  flex: 0 0 auto;
+}
+
+.bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-hand-head {
+  order: 0;
+  flex: 0 0 auto;
+  font-size: 0.9em;
+  opacity: 0.85;
+}
+
+.bj-phone-view__mini-hand--full-arc .bj-arc__cards {
+  order: 2;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 2.35rem;
+  margin: -0.12rem 0 0;
+  width: 100%;
+}
+
+.bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot {
+  order: 3;
+  flex: 0 0 auto;
+  margin-top: auto;
+  min-height: 1.65rem;
+  width: 100%;
+}
+
+.bj-phone-view__mini-stake-slot--reserved {
+  display: block;
+  min-height: 1.65rem;
+  width: 100%;
+}
+
+.bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot .stake-chips--bet {
+  transform: scale(0.58);
+  transform-origin: center center;
+}
+
+/* Card View compact bottom boxes — docked low, mini cards only. */
+.bj-phone-view__mini-hand--card-compact {
+  min-width: var(--bj-cardview-mobile-mini-hand-width, 2.3rem);
+  max-width: var(--bj-cardview-mobile-mini-hand-max-width, 2.55rem);
+  min-height: var(--bj-cardview-mobile-mini-hand-height, 2.2rem);
+  height: var(--bj-cardview-mobile-mini-hand-height, 2.2rem);
+  padding: 0.1rem 0.08rem 0.08rem;
+  gap: 0.04rem;
+}
+
+.bj-phone-view__mini-hand--card-compact .bj-phone-view__mini-hand-card-stack {
+  flex: 0 0 1.35rem;
+  min-height: 1.35rem;
+  height: 1.35rem;
+}
+
+.bj-phone-view__mini-hand--card-compact .bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card {
+  transform: translateX(calc(-50% + var(--mini-card-i, 0) * 0.32rem)) scale(0.4);
+}
+
+.bj-phone-view__mini-hand--card-compact .bj-phone-view__mini-stake-slot {
+  min-height: 1.15rem;
+}
+
+.bj-phone-view__mini-hand--card-compact .bj-phone-view__mini-stake-slot .stake-chips--bet {
+  transform: scale(0.46);
+  transform-origin: center center;
 }
 
 .bj-phone-view__mini-hand--has-stake {
@@ -566,7 +758,7 @@
   .bj-view-full-desktop .bj-casino__rail,
   .bj-view-card-desktop .bj-casino__rail {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     flex: 1 1 auto;
     height: 100%;
     min-height: 0;
@@ -578,7 +770,7 @@
   .bj-view-full-desktop .bj-casino__felt,
   .bj-view-card-desktop .bj-casino__felt {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     flex: 1 1 auto;
     min-height: 0;
     height: 100%;
@@ -631,6 +823,7 @@
 
   .bj-view-full-desktop .bj-arc__slot {
     width: var(--bj-desktop-mini-hand-width);
+    overflow: visible;
   }
 
   .bj-view-full-desktop .bj-arc__slot--empty:has(.bj-phone-view__mini-hand--empty) {
@@ -707,16 +900,40 @@
   }
 
   .bj-view-full-desktop .bj-casino__felt-main,
-  .bj-view-card-desktop .bj-casino__felt-main,
-  .bj-view-card-desktop .bj-casino__felt-main--card {
+  .bj-view-card-desktop .bj-casino__felt-main {
     flex: 1 1 auto;
     min-height: 0;
     width: 100%;
     max-width: none;
-    overflow: hidden;
+    overflow: visible;
     display: flex;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .bj-view-full-desktop .bj-arc__cards,
+  .bj-view-card-desktop .bj-arc__cards,
+  .bj-view-full-desktop .bj-cards-fan,
+  .bj-view-card-desktop .bj-cards-fan,
+  .bj-view-full-desktop .bj-arc,
+  .bj-view-full-desktop .bj-arc__slot {
+    overflow: visible;
+  }
+
+  .bj-view-full-desktop .bj-arc__cards {
+    flex: 0 0 auto;
+    min-height: 3.35rem;
+    width: 100%;
+  }
+
+  .bj-view-full-desktop .bj-phone-view__mini-hand--full-arc .bj-arc__cards {
+    min-height: 2.85rem;
+    margin-top: -0.15rem;
+  }
+
+  .bj-view-full-desktop .bj-phone-view__mini-hand--full-arc .bj-cards-fan .playing-card {
+    width: 2.55rem;
+    min-height: 3.55rem;
   }
 
   .bj-view-full-desktop .bj-arc {
@@ -743,7 +960,13 @@
     margin-top: auto;
   }
 
-  .bj-view-card-desktop .bj-phone-view {
+  .bj-view-card-desktop .bj-phone-view.bj-card-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .bj-view-card-desktop .bj-phone-view:not(.bj-card-layout) {
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
@@ -757,55 +980,14 @@
     overflow: hidden;
   }
 
-  .bj-view-card-desktop .bj-phone-view__slot--stage {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
-  }
-
   .bj-view-card-desktop .bj-phone-view__hero-stage,
   .bj-view-card-desktop .bj-phone-view__hand,
   .bj-view-card-desktop .bj-phone-view__cards-slot {
     min-height: 0;
   }
 
-  .bj-view-card-desktop .bj-phone-view__cards .playing-card.bj-phone-card--hero {
-    width: min(16vw, 6.75rem);
-    min-height: min(22vw, 8.5rem);
-    font-size: 1.35rem;
-  }
-
   .bj-view-card-desktop .bj-phone-view__action-bar--playing {
     flex: 0 0 auto;
     min-height: 0;
-  }
-
-  .bj-view-card-desktop .bj-phone-view__slot--boxes {
-    flex: 0 0 auto;
-    min-height: var(--bj-desktop-mini-row-height);
-    max-height: var(--bj-desktop-mini-row-height);
-  }
-
-  .bj-view-card-desktop .bj-phone-view__mini-row {
-    min-height: var(--bj-desktop-mini-row-height);
-    max-height: var(--bj-desktop-mini-row-height);
-    width: 100%;
-    justify-content: space-evenly;
-    gap: 0.22rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  .bj-view-card-desktop .bj-phone-view__mini-hand {
-    min-width: var(--bj-desktop-mini-hand-width);
-    max-width: calc(var(--bj-desktop-mini-hand-width) + 0.65rem);
-    min-height: var(--bj-desktop-mini-hand-height);
-    height: var(--bj-desktop-mini-hand-height);
-  }
-
-  .bj-view-card-desktop .bj-phone-view__mini-hand-card-stack {
-    flex: 0 0 1.65rem;
-    min-height: 1.65rem;
-    height: 1.65rem;
   }
 }

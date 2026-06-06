@@ -4,10 +4,6 @@
 
 .bj-phone-view {
 
-  display: flex;
-
-  flex-direction: column;
-
   width: 100%;
 
   max-width: 100%;
@@ -28,8 +24,6 @@
   color: var(--ds-color-text);
 
 }
-
-
 
 .bj-phone-view__app-bar {
 
@@ -191,6 +185,17 @@
   overflow-x: auto;
   overflow-y: hidden;
   box-sizing: border-box;
+}
+
+/* Card View grid owns box row sizing — do not use legacy 6.25rem band. */
+.bj-card-layout__boxes .bj-phone-view__mini-row {
+  min-height: 0;
+  max-height: 100%;
+  height: auto;
+  overflow-y: visible;
+  align-items: flex-end;
+  justify-content: space-evenly;
+  padding: 0;
 }
 
 .bj-casino__felt-main {
@@ -640,9 +645,8 @@
   flex: 0 0 auto;
 }
 
-.bj-phone-view__slot--boxes {
-  flex: 0 0 auto;
-  min-height: 2.55rem;
+.bj-card-layout__hero .bj-phone-view__slot--stage {
+  min-height: 0;
 }
 
 .bj-phone-view__action-bar {
@@ -1451,6 +1455,16 @@
 
   scrollbar-width: none;
 
+}
+
+.bj-card-layout__boxes .bj-phone-view__mini-row {
+  min-height: 0;
+  max-height: 100%;
+  height: auto;
+  overflow-y: visible;
+  align-items: flex-end;
+  justify-content: space-evenly;
+  padding: 0;
 }
 
 
