@@ -171,11 +171,13 @@ describe('Card View polish guards', () => {
   it('renders bet/stake value under the tile using existing wager data', () => {
     const html = renderCardPanel(playingState());
     const column = miniBoxColumn(html, 1);
-    expect(column).toContain(TABLE_UX.cardViewBoxStake);
+    expect(column).toContain(TABLE_UX.cardViewBoxChipStack);
     expect(column).toContain(TABLE_UX.cardViewBoxStakeLabel);
     expect(column).toContain('Bet: 50');
     const buttonClose = column.indexOf('</button>');
-    const stakeIdx = column.indexOf(TABLE_UX.cardViewBoxStake);
-    expect(stakeIdx).toBeGreaterThan(buttonClose);
+    const betIdx = column.indexOf(TABLE_UX.cardViewBoxStakeLabel);
+    const chipIdx = column.indexOf(TABLE_UX.cardViewBoxChipStack);
+    expect(betIdx).toBeGreaterThan(buttonClose);
+    expect(chipIdx).toBeGreaterThan(betIdx);
   });
 });

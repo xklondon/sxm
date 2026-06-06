@@ -63,9 +63,14 @@ export const TABLE_UX = {
   cardViewCompactBox: 'bj-phone-view__mini-hand--card-compact',
   /** Card View box column: value above, tile, stake below. */
   cardViewBoxColumn: 'bj-phone-view__mini-hand-column',
-  cardViewBoxStake: 'bj-phone-view__box-stake',
+  cardViewBoxChipStack: 'bj-phone-view__box-chip-stack',
+  cardViewBoxChipStackReserved: 'bj-phone-view__box-chip-stack--reserved',
   cardViewBoxStakeLabel: 'bj-phone-view__box-stake-label',
+  cardViewBoxStakeLabelReserved: 'bj-phone-view__box-stake-label--reserved',
   cardViewBoxValueAbove: 'bj-phone-view__box-value--above',
+  cardViewBoxValueReserved: 'bj-phone-view__box-value--reserved',
+  /** @deprecated Use cardViewBoxChipStack — chip stack is a fixed grid row, not a wrapper. */
+  cardViewBoxStake: 'bj-phone-view__box-chip-stack',
   /** Compact hero total badge in Card View grid. */
   cardViewTotalCompact: 'bj-phone-view__total--compact',
   /** Compact secondary action buttons in Card View. */

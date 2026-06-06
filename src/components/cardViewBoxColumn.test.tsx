@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
+
 import type { GameState } from '../types';
 import { BlackjackCardView } from './BlackjackCardView';
 import { TABLE_UX } from './tableUxContract';
@@ -99,32 +100,58 @@ function render(state: GameState): string {
   );
 }
 
-describe('Card View mini row layout contract', () => {
-  it('renders stake under the tile when chips are placed', () => {
-    const before = render(bettingState([]));
-    const after = render(bettingState([10, 5]));
-    expect(before).toContain(TABLE_UX.cardViewBoxColumn);
-    expect(before).toContain(TABLE_UX.cardViewBoxStakeLabelReserved);
-    expect(before).toContain(TABLE_UX.cardViewBoxChipStackReserved);
-    expect(after).toContain(TABLE_UX.cardViewBoxChipStack);
-    expect(after).toContain(TABLE_UX.cardViewBoxStakeLabel);
-    expect(after).toContain('Bet: 15');
-    expect(after).toContain('stake-chips--bet');
-    const columnCountBefore = (before.match(/bj-phone-view__mini-hand-column/g) ?? []).length;
-    const columnCountAfter = (after.match(/bj-phone-view__mini-hand-column/g) ?? []).length;
-    expect(columnCountBefore).toBe(columnCountAfter);
-    expect(columnCountBefore).toBeGreaterThan(0);
+function columnForBox(html: string, slotNumber: number): string {
+  const marker = slotNumber === 1 ? 'aria-label="Box 1' : `aria-label="Join box ${slotNumber}`;
+  const start = html.indexOf(marker);
+  expect(start).toBeGreaterThan(-1);
+  const columnStart = html.lastIndexOf(TABLE_UX.cardViewBoxColumn, start);
+  const chipStackEnd = html.indexOf('</div>', html.indexOf(TABLE_UX.cardViewBoxChipStack, start));
+  return html.slice(columnStart, chipStackEnd + 6);
+}
+
+describe('Card View stable box column', () => {
+  it('empty and occupied boxes share the same four-row column structure', () => {
+    const html = render(bettingState([10, 5]));
+    const occupied = columnForBox(html, 1);
+    const empty = columnForBox(html, 2);
+
+    for (const column of [occupied, empty]) {
+      expect(column).toContain(TABLE_UX.cardViewBoxValueAbove);
+      expect(column).toContain(TABLE_UX.cardViewBoxStakeLabel);
+      expect(column).toContain(TABLE_UX.cardViewBoxChipStack);
+    }
+
+    expect(occupied).toContain('Bet: 15');
+    expect(occupied).toContain('stake-chips--bet');
+    expect(occupied).not.toContain(TABLE_UX.cardViewBoxStakeLabelReserved);
+    expect(occupied).not.toContain(TABLE_UX.cardViewBoxChipStackReserved);
+
+    expect(empty).toContain(TABLE_UX.cardViewBoxValueReserved);
+    expect(empty).toContain(TABLE_UX.cardViewBoxStakeLabelReserved);
+    expect(empty).toContain(TABLE_UX.cardViewBoxChipStackReserved);
   });
 
-  it('CSS fixes mini tile height in the grid boxes row so stake does not expand layout', () => {
+  it('reserves bet-label and chip-stack placeholders before chips are placed', () => {
+    const html = render(bettingState([]));
+    const occupied = columnForBox(html, 1);
+
+    expect(occupied).toContain(TABLE_UX.cardViewBoxStakeLabelReserved);
+    expect(occupied).toContain(TABLE_UX.cardViewBoxChipStackReserved);
+    expect(occupied).not.toContain('stake-chips--bet');
+    expect(occupied).not.toContain('bj-phone-view__mini-hand--has-stake');
+  });
+
+  it('does not tie tile layout to stake presence', () => {
+    const cardSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
+    expect(cardSrc).not.toMatch(/showBetStakeChips\s*\?\s*["']bj-phone-view__mini-hand--has-stake["']/);
+    expect(cardSrc).not.toMatch(/showStakeRow\s*\?/);
+
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-    expect(layoutCss).toContain('--bj-card-row-boxes: 9rem');
     expect(layoutCss).toMatch(
-      /\.bj-card-layout__boxes \.bj-phone-view__mini-hand[\s\S]*max-height:\s*var\(--bj-cardview-desktop-mini-hand-height/,
+      /\.bj-card-layout__boxes \.bj-phone-view__mini-hand-column[\s\S]*grid-template-rows:[\s\S]*var\(--bj-card-box-chip-stack-height\)/,
     );
     expect(layoutCss).toMatch(
       /\.bj-card-layout__boxes \.bj-phone-view__box-chip-stack[\s\S]*max-height:\s*var\(--bj-card-box-chip-stack-height\)/,
     );
-    expect(layoutCss).toMatch(/\.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*max-height:\s*100%/);
   });
 });

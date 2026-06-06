@@ -69,9 +69,12 @@ import {
   BOX_CARD_VALUE,
   BOX_CARD_VALUE_ABOVE,
   BOX_CARD_VALUE_BUST,
+  BOX_CARD_VALUE_RESERVED,
   BOX_CARD_COLUMN,
-  BOX_CARD_STAKE,
   BOX_CARD_STAKE_LABEL,
+  BOX_CARD_STAKE_LABEL_RESERVED,
+  BOX_CARD_CHIP_STACK,
+  BOX_CARD_CHIP_STACK_RESERVED,
 } from "./cardViewBox";
 
 
@@ -557,6 +560,80 @@ export function BlackjackCardView({
     }
   }
 
+  function renderCardViewBoxColumn({
+    aboveLabel,
+    aboveBust,
+    tile,
+    wager,
+    stakeChips,
+    showBetStakeChips,
+    bettingOpen,
+    boxId,
+  }: {
+    aboveLabel: string;
+    aboveBust: boolean;
+    tile: ReactNode;
+    wager: number;
+    stakeChips: ChipValue[];
+    showBetStakeChips: boolean;
+    bettingOpen: boolean;
+    boxId?: string;
+  }) {
+    const valueReserved = aboveLabel.length === 0;
+    const betReserved = wager <= 0;
+    const chipsReserved = !showBetStakeChips;
+
+    return (
+      <div className={BOX_CARD_COLUMN}>
+        <span
+          className={[
+            BOX_CARD_VALUE,
+            BOX_CARD_VALUE_ABOVE,
+            aboveBust ? BOX_CARD_VALUE_BUST : "",
+            valueReserved ? BOX_CARD_VALUE_RESERVED : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          aria-hidden={valueReserved || undefined}
+        >
+          {aboveLabel || "\u00a0"}
+        </span>
+        {tile}
+        <span
+          className={[
+            BOX_CARD_STAKE_LABEL,
+            betReserved ? BOX_CARD_STAKE_LABEL_RESERVED : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          aria-hidden={betReserved || undefined}
+        >
+          {wager > 0 ? `Bet: ${wager}` : "\u00a0"}
+        </span>
+        <div
+          className={[
+            BOX_CARD_CHIP_STACK,
+            chipsReserved ? BOX_CARD_CHIP_STACK_RESERVED : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          aria-hidden={chipsReserved || undefined}
+        >
+          {showBetStakeChips && boxId ? (
+            <StakeChips
+              chips={stakeChips}
+              variant="bet"
+              removable={bettingOpen}
+              onRemoveTopChip={() => onRemoveLastChip(boxId)}
+            />
+          ) : (
+            <span aria-hidden="true">&nbsp;</span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   function renderMiniHandBox(slotNumber: number, boxId: string) {
     const handKey = getCardViewHandKeyForBox(protocolPhase, logicalRound, boxId);
     const displayBoxHand = round?.playerHands[handKey];
@@ -583,31 +660,23 @@ export function BlackjackCardView({
     const aboveLabel =
       valueLabel ||
       (status !== "betting" && status !== "waiting" ? formatCardViewBoxStatus(status) : "");
-    const showStakeRow = wager > 0 || showBetStakeChips;
     const showHeadInTile = ids.length === 0 && bettingMainStage;
 
-    const handTile = (
-      <div className={BOX_CARD_COLUMN}>
-        {aboveLabel ? (
-          <span
-            className={[
-              BOX_CARD_VALUE,
-              BOX_CARD_VALUE_ABOVE,
-              status === "bust" ? BOX_CARD_VALUE_BUST : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            {aboveLabel}
-          </span>
-        ) : null}
+    const handTile = renderCardViewBoxColumn({
+      aboveLabel,
+      aboveBust: status === "bust",
+      wager,
+      stakeChips,
+      showBetStakeChips,
+      bettingOpen,
+      boxId,
+      tile: (
         <button
           type="button"
           className={[
             getBoxCardClassName(isActiveBox),
             TABLE_UX.cardViewCompactBox,
             getBetBoxPulseClassName(bettingOpen, true),
-            showBetStakeChips ? "bj-phone-view__mini-hand--has-stake" : "",
           ]
             .filter(Boolean)
             .join(" ")}
@@ -638,23 +707,8 @@ export function BlackjackCardView({
               : null}
           </span>
         </button>
-        {showStakeRow ? (
-          <div className={BOX_CARD_STAKE}>
-            {wager > 0 ? (
-              <span className={BOX_CARD_STAKE_LABEL}>Bet: {wager}</span>
-            ) : null}
-            {showBetStakeChips ? (
-              <StakeChips
-                chips={stakeChips}
-                variant="bet"
-                removable={bettingOpen}
-                onRemoveTopChip={() => onRemoveLastChip(boxId)}
-              />
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-    );
+      ),
+    });
 
     if (bettingMainStage && bettingOpen) {
       const dropKey = chipDropKey({ slotNumber, boxId });
@@ -713,17 +767,25 @@ export function BlackjackCardView({
   }
 
   function renderMiniEmptySlot(slotNumber: number) {
-    const joinTile = (
-      <button
-        type="button"
-        className={`bj-phone-view__mini-hand bj-phone-view__mini-hand--empty ${TABLE_UX.cardViewCompactBox}`}
-        onClick={() => onClaimSlot(slotNumber)}
-        aria-label={`Join box ${slotNumber}`}
-      >
-        <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
-        <span className="bj-phone-view__mini-hand-name">Join</span>
-      </button>
-    );
+    const joinTile = renderCardViewBoxColumn({
+      aboveLabel: "",
+      aboveBust: false,
+      wager: 0,
+      stakeChips: [],
+      showBetStakeChips: false,
+      bettingOpen,
+      tile: (
+        <button
+          type="button"
+          className={`bj-phone-view__mini-hand bj-phone-view__mini-hand--empty ${TABLE_UX.cardViewCompactBox}`}
+          onClick={() => onClaimSlot(slotNumber)}
+          aria-label={`Join box ${slotNumber}`}
+        >
+          <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
+          <span className="bj-phone-view__mini-hand-name">Join</span>
+        </button>
+      ),
+    });
 
     if (bettingMainStage && bettingOpen) {
       const dropKey = chipDropKey({ slotNumber, boxId: null });

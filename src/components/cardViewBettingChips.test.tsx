@@ -102,15 +102,15 @@ describe('Card View betting chips and layout', () => {
   it('renders chip stack on selected bottom box tile', () => {
     const { html } = bettingCardViewWithStake();
     expect(html).toContain('stake-chips--bet');
-    expect(html).toContain(TABLE_UX.cardViewBoxStake);
+    expect(html).toContain(TABLE_UX.cardViewBoxChipStack);
     expect(html).toContain(TABLE_UX.cardViewBoxStakeLabel);
     expect(html).toContain('Bet:');
-    expect(html).toContain('bj-phone-view__mini-hand--has-stake');
+    expect(html).not.toContain('bj-phone-view__mini-hand--has-stake');
     expect(html).toContain('bj-phone-view__mini-hand--active');
     expect(html).toContain('aria-current="true"');
-    const stakeIdx = html.indexOf(TABLE_UX.cardViewBoxStake);
     const activeIdx = html.indexOf('bj-phone-view__mini-hand--active');
-    expect(stakeIdx).toBeGreaterThan(activeIdx);
+    const chipIdx = html.indexOf('stake-chips--bet', activeIdx);
+    expect(chipIdx).toBeGreaterThan(activeIdx);
     expect(html).not.toContain('bj-phone-view__bet-chip-wrap--main');
     expect(html).not.toContain('bj-phone-view__bet-chip--hero');
   });

@@ -12,6 +12,9 @@
   --bj-card-row-tray: 2.75rem;
   --bj-card-boxes-padding-bottom: 0.35rem;
   --bj-card-boxes-padding-inline: 0.4rem;
+  --bj-card-box-value-height: 0.75rem;
+  --bj-card-box-bet-label-height: 0.65rem;
+  --bj-card-box-chip-stack-height: 1.15rem;
   --bj-card-desktop-table-height: min(88vh, 56rem);
   --bj-card-hero-card-width: min(18vw, 7.25rem);
   --bj-card-hero-card-max-height: min(24vw, 9.5rem);
@@ -319,29 +322,54 @@
 }
 
 .bj-card-layout__boxes .bj-phone-view__mini-hand-column {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows:
+    var(--bj-card-box-value-height)
+    var(--bj-cardview-desktop-mini-hand-height, 4.35rem)
+    var(--bj-card-box-bet-label-height)
+    var(--bj-card-box-chip-stack-height);
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.08rem;
+  justify-items: center;
+  gap: 0;
   flex: 0 0 auto;
   min-height: 0;
   max-height: 100%;
+  width: var(--bj-cardview-desktop-mini-hand-width, 4.65rem);
 }
 
 .bj-card-layout__boxes .bj-phone-view__box-value--above {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
+  width: 100%;
+  height: var(--bj-card-box-value-height);
+  min-height: var(--bj-card-box-value-height);
+  max-height: var(--bj-card-box-value-height);
   font-family: var(--ds-font-mono);
   font-size: 0.62rem;
   font-weight: var(--ds-weight-bold);
   line-height: 1;
   text-align: center;
   color: var(--ds-color-text);
+  overflow: hidden;
+}
+
+.bj-card-layout__boxes .bj-phone-view__box-value--above.bj-phone-view__box-value--reserved {
+  visibility: hidden;
 }
 
 .bj-card-layout__boxes .bj-phone-view__box-value--above.bj-phone-view__box-value--bust {
   color: var(--ds-color-danger);
+}
+
+.bj-card-layout__boxes .bj-phone-view__mini-hand-column > .bj-phone-view__mini-hand,
+.bj-card-layout__boxes .bj-phone-view__mini-hand-column > .bj-phone-view__mini-hand--empty {
+  align-self: start;
+  width: 100%;
+  height: var(--bj-cardview-desktop-mini-hand-height, 4.35rem);
+  min-height: var(--bj-cardview-desktop-mini-hand-height, 4.35rem);
+  max-height: var(--bj-cardview-desktop-mini-hand-height, 4.35rem);
 }
 
 .bj-card-layout__boxes .bj-phone-view__mini-hand {
@@ -350,7 +378,8 @@
   align-items: center;
   justify-content: flex-start;
   padding: 0.1rem 0.08rem 0.06rem;
-  overflow: visible;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .bj-card-layout__boxes .bj-phone-view__mini-hand-card-stack {
@@ -360,29 +389,47 @@
   align-self: center;
 }
 
-.bj-card-layout__boxes .bj-phone-view__box-stake {
+.bj-card-layout__boxes .bj-phone-view__box-stake-label {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.04rem;
-  flex: 0 0 auto;
-  min-height: 0.85rem;
   width: 100%;
-  text-align: center;
-}
-
-.bj-card-layout__boxes .bj-phone-view__box-stake-label {
+  height: var(--bj-card-box-bet-label-height);
+  min-height: var(--bj-card-box-bet-label-height);
+  max-height: var(--bj-card-box-bet-label-height);
   font-family: var(--ds-font-mono);
   font-size: 0.52rem;
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-color-gold);
   line-height: 1.1;
+  overflow: hidden;
 }
 
-.bj-card-layout__boxes .bj-phone-view__box-stake .stake-chips--bet {
+.bj-card-layout__boxes .bj-phone-view__box-stake-label--reserved {
+  visibility: hidden;
+}
+
+.bj-card-layout__boxes .bj-phone-view__box-chip-stack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--bj-card-box-chip-stack-height);
+  min-height: var(--bj-card-box-chip-stack-height);
+  max-height: var(--bj-card-box-chip-stack-height);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.bj-card-layout__boxes .bj-phone-view__box-chip-stack--reserved {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.bj-card-layout__boxes .bj-phone-view__box-chip-stack .stake-chips--bet {
   transform: scale(0.44);
   transform-origin: center center;
+  flex-shrink: 0;
 }
 
 .bj-card-layout__tray .bj-casino__tray-wrap {
