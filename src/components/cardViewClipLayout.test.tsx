@@ -32,8 +32,8 @@ describe('Card View — full card visibility', () => {
 
   it('hero total badge is compact via layout tokens', () => {
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-    expect(layoutCss).toContain('--bj-card-total-font-size: 0.56rem');
-    expect(layoutCss).toContain('--bj-card-total-min-height: 0.95rem');
+    expect(layoutCss).toContain('--bj-card-total-font-size: 0.54rem');
+    expect(layoutCss).toContain('--bj-card-total-min-height: 0.7rem');
     expect(layoutCss).toMatch(/\.bj-card-layout__hero \.bj-phone-view__total--compact[\s\S]*font-size:\s*var\(--bj-card-total-font-size\)/);
   });
 

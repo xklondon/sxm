@@ -116,13 +116,14 @@ describe('Card View polish guards', () => {
     const html = renderCardPanel(playingState());
     expect(html).toContain(TABLE_UX.cardViewTotalCompact);
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
-    expect(layoutCss).toContain('--bj-card-total-font-size: 0.56rem');
+    expect(layoutCss).toContain('--bj-card-total-font-size: 0.54rem');
   });
 
   it('uses increased hero card size tokens inside hero row', () => {
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
-    expect(layoutCss).toContain('--bj-card-hero-card-width: min(18vw, 7.25rem)');
-    expect(layoutCss).toContain('--bj-card-hero-card-max-height: min(24vw, 9.5rem)');
+    expect(layoutCss).toContain('--bj-card-hero-card-width: min(19vw, 7.5rem)');
+    expect(layoutCss).toContain('--bj-card-hero-card-max-height: min(26vw, 10.5rem)');
+    expect(layoutCss).toContain('--bj-card-hero-card-aspect-ratio: 5 / 7');
     expect(layoutCss).toMatch(
       /\.bj-card-layout__hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*width:\s*var\(--bj-card-hero-card-width\)/,
     );
@@ -133,7 +134,7 @@ describe('Card View polish guards', () => {
     expect(html).toContain(TABLE_UX.cardViewActionCompact);
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
     expect(layoutCss).toMatch(
-      /\.bj-card-layout__actions \.bj-phone-view__action-bar-extra--compact[\s\S]*min-height:\s*1\.35rem/,
+      /\.bj-card-layout__actions \.bj-phone-view__action-bar-extra--compact[\s\S]*min-height:\s*var\(--bj-card-action-secondary-height\)/,
     );
   });
 

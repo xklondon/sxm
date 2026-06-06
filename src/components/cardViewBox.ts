@@ -16,6 +16,15 @@ export const BOX_CARD_VALUE_RESERVED = 'bj-phone-view__box-value--reserved';
 export const BOX_CARD_STAKE = 'bj-phone-view__box-chip-stack';
 export const BET_BOX_PULSE = 'bj-phone-view__bet-chip--pulse';
 
+/** Card View layout CSS custom properties — canonical values live in bj-card-layout.css */
+export const CARD_VIEW_CSS_TOKENS = {
+  heroCardAspectRatio: '--bj-card-hero-card-aspect-ratio',
+  heroCardWidth: '--bj-card-hero-card-width',
+  totalMinHeight: '--bj-card-total-min-height',
+  actionSecondaryHeight: '--bj-card-action-secondary-height',
+  miniCardScale: '--bj-card-mini-card-scale',
+} as const;
+
 /**
  * Dominant hand-value label shown at the top of each box card.
  * Busted hands read "BUST"; empty hands render no label.
