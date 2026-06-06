@@ -207,9 +207,9 @@ describe('Card View layout guard', () => {
 
   it('hero, actions, boxes, and tray are direct grid children in Card View markup', () => {
     const cardSrc = readSrc(CARD_VIEW_TSX);
-    expect(cardSrc).toMatch(/<div className=\{TABLE_UX\.cardLayoutHero\}>/);
-    expect(cardSrc).toMatch(/<div className=\{TABLE_UX\.cardLayoutActions\}>/);
-    expect(cardSrc).toMatch(/<div className=\{TABLE_UX\.cardLayoutBoxes\}>/);
+    expect(cardSrc).toMatch(/<div \{\.\.\.sxmSectionProps\(SXM_LAYOUT\.heroZone, TABLE_UX\.cardLayoutHero\)\}>/);
+    expect(cardSrc).toMatch(/<div \{\.\.\.sxmSectionProps\(SXM_LAYOUT\.actionZone, TABLE_UX\.cardLayoutActions\)\}>/);
+    expect(cardSrc).toMatch(/<div \{\.\.\.sxmSectionProps\(SXM_LAYOUT\.playerBoxesZone, TABLE_UX\.cardLayoutBoxes\)\}>/);
     expect(cardSrc).toMatch(/<div className=\{TABLE_UX\.cardLayoutTray\}>/);
     const html = renderCardPanel(playingState());
     expect(html).toMatch(

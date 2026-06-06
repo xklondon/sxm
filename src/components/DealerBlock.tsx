@@ -3,6 +3,7 @@ import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
 import { isTableInstructionMessage } from './tableCommandDisplay';
 import { TABLE_UX } from './tableUxContract';
+import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
 import './DealerBlock.css';
 
 interface DealerBlockProps {
@@ -179,7 +180,7 @@ export function DealerBlock({
     Boolean(commandMessage?.trim()) || commandLines.some((line) => line.trim().length > 0);
 
   return (
-    <div className="dealer-block">
+    <div {...sxmSectionProps(SXM_LAYOUT.dealerZone, 'dealer-block')}>
       <div className="dealer-block__grid">
         <div className="dealer-block__commentary-col">
           {commentaryText ? (
@@ -197,7 +198,13 @@ export function DealerBlock({
           <div className="dealer-block__stack">
             <div className="dealer-block__cards-slot">{cardsSlot}</div>
             {bankInfo ?? (
-              <div className="dealer-block__bank-info dealer-block__bank-info--placeholder" aria-hidden="true">
+              <div
+                {...sxmSectionProps(
+                  SXM_LAYOUT.bankSummary,
+                  'dealer-block__bank-info dealer-block__bank-info--placeholder',
+                )}
+                aria-hidden="true"
+              >
                 &nbsp;
               </div>
             )}

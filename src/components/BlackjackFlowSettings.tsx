@@ -9,12 +9,14 @@ import {
 } from '../engine/blackjack';
 import { canUserChangeDesign, canUserChangeProtocol } from '../engine/table/adminControls';
 import { listDesignTemplates, applyDesignTemplateToDocument } from '../design/templates';
+import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
 import { loadProfile } from '../storage/profileStorage';
 import {
   saveSettings,
   settingsFromGameState,
 } from '../storage/settingsStorage';
 import { CustomProtocolBuilder } from './CustomProtocolBuilder';
+import { BlackjackTableThemeControls } from './BlackjackTableThemeControls';
 import './BlackjackFlowSettings.css';
 import './InviteModal.css';
 
@@ -100,7 +102,10 @@ export function BlackjackFlowSettingsMenu({
           onClick={onClose}
         >
           <div
-            className="invite-modal invite-modal--ledger invite-modal--settings-panel"
+            {...sxmSectionProps(
+              SXM_LAYOUT.settingsPanel,
+              'invite-modal invite-modal--ledger invite-modal--settings-panel',
+            )}
             role="dialog"
             aria-labelledby="table-settings-title"
             onClick={(e) => e.stopPropagation()}
@@ -186,6 +191,13 @@ export function BlackjackFlowSettingsMenu({
                     </select>
                   </label>
                 </section>
+
+                {canChangeDesign && (
+                  <BlackjackTableThemeControls
+                    gameState={gameState}
+                    onGameStateChange={onGameStateChange}
+                  />
+                )}
 
                 <section className="bj-flow-settings__card" aria-labelledby="bj-settings-dealing">
                   <h3 id="bj-settings-dealing" className="bj-flow-settings__card-title">

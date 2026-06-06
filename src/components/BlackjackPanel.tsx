@@ -133,6 +133,8 @@ import {
   getViewRootClass,
   resolveInitialViewMode,
 } from './tableViewContract';
+import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
+import { applyBlackjackTableTheme } from '../design/blackjackTableTheme';
 import type { TableResetSetupVariant } from './TableStakePanel';
 import './BlackjackPanel.css';
 
@@ -176,6 +178,11 @@ export function BlackjackPanel({
     gameState;
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
+  const layoutRootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    applyBlackjackTableTheme(gameState.blackjackTableTheme ?? null, layoutRootRef.current);
+  }, [gameState.blackjackTableTheme]);
 
   const [error, setError] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
@@ -676,7 +683,9 @@ export function BlackjackPanel({
   function renderSummaryZone() {
     const alert = renderTableAlert();
     return (
-      <div className={`bj-table-zone ${TABLE_UX.tableZoneSummary}`}>
+      <div
+        {...sxmSectionProps(SXM_LAYOUT.statusZone, `bj-table-zone ${TABLE_UX.tableZoneSummary}`)}
+      >
         {alert ?? (
           <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />
         )}
@@ -700,10 +709,25 @@ export function BlackjackPanel({
     const insurance = renderInsuranceActions();
     const playerActions = renderTablePlayerActions();
     const content = insurance ?? playerActions;
+    const hasPrimarySecondary = Boolean(playerActions);
     return (
-      <div className={`bj-table-zone ${TABLE_UX.tableZoneActions}`}>
+      <div
+        {...sxmSectionProps(SXM_LAYOUT.actionZone, `bj-table-zone ${TABLE_UX.tableZoneActions}`)}
+      >
         {content ?? (
           <div className={TABLE_UX.actionsPlaceholder} aria-hidden="true" />
+        )}
+        {!hasPrimarySecondary && (
+          <>
+            <div
+              {...sxmSectionProps(SXM_LAYOUT.primaryActions, TABLE_UX.actionsPlaceholder)}
+              aria-hidden="true"
+            />
+            <div
+              {...sxmSectionProps(SXM_LAYOUT.secondaryActions, TABLE_UX.actionsPlaceholder)}
+              aria-hidden="true"
+            />
+          </>
         )}
       </div>
     );
@@ -735,10 +759,11 @@ export function BlackjackPanel({
     return (
       <div className="bj-casino__tray-wrap">
         <div
-          className={[
+          {...sxmSectionProps(
+            SXM_LAYOUT.chipTray,
             'bj-casino__tray',
             inBetting ? '' : TABLE_UX.trayReserved,
-          ].filter(Boolean).join(' ')}
+          )}
         >
           {inBetting && (
             <ChipTray
@@ -753,10 +778,11 @@ export function BlackjackPanel({
           <p className="bj-casino__tray-hint" role="status">{chipTrayHint}</p>
         )}
         <p
-          className={[
+          {...sxmSectionProps(
+            SXM_LAYOUT.playerBalance,
             'bj-casino__player-balance',
             playerAvailable === null ? 'bj-casino__player-balance--placeholder' : '',
-          ].filter(Boolean).join(' ')}
+          )}
           aria-label={playerAvailable !== null ? `Available ${playerAvailable} chips` : undefined}
           aria-hidden={playerAvailable === null}
         >
@@ -943,7 +969,7 @@ export function BlackjackPanel({
 
     return (
       <div className={`${TABLE_UX.playerActions} bj-table-actions`} aria-live="polite">
-        <div className="bj-table-actions__row">
+        <div {...sxmSectionProps(SXM_LAYOUT.primaryActions, 'bj-table-actions__row')}>
           <button
             type="button"
             className="ds-btn ds-btn--stand bj-table-actions__btn"
@@ -960,6 +986,8 @@ export function BlackjackPanel({
           >
             Hit
           </button>
+        </div>
+        <div {...sxmSectionProps(SXM_LAYOUT.secondaryActions, 'bj-table-actions__row')}>
           {blackjackSettings.allowDoubleDown && (
             <button
               type="button"
@@ -1110,13 +1138,7 @@ export function BlackjackPanel({
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
       >
         <div
-          className={[
-            getBoxCardClassName(isActiveBox),
-            TABLE_UX.fullArcBox,
-            getBetBoxPulseClassName(bettingOpen, true),
-            showBettingChips ? 'bj-phone-view__mini-hand--has-stake' : '',
-            isDrop ? 'bj-bet-zone--drop' : '',
-          ].filter(Boolean).join(' ')}
+          {...sxmSectionProps(SXM_LAYOUT.playerBox, getBoxCardClassName(isActiveBox), TABLE_UX.fullArcBox, getBetBoxPulseClassName(bettingOpen, true), showBettingChips ? 'bj-phone-view__mini-hand--has-stake' : '', isDrop ? 'bj-bet-zone--drop' : '')}
           {...{
             [CHIP_DROP_SLOT_ATTR]: slotNumber,
             [CHIP_DROP_BOX_ATTR]: boxId,
@@ -1278,7 +1300,10 @@ export function BlackjackPanel({
     const title = sideRailPanel === 'thisTable' ? 'This Table' : 'Table Details';
     return (
       <div
-        className={`${TABLE_UX.sideRailPlacement} bj-casino__this-table--${variant}`}
+        {...sxmSectionProps(
+          SXM_LAYOUT.rightSidePanel,
+          `${TABLE_UX.sideRailPlacement} bj-casino__this-table--${variant}`,
+        )}
         data-panel-placement={variant}
         data-side-panel={sideRailPanel}
       >
@@ -1305,14 +1330,14 @@ export function BlackjackPanel({
 
   function renderTableHeader() {
     return (
-      <header className={TABLE_UX.tableHeader}>
+      <header {...sxmSectionProps(SXM_LAYOUT.appHeader, TABLE_UX.tableHeader)}>
         <div className="bj-casino__toolbar">
-          <div className="bj-casino__view-toggle">
+          <div {...sxmSectionProps(SXM_LAYOUT.viewSwitcher, 'bj-casino__view-toggle')}>
             <button type="button" className={viewMode === 'full' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('full')}>Full Table</button>
             <button type="button" className={viewMode === 'card' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('card')}>Card View</button>
           </div>
-          <h1 className={TABLE_UX.pageTitle}>BLACKJACK</h1>
-          <div className="bj-casino__table-nav">
+          <h1 {...sxmSectionProps(SXM_LAYOUT.gameTitle, TABLE_UX.pageTitle)}>BLACKJACK</h1>
+          <div {...sxmSectionProps(SXM_LAYOUT.userMenu, 'bj-casino__table-nav')}>
             <button
               type="button"
               className={
@@ -1351,7 +1376,9 @@ export function BlackjackPanel({
           </div>
         </div>
         {viewMode === 'card' && (
-          <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="header" />
+          <div {...sxmSectionProps(SXM_LAYOUT.balanceDisplay)}>
+            <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="header" />
+          </div>
         )}
       </header>
     );
@@ -1359,7 +1386,8 @@ export function BlackjackPanel({
 
   return (
     <div
-      className={`bj-casino ${viewRootClass}`}
+      ref={layoutRootRef}
+      {...sxmSectionProps(SXM_LAYOUT.layoutRoot, `bj-casino ${viewRootClass}`)}
       aria-label="Blackjack table"
       data-view-mode={viewMode}
       data-device-view={deviceView}
@@ -1428,12 +1456,11 @@ export function BlackjackPanel({
           .join(' ')}
       >
       <div
-        className={[
+        {...sxmSectionProps(
+          SXM_LAYOUT.tableShell,
           'bj-casino__rail-wrap',
           deviceView === 'desktop' ? TABLE_UX.desktopTableShell : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+        )}
       >
       {renderTableHeader()}
       <div className={`bj-casino__rail ${TABLE_UX.rail}`}>
@@ -1449,12 +1476,20 @@ export function BlackjackPanel({
 
               {renderSummaryZone()}
 
+              <div
+                {...sxmSectionProps(SXM_LAYOUT.heroZone, 'bj-table-zone__hero-reserved')}
+                aria-hidden="true"
+              />
+
               {renderActionsZone()}
 
               <div className={`bj-table-zone ${TABLE_UX.tableZonePlay}`}>
               <div className="bj-arc-separator" aria-hidden="true" />
 
-              <div className="bj-arc bj-arc--rtl" style={{ '--slot-count': MAX_BOXES } as CSSProperties}>
+              <div
+                {...sxmSectionProps(SXM_LAYOUT.playerBoxesZone, 'bj-arc bj-arc--rtl')}
+                style={{ '--slot-count': MAX_BOXES } as CSSProperties}
+              >
                 {displaySlots.map((slot) =>
                   slot.playerId ? renderArcSlot(slot.playerId, slot.slotNumber) : renderEmptySlot(slot.slotNumber),
                 )}

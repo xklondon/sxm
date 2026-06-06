@@ -77,4 +77,6 @@ export interface GameState {
   tableAdminSettings: TableAdminSettings;
   /** Active design template id. */
   designTemplateId: string;
+  /** Admin overrides for blackjack table CSS tokens (null = stitch defaults). */
+  blackjackTableTheme?: import('../design/blackjackTableTheme').BlackjackTableThemeOverrides | null;
 }

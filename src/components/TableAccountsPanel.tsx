@@ -10,6 +10,7 @@ import { getEffectivePlayerOrder } from '../engine/session/playerAssignment';
 import { getPlayFlowForPerson, PLAY_FLOW_OPTIONS } from '../engine/blackjack';
 import type { PlayFlowAutoStand } from '../storage/profileStorage';
 import { ChipStack } from './ChipStack';
+import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
 import './TableAccountsPanel.css';
 
 interface TableAccountsPanelProps {
@@ -70,7 +71,9 @@ export function TableAccountsPanel({
       ) : (
         <>
           {bank && (
-            <section className="bj-accounts-panel__section">
+            <section
+              {...sxmSectionProps(SXM_LAYOUT.tableInfoPanel, 'bj-accounts-panel__section')}
+            >
               <div className="bj-accounts-panel__row bj-accounts-panel__row--bank">
                 <p className="bj-accounts-panel__bank-name">Bank: {bank.bankName}</p>
                 <p className="bj-accounts-panel__balance-line">Balance: {bank.balance}</p>
@@ -84,7 +87,9 @@ export function TableAccountsPanel({
           )}
 
           {people.length > 0 && (
-            <section className="bj-accounts-panel__section">
+            <section
+              {...sxmSectionProps(SXM_LAYOUT.playersPanel, 'bj-accounts-panel__section')}
+            >
               <h4 className="bj-accounts-panel__section-title">Players</h4>
               <ul className="bj-accounts-panel__list">
                 {people.map((row) => {

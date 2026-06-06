@@ -84,9 +84,12 @@ function miniBoxColumn(html: string, slotNumber: number): string {
   const marker = `aria-label="Box ${slotNumber}`;
   const start = html.indexOf(marker);
   expect(start).toBeGreaterThan(-1);
-  const columnStart = html.lastIndexOf(TABLE_UX.cardViewBoxColumn, start);
-  const columnEnd = html.indexOf('</div>', html.indexOf('</button>', start) + 9);
-  return html.slice(columnStart, columnEnd + 6);
+  const sectionMarker = 'data-sxm-section="sxm-player-box"';
+  const columnStart = html.lastIndexOf(sectionMarker, start);
+  expect(columnStart).toBeGreaterThan(-1);
+  const nextBox = html.indexOf(sectionMarker, columnStart + sectionMarker.length);
+  const sliceEnd = nextBox > columnStart ? nextBox : html.indexOf('bj-card-layout__tray', columnStart);
+  return html.slice(columnStart, sliceEnd > columnStart ? sliceEnd : undefined);
 }
 
 describe('Card View polish guards', () => {

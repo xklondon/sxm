@@ -11,7 +11,10 @@ describe('Card View — full card visibility', () => {
 
   it('hero cards fit inside the hero grid row without a low max-height clip', () => {
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-    expect(layoutCss).toMatch(/\.bj-card-layout__hero \.bj-phone-view__cards[\s\S]*max-height:\s*100%/);
+    expect(layoutCss).toContain('--bj-card-hero-meta-reserve');
+    expect(layoutCss).toMatch(
+      /\.bj-card-layout__hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*max-height:\s*min\(/,
+    );
     expect(cardCss).not.toMatch(
       /\.bj-phone-view__cards-slot[\s\S]*max-height:\s*6\.75rem/,
     );

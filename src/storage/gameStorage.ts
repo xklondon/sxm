@@ -4,6 +4,7 @@ import type { Player } from '../types/player';
 import { log } from '../utils/logger';
 import { DEFAULT_BLACKJACK_PROTOCOL_ID } from '../engine/blackjack/protocols';
 import { DEFAULT_DESIGN_TEMPLATE_ID } from '../design/templates';
+import { validateBlackjackTableThemeOverrides } from '../design/blackjackTableTheme';
 import { DEFAULT_TABLE_ADMIN_SETTINGS } from '../types/admin';
 import { normalizeFlowSettings } from '../engine/blackjack/flowSettings';
 import { DEFAULT_ZILCH_SETTINGS } from '../engine/zilch/settings';
@@ -101,6 +102,7 @@ export function deserializeGameState(raw: string): GameState {
     ),
     blackjackProtocolId: parsed.blackjackProtocolId ?? DEFAULT_BLACKJACK_PROTOCOL_ID,
     designTemplateId: parsed.designTemplateId ?? DEFAULT_DESIGN_TEMPLATE_ID,
+    blackjackTableTheme: validateBlackjackTableThemeOverrides(parsed.blackjackTableTheme),
     tableAdminSettings: parsed.tableAdminSettings ?? { ...DEFAULT_TABLE_ADMIN_SETTINGS },
     blackjackFlowSettings: normalizeFlowSettings(parsed.blackjackFlowSettings),
     zilch: parsed.zilch ?? null,

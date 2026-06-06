@@ -3,6 +3,7 @@ import type { GameState } from '../types';
 import type { ScoreLedgerEntry } from '../types/scoreLedger';
 import { loadScoreLedgerDisplayEntries } from '../storage/scoreLedgerStorage';
 import { LedgerPanel } from './LedgerPanel';
+import { SXM_LAYOUT, sxmSectionProps, type SxmLayoutSection } from './sxmLayoutContract';
 import './InviteModal.css';
 
 interface PlayLedgerPanelProps {
@@ -110,6 +111,7 @@ interface TablePanelOverlayProps {
   onClose: () => void;
   children: ReactNode;
   wide?: boolean;
+  section?: SxmLayoutSection;
 }
 
 export function TablePanelOverlay({
@@ -119,6 +121,7 @@ export function TablePanelOverlay({
   onClose,
   children,
   wide = true,
+  section,
 }: TablePanelOverlayProps) {
   if (!open) {
     return null;
@@ -127,7 +130,14 @@ export function TablePanelOverlay({
   return (
     <div className="invite-modal-overlay bj-table-panel-overlay" role="presentation" onClick={onClose}>
       <div
-        className={`invite-modal invite-modal--ledger${wide ? ' invite-modal--table-panel' : ''}`}
+        {...(section
+          ? sxmSectionProps(
+              section,
+              `invite-modal invite-modal--ledger${wide ? ' invite-modal--table-panel' : ''}`,
+            )
+          : {
+              className: `invite-modal invite-modal--ledger${wide ? ' invite-modal--table-panel' : ''}`,
+            })}
         role="dialog"
         aria-labelledby="table-panel-overlay-title"
         onClick={(e) => e.stopPropagation()}
@@ -163,6 +173,7 @@ export function PlayLedgerModal({ open, onClose, gameState }: PlayLedgerModalPro
       title="Play Ledger"
       subtitle="Chip and table action history for this game — bets, wins, losses, and adjustments."
       onClose={onClose}
+      section={SXM_LAYOUT.ledgerPanel}
     >
       <LedgerPanel gameState={gameState} variant="play" />
     </TablePanelOverlay>

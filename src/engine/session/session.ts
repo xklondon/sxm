@@ -70,6 +70,7 @@ export function createGameSession(
     blackjackProtocolId: DEFAULT_BLACKJACK_PROTOCOL_ID,
     tableAdminSettings: { ...DEFAULT_TABLE_ADMIN_SETTINGS },
     designTemplateId: DEFAULT_DESIGN_TEMPLATE_ID,
+    blackjackTableTheme: null,
   };
 }
 

@@ -77,6 +77,7 @@ import {
   BOX_CARD_CHIP_STACK,
   BOX_CARD_CHIP_STACK_RESERVED,
 } from "./cardViewBox";
+import { SXM_LAYOUT, sxmSectionProps } from "./sxmLayoutContract";
 
 
 import "./BlackjackCardView.css";
@@ -583,28 +584,26 @@ export function BlackjackCardView({
     const chipsReserved = !showBetStakeChips;
 
     return (
-      <div className={BOX_CARD_COLUMN}>
+      <div {...sxmSectionProps(SXM_LAYOUT.playerBox, BOX_CARD_COLUMN)}>
         <span
-          className={[
+          {...sxmSectionProps(
+            SXM_LAYOUT.playerBoxValue,
             BOX_CARD_VALUE,
             BOX_CARD_VALUE_ABOVE,
             aboveBust ? BOX_CARD_VALUE_BUST : "",
             valueReserved ? BOX_CARD_VALUE_RESERVED : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
+          )}
           aria-hidden={valueReserved || undefined}
         >
           {aboveLabel || "\u00a0"}
         </span>
-        {tile}
+        <div {...sxmSectionProps(SXM_LAYOUT.playerBoxCards)}>{tile}</div>
         <span
-          className={[
+          {...sxmSectionProps(
+            SXM_LAYOUT.playerBoxBet,
             BOX_CARD_STAKE_LABEL,
             betReserved ? BOX_CARD_STAKE_LABEL_RESERVED : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
+          )}
           aria-hidden={betReserved || undefined}
         >
           {wager > 0 ? `Bet: ${wager}` : "\u00a0"}
@@ -754,11 +753,19 @@ export function BlackjackCardView({
         <div className="bj-phone-view__hero-stage">
           <div className="bj-phone-view__hero-center">
             <div className="bj-phone-view__cards-slot">
-              <div className="bj-phone-view__cards-placeholder" aria-hidden="true" />
+              <div
+                {...sxmSectionProps(SXM_LAYOUT.heroCards, 'bj-phone-view__cards-placeholder')}
+                aria-hidden="true"
+              />
             </div>
             <div className="bj-phone-view__hand-meta">
               <div
-                className={`ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero ${TABLE_UX.cardViewTotalCompact} bj-phone-view__total--placeholder`}
+                {...sxmSectionProps(
+                  SXM_LAYOUT.handTotal,
+                  'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
+                  TABLE_UX.cardViewTotalCompact,
+                  'bj-phone-view__total--placeholder',
+                )}
                 aria-hidden="true"
               >
                 &nbsp;
@@ -929,11 +936,19 @@ export function BlackjackCardView({
         <div className="bj-phone-view__hero-stage">
           <div className="bj-phone-view__hero-center">
             <div className="bj-phone-view__cards-slot">
-              <div className="bj-phone-view__cards-placeholder" aria-hidden="true" />
+              <div
+                {...sxmSectionProps(SXM_LAYOUT.heroCards, 'bj-phone-view__cards-placeholder')}
+                aria-hidden="true"
+              />
             </div>
             <div className="bj-phone-view__hand-meta">
               <div
-                className={`ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero ${TABLE_UX.cardViewTotalCompact} bj-phone-view__total--placeholder`}
+                {...sxmSectionProps(
+                  SXM_LAYOUT.handTotal,
+                  'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
+                  TABLE_UX.cardViewTotalCompact,
+                  'bj-phone-view__total--placeholder',
+                )}
                 aria-hidden="true"
               >
                 &nbsp;
@@ -1037,7 +1052,12 @@ export function BlackjackCardView({
       <div className="bj-phone-view__hero-center">
         <div className="bj-phone-view__cards-slot">
           {heroCardIds.length > 0 ? (
-            <div className="bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched">
+            <div
+              {...sxmSectionProps(
+                SXM_LAYOUT.heroCards,
+                'bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched',
+              )}
+            >
               {heroCardIds.map((id, i) => (
                 <div
                   key={`${heroHandKey}-${i}-${id}`}
@@ -1054,17 +1074,31 @@ export function BlackjackCardView({
               ))}
             </div>
           ) : (
-            <div className="bj-phone-view__cards-placeholder" aria-hidden="true" />
+            <div
+              {...sxmSectionProps(SXM_LAYOUT.heroCards, 'bj-phone-view__cards-placeholder')}
+              aria-hidden="true"
+            />
           )}
         </div>
         <div className="bj-phone-view__hand-meta">
           {heroDisplayValue !== null ? (
-            <div className={`ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero ${TABLE_UX.cardViewTotalCompact}`}>
+            <div
+              {...sxmSectionProps(
+                SXM_LAYOUT.handTotal,
+                'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
+                TABLE_UX.cardViewTotalCompact,
+              )}
+            >
               Total {heroDisplayValue}
             </div>
           ) : (
             <div
-              className={`ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero ${TABLE_UX.cardViewTotalCompact} bj-phone-view__total--placeholder`}
+              {...sxmSectionProps(
+                SXM_LAYOUT.handTotal,
+                'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
+                TABLE_UX.cardViewTotalCompact,
+                'bj-phone-view__total--placeholder',
+              )}
               aria-hidden="true"
             >
               &nbsp;
@@ -1106,6 +1140,28 @@ export function BlackjackCardView({
     );
   }
 
+  function renderActionBarPlaceholder() {
+    return (
+      <div
+        className="bj-phone-view__action-bar bj-phone-view__action-bar--play-placeholder"
+        aria-hidden="true"
+      >
+        <div
+          {...sxmSectionProps(
+            SXM_LAYOUT.primaryActions,
+            'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--primary',
+          )}
+        />
+        <div
+          {...sxmSectionProps(
+            SXM_LAYOUT.secondaryActions,
+            'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--secondary',
+          )}
+        />
+      </div>
+    );
+  }
+
   function renderActionBar() {
     const canDoubleNow =
       isActiveTurn &&
@@ -1123,38 +1179,39 @@ export function BlackjackCardView({
     const showAid = blackjackFlowSettings.adviceEnabled;
 
     if (bettingMainStage) {
-      return (
-        <div
-          className="bj-phone-view__action-bar bj-phone-view__action-bar--play-placeholder"
-          aria-hidden="true"
-        />
-      );
+      return renderActionBarPlaceholder();
     }
 
     if (!showSideControls) {
-      return (
-        <div
-          className="bj-phone-view__action-bar bj-phone-view__action-bar--play-placeholder"
-          aria-hidden="true"
-        />
-      );
+      return renderActionBarPlaceholder();
     }
 
     if (!isActiveTurn && disabledReason) {
       return (
-        <p className={`${TABLE_UX.playerActions} bj-phone-view__action-bar bj-phone-view__action-bar--wait`} aria-live="polite">
-          {disabledReason}
-        </p>
+        <div className="bj-phone-view__action-bar bj-phone-view__action-bar--wait">
+          <p className={`${TABLE_UX.playerActions}`} aria-live="polite">
+            {disabledReason}
+          </p>
+          <div
+            {...sxmSectionProps(
+              SXM_LAYOUT.primaryActions,
+              'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--primary',
+            )}
+            aria-hidden="true"
+          />
+          <div
+            {...sxmSectionProps(
+              SXM_LAYOUT.secondaryActions,
+              'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--secondary',
+            )}
+            aria-hidden="true"
+          />
+        </div>
       );
     }
 
     if (!isActiveTurn) {
-      return (
-        <div
-          className="bj-phone-view__action-bar bj-phone-view__action-bar--play-placeholder"
-          aria-hidden="true"
-        />
-      );
+      return renderActionBarPlaceholder();
     }
 
     return (
@@ -1162,7 +1219,12 @@ export function BlackjackCardView({
         className={`${TABLE_UX.playerActions} ${TABLE_UX.cardViewBareActions} bj-phone-view__action-bar bj-phone-view__action-bar--playing`}
         aria-label="Player actions"
       >
-        <div className="bj-phone-view__action-bar-row bj-phone-view__action-bar-row--primary">
+        <div
+          {...sxmSectionProps(
+            SXM_LAYOUT.primaryActions,
+            'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--primary',
+          )}
+        >
           <button
             type="button"
             className={[
@@ -1196,7 +1258,12 @@ export function BlackjackCardView({
             Hit
           </button>
         </div>
-        <div className="bj-phone-view__action-bar-row bj-phone-view__action-bar-row--secondary">
+        <div
+          {...sxmSectionProps(
+            SXM_LAYOUT.secondaryActions,
+            'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--secondary',
+          )}
+        >
           {showDouble ? (
             <button
               type="button"
@@ -1266,12 +1333,12 @@ export function BlackjackCardView({
     <div className={`${TABLE_UX.cardLayout} bj-phone-view ${TABLE_UX.columnSurface}`}>
       <div className={TABLE_UX.cardLayoutDealer}>{dealer}</div>
 
-      <div className={TABLE_UX.cardLayoutSummary}>
+      <div {...sxmSectionProps(SXM_LAYOUT.statusZone, TABLE_UX.cardLayoutSummary)}>
         {summaryExtras}
         {renderSummaryZoneContent()}
       </div>
 
-      <div className={TABLE_UX.cardLayoutHero}>
+      <div {...sxmSectionProps(SXM_LAYOUT.heroZone, TABLE_UX.cardLayoutHero)}>
         <div className="bj-phone-view__axis">
           <div className="bj-phone-view__play-stack">
             <div
@@ -1291,11 +1358,11 @@ export function BlackjackCardView({
         </div>
       </div>
 
-      <div className={TABLE_UX.cardLayoutActions}>
+      <div {...sxmSectionProps(SXM_LAYOUT.actionZone, TABLE_UX.cardLayoutActions)}>
         {renderActionBar()}
       </div>
 
-      <div className={TABLE_UX.cardLayoutBoxes}>
+      <div {...sxmSectionProps(SXM_LAYOUT.playerBoxesZone, TABLE_UX.cardLayoutBoxes)}>
         {renderMiniBoxesRow()}
       </div>
 

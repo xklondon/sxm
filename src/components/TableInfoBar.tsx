@@ -1,6 +1,7 @@
 import type { GameState } from '../types';
 import { buildTableInfoDisplay } from './tableInfoDisplay';
 import { TABLE_UX } from './tableUxContract';
+import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
 import './TableInfoBar.css';
 
 interface TableInfoBarProps {
@@ -18,11 +19,12 @@ export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: 
 
   return (
     <div
-      className={[
+      {...sxmSectionProps(
+        isHeader ? SXM_LAYOUT.balanceDisplay : SXM_LAYOUT.bankSummary,
         TABLE_UX.tableInfoBar,
         isDealer ? TABLE_UX.dealerBankInfo : '',
         isHeader ? TABLE_UX.headerBankInfo : '',
-      ].filter(Boolean).join(' ')}
+      )}
       aria-label="Bank information"
     >
       {bankValue !== null ? (

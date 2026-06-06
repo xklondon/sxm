@@ -58,6 +58,7 @@ export function createNewBlackjackTable(): GameState {
     blackjackProtocolId: DEFAULT_BLACKJACK_PROTOCOL_ID,
     tableAdminSettings: { ...DEFAULT_TABLE_ADMIN_SETTINGS },
     designTemplateId: DEFAULT_DESIGN_TEMPLATE_ID,
+    blackjackTableTheme: null,
   };
 
   log.info('Blackjack table created (empty boxes)', { sessionId: id });
@@ -96,6 +97,7 @@ export function createNewZilchTable(): GameState {
     blackjackProtocolId: DEFAULT_BLACKJACK_PROTOCOL_ID,
     tableAdminSettings: { ...DEFAULT_TABLE_ADMIN_SETTINGS },
     designTemplateId: DEFAULT_DESIGN_TEMPLATE_ID,
+    blackjackTableTheme: null,
   };
 
   log.info('Zilch table created', { sessionId: id });

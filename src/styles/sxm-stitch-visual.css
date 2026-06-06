@@ -1,0 +1,71 @@
+/**
+ * Stitch Master visual tokens scoped to the blackjack table shell.
+ * Global :root tokens stay unchanged; admin overrides apply inline on .sxm-layout-root.
+ */
+.bj-casino.sxm-layout-root {
+  --sxm-theme-felt: #0a3d2a;
+  --sxm-theme-felt-highlight: #145a40;
+  --sxm-theme-border: rgb(212 175 55 / 0.35);
+  --sxm-theme-accent: #e9c349;
+  --sxm-theme-text: #e5e2e1;
+  --sxm-theme-text-muted: #94a3b8;
+  --sxm-theme-button-radius: 9999px;
+  --sxm-theme-surface-radius: 0.375rem;
+  --sxm-theme-panel-bg: rgb(19 19 19 / 0.92);
+  --sxm-theme-box-bg: rgb(0 0 0 / 0.18);
+  --sxm-theme-box-border: rgb(212 175 55 / 0.45);
+  --sxm-theme-active-glow: rgb(212 175 55 / 0.55);
+
+  --ds-color-felt: var(--sxm-theme-felt);
+  --ds-color-felt-mid: var(--sxm-theme-felt-highlight);
+  --ds-color-felt-dark: #062818;
+  --ds-color-gold: var(--sxm-theme-accent);
+  --ds-color-gold-glow: var(--sxm-theme-active-glow);
+  --ds-color-border: var(--sxm-theme-border);
+  --ds-color-text: var(--sxm-theme-text);
+  --ds-color-text-muted: var(--sxm-theme-text-muted);
+  --ds-font-body: 'Manrope', 'Hanken Grotesk', system-ui, sans-serif;
+  --ds-radius-md: var(--sxm-theme-surface-radius);
+  --ds-radius-full: var(--sxm-theme-button-radius);
+}
+
+.bj-casino.sxm-layout-root .bj-casino__felt {
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 50% 18%,
+      var(--sxm-theme-felt-highlight) 0%,
+      var(--sxm-theme-felt) 42%,
+      var(--ds-color-felt-dark) 100%
+    );
+  border-color: var(--sxm-theme-border);
+}
+
+.bj-casino.sxm-layout-root .bj-casino__title,
+.bj-casino.sxm-layout-root .bj-casino__view-btn--active {
+  color: var(--sxm-theme-accent);
+}
+
+.bj-casino.sxm-layout-root .bj-phone-view__mini-hand,
+.bj-casino.sxm-layout-root .bj-arc__slot .bj-phone-view__mini-hand {
+  background: var(--sxm-theme-box-bg);
+  border-color: var(--sxm-theme-box-border);
+}
+
+.bj-casino.sxm-layout-root .bj-phone-view__mini-hand--active,
+.bj-casino.sxm-layout-root .bj-bet-zone--active {
+  box-shadow: 0 0 0 1px var(--sxm-theme-box-border), 0 0 12px var(--sxm-theme-active-glow);
+}
+
+.bj-casino.sxm-layout-root .bj-casino__this-table--dock,
+.bj-casino.sxm-layout-root .bj-accounts-panel {
+  background: var(--sxm-theme-panel-bg);
+}
+
+.bj-casino.sxm-layout-root .ds-btn {
+  border-radius: var(--sxm-theme-button-radius);
+}
+
+.bj-casino.sxm-layout-root .playing-card,
+.bj-casino.sxm-layout-root .dealer-block__card-back {
+  border-radius: var(--sxm-theme-surface-radius);
+}

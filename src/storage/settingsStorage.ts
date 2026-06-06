@@ -28,6 +28,10 @@ import { DEFAULT_BLACKJACK_PROTOCOL_ID } from '../engine/blackjack/protocols';
 
 import { DEFAULT_DESIGN_TEMPLATE_ID } from '../design/templates';
 
+import type { BlackjackTableThemeOverrides } from '../design/blackjackTableTheme';
+
+import { validateBlackjackTableThemeOverrides } from '../design/blackjackTableTheme';
+
 import { DEFAULT_TABLE_ADMIN_SETTINGS } from '../types/admin';
 
 import type { TableAdminSettings } from '../types/admin';
@@ -56,6 +60,8 @@ export interface PersistedSettings {
 
   designTemplateId?: string;
 
+  blackjackTableTheme?: BlackjackTableThemeOverrides | null;
+
   tableAdminSettings?: TableAdminSettings;
 
 }
@@ -75,6 +81,8 @@ export function defaultPersistedSettings(): PersistedSettings {
     blackjackProtocolId: DEFAULT_BLACKJACK_PROTOCOL_ID,
 
     designTemplateId: DEFAULT_DESIGN_TEMPLATE_ID,
+
+    blackjackTableTheme: null,
 
     tableAdminSettings: { ...DEFAULT_TABLE_ADMIN_SETTINGS },
 
@@ -133,6 +141,11 @@ export function mergeSettingsWithDefaults(partial?: Partial<PersistedSettings>):
     blackjackProtocolId: partial?.blackjackProtocolId ?? defaults.blackjackProtocolId,
 
     designTemplateId: partial?.designTemplateId ?? defaults.designTemplateId,
+
+    blackjackTableTheme:
+      partial?.blackjackTableTheme === undefined
+        ? defaults.blackjackTableTheme
+        : validateBlackjackTableThemeOverrides(partial.blackjackTableTheme),
 
     tableAdminSettings: mergeAdminSettings(partial?.tableAdminSettings),
   };
@@ -212,6 +225,8 @@ export function settingsFromGameState(state: GameState): PersistedSettings {
 
     designTemplateId: state.designTemplateId,
 
+    blackjackTableTheme: state.blackjackTableTheme ?? null,
+
     tableAdminSettings: state.tableAdminSettings,
 
   };
@@ -237,6 +252,8 @@ export function applySettingsToGameState(state: GameState, settings: PersistedSe
     blackjackProtocolId: merged.blackjackProtocolId ?? DEFAULT_BLACKJACK_PROTOCOL_ID,
 
     designTemplateId: merged.designTemplateId ?? DEFAULT_DESIGN_TEMPLATE_ID,
+
+    blackjackTableTheme: merged.blackjackTableTheme ?? null,
 
     tableAdminSettings: mergeAdminSettings(merged.tableAdminSettings),
   };

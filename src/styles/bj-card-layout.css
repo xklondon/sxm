@@ -21,6 +21,7 @@
   --bj-card-hero-card-aspect-ratio: 5 / 7;
   --bj-card-total-font-size: 0.54rem;
   --bj-card-total-min-height: 0.7rem;
+  --bj-card-hero-meta-reserve: calc(var(--bj-card-total-min-height) + 0.35rem);
   --bj-card-total-padding-block: 0.02rem;
   --bj-card-total-padding-inline: 0.32rem;
   --bj-card-action-primary-height: 1.48rem;
@@ -184,6 +185,12 @@
 }
 
 @media (min-width: 721px) {
+  :root {
+    --bj-card-row-hero-min: calc(
+      var(--bj-card-hero-card-max-height) + var(--bj-card-hero-meta-reserve) + 0.25rem
+    );
+  }
+
   .bj-view-card-desktop .bj-table-desktop-shell {
     height: var(--bj-card-desktop-table-height);
     max-height: var(--bj-card-desktop-table-height);
@@ -216,6 +223,54 @@
     min-height: var(--bj-cardview-desktop-mini-hand-height, 4.35rem);
     height: var(--bj-cardview-desktop-mini-hand-height, 4.35rem);
     max-height: var(--bj-cardview-desktop-mini-hand-height, 4.35rem);
+  }
+
+  /*
+   * Desktop Card View — hero cards must stay fully readable (rank/suit never clipped).
+   * Row min-height is derived from card max-height + meta reserve; card size is capped
+   * to that budget so the hero grid row never crops the readable face.
+   */
+  .bj-view-card-desktop .bj-card-layout__hero {
+    justify-content: flex-start;
+    align-items: stretch;
+    padding-top: 0.1rem;
+  }
+
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__axis,
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__play-stack,
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__stage,
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__hand,
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__hero-stage,
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__hero-center,
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__play-area,
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__cards-slot,
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__cards,
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__card-wrap {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__hand-meta {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__cards {
+    flex: 0 1 auto;
+    max-height: calc(var(--bj-card-row-hero-min) - var(--bj-card-hero-meta-reserve));
+  }
+
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__cards .playing-card.bj-phone-card--hero,
+  .bj-view-card-desktop .bj-card-layout__hero .bj-phone-view__cards .playing-card.ds-card--hero {
+    max-height: calc(var(--bj-card-row-hero-min) - var(--bj-card-hero-meta-reserve));
+    max-width: min(
+      var(--bj-card-hero-card-width),
+      calc((var(--bj-card-row-hero-min) - var(--bj-card-hero-meta-reserve)) * 5 / 7)
+    );
+    width: min(
+      var(--bj-card-hero-card-width),
+      calc((var(--bj-card-row-hero-min) - var(--bj-card-hero-meta-reserve)) * 5 / 7)
+    );
   }
 }
 
@@ -306,10 +361,13 @@
   height: auto;
   aspect-ratio: var(--bj-card-hero-card-aspect-ratio);
   max-width: var(--bj-card-hero-card-width);
-  max-height: var(--bj-card-hero-card-max-height);
+  max-height: min(
+    var(--bj-card-hero-card-max-height),
+    calc(var(--bj-card-row-hero-min) - var(--bj-card-hero-meta-reserve))
+  );
   min-height: 0;
   flex: 0 0 auto;
-  align-self: center;
+  align-self: flex-start;
   box-sizing: border-box;
   font-size: 1.2rem;
 }

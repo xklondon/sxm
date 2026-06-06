@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BLACKJACK - desktop_card_view</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&amp;family=Manrope:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        .felt-gradient {
+            background: radial-gradient(circle at 50% 40%, #0a3d2a 0%, #031c14 100%);
+        }
+        .card-inner-shadow {
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .gold-pulse {
+            animation: gold-pulse-animation 2s infinite;
+        }
+        @keyframes gold-pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(233, 195, 73, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(233, 195, 73, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(233, 195, 73, 0); }
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1c1b1b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #414943;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#e2e2e2",
+                      "inverse-surface": "#e5e2e1",
+                      "primary-container": "#0a3d2a",
+                      "on-secondary-fixed-variant": "#574500",
+                      "outline": "#8a938c",
+                      "on-secondary": "#3c2f00",
+                      "primary-fixed": "#bbeed2",
+                      "tertiary-container": "#333535",
+                      "on-secondary-container": "#342800",
+                      "secondary": "#e9c349",
+                      "on-primary-container": "#78a88f",
+                      "primary-fixed-dim": "#a0d1b7",
+                      "inverse-on-surface": "#313030",
+                      "secondary-fixed-dim": "#e9c349",
+                      "outline-variant": "#414943",
+                      "surface-container-lowest": "#0e0e0e",
+                      "surface-dim": "#131313",
+                      "tertiary-fixed-dim": "#c6c6c7",
+                      "surface-variant": "#353535",
+                      "on-tertiary-fixed": "#1a1c1c",
+                      "inverse-primary": "#396752",
+                      "on-error": "#690005",
+                      "surface-tint": "#a0d1b7",
+                      "background": "#131313",
+                      "secondary-fixed": "#ffe088",
+                      "surface-container-highest": "#353535",
+                      "error-container": "#93000a",
+                      "on-primary": "#033825",
+                      "surface-container-low": "#1c1b1b",
+                      "error": "#ffb4ab",
+                      "on-surface-variant": "#c0c9c2",
+                      "on-tertiary-fixed-variant": "#454747",
+                      "surface-container-high": "#2a2a2a",
+                      "secondary-container": "#af8d11",
+                      "surface-container": "#20201f",
+                      "on-background": "#e5e2e1",
+                      "tertiary": "#c6c6c7",
+                      "on-primary-fixed": "#002114",
+                      "on-tertiary": "#2f3131",
+                      "on-tertiary-container": "#9c9d9e",
+                      "on-primary-fixed-variant": "#204f3b",
+                      "on-surface": "#e5e2e1",
+                      "on-secondary-fixed": "#241a00",
+                      "primary": "#a0d1b7",
+                      "surface": "#131313",
+                      "surface-bright": "#393939",
+                      "on-error-container": "#ffdad6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "card-overlap": "-40px",
+                      "action-bar-height": "80px",
+                      "sidebar-width": "320px",
+                      "table-padding": "2rem",
+                      "gutter-md": "1rem"
+              },
+              "fontFamily": {
+                      "body-lg": ["Manrope"],
+                      "card-rank": ["Libre Caslon Text"],
+                      "display-gold": ["Libre Caslon Text"],
+                      "label-mono": ["JetBrains Mono"],
+                      "body-md": ["Manrope"],
+                      "headline-table": ["Manrope"]
+              },
+              "fontSize": {
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "card-rank": ["20px", {"lineHeight": "20px", "fontWeight": "700"}],
+                      "display-gold": ["32px", {"lineHeight": "40px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "label-mono": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-table": ["24px", {"lineHeight": "32px", "letterSpacing": "0.1em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-secondary selection:text-on-secondary overflow-hidden h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-surface shadow-md border-b border-outline-variant full-width top-0 flex items-center w-full px-6 h-16 z-50">
+<!-- Left Section: Menu Icon -->
+<div class="flex-1 flex items-center">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container-high transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary">menu</span>
+</button>
+</div>
+<!-- Center Section: Game Title -->
+<div class="absolute left-1/2 -translate-x-1/2">
+<span class="text-display-gold font-display-gold tracking-widest text-secondary text-2xl uppercase">BLACKJACK</span>
+</div>
+<!-- Right Section: Avatar & Wallet -->
+<div class="flex-1 flex items-center justify-end gap-4">
+<div class="flex flex-col items-end">
+<span class="text-label-mono font-label-mono text-secondary">$25,000</span>
+<span class="text-[10px] text-outline uppercase tracking-tighter">Available Balance</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-high hover:bg-secondary transition-colors group">
+<span class="material-symbols-outlined text-secondary group-hover:text-on-secondary">account_balance_wallet</span>
+</button>
+<div class="w-8 h-8 rounded-full border border-outline-variant overflow-hidden bg-surface-container">
+<img alt="Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLtrCzXWD617dCaCoRmEDxnSjdCEPQZQ6ttLmmfA71JpocpPmV06OTEv7Ba1NLxQ-qvFcUUl7xWN0dqwOwhy172fWyTCpCtiXyG83BCh8r6oB_692uc_N7pFHUye-Sbgin_8wzGkgMkfu-zxxPTl4qRFjqIWeMQ1cQgSpNhrqFX3DBdTK04nipOmpN-2qrjNBK6FUc24FtOxAO2jRHMzkFq72amOgtnw5NDCMJDmFe7PUUJuFUFsmQ5kSDg"/>
+</div>
+</div>
+</div>
+</header>
+<div class="flex-1 flex overflow-hidden">
+<!-- Main Game Stage -->
+<main class="flex-1 felt-gradient relative overflow-hidden flex flex-col items-center py-8">
+<!-- Dealer Hand (Compact/Small) -->
+<div class="absolute top-12 flex flex-col items-center gap-2">
+<span class="text-label-mono font-label-mono text-outline uppercase tracking-widest text-xs">Dealer</span>
+<div class="flex gap-2">
+<div class="w-16 h-24 bg-white rounded-md shadow-xl border border-outline-variant relative card-inner-shadow flex flex-col justify-between p-2">
+<div class="text-black font-card-rank text-lg leading-none">A<br/><span class="text-red-600">♦</span></div>
+<div class="text-black font-card-rank text-lg leading-none self-end rotate-180">A<br/><span class="text-red-600">♦</span></div>
+</div>
+<div class="w-16 h-24 rounded-md shadow-xl border-2 border-secondary relative bg-surface-container-highest overflow-hidden">
+<div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#e9c349 1px, transparent 1px); background-size: 8px 8px;"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="text-display-gold font-display-gold text-secondary text-xl opacity-40">B</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Command Text (Hero Hand Zone) -->
+<div class="absolute top-[180px] flex flex-col items-center gap-1 z-10">
+<div class="px-6 py-1.5 bg-primary-container border border-primary/20 rounded-full shadow-lg">
+<span class="text-primary font-headline-table text-sm uppercase tracking-widest">Box 4 — Melika's turn</span>
+</div>
+</div>
+<!-- Hero Section: Active Hand (Focused View) -->
+<div class="flex flex-col items-center gap-6 z-10 mt-[230px] mb-8">
+<div class="flex flex-col items-center gap-1">
+<h2 class="text-headline-table font-headline-table text-secondary gold-pulse px-4 py-1 border-b border-secondary/30">Total 13</h2>
+</div>
+<div class="flex gap-6 items-center">
+<!-- Card 1 -->
+<div class="w-48 h-72 bg-white rounded-xl shadow-2xl border border-outline-variant relative card-inner-shadow flex flex-col justify-between p-4 transition-transform hover:scale-105 duration-300">
+<div class="text-black font-card-rank text-4xl flex flex-col">
+<span class="">3</span>
+<span class="text-red-600">♦</span>
+</div>
+<div class="absolute inset-0 flex items-center justify-center opacity-10">
+<span class="text-[120px] text-red-600">♦</span>
+</div>
+<div class="text-black font-card-rank text-4xl flex flex-col self-end rotate-180">
+<span class="">3</span>
+<span class="text-red-600">♦</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="w-48 h-72 bg-white rounded-xl shadow-2xl border border-outline-variant relative card-inner-shadow flex flex-col justify-between p-4 transition-transform hover:scale-105 duration-300">
+<div class="text-black font-card-rank text-4xl flex flex-col">
+<span class="">K</span>
+<span class="text-black">♠</span>
+</div>
+<div class="absolute inset-0 flex items-center justify-center opacity-10">
+<span class="text-[120px] text-black">♠</span>
+</div>
+<div class="text-black font-card-rank text-4xl flex flex-col self-end rotate-180">
+<span class="">K</span>
+<span class="text-black">♠</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Bar (Integrated) -->
+<div class="flex flex-col items-center gap-4 mb-8">
+<div class="flex gap-4 items-center">
+<button class="px-12 py-3.5 bg-secondary text-on-secondary rounded-xl font-headline-table uppercase tracking-widest shadow-[0_0_12px_rgba(233,195,73,0.6)] hover:bg-secondary-fixed transition-all active:scale-95 duration-75">
+                HIT
+            </button>
+<button class="px-12 py-3.5 border-2 border-outline text-on-surface rounded-xl font-headline-table uppercase tracking-widest hover:bg-surface-container-high transition-all active:scale-95 duration-75">
+                STAND
+            </button>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 text-label-mono font-label-mono border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors text-xs uppercase">Split</button>
+<button class="px-4 py-2 text-label-mono font-label-mono border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors text-xs uppercase">Double</button>
+<button class="px-4 py-2 text-label-mono font-label-mono border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors text-xs uppercase">Insurance</button>
+</div>
+</div>
+<!-- Player Boxes Zone (Full width 7 boxes - Standardized) -->
+<div class="absolute bottom-6 left-0 right-0 px-12 flex justify-between items-end gap-4 overflow-x-auto no-scrollbar">
+<!-- Box 1 -->
+<div class="flex flex-col items-center gap-2 opacity-60 min-w-[80px]">
+<div class="text-[10px] font-label-mono text-outline uppercase tracking-tighter">$1,250</div>
+<div class="w-16 h-20 border border-outline-variant rounded bg-surface-container-low flex flex-col items-center justify-center gap-1">
+<span class="text-[10px] text-outline font-label-mono">P1</span>
+<div class="flex flex-col gap-0.5">
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+</div>
+</div>
+<div class="h-1 w-6 bg-secondary/30 rounded-full"></div>
+</div>
+<!-- Box 2 -->
+<div class="flex flex-col items-center gap-2 opacity-60 min-w-[80px]">
+<div class="text-[10px] font-label-mono text-outline uppercase tracking-tighter">$3,100</div>
+<div class="w-16 h-20 border border-outline-variant rounded bg-surface-container-low flex flex-col items-center justify-center gap-1">
+<span class="text-[10px] text-outline font-label-mono">P2</span>
+<div class="flex flex-col gap-0.5">
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+</div>
+</div>
+<div class="h-1 w-6 bg-secondary/30 rounded-full"></div>
+</div>
+<!-- Box 3 -->
+<div class="flex flex-col items-center gap-2 opacity-60 min-w-[80px]">
+<div class="text-[10px] font-label-mono text-outline uppercase tracking-tighter">$8,400</div>
+<div class="w-16 h-20 border border-outline-variant rounded bg-surface-container-low flex flex-col items-center justify-center gap-1">
+<span class="text-[10px] text-outline font-label-mono">P3</span>
+<div class="flex flex-col gap-0.5">
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+</div>
+</div>
+<div class="h-1 w-6 bg-secondary/30 rounded-full"></div>
+</div>
+<!-- Box 4 Active (ME) -->
+<div class="flex flex-col items-center gap-2 relative min-w-[80px]">
+<div class="text-[10px] font-label-mono text-secondary uppercase tracking-tighter font-bold">$25,000</div>
+<div class="w-16 h-20 border-2 border-secondary rounded bg-surface-container-high flex flex-col items-center justify-center gap-1 shadow-[0_0_15px_rgba(233,195,73,0.2)]">
+<span class="text-[10px] text-secondary font-label-mono font-bold">ME</span>
+<div class="flex flex-col gap-0.5">
+<div class="w-10 h-1.5 bg-secondary rounded-full"></div>
+<div class="w-10 h-1.5 bg-secondary rounded-full"></div>
+<div class="w-10 h-1.5 bg-secondary rounded-full"></div>
+</div>
+</div>
+<div class="h-1 w-12 bg-secondary rounded-full gold-pulse"></div>
+<div class="absolute top-4 -right-1 w-3 h-3 bg-secondary rounded-full border-2 border-background"></div>
+</div>
+<!-- Box 5 -->
+<div class="flex flex-col items-center gap-2 opacity-60 min-w-[80px]">
+<div class="text-[10px] font-label-mono text-outline uppercase tracking-tighter">$2,100</div>
+<div class="w-16 h-20 border border-outline-variant rounded bg-surface-container-low flex flex-col items-center justify-center gap-1">
+<span class="text-[10px] text-outline font-label-mono">P5</span>
+<div class="flex flex-col gap-0.5">
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+</div>
+</div>
+<div class="h-1 w-6 bg-secondary/30 rounded-full"></div>
+</div>
+<!-- Box 6 -->
+<div class="flex flex-col items-center gap-2 opacity-60 min-w-[80px]">
+<div class="text-[10px] font-label-mono text-outline uppercase tracking-tighter">$450</div>
+<div class="w-16 h-20 border border-outline-variant rounded bg-surface-container-low flex flex-col items-center justify-center gap-1">
+<span class="text-[10px] text-outline font-label-mono">P6</span>
+<div class="flex flex-col gap-0.5">
+<div class="w-6 h-1.5 bg-primary/40 rounded-full"></div>
+</div>
+</div>
+<div class="h-1 w-6 bg-secondary/30 rounded-full"></div>
+</div>
+<!-- Box 7 -->
+<div class="flex flex-col items-center gap-2 opacity-60 min-w-[80px]">
+<div class="text-[10px] font-label-mono text-outline uppercase tracking-tighter">$12,000</div>
+<div class="w-16 h-20 border border-outline-variant rounded bg-surface-container-low flex flex-col items-center justify-center gap-1">
+<span class="text-[10px] text-outline font-label-mono">P7</span>
+<div class="flex flex-col gap-0.5">
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+<div class="w-8 h-1.5 bg-primary/40 rounded-full"></div>
+</div>
+</div>
+<div class="h-1 w-6 bg-secondary/30 rounded-full"></div>
+</div>
+</div>
+</main>
+<!-- SideNavBar (Right Information Panel) -->
+<aside class="bg-surface-container-low border-l border-outline-variant shadow-xl w-sidebar-width fixed right-0 top-16 h-[calc(100vh-16px)] flex flex-col z-40">
+<div class="p-6 border-b border-outline-variant">
+<div class="flex items-center gap-3 mb-1">
+<img alt="Table Stats" class="w-10 h-10 rounded-full border border-secondary" src="https://lh3.googleusercontent.com/aida/AP1WRLtrCzXWD617dCaCoRmEDxnSjdCEPQZQ6ttLmmfA71JpocpPmV06OTEv7Ba1NLxQ-qvFcUUl7xWN0dqwOwhy172fWyTCpCtiXyG83BCh8r6oB_692uc_N7pFHUye-Sbgin_8wzGkgMkfu-zxxPTl4qRFjqIWeMQ1cQgSpNhrqFX3DBdTK04nipOmpN-2qrjNBK6FUc24FtOxAO2jRHMzkFq72amOgtnw5NDCMJDmFe7PUUJuFUFsmQ5kSDg"/>
+<div>
+<h3 class="text-headline-table font-headline-table text-secondary leading-tight text-xl">Table #042</h3>
+<p class="text-[10px] font-label-mono text-on-surface-variant uppercase tracking-widest">High Stakes Lounge</p>
+</div>
+</div>
+</div>
+<!-- Tabs -->
+<nav class="flex-1 overflow-y-auto">
+<div class="flex flex-col">
+<button class="flex items-center gap-4 px-6 py-4 text-secondary font-bold border-r-4 border-secondary bg-surface-container-high transition-all translate-x-1 duration-150">
+<span class="material-symbols-outlined">info</span>
+<span class="font-body-md text-body-md">Table Info</span>
+</button>
+<button class="flex items-center gap-4 px-6 py-4 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-body-md text-body-md">Players</span>
+</button>
+<button class="flex items-center gap-4 px-6 py-4 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-body-md text-body-md">Ledger</span>
+</button>
+<button class="flex items-center gap-4 px-6 py-4 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</button>
+</div>
+<!-- Live Feed / Content -->
+<div class="p-6">
+<div class="space-y-4">
+<div class="bg-surface-container rounded-lg p-3 border border-outline-variant/20">
+<div class="flex justify-between mb-2">
+<span class="text-[10px] font-label-mono text-outline uppercase">Recent Activity</span>
+<span class="text-[10px] font-label-mono text-secondary">LIVE</span>
+</div>
+<ul class="text-xs font-label-mono space-y-2">
+<li class="flex justify-between border-b border-outline-variant/10 pb-1">
+<span class="text-on-surface-variant">Player 4 (Hit)</span>
+<span class="text-secondary">+ $250</span>
+</li>
+<li class="flex justify-between border-b border-outline-variant/10 pb-1">
+<span class="text-on-surface-variant">Player 1 (Double)</span>
+<span class="text-error">- $1,000</span>
+</li>
+<li class="flex justify-between">
+<span class="text-on-surface-variant">Dealer (Bust)</span>
+<span class="text-primary">Win</span>
+</li>
+</ul>
+</div>
+<!-- Statistics Visual -->
+<div class="bg-surface-container rounded-lg p-3 border border-outline-variant/20">
+<span class="text-[10px] font-label-mono text-outline uppercase block mb-3">House Advantage</span>
+<div class="h-2 bg-background rounded-full overflow-hidden flex">
+<div class="bg-secondary h-full" style="width: 48%"></div>
+<div class="bg-primary h-full" style="width: 52%"></div>
+</div>
+<div class="flex justify-between mt-2 text-[10px] font-label-mono">
+<span class="text-secondary">48% House</span>
+<span class="text-primary">52% Player</span>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<div class="p-6 border-t border-outline-variant bg-surface-container-low">
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold uppercase tracking-widest hover:brightness-110 transition-all active:scale-95">
+                    New Table
+                </button>
+</div>
+</aside>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.classList.add('scale-95');
+            });
+            button.addEventListener('mouseup', () => {
+                button.classList.remove('scale-95');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('scale-95');
+            });
+        });
+
+        // Atmospheric shimmer effect for gold elements
+        const goldElements = document.querySelectorAll('.text-secondary, .bg-secondary');
+        setInterval(() => {
+            goldElements.forEach(el => {
+                el.style.filter = `brightness(${1 + Math.random() * 0.1})`;
+            });
+        }, 1500);
+    </script>
+</body></html>
