@@ -66,6 +66,7 @@ import {
   getBetBoxPulseClassName,
   getBoxCardClassName,
   getBoxCardValueLabel,
+  isCardViewBettingBoxVisuallyAssigned,
   BOX_CARD_VALUE,
   BOX_CARD_VALUE_ABOVE,
   BOX_CARD_VALUE_BUST,
@@ -245,8 +246,6 @@ export function BlackjackCardView({
     heroHandKey !== null ? getDisplayedHandValue(deck, round, heroHandKey) : null;
 
   const slots = sortBoxSlotsForCardViewDisplay(gameState.tableMeta.boxSlots, deviceView);
-
-  const selectedId = gameState.selectedSeatId ?? heroBoxId;
 
   const heroCardsVisible = showHeroPlayerCards(
     protocolPhase,
@@ -644,8 +643,14 @@ export function BlackjackCardView({
     const wager = bettingMainStage ? openStake : (displayBoxHand?.currentBet ?? openStake);
     const showBetStakeChips = bettingMainStage && openStake > 0 && stakeChips.length > 0;
     const isTurnBox = activeTurnBoxId === boxId;
+    const bettingBoxAssigned = isCardViewBettingBoxVisuallyAssigned(
+      gameState,
+      boxId,
+      openStake,
+      viewerPersonId,
+    );
     const isActiveBox = bettingMainStage
-      ? boxId === selectedId
+      ? bettingBoxAssigned
       : isPlayerPhase && activeTurnBoxId === boxId;
     const status = getCardViewBoxStatus(
       protocolPhase,
@@ -661,6 +666,7 @@ export function BlackjackCardView({
       valueLabel ||
       (status !== "betting" && status !== "waiting" ? formatCardViewBoxStatus(status) : "");
     const showHeadInTile = ids.length === 0 && bettingMainStage;
+    const showAssignedHead = showHeadInTile && bettingBoxAssigned;
 
     const handTile = renderCardViewBoxColumn({
       aboveLabel,
@@ -676,7 +682,7 @@ export function BlackjackCardView({
           className={[
             getBoxCardClassName(isActiveBox),
             TABLE_UX.cardViewCompactBox,
-            getBetBoxPulseClassName(bettingOpen, true),
+            getBetBoxPulseClassName(bettingOpen, bettingBoxAssigned),
           ]
             .filter(Boolean)
             .join(" ")}
@@ -687,7 +693,9 @@ export function BlackjackCardView({
           {showHeadInTile ? (
             <span className="bj-phone-view__mini-hand-head">
               <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
-              <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
+              {showAssignedHead ? (
+                <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
+              ) : null}
             </span>
           ) : null}
           <span

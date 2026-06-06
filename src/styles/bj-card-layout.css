@@ -189,6 +189,14 @@
     max-height: var(--bj-card-desktop-table-height);
   }
 
+  .bj-view-card-desktop .bj-card-layout__boxes {
+    padding-bottom: calc(var(--bj-card-boxes-padding-bottom) + 0.45rem);
+  }
+
+  .bj-view-card-desktop .bj-card-layout__tray {
+    padding-top: 0.1rem;
+  }
+
   .bj-view-card-desktop .bj-card-layout__boxes .bj-phone-view__mini-row {
     min-height: 0;
     max-height: 100%;
@@ -263,6 +271,14 @@
 .bj-card-layout__hero .bj-phone-view__cards-slot {
   min-height: 0;
   flex: 1 1 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.bj-card-layout__hero .bj-phone-view__hero-center {
+  justify-content: flex-start;
+  gap: 0.1rem;
 }
 
 .bj-card-layout__hero .bj-phone-view__cards {
@@ -271,9 +287,17 @@
   max-height: 100%;
   overflow: hidden;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  align-content: center;
+  align-content: flex-start;
+}
+
+.bj-card-layout__hero .bj-phone-view__cards--fan {
+  align-items: flex-start;
+}
+
+.bj-card-layout__hero .bj-phone-view__card-wrap {
+  align-self: flex-start;
 }
 
 .bj-card-layout__hero .bj-phone-view__cards .playing-card.bj-phone-card--hero,

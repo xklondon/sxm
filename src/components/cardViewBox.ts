@@ -1,4 +1,6 @@
+import type { GameState } from '../types';
 import type { CardViewBoxStatus } from './blackjackViewPhase';
+import { isCallerForBox } from '../engine/session/playerAssignment';
 
 /** Box-card class names — desktop Card View box value + active highlight. */
 export const BOX_CARD_BASE = 'bj-phone-view__mini-hand';
@@ -24,6 +26,38 @@ export const CARD_VIEW_CSS_TOKENS = {
   actionSecondaryHeight: '--bj-card-action-secondary-height',
   miniCardScale: '--bj-card-mini-card-scale',
 } as const;
+
+/** True when the slot's native assignment belongs to this person. */
+export function isCardViewBoxNativeForPerson(
+  state: GameState,
+  boxPlayerId: string,
+  personId: string | null | undefined,
+): boolean {
+  if (!personId) {
+    return false;
+  }
+  const slot = state.tableMeta.boxSlots.find((s) => s.playerId === boxPlayerId);
+  return slot?.nativeAssignedPersonId === personId;
+}
+
+/**
+ * Card View betting display: native boxes look assigned by default; free boxes
+ * only after this viewer has staked (first-bettor ownership), never on click alone.
+ */
+export function isCardViewBettingBoxVisuallyAssigned(
+  state: GameState,
+  boxPlayerId: string,
+  openStake: number,
+  viewerPersonId: string | null | undefined,
+): boolean {
+  if (isCardViewBoxNativeForPerson(state, boxPlayerId, viewerPersonId)) {
+    return true;
+  }
+  if (openStake <= 0 || !viewerPersonId) {
+    return false;
+  }
+  return isCallerForBox(state, boxPlayerId, viewerPersonId);
+}
 
 /**
  * Dominant hand-value label shown at the top of each box card.
