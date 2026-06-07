@@ -67,6 +67,7 @@ import {
   getBoxCardVisualClasses,
   getBoxCardValueLabel,
   isCardViewBettingBoxVisuallyAssigned,
+  resolveBoxBorderVisualState,
   BOX_CARD_VALUE,
   BOX_CARD_VALUE_ABOVE,
   BOX_CARD_VALUE_BUST,
@@ -650,15 +651,25 @@ export function BlackjackCardView({
     const wager = bettingMainStage ? openStake : (displayBoxHand?.currentBet ?? openStake);
     const showBetStakeChips = bettingMainStage && openStake > 0 && stakeChips.length > 0;
     const isTurnBox = activeTurnBoxId === boxId;
-    const isSelected = selectedBettingBoxId === boxId;
+    const borderState = resolveBoxBorderVisualState({
+      state: gameState,
+      boxPlayerId: boxId,
+      viewerPersonId,
+      openStake,
+      selectedBettingBoxId,
+      activeBoxId: activeTurnBoxId,
+      isDropHover: dropTargetId === chipDropKey({ slotNumber, boxId }),
+      bettingStage: bettingMainStage,
+      playerPhase: isPlayerPhase,
+    });
+    const isSelected = borderState.isSelected;
+    const isTurn = borderState.isTurn;
     const bettingBoxAssigned = isCardViewBettingBoxVisuallyAssigned(
       gameState,
       boxId,
       openStake,
       viewerPersonId,
     );
-    const isAssigned = bettingBoxAssigned && !isSelected;
-    const isTurn = isPlayerPhase && isTurnBox;
     const status = getCardViewBoxStatus(
       protocolPhase,
       gameEnded,
@@ -687,11 +698,7 @@ export function BlackjackCardView({
         <button
           type="button"
           className={[
-            getBoxCardVisualClasses({
-              isSelected: bettingMainStage && isSelected,
-              isAssigned: bettingMainStage && isAssigned,
-              isTurn,
-            }),
+            getBoxCardVisualClasses(borderState),
             TABLE_UX.cardViewCompactBox,
             getBetBoxPulseClassName(bettingOpen, bettingMainStage && isSelected),
           ]

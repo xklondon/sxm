@@ -12,8 +12,9 @@ const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/Blackjack
 
 describe('launch layout fixes — table vertical positioning', () => {
   it('desktop Full Table pushes play content toward bottom of felt', () => {
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-casino__felt[\s\S]*padding-top:\s*0\.6rem/);
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-casino__felt-main[\s\S]*justify-content:\s*flex-end/);
+    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-casino__felt[\s\S]*var\(--bj-full-desktop-tray-padding-bottom\)/);
+    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-casino__felt-main[\s\S]*justify-content:\s*stretch/);
+    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-table-zone--play[\s\S]*justify-content:\s*flex-end/);
   });
 
   it('desktop Card View shifts felt up and reserves chip tray space', () => {

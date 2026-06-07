@@ -107,9 +107,9 @@ describe('Card View betting chips and layout', () => {
     expect(html).toContain(TABLE_UX.cardViewBoxStakeLabel);
     expect(html).toContain('Bet:');
     expect(html).not.toContain('bj-phone-view__mini-hand--has-stake');
-    expect(html).toContain('bj-phone-view__mini-hand--selected');
+    expect(html).toContain('bj-box--selected');
     expect(html).toContain('aria-current="true"');
-    const selectedIdx = html.indexOf('bj-phone-view__mini-hand--selected');
+    const selectedIdx = html.indexOf('bj-box--selected');
     const chipIdx = html.indexOf('stake-chips--bet', selectedIdx);
     expect(chipIdx).toBeGreaterThan(selectedIdx);
     expect(html).not.toContain('bj-phone-view__bet-chip-wrap--main');

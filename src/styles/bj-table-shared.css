@@ -52,6 +52,8 @@
 
   /* One desktop table shell — same size for Full Table + Card View. */
   --bj-desktop-table-height: min(72vh, 46rem);
+  --bj-full-desktop-table-height: min(88vh, 56rem);
+  --bj-full-desktop-tray-padding-bottom: 0.32rem;
   --bj-desktop-table-max-width: min(98vw, 86rem);
   --bj-desktop-rail-padding: 0.35rem 0.5rem 0.45rem;
   /* Flat felt on desktop — one continuous surface, no mid-tone band. */
@@ -236,27 +238,30 @@
   border-radius: var(--bj-seat-radius);
 }
 
-.bj-arc__slot--assigned .bj-bet-zone,
-.bj-arc__slot--assigned .bj-phone-view__mini-hand {
-  border-color: var(--bj-seat-assigned-border);
-  background: var(--bj-seat-assigned-bg);
+/* Semantic box border states — Full Table + Card View (classes from resolveBoxBorderVisualState). */
+.bj-phone-view__mini-hand.bj-box--native-assigned {
+  border: 1px solid rgb(251 191 36 / 0.82);
+  background: rgb(251 191 36 / 0.06);
 }
 
-.bj-arc__slot--selected .bj-bet-zone,
-.bj-arc__slot--selected .bj-arc__play-zone,
-.bj-arc__slot--selected .bj-phone-view__mini-hand:not(.bj-phone-view__mini-hand--selected) {
-  border-color: var(--bj-seat-selected-border);
-  background: var(--bj-seat-selected-bg);
+.bj-phone-view__mini-hand.bj-box--running {
+  border: 1.5px dashed rgb(251 191 36 / 0.88);
+  background: rgb(251 191 36 / 0.05);
 }
 
-.bj-phone-view__mini-hand--selected {
-  border-color: var(--bj-seat-selected-border);
-  background: var(--bj-seat-selected-bg);
+.bj-phone-view__mini-hand.bj-box--co-box {
+  border: 1px solid rgb(251 146 60 / 0.88);
+  background: rgb(251 146 60 / 0.07);
 }
 
-.bj-phone-view__mini-hand--assigned:not(.bj-phone-view__mini-hand--selected) {
-  border-color: var(--bj-seat-assigned-border);
-  background: var(--bj-seat-assigned-bg);
+.bj-phone-view__mini-hand.bj-box--selected {
+  border: 3px solid var(--ds-color-gold);
+  background: rgb(251 191 36 / 0.12);
+}
+
+.bj-phone-view__mini-hand.bj-box--drop-hover {
+  outline: 2px dashed rgb(110 231 183 / 0.75);
+  outline-offset: 2px;
 }
 
 /* Seat typography — shared hierarchy across Full Table arc + Card View mini row */
@@ -592,7 +597,8 @@
 
 .bj-seat-shell--active,
 .bj-arc__slot--turn .bj-arc__play-zone,
-.bj-phone-view__mini-hand--active {
+.bj-phone-view__mini-hand--active,
+.bj-phone-view__mini-hand.bj-box--turn {
   border-color: var(--bj-seat-active-border);
   background: var(--bj-seat-active-bg);
   animation: bj-turn-pulse 1.6s ease-in-out infinite;
@@ -606,7 +612,8 @@
 @media (prefers-reduced-motion: reduce) {
   .bj-seat-shell--active,
   .bj-arc__slot--turn .bj-arc__play-zone,
-  .bj-phone-view__mini-hand--active {
+  .bj-phone-view__mini-hand--active,
+  .bj-phone-view__mini-hand.bj-box--turn {
     animation: none;
   }
 }
@@ -801,12 +808,11 @@
     background-image: none;
   }
 
-  /* Flex spacer only — no painted middle band on Full Table. */
   .bj-view-full-desktop .bj-arc-separator {
     flex: 1 1 auto;
     min-height: 0;
     width: 100%;
-    height: 0;
+    height: auto;
     margin: 0;
     background: none;
     border: none;
@@ -842,16 +848,6 @@
     padding: 0;
     width: var(--bj-desktop-mini-hand-width);
     min-height: var(--bj-desktop-mini-hand-height);
-  }
-
-  .bj-arc__slot--assigned .bj-phone-view__mini-hand {
-    border-color: var(--bj-seat-assigned-border);
-    background: var(--bj-seat-assigned-bg);
-  }
-
-  .bj-arc__slot--selected .bj-phone-view__mini-hand {
-    border-color: var(--bj-seat-selected-border);
-    background: var(--bj-seat-selected-bg);
   }
 
   /* Desktop stage: table shell + right-docked side rail (no overlay on play area). */
@@ -903,17 +899,32 @@
   }
 
   .bj-view-full-desktop .bj-casino__felt {
-    padding-top: 0.6rem;
-    padding-bottom: 0.48rem;
+    padding-top: 0.45rem;
+    padding-bottom: var(--bj-full-desktop-tray-padding-bottom);
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .bj-view-full-desktop .bj-table-desktop-shell {
+    height: var(--bj-full-desktop-table-height);
+    max-height: var(--bj-full-desktop-table-height);
   }
 
   .bj-view-full-desktop .bj-casino__felt-main {
-    justify-content: flex-end;
-    padding-top: 0.15rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    justify-content: stretch;
+    padding-top: 0;
   }
 
   .bj-view-full-desktop .bj-table-zone--play {
-    padding-top: 0.2rem;
+    flex: 1 1 auto;
+    min-height: var(--bj-table-zone-play-min-height);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-top: 0.12rem;
   }
 
   .bj-view-card-desktop .bj-casino__felt.bj-casino__felt--card-view {
@@ -984,9 +995,16 @@
     padding: 0;
   }
 
+  .bj-view-full-desktop .bj-table-zone--bottom {
+    flex: 0 0 auto;
+    margin-top: 0;
+    padding-bottom: 0.08rem;
+  }
+
   .bj-view-full-desktop .bj-casino__tray-wrap {
     flex: 0 0 auto;
-    margin-top: auto;
+    margin-top: 0;
+    width: 100%;
   }
 
   .bj-view-card-desktop .bj-phone-view.bj-card-layout {

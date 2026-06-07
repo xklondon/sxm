@@ -678,7 +678,7 @@
   text-align: center;
 }
 
-.bj-arc__slot--assigned .bj-arc__box-label::after {
+.bj-arc__slot--join-highlight .bj-arc__box-label::after {
   content: ' · joined';
   font-size: 0.42rem;
   color: #7dd3fc;

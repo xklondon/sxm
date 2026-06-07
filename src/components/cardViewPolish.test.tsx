@@ -156,7 +156,7 @@ describe('Card View polish guards', () => {
     expect(column).toContain(TABLE_UX.cardViewBoxValueAbove);
     expect(column).toContain('13');
     const valueIdx = column.indexOf(TABLE_UX.cardViewBoxValueAbove);
-    const buttonIdx = column.indexOf('bj-phone-view__mini-hand--active');
+    const buttonIdx = column.indexOf('bj-box--turn');
     expect(valueIdx).toBeGreaterThan(-1);
     expect(buttonIdx).toBeGreaterThan(valueIdx);
   });
@@ -164,7 +164,7 @@ describe('Card View polish guards', () => {
   it('renders mini dealt cards inside the top of the tile', () => {
     const html = renderCardPanel(playingState());
     const column = miniBoxColumn(html, 1);
-    const buttonOpen = column.indexOf('bj-phone-view__mini-hand--active');
+    const buttonOpen = column.indexOf('bj-box--turn');
     const stackIdx = column.indexOf('bj-phone-view__mini-hand-card-stack', buttonOpen);
     const buttonClose = column.indexOf('</button>', buttonOpen);
     expect(stackIdx).toBeGreaterThan(buttonOpen);

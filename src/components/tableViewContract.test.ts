@@ -13,7 +13,6 @@ import { shouldShowMobileFullTableFallback } from '../hooks/useIsMobileViewport'
 import {
   getBetBoxPulseClassName,
   getBoxCardClassName,
-  BOX_CARD_ACTIVE,
 } from './cardViewBox';
 
 describe('view roots (no leak between views)', () => {
@@ -71,8 +70,8 @@ describe('betting Card View — same ordered row on every viewport', () => {
 
 describe('playing Card View — active box highlight', () => {
   it('active box gets the highlight class, inactive does not', () => {
-    expect(getBoxCardClassName(true)).toContain(BOX_CARD_ACTIVE);
-    expect(getBoxCardClassName(false)).not.toContain(BOX_CARD_ACTIVE);
+    expect(getBoxCardClassName(true)).toContain('bj-box--turn');
+    expect(getBoxCardClassName(false)).not.toContain('bj-box--turn');
   });
 });
 

@@ -161,25 +161,28 @@ describe('Card View desktop targeted fixes', () => {
     const html = renderBettingCardView(state);
     const freeShell =
       html.match(/data-chip-drop-box="box-free"[\s\S]*?(?=data-chip-drop-slot="2")/)?.[0] ?? '';
-    expect(freeShell).toContain('bj-phone-view__mini-hand--selected');
-    expect(freeShell).not.toContain('bj-phone-view__mini-hand--assigned');
+    expect(freeShell).toContain('bj-box--selected');
+    expect(freeShell).not.toContain('bj-box--running');
+    expect(freeShell).not.toContain('bj-box--native-assigned');
   });
 
-  it('marks a free box assigned only after chips are placed', () => {
-    const state = bettingStateWithTwoBoxes('box-free', 10);
-    expect(isCardViewBettingBoxVisuallyAssigned(state, 'box-free', 10, 'person-1')).toBe(true);
+  it('marks a free box running only after chips when not selected', () => {
+    let state = bettingStateWithTwoBoxes('box-native', 10);
+    const htmlSelected = renderBettingCardView(bettingStateWithTwoBoxes('box-free', 10));
+    expect(htmlSelected).toContain('bj-box--selected');
+    expect(htmlSelected).not.toContain('bj-box--running');
 
-    const html = renderBettingCardView(state);
-    expect(html).toContain('Bet: 10');
-    expect(html).toContain('bj-phone-view__mini-hand--assigned');
-    expect(html).toMatch(/aria-label="Box 3[^"]*"[^>]*aria-current="true"/);
+    state = bettingStateWithTwoBoxes('box-native', 10);
+    const htmlRunning = renderBettingCardView({ ...state, selectedSeatId: state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)!.playerId! });
+    expect(htmlRunning).toContain('bj-box--running');
+    expect(htmlRunning).toMatch(/aria-label="Box 3[^"]*10c staked"/);
   });
 
   it('keeps native box selected styling without stake when it is the chip target', () => {
     const state = bettingStateWithTwoBoxes('box-native', 0);
     const html = renderBettingCardView(state);
-    expect(html).toMatch(/data-chip-drop-box="box-native"[\s\S]*bj-phone-view__mini-hand--selected/);
-    expect(html).not.toMatch(/data-chip-drop-box="box-native"[\s\S]*bj-phone-view__mini-hand--assigned/);
+    expect(html).toMatch(/data-chip-drop-box="box-native"[\s\S]*bj-box--selected/);
+    expect(html).not.toMatch(/data-chip-drop-box="box-native"[\s\S]*bj-box--native-assigned/);
     expect(html).toContain('Host');
   });
 });

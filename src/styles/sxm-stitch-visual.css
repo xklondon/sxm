@@ -52,6 +52,7 @@
 }
 
 .bj-casino.sxm-layout-root .bj-phone-view__mini-hand--active,
+.bj-casino.sxm-layout-root .bj-phone-view__mini-hand.bj-box--turn,
 .bj-casino.sxm-layout-root .bj-bet-zone--active {
   box-shadow: 0 0 0 1px var(--sxm-theme-box-border), 0 0 12px var(--sxm-theme-active-glow);
 }

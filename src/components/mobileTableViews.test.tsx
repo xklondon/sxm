@@ -355,7 +355,7 @@ describe('mobile Card View structure', () => {
     expect(html).toContain('bj-phone-view__mini-row');
     expect(html).toContain('bj-phone-view__box-value--bust');
     expect(html).toContain('BUST');
-    expect(html).toContain('bj-phone-view__mini-hand--active');
+    expect(html).toContain('bj-box--turn');
     expect(html).toContain('Join');
     const order = cardViewMiniBoxOrder(html);
     expect(order.length).toBeGreaterThanOrEqual(3);

@@ -105,14 +105,15 @@ import {
   formatDecisionOwnerWaitMessage,
   getInsuranceActionsForController,
   getActiveTurnBoxId,
+  isPlayerTurnPhase,
 } from './blackjackViewPhase';
 import { getDisplayedHandValue, getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
 import {
   BOX_CARD_VALUE,
   BOX_CARD_VALUE_BUST,
-  getBoxCardVisualClasses,
   getBetBoxPulseClassName,
-  isCardViewBettingBoxVisuallyAssigned,
+  getBoxCardVisualClasses,
+  resolveBoxBorderVisualState,
 } from './cardViewBox';
 import {
   buildViewerIdentityHints,
@@ -1130,14 +1131,21 @@ export function BlackjackPanel({
 
 
   function renderArcSlot(boxId: string, slotNumber: number) {
-    const isSelected = selectedBettingBoxIdForUi === boxId;
-    const isTurn = activeBoxId === boxId;
-    const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
     const openStake = getStakeForBox(gameState, boxId);
-    const bettingAssigned =
-      inBetting &&
-      isCardViewBettingBoxVisuallyAssigned(gameState, boxId, openStake, viewerPersonId);
-    const isAssigned = bettingAssigned && !isSelected;
+    const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
+    const borderState = resolveBoxBorderVisualState({
+      state: gameState,
+      boxPlayerId: boxId,
+      viewerPersonId,
+      openStake,
+      selectedBettingBoxId: selectedBettingBoxIdForUi,
+      activeBoxId,
+      isDropHover: dropTargetId === chipDropKey({ slotNumber, boxId }),
+      bettingStage: inBetting,
+      playerPhase: isPlayerTurnPhase(protocolPhase),
+    });
+    const isSelected = borderState.isSelected;
+    const isTurn = borderState.isTurn;
     const callerDisplayName = getBoxCallerDisplayName(gameState, boxId);
     let handKeys = handKeysByBox.get(boxId) ?? [];
     if (handKeys.length === 0 && visualRound) {
@@ -1170,7 +1178,6 @@ export function BlackjackPanel({
         : [];
     const showStakeContent = inBetting || displayChips.length > 0;
     const dropKey = chipDropKey({ slotNumber, boxId });
-    const isDrop = dropTargetId === dropKey;
     const visualIdx = arcVisualIndex(slotNumber);
     const rotation = ARC_ROTATIONS[visualIdx] ?? 0;
 
@@ -1180,24 +1187,18 @@ export function BlackjackPanel({
         className={[
           'bj-arc__slot',
           'bj-arc__slot--owned',
-          isSelected ? 'bj-arc__slot--selected' : '',
+          isJoinAssigned ? 'bj-arc__slot--join-highlight' : '',
           isTurn ? 'bj-arc__slot--turn' : '',
-          isJoinAssigned ? 'bj-arc__slot--assigned' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
       >
         <div
           {...sxmSectionProps(
             SXM_LAYOUT.playerBox,
-            getBoxCardVisualClasses({
-              isSelected: inBetting && isSelected,
-              isAssigned: inBetting && isAssigned,
-              isTurn: !inBetting && isTurn,
-            }),
+            getBoxCardVisualClasses(borderState),
             TABLE_UX.fullArcBox,
             getBetBoxPulseClassName(bettingOpen, inBetting && isSelected),
             showBettingChips ? 'bj-phone-view__mini-hand--has-stake' : '',
-            isDrop ? 'bj-bet-zone--drop' : '',
           )}
           {...{
             [CHIP_DROP_SLOT_ATTR]: slotNumber,

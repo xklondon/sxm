@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { GameState } from '../types';
 import {
   BET_BOX_PULSE,
-  BOX_CARD_ACTIVE,
   BOX_CARD_BASE,
   getBetBoxPulseClassName,
   getBoxCardClassName,
@@ -30,9 +29,9 @@ describe('cardViewBox helpers', () => {
   });
 
   describe('getBoxCardClassName', () => {
-    it('adds the active highlight class only for the active box', () => {
-      expect(getBoxCardClassName(true)).toContain(BOX_CARD_ACTIVE);
-      expect(getBoxCardClassName(false)).not.toContain(BOX_CARD_ACTIVE);
+    it('adds the turn highlight class only for the active box', () => {
+      expect(getBoxCardClassName(true)).toContain('bj-box--turn');
+      expect(getBoxCardClassName(false)).not.toContain('bj-box--turn');
       expect(getBoxCardClassName(false)).toBe(BOX_CARD_BASE);
     });
   });
