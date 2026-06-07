@@ -40,7 +40,12 @@ export const TABLE_UX = {
   tableZoneBottom: 'bj-table-zone--bottom',
   /** Full Table visible card fan (shared projection with Card View). */
   arcCards: 'bj-arc__cards',
+  /** Full Table — vertical card stack above each box (not horizontal fan). */
+  arcCardsStackVertical: 'bj-arc__cards--stack-vertical',
+  arcCardsStack: 'bj-arc__cards-stack',
   cardsFan: 'bj-cards-fan',
+  /** Card View — command text between dealer row and hero display. */
+  cardLayoutCommand: 'bj-card-layout__command',
   /** Reserved tray slot when betting controls are hidden. */
   trayReserved: 'bj-casino__tray--reserved',
   actionsPlaceholder: 'bj-table-zone__actions-placeholder',

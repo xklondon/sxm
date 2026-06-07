@@ -101,15 +101,18 @@ describe('Card View layout polish', () => {
     expect(html).toMatch(/bj-phone-view__action-bar-row--secondary[\s\S]*2×/);
   });
 
-  it('command box is under centered dealer stack', () => {
+  it('command box sits between dealer stack and hero display', () => {
     const html = renderAt(390);
     expect(html).toContain('dealer-block__stack');
     expect(html).not.toContain('dealer-block__hero-row');
+    expect(html).toContain('bj-card-layout__command');
     expect(html).toContain('dealer-block__command');
     expect(html).toMatch(/Box \d+ — Alice.{0,12}turn/);
     const stackIdx = html.indexOf('dealer-block__stack');
-    const commandIdx = html.indexOf('dealer-block__command');
+    const commandIdx = html.indexOf('bj-card-layout__command');
+    const heroIdx = html.indexOf('bj-card-layout__hero');
     expect(commandIdx).toBeGreaterThan(stackIdx);
+    expect(heroIdx).toBeGreaterThan(commandIdx);
   });
 
   it('hero action CSS uses two centered rows with smaller extras', () => {

@@ -7,6 +7,7 @@ import {
   BET_BOX_PULSE,
   BOX_BORDER_NATIVE,
   BOX_BORDER_RUNNING,
+  BOX_BORDER_SELECTED,
   getBoxActivePulseClassName,
   getBoxBorderVisualClasses,
   getBoxCardVisualClasses,
@@ -58,10 +59,11 @@ describe('box selection + turn pulse', () => {
       bettingStage: true,
     });
     expect(resolved.isNativeAssigned).toBe(true);
-    expect(getBoxBorderVisualClasses(resolved)).toBe(BOX_BORDER_NATIVE);
+    expect(getBoxBorderVisualClasses(resolved)).toContain(BOX_BORDER_NATIVE);
+    expect(getBoxBorderVisualClasses(resolved)).toContain(BOX_BORDER_SELECTED);
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
     expect(getBoxCardVisualClasses(resolved)).toContain(BOX_BORDER_NATIVE);
-    expect(getBoxCardVisualClasses(resolved)).not.toContain('bj-box--selected');
+    expect(getBoxCardVisualClasses(resolved)).toContain(BOX_BORDER_SELECTED);
   });
 
   it('selected running box keeps dotted ownership border underneath pulse', () => {
@@ -79,7 +81,8 @@ describe('box selection + turn pulse', () => {
       bettingStage: true,
       openStake: 10,
     });
-    expect(getBoxBorderVisualClasses(resolved)).toBe(BOX_BORDER_RUNNING);
+    expect(getBoxBorderVisualClasses(resolved)).toContain(BOX_BORDER_RUNNING);
+    expect(getBoxBorderVisualClasses(resolved)).toContain(BOX_BORDER_SELECTED);
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
   });
 

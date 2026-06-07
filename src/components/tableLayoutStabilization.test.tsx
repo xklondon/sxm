@@ -108,12 +108,14 @@ describe('table layout stabilization contract', () => {
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc[\s\S]*overflow:\s*visible/);
   });
 
-  it('Full Table renders visible cards via shared card fan classes', () => {
+  it('Full Table renders visible cards via vertical stack above boxes', () => {
     const full = renderAt(1280, 'full');
     expect(full).toContain(TABLE_UX.arcCards);
-    expect(full).toContain(TABLE_UX.cardsFan);
+    expect(full).toContain(TABLE_UX.arcCardsStackVertical);
+    expect(full).toContain(TABLE_UX.arcCardsStack);
     expect(full).toContain('playing-card');
     expect(full).not.toMatch(/bj-phone-view__mini-hand-card-stack[\s\S]*playing-card/);
+    expect(full).not.toContain(TABLE_UX.cardsFan);
   });
 
   it('shows bank value, bank chips in table chrome', () => {
@@ -274,11 +276,17 @@ describe('table layout polish contract', () => {
     }
   });
 
-  it('Full Table arc boxes order value, cards, then chips', () => {
+  it('Full Table arc stacks cards vertically above each box shell', () => {
     const full = renderAt(1280, 'full');
+    expect(full).toContain('bj-arc__cards--stack-vertical');
+    expect(full).toContain('bj-arc__cards-stack');
     expect(full).toMatch(
-      /bj-phone-view__mini-hand--full-arc[\s\S]*bj-phone-view__box-value[\s\S]*bj-arc__cards[\s\S]*bj-phone-view__mini-stake-slot/,
+      /bj-arc__play-zone[\s\S]*bj-arc__cards-stack[\s\S]*bj-phone-view__mini-hand--full-arc/,
     );
+    expect(full).toMatch(
+      /bj-phone-view__mini-hand--full-arc[\s\S]*bj-phone-view__box-value[\s\S]*bj-phone-view__mini-stake-slot/,
+    );
+    expect(full).not.toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*bj-cards-fan/);
   });
 
   it('Full Table shows stake chips during play phase', () => {

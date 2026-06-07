@@ -106,21 +106,23 @@ function boxSlotIndex(html: string): number {
 }
 
 describe('Card View central layout', () => {
-  it('dealer command sits under centered stack, not beside cards', () => {
+  it('dealer command sits between dealer stack and hero display', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).toContain('dealer-block__stack');
+    expect(html).toContain('bj-card-layout__command');
     expect(html).not.toContain('dealer-block__hero-row');
     const stackIdx = html.indexOf('dealer-block__stack');
-    const commandIdx = html.indexOf('dealer-block__command');
+    const commandIdx = html.indexOf('bj-card-layout__command');
+    const heroIdx = html.indexOf('bj-card-layout__hero');
     const cardsIdx = html.indexOf('dealer-block__cards-slot');
     expect(stackIdx).toBeGreaterThan(-1);
     expect(commandIdx).toBeGreaterThan(stackIdx);
+    expect(heroIdx).toBeGreaterThan(commandIdx);
     expect(cardsIdx).toBeGreaterThan(stackIdx);
     expect(cardsIdx).toBeLessThan(commandIdx);
-    const dealerCss = readFileSync(join(process.cwd(), 'src/components/DealerBlock.css'), 'utf8');
-    expect(dealerCss).toMatch(/\.dealer-block__command[\s\S]*border-top:/);
-    expect(dealerCss).not.toMatch(/\.dealer-block__command[\s\S]*border-left:/);
-    expect(dealerCss).toMatch(/\.dealer-block__center-col[\s\S]*align-items:\s*center/);
+    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    expect(layoutCss).toContain('.bj-card-layout__command');
+    expect(layoutCss).toMatch(/\.bj-card-layout__command \.dealer-block__command[\s\S]*max-height:/);
   });
 
   it('betting phase does not render central selected-box card', () => {

@@ -63,6 +63,8 @@ import { StakeChips, type ChipValue } from "./ChipStack";
 import { PlayingCard } from "./PlayingCard";
 
 import {
+  BET_BOX_PULSE,
+  BOX_BORDER_SELECTED,
   getBoxActivePulseClassName,
   getBoxCardVisualClasses,
   getBoxCardValueLabel,
@@ -86,6 +88,8 @@ import "./BlackjackCardView.css";
 interface BlackjackCardViewProps {
   /** Dealer zone content — rendered in bj-card-layout__dealer only. */
   dealer: ReactNode;
+  /** Command text — rendered between dealer row and hero display. */
+  dealerCommand?: ReactNode;
   /** Tray + balance row — rendered in bj-card-layout__tray only. */
   tray: ReactNode;
   /** Panel summary extras (alerts, ledger offer) above insurance/even-money. */
@@ -99,6 +103,8 @@ interface BlackjackCardViewProps {
   focusBoxId?: string;
   /** Client-local chip target — same source as Full Table selection. */
   selectedBettingBoxId?: string | null;
+  /** Client-local empty-slot chip target — same source as Full Table selection. */
+  selectedBettingSlotNumber?: number | null;
   activeBoxId: string | null;
   showHoleHidden: boolean;
   protocolPhase: BlackjackProtocolPhase;
@@ -140,6 +146,7 @@ const SWIPE_THRESHOLD = 48;
 
 export function BlackjackCardView({
   dealer,
+  dealerCommand,
   tray,
   summaryExtras,
   gameState,
@@ -147,6 +154,7 @@ export function BlackjackCardView({
   deviceView = "mobile",
   focusBoxId,
   selectedBettingBoxId = null,
+  selectedBettingSlotNumber = null,
   activeBoxId,
   showHoleHidden: _showHoleHidden,
   protocolPhase,
@@ -659,7 +667,7 @@ export function BlackjackCardView({
       selectedBettingBoxId,
       activeBoxId: activeTurnBoxId,
       isDropHover: dropTargetId === chipDropKey({ slotNumber, boxId }),
-      bettingStage: bettingMainStage,
+      bettingStage: bettingOpen,
       playerPhase: isPlayerPhase,
     });
     const isSelected = borderState.isSelected;
@@ -801,6 +809,7 @@ export function BlackjackCardView({
   }
 
   function renderMiniEmptySlot(slotNumber: number) {
+    const isSelected = bettingOpen && selectedBettingSlotNumber === slotNumber;
     const joinTile = renderCardViewBoxColumn({
       aboveLabel: "",
       aboveBust: false,
@@ -811,9 +820,18 @@ export function BlackjackCardView({
       tile: (
         <button
           type="button"
-          className={`bj-phone-view__mini-hand bj-phone-view__mini-hand--empty ${TABLE_UX.cardViewCompactBox}`}
+          className={[
+            "bj-phone-view__mini-hand",
+            "bj-phone-view__mini-hand--empty",
+            TABLE_UX.cardViewCompactBox,
+            isSelected ? BOX_BORDER_SELECTED : "",
+            isSelected ? BET_BOX_PULSE : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
           onClick={() => onClaimSlot(slotNumber)}
           aria-label={`Join box ${slotNumber}`}
+          aria-current={isSelected ? "true" : undefined}
         >
           <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
           <span className="bj-phone-view__mini-hand-name">Join</span>
@@ -1338,6 +1356,9 @@ export function BlackjackCardView({
       <div className={TABLE_UX.cardLayoutDealer}>{dealer}</div>
 
       <div {...sxmSectionProps(SXM_LAYOUT.statusZone, TABLE_UX.cardLayoutSummary)}>
+        {dealerCommand ? (
+          <div className={TABLE_UX.cardLayoutCommand}>{dealerCommand}</div>
+        ) : null}
         {summaryExtras}
         {renderSummaryZoneContent()}
       </div>

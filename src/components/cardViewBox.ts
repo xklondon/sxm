@@ -161,7 +161,7 @@ export function resolveBoxBorderVisualState(input: BoxBorderVisualInput): BoxBor
   };
 }
 
-/** CSS classes for ownership/drop borders — pulse is layered separately. */
+/** CSS classes for ownership/drop/selection borders — pulse is layered separately. */
 export function getBoxBorderVisualClasses(resolved: BoxBorderVisualState): string {
   const parts: string[] = [];
   if (resolved.isNativeAssigned) {
@@ -170,6 +170,9 @@ export function getBoxBorderVisualClasses(resolved: BoxBorderVisualState): strin
     parts.push(BOX_BORDER_RUNNING);
   } else if (resolved.isCoBox) {
     parts.push(BOX_BORDER_CO_BOX);
+  }
+  if (resolved.isSelected) {
+    parts.push(BOX_BORDER_SELECTED);
   }
   if (resolved.isDropHover) {
     parts.push(BOX_BORDER_DROP_HOVER);

@@ -162,6 +162,7 @@ describe('Card View desktop targeted fixes', () => {
     const freeShell =
       html.match(/data-chip-drop-box="box-free"[\s\S]*?(?=data-chip-drop-slot="2")/)?.[0] ?? '';
     expect(freeShell).toContain('bj-phone-view__bet-chip--pulse');
+    expect(freeShell).toContain('bj-box--selected');
     expect(freeShell).not.toContain('bj-box--running');
     expect(freeShell).not.toContain('bj-box--native-assigned');
   });
@@ -183,6 +184,7 @@ describe('Card View desktop targeted fixes', () => {
     const html = renderBettingCardView(state);
     expect(html).toMatch(/data-chip-drop-box="box-native"[\s\S]*bj-phone-view__bet-chip--pulse/);
     expect(html).toMatch(/data-chip-drop-box="box-native"[\s\S]*bj-box--native-assigned/);
+    expect(html).toMatch(/data-chip-drop-box="box-native"[\s\S]*bj-box--selected/);
     expect(html).toContain('Host');
   });
 });

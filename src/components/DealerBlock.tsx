@@ -11,6 +11,8 @@ interface DealerBlockProps {
   gameEnded: boolean;
   /** AID advice and optional contextual commentary — left column. */
   commentaryText?: string | null;
+  /** Playful / dynamic content in the left-of-dealer column (e.g. Magic 8 Ball). */
+  dynamicTextSlot?: ReactNode;
   /** Primary gameplay instruction — central command area. */
   commandMessage?: string | null;
   /** Extra command lines (round summary, legal-action hints). */
@@ -40,12 +42,59 @@ interface DealerBlockProps {
   engineStatus?: string;
   initialDealManual: boolean;
   bankDrawManual: boolean;
+  /** Card View: command renders in layout summary row (between dealer and hero). */
+  omitCommand?: boolean;
+}
+
+export function DealerCommandArea({
+  commandMessage,
+  commandLines = [],
+  gameEnded,
+}: {
+  commandMessage?: string | null;
+  commandLines?: string[];
+  gameEnded: boolean;
+}) {
+  const hasCommandContent =
+    Boolean(commandMessage?.trim()) || commandLines.some((line) => line.trim().length > 0);
+
+  return (
+    <div className="dealer-block__command" aria-live="polite">
+      {hasCommandContent ? (
+        <>
+          {commandMessage ? (
+            <p
+              className={[
+                'dealer-block__status',
+                gameEnded ? 'dealer-block__status--game-over' : '',
+                isTableInstructionMessage(commandMessage) ? 'dealer-block__status--summary' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              {commandMessage}
+            </p>
+          ) : null}
+          {commandLines.map((line, i) => (
+            <p key={`${i}-${line}`} className="dealer-block__status dealer-block__status--summary">
+              {line}
+            </p>
+          ))}
+        </>
+      ) : (
+        <p className="dealer-block__status dealer-block__status--placeholder" aria-hidden="true">
+          &nbsp;
+        </p>
+      )}
+    </div>
+  );
 }
 
 export function DealerBlock({
   awaitingNextRound,
   gameEnded,
   commentaryText,
+  dynamicTextSlot,
   commandMessage,
   commandLines = [],
   onOpenTableDetails,
@@ -71,6 +120,7 @@ export function DealerBlock({
   engineStatus,
   initialDealManual,
   bankDrawManual,
+  omitCommand = false,
 }: DealerBlockProps) {
   const status = engineStatus;
 
@@ -179,22 +229,20 @@ export function DealerBlock({
     </div>
   );
 
-  const hasCommandContent =
-    Boolean(commandMessage?.trim()) || commandLines.some((line) => line.trim().length > 0);
-
   return (
     <div {...sxmSectionProps(SXM_LAYOUT.dealerZone, 'dealer-block')}>
       <div className="dealer-block__grid">
         <div className="dealer-block__commentary-col">
+          {dynamicTextSlot}
           {commentaryText ? (
             <p className="dealer-block__commentary" aria-live="polite">
               {commentaryText}
             </p>
-          ) : (
+          ) : !dynamicTextSlot ? (
             <p className="dealer-block__commentary dealer-block__commentary--placeholder" aria-hidden="true">
               &nbsp;
             </p>
-          )}
+          ) : null}
         </div>
 
         <div className="dealer-block__center-col">
@@ -223,36 +271,13 @@ export function DealerBlock({
               </button>
             )}
           </div>
-          <div className="dealer-block__command" aria-live="polite">
-            {hasCommandContent ? (
-              <>
-                {commandMessage ? (
-                  <p
-                    className={[
-                      'dealer-block__status',
-                      gameEnded ? 'dealer-block__status--game-over' : '',
-                      isTableInstructionMessage(commandMessage)
-                        ? 'dealer-block__status--summary'
-                        : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  >
-                    {commandMessage}
-                  </p>
-                ) : null}
-                {commandLines.map((line, i) => (
-                  <p key={`${i}-${line}`} className="dealer-block__status dealer-block__status--summary">
-                    {line}
-                  </p>
-                ))}
-              </>
-            ) : (
-              <p className="dealer-block__status dealer-block__status--placeholder" aria-hidden="true">
-                &nbsp;
-              </p>
-            )}
-          </div>
+          {!omitCommand ? (
+            <DealerCommandArea
+              commandMessage={commandMessage}
+              commandLines={commandLines}
+              gameEnded={gameEnded}
+            />
+          ) : null}
           {!bankerReady && !gameEnded && (
             <p className="dealer-block__hint">Choose banker first.</p>
           )}

@@ -1436,21 +1436,13 @@
   overflow: visible;
 }
 
-.bj-view-full-mobile .bj-arc__cards {
-  min-height: 1.25rem;
+.bj-view-full-mobile .bj-arc__cards--stack-vertical {
+  max-height: 5.5rem;
 }
 
-.bj-view-full-mobile .bj-cards-fan .playing-card {
-  width: 2.1rem;
-  height: 2.95rem;
-}
-
-.bj-view-full-mobile .bj-cards-fan .playing-card {
-  margin-left: -0.38rem;
-}
-
-.bj-view-full-mobile .bj-cards-fan .playing-card:first-child {
-  margin-left: 0;
+.bj-view-full-mobile .bj-arc__cards-stack .playing-card {
+  width: 1.65rem;
+  min-height: 2.3rem;
 }
 
 .bj-view-full-mobile .bj-arc__bust {

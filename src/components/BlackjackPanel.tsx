@@ -50,7 +50,8 @@ import { useBlackjackTableFlow } from './useBlackjackTableFlow';
 import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
 import { BlackjackCardView } from './BlackjackCardView';
 import { BankerSetupPanel } from './BankerSetupPanel';
-import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
+import { DealerBlock, DealerCommandArea, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
+import { Magic8Ball } from './magic8/Magic8Ball';
 import { getBoxCallerDisplayName } from './boxCallerDisplay';
 import { LocalProfileSetup } from './LocalProfileSetup';
 import { PlayLedgerModal, PlayLedgerPanel } from './LedgerModals';
@@ -116,6 +117,8 @@ import {
 } from './blackjackViewPhase';
 import { getDisplayedHandValue, getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
 import {
+  BET_BOX_PULSE,
+  BOX_BORDER_SELECTED,
   BOX_CARD_VALUE,
   BOX_CARD_VALUE_BUST,
   getBoxActivePulseClassName,
@@ -213,6 +216,8 @@ export function BlackjackPanel({
   const [selectedBettingBoxId, setSelectedBettingBoxId] = useState<string | null>(
     () => gameState.selectedSeatId,
   );
+  /** Empty-slot chip target — local UI only (occupied boxes use selectedBettingBoxId). */
+  const [selectedBettingSlotNumber, setSelectedBettingSlotNumber] = useState<number | null>(null);
   const selectedBettingBoxIdRef = useRef<string | null>(selectedBettingBoxId);
   selectedBettingBoxIdRef.current = selectedBettingBoxId;
   /** Last chip-tray / box-tap target — shared across Full Table and Card View. */
@@ -291,6 +296,11 @@ export function BlackjackPanel({
   const activeProtocol = getBlackjackProtocolForState(gameState);
   const activeBoxId = getActiveTurnBoxId(gameState, protocolPhase);
 
+  const magic8ShakeAllowed =
+    !gameEnded &&
+    isPlayerTurnPhase(protocolPhase) &&
+    resolveViewerActionPermission(gameState, viewerPersonId).canAct;
+
   useEffect(() => {
     if (gameState.tableMeta.gameStatus === 'ended') {
       setPersonalLedgerAdded(hasPersonalLedgerEntryForTable(gameState.session.id));
@@ -307,13 +317,8 @@ export function BlackjackPanel({
       onGameStateChange({ ...current, selectedSeatId: playerId });
     }
     setSelectedBettingBoxId(playerId);
+    setSelectedBettingSlotNumber(null);
   }, [round?.status, round?.activeHandKey, onGameStateChange]);
-
-  useEffect(() => {
-    if (!onlineDispatch) {
-      setSelectedBettingBoxId(gameState.selectedSeatId);
-    }
-  }, [gameState.selectedSeatId, onlineDispatch]);
 
   const playingFor = getTableWagerDisplay(gameState);
   const displaySlots = [...tableMeta.boxSlots].sort((a, b) => b.slotNumber - a.slotNumber);
@@ -416,6 +421,7 @@ export function BlackjackPanel({
         const personId = resolveControllerPersonId(state, controllerName);
         onGameStateChange(addChipToBoxStake(state, boxId, amount, personId ?? undefined));
         setSelectedBettingBoxId(boxId);
+        setSelectedBettingSlotNumber(null);
         rememberBetTarget({ kind: 'box', boxId });
         return;
       }
@@ -424,6 +430,7 @@ export function BlackjackPanel({
         addChipToBoxStake(state, target.boxId, amount, personId ?? undefined),
       );
       setSelectedBettingBoxId(target.boxId);
+      setSelectedBettingSlotNumber(null);
     } catch (err) {
       setError(formatPlaceBetError(err));
     }
@@ -431,6 +438,7 @@ export function BlackjackPanel({
 
   function selectBox(boxId: string) {
     setSelectedBettingBoxId(boxId);
+    setSelectedBettingSlotNumber(null);
     try {
       rememberBetTarget(
         getChipPlacementTargetFromBoxId(
@@ -513,6 +521,8 @@ export function BlackjackPanel({
       return;
     }
 
+    setSelectedBettingBoxId(null);
+    setSelectedBettingSlotNumber(slotNumber);
     rememberBetTarget({ kind: 'slot', slotNumber });
   }
 
@@ -709,6 +719,9 @@ export function BlackjackPanel({
     newGameDisabledReason:
       gameEnded && !canResetTable ? 'Only the table owner can start a new game.' : null,
     commentaryText: tableAidTip,
+    dynamicTextSlot: (
+      <Magic8Ball variant="table" compact canShake={magic8ShakeAllowed} />
+    ),
     commandMessage: tableCommand.commandMessage,
     commandLines: tableCommand.commandLines,
     onOpenTableDetails: toggleTableDetails,
@@ -1198,6 +1211,22 @@ export function BlackjackPanel({
     const visualIdx = arcVisualIndex(slotNumber);
     const rotation = ARC_ROTATIONS[visualIdx] ?? 0;
 
+    const arcCards =
+      cardIds.length > 0 && visualDeck ? (
+        <div className="bj-arc__play-zone">
+          <div
+            className={[
+              TABLE_UX.arcCards,
+              TABLE_UX.arcCardsStackVertical,
+            ].join(' ')}
+          >
+            <div className={TABLE_UX.arcCardsStack}>
+              {cardIds.map((id) => renderCard(id, false, deviceView === 'mobile', id))}
+            </div>
+          </div>
+        </div>
+      ) : null;
+
     return (
       <div
         key={boxId}
@@ -1209,6 +1238,7 @@ export function BlackjackPanel({
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
       >
+        {arcCards}
         <div
           {...sxmSectionProps(
             SXM_LAYOUT.playerBox,
@@ -1262,19 +1292,6 @@ export function BlackjackPanel({
             <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
             <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
           </span>
-          <div
-            className={[
-              TABLE_UX.arcCards,
-              cardIds.length === 0 ? `${TABLE_UX.arcCards}--empty` : '',
-            ].filter(Boolean).join(' ')}
-            aria-hidden={cardIds.length === 0}
-          >
-            {cardIds.length > 0 && visualDeck ? (
-              <div className={TABLE_UX.cardsFan}>
-                {cardIds.map((id) => renderCard(id, false, deviceView === 'mobile', id))}
-              </div>
-            ) : null}
-          </div>
           <span
             className="bj-phone-view__mini-stake-slot"
             aria-hidden={!showStakeContent}
@@ -1315,6 +1332,7 @@ export function BlackjackPanel({
     const rotation = ARC_ROTATIONS[visualIdx] ?? 0;
     const dropKey = `slot-${slotNumber}`;
     const isDrop = dropTargetId === dropKey;
+    const isSelected = inBetting && selectedBettingSlotNumber === slotNumber;
     return (
       <div
         key={`empty-${slotNumber}`}
@@ -1329,6 +1347,8 @@ export function BlackjackPanel({
           className={[
             'bj-phone-view__mini-hand',
             'bj-phone-view__mini-hand--empty',
+            isSelected ? BOX_BORDER_SELECTED : '',
+            isSelected ? BET_BOX_PULSE : '',
             isDrop ? 'bj-bet-zone--drop' : '',
           ].filter(Boolean).join(' ')}
           {...{
@@ -1657,7 +1677,16 @@ export function BlackjackPanel({
 
           {viewMode === 'card' && (
             <BlackjackCardView
-              dealer={<DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} />}
+              dealer={
+                <DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} omitCommand />
+              }
+              dealerCommand={
+                <DealerCommandArea
+                  commandMessage={tableCommand.commandMessage}
+                  commandLines={tableCommand.commandLines}
+                  gameEnded={gameEnded}
+                />
+              }
               tray={renderTrayInner()}
               summaryExtras={renderCardViewSummaryExtras()}
               gameState={tableVisualState}
@@ -1668,6 +1697,7 @@ export function BlackjackPanel({
                   deviceView={deviceView}
                   focusBoxId={focusBoxId ?? undefined}
                   selectedBettingBoxId={selectedBettingBoxIdForUi}
+                  selectedBettingSlotNumber={selectedBettingSlotNumber}
                   activeBoxId={activeBoxId}
                   showHoleHidden={showHoleHidden}
                   protocolPhase={protocolPhase}

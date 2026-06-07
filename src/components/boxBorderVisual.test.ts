@@ -108,7 +108,8 @@ describe('box border visual states', () => {
     });
     expect(resolved.isSelected).toBe(true);
     expect(resolved.isNativeAssigned).toBe(true);
-    expect(getBoxBorderVisualClasses(resolved)).toBe(BOX_BORDER_NATIVE);
+    expect(getBoxBorderVisualClasses(resolved)).toContain(BOX_BORDER_NATIVE);
+    expect(getBoxBorderVisualClasses(resolved)).toContain('bj-box--selected');
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
   });
 
@@ -125,6 +126,7 @@ describe('box border visual states', () => {
       bettingStage: true,
     });
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
+    expect(getBoxCardVisualClasses(resolved)).toContain('bj-box--selected');
     expect(getBoxCardVisualClasses(resolved)).not.toContain(BOX_BORDER_RUNNING);
     expect(getBoxCardVisualClasses(resolved)).not.toContain(BOX_BORDER_NATIVE);
   });

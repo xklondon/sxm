@@ -277,16 +277,18 @@ describe('TABLE_UX markup across views', () => {
     }
   });
 
-  it('Full Table arc seats use card fan + shared box class family', () => {
+  it('Full Table arc seats use vertical card stack + shared box class family', () => {
     const full = renderAt(1280, 'full');
     expect(full).toContain('bj-phone-view__mini-hand');
     expect(full).toContain(TABLE_UX.fullArcBox);
     expect(full).toContain('bj-phone-view__mini-hand-box');
     expect(full).toContain('bj-phone-view__mini-hand-name');
     expect(full).toContain(TABLE_UX.arcCards);
-    expect(full).toContain(TABLE_UX.cardsFan);
-    expect(full).not.toContain('bj-arc__play-zone');
+    expect(full).toContain(TABLE_UX.arcCardsStackVertical);
+    expect(full).toContain(TABLE_UX.arcCardsStack);
+    expect(full).toContain('bj-arc__play-zone');
     expect(full).toContain('bj-phone-view__box-value');
+    expect(full).not.toContain(TABLE_UX.cardsFan);
   });
 
   it('bet zones use rectangular seat shell class during betting', () => {

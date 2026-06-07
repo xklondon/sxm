@@ -159,6 +159,7 @@ const CARD_VIEW_PLAYING_SECTIONS = [
   ...CARD_VIEW_SECTIONS,
   'dealer-block__status',
   'dealer-block__command',
+  'bj-card-layout__command',
   'dealer-block__stack',
   'bj-card-layout__hero',
   'bj-card-layout__actions',

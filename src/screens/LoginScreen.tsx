@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { requestMagicLink } from '../api/client';
+import { Magic8Ball } from '../components/magic8/Magic8Ball';
 import './LoginScreen.css';
 
 interface LoginScreenProps {
@@ -121,6 +122,7 @@ export function LoginScreen({
             {checkingSession && <p className="login-screen__hint">Checking session…</p>}
             {sessionWarning && <p className="login-screen__warn">{sessionWarning}</p>}
             <form onSubmit={handleSubmit}>
+              <Magic8Ball variant="login" />
               <label className="login-screen__field">
                 Email
                 <input

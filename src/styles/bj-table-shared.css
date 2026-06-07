@@ -338,8 +338,10 @@
   background: rgb(251 146 60 / 0.07);
 }
 
+/* Local chip target — additive frame layered over ownership borders. */
 .bj-phone-view__mini-hand.bj-box--selected {
-  border: 3px solid var(--ds-color-gold);
+  outline: 3px solid var(--ds-color-gold);
+  outline-offset: 1px;
   background: rgb(251 191 36 / 0.12);
 }
 
@@ -602,10 +604,11 @@
   width: 100%;
 }
 
-/* Full Table arc seats — value → cards → chips inside the box. */
+/* Full Table arc seats — compact box shell; cards stack above in bj-arc__play-zone. */
 .bj-phone-view__mini-hand--full-arc {
   justify-content: flex-start;
   gap: 0.05rem;
+  flex: 0 0 auto;
 }
 
 .bj-phone-view__mini-hand--full-arc .bj-phone-view__box-value,
@@ -621,23 +624,54 @@
   opacity: 0.85;
 }
 
-.bj-phone-view__mini-hand--full-arc .bj-arc__cards {
-  order: 2;
-  flex: 1 1 auto;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  min-height: 2.35rem;
-  margin: -0.12rem 0 0;
-  width: 100%;
-}
-
 .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot {
-  order: 3;
+  order: 2;
   flex: 0 0 auto;
   margin-top: auto;
   min-height: 1.65rem;
   width: 100%;
+}
+
+.bj-view-full-desktop .bj-arc__slot--owned,
+.bj-view-full-mobile .bj-arc__slot--owned {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.bj-view-full-desktop .bj-arc__slot .bj-arc__play-zone,
+.bj-view-full-mobile .bj-arc__slot .bj-arc__play-zone {
+  flex: 0 1 auto;
+  width: 100%;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 0 0.06rem;
+}
+
+.bj-arc__cards--stack-vertical {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bj-arc__cards-stack {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 0.06rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.bj-arc__cards-stack .playing-card {
+  margin-left: 0;
+  flex: 0 0 auto;
 }
 
 .bj-phone-view__mini-stake-slot--reserved {
@@ -1073,14 +1107,14 @@
     width: 100%;
   }
 
-  .bj-view-full-desktop .bj-phone-view__mini-hand--full-arc .bj-arc__cards {
-    min-height: 2.85rem;
-    margin-top: -0.15rem;
+  .bj-view-full-desktop .bj-arc__cards--stack-vertical {
+    min-height: 0;
+    max-height: 8.5rem;
   }
 
-  .bj-view-full-desktop .bj-phone-view__mini-hand--full-arc .bj-cards-fan .playing-card {
-    width: 2.55rem;
-    min-height: 3.55rem;
+  .bj-view-full-desktop .bj-arc__cards-stack .playing-card {
+    width: 2.2rem;
+    min-height: 3.05rem;
   }
 
   .bj-view-full-desktop .bj-arc {
