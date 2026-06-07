@@ -37,18 +37,18 @@ describe('cardViewBox helpers', () => {
   });
 
   describe('getBetBoxPulseClassName', () => {
-    it('pulses only the selected box while betting is open', () => {
-      expect(getBetBoxPulseClassName(true, true)).toBe(BET_BOX_PULSE);
+    it('pulses for chip target or active turn', () => {
+      expect(getBetBoxPulseClassName(true, false)).toBe(BET_BOX_PULSE);
+      expect(getBetBoxPulseClassName(false, true)).toBe(BET_BOX_PULSE);
     });
 
-    it('does not pulse non-selected boxes or when betting closed', () => {
-      expect(getBetBoxPulseClassName(true, false)).toBe('');
-      expect(getBetBoxPulseClassName(false, true)).toBe('');
+    it('does not pulse when neither chip target nor turn', () => {
+      expect(getBetBoxPulseClassName(false, false)).toBe('');
     });
 
     it('is deterministic so the pulse survives re-renders / WebSocket updates', () => {
-      const first = getBetBoxPulseClassName(true, true);
-      const afterUpdate = getBetBoxPulseClassName(true, true);
+      const first = getBetBoxPulseClassName(true, false);
+      const afterUpdate = getBetBoxPulseClassName(true, false);
       expect(afterUpdate).toBe(first);
       expect(afterUpdate).toBe(BET_BOX_PULSE);
     });

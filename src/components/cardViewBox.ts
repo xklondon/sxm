@@ -131,21 +131,14 @@ export function resolveBoxBorderVisualState(input: BoxBorderVisualInput): BoxBor
   const isTurn = Boolean(playerPhase && activeBoxId === boxPlayerId);
   const isNative = isCardViewBoxNativeForPerson(state, boxPlayerId, viewerPersonId);
 
+  let isNativeAssigned = false;
   let isRunning = false;
   let isCoBox = false;
 
-  if (!isSelected && viewerPersonId) {
+  if (viewerPersonId) {
     if (isNative) {
-      return {
-        isNativeAssigned: true,
-        isRunning: false,
-        isCoBox: false,
-        isSelected: false,
-        isTurn,
-        isDropHover: Boolean(isDropHover),
-      };
-    }
-    if (openStake > 0) {
+      isNativeAssigned = true;
+    } else if (openStake > 0) {
       const caller = getCallerPersonIdForBox(state, boxPlayerId);
       const stakers = getStakerPersonIdsForBox(state, boxPlayerId);
       if (stakers.includes(viewerPersonId)) {
@@ -159,7 +152,7 @@ export function resolveBoxBorderVisualState(input: BoxBorderVisualInput): BoxBor
   }
 
   return {
-    isNativeAssigned: false,
+    isNativeAssigned,
     isRunning,
     isCoBox,
     isSelected,
@@ -168,20 +161,15 @@ export function resolveBoxBorderVisualState(input: BoxBorderVisualInput): BoxBor
   };
 }
 
-/** CSS classes for box border semantics — selected overrides native/running/co. */
+/** CSS classes for ownership/drop borders — pulse is layered separately. */
 export function getBoxBorderVisualClasses(resolved: BoxBorderVisualState): string {
   const parts: string[] = [];
-  if (resolved.isSelected) {
-    parts.push(BOX_BORDER_SELECTED);
-  } else if (resolved.isNativeAssigned) {
+  if (resolved.isNativeAssigned) {
     parts.push(BOX_BORDER_NATIVE);
   } else if (resolved.isRunning) {
     parts.push(BOX_BORDER_RUNNING);
   } else if (resolved.isCoBox) {
     parts.push(BOX_BORDER_CO_BOX);
-  }
-  if (resolved.isTurn) {
-    parts.push(BOX_BORDER_TURN);
   }
   if (resolved.isDropHover) {
     parts.push(BOX_BORDER_DROP_HOVER);
@@ -218,9 +206,17 @@ export function getBoxCardClassName(isActive: boolean): string {
   return isActive ? `${BOX_CARD_BASE} ${BOX_BORDER_TURN}` : BOX_CARD_BASE;
 }
 
+/** Pulse for local chip target (betting) or active player turn (play). */
+export function getBoxActivePulseClassName(
+  resolved: Pick<BoxBorderVisualState, 'isSelected' | 'isTurn'>,
+): string {
+  return resolved.isSelected || resolved.isTurn ? BET_BOX_PULSE : '';
+}
+
 /**
+ * @deprecated Prefer getBoxActivePulseClassName(borderState).
  * Betting pulse applies only to the selected chip target — not every assigned box.
  */
-export function getBetBoxPulseClassName(bettingOpen: boolean, isSelected: boolean): string {
-  return bettingOpen && isSelected ? BET_BOX_PULSE : '';
+export function getBetBoxPulseClassName(isChipTarget: boolean, isActiveTurn = false): string {
+  return isChipTarget || isActiveTurn ? BET_BOX_PULSE : '';
 }

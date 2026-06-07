@@ -63,8 +63,8 @@ describe('view mode is client-local (no flip on server update)', () => {
 
 describe('betting Card View — same ordered row on every viewport', () => {
   it('owned betting boxes pulse from current state', () => {
-    expect(getBetBoxPulseClassName(true, true)).not.toBe('');
-    expect(getBetBoxPulseClassName(false, true)).toBe('');
+    expect(getBetBoxPulseClassName(true, false)).not.toBe('');
+    expect(getBetBoxPulseClassName(false, false)).toBe('');
   });
 });
 

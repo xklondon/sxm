@@ -111,7 +111,7 @@ import { getDisplayedHandValue, getVisibleHandCardIds } from '../engine/blackjac
 import {
   BOX_CARD_VALUE,
   BOX_CARD_VALUE_BUST,
-  getBetBoxPulseClassName,
+  getBoxActivePulseClassName,
   getBoxCardVisualClasses,
   resolveBoxBorderVisualState,
 } from './cardViewBox';
@@ -1144,7 +1144,6 @@ export function BlackjackPanel({
       bettingStage: inBetting,
       playerPhase: isPlayerTurnPhase(protocolPhase),
     });
-    const isSelected = borderState.isSelected;
     const isTurn = borderState.isTurn;
     const callerDisplayName = getBoxCallerDisplayName(gameState, boxId);
     let handKeys = handKeysByBox.get(boxId) ?? [];
@@ -1197,7 +1196,7 @@ export function BlackjackPanel({
             SXM_LAYOUT.playerBox,
             getBoxCardVisualClasses(borderState),
             TABLE_UX.fullArcBox,
-            getBetBoxPulseClassName(bettingOpen, inBetting && isSelected),
+            getBoxActivePulseClassName(borderState),
             showBettingChips ? 'bj-phone-view__mini-hand--has-stake' : '',
           )}
           {...{

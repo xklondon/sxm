@@ -6,10 +6,11 @@ import { addChipToBoxStake } from '../engine/blackjack/stakes';
 import { tableAfterStartPlaying, boxPlayerId } from '../engine/blackjack/sanity/fixtures';
 import { claimBoxSlot } from '../engine/session/boxOps';
 import {
+  BET_BOX_PULSE,
   BOX_BORDER_CO_BOX,
   BOX_BORDER_NATIVE,
   BOX_BORDER_RUNNING,
-  BOX_BORDER_SELECTED,
+  getBoxActivePulseClassName,
   getBoxBorderVisualClasses,
   getBoxCardVisualClasses,
   resolveBoxBorderVisualState,
@@ -94,7 +95,7 @@ describe('box border visual states', () => {
     expect(getBoxBorderVisualClasses(resolved)).toBe(BOX_BORDER_CO_BOX);
   });
 
-  it('selected box gets thick yellow and only one ownership border class', () => {
+  it('selected native box keeps ownership border and adds pulse separately', () => {
     const state = personTable();
     const nativeBox = boxPlayerId(state, 1)!;
     const personId = viewerPersonId(state);
@@ -106,13 +107,12 @@ describe('box border visual states', () => {
       bettingStage: true,
     });
     expect(resolved.isSelected).toBe(true);
-    expect(resolved.isNativeAssigned).toBe(false);
-    const classes = getBoxBorderVisualClasses(resolved);
-    expect(classes).toBe(BOX_BORDER_SELECTED);
-    expect(classes).not.toContain(BOX_BORDER_NATIVE);
+    expect(resolved.isNativeAssigned).toBe(true);
+    expect(getBoxBorderVisualClasses(resolved)).toBe(BOX_BORDER_NATIVE);
+    expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
   });
 
-  it('free box selected without stake does not get running/co/native class', () => {
+  it('free box selected without stake gets pulse only, no ownership border', () => {
     const state = personTable();
     const freeBox = boxPlayerId(state, 3)!;
     const personId = viewerPersonId(state);
@@ -124,7 +124,7 @@ describe('box border visual states', () => {
       openStake: 0,
       bettingStage: true,
     });
-    expect(getBoxCardVisualClasses(resolved)).toContain(BOX_BORDER_SELECTED);
+    expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
     expect(getBoxCardVisualClasses(resolved)).not.toContain(BOX_BORDER_RUNNING);
     expect(getBoxCardVisualClasses(resolved)).not.toContain(BOX_BORDER_NATIVE);
   });

@@ -63,7 +63,7 @@ import { StakeChips, type ChipValue } from "./ChipStack";
 import { PlayingCard } from "./PlayingCard";
 
 import {
-  getBetBoxPulseClassName,
+  getBoxActivePulseClassName,
   getBoxCardVisualClasses,
   getBoxCardValueLabel,
   isCardViewBettingBoxVisuallyAssigned,
@@ -700,7 +700,7 @@ export function BlackjackCardView({
           className={[
             getBoxCardVisualClasses(borderState),
             TABLE_UX.cardViewCompactBox,
-            getBetBoxPulseClassName(bettingOpen, bettingMainStage && isSelected),
+            getBoxActivePulseClassName(borderState),
           ]
             .filter(Boolean)
             .join(" ")}

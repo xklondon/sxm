@@ -2,10 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  BOX_BORDER_NATIVE,
-  BOX_BORDER_SELECTED,
+  BET_BOX_PULSE,
+  getBoxActivePulseClassName,
   getBetBoxPulseClassName,
-  getBoxCardVisualClasses,
   resolveBoxBorderVisualState,
   isCardViewBettingBoxVisuallyAssigned,
 } from './cardViewBox';
@@ -41,17 +40,25 @@ describe('box selection — single chip target', () => {
     expect(target).toEqual({ kind: 'box', boxId: box3 });
   });
 
-  it('uses distinct selected and native border classes', () => {
+  it('uses pulse for selected box and keeps native border underneath', () => {
     const state = createNewBlackjackTable();
     const nativeBox = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.playerId ?? 'box-1';
     const selected = resolveBoxBorderVisualState({
-      state,
+      state: {
+        ...state,
+        tableMeta: {
+          ...state.tableMeta,
+          boxSlots: state.tableMeta.boxSlots.map((s) =>
+            s.slotNumber === 1 ? { ...s, playerId: nativeBox, nativeAssignedPersonId: 'person-1' } : s,
+          ),
+        },
+      },
       boxPlayerId: nativeBox,
       viewerPersonId: 'person-1',
       selectedBettingBoxId: nativeBox,
       bettingStage: true,
     });
-    const native = resolveBoxBorderVisualState({
+    const nativeOnly = resolveBoxBorderVisualState({
       state: {
         ...state,
         tableMeta: {
@@ -65,15 +72,15 @@ describe('box selection — single chip target', () => {
       viewerPersonId: 'person-1',
       bettingStage: true,
     });
-    expect(getBoxCardVisualClasses(selected)).toContain(BOX_BORDER_SELECTED);
-    expect(getBoxCardVisualClasses(selected)).not.toContain(BOX_BORDER_NATIVE);
-    expect(getBoxCardVisualClasses(native)).toContain(BOX_BORDER_NATIVE);
-    expect(getBoxCardVisualClasses(native)).not.toContain(BOX_BORDER_SELECTED);
+    expect(getBoxActivePulseClassName(selected)).toBe(BET_BOX_PULSE);
+    expect(getBoxActivePulseClassName(nativeOnly)).toBe('');
+    expect(getBetBoxPulseClassName(true, false)).toBe(BET_BOX_PULSE);
+    expect(getBetBoxPulseClassName(false, true)).toBe(BET_BOX_PULSE);
   });
 
   it('pulse applies only to selected box during betting', () => {
-    expect(getBetBoxPulseClassName(true, true)).toContain('pulse');
-    expect(getBetBoxPulseClassName(true, false)).toBe('');
+    expect(getBetBoxPulseClassName(true, false)).toContain('pulse');
+    expect(getBetBoxPulseClassName(false, false)).toBe('');
   });
 
   it('free box is not visually assigned until stake > 0', () => {
