@@ -150,14 +150,15 @@ export function TableAccountsPanel({
                               Assigned: Box {row.assignedBox}
                             </span>
                           )}
-                          {row.boxSlots.length > 0 ? (
-                            <span className="bj-accounts-panel__boxes">
-                              Boxes: {row.boxSlots.join(', ')}
+                          {row.runningBoxSlots.length > 0 && (
+                            <span className="bj-accounts-panel__running">
+                              Running: Box {row.runningBoxSlots.join(', Box ')}
                             </span>
-                          ) : (
-                            row.kind === 'person' && (
-                              <span className="bj-accounts-panel__boxes">Boxes: —</span>
-                            )
+                          )}
+                          {row.coBoxSlots.length > 0 && (
+                            <span className="bj-accounts-panel__co-boxes">
+                              Co-boxes: Box {row.coBoxSlots.join(', Box ')}
+                            </span>
                           )}
                           {row.kind === 'person' && row.personId && onPlayFlowChange && (
                             <label className="bj-accounts-panel__play-flow">

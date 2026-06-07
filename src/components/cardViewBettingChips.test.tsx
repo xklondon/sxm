@@ -75,6 +75,7 @@ function bettingCardViewWithStake(): { state: GameState; boxId: string; html: st
       tray={<div className="bj-casino__tray-wrap" />}
       gameState={state}
       focusBoxId={boxId}
+      selectedBettingBoxId={boxId}
       activeBoxId={null}
       showHoleHidden={false}
       protocolPhase="betting"
@@ -106,11 +107,11 @@ describe('Card View betting chips and layout', () => {
     expect(html).toContain(TABLE_UX.cardViewBoxStakeLabel);
     expect(html).toContain('Bet:');
     expect(html).not.toContain('bj-phone-view__mini-hand--has-stake');
-    expect(html).toContain('bj-phone-view__mini-hand--active');
+    expect(html).toContain('bj-phone-view__mini-hand--selected');
     expect(html).toContain('aria-current="true"');
-    const activeIdx = html.indexOf('bj-phone-view__mini-hand--active');
-    const chipIdx = html.indexOf('stake-chips--bet', activeIdx);
-    expect(chipIdx).toBeGreaterThan(activeIdx);
+    const selectedIdx = html.indexOf('bj-phone-view__mini-hand--selected');
+    const chipIdx = html.indexOf('stake-chips--bet', selectedIdx);
+    expect(chipIdx).toBeGreaterThan(selectedIdx);
     expect(html).not.toContain('bj-phone-view__bet-chip-wrap--main');
     expect(html).not.toContain('bj-phone-view__bet-chip--hero');
   });

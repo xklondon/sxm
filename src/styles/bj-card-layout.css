@@ -38,12 +38,23 @@
     --bj-card-row-summary: 2.25rem;
     --bj-card-row-hero-min: 10rem;
     --bj-card-row-actions: 3.45rem;
-    --bj-card-row-boxes: 7.5rem;
-    --bj-card-row-tray: 2.5rem;
-    --bj-card-boxes-padding-bottom: 0.3rem;
+    --bj-card-row-boxes: 6.85rem;
+    --bj-card-row-tray: 3.35rem;
+    --bj-card-boxes-padding-bottom: 0.08rem;
     --bj-card-desktop-table-height: min(84vh, 50rem);
     --bj-card-hero-card-width: min(22vw, 6.5rem);
     --bj-card-hero-card-max-height: min(28vw, 8.75rem);
+  }
+
+  .bj-view-card-mobile .bj-card-layout__boxes .bj-phone-view__mini-row {
+    gap: 0.1rem;
+    padding-bottom: 0.04rem;
+    overflow-y: visible;
+  }
+
+  .bj-view-card-mobile .bj-card-layout__tray {
+    padding-top: 0.18rem;
+    align-items: flex-start;
   }
 }
 

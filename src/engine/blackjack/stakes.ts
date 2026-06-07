@@ -95,6 +95,7 @@ export function addChipToBoxStake(
   const protocol = getBlackjackProtocolForState(state);
   const validation = isBetValidUnderProtocol(protocol, newAmount, minBet);
   const callerPersonId = assignTemporaryBoxOwnerOnFirstBet(state, boxPlayerId, bettorId, entry);
+  const stakerPersonIds = [...new Set([...(entry.stakerPersonIds ?? []), bettorId])];
   log.info('Stake chip added', {
     boxId: boxPlayerId,
     chip,
@@ -114,6 +115,7 @@ export function addChipToBoxStake(
           chips: [...entry.chips, chip],
           confirmed: validation.valid,
           callerPersonId,
+          stakerPersonIds,
         },
       },
     },

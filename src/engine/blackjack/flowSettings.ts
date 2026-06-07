@@ -102,6 +102,7 @@ export type CardDealDelayContext =
   | 'dealer'
   | 'bank-pause'
   | 'bank-turn-start'
+  | 'bank-card-draw'
   | 'hydration';
 
 /** Seconds to wait after the last player before bank begins (independent of deal speed). */
@@ -114,7 +115,11 @@ export function getCardDealDelayMs(
   state: Pick<GameState, 'blackjackFlowSettings'>,
   context: CardDealDelayContext = 'initial-deal',
 ): number {
-  if (context === 'bank-pause' || context === 'bank-turn-start') {
+  if (
+    context === 'bank-pause' ||
+    context === 'bank-turn-start' ||
+    context === 'bank-card-draw'
+  ) {
     return getBankTurnDelayMs(state.blackjackFlowSettings);
   }
   return cardDealDelayMs(state.blackjackFlowSettings);

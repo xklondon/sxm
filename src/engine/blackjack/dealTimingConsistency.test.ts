@@ -46,9 +46,10 @@ describe('deal timing — single canonical source', () => {
     expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'initial-deal')).toBe(1000);
   });
 
-  it('bank card draws use deal speed, not cardTimerPreset', () => {
+  it('bank card draws during bank-turn use Bank Timer, not deal speed', () => {
     const settings = normalizeFlowSettings({ dealSpeedPreset: 'slow', cardTimerPreset: 30 });
+    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-card-draw')).toBe(30000);
+    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'initial-deal')).toBe(5000);
     expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'dealer')).toBe(5000);
-    expect(randomBankDrawDelayMs(settings)).toBe(5000);
   });
 });

@@ -84,6 +84,15 @@ body {
   white-space: nowrap;
 }
 
+.personal-nav--menu-only .personal-nav__actions {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.personal-nav--menu-only .personal-nav__menu-btn {
+  min-width: 4.5rem;
+}
+
 .personal-nav__menu {
   position: relative;
 }

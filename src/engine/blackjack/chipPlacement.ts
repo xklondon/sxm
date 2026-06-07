@@ -99,7 +99,10 @@ export function resolveChipTrayBetTarget(
         return fromSelection;
       }
     } catch {
-      // selectedSeatId is stale — fall through
+      if (lastTarget && isValidBetTarget(state, lastTarget, online)) {
+        return lastTarget;
+      }
+      return null;
     }
   }
 

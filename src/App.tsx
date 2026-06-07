@@ -514,7 +514,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
         gameStatus={gameState?.tableMeta.gameStatus}
       />
       {showPersonalNav && (
-        <header className={`personal-nav${isMobileViewport ? ' personal-nav--mobile' : ''}`}>
+        <header className={`personal-nav${isMobileViewport ? ' personal-nav--mobile' : ''} personal-nav--menu-only`}>
           <div className="personal-nav__identity">
             <span className="personal-nav__user">{personalName}</span>
             {onlineMode && user && (
@@ -523,131 +523,125 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
             {!onlineMode && <span className="personal-nav__role">LOCAL</span>}
           </div>
           <div className="personal-nav__actions">
-            <button type="button" className="secondary" onClick={() => setScoreLedgerOpen(true)}>
-              Score Ledger
-            </button>
-            <button type="button" className="secondary" onClick={() => setProfileOpen(true)}>
-              Profile
-            </button>
-            {isMobileViewport ? (
-              <>
-                {onlineMode && user && (
-                  <button type="button" className="secondary" onClick={() => void handleLogout()}>
-                    Sign out
-                  </button>
-                )}
-                <div className="personal-nav__menu" ref={navMenuRef}>
+            <div className="personal-nav__menu" ref={navMenuRef}>
+              <button
+                type="button"
+                className="secondary personal-nav__menu-btn"
+                aria-expanded={navMenuOpen}
+                aria-haspopup="menu"
+                aria-label="App menu"
+                onClick={() => setNavMenuOpen((open) => !open)}
+              >
+                Menu
+              </button>
+              {navMenuOpen && (
+                <div className="personal-nav__menu-panel" role="menu">
                   <button
                     type="button"
-                    className="secondary personal-nav__menu-btn"
-                    aria-expanded={navMenuOpen}
-                    aria-haspopup="menu"
-                    aria-label="More actions"
-                    onClick={() => setNavMenuOpen((open) => !open)}
+                    role="menuitem"
+                    onClick={() => {
+                      setNavMenuOpen(false);
+                      setScoreLedgerOpen(true);
+                    }}
                   >
-                    ⋯
+                    Score Ledger
                   </button>
-                  {navMenuOpen && (
-                    <div className="personal-nav__menu-panel" role="menu">
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          setNavMenuOpen(false);
-                          handleStartNewTable();
-                        }}
-                        disabled={onlineMode && !canOwnTables}
-                      >
-                        Start New Table
-                      </button>
-                      <button
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          setNavMenuOpen(false);
-                          handleLoadTable();
-                        }}
-                      >
-                        Load Table
-                      </button>
-                      {onTableScreen && tableNavHandlers && (
-                        <button
-                          type="button"
-                          role="menuitem"
-                          onClick={() => {
-                            setNavMenuOpen(false);
-                            tableNavHandlers.openAdmin();
-                          }}
-                        >
-                          Admin
-                        </button>
-                      )}
-                      {onTableScreen && (
-                        <button
-                          type="button"
-                          role="menuitem"
-                          onClick={() => {
-                            setNavMenuOpen(false);
-                            handleLeaveTable();
-                          }}
-                        >
-                          Leave table
-                        </button>
-                      )}
-                    </div>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setNavMenuOpen(false);
+                      setProfileOpen(true);
+                    }}
+                  >
+                    Profile
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setNavMenuOpen(false);
+                      handleStartNewTable();
+                    }}
+                    disabled={onlineMode && !canOwnTables}
+                  >
+                    Start New Table
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setNavMenuOpen(false);
+                      handleLoadTable();
+                    }}
+                  >
+                    Load Table
+                  </button>
+                  {onlineMode && isPeopleAdmin(user) && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setNavMenuOpen(false);
+                        setScreen('people');
+                      }}
+                    >
+                      People
+                    </button>
                   )}
-                </div>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={handleStartNewTable}
-                  disabled={onlineMode && !canOwnTables}
-                >
-                  Start New Table
-                </button>
-                <button type="button" className="secondary" onClick={handleLoadTable}>
-                  Load Table
-                </button>
-                {onlineMode && isPeopleAdmin(user) && (
-                  <button type="button" className="secondary" onClick={() => setScreen('people')}>
-                    People
-                  </button>
-                )}
-                {onTableScreen && tableNavHandlers && (
-                  <button type="button" className="secondary" onClick={() => tableNavHandlers.openAdmin()}>
-                    Admin
-                  </button>
-                )}
-                {onTableScreen && (
-                  <button type="button" className="secondary" onClick={handleLeaveTable}>
-                    Leave table
-                  </button>
-                )}
-                {onlineMode && user && (
-                  <>
-                    {isOnline &&
-                      activeTableId &&
-                      gameState &&
-                      connectionState !== 'idle' &&
-                      connectionState !== 'connecting' && (
-                      <span
-                        className={
-                          connected ? 'personal-nav__live personal-nav__live--ok' : 'personal-nav__live'
-                        }
-                      >
-                        {formatConnectionLabel(connectionState)}
-                      </span>
-                    )}
-                    <button type="button" className="secondary" onClick={() => void handleLogout()}>
+                  {onTableScreen && tableNavHandlers && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setNavMenuOpen(false);
+                        tableNavHandlers.openAdmin();
+                      }}
+                    >
+                      Admin
+                    </button>
+                  )}
+                  {onTableScreen && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setNavMenuOpen(false);
+                        handleLeaveTable();
+                      }}
+                    >
+                      Leave table
+                    </button>
+                  )}
+                  {onlineMode && user && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setNavMenuOpen(false);
+                        void handleLogout();
+                      }}
+                    >
                       Sign out
                     </button>
-                  </>
-                )}
-              </>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
+            {onlineMode &&
+              isOnline &&
+              activeTableId &&
+              gameState &&
+              connectionState !== 'idle' &&
+              connectionState !== 'connecting' && (
+                <span
+                  className={
+                    connected ? 'personal-nav__live personal-nav__live--ok' : 'personal-nav__live'
+                  }
+                >
+                  {formatConnectionLabel(connectionState)}
+                </span>
+              )}
           </div>
         </header>
       )}

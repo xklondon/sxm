@@ -91,7 +91,7 @@ describe('TABLE_UX class contract', () => {
     expect(panelSrc).toContain('TABLE_UX.surface');
     expect(panelSrc).toContain('TABLE_UX.desktopTableShell');
     expect(panelSrc).toContain('TABLE_UX.desktopStage');
-    expect(panelSrc).toContain('getBoxCardClassName');
+    expect(panelSrc).toContain('getBoxCardVisualClasses');
     expect(panelSrc).toContain('bj-phone-view__mini-hand');
     expect(panelSrc).toContain('TABLE_UX.pageTitle');
     expect(panelSrc).toContain('TABLE_UX.playerActions');

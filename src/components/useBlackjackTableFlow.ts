@@ -72,6 +72,7 @@ export function useBlackjackTableFlow(
 
   const [flowError, setFlowError] = useState<string | null>(null);
   const [actionPending, setActionPending] = useState(false);
+  const [nextRoundPending, setNextRoundPending] = useState(false);
   const lastFlowErrorRef = useRef<string | null>(null);
   const [bankUiMessage, setBankUiMessage] = useState<string | null>(null);
   const bankPacingRef = useRef<'idle' | 'running'>('idle');
@@ -172,12 +173,17 @@ export function useBlackjackTableFlow(
   }, [onGameStateChange]);
 
   const handleNextRound = useCallback(() => {
+    if (actionPending || onlineActionInFlight || nextRoundPending) {
+      return;
+    }
     setFlowError(null);
     if (onlineDispatch) {
-      // Server-authoritative: advance the round server-side; do not mutate locally.
-      void onlineDispatch('nextRound', {}).catch((err) => {
-        setFlowError(err instanceof Error ? err.message : 'Cannot start next round');
-      });
+      setNextRoundPending(true);
+      void onlineDispatch('nextRound', {})
+        .catch((err) => {
+          setFlowError(err instanceof Error ? err.message : 'Cannot start next round');
+        })
+        .finally(() => setNextRoundPending(false));
       return;
     }
     try {
@@ -185,7 +191,13 @@ export function useBlackjackTableFlow(
     } catch (err) {
       setFlowError(err instanceof Error ? err.message : 'Cannot start next round');
     }
-  }, [onGameStateChange, onlineDispatch]);
+  }, [
+    actionPending,
+    nextRoundPending,
+    onlineActionInFlight,
+    onGameStateChange,
+    onlineDispatch,
+  ]);
 
   const handleShuffleToStart = useCallback(() => {
     if (actionPending || onlineActionInFlight) {
@@ -289,7 +301,7 @@ export function useBlackjackTableFlow(
             break;
           }
           const beforeDraw = gameStateRef.current;
-          const delay = getCardDealDelayMs(beforeDraw, 'dealer');
+          const delay = getCardDealDelayMs(beforeDraw, 'bank-card-draw');
           await sleep(delay);
           if (bankRunIdRef.current !== runId) {
             break;
@@ -412,6 +424,7 @@ export function useBlackjackTableFlow(
     bettingOpen,
     canDeal,
     dealActionPending: actionPending || onlineActionInFlight,
+    nextRoundPending,
     protocolPhase,
     awaitingNextRound,
     gameEnded,

@@ -8,13 +8,17 @@ import {
   getAvailableChipsForBankrollOwner,
   getLedgerBalanceForBankrollOwner,
   getTotalBettingExposureForBankrollOwner,
-  getBoxSlotNumbersForBankrollOwner,
   listPersonBankrollOwnerIds,
 } from './bankroll';
 import {
   getEffectivePlayerOrder,
   getAssignedSlotForPerson,
+  isSeatedPersonAtTable,
 } from './playerAssignment';
+import {
+  getCoBoxSlotsForPerson,
+  getRunningBoxSlotsForPerson,
+} from './tableBoxDisplay';
 
 export type TablePersonStatus = 'owner' | 'active' | 'invited' | 'pending';
 
@@ -34,7 +38,10 @@ export interface TablePersonRow {
   available: number;
   betting: number;
   ledgerBalance: number;
+  /** @deprecated Use runningBoxSlots / coBoxSlots — stake-based only, never selection. */
   boxSlots: number[];
+  runningBoxSlots: number[];
+  coBoxSlots: number[];
   assignedBox: number | null;
   kind: 'person' | 'invite';
   showBalance: boolean;
@@ -51,8 +58,7 @@ function personStatus(state: GameState, personId: string, label: string): TableP
   if (isTableOwner(state, label)) {
     return 'owner';
   }
-  const boxSlots = getBoxSlotNumbersForBankrollOwner(state, personId);
-  if (boxSlots.length > 0) {
+  if (isSeatedPersonAtTable(state, personId)) {
     return 'active';
   }
   return 'active';
@@ -100,7 +106,9 @@ export function logThisTablePlayerRow(row: TablePersonRow): void {
     exposure: row.betting,
     available: row.available,
     betting: row.betting,
-    boxes: row.boxSlots,
+    assignedBox: row.assignedBox,
+    runningBoxes: row.runningBoxSlots,
+    coBoxes: row.coBoxSlots,
   });
 }
 
@@ -171,8 +179,10 @@ export function buildTablePeopleRows(state: GameState): TablePersonRow[] {
       status = 'owner';
     }
 
-    const boxSlots = getBoxSlotNumbersForBankrollOwner(state, personId);
     const assignedBox = getAssignedSlotForPerson(state, personId);
+    const runningBoxSlots = getRunningBoxSlotsForPerson(state, personId);
+    const coBoxSlots = getCoBoxSlotsForPerson(state, personId);
+    const boxSlots = [...runningBoxSlots, ...coBoxSlots];
     const ledgerBalance = getLedgerBalanceForBankrollOwner(state, personId);
     const betting = getTotalBettingExposureForBankrollOwner(state, personId);
     const available = getAvailableChipsForBankrollOwner(state, personId);
@@ -186,6 +196,8 @@ export function buildTablePeopleRows(state: GameState): TablePersonRow[] {
       betting,
       ledgerBalance,
       boxSlots,
+      runningBoxSlots,
+      coBoxSlots,
       assignedBox,
       kind: 'person',
       showBalance: true,
@@ -208,6 +220,8 @@ export function buildTablePeopleRows(state: GameState): TablePersonRow[] {
       betting: 0,
       ledgerBalance: 0,
       boxSlots: [],
+      runningBoxSlots: [],
+      coBoxSlots: [],
       assignedBox: null,
       kind: 'invite',
       showBalance: false,

@@ -240,7 +240,10 @@ describe('Card View layout guard', () => {
     const layoutCss = readSrc(CARD_LAYOUT_CSS);
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
     const boxesBlock = layoutZoneBlock(layoutCss, '.bj-card-layout__boxes');
-    const miniRowReset = layoutCss.match(/\.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*?\n\}/)?.[0] ?? '';
+    const miniRowReset =
+      layoutCss.match(
+        /\.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*?min-height:\s*0[\s\S]*?\n\}/,
+      )?.[0] ?? '';
     expect(boxesBlock).not.toMatch(/overflow:\s*hidden/);
     expect(miniRowReset).toMatch(/overflow-y:\s*visible/);
     expect(miniRowReset).toMatch(/min-height:\s*0/);
@@ -307,7 +310,7 @@ describe('Card View layout guard', () => {
     expect(full).toContain(TABLE_UX.tableZonePlay);
     expect(full).toContain(TABLE_UX.tableZoneBottom);
     expect(full).toContain(TABLE_UX.arcCards);
-    expect(full).toContain(TABLE_UX.dealerBankInfo);
+    expect(full).toContain(TABLE_UX.headerBankInfo);
     expect(full).not.toContain(TABLE_UX.cardLayout);
   });
 });

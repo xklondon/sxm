@@ -119,17 +119,16 @@ describe('table layout stabilization contract', () => {
   it('shows bank value, bank chips in table chrome', () => {
     for (const width of [1280, 390]) {
       const full = renderAt(width, 'full');
-      expect(full).toContain(TABLE_UX.dealerBankInfo);
+      expect(full).toContain(TABLE_UX.headerBankInfo);
       expect(full).toContain('Bank:');
       expect(full).toContain('Bank chips:');
       expect(full).toContain('bj-casino__player-balance');
       expect(full).toContain('You:');
-      const cardsIdx = full.indexOf('dealer-block__cards');
-      const infoIdx = full.indexOf(TABLE_UX.dealerBankInfo);
-      expect(cardsIdx).toBeGreaterThan(-1);
-      expect(infoIdx).toBeGreaterThan(cardsIdx);
       const headerEnd = full.indexOf('</header>');
-      expect(infoIdx).toBeGreaterThan(headerEnd);
+      const infoIdx = full.indexOf(TABLE_UX.headerBankInfo);
+      expect(headerEnd).toBeGreaterThan(-1);
+      expect(infoIdx).toBeGreaterThan(-1);
+      expect(infoIdx).toBeLessThan(headerEnd);
 
       const card = renderAt(width, 'card');
       expect(card).toContain(TABLE_UX.headerBankInfo);
@@ -256,25 +255,22 @@ describe('table layout polish contract', () => {
     );
   }
 
-  it('centers BLACKJACK title in table header without bank info in outer header', () => {
+  it('centers BLACKJACK title with bank chips under title in header', () => {
     const css = readSrc('src/components/BlackjackPanel.css');
     const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
     expect(css).toMatch(/\.bj-casino__title[\s\S]*grid-column:\s*2/);
     expect(panelSrc).toContain('TABLE_UX.tableHeader');
-    expect(panelSrc).toContain("variant=\"header\"");
+    expect(panelSrc).toContain('bj-casino__header-bank');
+    expect(panelSrc).toContain('variant="header"');
     for (const mode of ['full', 'card'] as const) {
       const html = renderAt(1280, mode);
       expect(html).toContain(TABLE_UX.tableHeader);
       expect(html).toContain('BLACKJACK');
       const headerEnd = html.indexOf('</header>');
-      const infoIdx = html.indexOf(mode === 'card' ? TABLE_UX.headerBankInfo : TABLE_UX.dealerBankInfo);
+      const infoIdx = html.indexOf(TABLE_UX.headerBankInfo);
       expect(headerEnd).toBeGreaterThan(-1);
-      if (mode === 'card') {
-        expect(infoIdx).toBeGreaterThan(-1);
-        expect(infoIdx).toBeLessThan(headerEnd);
-      } else {
-        expect(infoIdx).toBeGreaterThan(headerEnd);
-      }
+      expect(infoIdx).toBeGreaterThan(-1);
+      expect(infoIdx).toBeLessThan(headerEnd);
     }
   });
 

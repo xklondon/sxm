@@ -110,8 +110,9 @@ import { getDisplayedHandValue, getVisibleHandCardIds } from '../engine/blackjac
 import {
   BOX_CARD_VALUE,
   BOX_CARD_VALUE_BUST,
-  getBoxCardClassName,
+  getBoxCardVisualClasses,
   getBetBoxPulseClassName,
+  isCardViewBettingBoxVisuallyAssigned,
 } from './cardViewBox';
 import {
   buildViewerIdentityHints,
@@ -197,6 +198,12 @@ export function BlackjackPanel({
   const [assignChipsOpen, setAssignChipsOpen] = useState(false);
   const [minBetOpen, setMinBetOpen] = useState(false);
   const [tableAidTip, setTableAidTip] = useState<string | null>(null);
+  /** Client-local chip target — survives online server snapshots that omit selectedSeatId. */
+  const [selectedBettingBoxId, setSelectedBettingBoxId] = useState<string | null>(
+    () => gameState.selectedSeatId,
+  );
+  const selectedBettingBoxIdRef = useRef<string | null>(selectedBettingBoxId);
+  selectedBettingBoxIdRef.current = selectedBettingBoxId;
   /** Last chip-tray / box-tap target — shared across Full Table and Card View. */
   const lastBetTargetRef = useRef<PlaceBetTarget | null>(null);
 
@@ -221,6 +228,7 @@ export function BlackjackPanel({
     bettingOpen,
     canDeal,
     dealActionPending,
+    nextRoundPending,
     protocolPhase,
     hasStakes,
     awaitingNextRound,
@@ -259,7 +267,8 @@ export function BlackjackPanel({
   const viewMode = localViewMode;
   const deviceView = getDeviceView(isMobileViewport);
   const viewRootClass = getViewRootClass(deviceView, viewMode);
-  const effectiveBoxId = gameState.selectedSeatId ?? defaultBlackjackSeatId(gameState);
+  const selectedBettingBoxIdForUi = selectedBettingBoxId;
+  const focusFallbackBoxId = defaultBlackjackSeatId(gameState);
   const flowSettings = gameState.blackjackFlowSettings;
   const canAssignChips = canUserAssignChips(gameState, controllerName);
   const minimumBet = getTableMinimumBet(gameState);
@@ -286,7 +295,14 @@ export function BlackjackPanel({
     if (current.selectedSeatId !== playerId) {
       onGameStateChange({ ...current, selectedSeatId: playerId });
     }
+    setSelectedBettingBoxId(playerId);
   }, [round?.status, round?.activeHandKey, onGameStateChange]);
+
+  useEffect(() => {
+    if (!onlineDispatch) {
+      setSelectedBettingBoxId(gameState.selectedSeatId);
+    }
+  }, [gameState.selectedSeatId, onlineDispatch]);
 
   const playingFor = getTableWagerDisplay(gameState);
   const displaySlots = [...tableMeta.boxSlots].sort((a, b) => b.slotNumber - a.slotNumber);
@@ -388,6 +404,7 @@ export function BlackjackPanel({
         }
         const personId = resolveControllerPersonId(state, controllerName);
         onGameStateChange(addChipToBoxStake(state, boxId, amount, personId ?? undefined));
+        setSelectedBettingBoxId(boxId);
         rememberBetTarget({ kind: 'box', boxId });
         return;
       }
@@ -395,13 +412,14 @@ export function BlackjackPanel({
       onGameStateChange(
         addChipToBoxStake(state, target.boxId, amount, personId ?? undefined),
       );
+      setSelectedBettingBoxId(target.boxId);
     } catch (err) {
       setError(formatPlaceBetError(err));
     }
   }
 
   function selectBox(boxId: string) {
-    run((s) => ({ ...s, selectedSeatId: boxId }));
+    setSelectedBettingBoxId(boxId);
     try {
       rememberBetTarget(
         getChipPlacementTargetFromBoxId(
@@ -485,30 +503,6 @@ export function BlackjackPanel({
     }
 
     rememberBetTarget({ kind: 'slot', slotNumber });
-
-    if (onlineDispatch) {
-      setError(null);
-      void onlineDispatch('assignBox', { slotNumber }).catch((err) => {
-        setError(err instanceof Error ? err.message : 'Could not claim box');
-      });
-      return;
-    }
-
-    setError(null);
-    try {
-      const name = controllerName;
-      const claimed = claimBoxSlot(
-        { ...gameStateRef.current, tableMeta: { ...gameStateRef.current.tableMeta, controllerName: name } },
-        slotNumber,
-      );
-      onGameStateChange(claimed);
-      const boxId = claimed.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber)?.playerId;
-      if (boxId) {
-        rememberBetTarget({ kind: 'box', boxId });
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not claim box');
-    }
   }
 
   function handleReleaseSlot(slotNumber: number) {
@@ -517,7 +511,10 @@ export function BlackjackPanel({
 
   function handleChipTrayClick(value: ChipValue) {
     const target = resolveChipTrayBetTarget(
-      gameStateRef.current,
+      {
+        ...gameStateRef.current,
+        selectedSeatId: selectedBettingBoxIdRef.current,
+      },
       controllerName,
       lastBetTargetRef.current,
       Boolean(onlineDispatch),
@@ -577,8 +574,8 @@ export function BlackjackPanel({
     [inBetting, bettingOpen],
   );
   const displayError = error ?? flowError;
-  const activeBoxStakeMessage = effectiveBoxId
-    ? getStakeBetValidationMessage(gameState, effectiveBoxId)
+  const activeBoxStakeMessage = selectedBettingBoxIdForUi
+    ? getStakeBetValidationMessage(gameState, selectedBettingBoxIdForUi)
     : null;
   const chipTrayHint =
     displayError && isInsufficientChipsMessage(displayError)
@@ -615,6 +612,48 @@ export function BlackjackPanel({
     setSideRailPanel((current) => toggleSideRailPanel(current, 'tableDetails'));
   }
 
+  function renderTableNav(className = 'bj-casino__table-nav') {
+    return (
+      <div {...sxmSectionProps(SXM_LAYOUT.userMenu, className)}>
+        <button
+          type="button"
+          className={
+            sideRailPanel === 'thisTable'
+              ? 'bj-casino__nav-btn bj-casino__nav-btn--this-table bj-casino__nav-btn--active'
+              : 'bj-casino__nav-btn bj-casino__nav-btn--this-table'
+          }
+          onClick={() => {
+            setActiveTablePanel(null);
+            setSideRailPanel((current) => toggleSideRailPanel(current, 'thisTable'));
+          }}
+          aria-expanded={sideRailPanel === 'thisTable'}
+        >
+          This Table
+        </button>
+        <button
+          type="button"
+          className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+          onClick={() => {
+            setSideRailPanel(null);
+            setActiveTablePanel('playLedger');
+          }}
+        >
+          Play Ledger
+        </button>
+        <button
+          type="button"
+          className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+          onClick={() => {
+            setSideRailPanel(null);
+            setActiveTablePanel('settings');
+          }}
+        >
+          Settings
+        </button>
+      </div>
+    );
+  }
+
   const tableDetailsProps = {
     playingFor,
     minimumBet,
@@ -640,14 +679,10 @@ export function BlackjackPanel({
       : undefined,
   };
 
-  const dealerBankInfo = viewMode === 'full' ? (
-    <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="dealer" />
-  ) : undefined;
-
   const dealerBlockProps = {
     awaitingNextRound,
     gameEnded,
-    bankInfo: dealerBankInfo,
+    tableNav: renderTableNav('bj-casino__table-nav bj-casino__table-nav--dealer'),
     onNewGame:
       gameEnded && onBeginTableReset
         ? () => onBeginTableReset('newGame')
@@ -672,6 +707,7 @@ export function BlackjackPanel({
     onDealNextCard: handleDealNextCard,
     onDrawBank: handleDrawBank,
     dealActionPending,
+    nextRoundPending,
     engineStatus,
     initialDealManual: initialDealStaged,
     bankDrawManual: flowSettings.bankDrawMode === 'manual',
@@ -1095,10 +1131,14 @@ export function BlackjackPanel({
 
 
   function renderArcSlot(boxId: string, slotNumber: number) {
-    const isSelected = effectiveBoxId === boxId;
+    const isSelected = selectedBettingBoxIdForUi === boxId;
     const isTurn = activeBoxId === boxId;
-    const isActiveBox = isSelected || isTurn;
     const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
+    const openStake = getStakeForBox(gameState, boxId);
+    const bettingAssigned =
+      inBetting &&
+      isCardViewBettingBoxVisuallyAssigned(gameState, boxId, openStake, viewerPersonId);
+    const isAssigned = bettingAssigned && !isSelected;
     const callerDisplayName = getBoxCallerDisplayName(gameState, boxId);
     let handKeys = handKeysByBox.get(boxId) ?? [];
     if (handKeys.length === 0 && visualRound) {
@@ -1120,7 +1160,6 @@ export function BlackjackPanel({
       : displayValue !== null && displayValue > 0
         ? String(displayValue)
         : '';
-    const openStake = getStakeForBox(gameState, boxId);
     const stakeChips = getStakeChipsForBox(gameState, boxId);
     const wager = inBetting ? openStake : (primaryHand?.currentBet ?? openStake);
     const showBettingChips = inBetting && openStake > 0 && stakeChips.length > 0;
@@ -1149,7 +1188,18 @@ export function BlackjackPanel({
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
       >
         <div
-          {...sxmSectionProps(SXM_LAYOUT.playerBox, getBoxCardClassName(isActiveBox), TABLE_UX.fullArcBox, getBetBoxPulseClassName(bettingOpen, true), showBettingChips ? 'bj-phone-view__mini-hand--has-stake' : '', isDrop ? 'bj-bet-zone--drop' : '')}
+          {...sxmSectionProps(
+            SXM_LAYOUT.playerBox,
+            getBoxCardVisualClasses({
+              isSelected: inBetting && isSelected,
+              isAssigned: inBetting && isAssigned,
+              isTurn: !inBetting && isTurn,
+            }),
+            TABLE_UX.fullArcBox,
+            getBetBoxPulseClassName(bettingOpen, inBetting && isSelected),
+            showBettingChips ? 'bj-phone-view__mini-hand--has-stake' : '',
+            isDrop ? 'bj-bet-zone--drop' : '',
+          )}
           {...{
             [CHIP_DROP_SLOT_ATTR]: slotNumber,
             [CHIP_DROP_BOX_ATTR]: boxId,
@@ -1288,7 +1338,7 @@ export function BlackjackPanel({
   const focusBoxId =
     round?.status === 'player-turns' && activeBoxId
       ? activeBoxId
-      : effectiveBoxId ?? defaultBlackjackSeatId(gameState);
+      : selectedBettingBoxIdForUi ?? focusFallbackBoxId;
 
   const dealerCardNodes =
     dealerCards.length > 0
@@ -1348,49 +1398,11 @@ export function BlackjackPanel({
             <button type="button" className={viewMode === 'card' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('card')}>Card View</button>
           </div>
           <h1 {...sxmSectionProps(SXM_LAYOUT.gameTitle, TABLE_UX.pageTitle)}>BLACKJACK</h1>
-          <div {...sxmSectionProps(SXM_LAYOUT.userMenu, 'bj-casino__table-nav')}>
-            <button
-              type="button"
-              className={
-                sideRailPanel === 'thisTable'
-                  ? 'bj-casino__nav-btn bj-casino__nav-btn--this-table bj-casino__nav-btn--active'
-                  : 'bj-casino__nav-btn bj-casino__nav-btn--this-table'
-              }
-              onClick={() => {
-                setActiveTablePanel(null);
-                setSideRailPanel((current) => toggleSideRailPanel(current, 'thisTable'));
-              }}
-              aria-expanded={sideRailPanel === 'thisTable'}
-            >
-              This Table
-            </button>
-            <button
-              type="button"
-              className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-              onClick={() => {
-                setSideRailPanel(null);
-                setActiveTablePanel('playLedger');
-              }}
-            >
-              Play Ledger
-            </button>
-            <button
-              type="button"
-              className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-              onClick={() => {
-                setSideRailPanel(null);
-                setActiveTablePanel('settings');
-              }}
-            >
-              Settings
-            </button>
-          </div>
+          <div className="bj-casino__toolbar-spacer" aria-hidden="true" />
         </div>
-        {viewMode === 'card' && (
-          <div {...sxmSectionProps(SXM_LAYOUT.balanceDisplay)}>
-            <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="header" />
-          </div>
-        )}
+        <div {...sxmSectionProps(SXM_LAYOUT.balanceDisplay, 'bj-casino__header-bank')}>
+          <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="header" />
+        </div>
       </header>
     );
   }
@@ -1524,6 +1536,7 @@ export function BlackjackPanel({
                   viewerAuth={viewerAuth}
                   deviceView={deviceView}
                   focusBoxId={focusBoxId ?? undefined}
+                  selectedBettingBoxId={selectedBettingBoxIdForUi}
                   activeBoxId={activeBoxId}
                   showHoleHidden={showHoleHidden}
                   protocolPhase={protocolPhase}

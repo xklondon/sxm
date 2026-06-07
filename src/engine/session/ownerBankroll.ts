@@ -22,7 +22,7 @@ export function logThisTableRowsAfterSetup(state: GameState, context: string): v
     status: row.status,
     available: row.available,
     betting: row.betting,
-    boxes: row.boxSlots,
+    boxes: [...row.runningBoxSlots, ...row.coBoxSlots],
     kind: row.kind,
   }));
   log.info('thisTableRowsAfterSetup', { context, rows });

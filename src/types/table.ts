@@ -62,6 +62,8 @@ export interface BoxStakeEntry {
   confirmed?: boolean;
   /** Person bankroll id of the caller for this box (first staker on free box). */
   callerPersonId?: string;
+  /** Person bankroll ids who placed chips on this box (for This Table co-box display). */
+  stakerPersonIds?: string[];
 }
 
 export interface TableMeta {

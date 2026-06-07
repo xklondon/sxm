@@ -9,12 +9,13 @@ import { addChipToBoxStake, blackjackHandKey } from '../engine/blackjack';
 
 const noop = () => {};
 
-function renderCardView(state: GameState): string {
+function renderCardView(state: GameState, focusBoxId?: string | null): string {
   return renderToStaticMarkup(
     <BlackjackCardView
       dealer={<div className="dealer-block" />}
       tray={<div className="bj-casino__tray-wrap" />}
       gameState={state}
+      focusBoxId={focusBoxId ?? undefined}
       activeBoxId={state.blackjack?.activePlayerId ?? null}
       showHoleHidden={false}
       protocolPhase={
@@ -70,7 +71,7 @@ describe('Card View dealer vs hero', () => {
         evenMoneyOfferHandKey: null,
       },
     };
-    const html = renderCardView(state);
+    const html = renderCardView(state, boxId);
     expect(html).not.toContain('bj-phone-view__cards--bank');
     expect(html).not.toContain('bj-phone-view__bank-hero');
     expect(html).toContain('bj-phone-view__cards--stitched');

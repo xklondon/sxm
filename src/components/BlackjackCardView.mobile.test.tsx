@@ -79,6 +79,7 @@ function renderBettingCardView(state: GameState, boxId: string): string {
       tray={<div className="bj-casino__tray-wrap" />}
       gameState={state}
       focusBoxId={boxId}
+      selectedBettingBoxId={boxId}
       activeBoxId={null}
       showHoleHidden={false}
       protocolPhase="betting"
@@ -141,6 +142,7 @@ describe('mobile Card View render contract', () => {
         tray={<div className="bj-casino__tray-wrap" />}
         gameState={state}
         focusBoxId={boxId}
+      selectedBettingBoxId={boxId}
         activeBoxId={null}
         showHoleHidden={false}
         protocolPhase="player"

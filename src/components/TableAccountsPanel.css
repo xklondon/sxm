@@ -100,6 +100,14 @@
   margin-top: 0.15rem;
 }
 
+.bj-accounts-panel__running,
+.bj-accounts-panel__co-boxes {
+  display: block;
+  font-size: 0.52rem;
+  opacity: 0.85;
+  margin-top: 0.12rem;
+}
+
 .bj-accounts-panel__label {
   font-weight: 700;
   font-size: 0.56rem;

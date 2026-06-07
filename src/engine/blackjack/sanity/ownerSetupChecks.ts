@@ -48,8 +48,8 @@ export function runOwnerSetupSanityChecks(): SanitySuiteResult {
   results.push(
     check(
       'owner has native box 1 assigned before extra claims',
-      ownerRow?.assignedBox === 1 && (ownerRow?.boxSlots.includes(1) ?? false),
-      `assigned=${ownerRow?.assignedBox} boxes=${ownerRow?.boxSlots.join(',')}`,
+      ownerRow?.assignedBox === 1 && (ownerRow?.runningBoxSlots.length ?? 0) === 0,
+      `assigned=${ownerRow?.assignedBox} running=${ownerRow?.runningBoxSlots.join(',')}`,
     ),
   );
   results.push(
@@ -79,12 +79,13 @@ export function runOwnerSetupSanityChecks(): SanitySuiteResult {
 
   state = claimBoxSlot(state, 2);
   state = claimBoxSlot(state, 3);
-  const boxes = buildTablePeopleRows(state).find((p) => p.personId === ownerId)?.boxSlots ?? [];
+  const ownerRowAfterClaims = buildTablePeopleRows(state).find((p) => p.personId === ownerId);
   results.push(
     check(
-      'owner boxes 1,2,3 linked',
-      boxes.length === 3 && boxes.includes(1) && boxes.includes(2) && boxes.includes(3),
-      `boxes=${boxes.join(',')}`,
+      'claimed boxes without stake do not appear in This Table running list',
+      (ownerRowAfterClaims?.runningBoxSlots.length ?? 0) === 0 &&
+        (ownerRowAfterClaims?.coBoxSlots.length ?? 0) === 0,
+      `running=${ownerRowAfterClaims?.runningBoxSlots.join(',')} co=${ownerRowAfterClaims?.coBoxSlots.join(',')}`,
     ),
   );
   results.push(

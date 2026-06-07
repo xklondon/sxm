@@ -133,6 +133,9 @@ describe('action readiness — natural dealing ON', () => {
     expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-turn-start')).toBe(
       15000,
     );
+    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-card-draw')).toBe(
+      15000,
+    );
   });
 });
 

@@ -55,7 +55,9 @@ export function getBankTurnDelayMs(settings) {
 }
 /** Single timing source for sequential card reveal between player cards. */
 export function getCardDealDelayMs(state, context = 'initial-deal') {
-    if (context === 'bank-pause' || context === 'bank-turn-start') {
+    if (context === 'bank-pause' ||
+        context === 'bank-turn-start' ||
+        context === 'bank-card-draw') {
         return getBankTurnDelayMs(state.blackjackFlowSettings);
     }
     return cardDealDelayMs(state.blackjackFlowSettings);

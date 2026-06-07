@@ -64,7 +64,7 @@ import { PlayingCard } from "./PlayingCard";
 
 import {
   getBetBoxPulseClassName,
-  getBoxCardClassName,
+  getBoxCardVisualClasses,
   getBoxCardValueLabel,
   isCardViewBettingBoxVisuallyAssigned,
   BOX_CARD_VALUE,
@@ -96,6 +96,8 @@ interface BlackjackCardViewProps {
   /** Drives desktop vs mobile betting layout; defaults to mobile-canonical. */
   deviceView?: DeviceView;
   focusBoxId?: string;
+  /** Client-local chip target — same source as Full Table selection. */
+  selectedBettingBoxId?: string | null;
   activeBoxId: string | null;
   showHoleHidden: boolean;
   protocolPhase: BlackjackProtocolPhase;
@@ -143,6 +145,7 @@ export function BlackjackCardView({
   logicalGameState: logicalGameStateProp,
   deviceView = "mobile",
   focusBoxId,
+  selectedBettingBoxId = null,
   activeBoxId,
   showHoleHidden: _showHoleHidden,
   protocolPhase,
@@ -199,7 +202,7 @@ export function BlackjackCardView({
   const heroBoxId = getCardViewHeroBoxId(
     protocolPhase,
     activeBoxId,
-    gameState.selectedSeatId,
+    selectedBettingBoxId,
     focusBoxId ?? null,
   );
   const heroHandKey = getCardViewHeroHandKey(protocolPhase, logicalRound, heroBoxId);
@@ -647,15 +650,15 @@ export function BlackjackCardView({
     const wager = bettingMainStage ? openStake : (displayBoxHand?.currentBet ?? openStake);
     const showBetStakeChips = bettingMainStage && openStake > 0 && stakeChips.length > 0;
     const isTurnBox = activeTurnBoxId === boxId;
+    const isSelected = selectedBettingBoxId === boxId;
     const bettingBoxAssigned = isCardViewBettingBoxVisuallyAssigned(
       gameState,
       boxId,
       openStake,
       viewerPersonId,
     );
-    const isActiveBox = bettingMainStage
-      ? bettingBoxAssigned
-      : isPlayerPhase && activeTurnBoxId === boxId;
+    const isAssigned = bettingBoxAssigned && !isSelected;
+    const isTurn = isPlayerPhase && isTurnBox;
     const status = getCardViewBoxStatus(
       protocolPhase,
       gameEnded,
@@ -684,15 +687,19 @@ export function BlackjackCardView({
         <button
           type="button"
           className={[
-            getBoxCardClassName(isActiveBox),
+            getBoxCardVisualClasses({
+              isSelected: bettingMainStage && isSelected,
+              isAssigned: bettingMainStage && isAssigned,
+              isTurn,
+            }),
             TABLE_UX.cardViewCompactBox,
-            getBetBoxPulseClassName(bettingOpen, bettingBoxAssigned),
+            getBetBoxPulseClassName(bettingOpen, bettingMainStage && isSelected),
           ]
             .filter(Boolean)
             .join(" ")}
           onClick={() => onSelectBox(boxId)}
           aria-label={`Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`}
-          aria-current={isActiveBox ? "true" : undefined}
+          aria-current={isSelected || isTurn ? "true" : undefined}
         >
           {showHeadInTile ? (
             <span className="bj-phone-view__mini-hand-head">

@@ -89,6 +89,7 @@ export function addChipToBoxStake(state, boxPlayerId, chip, stakerPersonId) {
     const protocol = getBlackjackProtocolForState(state);
     const validation = isBetValidUnderProtocol(protocol, newAmount, minBet);
     const callerPersonId = resolveCallerForStake(state, boxPlayerId, bettorId, entry);
+    const stakerPersonIds = [...new Set([...(entry.stakerPersonIds ?? []), bettorId])];
     log.info('Stake chip added', {
         boxId: boxPlayerId,
         chip,
@@ -108,6 +109,7 @@ export function addChipToBoxStake(state, boxPlayerId, chip, stakerPersonId) {
                     chips: [...entry.chips, chip],
                     confirmed: validation.valid,
                     callerPersonId,
+                    stakerPersonIds,
                 },
             },
         },

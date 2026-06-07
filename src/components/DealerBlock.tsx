@@ -36,9 +36,12 @@ interface DealerBlockProps {
   onDealNextCard: () => void;
   onDrawBank: () => void;
   dealActionPending?: boolean;
+  nextRoundPending?: boolean;
   engineStatus?: string;
   initialDealManual: boolean;
   bankDrawManual: boolean;
+  /** Table nav (This Table / Play Ledger / Settings) — right of dealer area. */
+  tableNav?: ReactNode;
 }
 
 export function DealerBlock({
@@ -66,9 +69,11 @@ export function DealerBlock({
   onDealNextCard,
   onDrawBank,
   dealActionPending = false,
+  nextRoundPending = false,
   engineStatus,
   initialDealManual,
   bankDrawManual,
+  tableNav,
 }: DealerBlockProps) {
   const status = engineStatus;
 
@@ -89,9 +94,10 @@ export function DealerBlock({
     }
 
     if (protocolPhase === 'round-complete' && awaitingNextRound) {
+      const pending = nextRoundPending || dealActionPending;
       return {
-        label: 'Next Round',
-        disabled: false,
+        label: pending ? 'Starting…' : 'Next Round',
+        disabled: pending,
         onClick: onNextRound,
       };
     }
@@ -181,6 +187,12 @@ export function DealerBlock({
 
   return (
     <div {...sxmSectionProps(SXM_LAYOUT.dealerZone, 'dealer-block')}>
+      {tableNav ? (
+        <div className="dealer-block__top-row">
+          <div className="dealer-block__top-spacer" aria-hidden="true" />
+          {tableNav}
+        </div>
+      ) : null}
       <div className="dealer-block__grid">
         <div className="dealer-block__commentary-col">
           {commentaryText ? (

@@ -2,9 +2,14 @@ import type { GameState } from '../types';
 import type { CardViewBoxStatus } from './blackjackViewPhase';
 import { isCallerForBox } from '../engine/session/playerAssignment';
 
-/** Box-card class names — desktop Card View box value + active highlight. */
+/** Box-card class names — desktop Card View box value + highlight states. */
 export const BOX_CARD_BASE = 'bj-phone-view__mini-hand';
+/** Active player turn — distinct from betting selection. */
 export const BOX_CARD_ACTIVE = 'bj-phone-view__mini-hand--active';
+/** Chip-tray / click target during betting — exactly one at a time. */
+export const BOX_CARD_SELECTED = 'bj-phone-view__mini-hand--selected';
+/** Native or staked ownership during betting — not the same as selection. */
+export const BOX_CARD_ASSIGNED = 'bj-phone-view__mini-hand--assigned';
 export const BOX_CARD_VALUE = 'bj-phone-view__box-value';
 export const BOX_CARD_VALUE_ABOVE = 'bj-phone-view__box-value--above';
 export const BOX_CARD_VALUE_BUST = 'bj-phone-view__box-value--bust';
@@ -76,15 +81,35 @@ export function getBoxCardValueLabel(
   return String(value);
 }
 
-/** Box card gets the active highlight only when it is the active turn box in play. */
+export interface BoxCardVisualState {
+  isSelected?: boolean;
+  isAssigned?: boolean;
+  isTurn?: boolean;
+}
+
+/** Compose distinct box highlight classes (selected / assigned / turn). */
+export function getBoxCardVisualClasses(state: BoxCardVisualState): string {
+  const parts = [BOX_CARD_BASE];
+  if (state.isTurn) {
+    parts.push(BOX_CARD_ACTIVE);
+  }
+  if (state.isSelected) {
+    parts.push(BOX_CARD_SELECTED);
+  }
+  if (state.isAssigned) {
+    parts.push(BOX_CARD_ASSIGNED);
+  }
+  return parts.join(' ');
+}
+
+/** @deprecated Prefer getBoxCardVisualClasses — active is turn-only. */
 export function getBoxCardClassName(isActive: boolean): string {
   return isActive ? `${BOX_CARD_BASE} ${BOX_CARD_ACTIVE}` : BOX_CARD_BASE;
 }
 
 /**
- * Betting pulse is derived purely from current state, so it stays applied
- * across re-renders (including WebSocket-driven state updates).
+ * Betting pulse applies only to the selected chip target — not every assigned box.
  */
-export function getBetBoxPulseClassName(bettingOpen: boolean, hasBox: boolean): string {
-  return bettingOpen && hasBox ? BET_BOX_PULSE : '';
+export function getBetBoxPulseClassName(bettingOpen: boolean, isSelected: boolean): string {
+  return bettingOpen && isSelected ? BET_BOX_PULSE : '';
 }

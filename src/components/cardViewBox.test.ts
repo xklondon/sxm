@@ -38,11 +38,11 @@ describe('cardViewBox helpers', () => {
   });
 
   describe('getBetBoxPulseClassName', () => {
-    it('pulses owned boxes while betting is open', () => {
+    it('pulses only the selected box while betting is open', () => {
       expect(getBetBoxPulseClassName(true, true)).toBe(BET_BOX_PULSE);
     });
 
-    it('does not pulse open seats or when betting closed', () => {
+    it('does not pulse non-selected boxes or when betting closed', () => {
       expect(getBetBoxPulseClassName(true, false)).toBe('');
       expect(getBetBoxPulseClassName(false, true)).toBe('');
     });

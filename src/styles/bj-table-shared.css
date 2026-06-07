@@ -244,9 +244,19 @@
 
 .bj-arc__slot--selected .bj-bet-zone,
 .bj-arc__slot--selected .bj-arc__play-zone,
-.bj-arc__slot--selected .bj-phone-view__mini-hand {
+.bj-arc__slot--selected .bj-phone-view__mini-hand:not(.bj-phone-view__mini-hand--selected) {
   border-color: var(--bj-seat-selected-border);
   background: var(--bj-seat-selected-bg);
+}
+
+.bj-phone-view__mini-hand--selected {
+  border-color: var(--bj-seat-selected-border);
+  background: var(--bj-seat-selected-bg);
+}
+
+.bj-phone-view__mini-hand--assigned:not(.bj-phone-view__mini-hand--selected) {
+  border-color: var(--bj-seat-assigned-border);
+  background: var(--bj-seat-assigned-bg);
 }
 
 /* Seat typography — shared hierarchy across Full Table arc + Card View mini row */
