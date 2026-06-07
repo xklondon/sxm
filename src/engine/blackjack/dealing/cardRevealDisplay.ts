@@ -118,6 +118,37 @@ export function maxVisibilityForRound(round: BlackjackRound | null): CardVisibil
   return countVisibleCards(round);
 }
 
+export function isActiveHandRevealComplete(
+  round: BlackjackRound | null | undefined,
+  visible: CardVisibilityCounts,
+  handKey: string | null | undefined,
+): boolean {
+  if (!round || !handKey) {
+    return false;
+  }
+  const hand = round.playerHands[handKey];
+  if (!hand) {
+    return false;
+  }
+  const targetCount = hand.cardIds.filter(Boolean).length;
+  if (targetCount === 0) {
+    return false;
+  }
+  const visibleCount = visible.hands[handKey] ?? 0;
+  return visibleCount >= targetCount;
+}
+
+/** Player controls may enable before the full table reveal finishes (natural dealing). */
+export function isActionRevealReady(
+  naturalDealing: boolean,
+  options: { cardRevealComplete: boolean; activeHandRevealComplete: boolean },
+): boolean {
+  if (!naturalDealing) {
+    return true;
+  }
+  return options.cardRevealComplete || options.activeHandRevealComplete;
+}
+
 /** Visible card ids for a hand in the current display round (masked or full). */
 export function getVisibleHandCardIds(
   round: BlackjackRound | null | undefined,

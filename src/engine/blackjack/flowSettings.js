@@ -49,12 +49,18 @@ export function syncDealTimingFromPreset(settings) {
 export function cardDealDelayMs(settings) {
     return dealDelayMsForPreset(settings.dealSpeedPreset);
 }
-/** Single timing source for every card reveal / bank pacing delay. */
-export function getCardDealDelayMs(state, _context = 'initial-deal') {
-    void _context;
+/** Seconds to wait after the last player before bank begins (independent of deal speed). */
+export function getBankTurnDelayMs(settings) {
+    return settings.cardTimerPreset * 1000;
+}
+/** Single timing source for sequential card reveal between player cards. */
+export function getCardDealDelayMs(state, context = 'initial-deal') {
+    if (context === 'bank-pause' || context === 'bank-turn-start') {
+        return getBankTurnDelayMs(state.blackjackFlowSettings);
+    }
     return cardDealDelayMs(state.blackjackFlowSettings);
 }
-/** Bank draw pacing — uses the same deal-speed delay as player cards. */
+/** Bank draw pacing between individual bank cards — uses deal speed, not bank timer. */
 export function randomBankDrawDelayMs(settings) {
     return cardDealDelayMs(settings);
 }

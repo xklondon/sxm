@@ -209,7 +209,8 @@ export function BlackjackPanel({
     tableOwner || controllerName === tableMeta.controllerName;
 
   const isMobileViewport = useIsMobileViewport();
-  const { displayState: tableVisualState, isRevealing } = useSequentialCardReveal(gameState, {
+  const { displayState: tableVisualState, isRevealing, activeHandRevealComplete } =
+    useSequentialCardReveal(gameState, {
     onlineMode: Boolean(onlineDispatch) || isOnlineModeEnabled(),
   });
   const cardRevealComplete = !isRevealing;
@@ -330,8 +331,15 @@ export function BlackjackPanel({
   ) {
     setError(null);
     if (onlineDispatch && online) {
+      if (onlineActionInFlight) {
+        return;
+      }
       void onlineDispatch(online.type, online.payload ?? {}).catch((err) => {
-        setError(err instanceof Error ? err.message : 'Action failed');
+        const msg = err instanceof Error ? err.message : 'Action failed';
+        if (msg === 'Action already in progress') {
+          return;
+        }
+        setError(msg);
       });
       return;
     }
@@ -924,7 +932,10 @@ export function BlackjackPanel({
       return renderEvenMoneyActions();
     }
 
-    if (!canShowPlayerDecisionControls(gameState, protocolPhase, { cardRevealComplete })) {
+    if (!canShowPlayerDecisionControls(gameState, protocolPhase, {
+      cardRevealComplete,
+      activeHandRevealComplete,
+    })) {
       return null;
     }
 
@@ -1517,6 +1528,7 @@ export function BlackjackPanel({
                   showHoleHidden={showHoleHidden}
                   protocolPhase={protocolPhase}
                   cardRevealComplete={cardRevealComplete}
+                  activeHandRevealComplete={activeHandRevealComplete}
                   bettingOpen={bettingOpen}
                   gameEnded={gameEnded}
                   onSelectBox={selectBox}

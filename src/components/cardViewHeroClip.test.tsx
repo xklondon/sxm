@@ -31,15 +31,18 @@ describe('Desktop Card View hero card clipping guards', () => {
     );
   });
 
-  it('uses overflow visible on desktop hero card slot and fan containers', () => {
+  it('clips hero cards from the bottom only on desktop (overflow hidden + top alignment)', () => {
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__cards-slot[\s\S]*overflow:\s*visible/,
+      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__cards-slot[\s\S]*overflow:\s*hidden/,
     );
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__cards[\s\S]*overflow:\s*visible/,
+      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__cards[\s\S]*overflow:\s*hidden/,
     );
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__card-wrap[\s\S]*overflow:\s*visible/,
+      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__cards-slot[\s\S]*align-items:\s*flex-start/,
+    );
+    expect(LAYOUT_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__card-wrap[\s\S]*transform-origin:\s*top center/,
     );
   });
 

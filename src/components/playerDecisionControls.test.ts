@@ -115,4 +115,37 @@ describe('player decision controls visibility', () => {
       canShowPlayerDecisionControls(state, 'player', { cardRevealComplete: true }),
     ).toBe(true);
   });
+
+  it('shows controls during natural dealing once active hand reveal completes', () => {
+    let state = tableWithClaimedBox(1);
+    const boxId = boxPlayerId(state, 1)!;
+    const handKey = blackjackHandKey(boxId, 0);
+    const deck = state.deck!;
+    state = {
+      ...state,
+      blackjackFlowSettings: {
+        ...state.blackjackFlowSettings,
+        initialDealMode: 'natural',
+      },
+      blackjack: {
+        ...actingRound(state, boxId, [findCardId(deck, '6'), findCardId(deck, '5')], 50),
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: boxId,
+        dealerCardIds: [findCardId(deck, '10'), findCardId(deck, '7')],
+      },
+    };
+    expect(
+      canShowPlayerDecisionControls(state, 'player', {
+        cardRevealComplete: false,
+        activeHandRevealComplete: false,
+      }),
+    ).toBe(false);
+    expect(
+      canShowPlayerDecisionControls(state, 'player', {
+        cardRevealComplete: false,
+        activeHandRevealComplete: true,
+      }),
+    ).toBe(true);
+  });
 });

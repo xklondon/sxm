@@ -8,6 +8,7 @@ import {
   buildInitialRevealSteps,
   cardRevealScopeKey,
   hasPendingCardReveal,
+  isActiveHandRevealComplete,
   maxVisibilityForRound,
   nextGameplayRevealStep,
   shouldHydrateCardRevealScope,
@@ -31,6 +32,21 @@ function countsEqual(a: CardVisibilityCounts, b: CardVisibilityCounts): boolean 
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function computeActiveHandRevealComplete(
+  gameState: GameState,
+  visible: CardVisibilityCounts,
+  natural: boolean,
+): boolean {
+  if (!natural) {
+    return true;
+  }
+  return isActiveHandRevealComplete(
+    gameState.blackjack,
+    visible,
+    gameState.blackjack?.activeHandKey ?? null,
+  );
 }
 
 function nextRevealStep(
@@ -83,7 +99,7 @@ export interface SequentialCardRevealOptions {
 export function useSequentialCardReveal(
   gameState: GameState,
   _options?: SequentialCardRevealOptions,
-): { displayState: GameState; isRevealing: boolean } {
+): { displayState: GameState; isRevealing: boolean; activeHandRevealComplete: boolean } {
   const natural = isNaturalInitialDeal(gameState.blackjackFlowSettings.initialDealMode);
 
   const scopeKey = cardRevealScopeKey(
@@ -103,6 +119,9 @@ export function useSequentialCardReveal(
     natural ? applyCardVisibility(gameState, initialTarget) : gameState,
   );
   const [isRevealing, setIsRevealing] = useState(false);
+  const [activeHandRevealComplete, setActiveHandRevealComplete] = useState(() =>
+    computeActiveHandRevealComplete(gameState, initialTarget, natural),
+  );
 
   useEffect(() => {
     return () => {
@@ -121,6 +140,7 @@ export function useSequentialCardReveal(
       visibleRef.current = target;
       setDisplayState(state);
       setIsRevealing(false);
+      setActiveHandRevealComplete(computeActiveHandRevealComplete(state, target, natural));
       hasHydratedRef.current = true;
     };
 
@@ -148,6 +168,7 @@ export function useSequentialCardReveal(
     if (countsEqual(current, target)) {
       setDisplayState(gameState);
       setIsRevealing(false);
+      setActiveHandRevealComplete(computeActiveHandRevealComplete(gameState, target, natural));
       return;
     }
 
@@ -186,17 +207,26 @@ export function useSequentialCardReveal(
         visible = stepped ?? authoritativeTarget;
         visibleRef.current = visible;
         setDisplayState(applyCardVisibility(authoritative, visible));
+        setActiveHandRevealComplete(
+          computeActiveHandRevealComplete(authoritative, visible, natural),
+        );
         await sleep(delay);
       }
 
       if (runIdRef.current === runId) {
         const final = gameStateRef.current;
-        visibleRef.current = maxVisibilityForRound(final.blackjack);
+        const finalTarget = maxVisibilityForRound(final.blackjack);
+        visibleRef.current = finalTarget;
         setDisplayState(final);
         setIsRevealing(false);
+        setActiveHandRevealComplete(computeActiveHandRevealComplete(final, finalTarget, natural));
       }
     })();
   }, [gameState, natural, scopeKey]);
 
-  return { displayState: natural ? displayState : gameState, isRevealing };
+  return {
+    displayState: natural ? displayState : gameState,
+    isRevealing,
+    activeHandRevealComplete,
+  };
 }

@@ -90,6 +90,7 @@ export {
   dealDelayMsForPreset,
   cardDealDelayMs,
   getCardDealDelayMs,
+  getBankTurnDelayMs,
   syncDealTimingFromPreset,
   randomBankDrawDelayMs,
 } from './flowSettings';

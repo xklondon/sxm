@@ -101,6 +101,8 @@ interface BlackjackCardViewProps {
   protocolPhase: BlackjackProtocolPhase;
   /** False while natural-deal reveal is catching up — hides decision buttons. */
   cardRevealComplete?: boolean;
+  /** Active hand cards fully revealed in natural dealing (may lead full-table reveal). */
+  activeHandRevealComplete?: boolean;
   bettingOpen: boolean;
   gameEnded: boolean;
   onSelectBox: (boxId: string) => void;
@@ -145,6 +147,7 @@ export function BlackjackCardView({
   showHoleHidden: _showHoleHidden,
   protocolPhase,
   cardRevealComplete = true,
+  activeHandRevealComplete = true,
   bettingOpen,
   gameEnded,
   onSelectBox,
@@ -188,7 +191,7 @@ export function BlackjackCardView({
   const stitchedActionsActive = canShowPlayerDecisionControls(
     logicalGameState,
     protocolPhase,
-    { cardRevealComplete },
+    { cardRevealComplete, activeHandRevealComplete },
   );
   const isPlayerPhase = isPlayerTurnPhase(protocolPhase);
 
@@ -255,6 +258,8 @@ export function BlackjackCardView({
   );
   const showSideControls =
     stitchedActionsActive && !evenMoneyActive && !insuranceActive;
+  const mountPlayerActionBar =
+    isPlayerPhase && !evenMoneyActive && !insuranceActive && !bettingMainStage;
 
   function getActionDisabledReason(): string | null {
     if (isBettingPhase(protocolPhase)) {
@@ -1163,13 +1168,33 @@ export function BlackjackCardView({
   }
 
   function renderActionBar() {
+    if (bettingMainStage) {
+      return renderActionBarPlaceholder();
+    }
+
+    if (!mountPlayerActionBar) {
+      return renderActionBarPlaceholder();
+    }
+
+    const actionsEnabled = showSideControls && isActiveTurn;
+
+    if (!actionsEnabled && disabledReason) {
+      return (
+        <div className="bj-phone-view__action-bar bj-phone-view__action-bar--wait">
+          <p className={TABLE_UX.playerActions} aria-live="polite">
+            {disabledReason}
+          </p>
+        </div>
+      );
+    }
+
     const canDoubleNow =
-      isActiveTurn &&
+      actionsEnabled &&
       actionableHandKey &&
       blackjackSettings.allowDoubleDown &&
       canDoubleBlackjackForState(logicalGameState, actionableHandKey);
     const canSplitNow =
-      isActiveTurn &&
+      actionsEnabled &&
       actionableHandKey &&
       blackjackSettings.allowSplit &&
       deck &&
@@ -1177,42 +1202,6 @@ export function BlackjackCardView({
     const showDouble = blackjackSettings.allowDoubleDown;
     const showSplit = blackjackSettings.allowSplit && Boolean(deck);
     const showAid = blackjackFlowSettings.adviceEnabled;
-
-    if (bettingMainStage) {
-      return renderActionBarPlaceholder();
-    }
-
-    if (!showSideControls) {
-      return renderActionBarPlaceholder();
-    }
-
-    if (!isActiveTurn && disabledReason) {
-      return (
-        <div className="bj-phone-view__action-bar bj-phone-view__action-bar--wait">
-          <p className={`${TABLE_UX.playerActions}`} aria-live="polite">
-            {disabledReason}
-          </p>
-          <div
-            {...sxmSectionProps(
-              SXM_LAYOUT.primaryActions,
-              'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--primary',
-            )}
-            aria-hidden="true"
-          />
-          <div
-            {...sxmSectionProps(
-              SXM_LAYOUT.secondaryActions,
-              'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--secondary',
-            )}
-            aria-hidden="true"
-          />
-        </div>
-      );
-    }
-
-    if (!isActiveTurn) {
-      return renderActionBarPlaceholder();
-    }
 
     return (
       <div
@@ -1232,11 +1221,11 @@ export function BlackjackCardView({
               "bj-phone-view__action-bar-btn--stand",
               "ds-btn",
               "ds-btn--stand",
-              isActiveTurn ? "bj-phone-view__action-bar-btn--live" : "",
+              actionsEnabled ? "bj-phone-view__action-bar-btn--live" : "",
             ]
               .filter(Boolean)
               .join(" ")}
-            disabled={!isActiveTurn || !canStand}
+            disabled={!actionsEnabled || !canStand}
             onClick={handleStayClick}
           >
             Stand
@@ -1248,11 +1237,11 @@ export function BlackjackCardView({
               "bj-phone-view__action-bar-btn--hit",
               "ds-btn",
               "ds-btn--hit",
-              isActiveTurn ? "bj-phone-view__action-bar-btn--live" : "",
+              actionsEnabled ? "bj-phone-view__action-bar-btn--live" : "",
             ]
               .filter(Boolean)
               .join(" ")}
-            disabled={!isActiveTurn || !canHit}
+            disabled={!actionsEnabled || !canHit}
             onClick={handleHitClick}
           >
             Hit
@@ -1306,6 +1295,7 @@ export function BlackjackCardView({
             <button
               type="button"
               className={`bj-phone-view__action-bar-extra ${TABLE_UX.cardViewActionCompact} bj-phone-view__action-btn--tappable bj-phone-view__action-bar-extra--aid`}
+              disabled={!actionsEnabled}
               onClick={handleAid}
             >
               AID

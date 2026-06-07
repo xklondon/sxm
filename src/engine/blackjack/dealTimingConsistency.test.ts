@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   cardDealDelayMs,
+  getBankTurnDelayMs,
+  getCardDealDelayMs,
   normalizeFlowSettings,
   randomBankDrawDelayMs,
   syncDealTimingFromPreset,
@@ -35,5 +37,18 @@ describe('deal timing — single canonical source', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/useBlackjackTableFlow.ts'), 'utf8');
     expect(src).toContain('getCardDealDelayMs');
     expect(src).not.toMatch(/cardDealDelayMs\(/);
+  });
+
+  it('bank-turn-start delay uses cardTimerPreset, not deal speed', () => {
+    const settings = normalizeFlowSettings({ dealSpeedPreset: 'fast', cardTimerPreset: 15 });
+    expect(getBankTurnDelayMs(settings)).toBe(15000);
+    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-turn-start')).toBe(15000);
+    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'initial-deal')).toBe(1000);
+  });
+
+  it('bank card draws use deal speed, not cardTimerPreset', () => {
+    const settings = normalizeFlowSettings({ dealSpeedPreset: 'slow', cardTimerPreset: 30 });
+    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'dealer')).toBe(5000);
+    expect(randomBankDrawDelayMs(settings)).toBe(5000);
   });
 });

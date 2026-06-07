@@ -92,6 +92,28 @@ export function countsFromRevealSteps(steps) {
 export function maxVisibilityForRound(round) {
     return countVisibleCards(round);
 }
+export function isActiveHandRevealComplete(round, visible, handKey) {
+    if (!round || !handKey) {
+        return false;
+    }
+    const hand = round.playerHands[handKey];
+    if (!hand) {
+        return false;
+    }
+    const targetCount = hand.cardIds.filter(Boolean).length;
+    if (targetCount === 0) {
+        return false;
+    }
+    const visibleCount = visible.hands[handKey] ?? 0;
+    return visibleCount >= targetCount;
+}
+/** Player controls may enable before the full table reveal finishes (natural dealing). */
+export function isActionRevealReady(naturalDealing, options) {
+    if (!naturalDealing) {
+        return true;
+    }
+    return options.cardRevealComplete || options.activeHandRevealComplete;
+}
 /** Stable key for per-table, per-round visual hydration. */
 export function cardRevealScopeKey(sessionId, roundNumber) {
     return `${sessionId}:${roundNumber}`;

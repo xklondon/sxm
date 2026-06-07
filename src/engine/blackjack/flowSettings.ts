@@ -101,18 +101,26 @@ export type CardDealDelayContext =
   | 'double'
   | 'dealer'
   | 'bank-pause'
+  | 'bank-turn-start'
   | 'hydration';
 
-/** Single timing source for every card reveal / bank pacing delay. */
+/** Seconds to wait after the last player before bank begins (independent of deal speed). */
+export function getBankTurnDelayMs(settings: BlackjackFlowSettings): number {
+  return settings.cardTimerPreset * 1000;
+}
+
+/** Single timing source for sequential card reveal between player cards. */
 export function getCardDealDelayMs(
   state: Pick<GameState, 'blackjackFlowSettings'>,
-  _context: CardDealDelayContext = 'initial-deal',
+  context: CardDealDelayContext = 'initial-deal',
 ): number {
-  void _context;
+  if (context === 'bank-pause' || context === 'bank-turn-start') {
+    return getBankTurnDelayMs(state.blackjackFlowSettings);
+  }
   return cardDealDelayMs(state.blackjackFlowSettings);
 }
 
-/** Bank draw pacing — uses the same deal-speed delay as player cards. */
+/** Bank draw pacing between individual bank cards — uses deal speed, not bank timer. */
 export function randomBankDrawDelayMs(settings: BlackjackFlowSettings): number {
   return cardDealDelayMs(settings);
 }

@@ -438,6 +438,7 @@
 
 .bj-phone-view__cards--stitched .bj-phone-view__card-wrap {
   margin-left: -1.35rem;
+  transform-origin: top center;
 }
 
 .bj-phone-view__cards--stitched .bj-phone-view__card-wrap:first-child {

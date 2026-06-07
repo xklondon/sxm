@@ -3,6 +3,8 @@ import type { BlackjackRound } from '../types/blackjack';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { getBlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { isInitialDealRoundComplete } from '../engine/blackjack/initialDealGuards';
+import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
+import { isActionRevealReady } from '../engine/blackjack/dealing/cardRevealDisplay';
 import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
 import { getInsuranceEligibleBoxIds } from '../engine/blackjack/protocols/activeRules';
 import { isInsuranceBoxDecisionResolved } from '../engine/blackjack/insurance';
@@ -90,13 +92,18 @@ export function showPlayerActionControls(
 export function canShowPlayerDecisionControls(
   state: GameState,
   displayPhase: BlackjackProtocolPhase,
-  options: { cardRevealComplete: boolean },
+  options: { cardRevealComplete: boolean; activeHandRevealComplete?: boolean },
 ): boolean {
   const round = state.blackjack;
   if (!showPlayerActionControls(displayPhase, round)) {
     return false;
   }
-  if (!options.cardRevealComplete || isDealingPhase(displayPhase)) {
+  const naturalDealing = isNaturalInitialDeal(state.blackjackFlowSettings.initialDealMode);
+  const revealReady = isActionRevealReady(naturalDealing, {
+    cardRevealComplete: options.cardRevealComplete,
+    activeHandRevealComplete: options.activeHandRevealComplete ?? false,
+  });
+  if (!revealReady || isDealingPhase(displayPhase)) {
     return false;
   }
   if (round?.status === 'initial-deal') {
@@ -198,7 +205,7 @@ export function getActiveTurnBoxId(
 export function showStitchedActionControls(
   state: GameState,
   displayPhase: BlackjackProtocolPhase,
-  options: { cardRevealComplete: boolean },
+  options: { cardRevealComplete: boolean; activeHandRevealComplete?: boolean },
 ): boolean {
   return canShowPlayerDecisionControls(state, displayPhase, options);
 }

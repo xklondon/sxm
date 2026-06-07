@@ -277,6 +277,13 @@ export function useBlackjackTableFlow(
     void (async () => {
       if (gameStateRef.current.blackjack?.status === 'bank-turn') {
         setBankUiMessage('Bank thinking…');
+        const startDelay = getCardDealDelayMs(gameStateRef.current, 'bank-turn-start');
+        if (startDelay > 0) {
+          await sleep(startDelay);
+          if (bankRunIdRef.current !== runId) {
+            return;
+          }
+        }
         while (gameStateRef.current.blackjack?.status === 'bank-turn') {
           if (bankRunIdRef.current !== runId) {
             break;
@@ -305,10 +312,6 @@ export function useBlackjackTableFlow(
       const afterDraw = gameStateRef.current;
       if (afterDraw.blackjack?.status === 'banking') {
         setBankUiMessage(getBankFinalMessage(afterDraw));
-        await sleep(getCardDealDelayMs(afterDraw, 'bank-pause'));
-        if (bankRunIdRef.current !== runId) {
-          return;
-        }
         await sleep(getCardDealDelayMs(afterDraw, 'bank-pause'));
         if (bankRunIdRef.current !== runId) {
           return;
