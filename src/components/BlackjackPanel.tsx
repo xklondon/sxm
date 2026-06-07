@@ -822,7 +822,6 @@ export function BlackjackPanel({
     newGameDisabledReason:
       gameEnded && !canResetTable ? 'Only the table owner can start a new game.' : null,
     commentaryText: tableAidTip,
-    dynamicTextSlot: <Magic8TableAnswer answer={magic8Answer} />,
     commandMessage: tableCommand.commandMessage,
     commandLines: tableCommand.commandLines,
     onOpenTableDetails: toggleTableDetails,
@@ -989,6 +988,7 @@ export function BlackjackPanel({
       <div
         className={[
           'bj-bet-zone',
+          TABLE_UX.boxInteractive,
           isDrop ? 'bj-bet-zone--drop' : '',
           hasStake ? 'bj-bet-zone--has-chips' : '',
           belowMin ? 'bj-bet-zone--below-min' : '',
@@ -1009,7 +1009,7 @@ export function BlackjackPanel({
           setDropTargetId(null);
         }}
         onDrop={(e) => inBetting && handleBetZoneDrop(boxId, slotNumber, e)}
-        onClick={(e) => e.stopPropagation()}
+        onClick={() => selectBox(boxId)}
       >
         {hasStake && (
           <>
@@ -1334,28 +1334,18 @@ export function BlackjackPanel({
         className={[
           'bj-arc__slot',
           'bj-arc__slot--owned',
+          TABLE_UX.boxHitZone,
           isJoinAssigned ? 'bj-arc__slot--join-highlight' : '',
           isTurn ? 'bj-arc__slot--turn' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
       >
-        {arcCards}
-        <div
-          {...sxmSectionProps(
-            SXM_LAYOUT.playerBox,
-            getBoxCardVisualClasses(borderState),
-            TABLE_UX.fullArcBox,
-            getBoxActivePulseClassName(borderState),
-            showBettingChips ? 'bj-phone-view__mini-hand--has-stake' : '',
-          )}
-          {...{
-            [CHIP_DROP_SLOT_ATTR]: slotNumber,
-            [CHIP_DROP_BOX_ATTR]: boxId,
-          }}
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
+          className={TABLE_UX.boxHitArea}
           onClick={() => selectBox(boxId)}
-          onKeyDown={(e) => e.key === 'Enter' && selectBox(boxId)}
+          aria-label={`Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`}
+          aria-current={borderState.isSelected || isTurn ? 'true' : undefined}
           onDragOver={inBetting ? handleDragOver : undefined}
           onDragEnter={
             inBetting
@@ -1374,6 +1364,20 @@ export function BlackjackPanel({
               : undefined
           }
           onDrop={inBetting ? (e) => handleBetZoneDrop(boxId, slotNumber, e) : undefined}
+        />
+        {arcCards}
+        <div
+          {...sxmSectionProps(
+            SXM_LAYOUT.playerBox,
+            getBoxCardVisualClasses(borderState),
+            TABLE_UX.fullArcBox,
+            getBoxActivePulseClassName(borderState),
+            showBettingChips ? 'bj-phone-view__mini-hand--has-stake' : '',
+          )}
+          {...{
+            [CHIP_DROP_SLOT_ATTR]: slotNumber,
+            [CHIP_DROP_BOX_ATTR]: boxId,
+          }}
         >
           {valueLabel ? (
             <span
@@ -1394,7 +1398,9 @@ export function BlackjackPanel({
             <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
           </span>
           <span
-            className="bj-phone-view__mini-stake-slot"
+            className={['bj-phone-view__mini-stake-slot', TABLE_UX.boxInteractive]
+              .filter(Boolean)
+              .join(' ')}
             aria-hidden={!showStakeContent}
           >
             {displayChips.length > 0 ? (
@@ -1440,10 +1446,26 @@ export function BlackjackPanel({
         className={[
           'bj-arc__slot',
           'bj-arc__slot--empty',
+          TABLE_UX.boxHitZone,
           isDrop ? 'bj-arc__slot--drop' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
+        {...{
+          [CHIP_DROP_SLOT_ATTR]: slotNumber,
+          [CHIP_DROP_BOX_ATTR]: '',
+        }}
       >
+        <button
+          type="button"
+          className={TABLE_UX.boxHitArea}
+          onClick={() => handleClaimOrSelectSlot(slotNumber)}
+          aria-label={`Join box ${slotNumber}`}
+          aria-current={isSelected ? 'true' : undefined}
+          onDragOver={handleDragOver}
+          onDragEnter={() => inBetting && setDropTargetId(dropKey)}
+          onDragLeave={() => setDropTargetId(null)}
+          onDrop={(e) => inBetting && handleSlotChipDrop(slotNumber, null, e)}
+        />
         <div
           className={[
             'bj-phone-view__mini-hand',
@@ -1451,19 +1473,6 @@ export function BlackjackPanel({
             isSelected ? BET_BOX_PULSE : '',
             isDrop ? 'bj-bet-zone--drop' : '',
           ].filter(Boolean).join(' ')}
-          {...{
-            [CHIP_DROP_SLOT_ATTR]: slotNumber,
-            [CHIP_DROP_BOX_ATTR]: '',
-          }}
-          role="button"
-          tabIndex={0}
-          onClick={() => handleClaimOrSelectSlot(slotNumber)}
-          onKeyDown={(e) => e.key === 'Enter' && handleClaimOrSelectSlot(slotNumber)}
-          onDragOver={handleDragOver}
-          onDragEnter={() => inBetting && setDropTargetId(dropKey)}
-          onDragLeave={() => setDropTargetId(null)}
-          onDrop={(e) => inBetting && handleSlotChipDrop(slotNumber, null, e)}
-          aria-label={`Join box ${slotNumber}`}
         >
           <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
           <span className="bj-phone-view__mini-hand-name">Join</span>
@@ -1756,9 +1765,11 @@ export function BlackjackPanel({
               compact
               controlOnly
               canShake={magic8ShakeAllowed}
+              answer={magic8Answer}
               onAnswer={setMagic8Answer}
             />
           </div>
+          <Magic8TableAnswer answer={magic8Answer} />
           {viewMode === 'full' && (
             <>
               <div className="bj-casino__felt-main">

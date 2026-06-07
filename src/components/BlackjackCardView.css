@@ -1005,7 +1005,6 @@
   justify-content: center;
   width: 100%;
   min-height: 2.35rem;
-  pointer-events: auto;
 }
 
 .bj-phone-view__mini-stake-slot .stake-chips--bet {

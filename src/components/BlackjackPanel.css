@@ -1361,7 +1361,8 @@
    Scoped to .bj-view-full-mobile; Card View mobile is unchanged.
    ============================================================ */
 .bj-view-full-mobile {
-  overflow-x: hidden; /* page never scrolls sideways */
+  overflow: hidden;
+  min-height: 0;
 }
 
 .bj-view-full-mobile .bj-casino__rail-wrap {
@@ -1393,14 +1394,14 @@
   flex-direction: column;
   align-items: center;
   overflow-x: hidden;
-  overflow-y: visible;
+  overflow-y: hidden;
   padding: 0.35rem 0.85rem 0.2rem;
   box-sizing: border-box;
 }
 
 .bj-view-full-mobile .bj-arc-separator {
   flex: 1 1 auto;
-  min-height: min(12dvh, 3.5rem);
+  min-height: min(8dvh, 2.5rem);
 }
 
 /* contract: mobile-arc-fit — seven boxes fit shell width, no inner horizontal scroll */

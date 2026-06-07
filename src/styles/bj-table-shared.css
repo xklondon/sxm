@@ -241,6 +241,20 @@
       --bj-card-row-actions: 2.75rem;
       --bj-card-row-boxes: 4.25rem;
       --bj-card-row-tray: 2.85rem;
+      --bj-table-zone-dealer-min-height: 4.25rem;
+      --bj-table-zone-summary-min-height: 1.15rem;
+      --bj-table-zone-actions-min-height: 2.1rem;
+      --bj-table-zone-play-min-height: 0;
+      --bj-table-zone-tray-min-height: 2.75rem;
+    }
+
+    .bj-view-full-mobile.bj-casino,
+    .bj-view-full-mobile .bj-mobile-table-shell,
+    .bj-view-full-mobile .bj-casino__rail-wrap,
+    .bj-view-full-mobile .bj-casino__rail,
+    .bj-view-full-mobile .bj-casino__felt {
+      min-height: 0;
+      overflow: hidden;
     }
 
     .bj-view-full-mobile .bj-casino__felt,
@@ -258,6 +272,43 @@
     .bj-view-full-mobile .bj-casino__felt-main {
       min-height: 0;
       flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    .bj-view-full-mobile .bj-table-zone--dealer {
+      min-height: var(--bj-table-zone-dealer-min-height);
+    }
+
+    .bj-view-full-mobile .bj-table-zone--summary {
+      min-height: var(--bj-table-zone-summary-min-height);
+    }
+
+    .bj-view-full-mobile .bj-table-zone--actions {
+      min-height: var(--bj-table-zone-actions-min-height);
+    }
+
+    .bj-view-full-mobile .bj-table-zone--play {
+      min-height: var(--bj-table-zone-play-min-height);
+      flex: 1 1 auto;
+    }
+
+    .bj-view-full-mobile .bj-table-zone--bottom {
+      min-height: var(--bj-table-zone-tray-min-height);
+    }
+
+    .bj-view-full-mobile .bj-arc-separator {
+      min-height: 0;
+      flex: 1 1 auto;
+      max-height: min(5dvh, 1.35rem);
+    }
+
+    .bj-view-full-mobile .bj-arc__cards--stack-vertical {
+      max-height: 3.75rem;
+    }
+
+    .bj-view-full-mobile .bj-arc__cards-stack .playing-card {
+      width: 1.45rem;
+      min-height: 2rem;
     }
 
     .bj-view-card-mobile .bj-card-layout {
@@ -368,6 +419,63 @@
   overflow: visible;
 }
 
+/* Canonical box selection hit target — one tap anywhere in the box zone. */
+.bj-box-hit-zone {
+  position: relative;
+}
+
+.bj-box-hit-area {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bj-box-hit-area:focus-visible {
+  outline: 2px solid var(--ds-color-gold);
+  outline-offset: 1px;
+}
+
+.bj-box-interactive {
+  position: relative;
+  z-index: 3;
+}
+
+.bj-box-hit-zone .bj-arc__play-zone,
+.bj-box-hit-zone .bj-arc__play-zone *,
+.bj-box-hit-zone .bj-phone-view__box-value,
+.bj-box-hit-zone .bj-phone-view__box-value--above,
+.bj-box-hit-zone .bj-phone-view__box-stake-label,
+.bj-box-hit-zone .bj-phone-view__mini-hand-head,
+.bj-box-hit-zone .bj-phone-view__mini-hand-card-stack,
+.bj-box-hit-zone .bj-phone-view__mini-hand-card-stack *,
+.bj-box-hit-zone .bj-phone-view__mini-hand-box,
+.bj-box-hit-zone .bj-phone-view__mini-hand-name,
+.bj-box-hit-zone .bj-phone-view__mini-hand--empty > * {
+  pointer-events: none;
+}
+
+.bj-box-interactive,
+.bj-box-interactive *,
+.bj-bet-zone,
+.bj-bet-zone *,
+.bj-arc__leave,
+.stake-chips__remove {
+  pointer-events: auto;
+}
+
+.bj-phone-view__mini-hand--full-arc,
+.bj-phone-view__mini-hand-column {
+  position: relative;
+}
+
 .bj-arc__slot--empty {
   border: var(--bj-seat-empty-border);
   border-radius: var(--bj-seat-radius);
@@ -377,6 +485,11 @@
   cursor: pointer;
   padding: 0;
   box-sizing: border-box;
+}
+
+.bj-arc__slot--owned,
+.bj-arc__slot--empty {
+  position: relative;
 }
 
 .bj-arc__slot--owned {
@@ -544,7 +657,6 @@
   justify-content: center;
   width: 100%;
   min-height: 2.35rem;
-  pointer-events: auto;
 }
 
 .bj-phone-view__mini-stake-slot .stake-chips--bet {

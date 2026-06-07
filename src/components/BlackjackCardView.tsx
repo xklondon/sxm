@@ -585,6 +585,9 @@ export function BlackjackCardView({
     showBetStakeChips,
     bettingOpen,
     boxId,
+    onHitAreaClick,
+    hitAreaLabel,
+    hitAreaSelected,
   }: {
     aboveLabel: string;
     aboveBust: boolean;
@@ -594,13 +597,23 @@ export function BlackjackCardView({
     showBetStakeChips: boolean;
     bettingOpen: boolean;
     boxId?: string;
+    onHitAreaClick: () => void;
+    hitAreaLabel: string;
+    hitAreaSelected?: boolean;
   }) {
     const valueReserved = aboveLabel.length === 0;
     const betReserved = wager <= 0;
     const chipsReserved = !showBetStakeChips;
 
     return (
-      <div {...sxmSectionProps(SXM_LAYOUT.playerBox, BOX_CARD_COLUMN)}>
+      <div {...sxmSectionProps(SXM_LAYOUT.playerBox, BOX_CARD_COLUMN, TABLE_UX.boxHitZone)}>
+        <button
+          type="button"
+          className={TABLE_UX.boxHitArea}
+          onClick={onHitAreaClick}
+          aria-label={hitAreaLabel}
+          aria-current={hitAreaSelected ? 'true' : undefined}
+        />
         <span
           {...sxmSectionProps(
             SXM_LAYOUT.playerBoxValue,
@@ -627,6 +640,7 @@ export function BlackjackCardView({
         <div
           className={[
             BOX_CARD_CHIP_STACK,
+            TABLE_UX.boxInteractive,
             chipsReserved ? BOX_CARD_CHIP_STACK_RESERVED : "",
           ]
             .filter(Boolean)
@@ -701,9 +715,11 @@ export function BlackjackCardView({
       showBetStakeChips,
       bettingOpen,
       boxId,
+      onHitAreaClick: () => onSelectBox(boxId),
+      hitAreaLabel: `Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`,
+      hitAreaSelected: isSelected || isTurn,
       tile: (
-        <button
-          type="button"
+        <div
           className={[
             getBoxCardVisualClasses(borderState),
             TABLE_UX.cardViewCompactBox,
@@ -711,9 +727,6 @@ export function BlackjackCardView({
           ]
             .filter(Boolean)
             .join(" ")}
-          onClick={() => onSelectBox(boxId)}
-          aria-label={`Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`}
-          aria-current={isSelected || isTurn ? "true" : undefined}
         >
           {showHeadInTile ? (
             <span className="bj-phone-view__mini-hand-head">
@@ -739,7 +752,7 @@ export function BlackjackCardView({
                 ))
               : null}
           </span>
-        </button>
+        </div>
       ),
     });
 
@@ -816,9 +829,11 @@ export function BlackjackCardView({
       stakeChips: [],
       showBetStakeChips: false,
       bettingOpen,
+      onHitAreaClick: () => onClaimSlot(slotNumber),
+      hitAreaLabel: `Join box ${slotNumber}`,
+      hitAreaSelected: isSelected,
       tile: (
-        <button
-          type="button"
+        <div
           className={[
             "bj-phone-view__mini-hand",
             "bj-phone-view__mini-hand--empty",
@@ -827,13 +842,10 @@ export function BlackjackCardView({
           ]
             .filter(Boolean)
             .join(" ")}
-          onClick={() => onClaimSlot(slotNumber)}
-          aria-label={`Join box ${slotNumber}`}
-          aria-current={isSelected ? "true" : undefined}
         >
           <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
           <span className="bj-phone-view__mini-hand-name">Join</span>
-        </button>
+        </div>
       ),
     });
 

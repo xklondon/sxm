@@ -93,4 +93,9 @@ export const TABLE_UX = {
   /** @deprecated Use cardLayout — kept for migration reads only. */
   cardViewPhased: 'bj-phone-view--phased',
   stakeSlotReserved: 'bj-phone-view__mini-stake-slot--reserved',
+  /** Full-size tap target for box/slot selection — decorative children use pointer-events: none. */
+  boxHitZone: 'bj-box-hit-zone',
+  boxHitArea: 'bj-box-hit-area',
+  /** Chip drop / remove controls — pointer-events: auto above the hit area. */
+  boxInteractive: 'bj-box-interactive',
 } as const;

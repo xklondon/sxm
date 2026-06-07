@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useIsMobileViewport } from '../../hooks/useIsMobileViewport';
-import { randomAnswer } from './answers';
+import { getMagic8Wisdom, type Magic8GameType } from '../../content/magic8';
 import { getShakeCooldownMs, useShakeDetector } from './useShakeDetector';
 import './Magic8Ball.css';
 
@@ -9,8 +9,10 @@ export type Magic8BallProps = {
   disabled?: boolean;
   canShake?: boolean;
   compact?: boolean;
-  /** Table felt overlay — orb trigger only; answer renders via Magic8TableAnswer. */
+  /** Table felt overlay — orb trigger only; answer renders via Magic8TableAnswer on felt. */
   controlOnly?: boolean;
+  /** Wisdom pool; defaults to blackjack on table variant, global on login. */
+  gameType?: Magic8GameType;
   answer?: string | null;
   onAnswer?: (answer: string | null) => void;
 };
@@ -18,15 +20,14 @@ export type Magic8BallProps = {
 const ANSWER_DELAY_MS = 500;
 
 export function Magic8TableAnswer({ answer }: { answer: string | null }) {
+  if (!answer) {
+    return null;
+  }
   return (
     <div className="magic8-table-answer" aria-live="polite">
-      {answer ? (
-        <p key={answer} className="magic8-table-answer__text">
-          {answer}
-        </p>
-      ) : (
-        <p className="magic8-table-answer__placeholder">Ask the 8 Ball</p>
-      )}
+      <p key={answer} className="magic8-table-answer__text">
+        {answer}
+      </p>
     </div>
   );
 }
@@ -37,9 +38,12 @@ export function Magic8Ball({
   canShake = true,
   compact = false,
   controlOnly = false,
+  gameType,
   answer: controlledAnswer,
   onAnswer,
 }: Magic8BallProps) {
+  const wisdomGameType: Magic8GameType | undefined =
+    gameType ?? (variant === 'table' ? 'blackjack' : undefined);
   const isMobile = useIsMobileViewport();
   const [internalAnswer, setInternalAnswer] = useState<string | null>(null);
   const [isShaking, setIsShaking] = useState(false);
@@ -107,10 +111,22 @@ export function Magic8Ball({
     });
 
     answerTimer.current = setTimeout(() => {
-      const nextAnswer = randomAnswer(answer);
+      const nextAnswer = getMagic8Wisdom({
+        gameType: wisdomGameType,
+        previousAnswer: answer,
+      });
       commitAnswer(nextAnswer);
     }, ANSWER_DELAY_MS);
-  }, [answer, clearTimers, commitAnswer, controlOnly, controlledAnswer, disabled, onAnswer]);
+  }, [
+    answer,
+    clearTimers,
+    commitAnswer,
+    controlOnly,
+    controlledAnswer,
+    disabled,
+    onAnswer,
+    wisdomGameType,
+  ]);
 
   const { requestMotionAccess } = useShakeDetector(
     isMobile && canShake && !disabled,
@@ -118,6 +134,22 @@ export function Magic8Ball({
   );
 
   useEffect(() => () => clearTimers(), [clearTimers]);
+
+  useEffect(() => {
+    if (variant !== 'table' || !controlOnly || !answer || !onAnswer) {
+      return;
+    }
+    const dismissOnButton = (event: Event) => {
+      const btn = (event.target as Element | null)?.closest('button');
+      if (!btn) {
+        return;
+      }
+      onAnswer(null);
+    };
+    const root = document.querySelector('.bj-casino') ?? document;
+    root.addEventListener('click', dismissOnButton, true);
+    return () => root.removeEventListener('click', dismissOnButton, true);
+  }, [variant, controlOnly, answer, onAnswer]);
 
   async function handleOrbActivate() {
     if (disabled) {

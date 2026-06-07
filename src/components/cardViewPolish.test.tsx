@@ -164,11 +164,13 @@ describe('Card View polish guards', () => {
   it('renders mini dealt cards inside the top of the tile', () => {
     const html = renderCardPanel(playingState());
     const column = miniBoxColumn(html, 1);
-    const buttonOpen = column.indexOf('bj-phone-view__bet-chip--pulse');
-    const stackIdx = column.indexOf('bj-phone-view__mini-hand-card-stack', buttonOpen);
-    const buttonClose = column.indexOf('</button>', buttonOpen);
-    expect(stackIdx).toBeGreaterThan(buttonOpen);
-    expect(stackIdx).toBeLessThan(buttonClose);
+    const hitAreaIdx = column.indexOf(TABLE_UX.boxHitArea);
+    const tileIdx = column.indexOf('bj-phone-view__bet-chip--pulse', hitAreaIdx);
+    const stackIdx = column.indexOf('bj-phone-view__mini-hand-card-stack', tileIdx);
+    const tileClose = column.indexOf('</div>', stackIdx);
+    expect(hitAreaIdx).toBeGreaterThan(-1);
+    expect(stackIdx).toBeGreaterThan(tileIdx);
+    expect(stackIdx).toBeLessThan(tileClose);
     expect(column).toContain('bj-phone-view__mini-card');
   });
 
@@ -178,10 +180,10 @@ describe('Card View polish guards', () => {
     expect(column).toContain(TABLE_UX.cardViewBoxChipStack);
     expect(column).toContain(TABLE_UX.cardViewBoxStakeLabel);
     expect(column).toContain('Bet: 50');
-    const buttonClose = column.indexOf('</button>');
+    const cardsSlotClose = column.indexOf('</div>', column.indexOf('data-sxm-zone="playerBoxCards"'));
     const betIdx = column.indexOf(TABLE_UX.cardViewBoxStakeLabel);
     const chipIdx = column.indexOf(TABLE_UX.cardViewBoxChipStack);
-    expect(betIdx).toBeGreaterThan(buttonClose);
+    expect(betIdx).toBeGreaterThan(cardsSlotClose);
     expect(chipIdx).toBeGreaterThan(betIdx);
   });
 });

@@ -145,12 +145,15 @@ function finalizeAfterInitialDeal(
   }
 
   const insurancePending = Boolean(nextRound.insuranceOfferPending);
+  const holeDealtLast = settings?.holeCardDealtLast ?? false;
+  const hasDealerHoleCard = Boolean(nextRound.dealerCardIds[1]);
 
   nextRound = syncActivePlayerId({
     ...nextRound,
     activeHandKey: insurancePending ? null : firstActingHand,
     status: allInstant && !insurancePending ? 'bank-turn' : 'player-turns',
-    dealerHoleHidden: insurancePending ? true : !allInstant,
+    dealerHoleHidden:
+      hasDealerHoleCard || insurancePending || holeDealtLast,
   });
 
   return {
@@ -218,7 +221,7 @@ export function dealNextInitialCard(
     nextRound = {
       ...nextRound,
       dealerCardIds,
-      dealerHoleHidden: step.cardIndex === 1,
+      dealerHoleHidden: step.cardIndex === 1 ? true : nextRound.dealerHoleHidden,
     };
   }
 

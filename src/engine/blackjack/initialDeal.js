@@ -85,11 +85,13 @@ function finalizeAfterInitialDeal(session, players, deck, round, settings, proto
         nextRound = activateInsuranceOfferIfNeeded(nextRound, deck, settings, session, protocol);
     }
     const insurancePending = Boolean(nextRound.insuranceOfferPending);
+    const holeDealtLast = settings?.holeCardDealtLast ?? false;
+    const hasDealerHoleCard = Boolean(nextRound.dealerCardIds[1]);
     nextRound = syncActivePlayerId({
         ...nextRound,
         activeHandKey: insurancePending ? null : firstActingHand,
         status: allInstant && !insurancePending ? 'bank-turn' : 'player-turns',
-        dealerHoleHidden: insurancePending ? true : !allInstant,
+        dealerHoleHidden: hasDealerHoleCard || insurancePending || holeDealtLast,
     });
     return {
         session,
@@ -138,7 +140,7 @@ export function dealNextInitialCard(session, players, deck, round, settings, pro
         nextRound = {
             ...nextRound,
             dealerCardIds,
-            dealerHoleHidden: step.cardIndex === 1,
+            dealerHoleHidden: step.cardIndex === 1 ? true : nextRound.dealerHoleHidden,
         };
     }
     const nextIndex = stepIndex + 1;

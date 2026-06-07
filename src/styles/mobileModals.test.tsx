@@ -26,7 +26,7 @@ describe('mobile Full Table arc fit (CSS contract)', () => {
   it('felt-main hides horizontal overflow; arc stays within shell width', () => {
     expect(css).toContain('contract: mobile-arc-fit');
     expect(css).toMatch(
-      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*hidden[\s\S]*overflow-y:\s*visible/,
+      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*hidden[\s\S]*overflow-y:\s*hidden/,
     );
   });
 
