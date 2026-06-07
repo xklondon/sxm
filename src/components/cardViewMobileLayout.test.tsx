@@ -101,11 +101,14 @@ function playingState(): GameState {
 }
 
 describe('mobile Card View layout contract', () => {
-  it('betting phase: page overflow hidden, mini box strip scrolls internally', () => {
+  it('betting phase: page overflow hidden, mini box strip fits shell width', () => {
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
-    const cardCss = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
+    const cardLayoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
     expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*overflow-x:\s*hidden/);
-    expect(cardCss).toMatch(/\.bj-phone-view__mini-row[\s\S]*overflow-x:\s*auto/);
+    expect(panelCss).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*hidden/);
+    expect(cardLayoutCss).toMatch(
+      /\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*hidden/,
+    );
   });
 
   it('betting and playing share stage, action, and box strip slots', () => {

@@ -1386,16 +1386,14 @@
 
 .bj-view-full-mobile .bj-casino__felt-main {
   flex: 1 1 auto;
-  min-height: min(42dvh, 18rem);
+  min-height: 0;
   width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
   padding: 0.35rem 0.85rem 0.2rem;
   box-sizing: border-box;
 }
@@ -1405,23 +1403,26 @@
   min-height: min(12dvh, 3.5rem);
 }
 
-/* contract: mobile-arc-safe — inner horizontal scroll, edge gutters, cards may extend upward */
+/* contract: mobile-arc-fit — seven boxes fit shell width, no inner horizontal scroll */
 .bj-view-full-mobile .bj-arc {
   flex: 0 0 auto;
   margin-top: auto;
   flex-wrap: nowrap;
-  justify-content: center;
+  justify-content: space-between;
   align-items: flex-end;
-  width: max-content;
-  min-width: calc(100% + 2.5rem);
-  gap: 0.06rem 0.1rem;
-  padding: 0 1.35rem 0.08rem;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  gap: 0.04rem;
+  padding: 0 0.12rem 0.08rem;
   box-sizing: border-box;
 }
 
 .bj-view-full-mobile .bj-arc__slot {
-  flex-shrink: 0;
-  transform: rotate(var(--arc-rot, 0deg)) scale(0.94);
+  flex: 1 1 0;
+  min-width: 0;
+  flex-shrink: 1;
+  transform: rotate(var(--arc-rot, 0deg)) scale(0.88);
   transform-origin: center bottom;
 }
 
@@ -1531,14 +1532,20 @@
 
 .bj-view-card-mobile .bj-phone-view__mini-row {
   flex: 0 0 auto;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0.1rem 0.3rem 0.04rem;
-  scrollbar-width: thin;
-  gap: 0.1rem;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.06rem;
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding: 0.1rem 0.2rem 0.04rem;
   max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bj-view-card-mobile .bj-phone-view__mini-hand-column {
+  min-width: 0;
+  width: 100%;
 }
 
 .bj-view-card-mobile .bj-phone-view__mini-hand-cards {
@@ -1551,36 +1558,19 @@
   margin-left: -0.5rem;
 }
 
-/* Keep elliptical full-table felt on narrow phones (override generic flatten rules). */
-@media (max-width: 480px) {
-  .bj-view-full-mobile .bj-casino__rail {
-    border-radius: 50% / 18%;
-  }
-
-  .bj-view-full-mobile .bj-casino__felt {
-    border-radius: 50% / 16%;
-    min-height: min(50dvh, 21rem);
-    padding-inline: 0.95rem;
+/* Mobile landscape — table fills gameplay canvas; chip tray stays at bottom. */
+@media (max-width: 720px) and (orientation: landscape) {
+  .bj-view-full-mobile .bj-casino__rail-wrap,
+  .bj-view-card-mobile .bj-casino__rail-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .bj-view-full-mobile .bj-casino__felt-main {
-    min-height: min(40dvh, 17rem);
+    min-height: 0;
   }
 
   .bj-view-full-mobile .bj-arc-separator {
-    min-height: min(10dvh, 3rem);
-  }
-
-  .bj-view-full-mobile .bj-arc__slot {
-    transform: rotate(var(--arc-rot, 0deg)) scale(0.94);
-  }
-
-  .bj-view-full-mobile .bj-casino__felt-main {
-    padding-inline: 0.95rem;
-  }
-
-  .bj-view-full-mobile .bj-arc {
-    min-width: calc(100% + 3rem);
-    padding-inline: 1.5rem;
+    min-height: min(8dvh, 2.5rem);
   }
 }

@@ -20,9 +20,9 @@ describe('mobile Card View chip tray layout', () => {
   });
 
   it('uses reduced horizontal gap between player boxes on mobile', () => {
-    expect(PANEL_CSS).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-row[\s\S]*gap:\s*0\.1rem/);
+    expect(PANEL_CSS).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-row[\s\S]*gap:\s*0\.06rem/);
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*gap:\s*0\.1rem/,
+      /\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*gap:\s*0\.06rem/,
     );
   });
 });

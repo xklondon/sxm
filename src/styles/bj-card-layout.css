@@ -47,9 +47,19 @@
   }
 
   .bj-view-card-mobile .bj-card-layout__boxes .bj-phone-view__mini-row {
-    gap: 0.1rem;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.06rem;
     padding-bottom: 0.04rem;
+    overflow-x: hidden;
     overflow-y: visible;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bj-view-card-mobile .bj-card-layout__boxes .bj-phone-view__mini-hand-column {
+    min-width: 0;
+    width: 100%;
   }
 
   .bj-view-card-mobile .bj-card-layout__tray {
@@ -459,7 +469,7 @@
   transform: none;
   margin-top: 0;
   margin-bottom: 0;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: visible;
   align-items: flex-end;
   justify-content: space-evenly;

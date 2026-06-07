@@ -119,13 +119,15 @@ describe('This Table panel placement', () => {
     expect(dockIdx).toBeGreaterThan(railIdx);
   });
 
-  it('mobile: below chips, not slide overlay', () => {
+  it('mobile: This Table opens as overlay sheet (not below-table flow)', () => {
     const html = renderAt(390, playingState());
-    expect(html).toContain('bj-casino__this-table--below');
-    expect(html).not.toContain('bj-casino__this-table--side');
-    expect(html).not.toContain(TABLE_UX.sideRailDock);
-    expect(html).not.toMatch(/bj-table-slide-overlay[^>]*>[\s\S]*bj-accounts-panel/);
-    expect(html).toContain('bj-accounts-panel');
+    expect(html).not.toContain('bj-casino__this-table--below');
+    expect(html).not.toContain(TABLE_UX.mobileSidePanelOverlay);
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(panelSrc).toContain('TABLE_UX.mobileSidePanelOverlay');
+    expect(panelSrc).toContain("renderSideRailPanel('overlay')");
+    expect(panelSrc).toContain('renderMobileSidePanelTabs');
+    expect(panelSrc).toContain('<PlayLedgerPanel');
   });
 
   it('Play Ledger still uses modal overlay markup', () => {
@@ -144,9 +146,11 @@ describe('This Table panel placement', () => {
     expect(html).toContain('data-side-panel="thisTable"');
   });
 
-  it('Settings modal markup remains separate from side rail', () => {
+  it('Settings modal markup remains on desktop; mobile uses overlay tab', () => {
     const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
     expect(panelSrc).toContain("activeTablePanel === 'settings'");
     expect(panelSrc).toContain("activeTablePanel === 'playLedger'");
+    expect(panelSrc).toContain("deviceView !== 'mobile'");
+    expect(panelSrc).toContain("setMobileSidePanelTab('settings')");
   });
 });

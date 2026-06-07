@@ -122,23 +122,16 @@
   }
 
   .bj-view-full-mobile .bj-phone-view__mini-hand,
-  .bj-view-full-mobile .bj-arc__slot .bj-phone-view__mini-hand {
-    flex: 0 0 auto;
-    min-width: var(--bj-mobile-mini-hand-width);
-    max-width: var(--bj-mobile-mini-hand-max-width);
-    min-height: var(--bj-mobile-mini-hand-height);
-    height: var(--bj-mobile-mini-hand-height);
-    padding: 0.12rem 0.08rem;
-  }
-
+  .bj-view-full-mobile .bj-arc__slot .bj-phone-view__mini-hand,
   .bj-view-card-mobile .bj-phone-view__mini-hand,
   .bj-view-card-mobile .bj-phone-view__mini-hand--card-compact {
-    flex: 0 0 auto;
-    min-width: var(--bj-cardview-mobile-mini-hand-width);
-    max-width: var(--bj-cardview-mobile-mini-hand-max-width);
-    min-height: var(--bj-cardview-mobile-mini-hand-height);
-    height: var(--bj-cardview-mobile-mini-hand-height);
-    padding: 0.1rem 0.06rem;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    min-height: var(--bj-mobile-mini-hand-height);
+    height: var(--bj-mobile-mini-hand-height);
+    padding: 0.1rem 0.04rem;
   }
 
   .bj-view-full-mobile .bj-phone-view__box-value,
@@ -148,7 +141,98 @@
   }
 
   .bj-view-full-mobile .bj-arc__slot {
-    width: var(--bj-mobile-mini-hand-width);
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+  }
+
+  .bj-mobile-table-shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bj-view-full-mobile,
+  .bj-view-card-mobile {
+    overflow-x: hidden;
+  }
+
+  .bj-casino__mobile-panel-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    background: rgb(0 0 0 / 0.45);
+  }
+
+  .bj-casino__mobile-panel-sheet {
+    width: 100%;
+    max-width: 100%;
+    max-height: min(88dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 2rem));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border-radius: 14px 14px 0 0;
+    background: var(--ds-color-surface-raised, #1a2332);
+    box-shadow: 0 -8px 32px rgb(0 0 0 / 0.35);
+  }
+
+  .bj-casino__mobile-panel-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.45rem 0.55rem 0;
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .bj-casino__mobile-panel-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.35rem 0.25rem;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    border-radius: 6px 6px 0 0;
+    background: transparent;
+    color: rgb(255 255 255 / 0.65);
+    cursor: pointer;
+  }
+
+  .bj-casino__mobile-panel-tab--active {
+    color: var(--ds-color-gold, #f0d060);
+    border-color: rgb(255 255 255 / 0.12);
+    background: rgb(255 255 255 / 0.06);
+  }
+
+  .bj-casino__this-table--overlay {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bj-casino__this-table--overlay .bj-side-rail-shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @media (orientation: landscape) {
+    :root {
+      --bj-mobile-felt-min-height: min(68dvh, 100%);
+    }
+
+    .bj-casino__mobile-panel-sheet {
+      max-height: min(92dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 1rem));
+    }
   }
 
   .bj-view-full-mobile .bj-arc-separator {

@@ -149,7 +149,16 @@ describe('Stitch layout sections', () => {
 
   it('renders core sections in mobile full table view', () => {
     const html = renderPanelAt(390, withView(bettingState(), 'full'));
-    expectSections(html, SXM_FULL_TABLE_SECTIONS);
+    const mobileOnlyInOverlay = new Set<SxmLayoutSection>([
+      SXM_LAYOUT.rightSidePanel,
+      SXM_LAYOUT.tableInfoPanel,
+      SXM_LAYOUT.playersPanel,
+    ]);
+    const mobileSections = SXM_FULL_TABLE_SECTIONS.filter((s) => !mobileOnlyInOverlay.has(s));
+    expectSections(html, mobileSections);
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(panelSrc).toContain('SXM_LAYOUT.rightSidePanel');
+    expect(panelSrc).toContain('TABLE_UX.mobileSidePanelOverlay');
   });
 
   it('renders core sections in mobile card view', () => {

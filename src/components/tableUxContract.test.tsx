@@ -253,10 +253,9 @@ describe('TABLE_UX markup across views', () => {
     expect(card).toContain('bj-phone-view__action-bar--playing');
   });
 
-  it('mobile Full Table and Card View share felt tokens with view-specific box sizing', () => {
+  it('mobile Full Table and Card View share unified felt tokens and mini-hand sizing', () => {
     const css = readSrc('src/styles/bj-table-shared.css');
     expect(css).toContain('--bj-mobile-mini-hand-width: 2.55rem');
-    expect(css).toContain('--bj-cardview-mobile-mini-hand-width: 2.3rem');
     expect(css).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt/,
     );
@@ -265,6 +264,7 @@ describe('TABLE_UX markup across views', () => {
     expect(css).toMatch(
       /\.bj-view-full-mobile \.bj-phone-view__box-value,\s*\n\s*\.bj-view-card-mobile \.bj-phone-view__box-value/,
     );
+    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-hand[\s\S]*var\(--bj-mobile-mini-hand-height\)/);
   });
 
   it('mobile Full/Card player boxes share mini-hand class family on render', () => {

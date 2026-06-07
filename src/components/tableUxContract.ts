@@ -14,6 +14,11 @@ export const TABLE_UX = {
   sideRailPlacement: 'bj-casino__this-table',
   /** Desktop side rail docks to canvas right edge (flex column, not felt overlay). */
   sideRailDock: 'bj-casino__this-table--dock',
+  /** Mobile side rail overlay — fixed sheet above table, zero layout flow when closed. */
+  mobileSidePanelOverlay: 'bj-casino__mobile-panel-overlay',
+  mobileSidePanelSheet: 'bj-casino__mobile-panel-sheet',
+  /** Shared mobile table shell — Full Table + Card View same outer dimensions. */
+  mobileTableShell: 'bj-mobile-table-shell',
   felt: 'bj-casino__felt',
   phoneView: 'bj-phone-view',
   /** Page title — centered in toolbar, outside felt/rail border. */

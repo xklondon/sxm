@@ -1,4 +1,10 @@
-/* Compact table settings modal — matches Play Ledger shell, tighter body */
+.bj-flow-settings-embedded {
+  padding: 0 0.5rem 0.75rem;
+}
+
+.bj-flow-settings-embedded .bj-settings-modal__body {
+  max-height: none;
+}
 
 .invite-modal--settings-panel {
   width: min(840px, 92vw);

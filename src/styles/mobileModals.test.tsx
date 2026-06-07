@@ -20,20 +20,20 @@ function bettingTable(): GameState {
   return createNewBlackjackTable();
 }
 
-describe('mobile Full Table arc safe gutters (CSS contract)', () => {
+describe('mobile Full Table arc fit (CSS contract)', () => {
   const css = readCss('src/components/BlackjackPanel.css');
 
-  it('felt-main scrolls horizontally with visible vertical overflow for cards', () => {
-    expect(css).toContain('contract: mobile-arc-safe');
+  it('felt-main hides horizontal overflow; arc stays within shell width', () => {
+    expect(css).toContain('contract: mobile-arc-fit');
     expect(css).toMatch(
-      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*auto[\s\S]*overflow-y:\s*visible/,
+      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*hidden[\s\S]*overflow-y:\s*visible/,
     );
   });
 
-  it('page root hides horizontal overflow; arc has inline gutters and extra min-width', () => {
+  it('page root hides horizontal overflow; arc uses full shell width', () => {
     expect(css).toMatch(/\.bj-view-full-mobile[\s\S]*overflow-x:\s*hidden/);
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*min-width:\s*calc\(100% \+ 2\.5rem\)/);
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*padding:\s*0\s+1\.35rem/);
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*width:\s*100%/);
+    expect(css).not.toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*min-width:\s*calc\(100% \+ 2\.5rem\)/);
   });
 
   it('arc slots keep center-bottom transform origin and mobile scale', () => {

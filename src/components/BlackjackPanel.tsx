@@ -53,9 +53,16 @@ import { BankerSetupPanel } from './BankerSetupPanel';
 import { DealerBlock, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
 import { getBoxCallerDisplayName } from './boxCallerDisplay';
 import { LocalProfileSetup } from './LocalProfileSetup';
-import { PlayLedgerModal } from './LedgerModals';
+import { PlayLedgerModal, PlayLedgerPanel } from './LedgerModals';
 import { TableSideRailShell } from './TableSideRailShell';
 import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
+
+function initialSideRailPanel(): SideRailPanel {
+  if (typeof window === 'undefined') {
+    return 'thisTable';
+  }
+  return window.matchMedia('(max-width: 720px)').matches ? null : 'thisTable';
+}
 import { TABLE_UX } from './tableUxContract';
 import { TableInfoBar } from './TableInfoBar';
 import { buildTableInfoDisplay } from './tableInfoDisplay';
@@ -188,7 +195,10 @@ export function BlackjackPanel({
 
   const [error, setError] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
-  const [sideRailPanel, setSideRailPanel] = useState<SideRailPanel>('thisTable');
+  const [sideRailPanel, setSideRailPanel] = useState<SideRailPanel>(initialSideRailPanel);
+  const [mobileSidePanelTab, setMobileSidePanelTab] = useState<'thisTable' | 'playLedger' | 'settings'>(
+    'thisTable',
+  );
   const [activeTablePanel, setActiveTablePanel] = useState<'playLedger' | 'settings' | null>(null);
   const [profileOpenInternal, setProfileOpenInternal] = useState(
     () => !isOnlineModeEnabled() && !loadProfile().name.trim(),
@@ -614,6 +624,7 @@ export function BlackjackPanel({
   }
 
   function renderTableNav(className = 'bj-casino__table-nav') {
+    const isMobile = deviceView === 'mobile';
     return (
       <div {...sxmSectionProps(SXM_LAYOUT.userMenu, className)}>
         <button
@@ -625,32 +636,39 @@ export function BlackjackPanel({
           }
           onClick={() => {
             setActiveTablePanel(null);
+            if (isMobile) {
+              setMobileSidePanelTab('thisTable');
+            }
             setSideRailPanel((current) => toggleSideRailPanel(current, 'thisTable'));
           }}
           aria-expanded={sideRailPanel === 'thisTable'}
         >
           This Table
         </button>
-        <button
-          type="button"
-          className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-          onClick={() => {
-            setSideRailPanel(null);
-            setActiveTablePanel('playLedger');
-          }}
-        >
-          Play Ledger
-        </button>
-        <button
-          type="button"
-          className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
-          onClick={() => {
-            setSideRailPanel(null);
-            setActiveTablePanel('settings');
-          }}
-        >
-          Settings
-        </button>
+        {!isMobile && (
+          <>
+            <button
+              type="button"
+              className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+              onClick={() => {
+                setSideRailPanel(null);
+                setActiveTablePanel('playLedger');
+              }}
+            >
+              Play Ledger
+            </button>
+            <button
+              type="button"
+              className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+              onClick={() => {
+                setSideRailPanel(null);
+                setActiveTablePanel('settings');
+              }}
+            >
+              Settings
+            </button>
+          </>
+        )}
       </div>
     );
   }
@@ -1353,39 +1371,153 @@ export function BlackjackPanel({
 
   const thisTableInline = deviceView === 'desktop';
 
-  function renderSideRailPanel(variant: 'dock' | 'below') {
+  function renderMobileSidePanelTabs() {
+    return (
+      <div className="bj-casino__mobile-panel-tabs" role="tablist" aria-label="Table panels">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileSidePanelTab === 'thisTable'}
+          className={
+            mobileSidePanelTab === 'thisTable'
+              ? 'bj-casino__mobile-panel-tab bj-casino__mobile-panel-tab--active'
+              : 'bj-casino__mobile-panel-tab'
+          }
+          onClick={() => setMobileSidePanelTab('thisTable')}
+        >
+          This Table
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileSidePanelTab === 'playLedger'}
+          className={
+            mobileSidePanelTab === 'playLedger'
+              ? 'bj-casino__mobile-panel-tab bj-casino__mobile-panel-tab--active'
+              : 'bj-casino__mobile-panel-tab'
+          }
+          onClick={() => setMobileSidePanelTab('playLedger')}
+        >
+          Play Ledger
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileSidePanelTab === 'settings'}
+          className={
+            mobileSidePanelTab === 'settings'
+              ? 'bj-casino__mobile-panel-tab bj-casino__mobile-panel-tab--active'
+              : 'bj-casino__mobile-panel-tab'
+          }
+          onClick={() => setMobileSidePanelTab('settings')}
+        >
+          Settings
+        </button>
+      </div>
+    );
+  }
+
+  function renderMobileSidePanelBody() {
+    if (sideRailPanel === 'tableDetails') {
+      return <TableDetailsPanelContent {...tableDetailsProps} />;
+    }
+    switch (mobileSidePanelTab) {
+      case 'playLedger':
+        return <PlayLedgerPanel gameState={gameState} />;
+      case 'settings':
+        return (
+          <BlackjackFlowSettingsMenu
+            embedded
+            gameState={gameState}
+            onGameStateChange={onGameStateChange}
+            open
+            onClose={() => setMobileSidePanelTab('thisTable')}
+          />
+        );
+      default:
+        return (
+          <TableAccountsPanel
+            gameState={gameState}
+            showAssignButton={canAssignChips}
+            onAssignChips={() => setAssignChipsOpen(true)}
+            onInvite={onInviteTable}
+            onSaveTable={onSaveTable}
+            showPlayerOrderControls={tableOwner && bettingOpen}
+            onMovePlayer={handleMovePlayer}
+            onPlayFlowChange={handlePlayFlowChange}
+            variant="inline"
+          />
+        );
+    }
+  }
+
+  function renderSideRailPanel(variant: 'dock' | 'overlay') {
     if (!sideRailPanel) {
       return null;
     }
-    const title = sideRailPanel === 'thisTable' ? 'This Table' : 'Table Details';
-    return (
+    const isOverlay = variant === 'overlay';
+    const title =
+      sideRailPanel === 'tableDetails'
+        ? 'Table Details'
+        : mobileSidePanelTab === 'playLedger'
+          ? 'Play Ledger'
+          : mobileSidePanelTab === 'settings'
+            ? 'Settings'
+            : 'This Table';
+    const panelContent = isOverlay ? (
+      renderMobileSidePanelBody()
+    ) : sideRailPanel === 'thisTable' ? (
+      <TableAccountsPanel
+        gameState={gameState}
+        showAssignButton={canAssignChips}
+        onAssignChips={() => setAssignChipsOpen(true)}
+        onInvite={onInviteTable}
+        onSaveTable={onSaveTable}
+        showPlayerOrderControls={tableOwner && bettingOpen}
+        onMovePlayer={handleMovePlayer}
+        onPlayFlowChange={handlePlayFlowChange}
+        variant="inline"
+      />
+    ) : (
+      <TableDetailsPanelContent {...tableDetailsProps} />
+    );
+
+    const shell = (
       <div
         {...sxmSectionProps(
           SXM_LAYOUT.rightSidePanel,
-          `${TABLE_UX.sideRailPlacement} bj-casino__this-table--${variant}`,
+          `${TABLE_UX.sideRailPlacement} ${isOverlay ? 'bj-casino__this-table--overlay' : TABLE_UX.sideRailDock}`,
         )}
         data-panel-placement={variant}
         data-side-panel={sideRailPanel}
       >
+        {isOverlay && sideRailPanel === 'thisTable' && renderMobileSidePanelTabs()}
         <TableSideRailShell title={title} onClose={() => setSideRailPanel(null)}>
-          {sideRailPanel === 'thisTable' ? (
-            <TableAccountsPanel
-              gameState={gameState}
-              showAssignButton={canAssignChips}
-              onAssignChips={() => setAssignChipsOpen(true)}
-              onInvite={onInviteTable}
-              onSaveTable={onSaveTable}
-              showPlayerOrderControls={tableOwner && bettingOpen}
-              onMovePlayer={handleMovePlayer}
-              onPlayFlowChange={handlePlayFlowChange}
-              variant="inline"
-            />
-          ) : (
-            <TableDetailsPanelContent {...tableDetailsProps} />
-          )}
+          {panelContent}
         </TableSideRailShell>
       </div>
     );
+
+    if (isOverlay) {
+      return (
+        <div
+          className={TABLE_UX.mobileSidePanelOverlay}
+          role="presentation"
+          onClick={() => setSideRailPanel(null)}
+        >
+          <div
+            className={TABLE_UX.mobileSidePanelSheet}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {shell}
+          </div>
+        </div>
+      );
+    }
+    return shell;
   }
 
   function renderTableHeader() {
@@ -1419,14 +1551,14 @@ export function BlackjackPanel({
         <BankerSetupPanel gameState={gameState} onConfirm={onGameStateChange} />
       )}
 
-      {activeTablePanel === 'playLedger' && (
+      {activeTablePanel === 'playLedger' && deviceView !== 'mobile' && (
         <PlayLedgerModal
           open
           onClose={() => setActiveTablePanel(null)}
           gameState={gameState}
         />
       )}
-      {activeTablePanel === 'settings' && (
+      {activeTablePanel === 'settings' && deviceView !== 'mobile' && (
         <BlackjackFlowSettingsMenu
           gameState={gameState}
           onGameStateChange={onGameStateChange}
@@ -1481,7 +1613,7 @@ export function BlackjackPanel({
         {...sxmSectionProps(
           SXM_LAYOUT.tableShell,
           'bj-casino__rail-wrap',
-          deviceView === 'desktop' ? TABLE_UX.desktopTableShell : '',
+          deviceView === 'desktop' ? TABLE_UX.desktopTableShell : TABLE_UX.mobileTableShell,
         )}
       >
       {renderTableHeader()}
@@ -1564,8 +1696,8 @@ export function BlackjackPanel({
           )}
         </div>
         </div>
-        {!thisTableInline && renderSideRailPanel('below')}
       </div>
+      {deviceView === 'mobile' && sideRailPanel && renderSideRailPanel('overlay')}
       {thisTableInline && sideRailPanel && renderSideRailPanel('dock')}
       </div>
       )}

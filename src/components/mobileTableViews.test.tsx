@@ -135,7 +135,6 @@ const FULL_TABLE_SECTIONS = [
   'dealer-block',
   'bj-casino__felt',
   'bj-arc',
-  'bj-accounts-panel',
 ] as const;
 
 const FULL_TABLE_PLAYING_SECTIONS = [
@@ -154,7 +153,6 @@ const CARD_VIEW_SECTIONS = [
   'dealer-block',
   'dealer-block__details-btn',
   'bj-phone-view',
-  'bj-accounts-panel',
 ] as const;
 
 const CARD_VIEW_PLAYING_SECTIONS = [
@@ -294,24 +292,23 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     expect(arcBoxOrder(mobile).length).toBeGreaterThan(0);
   });
 
-  it('felt scroller CSS includes mobile-arc-safe contract (horizontal scroll, edge gutters)', () => {
+  it('felt scroller CSS keeps arc inside shell (no inner horizontal scroll)', () => {
     const css = mobileFullTableCss();
-    expect(css).toContain('contract: mobile-arc-safe');
+    expect(css).toContain('contract: mobile-arc-fit');
     expect(css).toMatch(
-      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*auto[\s\S]*overflow-y:\s*visible/,
+      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*hidden[\s\S]*overflow-y:\s*visible/,
     );
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*padding:\s*0\s+1\.35rem/);
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*width:\s*100%/);
     expect(css).toMatch(/\.bj-view-full-mobile[\s\S]*overflow-x:\s*hidden/);
   });
 
-  it('mobile Full Table vertical spacing aligns with Card View (tall felt, boxes at bottom)', () => {
+  it('mobile Full Table vertical spacing aligns with Card View (shared felt token, boxes at bottom)', () => {
     const css = mobileFullTableCss();
     const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     expect(sharedCss).toContain('--bj-mobile-felt-min-height: min(52dvh, 22rem)');
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*min-height:\s*var\(--bj-mobile-felt-min-height\)/,
     );
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*min-height:\s*min\(42dvh,\s*18rem\)/);
     expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*margin-top:\s*auto/);
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
     expect(layoutCss).toMatch(/\.bj-card-layout__hero\s*\{[\s\S]*min-height:\s*var\(--bj-card-row-hero-min\)/);
@@ -323,11 +320,11 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     expect(html).toContain('Use Card View');
   });
 
-  it('includes full-width Assign chips and Invite actions in This Table markup', () => {
-    const html = renderPanelAt(390, withView(bettingState(), 'full'));
-    expect(html).toContain('bj-accounts-panel__assign');
-    expect(html).toContain('Assign chips');
-    expect(html).toContain('bj-accounts-panel__play-flow');
+  it('includes Assign chips actions in mobile This Table overlay source', () => {
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(panelSrc).toContain('onAssignChips');
+    expect(panelSrc).toContain('renderMobileSidePanelBody');
+    expect(panelSrc).toContain('TableAccountsPanel');
   });
 });
 
@@ -341,13 +338,14 @@ describe('mobile Card View structure', () => {
     expect(html).not.toContain('bj-mobile-fallback');
   });
 
-  it('uses stacked This Table layout (same markers as mobile Full Table)', () => {
+  it('shares mobile table shell; This Table panel lives in overlay source', () => {
     const card = renderPanelAt(390, withView(playingState(), 'card'));
     const full = renderPanelAt(390, withView(playingState(), 'full'));
-    expect(card).toContain('bj-accounts-panel__section');
-    expect(card).toContain('bj-accounts-panel__list');
-    expect(full).toContain('bj-accounts-panel__section');
-    expect(full).toContain('bj-accounts-panel__list');
+    expect(card).toContain(TABLE_UX.mobileTableShell);
+    expect(full).toContain(TABLE_UX.mobileTableShell);
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(panelSrc).toContain('renderMobileSidePanelBody');
+    expect(panelSrc).toContain('TableAccountsPanel');
   });
 
   it('mini row includes all slots in order with BUST, active highlight, and join boxes', () => {
@@ -404,18 +402,18 @@ describe('Table Details side rail (same slot as This Table)', () => {
     expect(html).not.toContain('TableDetailsSlidePanel');
   });
 
-  it('uses felt-adjacent panel slot with data-side-panel (not modal)', () => {
+  it('uses overlay panel slot when open (not below-table flow)', () => {
     const mobile = renderPanelAt(390, withView(playingState(), 'card'));
     const desktop = renderPanelAt(1280, withView(playingState(), 'card'));
-    expect(mobile).toContain('bj-casino__this-table--below');
-    expect(mobile).toContain('data-side-panel="thisTable"');
+    expect(mobile).not.toContain('bj-casino__this-table--below');
     expect(desktop).toContain(TABLE_UX.sideRailDock);
     expect(desktop).toContain('data-side-panel="thisTable"');
     expect(mobile).not.toMatch(/bj-table-slide-overlay[^>]*>[\s\S]*table-details-panel/);
     for (const html of [mobile, desktop]) {
-      expect(html).toContain('bj-side-rail-shell');
-      expect(html).toContain('bj-side-rail-shell__header');
+      expect(html).not.toContain('bj-table-slide-overlay--details');
     }
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(panelSrc).toContain('TABLE_UX.mobileSidePanelOverlay');
   });
 });
 
@@ -485,10 +483,11 @@ describe('stable dealer layout slots across phases', () => {
 });
 
 describe('mobile Card View width contract', () => {
-  it('CSS constrains casino rail and hides page-level horizontal overflow', () => {
+  it('CSS constrains casino rail and hides horizontal overflow on mini-row', () => {
     const css = mobileFullTableCss();
     expect(css).toMatch(/\.bj-view-card-mobile[\s\S]*max-width:\s*100vw/);
     expect(css).toMatch(/\.bj-view-card-mobile \.bj-casino__rail[\s\S]*max-width:\s*100%/);
-    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*auto/);
+    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*hidden/);
+    expect(css).toMatch(/grid-template-columns:\s*repeat\(7,\s*minmax\(0,\s*1fr\)\)/);
   });
 });
