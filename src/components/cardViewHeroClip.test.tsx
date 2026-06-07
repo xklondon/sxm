@@ -58,6 +58,6 @@ describe('Desktop Card View hero card clipping guards', () => {
   it('aligns hero cards to the top so rank/suit stay readable', () => {
     expect(LAYOUT_CSS).toMatch(/\.bj-card-layout__hero \.bj-phone-view__cards[\s\S]*align-items:\s*flex-start/);
     expect(LAYOUT_CSS).toMatch(/\.bj-card-layout__hero \.bj-phone-view__cards-slot[\s\S]*align-items:\s*flex-start/);
-    expect(LAYOUT_CSS).toMatch(/\.bj-view-card-desktop \.bj-card-layout__hero[\s\S]*justify-content:\s*flex-start/);
+    expect(LAYOUT_CSS).toMatch(/\.bj-view-card-desktop \.bj-card-layout__hero[\s\S]*padding-top:\s*0\.38rem/);
   });
 });

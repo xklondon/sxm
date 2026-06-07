@@ -73,10 +73,11 @@ describe('blackjack polish — dealing speed helper', () => {
     expect(getCardDealDelayMs(state, 'dealer')).toBe(5000);
   });
 
-  it('reveal hook and table flow call getCardDealDelayMs', () => {
+  it('reveal hook uses resolveCardRevealDelayMs and table flow uses getCardDealDelayMs', () => {
     const hook = readFileSync(join(process.cwd(), 'src/hooks/useSequentialCardReveal.ts'), 'utf8');
     const flow = readFileSync(join(process.cwd(), 'src/components/useBlackjackTableFlow.ts'), 'utf8');
-    expect(hook).toContain('getCardDealDelayMs');
+    expect(hook).toContain('resolveCardRevealDelayMs');
+    expect(hook).not.toMatch(/getCardDealDelayMs\(authoritative, 'initial-deal'\)/);
     expect(flow).toContain('getCardDealDelayMs');
   });
 });

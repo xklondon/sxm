@@ -682,7 +682,6 @@ export function BlackjackPanel({
   const dealerBlockProps = {
     awaitingNextRound,
     gameEnded,
-    tableNav: renderTableNav('bj-casino__table-nav bj-casino__table-nav--dealer'),
     onNewGame:
       gameEnded && onBeginTableReset
         ? () => onBeginTableReset('newGame')
@@ -1398,7 +1397,7 @@ export function BlackjackPanel({
             <button type="button" className={viewMode === 'card' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('card')}>Card View</button>
           </div>
           <h1 {...sxmSectionProps(SXM_LAYOUT.gameTitle, TABLE_UX.pageTitle)}>BLACKJACK</h1>
-          <div className="bj-casino__toolbar-spacer" aria-hidden="true" />
+          {renderTableNav()}
         </div>
         <div {...sxmSectionProps(SXM_LAYOUT.balanceDisplay, 'bj-casino__header-bank')}>
           <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="header" />

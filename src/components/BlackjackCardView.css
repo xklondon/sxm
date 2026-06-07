@@ -1263,6 +1263,14 @@
   margin-bottom: 0.3rem;
 }
 
+.bj-phone-view__bust-label--meta {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  padding: 0.08rem 0.55rem;
+  margin: 0.12rem 0 0;
+  pointer-events: none;
+}
+
 .bj-phone-view__total--hero {
   margin-top: 0;
   font-size: 0.68rem;

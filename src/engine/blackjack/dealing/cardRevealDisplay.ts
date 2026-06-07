@@ -1,6 +1,7 @@
 import type { GameState } from '../../../types';
 import type { BlackjackRound } from '../../../types/blackjack';
 import type { Deck } from '../../../types/deck';
+import { getCardDealDelayMs } from '../flowSettings';
 import { buildInitialDealPlanFromHandKeys } from '../initialDeal';
 import type { InitialDealStep } from '../initialDeal';
 import { cardsFromIds, getBlackjackHandValue } from '../hand';
@@ -237,4 +238,28 @@ export function shouldUseOrderedInitialReveal(
     return false;
   }
   return true;
+}
+
+/** Pick deal-speed vs bank-timer delay for the next sequential reveal step. */
+export function resolveCardRevealDelayMs(
+  state: Pick<GameState, 'blackjackFlowSettings'>,
+  round: NonNullable<GameState['blackjack']> | null,
+  roundStatus: NonNullable<GameState['blackjack']>['status'] | undefined,
+  visible: CardVisibilityCounts,
+  target: CardVisibilityCounts,
+): number {
+  if (round && shouldUseOrderedInitialReveal(roundStatus, visible, target)) {
+    return getCardDealDelayMs(state, 'initial-deal');
+  }
+  const step = nextGameplayRevealStep(visible, target);
+  if (!step) {
+    return getCardDealDelayMs(state, 'initial-deal');
+  }
+  if (step.dealer > visible.dealer) {
+    if (roundStatus === 'bank-turn' || roundStatus === 'banking') {
+      return getCardDealDelayMs(state, 'bank-card-draw');
+    }
+    return getCardDealDelayMs(state, 'dealer');
+  }
+  return getCardDealDelayMs(state, 'hit');
 }

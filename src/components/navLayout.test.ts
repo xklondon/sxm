@@ -13,12 +13,19 @@ describe('header and table nav layout', () => {
     expect(src).toContain('Sign out');
   });
 
-  it('renders table nav in dealer area', () => {
+  it('renders table nav in header toolbar beside view switcher', () => {
     const panel = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    const css = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
+    expect(panel).toContain('{renderTableNav()}');
+    expect(panel).not.toContain('tableNav: renderTableNav');
+    expect(css).toContain('.bj-casino__table-nav');
+    expect(css).not.toContain('.bj-casino__table-nav--dealer');
+  });
+
+  it('does not render table nav in dealer zone', () => {
     const dealer = readFileSync(join(process.cwd(), 'src/components/DealerBlock.tsx'), 'utf8');
-    expect(panel).toContain('bj-casino__table-nav--dealer');
-    expect(panel).toContain('tableNav: renderTableNav');
-    expect(dealer).toContain('dealer-block__top-row');
+    expect(dealer).not.toContain('tableNav');
+    expect(dealer).not.toContain('dealer-block__top-row');
   });
 
   it('centers bank chips under BLACKJACK title', () => {

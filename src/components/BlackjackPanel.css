@@ -80,17 +80,8 @@
   gap: 0.25rem;
   justify-self: end;
   flex-shrink: 0;
-}
-
-.bj-casino__table-nav--dealer {
+  flex-wrap: wrap;
   justify-content: flex-end;
-  width: 100%;
-  margin-bottom: 0.12rem;
-}
-
-.bj-casino__toolbar-spacer {
-  justify-self: end;
-  min-width: 0;
 }
 
 .bj-casino__header-bank {

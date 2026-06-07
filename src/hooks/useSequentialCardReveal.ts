@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { GameState } from '../types';
 import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
-import { getCardDealDelayMs } from '../engine/blackjack/flowSettings';
 import {
   applyCardVisibility,
   applyRevealStep,
@@ -11,6 +10,7 @@ import {
   isActiveHandRevealComplete,
   maxVisibilityForRound,
   nextGameplayRevealStep,
+  resolveCardRevealDelayMs,
   shouldHydrateCardRevealScope,
   shouldUseOrderedInitialReveal,
   totalCardCount,
@@ -198,8 +198,14 @@ export function useSequentialCardReveal(
           break;
         }
 
-        const delay = getCardDealDelayMs(authoritative, 'initial-deal');
         const round = authoritative.blackjack;
+        const delay = resolveCardRevealDelayMs(
+          authoritative,
+          round ?? null,
+          round?.status,
+          visible,
+          authoritativeTarget,
+        );
         const stepped = round
           ? nextRevealStep(visible, authoritativeTarget, round, round.status)
           : nextGameplayRevealStep(visible, authoritativeTarget);

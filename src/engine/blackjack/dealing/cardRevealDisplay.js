@@ -1,5 +1,6 @@
 import { buildInitialDealPlanFromHandKeys } from '../initialDeal';
 import { cardsFromIds, getBlackjackHandValue } from '../hand';
+import { getCardDealDelayMs } from '../flowSettings';
 export function countVisibleCards(round) {
     if (!round) {
         return { dealer: 0, hands: {} };
@@ -155,6 +156,23 @@ export function shouldUseOrderedInitialReveal(roundStatus, visible, target) {
         return false;
     }
     return true;
+}
+/** Pick deal-speed vs bank-timer delay for the next sequential reveal step. */
+export function resolveCardRevealDelayMs(state, round, roundStatus, visible, target) {
+    if (round && shouldUseOrderedInitialReveal(roundStatus, visible, target)) {
+        return getCardDealDelayMs(state, 'initial-deal');
+    }
+    const step = nextGameplayRevealStep(visible, target);
+    if (!step) {
+        return getCardDealDelayMs(state, 'initial-deal');
+    }
+    if (step.dealer > visible.dealer) {
+        if (roundStatus === 'bank-turn' || roundStatus === 'banking') {
+            return getCardDealDelayMs(state, 'bank-card-draw');
+        }
+        return getCardDealDelayMs(state, 'dealer');
+    }
+    return getCardDealDelayMs(state, 'hit');
 }
 /** Visible card ids for a hand in the current display round (masked or full). */
 export function getVisibleHandCardIds(round, handKey) {

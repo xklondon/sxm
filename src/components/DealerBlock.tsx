@@ -40,8 +40,6 @@ interface DealerBlockProps {
   engineStatus?: string;
   initialDealManual: boolean;
   bankDrawManual: boolean;
-  /** Table nav (This Table / Play Ledger / Settings) — right of dealer area. */
-  tableNav?: ReactNode;
 }
 
 export function DealerBlock({
@@ -73,7 +71,6 @@ export function DealerBlock({
   engineStatus,
   initialDealManual,
   bankDrawManual,
-  tableNav,
 }: DealerBlockProps) {
   const status = engineStatus;
 
@@ -187,12 +184,6 @@ export function DealerBlock({
 
   return (
     <div {...sxmSectionProps(SXM_LAYOUT.dealerZone, 'dealer-block')}>
-      {tableNav ? (
-        <div className="dealer-block__top-row">
-          <div className="dealer-block__top-spacer" aria-hidden="true" />
-          {tableNav}
-        </div>
-      ) : null}
       <div className="dealer-block__grid">
         <div className="dealer-block__commentary-col">
           {commentaryText ? (

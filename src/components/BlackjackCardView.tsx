@@ -1116,6 +1116,11 @@ export function BlackjackCardView({
               &nbsp;
             </div>
           )}
+          {heroBusted ? (
+            <span className="bj-phone-view__bust-label bj-phone-view__bust-label--meta" aria-label="Busted">
+              BUST
+            </span>
+          ) : null}
         </div>
         {deviceView === "mobile" && showSideControls && isActiveTurn && (
           <p className="bj-phone-view__swipe-guide" aria-hidden="true">
@@ -1127,11 +1132,6 @@ export function BlackjackCardView({
 
     return (
       <div className="bj-phone-view__hand">
-        {heroBusted && (
-          <span className="bj-phone-view__bust-label" aria-label="Busted">
-            BUST
-          </span>
-        )}
         <div className="bj-phone-view__hero-stage">
           <div
             className={[

@@ -902,6 +902,25 @@
     min-height: 0;
   }
 
+  .bj-view-full-desktop .bj-casino__felt {
+    padding-top: 0.6rem;
+    padding-bottom: 0.48rem;
+  }
+
+  .bj-view-full-desktop .bj-casino__felt-main {
+    justify-content: flex-end;
+    padding-top: 0.15rem;
+  }
+
+  .bj-view-full-desktop .bj-table-zone--play {
+    padding-top: 0.2rem;
+  }
+
+  .bj-view-card-desktop .bj-casino__felt.bj-casino__felt--card-view {
+    padding-top: 0.1rem;
+    padding-bottom: 0.32rem;
+  }
+
   .bj-view-full-desktop .dealer-block__center-col,
   .bj-view-card-desktop .dealer-block__center-col {
     border: none;

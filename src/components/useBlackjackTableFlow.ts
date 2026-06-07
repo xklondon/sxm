@@ -300,12 +300,6 @@ export function useBlackjackTableFlow(
           if (bankRunIdRef.current !== runId) {
             break;
           }
-          const beforeDraw = gameStateRef.current;
-          const delay = getCardDealDelayMs(beforeDraw, 'bank-card-draw');
-          await sleep(delay);
-          if (bankRunIdRef.current !== runId) {
-            break;
-          }
           const snap = gameStateRef.current;
           if (snap.blackjack?.status !== 'bank-turn') {
             break;
@@ -314,6 +308,13 @@ export function useBlackjackTableFlow(
           const next = drawBankCardOnState(snap);
           gameStateRef.current = next;
           onGameStateChange(next);
+          if (gameStateRef.current.blackjack?.status !== 'bank-turn') {
+            break;
+          }
+          const between = getCardDealDelayMs(gameStateRef.current, 'bank-card-draw');
+          if (between > 0) {
+            await sleep(between);
+          }
         }
       }
 
