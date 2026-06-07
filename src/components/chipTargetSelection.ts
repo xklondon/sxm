@@ -1,5 +1,21 @@
 import type { GameState } from '../types';
 import type { PlaceBetTarget } from '../engine/blackjack/chipPlacement';
+import { getAssignedSlotForPerson } from '../engine/session/playerAssignment';
+
+/** Viewer native assigned box player id, when the slot is occupied. */
+export function resolveViewerAssignedBoxPlayerId(
+  state: GameState,
+  viewerPersonId: string | null,
+): string | null {
+  if (!viewerPersonId) {
+    return null;
+  }
+  const slotNumber = getAssignedSlotForPerson(state, viewerPersonId);
+  if (slotNumber == null) {
+    return null;
+  }
+  return state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber)?.playerId ?? null;
+}
 
 /** True when a box id still exists on the table for chip placement. */
 export function isBoxChipTargetOnTable(

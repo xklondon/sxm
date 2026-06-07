@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  buildTableCommandDisplay,
-  formatCallerTurnMessage,
+  buildBlackjackCommandText,
+  formatPlayerTurnCommand,
 } from './tableCommandDisplay';
 import {
   actingRound,
@@ -62,7 +62,7 @@ describe('multiplayer turn-owner visibility (UI)', () => {
     state.blackjack!.activeHandKey = `${box2}:0`;
     state.blackjack!.activePlayerId = box2;
 
-    const result = buildTableCommandDisplay({
+    const result = buildBlackjackCommandText({
       gameState: state,
       gameEnded: false,
       gameOverMessage: '',
@@ -115,7 +115,7 @@ describe('multiplayer turn-owner visibility (UI)', () => {
     };
     state.blackjack!.activeHandKey = `${box2}:0`;
 
-    const result = buildTableCommandDisplay({
+    const result = buildBlackjackCommandText({
       gameState: state,
       gameEnded: false,
       gameOverMessage: '',
@@ -125,7 +125,9 @@ describe('multiplayer turn-owner visibility (UI)', () => {
       controllerName: 'Wrong',
       viewerPersonId: bobId,
     });
-    expect(result.commandMessage).toBe(formatCallerTurnMessage(2, 'Bob'));
+    expect(result.commandMessage).toBe(
+      formatPlayerTurnCommand(2, 'Bob', { value: 13, isSoft: false, isBlackjack: false }),
+    );
   });
 
   it('Card View uses viewer person id not profile name for controls', () => {

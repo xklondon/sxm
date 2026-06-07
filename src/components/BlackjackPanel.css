@@ -1444,8 +1444,10 @@
 }
 
 .bj-view-full-mobile .bj-arc__cards-stack .playing-card {
-  width: 1.65rem;
-  min-height: 2.3rem;
+  width: var(--bj-table-card-width);
+  height: var(--bj-table-card-height);
+  min-height: 0;
+  max-height: var(--bj-table-card-height);
 }
 
 .bj-view-full-mobile .bj-arc__bust {

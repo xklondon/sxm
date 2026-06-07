@@ -48,8 +48,8 @@ describe('TABLE_UX class contract', () => {
     expect(css).toContain('.bj-table-desktop-shell');
     expect(css).toContain('--bj-desktop-table-height: min(72vh, 46rem)');
     expect(css).toContain('--bj-desktop-table-max-width: min(98vw, 86rem)');
-    expect(css).toContain('--bj-desktop-seat-width: 5.75rem');
-    expect(css).toContain('--bj-desktop-mini-hand-width: 6rem');
+    expect(css).toContain('--bj-desktop-seat-width: 4.85rem');
+    expect(css).toContain('--bj-desktop-mini-hand-width: 4.85rem');
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-casino__felt,\s*\n\s*\.bj-view-card-desktop \.bj-casino__felt/);
     expect(css).toMatch(/background:\s*var\(--bj-desktop-felt-bg\)/);
     expect(css).toMatch(/--bj-desktop-felt-bg:\s*var\(--ds-color-felt\)/);

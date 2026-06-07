@@ -307,4 +307,22 @@ describe('box selection — single chip target', () => {
     });
     expect(trayTarget).toEqual({ kind: 'box', boxId: box5 });
   });
+
+  it('selects viewer assigned box by default when no explicit pick exists', () => {
+    const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(src).toContain('resolveViewerAssignedBoxPlayerId');
+    expect(src).toMatch(/if \(userPickedChipTargetRef\.current\) \{\s*return;\s*\}/);
+    expect(src).toMatch(
+      /resolveViewerAssignedBoxPlayerId\(gameStateRef\.current, viewerPersonId\)[\s\S]*setSelectedBettingBoxId\(boxId\)/,
+    );
+  });
+
+  it('does not auto-reselect assigned box after user picks another target', () => {
+    const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(src).toMatch(/if \(userPickedChipTargetRef\.current\) \{\s*return;\s*\}/);
+    expect(src).toMatch(/rememberExplicitChipTarget/);
+    expect(src).not.toMatch(
+      /setSelectedBettingBoxId\(resolveViewerAssignedBoxPlayerId[\s\S]*userPickedChipTargetRef\.current = false/,
+    );
+  });
 });

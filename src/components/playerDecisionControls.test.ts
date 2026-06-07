@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildTableCommandDisplay,
+  buildBlackjackCommandText,
   formatCallerLegalLine,
   formatCallerTurnMessage,
   isTableInstructionMessage,
@@ -35,7 +35,7 @@ describe('table command display', () => {
       },
       blackjackSettings: { ...state.blackjackSettings, allowDoubleDown: true, allowSplit: false },
     };
-    const result = buildTableCommandDisplay({
+    const result = buildBlackjackCommandText({
       gameState: state,
       gameEnded: false,
       gameOverMessage: '',

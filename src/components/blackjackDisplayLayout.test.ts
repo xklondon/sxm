@@ -39,13 +39,29 @@ describe('blackjack display layout contract', () => {
   it('Full Table arc stack uses compact overlapping card layout', () => {
     expect(SHARED_CSS).toContain('--bj-table-card-overlap');
     expect(SHARED_CSS).toContain('--bj-table-card-stack-max-height');
+    expect(SHARED_CSS).toContain('--bj-table-card-height');
     expect(SHARED_CSS).toMatch(
-      /\.bj-arc__cards-stack \.playing-card \+ \.playing-card[\s\S]*margin-top:\s*calc\(-1 \* var\(--bj-table-card-overlap\)\)/,
+      /\.bj-arc__cards-stack \.playing-card \+ \.playing-card[\s\S]*margin-bottom:\s*calc\(-1 \* var\(--bj-table-card-overlap\)\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-arc__cards-stack \.playing-card[\s\S]*height:\s*var\(--bj-table-card-height\)/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-arc__cards--stack-vertical[\s\S]*max-height:\s*var\(--bj-table-card-stack-max-height\)/,
     );
     expect(SHARED_CSS).toMatch(/\.bj-arc__cards-stack \.playing-card[\s\S]*pointer-events:\s*none/);
+  });
+
+  it('Full Table boxes use compact sizing variables', () => {
+    expect(SHARED_CSS).toContain('--bj-full-table-box-width');
+    expect(SHARED_CSS).toContain('--bj-full-table-box-height');
+    expect(SHARED_CSS).toContain('--bj-full-table-box-gap');
+    expect(SHARED_CSS).toMatch(
+      /\.bj-phone-view__mini-hand--full-arc[\s\S]*padding:\s*var\(--bj-full-table-box-padding\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-phone-view__mini-hand--full-arc \.bj-phone-view__mini-stake-slot[\s\S]*margin-top:\s*0/,
+    );
   });
 
   it('Full Table action zone clears player card stacks', () => {
@@ -55,11 +71,15 @@ describe('blackjack display layout contract', () => {
     );
     expect(SHARED_CSS).toMatch(/\.bj-view-full-mobile \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
     expect(SHARED_CSS).toMatch(/\.bj-view-full-mobile \.bj-table-zone--play[\s\S]*min-height:\s*0/);
+    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-table-zone__hero-reserved[\s\S]*height:\s*0/);
   });
 
   it('exports arc stack and card command layout class names', () => {
     expect(TABLE_UX_SRC).toContain("arcCardsStackVertical: 'bj-arc__cards--stack-vertical'");
     expect(TABLE_UX_SRC).toContain("arcCardsStack: 'bj-arc__cards-stack'");
     expect(TABLE_UX_SRC).toContain("cardLayoutCommand: 'bj-card-layout__command'");
+    expect(PANEL_SRC).toContain('buildBlackjackCommandText');
+    expect(PANEL_SRC).toContain('DealerCommandArea');
+    expect(PANEL_SRC).toMatch(/tableCommand\.commandMessage[\s\S]*DealerCommandArea/);
   });
 });

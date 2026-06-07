@@ -107,7 +107,7 @@ describe('Card View layout polish', () => {
     expect(html).not.toContain('dealer-block__hero-row');
     expect(html).toContain('bj-card-layout__command');
     expect(html).toContain('dealer-block__command');
-    expect(html).toMatch(/Box \d+ — Alice.{0,12}turn/);
+    expect(html).toMatch(/Box \d+: Alice, you have \d+\./);
     const stackIdx = html.indexOf('dealer-block__stack');
     const commandIdx = html.indexOf('bj-card-layout__command');
     const heroIdx = html.indexOf('bj-card-layout__hero');

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isBoxChipTargetOnTable,
   resolveLocalChipTrayTarget,
+  resolveViewerAssignedBoxPlayerId,
   shouldClearExplicitChipTarget,
 } from './chipTargetSelection';
 import { createNewBlackjackTable } from '../engine/session';
@@ -100,5 +101,14 @@ describe('chipTargetSelection', () => {
     });
     expect(target).toEqual({ kind: 'box', boxId: box5 });
     expect(target?.kind === 'box' ? target.boxId : null).not.toBe(nativeBox);
+  });
+
+  it('resolveViewerAssignedBoxPlayerId returns native occupied box', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+    const nativeBox = boxPlayerId(state, 1)!;
+    expect(resolveViewerAssignedBoxPlayerId(state, personId)).toBe(nativeBox);
+    expect(resolveViewerAssignedBoxPlayerId(state, 'unknown')).toBeNull();
   });
 });

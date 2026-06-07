@@ -58,6 +58,7 @@ import { PlayLedgerModal, PlayLedgerPanel } from './LedgerModals';
 import { TableSideRailShell } from './TableSideRailShell';
 import {
   resolveLocalChipTrayTarget,
+  resolveViewerAssignedBoxPlayerId,
   shouldClearExplicitChipTarget,
 } from './chipTargetSelection';
 import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
@@ -83,7 +84,7 @@ import {
   isBotBankGame,
 } from '../engine/scoreLedger/scoreLedger';
 import { buildRoundResultSummary } from '../engine/blackjack';
-import { buildTableCommandDisplay } from './tableCommandDisplay';
+import { buildBlackjackCommandText } from './tableCommandDisplay';
 import {
   formatPlaceBetError,
   getChipPlacementTarget,
@@ -315,6 +316,21 @@ export function BlackjackPanel({
   }, [gameState.tableMeta.gameStatus, gameState.session.id]);
 
   useEffect(() => {
+    if (userPickedChipTargetRef.current) {
+      return;
+    }
+    if (selectedBettingBoxIdRef.current != null || selectedBettingSlotNumberRef.current != null) {
+      return;
+    }
+    const boxId = resolveViewerAssignedBoxPlayerId(gameStateRef.current, viewerPersonId);
+    if (!boxId) {
+      return;
+    }
+    setSelectedBettingBoxId(boxId);
+    selectedBettingBoxIdRef.current = boxId;
+  }, [viewerPersonId, gameState.tableMeta.boxSlots, gameState.session.id]);
+
+  useEffect(() => {
     if (round?.status !== 'player-turns' || !round.activeHandKey) {
       return;
     }
@@ -364,7 +380,7 @@ export function BlackjackPanel({
   // the Next Round button). Per-box result chips are intentionally not repeated.
   const roundSummaryLines =
     awaitingNextRound && !gameEnded ? buildRoundResultSummary(gameState) : [];
-  const tableCommand = buildTableCommandDisplay({
+  const tableCommand = buildBlackjackCommandText({
     gameState,
     gameEnded,
     gameOverMessage,
@@ -481,17 +497,24 @@ export function BlackjackPanel({
       explicit: explicitChipTargetRef.current,
       online,
     });
-    if (!local) {
-      return null;
+    if (local) {
+      if (local.kind === 'box') {
+        try {
+          return getChipPlacementTargetFromBoxId(state, local.boxId, online);
+        } catch {
+          return local;
+        }
+      }
+      return local;
     }
-    if (local.kind === 'box') {
+    if (!userPickedChipTargetRef.current && selectedBettingBoxIdRef.current) {
       try {
-        return getChipPlacementTargetFromBoxId(state, local.boxId, online);
+        return getChipPlacementTargetFromBoxId(state, selectedBettingBoxIdRef.current, online);
       } catch {
-        return local;
+        return null;
       }
     }
-    return local;
+    return null;
   }
 
   function reinforceExplicitChipTarget(target: PlaceBetTarget) {

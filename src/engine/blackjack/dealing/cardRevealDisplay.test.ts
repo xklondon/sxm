@@ -79,9 +79,17 @@ describe('cardRevealDisplay', () => {
     };
   }
 
-  it('builds initial reveal steps in deal order', () => {
+  function tableAfterInitialDealWithHiddenHole() {
     let state = tableReadyToDeal();
+    state = { ...state, deck: deckWithInitialDealRanks(['9', '8', '10', '7']) };
     state = completeStepwiseInitialDealIfNeeded(dealCardsButtonOnState(state));
+    expect(state.blackjack?.status).toBe('player-turns');
+    expect(state.blackjack?.dealerHoleHidden).toBe(true);
+    return state;
+  }
+
+  it('builds initial reveal steps in deal order', () => {
+    const state = tableAfterInitialDealWithHiddenHole();
     const steps = buildInitialRevealSteps(state.blackjack!);
     expect(steps.length).toBeGreaterThan(2);
     expect(steps[0]?.type).toBe('box');
@@ -90,10 +98,8 @@ describe('cardRevealDisplay', () => {
   });
 
   it('reveal plan includes dealer hole when hole card exists in state', () => {
-    let state = tableReadyToDeal();
-    state = completeStepwiseInitialDealIfNeeded(dealCardsButtonOnState(state));
+    const state = tableAfterInitialDealWithHiddenHole();
     const round = state.blackjack!;
-    expect(round.dealerHoleHidden).toBe(true);
     expect(round.dealerCardIds[1]).toBeTruthy();
     const steps = buildInitialRevealSteps(round);
     expect(steps.filter((s) => s.type === 'dealer' && s.cardIndex === 1)).toHaveLength(1);
@@ -130,8 +136,7 @@ describe('cardRevealDisplay', () => {
   });
 
   it('authoritative hole card exists before UI reveal pacing runs', () => {
-    let state = tableReadyToDeal();
-    state = completeStepwiseInitialDealIfNeeded(dealCardsButtonOnState(state));
+    const state = tableAfterInitialDealWithHiddenHole();
     const round = state.blackjack!;
     const target = maxVisibilityForRound(round);
     const visible = countVisibleCards(null);
@@ -163,8 +168,7 @@ describe('cardRevealDisplay', () => {
   });
 
   it('full deal has more cards than empty visibility', () => {
-    let state = tableReadyToDeal();
-    state = completeStepwiseInitialDealIfNeeded(dealCardsButtonOnState(state));
+    const state = tableAfterInitialDealWithHiddenHole();
     const target = maxVisibilityForRound(state.blackjack);
     expect(totalCardCount(target)).toBeGreaterThan(2);
     expect(totalCardCount(countVisibleCards(null))).toBe(0);

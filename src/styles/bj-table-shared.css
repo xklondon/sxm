@@ -58,10 +58,10 @@
   --bj-desktop-rail-padding: 0.35rem 0.5rem 0.45rem;
   /* Flat felt on desktop — one continuous surface, no mid-tone band. */
   --bj-desktop-felt-bg: var(--ds-color-felt);
-  --bj-desktop-seat-width: 5.75rem;
-  --bj-desktop-seat-min-height: 4.15rem;
-  --bj-desktop-mini-hand-width: 6rem;
-  --bj-desktop-mini-hand-height: 7.25rem;
+  --bj-desktop-seat-width: 4.85rem;
+  --bj-desktop-seat-min-height: 3.65rem;
+  --bj-desktop-mini-hand-width: 4.85rem;
+  --bj-desktop-mini-hand-height: 4.35rem;
   --bj-desktop-mini-row-height: 7.25rem;
   --bj-table-zone-dealer-min-height: 6.75rem;
   --bj-table-zone-summary-min-height: 1.75rem;
@@ -69,9 +69,16 @@
   --bj-table-zone-tray-min-height: 3.35rem;
   --bj-table-zone-play-min-height: 8rem;
   /* Full Table player card stack — upright overlap; lower cards peek at bottom corner only. */
-  --bj-table-card-overlap: 2.2rem;
-  --bj-table-card-stack-max-height: 4.35rem;
-  --bj-table-actions-play-gap: 0.55rem;
+  --bj-table-card-width: 1.85rem;
+  --bj-table-card-height: 2.15rem;
+  --bj-table-card-overlap: 1.72rem;
+  --bj-table-card-stack-max-height: 3.45rem;
+  --bj-table-actions-play-gap: 0.75rem;
+  --bj-full-table-box-width: 4.85rem;
+  --bj-full-table-box-height: 4.35rem;
+  --bj-full-table-box-padding: 0.1rem 0.16rem 0.08rem;
+  --bj-full-table-box-gap: 0.02rem;
+  --bj-full-table-stake-min-height: 1.2rem;
   --bj-cardview-zone-summary-height: 2.5rem;
   --bj-cardview-zone-actions-height: 4rem;
   --bj-cardview-zone-boxes-height: 4.35rem;
@@ -96,9 +103,13 @@
     --bj-mobile-mini-hand-height: 2.45rem;
     --bj-mobile-felt-min-height: min(52dvh, 22rem);
     --bj-mobile-rail-padding: 0.28rem 0.55rem 0.4rem;
-    --bj-table-card-overlap: 1.45rem;
-    --bj-table-card-stack-max-height: 2.95rem;
-    --bj-table-actions-play-gap: 0.35rem;
+    --bj-table-card-width: 1.45rem;
+    --bj-table-card-height: 1.85rem;
+    --bj-table-card-overlap: 1.42rem;
+    --bj-table-card-stack-max-height: 2.65rem;
+    --bj-table-actions-play-gap: 0.45rem;
+    --bj-full-table-box-height: 3.15rem;
+    --bj-full-table-stake-min-height: 0.95rem;
   }
 
   /* Mobile Full Table + Card View — one felt/rail/box visual system. */
@@ -310,8 +321,10 @@
     }
 
     .bj-view-full-mobile .bj-arc__cards-stack .playing-card {
-      width: 1.45rem;
-      min-height: 2rem;
+      width: var(--bj-table-card-width);
+      height: var(--bj-table-card-height);
+      min-height: 0;
+      max-height: var(--bj-table-card-height);
     }
 
     .bj-view-full-mobile .bj-table-zone--play {
@@ -766,6 +779,7 @@
   position: relative;
   z-index: 6;
   margin-bottom: var(--bj-table-actions-play-gap);
+  padding-bottom: 0.05rem;
 }
 
 .bj-view-full-desktop .bj-table-zone--play,
@@ -801,8 +815,13 @@
 /* Full Table arc seats — compact box shell; cards stack above in bj-arc__play-zone. */
 .bj-phone-view__mini-hand--full-arc {
   justify-content: flex-start;
-  gap: 0.05rem;
+  gap: var(--bj-full-table-box-gap);
   flex: 0 0 auto;
+  min-width: var(--bj-full-table-box-width);
+  max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+  min-height: var(--bj-full-table-box-height);
+  height: var(--bj-full-table-box-height);
+  padding: var(--bj-full-table-box-padding);
 }
 
 .bj-phone-view__mini-hand--full-arc .bj-phone-view__box-value,
@@ -814,15 +833,17 @@
 .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-hand-head {
   order: 0;
   flex: 0 0 auto;
-  font-size: 0.9em;
+  font-size: 0.82em;
   opacity: 0.85;
+  gap: 0.02rem;
+  line-height: 1.05;
 }
 
 .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot {
   order: 2;
   flex: 0 0 auto;
-  margin-top: auto;
-  min-height: 1.65rem;
+  margin-top: 0;
+  min-height: var(--bj-full-table-stake-min-height);
   width: 100%;
 }
 
@@ -842,7 +863,7 @@
   background: transparent;
   box-shadow: none;
   padding: 0;
-  margin: 0 0 0.06rem;
+  margin: 0 0 0.02rem;
 }
 
 .bj-arc__cards--stack-vertical {
@@ -868,10 +889,15 @@
   margin-left: 0;
   flex: 0 0 auto;
   pointer-events: none;
+  width: var(--bj-table-card-width);
+  height: var(--bj-table-card-height);
+  min-height: 0;
+  max-height: var(--bj-table-card-height);
 }
 
 .bj-arc__cards-stack .playing-card + .playing-card {
-  margin-top: calc(-1 * var(--bj-table-card-overlap));
+  margin-top: 0;
+  margin-bottom: calc(-1 * var(--bj-table-card-overlap));
 }
 
 .bj-arc__cards-stack .playing-card:nth-child(1) {
@@ -905,7 +931,7 @@
 }
 
 .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot .stake-chips--bet {
-  transform: scale(0.58);
+  transform: scale(0.5);
   transform-origin: center center;
 }
 
@@ -1283,13 +1309,52 @@
     padding-top: 0;
   }
 
+  .bj-view-full-desktop .bj-table-zone--dealer {
+    min-height: 5.25rem;
+  }
+
+  .bj-view-full-desktop .bj-table-zone--summary {
+    min-height: 1.2rem;
+  }
+
+  .bj-view-full-desktop .bj-table-zone__hero-reserved {
+    flex: 0 0 auto;
+    min-height: 0;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  .bj-view-full-desktop .bj-table-zone--actions {
+    min-height: 2.65rem;
+  }
+
   .bj-view-full-desktop .bj-table-zone--play {
     flex: 1 1 auto;
-    min-height: var(--bj-table-zone-play-min-height);
+    min-height: 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding-top: 0.12rem;
+    padding-top: 0;
+  }
+
+  .bj-view-full-desktop .bj-arc__cards {
+    flex: 0 0 auto;
+    min-height: 0;
+    width: 100%;
+  }
+
+  .bj-view-full-desktop .bj-arc__cards--stack-vertical {
+    min-height: 0;
+    max-height: var(--bj-table-card-stack-max-height);
+  }
+
+  .bj-view-full-desktop .bj-arc__cards-stack .playing-card {
+    width: var(--bj-table-card-width);
+    height: var(--bj-table-card-height);
+    min-height: 0;
+    max-height: var(--bj-table-card-height);
   }
 
   .bj-view-card-desktop .bj-casino__felt.bj-casino__felt--card-view {
@@ -1323,22 +1388,6 @@
   .bj-view-full-desktop .bj-arc,
   .bj-view-full-desktop .bj-arc__slot {
     overflow: visible;
-  }
-
-  .bj-view-full-desktop .bj-arc__cards {
-    flex: 0 0 auto;
-    min-height: 3.35rem;
-    width: 100%;
-  }
-
-  .bj-view-full-desktop .bj-arc__cards--stack-vertical {
-    min-height: 0;
-    max-height: var(--bj-table-card-stack-max-height);
-  }
-
-  .bj-view-full-desktop .bj-arc__cards-stack .playing-card {
-    width: 2.2rem;
-    min-height: 3.05rem;
   }
 
   .bj-view-full-desktop .bj-arc {
