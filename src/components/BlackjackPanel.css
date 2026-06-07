@@ -1550,8 +1550,9 @@
   margin-left: -0.5rem;
 }
 
-/* Mobile landscape — table fills gameplay canvas; chip tray stays at bottom. */
-@media (max-width: 720px) and (orientation: landscape) {
+/* Mobile landscape — shared shell compresses felt; tray stays pinned (see bj-table-shared.css). */
+@media (max-width: 720px) and (orientation: landscape),
+  ((max-width: 960px) and (max-height: 520px) and (pointer: coarse) and (orientation: landscape)) {
   .bj-view-full-mobile .bj-casino__rail-wrap,
   .bj-view-card-mobile .bj-casino__rail-wrap {
     flex: 1 1 auto;
@@ -1564,5 +1565,10 @@
 
   .bj-view-full-mobile .bj-arc-separator {
     min-height: min(8dvh, 2.5rem);
+  }
+
+  .bj-view-full-mobile .bj-casino__tray-wrap,
+  .bj-view-card-mobile .bj-card-layout__tray {
+    flex-shrink: 0;
   }
 }

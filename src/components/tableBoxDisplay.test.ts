@@ -118,7 +118,7 @@ describe('This Table box display — stake-based ownership', () => {
   it('empty slot tap selects chip target without assignBox or claimBoxSlot', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
     expect(src).toMatch(
-      /function handleClaimOrSelectSlot[\s\S]*rememberBetTarget\(\{ kind: 'slot', slotNumber \}\)/,
+      /function handleClaimOrSelectSlot[\s\S]*rememberExplicitChipTarget\(\{ kind: 'slot', slotNumber \}\)/,
     );
     expect(src).not.toMatch(/handleClaimOrSelectSlot[\s\S]*assignBox/);
     expect(src).not.toMatch(/handleClaimOrSelectSlot[\s\S]*claimBoxSlot/);

@@ -67,7 +67,7 @@ export function placeBetPayloadFromTarget(
   return { slotNumber: target.slotNumber, amount };
 }
 
-function isValidBetTarget(state: GameState, target: PlaceBetTarget, online: boolean): boolean {
+export function isValidBetTarget(state: GameState, target: PlaceBetTarget, online: boolean): boolean {
   if (target.kind === 'box') {
     if (online) {
       return findBoxSlot(state, target.boxId) !== undefined;

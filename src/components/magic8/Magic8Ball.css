@@ -12,8 +12,20 @@
 
 .magic8--table {
   align-items: flex-start;
-  gap: 0.2rem;
-  width: 100%;
+  gap: 0;
+  width: auto;
+}
+
+.magic8--table.magic8--control-only {
+  gap: 0;
+}
+
+.magic8-table-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 8;
+  pointer-events: auto;
 }
 
 .magic8__controls {
@@ -25,6 +37,11 @@
 
 .magic8--table .magic8__controls {
   align-items: flex-start;
+  gap: 0;
+}
+
+.magic8--table.magic8--control-only .magic8__controls {
+  align-items: center;
 }
 
 .magic8__orb-wrap {
@@ -78,6 +95,11 @@
   height: clamp(3.375rem, 12vw, 4.75rem);
 }
 
+.magic8--table.magic8--control-only .magic8__orb {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
 .magic8__window {
   position: absolute;
   left: 50%;
@@ -114,6 +136,16 @@
 
 .magic8--table .magic8__idle {
   font-size: 0.95em;
+}
+
+.magic8--table.magic8--control-only .magic8__window {
+  width: 52%;
+  height: 52%;
+}
+
+.magic8--table.magic8--control-only .magic8__idle {
+  font-size: 0.72em;
+  font-weight: 800;
 }
 
 .magic8__answer-in-window {
@@ -173,6 +205,57 @@
   padding: 0.22rem 0.32rem;
 }
 
+.magic8-table-answer {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.4rem;
+  display: flex;
+  align-items: center;
+}
+
+.magic8-table-answer__text {
+  margin: 0;
+  width: 100%;
+  font-size: clamp(1.125rem, 2.4vw, 1.5rem);
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  font-variant: small-caps;
+  text-transform: none;
+  color: rgb(255 248 228 / 0.98);
+  text-shadow:
+    0 0 14px rgb(240 208 96 / 0.42),
+    0 0 4px rgb(255 255 255 / 0.18),
+    0 1px 3px rgb(0 0 0 / 0.55);
+  animation: magic8-answer-pop 0.45s ease-out;
+}
+
+.magic8-table-answer__placeholder {
+  margin: 0;
+  width: 100%;
+  font-size: 0.58rem;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.38);
+}
+
+@keyframes magic8-answer-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .magic8__orb--shaking {
   animation: magic8-shake 0.5s ease-in-out;
 }
@@ -204,5 +287,14 @@
 @media (max-width: 720px) {
   .magic8__shake-btn {
     display: none;
+  }
+
+  .magic8--table.magic8--control-only .magic8__orb {
+    width: 2.125rem;
+    height: 2.125rem;
+  }
+
+  .magic8-table-answer__text {
+    font-size: clamp(0.9375rem, 4.2vw, 1.1875rem);
   }
 }

@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 
-/**
- * Single source of truth for the device boundary. Widths at or below this are
- * treated as mobile (phone) layouts. 720 matches the existing accounts-panel /
- * accounts-button breakpoint so JS and CSS agree on one device class.
- */
-export const MOBILE_MAX_WIDTH = 720;
+import {
+  MOBILE_LAYOUT_MEDIA,
+  MOBILE_MAX_WIDTH,
+} from '../styles/mobileLayoutContract';
+
+export {
+  MOBILE_LAYOUT_MEDIA,
+  MOBILE_MAX_WIDTH,
+  isMobileLayoutViewport,
+} from '../styles/mobileLayoutContract';
 
 /**
  * Below this width the curved Full Table felt cannot render usefully, so we fall
@@ -14,6 +18,7 @@ export const MOBILE_MAX_WIDTH = 720;
  */
 export const ULTRA_NARROW_MAX_WIDTH = 359;
 
+/** Width-only check — prefer isMobileLayoutViewport for device classification. */
 export function isMobileViewportWidth(width: number): boolean {
   return width <= MOBILE_MAX_WIDTH;
 }
@@ -34,29 +39,34 @@ export function shouldShowMobileFullTableFallback(
   return isUltraNarrow && viewMode === 'full';
 }
 
-const MOBILE_QUERY = `(max-width: ${MOBILE_MAX_WIDTH}px)`;
 const ULTRA_NARROW_QUERY = `(max-width: ${ULTRA_NARROW_MAX_WIDTH}px)`;
 
-function matchesMobile(): boolean {
+function matchesMobileLayout(): boolean {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
     return false;
   }
-  return window.matchMedia(MOBILE_QUERY).matches;
+  return window.matchMedia(MOBILE_LAYOUT_MEDIA).matches;
 }
 
-/** Reactive mobile-viewport flag driven by matchMedia. SSR/no-window → false. */
+/** Reactive mobile layout flag — portrait width or short coarse-pointer landscape. */
 export function useIsMobileViewport(): boolean {
-  const [isMobile, setIsMobile] = useState(matchesMobile);
+  const [isMobile, setIsMobile] = useState(matchesMobileLayout);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return;
     }
-    const mq = window.matchMedia(MOBILE_QUERY);
+    const mq = window.matchMedia(MOBILE_LAYOUT_MEDIA);
     const handler = () => setIsMobile(mq.matches);
     handler();
     mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+    window.addEventListener('resize', handler);
+    window.addEventListener('orientationchange', handler);
+    return () => {
+      mq.removeEventListener('change', handler);
+      window.removeEventListener('resize', handler);
+      window.removeEventListener('orientationchange', handler);
+    };
   }, []);
 
   return isMobile;

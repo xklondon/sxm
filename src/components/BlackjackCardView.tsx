@@ -64,7 +64,6 @@ import { PlayingCard } from "./PlayingCard";
 
 import {
   BET_BOX_PULSE,
-  BOX_BORDER_SELECTED,
   getBoxActivePulseClassName,
   getBoxCardVisualClasses,
   getBoxCardValueLabel,
@@ -824,7 +823,6 @@ export function BlackjackCardView({
             "bj-phone-view__mini-hand",
             "bj-phone-view__mini-hand--empty",
             TABLE_UX.cardViewCompactBox,
-            isSelected ? BOX_BORDER_SELECTED : "",
             isSelected ? BET_BOX_PULSE : "",
           ]
             .filter(Boolean)

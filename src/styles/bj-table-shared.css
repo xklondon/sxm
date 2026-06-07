@@ -80,7 +80,8 @@
   --bj-cardview-mobile-mini-hand-height: 2.2rem;
 }
 
-@media (max-width: 720px) {
+/* MOBILE_LAYOUT_MEDIA — sync with src/styles/mobileLayoutContract.ts */
+@media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
   :root {
     --bj-seat-total-size: 0.72rem;
     --bj-actions-btn-font-size: 0.58rem;
@@ -225,13 +226,73 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  .bj-view-full-mobile .bj-casino__tray-wrap,
+  .bj-view-card-mobile .bj-card-layout__tray {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+  }
+
   @media (orientation: landscape) {
     :root {
-      --bj-mobile-felt-min-height: min(68dvh, 100%);
+      --bj-mobile-felt-min-height: 0;
+      --bj-card-row-dealer: 4.75rem;
+      --bj-card-row-summary: 1.75rem;
+      --bj-card-row-hero-min: 4rem;
+      --bj-card-row-actions: 2.75rem;
+      --bj-card-row-boxes: 4.25rem;
+      --bj-card-row-tray: 2.85rem;
+    }
+
+    .bj-view-full-mobile .bj-casino__felt,
+    .bj-view-card-mobile .bj-casino__felt {
+      min-height: 0;
+    }
+
+    .bj-view-full-mobile .bj-casino__rail-wrap,
+    .bj-view-card-mobile .bj-casino__rail-wrap,
+    .bj-mobile-table-shell {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .bj-view-full-mobile .bj-casino__felt-main {
+      min-height: 0;
+      flex: 1 1 auto;
+    }
+
+    .bj-view-card-mobile .bj-card-layout {
+      grid-template-rows:
+        minmax(3.25rem, var(--bj-card-row-dealer))
+        minmax(1.25rem, var(--bj-card-row-summary))
+        minmax(3rem, 1fr)
+        minmax(2rem, var(--bj-card-row-actions))
+        minmax(2.75rem, var(--bj-card-row-boxes))
+        minmax(2.75rem, var(--bj-card-row-tray));
+    }
+
+    .bj-view-card-mobile .bj-card-layout__dealer,
+    .bj-view-card-mobile .bj-card-layout__summary,
+    .bj-view-card-mobile .bj-card-layout__actions,
+    .bj-view-card-mobile .bj-card-layout__boxes {
+      height: auto;
+      min-height: 0;
+      max-height: none;
+    }
+
+    .bj-view-card-mobile .bj-card-layout__hero {
+      min-height: 0;
+      max-height: none;
+    }
+
+    .bj-view-card-mobile .bj-card-layout__tray {
+      height: auto;
+      min-height: var(--bj-card-row-tray);
+      max-height: none;
+      overflow: visible;
     }
 
     .bj-casino__mobile-panel-sheet {
-      max-height: min(92dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 1rem));
+      max-height: min(72dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 3rem));
     }
   }
 

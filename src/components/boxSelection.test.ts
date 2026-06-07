@@ -5,7 +5,6 @@ import {
   BET_BOX_PULSE,
   BOX_BORDER_NATIVE,
   BOX_BORDER_RUNNING,
-  BOX_BORDER_SELECTED,
   getBoxActivePulseClassName,
   getBetBoxPulseClassName,
   getBoxCardVisualClasses,
@@ -13,7 +12,9 @@ import {
   resolveBoxBorderVisualState,
   isCardViewBettingBoxVisuallyAssigned,
 } from './cardViewBox';
-import { resolveChipTrayBetTarget } from '../engine/blackjack/chipPlacement';
+import { resolveLocalChipTrayTarget } from './chipTargetSelection';
+import { resolveChipTrayBetTarget, type PlaceBetTarget } from '../engine/blackjack/chipPlacement';
+import { getStakeForBox } from '../engine/blackjack/stakes';
 import { createNewBlackjackTable } from '../engine/session';
 import { claimBoxSlot } from '../engine/session/boxOps';
 import { addChipToBoxStake } from '../engine/blackjack/stakes';
@@ -129,7 +130,7 @@ describe('box selection — single chip target', () => {
     expect(src).not.toMatch(/function selectBox\(boxId: string\) \{[\s\S]*selectedSeatId: boxId/);
   });
 
-  it('empty occupied box selected without stake gets selected frame immediately', () => {
+  it('empty occupied box selected without stake gets pulse immediately', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 1);
     state = claimBoxSlot(state, 3);
@@ -144,12 +145,12 @@ describe('box selection — single chip target', () => {
       bettingStage: true,
     });
     expect(resolved.isSelected).toBe(true);
-    expect(getBoxBorderVisualClasses(resolved)).toBe(BOX_BORDER_SELECTED);
+    expect(getBoxBorderVisualClasses(resolved)).toBe('');
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
     expect(getBoxBorderVisualClasses(resolved)).not.toContain(BOX_BORDER_RUNNING);
   });
 
-  it('selected frame persists after chip placement on the same box', () => {
+  it('selected pulse persists after chip placement on the same box', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 1);
     state = claimBoxSlot(state, 3);
@@ -165,7 +166,7 @@ describe('box selection — single chip target', () => {
       bettingStage: true,
     });
     expect(getBoxBorderVisualClasses(resolved)).toContain(BOX_BORDER_RUNNING);
-    expect(getBoxBorderVisualClasses(resolved)).toContain(BOX_BORDER_SELECTED);
+    expect(getBoxCardVisualClasses(resolved)).not.toContain('bj-box--selected');
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
   });
 
@@ -192,11 +193,11 @@ describe('box selection — single chip target', () => {
     });
     expect(getBoxBorderVisualClasses(nativeResolved)).toBe(BOX_BORDER_NATIVE);
     expect(getBoxActivePulseClassName(nativeResolved)).toBe('');
-    expect(getBoxBorderVisualClasses(freeResolved)).toBe(BOX_BORDER_SELECTED);
+    expect(getBoxBorderVisualClasses(freeResolved)).toBe('');
     expect(getBoxActivePulseClassName(freeResolved)).toBe(BET_BOX_PULSE);
   });
 
-  it('assigned and selected on same native box renders both ownership and selected frame', () => {
+  it('assigned and selected on same native box renders ownership plus pulse', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 1);
     const nativeBox = boxPlayerId(state, 1)!;
@@ -209,7 +210,7 @@ describe('box selection — single chip target', () => {
       bettingStage: true,
     });
     expect(getBoxCardVisualClasses(resolved)).toContain(BOX_BORDER_NATIVE);
-    expect(getBoxCardVisualClasses(resolved)).toContain(BOX_BORDER_SELECTED);
+    expect(getBoxCardVisualClasses(resolved)).not.toContain('bj-box--selected');
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
   });
 
@@ -237,5 +238,73 @@ describe('box selection — single chip target', () => {
     expect(src).toMatch(
       /function selectBox\(boxId: string\) \{[\s\S]*setSelectedBettingBoxId\(boxId\)[\s\S]*setSelectedBettingSlotNumber\(null\)/,
     );
+  });
+
+  it('sync effect upgrades slot targets instead of clearing after materialization', () => {
+    const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(src).toContain('adoptMaterializedBoxTarget');
+    expect(src).toContain('shouldClearExplicitChipTarget');
+    expect(src).not.toMatch(
+      /isExplicitChipTargetValid[\s\S]*setSelectedBettingBoxId\(null\)/,
+    );
+  });
+
+  it('assigned native box and explicit selected box 5 can differ', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    state = claimBoxSlot(state, 5);
+    const nativeBox = boxPlayerId(state, 1)!;
+    const box5 = boxPlayerId(state, 5)!;
+    const nativeResolved = resolveBoxBorderVisualState({
+      state,
+      boxPlayerId: nativeBox,
+      viewerPersonId: state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId,
+      selectedBettingBoxId: box5,
+      bettingStage: true,
+    });
+    const selectedResolved = resolveBoxBorderVisualState({
+      state,
+      boxPlayerId: box5,
+      viewerPersonId: state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId,
+      selectedBettingBoxId: box5,
+      bettingStage: true,
+    });
+    expect(nativeResolved.isNativeAssigned).toBe(true);
+    expect(nativeResolved.isSelected).toBe(false);
+    expect(selectedResolved.isSelected).toBe(true);
+    expect(getBoxActivePulseClassName(nativeResolved)).toBe('');
+    expect(getBoxActivePulseClassName(selectedResolved)).toBe(BET_BOX_PULSE);
+  });
+
+  it('handleChipTrayClick reads resolveActiveChipTrayTarget at click time', () => {
+    const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(src).toMatch(
+      /function handleChipTrayClick\(value: ChipValue\) \{[\s\S]*resolveActiveChipTrayTarget\(\)/,
+    );
+    expect(src).not.toMatch(
+      /function handleChipTrayClick\(value: ChipValue\) \{[\s\S]*selectedSeatId:/,
+    );
+    expect(src).toContain('resolveLocalChipTrayTarget');
+    expect(src).not.toContain('resolveChipTrayBetTarget');
+  });
+
+  it('double chip placement on explicit Box 5 target keeps tray on Box 5', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    state = claimBoxSlot(state, 5);
+    const nativeBox = boxPlayerId(state, 1)!;
+    const box5 = boxPlayerId(state, 5)!;
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+    const explicit: PlaceBetTarget = { kind: 'box', boxId: box5 };
+    const first = addChipToBoxStake(state, box5, 10, personId);
+    const second = addChipToBoxStake(first, box5, 10, personId);
+    expect(getStakeForBox(second, box5)).toBe(20);
+    expect(getStakeForBox(second, nativeBox)).toBe(0);
+    const trayTarget = resolveLocalChipTrayTarget(second, {
+      userPicked: true,
+      explicit,
+      online: false,
+    });
+    expect(trayTarget).toEqual({ kind: 'box', boxId: box5 });
   });
 });

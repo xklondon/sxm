@@ -32,7 +32,8 @@
   --bj-cardview-desktop-mini-hand-height: 4.35rem;
 }
 
-@media (max-width: 720px) {
+/* MOBILE_LAYOUT_MEDIA — sync with src/styles/mobileLayoutContract.ts */
+@media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
   :root {
     --bj-card-row-dealer: 7rem;
     --bj-card-row-summary: 2.25rem;

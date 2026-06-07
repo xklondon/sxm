@@ -9,17 +9,34 @@ export type Magic8BallProps = {
   disabled?: boolean;
   canShake?: boolean;
   compact?: boolean;
-  answer?: string;
-  onAnswer?: (answer: string) => void;
+  /** Table felt overlay — orb trigger only; answer renders via Magic8TableAnswer. */
+  controlOnly?: boolean;
+  answer?: string | null;
+  onAnswer?: (answer: string | null) => void;
 };
 
 const ANSWER_DELAY_MS = 500;
+
+export function Magic8TableAnswer({ answer }: { answer: string | null }) {
+  return (
+    <div className="magic8-table-answer" aria-live="polite">
+      {answer ? (
+        <p key={answer} className="magic8-table-answer__text">
+          {answer}
+        </p>
+      ) : (
+        <p className="magic8-table-answer__placeholder">Ask the 8 Ball</p>
+      )}
+    </div>
+  );
+}
 
 export function Magic8Ball({
   variant,
   disabled = false,
   canShake = true,
   compact = false,
+  controlOnly = false,
   answer: controlledAnswer,
   onAnswer,
 }: Magic8BallProps) {
@@ -33,7 +50,8 @@ export function Magic8Ball({
   const shakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const answer = controlledAnswer ?? internalAnswer;
-  const showBubbleAnswer = Boolean(answer) && (variant === 'login' || variant === 'table');
+  const showBubbleAnswer =
+    Boolean(answer) && variant === 'login' && !controlOnly;
   const showWindowAnswer =
     variant === 'login' && Boolean(answer) && showAnswerInWindow && !isShaking && compact;
 
@@ -76,6 +94,8 @@ export function Magic8Ball({
     setShowAnswerInWindow(false);
     if (controlledAnswer === undefined) {
       setInternalAnswer(null);
+    } else if (controlOnly) {
+      onAnswer?.(null);
     }
 
     shakeKey.current += 1;
@@ -90,7 +110,7 @@ export function Magic8Ball({
       const nextAnswer = randomAnswer(answer);
       commitAnswer(nextAnswer);
     }, ANSWER_DELAY_MS);
-  }, [answer, clearTimers, commitAnswer, controlledAnswer, disabled]);
+  }, [answer, clearTimers, commitAnswer, controlOnly, controlledAnswer, disabled, onAnswer]);
 
   const { requestMotionAccess } = useShakeDetector(
     isMobile && canShake && !disabled,
@@ -116,6 +136,7 @@ export function Magic8Ball({
       className={[
         'magic8',
         variant === 'login' ? 'magic8--login' : 'magic8--table',
+        controlOnly ? 'magic8--control-only' : '',
         compact ? 'magic8--compact' : '',
       ]
         .filter(Boolean)
@@ -143,7 +164,7 @@ export function Magic8Ball({
             </span>
           </button>
         </div>
-        {!isMobile && (
+        {!isMobile && variant === 'login' && (
           <button
             type="button"
             className="magic8__shake-btn"

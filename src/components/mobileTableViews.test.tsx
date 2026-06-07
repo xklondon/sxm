@@ -15,34 +15,25 @@ import {
 import { claimBoxSlot } from '../engine/session';
 import { addChipToBoxStake, blackjackHandKey } from '../engine/blackjack';
 
+import {
+  createMobileLayoutMatchMedia,
+  type SimulatedViewport,
+} from '../test/mobileLayoutMatchMedia';
+
 const noop = () => {};
 
 /**
- * Force a deterministic viewport width for the device hooks, which read
- * `window.matchMedia('(max-width: …px)')`. The test env is `node`, so we install
- * a minimal window whose matchMedia compares the queried max-width to a
- * simulated CSS width.
+ * Force a deterministic viewport for the device hooks, which read
+ * `window.matchMedia(MOBILE_LAYOUT_MEDIA)`. The test env is `node`, so we install
+ * a minimal window whose matchMedia compares to a simulated width/height.
  */
-let simulatedWidth = 390; // a normal phone (>= 360, so NOT ultra-narrow)
+let simulatedViewport: SimulatedViewport = { width: 390, height: 844 };
 const globalRef = globalThis as unknown as { window?: unknown };
 const hadWindow = 'window' in globalRef;
 
 beforeAll(() => {
   globalRef.window = {
-    matchMedia: (query: string) => {
-      const m = /max-width:\s*(\d+)/.exec(query);
-      const max = m ? Number(m[1]) : Number.POSITIVE_INFINITY;
-      return {
-        matches: simulatedWidth <= max,
-        media: query,
-        addEventListener: noop,
-        removeEventListener: noop,
-        addListener: noop,
-        removeListener: noop,
-        onchange: null,
-        dispatchEvent: () => false,
-      };
-    },
+    matchMedia: createMobileLayoutMatchMedia(() => simulatedViewport),
   };
 });
 
@@ -52,8 +43,8 @@ afterAll(() => {
   }
 });
 
-function renderPanelAt(width: number, state: GameState): string {
-  simulatedWidth = width;
+function renderPanelAt(width: number, state: GameState, height = 844): string {
+  simulatedViewport = { width, height };
   return renderToStaticMarkup(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
 }
 

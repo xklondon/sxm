@@ -171,9 +171,6 @@ export function getBoxBorderVisualClasses(resolved: BoxBorderVisualState): strin
   } else if (resolved.isCoBox) {
     parts.push(BOX_BORDER_CO_BOX);
   }
-  if (resolved.isSelected) {
-    parts.push(BOX_BORDER_SELECTED);
-  }
   if (resolved.isDropHover) {
     parts.push(BOX_BORDER_DROP_HOVER);
   }
