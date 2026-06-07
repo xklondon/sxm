@@ -150,7 +150,8 @@ describe('table layout stabilization contract', () => {
     expect(full).toContain(TABLE_UX.tableZoneDealer);
     expect(full).toContain(TABLE_UX.tableZoneSummary);
     expect(full).toContain(TABLE_UX.tableZoneActions);
-    expect(full).toContain(TABLE_UX.tableZonePlay);
+    expect(full).toContain(TABLE_UX.tableZoneCards);
+    expect(full).toContain(TABLE_UX.tableZoneBoxes);
     expect(full).toContain(TABLE_UX.tableZoneBottom);
     expect(full).toContain(BLACKJACK_TABLE_LAYOUT.chipTrayWrap);
 
@@ -281,7 +282,7 @@ describe('table layout polish contract', () => {
     expect(full).toContain('bj-arc__cards--stack-vertical');
     expect(full).toContain('bj-arc__cards-stack');
     expect(full).toMatch(
-      /bj-arc__play-zone[\s\S]*bj-arc__cards-stack[\s\S]*bj-phone-view__mini-hand--full-arc/,
+      /bj-table-zone--cards[\s\S]*bj-arc__cards-stack[\s\S]*bj-table-zone--boxes[\s\S]*bj-phone-view__mini-hand--full-arc/,
     );
     expect(full).toMatch(
       /bj-phone-view__mini-hand--full-arc[\s\S]*bj-phone-view__box-value[\s\S]*bj-phone-view__mini-stake-slot/,

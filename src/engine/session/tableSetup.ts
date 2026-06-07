@@ -52,7 +52,7 @@ export function parseTableStakeSetupPayload(
     controllerEmail: String(payload.controllerEmail ?? ''),
     protocolId: String(payload.protocolId ?? 'las-vegas-house'),
     naturalDealing: payload.naturalDealing === true,
-    dealSpeedPreset: (payload.dealSpeedPreset as DealSpeedPreset) ?? 'normal',
+    dealSpeedPreset: (payload.dealSpeedPreset as DealSpeedPreset) ?? 'fast',
     cardTimerPreset: (Number(payload.cardTimerPreset) || 0) as CardTimerPreset,
     bankDrawAuto: payload.bankDrawAuto !== false,
   };
@@ -96,7 +96,7 @@ export function applyTableStakeSetup(state: GameState, input: TableStakeSetupInp
   logTableMetaStartingChips(next, 'start-playing');
   next = setBlackjackProtocolOnState(next, input.protocolId, input.controllerName);
   next = updateBlackjackFlowSettings(next, {
-    initialDealMode: input.naturalDealing ? 'natural' : 'instant',
+    initialDealMode: input.naturalDealing ? 'natural' : 'staged',
     dealSpeedPreset: input.dealSpeedPreset,
     cardTimerPreset: input.cardTimerPreset,
     countdownSeconds: input.cardTimerPreset,

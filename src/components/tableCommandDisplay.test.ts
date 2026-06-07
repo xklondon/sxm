@@ -14,6 +14,7 @@ import { blackjackHandKey } from '../engine/blackjack';
 
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
+const COMMAND_BOX_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCommandBox.tsx'), 'utf8');
 const DEALER_BLOCK_SRC = readFileSync(join(process.cwd(), 'src/components/DealerBlock.tsx'), 'utf8');
 
 describe('buildBlackjackCommandText', () => {
@@ -21,8 +22,8 @@ describe('buildBlackjackCommandText', () => {
     expect(buildTableCommandDisplay).toBe(buildBlackjackCommandText);
     expect(PANEL_SRC).toContain('buildBlackjackCommandText');
     expect(PANEL_SRC).toContain('tableCommand.commandMessage');
-    expect(PANEL_SRC).toContain('DealerCommandArea');
-    expect(PANEL_SRC).toMatch(/dealerCommand=\{\s*<DealerCommandArea[\s\S]*tableCommand\.commandMessage/);
+    expect(PANEL_SRC).toContain('BlackjackCommandBox');
+    expect(PANEL_SRC).toMatch(/dealerCommand=\{\s*<BlackjackCommandBox[\s\S]*tableCommand\.commandMessage/);
     expect(PANEL_SRC).not.toMatch(/commandMessage:\s*tableAidTip/);
     expect(PANEL_SRC).not.toMatch(/commandMessage:\s*magic8Answer/);
   });
@@ -41,7 +42,7 @@ describe('buildBlackjackCommandText', () => {
     expect(result.commandMessage).toContain('Place your bets');
   });
 
-  it('returns round summary lines when awaiting next round', () => {
+  it('returns short command when awaiting next round', () => {
     const state = createNewBlackjackTable();
     const result = buildBlackjackCommandText({
       gameState: state,
@@ -52,8 +53,8 @@ describe('buildBlackjackCommandText', () => {
       roundSummaryLines: ['Box 1 wins +10', 'Box 2 loses -10'],
       controllerName: 'Host',
     });
-    expect(result.commandMessage).toBeNull();
-    expect(result.commandLines).toEqual(['Box 1 wins +10', 'Box 2 loses -10']);
+    expect(result.commandMessage).toBe('Round finished. Summary ready.');
+    expect(result.commandLines).toEqual([]);
   });
 
   it('formats player turn with box, caller name, and hand value', () => {
@@ -137,14 +138,16 @@ describe('command text routing separation', () => {
     expect(PANEL_SRC).toContain('omitCommand');
     expect(PANEL_SRC).toMatch(/tableCommand\.commandMessage[\s\S]*tableCommand\.commandLines/);
     expect(CARD_VIEW_SRC).toContain('dealerCommand');
-    expect(CARD_VIEW_SRC).toContain('TABLE_UX.cardLayoutCommand');
+    expect(COMMAND_BOX_SRC).toContain('TABLE_UX.cardLayoutCommand');
+    expect(COMMAND_BOX_SRC).toContain('DealerCommandArea');
     expect(CARD_VIEW_SRC).not.toContain('buildTableCommandDisplay');
     expect(CARD_VIEW_SRC).not.toContain('buildBlackjackCommandText');
   });
 
   it('AID and Magic 8 do not route through command builder', () => {
     expect(PANEL_SRC).toContain('commentaryText: tableAidTip');
-    expect(PANEL_SRC).toContain('Magic8TableAnswer');
+    expect(PANEL_SRC).toContain('magic8Answer');
+    expect(PANEL_SRC).toContain('controlOnly');
     expect(PANEL_SRC).not.toMatch(/commandMessage:\s*tableAidTip/);
     expect(PANEL_SRC).not.toMatch(/commandMessage:\s*magic8Answer/);
     expect(CARD_VIEW_SRC).toContain('aidTip');

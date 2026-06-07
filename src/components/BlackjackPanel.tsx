@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useMemo, type CSSProperties } from 'react';
 import type { GameState, TableViewMode } from '../types';
+import { resolveShowRoundSummaryOverlay } from '../types/table';
 import {
   claimBoxSlot,
   defaultBlackjackSeatId,
@@ -50,17 +51,33 @@ import { useBlackjackTableFlow } from './useBlackjackTableFlow';
 import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
 import { BlackjackCardView } from './BlackjackCardView';
 import { BankerSetupPanel } from './BankerSetupPanel';
-import { DealerBlock, DealerCommandArea, dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
-import { Magic8Ball, Magic8TableAnswer } from './magic8/Magic8Ball';
-import { getBoxCallerDisplayName } from './boxCallerDisplay';
+import { dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
+import { BlackjackActionPanel } from './BlackjackActionPanel';
+import { BlackjackCommandBox } from './BlackjackCommandBox';
+import { BlackjackDealerArea, BlackjackDealerAreaCardSlot } from './BlackjackDealerArea';
+import {
+  BlackjackActionsZone,
+  BlackjackCardsAreaZone,
+  BlackjackCommandZone,
+  BlackjackPlayerBoxesZone,
+} from './blackjackViewZones';
+import { Magic8Ball } from './magic8/Magic8Ball';
+import { buildBlackjackPlayerBoxInfo } from './blackjackPlayerBoxInfo';
+import { BlackjackPlayerBoxHead } from './BlackjackPlayerBoxes';
 import { LocalProfileSetup } from './LocalProfileSetup';
 import { PlayLedgerModal, PlayLedgerPanel } from './LedgerModals';
 import { TableSideRailShell } from './TableSideRailShell';
 import {
-  resolveLocalChipTrayTarget,
-  resolveViewerAssignedBoxPlayerId,
-  shouldClearExplicitChipTarget,
-} from './chipTargetSelection';
+  applyDefaultAssignedChipTarget,
+  createEmptyLocalChipTarget,
+  localChipTargetsEqual,
+  reconcileLocalChipTarget,
+  resolveTrayTargetFromLocalSelection,
+  selectLocalChipTarget,
+  uiFromLocalChipTarget,
+  type LocalSelectedChipTarget,
+} from './localChipTargetSelection';
+import { bindTapSelect, createTapSelectHandler } from './tapSelect';
 import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
 import { TABLE_UX } from './tableUxContract';
 import { TableInfoBar } from './TableInfoBar';
@@ -84,7 +101,9 @@ import {
   isBotBankGame,
 } from '../engine/scoreLedger/scoreLedger';
 import { buildRoundResultSummary } from '../engine/blackjack';
+import { buildRoundSummaryOverlayModel } from '../engine/blackjack/roundSummaryOverlay';
 import { buildBlackjackCommandText } from './tableCommandDisplay';
+import { RoundSummaryOverlay } from './RoundSummaryOverlay';
 import {
   formatPlaceBetError,
   getChipPlacementTarget,
@@ -217,19 +236,16 @@ export function BlackjackPanel({
   const [minBetOpen, setMinBetOpen] = useState(false);
   const [tableAidTip, setTableAidTip] = useState<string | null>(null);
   const [magic8Answer, setMagic8Answer] = useState<string | null>(null);
-  /** Client-local chip target — survives online server snapshots that omit selectedSeatId. */
-  const [selectedBettingBoxId, setSelectedBettingBoxId] = useState<string | null>(null);
-  /** Empty-slot chip target — local UI only (occupied boxes use selectedBettingBoxId). */
-  const [selectedBettingSlotNumber, setSelectedBettingSlotNumber] = useState<number | null>(null);
-  const selectedBettingBoxIdRef = useRef<string | null>(null);
-  const selectedBettingSlotNumberRef = useRef<number | null>(null);
-  selectedBettingBoxIdRef.current = selectedBettingBoxId;
-  selectedBettingSlotNumberRef.current = selectedBettingSlotNumber;
-  /** Explicit player chip target — never auto-overwritten after box/slot tap. */
-  const userPickedChipTargetRef = useRef(false);
-  const explicitChipTargetRef = useRef<PlaceBetTarget | null>(null);
-  /** Last chip-tray / box-tap target — shared across Full Table and Card View. */
-  const lastBetTargetRef = useRef<PlaceBetTarget | null>(null);
+  const [roundSummaryDismissed, setRoundSummaryDismissed] = useState(false);
+  /** Single local chip target — tray pulse and placement both read from here. */
+  const [localChipSelection, setLocalChipSelection] = useState<LocalSelectedChipTarget>(() =>
+    createEmptyLocalChipTarget(),
+  );
+  const localSelectedChipTargetRef = useRef(localChipSelection);
+  localSelectedChipTargetRef.current = localChipSelection;
+  const tapSelectRef = useRef(createTapSelectHandler());
+  const [shuffleAnimating, setShuffleAnimating] = useState(false);
+  const shuffleAnimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const profile = loadProfile();
   const controllerName = profile.name.trim() || tableMeta.controllerName;
@@ -291,7 +307,8 @@ export function BlackjackPanel({
   const viewMode = localViewMode;
   const deviceView = getDeviceView(isMobileViewport);
   const viewRootClass = getViewRootClass(deviceView, viewMode);
-  const selectedBettingBoxIdForUi = selectedBettingBoxId;
+  const { selectedBettingBoxId: selectedBettingBoxIdForUi, selectedBettingSlotNumber } =
+    uiFromLocalChipTarget(localChipSelection.target);
   const focusFallbackBoxId = defaultBlackjackSeatId(gameState);
   const flowSettings = gameState.blackjackFlowSettings;
   const canAssignChips = canUserAssignChips(gameState, controllerName);
@@ -316,19 +333,26 @@ export function BlackjackPanel({
   }, [gameState.tableMeta.gameStatus, gameState.session.id]);
 
   useEffect(() => {
-    if (userPickedChipTargetRef.current) {
+    const local = localSelectedChipTargetRef.current;
+    if (local.hasUserSelected) {
       return;
     }
-    if (selectedBettingBoxIdRef.current != null || selectedBettingSlotNumberRef.current != null) {
-      return;
+    const next = applyDefaultAssignedChipTarget(local, gameStateRef.current, viewerPersonId);
+    if (!localChipTargetsEqual(local, next)) {
+      commitLocalChipTarget(next);
     }
-    const boxId = resolveViewerAssignedBoxPlayerId(gameStateRef.current, viewerPersonId);
-    if (!boxId) {
-      return;
-    }
-    setSelectedBettingBoxId(boxId);
-    selectedBettingBoxIdRef.current = boxId;
   }, [viewerPersonId, gameState.tableMeta.boxSlots, gameState.session.id]);
+
+  useEffect(() => {
+    const next = reconcileLocalChipTarget(
+      localSelectedChipTargetRef.current,
+      gameState,
+      Boolean(onlineDispatch),
+    );
+    if (!localChipTargetsEqual(localSelectedChipTargetRef.current, next)) {
+      commitLocalChipTarget(next);
+    }
+  }, [gameState.tableMeta.boxSlots, gameState.tableMeta.boxStakes, gameState.session.boxSlotNumbers, onlineDispatch, gameState.session.id]);
 
   useEffect(() => {
     if (round?.status !== 'player-turns' || !round.activeHandKey) {
@@ -339,37 +363,15 @@ export function BlackjackPanel({
     if (current.selectedSeatId !== playerId) {
       onGameStateChange({ ...current, selectedSeatId: playerId });
     }
-    if (!bettingOpen) {
-      setSelectedBettingBoxId(playerId);
-      selectedBettingBoxIdRef.current = playerId;
-      setSelectedBettingSlotNumber(null);
-      selectedBettingSlotNumberRef.current = null;
-    }
-  }, [round?.status, round?.activeHandKey, onGameStateChange, bettingOpen]);
+  }, [round?.status, round?.activeHandKey, onGameStateChange]);
 
   useEffect(() => {
-    if (!userPickedChipTargetRef.current || !explicitChipTargetRef.current) {
-      return;
-    }
-    const online = Boolean(onlineDispatch);
-    const explicit = explicitChipTargetRef.current;
-
-    if (explicit.kind === 'slot') {
-      const slot = gameState.tableMeta.boxSlots.find((s) => s.slotNumber === explicit.slotNumber);
-      if (!slot) {
-        clearExplicitChipTarget();
-        return;
+    return () => {
+      if (shuffleAnimTimerRef.current) {
+        clearTimeout(shuffleAnimTimerRef.current);
       }
-      if (slot.playerId) {
-        adoptMaterializedBoxTarget(explicit.slotNumber, slot.playerId);
-      }
-      return;
-    }
-
-    if (shouldClearExplicitChipTarget(gameState, explicit, online)) {
-      clearExplicitChipTarget();
-    }
-  }, [gameState.tableMeta.boxSlots, gameState.session.boxSlotNumbers, onlineDispatch, gameState]);
+    };
+  }, []);
 
   const playingFor = getTableWagerDisplay(gameState);
   const displaySlots = [...tableMeta.boxSlots].sort((a, b) => b.slotNumber - a.slotNumber);
@@ -378,19 +380,49 @@ export function BlackjackPanel({
   const showPersonalLedgerOffer = gameEnded && !isBotBankGame(gameState);
   // Consolidated end-of-round summary, shown once (in the dealer block, above
   // the Next Round button). Per-box result chips are intentionally not repeated.
-  const roundSummaryLines =
-    awaitingNextRound && !gameEnded ? buildRoundResultSummary(gameState) : [];
-  const tableCommand = buildBlackjackCommandText({
-    gameState,
-    gameEnded,
-    gameOverMessage,
-    centerStatus,
-    protocolPhase,
-    roundSummaryLines,
-    controllerName,
-    viewerPersonId,
-    viewerHints,
-  });
+  const roundSummaryLines = useMemo(
+    () => (awaitingNextRound && !gameEnded ? buildRoundResultSummary(gameState) : []),
+    [awaitingNextRound, gameEnded, gameState],
+  );
+  const roundSummaryOverlayModel = useMemo(
+    () => (awaitingNextRound && !gameEnded ? buildRoundSummaryOverlayModel(gameState) : null),
+    [awaitingNextRound, gameEnded, gameState],
+  );
+  const showRoundSummaryOverlay =
+    Boolean(roundSummaryOverlayModel) &&
+    resolveShowRoundSummaryOverlay(tableMeta) &&
+    !roundSummaryDismissed;
+  const tableCommand = useMemo(
+    () =>
+      buildBlackjackCommandText({
+        gameState,
+        gameEnded,
+        gameOverMessage,
+        centerStatus,
+        protocolPhase,
+        roundSummaryLines,
+        controllerName,
+        viewerPersonId,
+        viewerHints,
+      }),
+    [
+      gameState,
+      gameEnded,
+      gameOverMessage,
+      centerStatus,
+      protocolPhase,
+      roundSummaryLines,
+      controllerName,
+      viewerPersonId,
+      viewerHints,
+    ],
+  );
+
+  useEffect(() => {
+    if (!awaitingNextRound) {
+      setRoundSummaryDismissed(false);
+    }
+  }, [awaitingNextRound]);
 
   function handleAddToPersonalLedger() {
     setError(null);
@@ -440,96 +472,70 @@ export function BlackjackPanel({
     run((s) => ({ ...s, tableViewMode: mode }));
   }
 
-  function rememberBetTarget(target: PlaceBetTarget) {
-    lastBetTargetRef.current = target;
+  function commitLocalChipTarget(next: LocalSelectedChipTarget) {
+    localSelectedChipTargetRef.current = next;
+    setLocalChipSelection(next);
   }
 
-  function rememberExplicitChipTarget(target: PlaceBetTarget) {
-    userPickedChipTargetRef.current = true;
-    explicitChipTargetRef.current = target;
-    rememberBetTarget(target);
+  function selectLocalTarget(target: PlaceBetTarget) {
+    commitLocalChipTarget(selectLocalChipTarget(localSelectedChipTargetRef.current, target));
   }
 
-  function clearExplicitChipTarget() {
-    userPickedChipTargetRef.current = false;
-    explicitChipTargetRef.current = null;
-    setSelectedBettingBoxId(null);
-    selectedBettingBoxIdRef.current = null;
-    setSelectedBettingSlotNumber(null);
-    selectedBettingSlotNumberRef.current = null;
-  }
-
-  function syncUiWithExplicitChipTarget(target: PlaceBetTarget) {
-    if (target.kind === 'box') {
-      setSelectedBettingBoxId(target.boxId);
-      selectedBettingBoxIdRef.current = target.boxId;
-      setSelectedBettingSlotNumber(null);
-      selectedBettingSlotNumberRef.current = null;
-      return;
-    }
-    setSelectedBettingBoxId(null);
-    selectedBettingBoxIdRef.current = null;
-    setSelectedBettingSlotNumber(target.slotNumber);
-    selectedBettingSlotNumberRef.current = target.slotNumber;
-  }
-
-  function adoptMaterializedBoxTarget(slotNumber: number, boxId: string) {
-    if (
-      userPickedChipTargetRef.current &&
-      explicitChipTargetRef.current?.kind === 'slot' &&
-      explicitChipTargetRef.current.slotNumber === slotNumber
-    ) {
-      const boxTarget: PlaceBetTarget = { kind: 'box', boxId };
-      explicitChipTargetRef.current = boxTarget;
-      rememberBetTarget(boxTarget);
-      setSelectedBettingBoxId(boxId);
-      selectedBettingBoxIdRef.current = boxId;
-      setSelectedBettingSlotNumber(null);
-      selectedBettingSlotNumberRef.current = null;
-    }
+  function preserveLocalChipTargetAfterStateSync() {
+    const next = reconcileLocalChipTarget(
+      localSelectedChipTargetRef.current,
+      gameStateRef.current,
+      Boolean(onlineDispatch),
+    );
+    commitLocalChipTarget(next);
   }
 
   function resolveActiveChipTrayTarget(): PlaceBetTarget | null {
-    const state = gameStateRef.current;
-    const online = Boolean(onlineDispatch);
-    const local = resolveLocalChipTrayTarget(state, {
-      userPicked: userPickedChipTargetRef.current,
-      explicit: explicitChipTargetRef.current,
-      online,
-    });
-    if (local) {
-      if (local.kind === 'box') {
-        try {
-          return getChipPlacementTargetFromBoxId(state, local.boxId, online);
-        } catch {
-          return local;
-        }
-      }
-      return local;
-    }
-    if (!userPickedChipTargetRef.current && selectedBettingBoxIdRef.current) {
-      try {
-        return getChipPlacementTargetFromBoxId(state, selectedBettingBoxIdRef.current, online);
-      } catch {
-        return null;
-      }
-    }
-    return null;
+    return resolveTrayTargetFromLocalSelection(
+      localSelectedChipTargetRef.current,
+      gameStateRef.current,
+      Boolean(onlineDispatch),
+      viewerPersonId,
+    );
   }
 
-  function reinforceExplicitChipTarget(target: PlaceBetTarget) {
-    rememberExplicitChipTarget(target);
-    syncUiWithExplicitChipTarget(target);
+  function applyOptimisticChipPlacement(target: PlaceBetTarget, amount: ChipValue): GameState {
+    let state = gameStateRef.current;
+    if (target.kind === 'slot') {
+      const slot = state.tableMeta.boxSlots.find((s) => s.slotNumber === target.slotNumber);
+      if (!slot?.playerId) {
+        state = claimBoxSlot(state, target.slotNumber);
+      }
+      const boxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === target.slotNumber)
+        ?.playerId;
+      if (!boxId) {
+        throw new Error('Could not claim box');
+      }
+      const personId = resolveControllerPersonId(state, controllerName);
+      return addChipToBoxStake(state, boxId, amount, personId ?? undefined);
+    }
+    const personId = resolveControllerPersonId(state, controllerName);
+    return addChipToBoxStake(state, target.boxId, amount, personId ?? undefined);
   }
 
   function placeBetAtTarget(target: PlaceBetTarget, amount: ChipValue) {
-    rememberBetTarget(target);
-    reinforceExplicitChipTarget(target);
+    selectLocalTarget(target);
     const payload = placeBetPayloadFromTarget(target, amount);
 
     if (onlineDispatch) {
       setError(null);
+      const snapshot = gameStateRef.current;
+      try {
+        const optimistic = applyOptimisticChipPlacement(target, amount);
+        onGameStateChange(optimistic);
+        preserveLocalChipTargetAfterStateSync();
+      } catch (err) {
+        setError(formatPlaceBetError(err));
+        return;
+      }
       void onlineDispatch('placeBet', payload).catch((err) => {
+        onGameStateChange(snapshot);
+        preserveLocalChipTargetAfterStateSync();
         setError(formatPlaceBetError(err));
       });
       return;
@@ -550,25 +556,22 @@ export function BlackjackPanel({
         }
         const personId = resolveControllerPersonId(state, controllerName);
         onGameStateChange(addChipToBoxStake(state, boxId, amount, personId ?? undefined));
-        adoptMaterializedBoxTarget(target.slotNumber, boxId);
+        preserveLocalChipTargetAfterStateSync();
         return;
       }
       const personId = resolveControllerPersonId(state, controllerName);
       onGameStateChange(
         addChipToBoxStake(state, target.boxId, amount, personId ?? undefined),
       );
+      preserveLocalChipTargetAfterStateSync();
     } catch (err) {
       setError(formatPlaceBetError(err));
     }
   }
 
   function selectBox(boxId: string) {
-    setSelectedBettingBoxId(boxId);
-    selectedBettingBoxIdRef.current = boxId;
-    setSelectedBettingSlotNumber(null);
-    selectedBettingSlotNumberRef.current = null;
     try {
-      rememberExplicitChipTarget(
+      selectLocalTarget(
         getChipPlacementTargetFromBoxId(
           gameStateRef.current,
           boxId,
@@ -578,11 +581,13 @@ export function BlackjackPanel({
     } catch {
       const slotNum = gameStateRef.current.session.boxSlotNumbers?.[boxId];
       if (slotNum != null) {
-        rememberExplicitChipTarget(
-          getChipPlacementTarget(gameStateRef.current, { slotNumber: slotNum }),
-        );
+        selectLocalTarget(getChipPlacementTarget(gameStateRef.current, { slotNumber: slotNum }));
       }
     }
+  }
+
+  function bindBoxTapSelect(action: () => void) {
+    return bindTapSelect(tapSelectRef.current, action);
   }
 
   function addChipToBox(boxId: string, amount: ChipValue) {
@@ -634,7 +639,6 @@ export function BlackjackPanel({
     }
 
     const target = getChipPlacementTarget(gameStateRef.current, { slotNumber, boxId });
-    reinforceExplicitChipTarget(target);
     placeBetAtTarget(target, value);
   }
 
@@ -652,11 +656,7 @@ export function BlackjackPanel({
       return;
     }
 
-    setSelectedBettingBoxId(null);
-    selectedBettingBoxIdRef.current = null;
-    setSelectedBettingSlotNumber(slotNumber);
-    selectedBettingSlotNumberRef.current = slotNumber;
-    rememberExplicitChipTarget({ kind: 'slot', slotNumber });
+    selectLocalTarget({ kind: 'slot', slotNumber });
   }
 
   function handleReleaseSlot(slotNumber: number) {
@@ -714,7 +714,6 @@ export function BlackjackPanel({
             return;
           }
           const placementTarget = getChipPlacementTarget(gameStateRef.current, target);
-          reinforceExplicitChipTarget(placementTarget);
           placeBetAtTarget(placementTarget, value);
         },
       }),
@@ -834,6 +833,18 @@ export function BlackjackPanel({
       : undefined,
   };
 
+  function handleShuffleWithAnimation() {
+    setShuffleAnimating(true);
+    if (shuffleAnimTimerRef.current) {
+      clearTimeout(shuffleAnimTimerRef.current);
+    }
+    shuffleAnimTimerRef.current = setTimeout(() => {
+      setShuffleAnimating(false);
+      shuffleAnimTimerRef.current = null;
+    }, 700);
+    handleShuffleToStart();
+  }
+
   const dealerBlockProps = {
     awaitingNextRound,
     gameEnded,
@@ -856,7 +867,8 @@ export function BlackjackPanel({
     bettingOpen,
     canDeal,
     hasStakes,
-    onShuffleToStart: handleShuffleToStart,
+    onShuffleToStart: handleShuffleWithAnimation,
+    shuffleAnimating,
     onDealCards: handleDealCards,
     onDealNextCard: handleDealNextCard,
     onDrawBank: handleDrawBank,
@@ -881,9 +893,12 @@ export function BlackjackPanel({
   function renderSummaryZone() {
     const alert = renderTableAlert();
     return (
-      <div
-        {...sxmSectionProps(SXM_LAYOUT.statusZone, `bj-table-zone ${TABLE_UX.tableZoneSummary}`)}
-      >
+      <BlackjackCommandZone variant="table">
+        <BlackjackCommandBox
+          commandMessage={tableCommand.commandMessage}
+          commandLines={tableCommand.commandLines}
+          gameEnded={gameEnded}
+        />
         {alert ?? (
           <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />
         )}
@@ -899,7 +914,7 @@ export function BlackjackPanel({
             </button>
           </div>
         ) : null}
-      </div>
+      </BlackjackCommandZone>
     );
   }
 
@@ -909,9 +924,7 @@ export function BlackjackPanel({
     const content = insurance ?? playerActions;
     const hasPrimarySecondary = Boolean(playerActions);
     return (
-      <div
-        {...sxmSectionProps(SXM_LAYOUT.actionZone, `bj-table-zone ${TABLE_UX.tableZoneActions}`)}
-      >
+      <BlackjackActionsZone variant="table">
         {content ?? (
           <div className={TABLE_UX.actionsPlaceholder} aria-hidden="true" />
         )}
@@ -927,7 +940,7 @@ export function BlackjackPanel({
             />
           </>
         )}
-      </div>
+      </BlackjackActionsZone>
     );
   }
 
@@ -1032,7 +1045,7 @@ export function BlackjackPanel({
           setDropTargetId(null);
         }}
         onDrop={(e) => inBetting && handleBetZoneDrop(boxId, slotNumber, e)}
-        onClick={() => selectBox(boxId)}
+        {...bindBoxTapSelect(() => selectBox(boxId))}
       >
         {hasStake && (
           <>
@@ -1145,9 +1158,23 @@ export function BlackjackPanel({
         actionPermission.waitMessage ??
         formatDecisionOwnerWaitMessage(gameState, playerId);
       return (
-        <p className={`${TABLE_UX.playerActions} bj-table-actions bj-table-actions--wait`}>
-          {waitMessage}
-        </p>
+        <BlackjackActionPanel
+          variant="table"
+          waitMessage={waitMessage}
+          actionsEnabled={false}
+          canHit={false}
+          canStand={false}
+          canDouble={false}
+          canSplit={false}
+          showDouble={false}
+          showSplit={false}
+          showAid={false}
+          onHit={() => {}}
+          onStand={() => {}}
+          onDouble={() => {}}
+          onSplit={() => {}}
+          onAid={() => {}}
+        />
       );
     }
 
@@ -1170,69 +1197,33 @@ export function BlackjackPanel({
     }
 
     return (
-      <div className={`${TABLE_UX.playerActions} bj-table-actions`} aria-live="polite">
-        <div {...sxmSectionProps(SXM_LAYOUT.primaryActions, 'bj-table-actions__row')}>
-          <button
-            type="button"
-            className="ds-btn ds-btn--stand bj-table-actions__btn"
-            disabled={!canStand}
-            onClick={() => run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} })}
-          >
-            Stay
-          </button>
-          <button
-            type="button"
-            className="ds-btn ds-btn--hit bj-table-actions__btn"
-            disabled={!canHit}
-            onClick={() => run((s) => hitBlackjackOnState(s, actionable.handKey), { type: 'hit', payload: {} })}
-          >
-            Hit
-          </button>
-        </div>
-        <div {...sxmSectionProps(SXM_LAYOUT.secondaryActions, 'bj-table-actions__row')}>
-          {blackjackSettings.allowDoubleDown && (
-            <button
-              type="button"
-              className={[
-                'ds-btn',
-                'ds-btn--secondary',
-                'bj-table-actions__btn',
-                'bj-table-actions__btn--sm',
-                canDouble ? 'bj-table-actions__btn--legal' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              disabled={!canDouble}
-              onClick={() => run((s) => doubleDownBlackjackOnState(s, actionable.handKey), { type: 'double', payload: {} })}
-            >
-              2×
-            </button>
-          )}
-          {blackjackSettings.allowSplit && deck && (
-            <button
-              type="button"
-              className={[
-                'ds-btn',
-                'ds-btn--secondary',
-                'bj-table-actions__btn',
-                'bj-table-actions__btn--sm',
-                canSplit ? 'bj-table-actions__btn--legal' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              disabled={!canSplit}
-              onClick={() => run((s) => splitBlackjackOnState(s, actionable.handKey), { type: 'split', payload: {} })}
-            >
-              Split
-            </button>
-          )}
-          {flowSettings.adviceEnabled && (
-            <button type="button" className="ds-btn ds-btn--ghost bj-table-actions__btn bj-table-actions__btn--sm" onClick={handleTableAid}>
-              AID
-            </button>
-          )}
-        </div>
-      </div>
+      <BlackjackActionPanel
+        variant="table"
+        actionsEnabled
+        canHit={canHit}
+        canStand={canStand}
+        canDouble={canDouble}
+        canSplit={canSplit}
+        showDouble={blackjackSettings.allowDoubleDown}
+        showSplit={blackjackSettings.allowSplit && Boolean(deck)}
+        showAid={flowSettings.adviceEnabled}
+        onStand={() =>
+          run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} })
+        }
+        onHit={() =>
+          run((s) => hitBlackjackOnState(s, actionable.handKey), { type: 'hit', payload: {} })
+        }
+        onDouble={() =>
+          run((s) => doubleDownBlackjackOnState(s, actionable.handKey), {
+            type: 'double',
+            payload: {},
+          })
+        }
+        onSplit={() =>
+          run((s) => splitBlackjackOnState(s, actionable.handKey), { type: 'split', payload: {} })
+        }
+        onAid={handleTableAid}
+      />
     );
   }
 
@@ -1285,7 +1276,70 @@ export function BlackjackPanel({
   }
 
 
-  function renderArcSlot(boxId: string, slotNumber: number) {
+  function arcSlotRotation(slotNumber: number): number {
+    const visualIdx = arcVisualIndex(slotNumber);
+    return ARC_ROTATIONS[visualIdx] ?? 0;
+  }
+
+  function renderArcCardStack(cardIds: string[]) {
+    if (cardIds.length === 0 || !visualDeck) {
+      return null;
+    }
+    return (
+      <div className="bj-arc__play-zone">
+        <div
+          className={[
+            TABLE_UX.arcCards,
+            TABLE_UX.arcCardsStackVertical,
+          ].join(' ')}
+        >
+          <div
+            className={TABLE_UX.arcCardsStack}
+            data-bj-card-count={Math.min(cardIds.length, 6)}
+          >
+            {cardIds.map((id) => renderCard(id, false, deviceView === 'mobile', id))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderArcCardColumn(boxId: string, slotNumber: number) {
+    let handKeys = handKeysByBox.get(boxId) ?? [];
+    if (handKeys.length === 0 && visualRound) {
+      const primaryKey = blackjackHandKey(boxId, 0);
+      const hand = visualRound.playerHands[primaryKey];
+      if (hand && (hand.currentBet > 0 || hand.cardIds.some(Boolean))) {
+        handKeys = [primaryKey];
+      }
+    }
+    const primaryHandKey = handKeys[0];
+    const cardIds = primaryHandKey ? getVisibleHandCardIds(visualRound, primaryHandKey) : [];
+    const rotation = arcSlotRotation(slotNumber);
+    return (
+      <div
+        key={`cards-${boxId}`}
+        className="bj-arc__slot bj-arc__slot--card-column"
+        style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
+      >
+        {renderArcCardStack(cardIds)}
+      </div>
+    );
+  }
+
+  function renderEmptyCardColumn(slotNumber: number) {
+    const rotation = arcSlotRotation(slotNumber);
+    return (
+      <div
+        key={`cards-empty-${slotNumber}`}
+        className="bj-arc__slot bj-arc__slot--card-column bj-arc__slot--card-empty"
+        style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
+        aria-hidden="true"
+      />
+    );
+  }
+
+  function renderArcBoxSlot(boxId: string, slotNumber: number) {
     const openStake = getStakeForBox(gameState, boxId);
     const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
     const borderState = resolveBoxBorderVisualState({
@@ -1300,7 +1354,7 @@ export function BlackjackPanel({
       playerPhase: isPlayerTurnPhase(protocolPhase),
     });
     const isTurn = borderState.isTurn;
-    const callerDisplayName = getBoxCallerDisplayName(gameState, boxId);
+    const boxInfo = buildBlackjackPlayerBoxInfo(gameState, slotNumber, boxId);
     let handKeys = handKeysByBox.get(boxId) ?? [];
     if (handKeys.length === 0 && visualRound) {
       const primaryKey = blackjackHandKey(boxId, 0);
@@ -1310,7 +1364,6 @@ export function BlackjackPanel({
       }
     }
     const primaryHandKey = handKeys[0];
-    const cardIds = primaryHandKey ? getVisibleHandCardIds(visualRound, primaryHandKey) : [];
     const displayValue = primaryHandKey
       ? getDisplayedHandValue(visualDeck, visualRound, primaryHandKey)
       : null;
@@ -1332,28 +1385,11 @@ export function BlackjackPanel({
         : [];
     const showStakeContent = inBetting || displayChips.length > 0;
     const dropKey = chipDropKey({ slotNumber, boxId });
-    const visualIdx = arcVisualIndex(slotNumber);
-    const rotation = ARC_ROTATIONS[visualIdx] ?? 0;
-
-    const arcCards =
-      cardIds.length > 0 && visualDeck ? (
-        <div className="bj-arc__play-zone">
-          <div
-            className={[
-              TABLE_UX.arcCards,
-              TABLE_UX.arcCardsStackVertical,
-            ].join(' ')}
-          >
-            <div className={TABLE_UX.arcCardsStack}>
-              {cardIds.map((id) => renderCard(id, false, deviceView === 'mobile', id))}
-            </div>
-          </div>
-        </div>
-      ) : null;
+    const rotation = arcSlotRotation(slotNumber);
 
     return (
       <div
-        key={boxId}
+        key={`box-${boxId}`}
         className={[
           'bj-arc__slot',
           'bj-arc__slot--owned',
@@ -1366,7 +1402,7 @@ export function BlackjackPanel({
         <button
           type="button"
           className={TABLE_UX.boxHitArea}
-          onClick={() => selectBox(boxId)}
+          {...bindBoxTapSelect(() => selectBox(boxId))}
           aria-label={`Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`}
           aria-current={borderState.isSelected || isTurn ? 'true' : undefined}
           onDragOver={inBetting ? handleDragOver : undefined}
@@ -1388,7 +1424,6 @@ export function BlackjackPanel({
           }
           onDrop={inBetting ? (e) => handleBetZoneDrop(boxId, slotNumber, e) : undefined}
         />
-        {arcCards}
         <div
           {...sxmSectionProps(
             SXM_LAYOUT.playerBox,
@@ -1416,10 +1451,10 @@ export function BlackjackPanel({
               &nbsp;
             </span>
           )}
-          <span className="bj-phone-view__mini-hand-head">
-            <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
-            <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
-          </span>
+          <BlackjackPlayerBoxHead
+            boxLabel={boxInfo.boxLabel}
+            callerDisplayName={boxInfo.callerDisplayName}
+          />
           <span
             className={['bj-phone-view__mini-stake-slot', TABLE_UX.boxInteractive]
               .filter(Boolean)
@@ -1457,7 +1492,7 @@ export function BlackjackPanel({
     );
   }
 
-  function renderEmptySlot(slotNumber: number) {
+  function renderEmptyBoxSlot(slotNumber: number) {
     const visualIdx = arcVisualIndex(slotNumber);
     const rotation = ARC_ROTATIONS[visualIdx] ?? 0;
     const dropKey = `slot-${slotNumber}`;
@@ -1481,7 +1516,7 @@ export function BlackjackPanel({
         <button
           type="button"
           className={TABLE_UX.boxHitArea}
-          onClick={() => handleClaimOrSelectSlot(slotNumber)}
+          {...bindBoxTapSelect(() => handleClaimOrSelectSlot(slotNumber))}
           aria-label={`Join box ${slotNumber}`}
           aria-current={isSelected ? 'true' : undefined}
           onDragOver={handleDragOver}
@@ -1728,6 +1763,30 @@ export function BlackjackPanel({
         />
       )}
 
+      {showRoundSummaryOverlay && roundSummaryOverlayModel && (
+        <RoundSummaryOverlay
+          open
+          model={roundSummaryOverlayModel}
+          deck={deck}
+          pending={nextRoundPending}
+          onPlayOn={() => {
+            setRoundSummaryDismissed(true);
+            handleNextRound();
+          }}
+          onClose={() => setRoundSummaryDismissed(true)}
+          onDontShowAgain={() => {
+            onGameStateChange({
+              ...gameState,
+              tableMeta: {
+                ...gameState.tableMeta,
+                showRoundSummaryOverlay: false,
+              },
+            });
+            setRoundSummaryDismissed(true);
+          }}
+        />
+      )}
+
       <LocalProfileSetup
         open={profileOpen}
         required={!isOnlineModeEnabled() && !loadProfile().name.trim()}
@@ -1782,45 +1841,48 @@ export function BlackjackPanel({
           <div
             className={`bj-casino__felt ${TABLE_UX.surface}${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}
         >
-          <div className="magic8-table-overlay">
-            <Magic8Ball
-              variant="table"
-              compact
-              controlOnly
-              canShake={magic8ShakeAllowed}
-              answer={magic8Answer}
-              onAnswer={setMagic8Answer}
-            />
-          </div>
-          <Magic8TableAnswer answer={magic8Answer} />
+          <Magic8Ball
+            variant="table"
+            compact
+            controlOnly
+            canShake={magic8ShakeAllowed}
+            answer={magic8Answer}
+            onAnswer={setMagic8Answer}
+          />
           {viewMode === 'full' && (
             <>
               <div className="bj-casino__felt-main">
-              <div className={`bj-table-zone ${TABLE_UX.tableZoneDealer}`}>
-              <DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} />
-              </div>
+              <BlackjackDealerArea {...dealerBlockProps} dealerCards={dealerCardNodes} omitCommand />
 
               {renderSummaryZone()}
 
-              <div
-                {...sxmSectionProps(SXM_LAYOUT.heroZone, 'bj-table-zone__hero-reserved')}
-                aria-hidden="true"
-              />
-
               {renderActionsZone()}
 
-              <div className={`bj-table-zone ${TABLE_UX.tableZonePlay}`}>
-              <div className="bj-arc-separator" aria-hidden="true" />
+              <BlackjackCardsAreaZone variant="table">
+                <div
+                  className="bj-arc bj-arc--cards bj-arc--rtl"
+                  style={{ '--slot-count': MAX_BOXES } as CSSProperties}
+                >
+                  {displaySlots.map((slot) =>
+                    slot.playerId
+                      ? renderArcCardColumn(slot.playerId, slot.slotNumber)
+                      : renderEmptyCardColumn(slot.slotNumber),
+                  )}
+                </div>
+              </BlackjackCardsAreaZone>
 
-              <div
-                {...sxmSectionProps(SXM_LAYOUT.playerBoxesZone, 'bj-arc bj-arc--rtl')}
-                style={{ '--slot-count': MAX_BOXES } as CSSProperties}
-              >
-                {displaySlots.map((slot) =>
-                  slot.playerId ? renderArcSlot(slot.playerId, slot.slotNumber) : renderEmptySlot(slot.slotNumber),
-                )}
-              </div>
-              </div>
+              <BlackjackPlayerBoxesZone variant="table">
+                <div
+                  className="bj-arc bj-arc--rtl"
+                  style={{ '--slot-count': MAX_BOXES } as CSSProperties}
+                >
+                  {displaySlots.map((slot) =>
+                    slot.playerId
+                      ? renderArcBoxSlot(slot.playerId, slot.slotNumber)
+                      : renderEmptyBoxSlot(slot.slotNumber),
+                  )}
+                </div>
+              </BlackjackPlayerBoxesZone>
 
               {renderBottomTrayZone()}
               </div>
@@ -1830,10 +1892,17 @@ export function BlackjackPanel({
           {viewMode === 'card' && (
             <BlackjackCardView
               dealer={
-                <DealerBlock {...dealerBlockProps} dealerCards={dealerCardNodes} omitCommand />
+                <BlackjackDealerAreaCardSlot>
+                  <BlackjackDealerArea
+                    variant="card"
+                    {...dealerBlockProps}
+                    dealerCards={dealerCardNodes}
+                    omitCommand
+                  />
+                </BlackjackDealerAreaCardSlot>
               }
               dealerCommand={
-                <DealerCommandArea
+                <BlackjackCommandBox
                   commandMessage={tableCommand.commandMessage}
                   commandLines={tableCommand.commandLines}
                   gameEnded={gameEnded}

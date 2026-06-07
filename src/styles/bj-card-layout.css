@@ -7,7 +7,7 @@
   --bj-card-row-dealer: 8rem;
   --bj-card-row-summary: 2.75rem;
   --bj-card-row-hero-min: 11rem;
-  --bj-card-row-actions: 3.75rem;
+  --bj-card-row-actions: 3.15rem;
   --bj-card-row-boxes: 9rem;
   --bj-card-row-tray: 2.75rem;
   --bj-card-boxes-padding-bottom: 0.35rem;
@@ -38,7 +38,7 @@
     --bj-card-row-dealer: 7rem;
     --bj-card-row-summary: 2.25rem;
     --bj-card-row-hero-min: 10rem;
-    --bj-card-row-actions: 3.45rem;
+    --bj-card-row-actions: 2.85rem;
     --bj-card-row-boxes: 6.85rem;
     --bj-card-row-tray: 3.35rem;
     --bj-card-boxes-padding-bottom: 0.08rem;
@@ -75,8 +75,8 @@
   grid-template-rows:
     var(--bj-card-row-dealer)
     var(--bj-card-row-summary)
-    minmax(var(--bj-card-row-hero-min), 1fr)
     var(--bj-card-row-actions)
+    minmax(var(--bj-card-row-hero-min), 1fr)
     var(--bj-card-row-boxes)
     var(--bj-card-row-tray);
   width: 100%;
@@ -107,10 +107,15 @@
   height: var(--bj-card-row-dealer);
   min-height: var(--bj-card-row-dealer);
   max-height: var(--bj-card-row-dealer);
-  overflow: visible;
-  position: relative;
-  z-index: 2;
-  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.bj-card-layout__dealer .dealer-block {
+  width: 100%;
+  max-width: var(--bj-table-center-column-max-width, 28rem);
+  margin-inline: auto;
 }
 
 .bj-card-layout__summary {
@@ -124,6 +129,11 @@
   justify-content: flex-start;
   overflow: hidden;
   gap: 0.04rem;
+}
+
+.bj-card-layout__summary .bj-card-layout__command {
+  max-width: var(--bj-table-center-column-max-width, 28rem);
+  width: 100%;
 }
 
 /* Command text sits between dealer area and hero display — never overlays hero cards. */
@@ -154,22 +164,8 @@
   visibility: hidden;
 }
 
-.bj-card-layout__hero {
-  grid-row: 3;
-  min-height: var(--bj-card-row-hero-min);
-  max-height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  padding-top: 0.28rem;
-  box-sizing: border-box;
-  z-index: 1;
-}
-
 .bj-card-layout__actions {
-  grid-row: 4;
+  grid-row: 3;
   height: var(--bj-card-row-actions);
   min-height: var(--bj-card-row-actions);
   max-height: var(--bj-card-row-actions);
@@ -180,12 +176,36 @@
   overflow: hidden;
   padding-bottom: 0.04rem;
   box-sizing: border-box;
+  position: relative;
+  z-index: 6;
+  width: 100%;
+}
+
+.bj-card-layout__actions .bj-player-actions,
+.bj-card-layout__actions .bj-phone-view__action-bar {
+  max-width: var(--bj-table-center-column-max-width, 28rem);
+  width: 100%;
+  margin-inline: auto;
 }
 
 .bj-card-layout__actions-placeholder {
   width: 100%;
   min-height: calc(var(--bj-card-row-actions) - 0.5rem);
   visibility: hidden;
+}
+
+.bj-card-layout__hero {
+  grid-row: 4;
+  min-height: var(--bj-card-row-hero-min);
+  max-height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding-top: 0.28rem;
+  box-sizing: border-box;
+  z-index: 1;
 }
 
 .bj-card-layout__boxes {

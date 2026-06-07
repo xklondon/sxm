@@ -231,6 +231,41 @@
   opacity: 0.88;
 }
 
+.dealer-block__card-stack--shuffling,
+.dealer-block__cards--shuffling {
+  animation: dealer-shuffle-jitter 0.7s ease-in-out;
+}
+
+@keyframes dealer-shuffle-jitter {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+  15% {
+    transform: translateX(-3px) rotate(-4deg) scale(1.02);
+  }
+  30% {
+    transform: translateX(4px) rotate(3deg) scale(0.98);
+  }
+  45% {
+    transform: translateX(-2px) rotate(-2deg) scale(1.01);
+  }
+  60% {
+    transform: translateX(3px) rotate(2deg) scale(1);
+  }
+  75% {
+    transform: translateX(-1px) rotate(-1deg) scale(1.01);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dealer-block__card-stack--shuffling,
+  .dealer-block__cards--shuffling {
+    animation: none;
+    filter: brightness(1.08);
+  }
+}
+
 .dealer-block__action {
   font-size: 0.68rem;
   padding: 0.38rem 0.85rem;

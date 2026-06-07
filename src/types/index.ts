@@ -47,7 +47,7 @@ export {
 export type { TableAgreement, TableOutcome, TableMeta, TableSessionStatus } from './table';
 export type { TableInviteRecord, InviteStatus, JoinTableParams } from './invites';
 export type { TableAdminSettings } from './admin';
-export { createDefaultTableMeta } from './table';
+export { createDefaultTableMeta, resolveShowRoundSummaryOverlay } from './table';
 import type { TableMeta } from './table';
 import type { TableAdminSettings } from './admin';
 import type { BlackjackFlowSettings } from '../engine/blackjack/flowSettings';

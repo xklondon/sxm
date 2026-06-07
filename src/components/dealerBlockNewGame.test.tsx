@@ -58,7 +58,7 @@ describe('DealerBlock New Game', () => {
     expect(html).toContain('Only the table owner can start a new game.');
   });
 
-  it('shows Next Round between rounds when the game is still active', () => {
+  it('shows New Cards between rounds when the game is still active', () => {
     const html = renderDealerBlock({
       gameEnded: false,
       awaitingNextRound: true,
@@ -66,7 +66,7 @@ describe('DealerBlock New Game', () => {
       bettingOpen: false,
       shoeStarted: true,
     });
-    expect(html).toContain('Next Round');
+    expect(html).toContain('New Cards');
     expect(html).not.toContain('New Game');
   });
 

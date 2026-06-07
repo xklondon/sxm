@@ -68,7 +68,7 @@ export function buildRoundResultSummary(state: GameState): string[] {
 export function formatRoundResultSummary(state: GameState): string {
   const lines = buildRoundResultSummary(state);
   if (lines.length === 0) {
-    return 'Round complete — review results, then press Next Round.';
+    return 'Round complete — review results, then press New Cards.';
   }
   return lines.join('\n');
 }

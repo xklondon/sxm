@@ -209,6 +209,14 @@ export type { DealerDisplayHand } from './dealerDisplay';
 
 export { getProtocolMessage } from './protocolMessages';
 export { formatRoundResultSummary, buildRoundResultSummary } from './roundResultSummary';
+export {
+  buildRoundSummaryOverlayModel,
+  netChipsForOutcome,
+  outcomeDisplayLabel,
+  roundSummaryFlavor,
+  type RoundSummaryBoxEntry,
+  type RoundSummaryOverlayModel,
+} from './roundSummaryOverlay';
 export { shouldDealerDraw, evaluateDealerDraw } from './dealerDraw';
 
 export {

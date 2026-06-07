@@ -24,7 +24,14 @@ export function isBoxChipTargetOnTable(
   online: boolean,
 ): boolean {
   if (online) {
-    return state.tableMeta.boxSlots.some((s) => s.playerId === boxId);
+    if (state.tableMeta.boxSlots.some((s) => s.playerId === boxId)) {
+      return true;
+    }
+    const slotNum = state.session.boxSlotNumbers?.[boxId];
+    if (slotNum != null) {
+      return state.tableMeta.boxSlots.some((s) => s.slotNumber === slotNum);
+    }
+    return false;
   }
   return Boolean(state.players[boxId]);
 }
@@ -55,6 +62,20 @@ export function resolveLocalChipTrayTarget(
       return { kind: 'box', boxId: slot.playerId };
     }
     return explicit;
+  }
+
+  const slot = state.tableMeta.boxSlots.find((s) => s.playerId === explicit.boxId);
+  if (slot?.playerId) {
+    return { kind: 'box', boxId: slot.playerId };
+  }
+  if (online) {
+    const slotNum = state.session.boxSlotNumbers?.[explicit.boxId];
+    if (slotNum != null) {
+      const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNum);
+      if (row?.playerId) {
+        return { kind: 'box', boxId: row.playerId };
+      }
+    }
   }
 
   if (isBoxChipTargetOnTable(state, explicit.boxId, online)) {

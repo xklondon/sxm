@@ -24,8 +24,8 @@ function readSrc(relativePath: string): string {
 const CARD_LAYOUT_ZONES = [
   TABLE_UX.cardLayoutDealer,
   TABLE_UX.cardLayoutSummary,
-  TABLE_UX.cardLayoutHero,
   TABLE_UX.cardLayoutActions,
+  TABLE_UX.cardLayoutHero,
   TABLE_UX.cardLayoutBoxes,
   TABLE_UX.cardLayoutTray,
 ] as const;
@@ -207,13 +207,13 @@ describe('Card View layout guard', () => {
 
   it('hero, actions, boxes, and tray are direct grid children in Card View markup', () => {
     const cardSrc = readSrc(CARD_VIEW_TSX);
-    expect(cardSrc).toMatch(/<div \{\.\.\.sxmSectionProps\(SXM_LAYOUT\.heroZone, TABLE_UX\.cardLayoutHero\)\}>/);
-    expect(cardSrc).toMatch(/<div \{\.\.\.sxmSectionProps\(SXM_LAYOUT\.actionZone, TABLE_UX\.cardLayoutActions\)\}>/);
-    expect(cardSrc).toMatch(/<div \{\.\.\.sxmSectionProps\(SXM_LAYOUT\.playerBoxesZone, TABLE_UX\.cardLayoutBoxes\)\}>/);
+    expect(cardSrc).toContain('BlackjackActionsZone');
+    expect(cardSrc).toContain('BlackjackCardsAreaZone');
+    expect(cardSrc).toContain('BlackjackPlayerBoxesZone');
     expect(cardSrc).toMatch(/<div className=\{TABLE_UX\.cardLayoutTray\}>/);
     const html = renderCardPanel(playingState());
     expect(html).toMatch(
-      /bj-card-layout[\s\S]*bj-card-layout__hero[\s\S]*bj-card-layout__actions[\s\S]*bj-card-layout__boxes[\s\S]*bj-card-layout__tray/,
+      /bj-card-layout[\s\S]*bj-card-layout__actions[\s\S]*bj-card-layout__hero[\s\S]*bj-card-layout__boxes[\s\S]*bj-card-layout__tray/,
     );
   });
 
@@ -221,8 +221,8 @@ describe('Card View layout guard', () => {
     const layoutCss = readSrc(CARD_LAYOUT_CSS);
     expect(layoutCss).toMatch(/\.bj-card-layout__dealer\s*\{[\s\S]*grid-row:\s*1/);
     expect(layoutCss).toMatch(/\.bj-card-layout__summary\s*\{[\s\S]*grid-row:\s*2/);
-    expect(layoutCss).toMatch(/\.bj-card-layout__hero\s*\{[\s\S]*grid-row:\s*3/);
-    expect(layoutCss).toMatch(/\.bj-card-layout__actions\s*\{[\s\S]*grid-row:\s*4/);
+    expect(layoutCss).toMatch(/\.bj-card-layout__actions\s*\{[\s\S]*grid-row:\s*3/);
+    expect(layoutCss).toMatch(/\.bj-card-layout__hero\s*\{[\s\S]*grid-row:\s*4/);
     expect(layoutCss).toMatch(/\.bj-card-layout__boxes\s*\{[\s\S]*grid-row:\s*5/);
     expect(layoutCss).toMatch(/\.bj-card-layout__tray\s*\{[\s\S]*grid-row:\s*6/);
   });
@@ -307,10 +307,11 @@ describe('Card View layout guard', () => {
       />,
     );
     expect(full).toContain(TABLE_UX.tableZoneDealer);
-    expect(full).toContain(TABLE_UX.tableZonePlay);
+    expect(full).toContain(TABLE_UX.tableZoneCards);
+    expect(full).toContain(TABLE_UX.tableZoneBoxes);
     expect(full).toContain(TABLE_UX.tableZoneBottom);
     expect(full).toContain(TABLE_UX.arcCards);
     expect(full).toContain(TABLE_UX.headerBankInfo);
-    expect(full).not.toContain(TABLE_UX.cardLayout);
+    expect(full).not.toMatch(/\bbj-card-layout bj-phone-view\b/);
   });
 });

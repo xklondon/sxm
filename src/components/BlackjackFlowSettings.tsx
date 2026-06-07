@@ -200,7 +200,23 @@ export function BlackjackFlowSettingsMenu({
                 checked={naturalDealing}
                 onChange={(e) =>
                   persistAndApply(gameState, onGameStateChange, {
-                    initialDealMode: e.target.checked ? 'natural' : 'instant',
+                    initialDealMode: e.target.checked ? 'natural' : 'staged',
+                  })
+                }
+              />
+            </label>
+            <label className="bj-flow-settings__field bj-flow-settings__field--check">
+              <span className="bj-flow-settings__label">Round summary overlay</span>
+              <input
+                type="checkbox"
+                checked={gameState.tableMeta.showRoundSummaryOverlay !== false}
+                onChange={(e) =>
+                  onGameStateChange({
+                    ...gameState,
+                    tableMeta: {
+                      ...gameState.tableMeta,
+                      showRoundSummaryOverlay: e.target.checked,
+                    },
                   })
                 }
               />

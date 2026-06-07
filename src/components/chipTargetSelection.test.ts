@@ -111,4 +111,25 @@ describe('chipTargetSelection', () => {
     expect(resolveViewerAssignedBoxPlayerId(state, personId)).toBe(nativeBox);
     expect(resolveViewerAssignedBoxPlayerId(state, 'unknown')).toBeNull();
   });
+
+  it('online box target survives slot mapping refresh', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 5);
+    const box5 = boxPlayerId(state, 5)!;
+    state = {
+      ...state,
+      session: {
+        ...state.session,
+        boxSlotNumbers: { ...state.session.boxSlotNumbers, [box5]: 5 },
+      },
+    };
+    expect(
+      resolveLocalChipTrayTarget(state, {
+        userPicked: true,
+        explicit: { kind: 'box', boxId: box5 },
+        online: true,
+      }),
+    ).toEqual({ kind: 'box', boxId: box5 });
+    expect(shouldClearExplicitChipTarget(state, { kind: 'box', boxId: box5 }, true)).toBe(false);
+  });
 });

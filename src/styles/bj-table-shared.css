@@ -35,7 +35,7 @@
   --bj-actions-panel-bg: rgb(0 0 0 / 0.28);
   --bj-actions-panel-border: 1px solid rgb(110 231 183 / 0.35);
   --bj-actions-panel-radius: var(--ds-radius-md);
-  --bj-actions-panel-padding: 0.35rem 0.5rem;
+  --bj-actions-panel-padding: 0.22rem 0.42rem;
   --bj-actions-btn-radius: var(--ds-radius-md);
   --bj-actions-btn-font-size: 0.68rem;
   --bj-actions-btn-sm-font-size: 0.58rem;
@@ -68,12 +68,17 @@
   --bj-table-zone-actions-min-height: 3.15rem;
   --bj-table-zone-tray-min-height: 3.35rem;
   --bj-table-zone-play-min-height: 8rem;
-  /* Full Table player card stack — upright overlap; lower cards peek at bottom corner only. */
-  --bj-table-card-width: 1.85rem;
-  --bj-table-card-height: 2.15rem;
-  --bj-table-card-overlap: 1.72rem;
-  --bj-table-card-stack-max-height: 3.45rem;
-  --bj-table-actions-play-gap: 0.75rem;
+  --bj-table-zone-cards-min-height: 3.75rem;
+  --bj-table-zone-boxes-min-height: 5.25rem;
+  --bj-table-center-column-max-width: 28rem;
+  /* Full Table player cards — medium-large, hand-size-aware overlap (see .bj-arc__cards-stack). */
+  --bj-table-card-width: 2.65rem;
+  --bj-table-card-height: 3.55rem;
+  --bj-table-card-overlap-2: 1.25rem;
+  --bj-table-card-overlap-3: 1.75rem;
+  --bj-table-card-overlap-4plus: 2.15rem;
+  --bj-table-actions-play-gap: 0.65rem;
+  --bj-table-play-actions-buffer: 0.25rem;
   --bj-full-table-box-width: 4.85rem;
   --bj-full-table-box-height: 4.35rem;
   --bj-full-table-box-padding: 0.1rem 0.16rem 0.08rem;
@@ -97,17 +102,21 @@
     --bj-seat-total-size: 0.72rem;
     --bj-actions-btn-font-size: 0.58rem;
     --bj-actions-btn-sm-font-size: 0.5rem;
-    --bj-actions-panel-padding: 0.25rem 0.5rem;
+    --bj-actions-panel-padding: 0.18rem 0.38rem;
     --bj-mobile-mini-hand-width: 2.55rem;
     --bj-mobile-mini-hand-max-width: 2.85rem;
     --bj-mobile-mini-hand-height: 2.45rem;
     --bj-mobile-felt-min-height: min(52dvh, 22rem);
     --bj-mobile-rail-padding: 0.28rem 0.55rem 0.4rem;
-    --bj-table-card-width: 1.45rem;
-    --bj-table-card-height: 1.85rem;
-    --bj-table-card-overlap: 1.42rem;
-    --bj-table-card-stack-max-height: 2.65rem;
+    --bj-table-card-width: 1.95rem;
+    --bj-table-card-height: 2.65rem;
+    --bj-table-card-overlap-2: 0.95rem;
+    --bj-table-card-overlap-3: 1.35rem;
+    --bj-table-card-overlap-4plus: 1.65rem;
     --bj-table-actions-play-gap: 0.45rem;
+    --bj-table-play-actions-buffer: 0.18rem;
+    --bj-table-zone-cards-min-height: 2.85rem;
+    --bj-table-zone-boxes-min-height: 3.35rem;
     --bj-full-table-box-height: 3.15rem;
     --bj-full-table-stake-min-height: 0.95rem;
   }
@@ -256,7 +265,7 @@
       --bj-card-row-dealer: 4.75rem;
       --bj-card-row-summary: 1.75rem;
       --bj-card-row-hero-min: 4rem;
-      --bj-card-row-actions: 2.75rem;
+      --bj-card-row-actions: 2.45rem;
       --bj-card-row-boxes: 4.25rem;
       --bj-card-row-tray: 2.85rem;
       --bj-table-zone-dealer-min-height: 4.25rem;
@@ -305,8 +314,12 @@
       min-height: var(--bj-table-zone-actions-min-height);
     }
 
-    .bj-view-full-mobile .bj-table-zone--play {
-      min-height: var(--bj-table-zone-play-min-height);
+    .bj-view-full-mobile .bj-table-zone--cards {
+      min-height: var(--bj-table-zone-cards-min-height);
+    }
+
+    .bj-view-full-mobile .bj-table-zone--boxes {
+      min-height: var(--bj-table-zone-boxes-min-height);
       flex: 1 1 auto;
     }
 
@@ -314,20 +327,7 @@
       min-height: var(--bj-table-zone-tray-min-height);
     }
 
-    .bj-view-full-mobile .bj-arc-separator {
-      min-height: 0;
-      flex: 1 1 auto;
-      max-height: min(5dvh, 1.35rem);
-    }
-
-    .bj-view-full-mobile .bj-arc__cards-stack .playing-card {
-      width: var(--bj-table-card-width);
-      height: var(--bj-table-card-height);
-      min-height: 0;
-      max-height: var(--bj-table-card-height);
-    }
-
-    .bj-view-full-mobile .bj-table-zone--play {
+    .bj-view-full-mobile .bj-table-zone--boxes {
       min-height: 0;
     }
 
@@ -335,8 +335,8 @@
       grid-template-rows:
         minmax(3.25rem, var(--bj-card-row-dealer))
         minmax(1.25rem, var(--bj-card-row-summary))
-        minmax(3rem, 1fr)
         minmax(2rem, var(--bj-card-row-actions))
+        minmax(3rem, 1fr)
         minmax(2.75rem, var(--bj-card-row-boxes))
         minmax(2.75rem, var(--bj-card-row-tray));
     }
@@ -727,6 +727,35 @@
 
 .bj-table-zone--dealer {
   min-height: var(--bj-table-zone-dealer-min-height, 6.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bj-view-full-desktop .bj-table-zone--dealer .dealer-block,
+.bj-view-full-mobile .bj-table-zone--dealer .dealer-block {
+  width: 100%;
+  max-width: var(--bj-table-center-column-max-width);
+  margin-inline: auto;
+}
+
+.bj-view-full-desktop .bj-table-zone--summary .bj-card-layout__command,
+.bj-view-full-mobile .bj-table-zone--summary .bj-card-layout__command {
+  max-width: var(--bj-table-center-column-max-width);
+  margin-inline: auto;
+}
+
+.bj-view-full-desktop .bj-table-zone--actions,
+.bj-view-full-mobile .bj-table-zone--actions {
+  display: flex;
+  justify-content: center;
+}
+
+.bj-view-full-desktop .bj-table-zone--actions .bj-table-actions,
+.bj-view-full-mobile .bj-table-zone--actions .bj-player-actions,
+.bj-view-full-mobile .bj-table-zone--actions .bj-table-actions {
+  max-width: var(--bj-table-center-column-max-width);
+  margin-inline: auto;
 }
 
 .bj-table-zone--summary {
@@ -735,8 +764,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
+  gap: 0.04rem;
+}
+
+.bj-table-zone--summary .bj-card-layout__command {
+  width: 100%;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.bj-table-zone--summary .bj-card-layout__command .dealer-block__command {
+  border-top: none;
+  margin-top: 0;
+  min-height: 1.35rem;
+  max-height: 2.35rem;
+  padding: 0.04rem 0.35rem 0.02rem;
 }
 
 .bj-table-zone__summary-placeholder {
@@ -782,10 +826,33 @@
   padding-bottom: 0.05rem;
 }
 
+.bj-view-full-desktop .bj-table-zone--cards,
+.bj-view-full-mobile .bj-table-zone--cards {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  min-height: var(--bj-table-zone-cards-min-height, 3.75rem);
+  padding-top: var(--bj-table-play-actions-buffer);
+  overflow: visible;
+}
+
+.bj-view-full-desktop .bj-table-zone--boxes,
+.bj-view-full-mobile .bj-table-zone--boxes {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: var(--bj-table-zone-boxes-min-height, 5.25rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: visible;
+}
+
 .bj-view-full-desktop .bj-table-zone--play,
 .bj-view-full-mobile .bj-table-zone--play {
   position: relative;
   z-index: 1;
+  padding-top: var(--bj-table-play-actions-buffer);
 }
 
 .bj-table-zone__actions-placeholder {
@@ -812,7 +879,7 @@
   width: 100%;
 }
 
-/* Full Table arc seats — compact box shell; cards stack above in bj-arc__play-zone. */
+/* Full Table arc seats — compact box shell; cards render in bj-table-zone--cards. */
 .bj-phone-view__mini-hand--full-arc {
   justify-content: flex-start;
   gap: var(--bj-full-table-box-gap);
@@ -863,64 +930,108 @@
   background: transparent;
   box-shadow: none;
   padding: 0;
-  margin: 0 0 0.02rem;
+  margin: 0;
 }
 
-.bj-arc__cards--stack-vertical {
+.bj-view-full-desktop .bj-arc--cards,
+.bj-view-full-mobile .bj-arc--cards {
+  margin-top: 0;
+  margin-bottom: 0.08rem;
+}
+
+.bj-view-full-desktop .bj-arc__slot--card-column,
+.bj-view-full-mobile .bj-arc__slot--card-column {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.bj-view-full-desktop .bj-arc__cards--stack-vertical,
+.bj-view-full-mobile .bj-arc__cards--stack-vertical {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: flex-end;
   min-height: 0;
-  max-height: var(--bj-table-card-stack-max-height);
   overflow: visible;
 }
 
-.bj-arc__cards-stack {
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack,
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack {
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
   gap: 0;
-  width: 100%;
-  max-width: 100%;
+  width: var(--bj-table-card-width);
+  pointer-events: none;
 }
 
-.bj-arc__cards-stack .playing-card {
-  margin-left: 0;
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card,
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  margin: 0;
+  transform: none;
   flex: 0 0 auto;
   pointer-events: none;
+  opacity: 1;
   width: var(--bj-table-card-width);
   height: var(--bj-table-card-height);
-  min-height: 0;
+  min-height: var(--bj-table-card-height);
   max-height: var(--bj-table-card-height);
 }
 
-.bj-arc__cards-stack .playing-card + .playing-card {
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card + .playing-card,
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card + .playing-card {
   margin-top: 0;
-  margin-bottom: calc(-1 * var(--bj-table-card-overlap));
 }
 
-.bj-arc__cards-stack .playing-card:nth-child(1) {
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack[data-bj-card-count='2'] .playing-card + .playing-card,
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack[data-bj-card-count='2'] .playing-card + .playing-card {
+  margin-bottom: calc(-1 * var(--bj-table-card-overlap-2));
+}
+
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack[data-bj-card-count='3'] .playing-card + .playing-card,
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack[data-bj-card-count='3'] .playing-card + .playing-card {
+  margin-bottom: calc(-1 * var(--bj-table-card-overlap-3));
+}
+
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack[data-bj-card-count='4'] .playing-card + .playing-card,
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack[data-bj-card-count='5'] .playing-card + .playing-card,
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack[data-bj-card-count='6'] .playing-card + .playing-card,
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack[data-bj-card-count='4'] .playing-card + .playing-card,
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack[data-bj-card-count='5'] .playing-card + .playing-card,
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack[data-bj-card-count='6'] .playing-card + .playing-card {
+  margin-bottom: calc(-1 * var(--bj-table-card-overlap-4plus));
+}
+
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(1),
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(1) {
   z-index: 1;
 }
 
-.bj-arc__cards-stack .playing-card:nth-child(2) {
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(2),
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(2) {
   z-index: 2;
 }
 
-.bj-arc__cards-stack .playing-card:nth-child(3) {
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(3),
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(3) {
   z-index: 3;
 }
 
-.bj-arc__cards-stack .playing-card:nth-child(4) {
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(4),
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(4) {
   z-index: 4;
 }
 
-.bj-arc__cards-stack .playing-card:nth-child(5) {
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(5),
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(5) {
   z-index: 5;
 }
 
-.bj-arc__cards-stack .playing-card:nth-child(n + 6) {
+.bj-view-full-desktop .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(n + 6),
+.bj-view-full-mobile .bj-arc__cards--stack-vertical .bj-arc__cards-stack .playing-card:nth-child(n + 6) {
   z-index: 6;
 }
 
@@ -1017,7 +1128,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.14rem;
   box-sizing: border-box;
   background: var(--bj-actions-panel-bg);
   border: var(--bj-actions-panel-border);
@@ -1199,16 +1310,6 @@
     background-image: none;
   }
 
-  .bj-view-full-desktop .bj-arc-separator {
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-    height: auto;
-    margin: 0;
-    background: none;
-    border: none;
-  }
-
   .bj-view-full-desktop .bj-arc__slot--owned {
     background: none;
     padding: 0;
@@ -1314,29 +1415,24 @@
   }
 
   .bj-view-full-desktop .bj-table-zone--summary {
-    min-height: 1.2rem;
-  }
-
-  .bj-view-full-desktop .bj-table-zone__hero-reserved {
-    flex: 0 0 auto;
-    min-height: 0;
-    height: 0;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
+    min-height: 2rem;
   }
 
   .bj-view-full-desktop .bj-table-zone--actions {
     min-height: 2.65rem;
   }
 
-  .bj-view-full-desktop .bj-table-zone--play {
+  .bj-view-full-desktop .bj-table-zone--cards {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  .bj-view-full-desktop .bj-table-zone--boxes {
     flex: 1 1 auto;
     min-height: 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    padding-top: 0;
   }
 
   .bj-view-full-desktop .bj-arc__cards {
@@ -1347,14 +1443,7 @@
 
   .bj-view-full-desktop .bj-arc__cards--stack-vertical {
     min-height: 0;
-    max-height: var(--bj-table-card-stack-max-height);
-  }
-
-  .bj-view-full-desktop .bj-arc__cards-stack .playing-card {
-    width: var(--bj-table-card-width);
-    height: var(--bj-table-card-height);
-    min-height: 0;
-    max-height: var(--bj-table-card-height);
+    overflow: visible;
   }
 
   .bj-view-card-desktop .bj-casino__felt.bj-casino__felt--card-view {

@@ -35,6 +35,9 @@ export const TABLE_UX = {
   tableZoneSummary: 'bj-table-zone--summary',
   tableZoneHero: 'bj-table-zone--hero',
   tableZoneActions: 'bj-table-zone--actions',
+  /** Full Table per-box card stacks — separate from player boxes. */
+  tableZoneCards: 'bj-table-zone--cards',
+  /** @deprecated Play zone merged into tableZoneCards + tableZoneBoxes. */
   tableZonePlay: 'bj-table-zone--play',
   tableZoneBoxes: 'bj-table-zone--boxes',
   tableZoneBottom: 'bj-table-zone--bottom',

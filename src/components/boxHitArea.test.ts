@@ -19,13 +19,15 @@ describe('box hit area — single reliable tap target', () => {
   it('Full Table arc slots use TABLE_UX.boxHitArea for selection', () => {
     expect(PANEL_SRC).toContain('TABLE_UX.boxHitArea');
     expect(PANEL_SRC).toContain('TABLE_UX.boxHitZone');
-    expect(PANEL_SRC).toMatch(/function renderArcSlot[\s\S]*TABLE_UX\.boxHitArea[\s\S]*selectBox\(boxId\)/);
-    expect(PANEL_SRC).toMatch(/function renderEmptySlot[\s\S]*TABLE_UX\.boxHitArea[\s\S]*handleClaimOrSelectSlot/);
+    expect(PANEL_SRC).toContain('bindBoxTapSelect');
+    expect(PANEL_SRC).toMatch(/function renderArcBoxSlot[\s\S]*bindBoxTapSelect[\s\S]*selectBox\(boxId\)/);
+    expect(PANEL_SRC).toMatch(/function renderEmptyBoxSlot[\s\S]*bindBoxTapSelect[\s\S]*handleClaimOrSelectSlot/);
   });
 
   it('Card View columns use TABLE_UX.boxHitArea covering value, tile, and chip rows', () => {
     expect(CARD_SRC).toContain('TABLE_UX.boxHitArea');
     expect(CARD_SRC).toContain('TABLE_UX.boxHitZone');
+    expect(CARD_SRC).toContain('onPointerDown');
     expect(CARD_SRC).toMatch(/function renderCardViewBoxColumn[\s\S]*TABLE_UX\.boxHitArea[\s\S]*onHitAreaClick/);
   });
 
@@ -34,7 +36,7 @@ describe('box hit area — single reliable tap target', () => {
     const end = PANEL_SRC.indexOf('function handleMovePlayer', start);
     const block = PANEL_SRC.slice(start, end);
     expect(block).not.toMatch(/onClick=\{\(e\) => e\.stopPropagation\(\)\}/);
-    expect(block).toMatch(/onClick=\{\(\) => selectBox\(boxId\)\}/);
+    expect(block).toMatch(/bindBoxTapSelect\(\(\) => selectBox\(boxId\)\)/);
   });
 
   it('card stacks and labels pass taps through to the hit area', () => {
@@ -64,7 +66,7 @@ describe('mobile landscape Full Table fit', () => {
     );
     expect(PANEL_CSS).toMatch(/\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-y:\s*hidden/);
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc-separator[\s\S]*max-height:\s*min\(5dvh,\s*1\.35rem\)/,
+      /\.bj-view-full-mobile \.bj-table-zone--boxes[\s\S]*min-height:\s*0/,
     );
   });
 

@@ -92,8 +92,7 @@ export function useBlackjackTableFlow(
     !tableMeta.bettingLocked &&
     Boolean(tableMeta.shoeStarted) &&
     canStartCards(gameState) &&
-    !actionPending &&
-    !onlineActionInFlight;
+    !actionPending;
 
   const reportFlowError = useCallback((msg: string) => {
     if (lastFlowErrorRef.current === msg) {
@@ -109,7 +108,7 @@ export function useBlackjackTableFlow(
   }, []);
 
   const handleDealCards = useCallback(() => {
-    if (actionPending || onlineActionInFlight) {
+    if (actionPending) {
       return;
     }
     clearFlowError();
@@ -156,7 +155,6 @@ export function useBlackjackTableFlow(
     }
   }, [
     actionPending,
-    onlineActionInFlight,
     clearFlowError,
     onGameStateChange,
     onlineDispatch,
@@ -200,7 +198,7 @@ export function useBlackjackTableFlow(
   ]);
 
   const handleShuffleToStart = useCallback(() => {
-    if (actionPending || onlineActionInFlight) {
+    if (actionPending) {
       return;
     }
     clearFlowError();
@@ -219,7 +217,7 @@ export function useBlackjackTableFlow(
     } catch (err) {
       reportFlowError(err instanceof Error ? err.message : 'Cannot shuffle');
     }
-  }, [actionPending, onlineActionInFlight, clearFlowError, onGameStateChange, onlineDispatch, reportFlowError]);
+  }, [actionPending, clearFlowError, onGameStateChange, onlineDispatch, reportFlowError]);
 
   const handleShuffleFresh = useCallback(() => {
     setFlowError(null);
@@ -424,7 +422,7 @@ export function useBlackjackTableFlow(
     setFlowError,
     bettingOpen,
     canDeal,
-    dealActionPending: actionPending || onlineActionInFlight,
+    dealActionPending: actionPending,
     nextRoundPending,
     protocolPhase,
     awaitingNextRound,

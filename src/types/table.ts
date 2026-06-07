@@ -103,8 +103,10 @@ export interface TableMeta {
   startingChipsBank: number;
   /** Minimum bet per box for deal eligibility (owner-editable during betting). */
   minimumBet: number;
-  /** True after payout until player presses Next Round. */
+  /** True after payout until player presses New Cards. */
   awaitingNextRound: boolean;
+  /** Show structured round summary overlay after settlement (default on). */
+  showRoundSummaryOverlay?: boolean;
   /** Active play vs table ended (one side holds all chips). */
   gameStatus: TableGameStatus;
   /** Bank or person bankroll id when gameStatus is ended. */
@@ -145,6 +147,10 @@ export function createEmptyBoxSlots(): BoxSlotState[] {
   }));
 }
 
+export function resolveShowRoundSummaryOverlay(meta: Pick<TableMeta, 'showRoundSummaryOverlay'>): boolean {
+  return meta.showRoundSummaryOverlay !== false;
+}
+
 export function createDefaultTableMeta(): TableMeta {
   return {
     agreement: null,
@@ -173,6 +179,7 @@ export function createDefaultTableMeta(): TableMeta {
     startingChipsBank: 500,
     minimumBet: 5,
     awaitingNextRound: false,
+    showRoundSummaryOverlay: true,
     gameStatus: 'active',
     winnerId: null,
     endedAt: null,

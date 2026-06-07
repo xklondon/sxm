@@ -1,4 +1,7 @@
 export const MAX_TABLE_BOXES = 7;
+export function resolveShowRoundSummaryOverlay(meta) {
+    return meta.showRoundSummaryOverlay !== false;
+}
 export function createEmptyBoxSlots() {
     return Array.from({ length: MAX_TABLE_BOXES }, (_, i) => ({
         slotNumber: i + 1,
@@ -37,6 +40,7 @@ export function createDefaultTableMeta() {
         startingChipsBank: 500,
         minimumBet: 5,
         awaitingNextRound: false,
+        showRoundSummaryOverlay: true,
         gameStatus: 'active',
         winnerId: null,
         endedAt: null,

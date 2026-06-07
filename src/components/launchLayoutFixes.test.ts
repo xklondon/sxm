@@ -14,7 +14,7 @@ describe('launch layout fixes — table vertical positioning', () => {
   it('desktop Full Table pushes play content toward bottom of felt', () => {
     expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-casino__felt[\s\S]*var\(--bj-full-desktop-tray-padding-bottom\)/);
     expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-casino__felt-main[\s\S]*justify-content:\s*stretch/);
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-table-zone--play[\s\S]*justify-content:\s*flex-end/);
+    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
   });
 
   it('desktop Card View shifts felt up and reserves chip tray space', () => {
@@ -63,7 +63,7 @@ describe('launch layout fixes — hero top clipping guards', () => {
   });
 
   it('does not use negative margin or translateY on hero card fan/wrap', () => {
-    const heroBlock = CARD_LAYOUT_CSS.match(/\.bj-card-layout__hero[\s\S]*?\.bj-card-layout__actions/)?.[0] ?? '';
+    const heroBlock = CARD_LAYOUT_CSS.match(/\.bj-card-layout__hero\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
     expect(heroBlock).not.toMatch(/margin-top:\s*-/);
     expect(heroBlock).not.toMatch(/translateY\(-/);
   });

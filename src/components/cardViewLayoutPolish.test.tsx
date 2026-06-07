@@ -90,18 +90,23 @@ function renderAt(width: number): string {
 }
 
 describe('Card View layout polish', () => {
-  it('central action rows sit under hand meta', () => {
+  it('action rows render in actions zone above hero hand meta', () => {
     const html = renderAt(390);
+    const actionsIdx = html.indexOf('bj-card-layout__actions');
+    const heroIdx = html.indexOf('bj-card-layout__hero');
     const metaIdx = html.indexOf('bj-phone-view__hand-meta');
     const primaryIdx = html.indexOf('bj-phone-view__action-bar-row--primary');
-    expect(metaIdx).toBeGreaterThan(-1);
-    expect(primaryIdx).toBeGreaterThan(metaIdx);
+    expect(actionsIdx).toBeGreaterThan(-1);
+    expect(heroIdx).toBeGreaterThan(actionsIdx);
+    expect(metaIdx).toBeGreaterThan(heroIdx);
+    expect(primaryIdx).toBeGreaterThan(actionsIdx);
+    expect(primaryIdx).toBeLessThan(metaIdx);
     expect(html).toContain('bj-phone-view__action-bar-row--secondary');
     expect(html).toMatch(/bj-phone-view__action-bar-row--primary[\s\S]*Stand/);
     expect(html).toMatch(/bj-phone-view__action-bar-row--secondary[\s\S]*2×/);
   });
 
-  it('command box sits between dealer stack and hero display', () => {
+  it('command box sits between dealer stack and actions, then hero display', () => {
     const html = renderAt(390);
     expect(html).toContain('dealer-block__stack');
     expect(html).not.toContain('dealer-block__hero-row');
@@ -110,9 +115,11 @@ describe('Card View layout polish', () => {
     expect(html).toMatch(/Box \d+: Alice, you have \d+\./);
     const stackIdx = html.indexOf('dealer-block__stack');
     const commandIdx = html.indexOf('bj-card-layout__command');
+    const actionsIdx = html.indexOf('bj-card-layout__actions');
     const heroIdx = html.indexOf('bj-card-layout__hero');
     expect(commandIdx).toBeGreaterThan(stackIdx);
-    expect(heroIdx).toBeGreaterThan(commandIdx);
+    expect(actionsIdx).toBeGreaterThan(commandIdx);
+    expect(heroIdx).toBeGreaterThan(actionsIdx);
   });
 
   it('hero action CSS uses two centered rows with smaller extras', () => {

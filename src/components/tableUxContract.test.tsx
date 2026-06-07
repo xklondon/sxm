@@ -54,7 +54,7 @@ describe('TABLE_UX class contract', () => {
     expect(css).toMatch(/background:\s*var\(--bj-desktop-felt-bg\)/);
     expect(css).toMatch(/--bj-desktop-felt-bg:\s*var\(--ds-color-felt\)/);
     expect(css).not.toMatch(/--bj-desktop-felt-bg:[\s\S]*felt-mid/);
-    expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc-separator[\s\S]*background:\s*none/);
+    expect(css).toMatch(/\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc__slot \.bj-phone-view__mini-hand/);
     expect(layoutCss).toMatch(/\.bj-view-card-desktop \.bj-card-layout__boxes \.bj-phone-view__mini-hand--card-compact[\s\S]*--bj-cardview-desktop-mini-hand-width/);
     expect(css).toMatch(/\.bj-casino__this-table--dock[\s\S]*flex:\s*0\s*0\s*12\.5rem/);
@@ -100,9 +100,10 @@ describe('TABLE_UX class contract', () => {
 
   it('BlackjackCardView applies shared column surface and bare action shell', () => {
     const cardSrc = readSrc('src/components/BlackjackCardView.tsx');
+    const actionPanelSrc = readSrc('src/components/BlackjackActionPanel.tsx');
     expect(cardSrc).toContain('TABLE_UX.columnSurface');
-    expect(cardSrc).toContain('TABLE_UX.playerActions');
-    expect(cardSrc).toContain('TABLE_UX.cardViewBareActions');
+    expect(cardSrc).toContain('BlackjackActionPanel');
+    expect(actionPanelSrc).toContain('TABLE_UX.cardViewBareActions');
     expect(cardSrc).toContain('getVisibleHandCardIds');
   });
 });

@@ -39,6 +39,7 @@ interface DealerBlockProps {
   onDrawBank: () => void;
   dealActionPending?: boolean;
   nextRoundPending?: boolean;
+  shuffleAnimating?: boolean;
   engineStatus?: string;
   initialDealManual: boolean;
   bankDrawManual: boolean;
@@ -117,6 +118,7 @@ export function DealerBlock({
   onDrawBank,
   dealActionPending = false,
   nextRoundPending = false,
+  shuffleAnimating = false,
   engineStatus,
   initialDealManual,
   bankDrawManual,
@@ -143,7 +145,7 @@ export function DealerBlock({
     if (protocolPhase === 'round-complete' && awaitingNextRound) {
       const pending = nextRoundPending || dealActionPending;
       return {
-        label: pending ? 'Starting…' : 'Next Round',
+        label: pending ? 'Starting…' : 'New Cards',
         disabled: pending,
         onClick: onNextRound,
       };
@@ -219,10 +221,19 @@ export function DealerBlock({
   const primaryAction = renderPrimaryAction();
 
   const cardsSlot = dealerCards ? (
-    <div className="dealer-block__cards">{dealerCards}</div>
+    <div className={['dealer-block__cards', shuffleAnimating ? 'dealer-block__cards--shuffling' : ''].filter(Boolean).join(' ')}>
+      {dealerCards}
+    </div>
   ) : (
     <div className="dealer-block__card-placeholder" aria-hidden="true">
-      <div className="dealer-block__card-stack">
+      <div
+        className={[
+          'dealer-block__card-stack',
+          shuffleAnimating ? 'dealer-block__card-stack--shuffling' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <div className="dealer-block__card-back dealer-block__card-back--2" />
         <div className="dealer-block__card-back dealer-block__card-back--1" />
       </div>

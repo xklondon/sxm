@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_BLACKJACK_FLOW_SETTINGS, dealDelayMsForPreset, normalizeFlowSettings, syncDealTimingFromPreset, } from './flowSettings';
 describe('flowSettings deal speed', () => {
-    it('defaults to natural dealing with 3 second deal speed', () => {
-        expect(DEFAULT_BLACKJACK_FLOW_SETTINGS.initialDealMode).toBe('natural');
-        expect(DEFAULT_BLACKJACK_FLOW_SETTINGS.dealSpeedPreset).toBe('normal');
-        expect(dealDelayMsForPreset('normal')).toBe(3000);
-        expect(DEFAULT_BLACKJACK_FLOW_SETTINGS.naturalDealDelayMs).toBe(3000);
+    it('defaults to manual staged dealing with 1 second deal speed', () => {
+        expect(DEFAULT_BLACKJACK_FLOW_SETTINGS.initialDealMode).toBe('staged');
+        expect(DEFAULT_BLACKJACK_FLOW_SETTINGS.dealSpeedPreset).toBe('fast');
+        expect(dealDelayMsForPreset('fast')).toBe(1000);
+        expect(DEFAULT_BLACKJACK_FLOW_SETTINGS.naturalDealDelayMs).toBe(1000);
     });
     it('syncDealTimingFromPreset derives all pacing fields from deal speed', () => {
         const synced = syncDealTimingFromPreset({

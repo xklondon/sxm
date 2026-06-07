@@ -9,7 +9,7 @@ export type Magic8BallProps = {
   disabled?: boolean;
   canShake?: boolean;
   compact?: boolean;
-  /** Table felt overlay — orb trigger only; answer renders via Magic8TableAnswer on felt. */
+  /** Table felt overlay — ball + answer in top-left zone. */
   controlOnly?: boolean;
   /** Wisdom pool; defaults to blackjack on table variant, global on login. */
   gameType?: Magic8GameType;
@@ -18,18 +18,34 @@ export type Magic8BallProps = {
 };
 
 const ANSWER_DELAY_MS = 500;
+const TABLE_ANSWER_PREFIXES = ['✨', '🎱', '🃏', '🔮'] as const;
 
 export function Magic8TableAnswer({ answer }: { answer: string | null }) {
+  const [prefix, setPrefix] = useState<(typeof TABLE_ANSWER_PREFIXES)[number]>('✨');
+
+  useEffect(() => {
+    if (!answer) {
+      return;
+    }
+    const index = Math.floor(Math.random() * TABLE_ANSWER_PREFIXES.length);
+    setPrefix(TABLE_ANSWER_PREFIXES[index] ?? '✨');
+  }, [answer]);
+
   if (!answer) {
     return null;
   }
+
   return (
-    <div className="magic8-table-answer" aria-live="polite">
-      <div className="magic8-table-answer__panel">
-        <p key={answer} className="magic8-table-answer__text">
-          {answer}
-        </p>
-      </div>
+    <div
+      key={answer}
+      className="magic8-table-answer"
+      aria-live="polite"
+      title={answer}
+    >
+      <span className="magic8-table-answer__prefix" aria-hidden="true">
+        {prefix}
+      </span>
+      <span className="magic8-table-answer__text">{answer}</span>
     </div>
   );
 }
@@ -165,6 +181,42 @@ export function Magic8Ball({
 
   const buttonLabel = variant === 'login' ? 'Ask the 8 Ball' : 'Shake';
 
+  const orbButton = (
+    <button
+      type="button"
+      className={[
+        'magic8__orb',
+        variant === 'table' && controlOnly ? 'magic8-ball' : '',
+        isShaking ? 'magic8__orb--shaking' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      onClick={() => void handleOrbActivate()}
+      disabled={disabled}
+      aria-label={buttonLabel}
+      key={shakeKey.current}
+    >
+      <span className="magic8__window" aria-live="polite">
+        {showWindowAnswer ? (
+          <p className="magic8__answer-in-window">{answer}</p>
+        ) : (
+          <span className="magic8__idle" aria-hidden={isShaking}>
+            {variant === 'table' ? '8' : '🎱'}
+          </span>
+        )}
+      </span>
+    </button>
+  );
+
+  if (variant === 'table' && controlOnly) {
+    return (
+      <div className="magic8-table-zone" data-magic8-variant="table">
+        {orbButton}
+        <Magic8TableAnswer answer={answer} />
+      </div>
+    );
+  }
+
   return (
     <div
       className={[
@@ -178,26 +230,7 @@ export function Magic8Ball({
       data-magic8-variant={variant}
     >
       <div className="magic8__controls">
-        <div className="magic8__orb-wrap">
-          <button
-            type="button"
-            className={['magic8__orb', isShaking ? 'magic8__orb--shaking' : ''].filter(Boolean).join(' ')}
-            onClick={() => void handleOrbActivate()}
-            disabled={disabled}
-            aria-label={buttonLabel}
-            key={shakeKey.current}
-          >
-            <span className="magic8__window" aria-live="polite">
-              {showWindowAnswer ? (
-                <p className="magic8__answer-in-window">{answer}</p>
-              ) : (
-                <span className="magic8__idle" aria-hidden={isShaking}>
-                  {variant === 'table' ? '8' : '🎱'}
-                </span>
-              )}
-            </span>
-          </button>
-        </div>
+        <div className="magic8__orb-wrap">{orbButton}</div>
         {!isMobile && variant === 'login' && (
           <button
             type="button"

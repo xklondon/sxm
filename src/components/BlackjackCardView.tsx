@@ -49,7 +49,6 @@ import {
 } from "./blackjackViewPhase";
 import { getDisplayedHandValue, getVisibleHandCardIds } from "../engine/blackjack/dealing/cardRevealDisplay";
 
-import { getBoxCallerDisplayName } from "./boxCallerDisplay";
 import { sortBoxSlotsForCardViewDisplay, type DeviceView } from "./tableViewContract";
 import { TABLE_UX } from "./tableUxContract";
 import {
@@ -79,8 +78,16 @@ import {
   BOX_CARD_CHIP_STACK,
   BOX_CARD_CHIP_STACK_RESERVED,
 } from "./cardViewBox";
+import { BlackjackActionPanel } from "./BlackjackActionPanel";
+import { buildBlackjackPlayerBoxInfo } from "./blackjackPlayerBoxInfo";
+import { BlackjackPlayerBoxHead } from "./BlackjackPlayerBoxes";
+import {
+  BlackjackActionsZone,
+  BlackjackCardsAreaZone,
+  BlackjackCommandZone,
+  BlackjackPlayerBoxesZone,
+} from "./blackjackViewZones";
 import { SXM_LAYOUT, sxmSectionProps } from "./sxmLayoutContract";
-
 
 import "./BlackjackCardView.css";
 
@@ -610,6 +617,12 @@ export function BlackjackCardView({
         <button
           type="button"
           className={TABLE_UX.boxHitArea}
+          onPointerDown={(e) => {
+            if (e.pointerType === 'mouse' && e.button !== 0) {
+              return;
+            }
+            onHitAreaClick();
+          }}
           onClick={onHitAreaClick}
           aria-label={hitAreaLabel}
           aria-current={hitAreaSelected ? 'true' : undefined}
@@ -699,8 +712,8 @@ export function BlackjackCardView({
       openStake,
       isTurnBox && isPlayerPhase,
     );
+    const boxInfo = buildBlackjackPlayerBoxInfo(gameState, slotNumber, boxId);
     const valueLabel = getBoxCardValueLabel(miniTotal, status);
-    const callerDisplayName = getBoxCallerDisplayName(gameState, boxId);
     const aboveLabel =
       valueLabel ||
       (status !== "betting" && status !== "waiting" ? formatCardViewBoxStatus(status) : "");
@@ -729,12 +742,16 @@ export function BlackjackCardView({
             .join(" ")}
         >
           {showHeadInTile ? (
-            <span className="bj-phone-view__mini-hand-head">
-              <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
-              {showAssignedHead ? (
-                <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
-              ) : null}
-            </span>
+            showAssignedHead ? (
+              <BlackjackPlayerBoxHead
+                boxLabel={boxInfo.boxLabel}
+                callerDisplayName={boxInfo.callerDisplayName}
+              />
+            ) : (
+              <span className="bj-phone-view__mini-hand-head">
+                <span className="bj-phone-view__mini-hand-box">{boxInfo.boxLabel}</span>
+              </span>
+            )
           ) : null}
           <span
             className="bj-phone-view__mini-hand-card-stack"
@@ -1222,11 +1239,23 @@ export function BlackjackCardView({
 
     if (!actionsEnabled && disabledReason) {
       return (
-        <div className="bj-phone-view__action-bar bj-phone-view__action-bar--wait">
-          <p className={TABLE_UX.playerActions} aria-live="polite">
-            {disabledReason}
-          </p>
-        </div>
+        <BlackjackActionPanel
+          variant="card"
+          waitMessage={disabledReason}
+          actionsEnabled={false}
+          canHit={false}
+          canStand={false}
+          canDouble={false}
+          canSplit={false}
+          showDouble={false}
+          showSplit={false}
+          showAid={false}
+          onHit={() => {}}
+          onStand={() => {}}
+          onDouble={() => {}}
+          onSplit={() => {}}
+          onAid={() => {}}
+        />
       );
     }
 
@@ -1246,107 +1275,22 @@ export function BlackjackCardView({
     const showAid = blackjackFlowSettings.adviceEnabled;
 
     return (
-      <div
-        className={`${TABLE_UX.playerActions} ${TABLE_UX.cardViewBareActions} bj-phone-view__action-bar bj-phone-view__action-bar--playing`}
-        aria-label="Player actions"
-      >
-        <div
-          {...sxmSectionProps(
-            SXM_LAYOUT.primaryActions,
-            'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--primary',
-          )}
-        >
-          <button
-            type="button"
-            className={[
-              "bj-phone-view__action-bar-btn",
-              "bj-phone-view__action-bar-btn--stand",
-              "ds-btn",
-              "ds-btn--stand",
-              actionsEnabled ? "bj-phone-view__action-bar-btn--live" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            disabled={!actionsEnabled || !canStand}
-            onClick={handleStayClick}
-          >
-            Stand
-          </button>
-          <button
-            type="button"
-            className={[
-              "bj-phone-view__action-bar-btn",
-              "bj-phone-view__action-bar-btn--hit",
-              "ds-btn",
-              "ds-btn--hit",
-              actionsEnabled ? "bj-phone-view__action-bar-btn--live" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            disabled={!actionsEnabled || !canHit}
-            onClick={handleHitClick}
-          >
-            Hit
-          </button>
-        </div>
-        <div
-          {...sxmSectionProps(
-            SXM_LAYOUT.secondaryActions,
-            'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--secondary',
-          )}
-        >
-          {showDouble ? (
-            <button
-              type="button"
-              className={[
-                "bj-phone-view__action-bar-extra",
-                TABLE_UX.cardViewActionCompact,
-                "bj-phone-view__action-btn--tappable",
-                canDoubleNow ? "bj-phone-view__action-bar-extra--legal" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              disabled={!canDoubleNow}
-              onClick={() => actionableHandKey && onDouble(actionableHandKey)}
-            >
-              2×
-            </button>
-          ) : (
-            <span className="bj-phone-view__action-bar-extra bj-phone-view__action-bar-extra--placeholder" aria-hidden="true" />
-          )}
-          {showSplit ? (
-            <button
-              type="button"
-              className={[
-                "bj-phone-view__action-bar-extra",
-                TABLE_UX.cardViewActionCompact,
-                "bj-phone-view__action-btn--tappable",
-                canSplitNow ? "bj-phone-view__action-bar-extra--legal" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              disabled={!canSplitNow}
-              onClick={() => actionableHandKey && onSplit(actionableHandKey)}
-            >
-              Split
-            </button>
-          ) : (
-            <span className="bj-phone-view__action-bar-extra bj-phone-view__action-bar-extra--placeholder" aria-hidden="true" />
-          )}
-          {showAid ? (
-            <button
-              type="button"
-              className={`bj-phone-view__action-bar-extra ${TABLE_UX.cardViewActionCompact} bj-phone-view__action-btn--tappable bj-phone-view__action-bar-extra--aid`}
-              disabled={!actionsEnabled}
-              onClick={handleAid}
-            >
-              AID
-            </button>
-          ) : (
-            <span className="bj-phone-view__action-bar-extra bj-phone-view__action-bar-extra--placeholder" aria-hidden="true" />
-          )}
-        </div>
-      </div>
+      <BlackjackActionPanel
+        variant="card"
+        actionsEnabled={actionsEnabled}
+        canHit={canHit}
+        canStand={canStand}
+        canDouble={Boolean(canDoubleNow)}
+        canSplit={Boolean(canSplitNow)}
+        showDouble={showDouble}
+        showSplit={showSplit}
+        showAid={showAid}
+        onStand={handleStayClick}
+        onHit={handleHitClick}
+        onDouble={() => actionableHandKey && onDouble(actionableHandKey)}
+        onSplit={() => actionableHandKey && onSplit(actionableHandKey)}
+        onAid={handleAid}
+      />
     );
   }
 
@@ -1363,17 +1307,17 @@ export function BlackjackCardView({
   /** Card View uses fixed grid rows. Do not position boxes with flex or phase-dependent margins. */
   return (
     <div className={`${TABLE_UX.cardLayout} bj-phone-view ${TABLE_UX.columnSurface}`}>
-      <div className={TABLE_UX.cardLayoutDealer}>{dealer}</div>
+      {dealer}
 
-      <div {...sxmSectionProps(SXM_LAYOUT.statusZone, TABLE_UX.cardLayoutSummary)}>
-        {dealerCommand ? (
-          <div className={TABLE_UX.cardLayoutCommand}>{dealerCommand}</div>
-        ) : null}
+      <BlackjackCommandZone variant="card">
+        {dealerCommand}
         {summaryExtras}
         {renderSummaryZoneContent()}
-      </div>
+      </BlackjackCommandZone>
 
-      <div {...sxmSectionProps(SXM_LAYOUT.heroZone, TABLE_UX.cardLayoutHero)}>
+      <BlackjackActionsZone variant="card">{renderActionBar()}</BlackjackActionsZone>
+
+      <BlackjackCardsAreaZone variant="card">
         <div className="bj-phone-view__axis">
           <div className="bj-phone-view__play-stack">
             <div
@@ -1391,15 +1335,9 @@ export function BlackjackCardView({
             </div>
           </div>
         </div>
-      </div>
+      </BlackjackCardsAreaZone>
 
-      <div {...sxmSectionProps(SXM_LAYOUT.actionZone, TABLE_UX.cardLayoutActions)}>
-        {renderActionBar()}
-      </div>
-
-      <div {...sxmSectionProps(SXM_LAYOUT.playerBoxesZone, TABLE_UX.cardLayoutBoxes)}>
-        {renderMiniBoxesRow()}
-      </div>
+      <BlackjackPlayerBoxesZone variant="card">{renderMiniBoxesRow()}</BlackjackPlayerBoxesZone>
 
       <div className={TABLE_UX.cardLayoutTray}>{tray}</div>
     </div>

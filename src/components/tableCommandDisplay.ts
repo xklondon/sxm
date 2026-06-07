@@ -169,7 +169,7 @@ function polishCenterStatusMessage(message: string, phase: BlackjackProtocolPhas
     'Bank busts.': 'Dealer busts.',
     'Review results — place bets, then Deal Cards.': 'Review the result, then place bets for the next hand.',
     'Round complete — review results, then press Next Round.':
-      'Round complete — review results, then start the next hand.',
+      'Round complete — review results, then press New Cards.',
   };
   if (exact[trimmed]) {
     return exact[trimmed];
@@ -227,7 +227,7 @@ export function buildBlackjackCommandText(params: {
   }
 
   if (roundSummaryLines.length > 0) {
-    return { commandMessage: null, commandLines: roundSummaryLines };
+    return { commandMessage: 'Round finished. Summary ready.', commandLines: [] };
   }
 
   if (protocolPhase === 'betting' && gameState.tableMeta.tableNotice?.message) {

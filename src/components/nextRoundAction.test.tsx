@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { DealerBlock } from './DealerBlock';
 
-describe('Next Round — single click', () => {
-  it('disables Next Round while pending', () => {
+describe('New Cards — single click', () => {
+  it('disables New Cards while pending', () => {
     const html = renderToStaticMarkup(
       <DealerBlock
         awaitingNextRound

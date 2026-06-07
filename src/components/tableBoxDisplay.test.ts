@@ -111,14 +111,14 @@ describe('This Table box display — stake-based ownership', () => {
   it('selectedBettingBoxId stays client-local — selectBox does not persist selectedSeatId', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
     expect(src).toContain('selectedBettingBoxId');
-    expect(src).toMatch(/function selectBox\(boxId: string\) \{[\s\S]*setSelectedBettingBoxId\(boxId\)/);
+    expect(src).toMatch(/function selectBox\(boxId: string\) \{[\s\S]*selectLocalTarget/);
     expect(src).not.toMatch(/function selectBox\(boxId: string\) \{[\s\S]*selectedSeatId: boxId/);
   });
 
   it('empty slot tap selects chip target without assignBox or claimBoxSlot', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
     expect(src).toMatch(
-      /function handleClaimOrSelectSlot[\s\S]*rememberExplicitChipTarget\(\{ kind: 'slot', slotNumber \}\)/,
+      /function handleClaimOrSelectSlot[\s\S]*selectLocalTarget\(\{ kind: 'slot', slotNumber \}\)/,
     );
     expect(src).not.toMatch(/handleClaimOrSelectSlot[\s\S]*assignBox/);
     expect(src).not.toMatch(/handleClaimOrSelectSlot[\s\S]*claimBoxSlot/);

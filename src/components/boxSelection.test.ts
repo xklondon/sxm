@@ -231,22 +231,20 @@ describe('box selection — single chip target', () => {
     expect(src).not.toMatch(
       /if\s*\(\s*!onlineDispatch\s*\)\s*\{[\s\S]*setSelectedBettingBoxId\(gameState\.selectedSeatId\)/,
     );
+    expect(src).not.toMatch(/setSelectedBettingBoxId/);
+    expect(src).toContain('localChipSelection');
+    expect(src).toMatch(/uiFromLocalChipTarget\(localChipSelection\.target\)/);
   });
 
-  it('selectBox clears selectedBettingSlotNumber for occupied boxes', () => {
+  it('selectBox sets canonical local chip target for occupied boxes', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-    expect(src).toMatch(
-      /function selectBox\(boxId: string\) \{[\s\S]*setSelectedBettingBoxId\(boxId\)[\s\S]*setSelectedBettingSlotNumber\(null\)/,
-    );
+    expect(src).toMatch(/function selectBox\(boxId: string\) \{[\s\S]*selectLocalTarget/);
   });
 
-  it('sync effect upgrades slot targets instead of clearing after materialization', () => {
+  it('reconcile effect upgrades slot targets instead of clearing after materialization', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-    expect(src).toContain('adoptMaterializedBoxTarget');
-    expect(src).toContain('shouldClearExplicitChipTarget');
-    expect(src).not.toMatch(
-      /isExplicitChipTargetValid[\s\S]*setSelectedBettingBoxId\(null\)/,
-    );
+    expect(src).toContain('reconcileLocalChipTarget');
+    expect(src).toContain('commitLocalChipTarget');
   });
 
   it('assigned native box and explicit selected box 5 can differ', () => {
@@ -284,7 +282,8 @@ describe('box selection — single chip target', () => {
     expect(src).not.toMatch(
       /function handleChipTrayClick\(value: ChipValue\) \{[\s\S]*selectedSeatId:/,
     );
-    expect(src).toContain('resolveLocalChipTrayTarget');
+    expect(src).toContain('resolveTrayTargetFromLocalSelection');
+    expect(src).toContain('localSelectedChipTargetRef');
     expect(src).not.toContain('resolveChipTrayBetTarget');
   });
 
@@ -310,19 +309,23 @@ describe('box selection — single chip target', () => {
 
   it('selects viewer assigned box by default when no explicit pick exists', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-    expect(src).toContain('resolveViewerAssignedBoxPlayerId');
-    expect(src).toMatch(/if \(userPickedChipTargetRef\.current\) \{\s*return;\s*\}/);
-    expect(src).toMatch(
-      /resolveViewerAssignedBoxPlayerId\(gameStateRef\.current, viewerPersonId\)[\s\S]*setSelectedBettingBoxId\(boxId\)/,
-    );
+    expect(src).toContain('applyDefaultAssignedChipTarget');
+    expect(src).toContain('localSelectedChipTargetRef');
+    expect(src).toMatch(/if \(local\.hasUserSelected\) \{\s*return;\s*\}/);
   });
 
   it('does not auto-reselect assigned box after user picks another target', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-    expect(src).toMatch(/if \(userPickedChipTargetRef\.current\) \{\s*return;\s*\}/);
-    expect(src).toMatch(/rememberExplicitChipTarget/);
-    expect(src).not.toMatch(
-      /setSelectedBettingBoxId\(resolveViewerAssignedBoxPlayerId[\s\S]*userPickedChipTargetRef\.current = false/,
-    );
+    expect(src).toContain('localSelectedChipTargetRef');
+    expect(src).toContain('selectLocalChipTarget');
+    expect(src).toContain('resolveTrayTargetFromLocalSelection');
+    expect(src).not.toMatch(/if \(!bettingOpen\) \{\s*setSelectedBettingBoxId\(playerId\)/);
+  });
+
+  it('chip tray target uses canonical local selection only', () => {
+    const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(src).toMatch(/function resolveActiveChipTrayTarget\(\)[\s\S]*resolveTrayTargetFromLocalSelection/);
+    expect(src).not.toContain('resolveChipTrayBetTarget');
+    expect(src).not.toMatch(/function resolveActiveChipTrayTarget\(\) \{[\s\S]*selectedSeatId/);
   });
 });

@@ -691,6 +691,12 @@
   margin-bottom: 0.08rem;
 }
 
+.bj-view-full-desktop .bj-arc__cards,
+.bj-view-full-mobile .bj-arc__cards {
+  min-height: 0;
+  margin-bottom: 0.02rem;
+}
+
 .bj-casino__accounts-btn {
   display: none;
 }
@@ -1434,20 +1440,17 @@
 }
 
 .bj-view-full-mobile .bj-arc__play-zone,
-.bj-view-full-mobile .bj-arc__cards,
 .bj-view-full-mobile .bj-arc__hand {
   overflow: visible;
 }
 
-.bj-view-full-mobile .bj-arc__cards--stack-vertical {
-  max-height: var(--bj-table-card-stack-max-height);
+.bj-view-full-mobile .bj-arc__cards {
+  overflow: visible;
+  min-height: 0;
 }
 
-.bj-view-full-mobile .bj-arc__cards-stack .playing-card {
-  width: var(--bj-table-card-width);
-  height: var(--bj-table-card-height);
-  min-height: 0;
-  max-height: var(--bj-table-card-height);
+.bj-view-full-mobile .bj-arc__cards--stack-vertical {
+  overflow: visible;
 }
 
 .bj-view-full-mobile .bj-arc__bust {
