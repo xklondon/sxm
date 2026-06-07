@@ -703,9 +703,11 @@
 
 /* Full Table player action panel — chrome in bj-table-shared.css */
 .bj-table-actions {
-  margin: 0.15rem auto 0.35rem;
+  margin: 0.08rem auto 0.12rem;
   max-width: 22rem;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .bj-table-actions--wait {
@@ -1438,7 +1440,7 @@
 }
 
 .bj-view-full-mobile .bj-arc__cards--stack-vertical {
-  max-height: 5.5rem;
+  max-height: var(--bj-table-card-stack-max-height);
 }
 
 .bj-view-full-mobile .bj-arc__cards-stack .playing-card {

@@ -25,9 +25,11 @@ export function Magic8TableAnswer({ answer }: { answer: string | null }) {
   }
   return (
     <div className="magic8-table-answer" aria-live="polite">
-      <p key={answer} className="magic8-table-answer__text">
-        {answer}
-      </p>
+      <div className="magic8-table-answer__panel">
+        <p key={answer} className="magic8-table-answer__text">
+          {answer}
+        </p>
+      </div>
     </div>
   );
 }

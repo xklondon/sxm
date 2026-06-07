@@ -201,41 +201,46 @@
   padding: 0.22rem 0.32rem;
 }
 
-/* Table oracle line — absolute on felt, left of dealer */
+/* Table oracle line — absolute on felt, left of dealer, clear of cards/buttons */
 .magic8-table-answer {
   position: absolute;
-  left: clamp(4.375rem, 12vw, 13.75rem);
-  top: clamp(3.25rem, 9vh, 6.875rem);
-  z-index: 6;
+  left: clamp(4.75rem, 7vw, 9.375rem);
+  top: clamp(7.375rem, 17vh, 10.625rem);
+  width: clamp(13.75rem, 28vw, 24.375rem);
+  max-width: min(24.375rem, calc(50vw - 2.5rem));
+  z-index: 5;
   pointer-events: none;
-  width: max-content;
-  max-width: clamp(18.75rem, 42vw, 26.25rem);
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.625rem;
-  border-left: 2px solid rgb(255 220 130 / 0.45);
-  background: linear-gradient(90deg, rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.02));
-  backdrop-filter: blur(1px);
   box-sizing: border-box;
+}
+
+.magic8-table-answer__panel {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.4375rem 0.6875rem 0.5rem;
+  border-left: 2px solid rgb(255 220 130 / 0.45);
+  border-radius: 0.625rem;
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.04));
+  backdrop-filter: blur(1px);
+  animation: magic8-oracle-pop 220ms ease-out;
 }
 
 .magic8-table-answer__text {
   margin: 0;
   display: block;
-  width: 100%;
+  max-width: 100%;
   font-family: var(--ds-font-body);
-  font-size: clamp(1.125rem, 2.2vw, 2.125rem);
+  font-size: clamp(1rem, 1.45vw, 1.625rem);
   font-weight: 900;
-  line-height: 1.08;
-  letter-spacing: 0.03em;
+  line-height: 1.12;
+  letter-spacing: 0.025em;
   text-transform: none;
   white-space: normal;
   word-break: normal;
   overflow-wrap: normal;
-  color: rgb(255 248 228 / 0.98);
+  color: #fff6d8;
   text-shadow:
-    0 2px 0 rgb(0 0 0 / 0.55),
-    0 0 14px rgb(255 220 130 / 0.35);
-  animation: magic8-oracle-pop 220ms ease-out;
+    0 2px 0 rgb(0 0 0 / 0.65),
+    0 0 12px rgb(255 220 130 / 0.28);
 }
 
 @keyframes magic8-oracle-pop {
@@ -289,26 +294,27 @@
   }
 
   .magic8-table-answer {
-    left: clamp(3.5rem, 14vw, 7.5rem);
-    top: clamp(2.75rem, 8vh, 5.5rem);
-    max-width: clamp(11.25rem, 52vw, 16.25rem);
-    padding: 0.45rem 0.65rem;
+    left: 3.25rem;
+    top: 5.375rem;
+    width: min(14.375rem, 58vw);
+    max-width: min(14.375rem, calc(50vw - 2rem));
   }
 
   .magic8-table-answer__text {
-    font-size: clamp(0.9375rem, 4.2vw, 1.1875rem);
-    line-height: 1.1;
+    font-size: clamp(0.875rem, 4.2vw, 1.125rem);
+    line-height: 1.12;
   }
 }
 
 @media (max-width: 720px) and (orientation: landscape) {
   .magic8-table-answer {
-    left: clamp(4rem, 11vw, 9rem);
-    top: clamp(2.5rem, 7vh, 4.5rem);
-    max-width: clamp(15rem, 38vw, 21.25rem);
+    left: 3.875rem;
+    top: 4.5rem;
+    width: min(18.75rem, 36vw);
+    max-width: min(18.75rem, calc(50vw - 2rem));
   }
 
   .magic8-table-answer__text {
-    font-size: clamp(1rem, 2.8vw, 1.25rem);
+    font-size: clamp(0.875rem, 2.5vw, 1.25rem);
   }
 }

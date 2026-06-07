@@ -36,6 +36,27 @@ describe('blackjack display layout contract', () => {
     expect(SHARED_CSS).toMatch(/\.bj-arc__cards-stack \.playing-card[\s\S]*margin-left:\s*0/);
   });
 
+  it('Full Table arc stack uses compact overlapping card layout', () => {
+    expect(SHARED_CSS).toContain('--bj-table-card-overlap');
+    expect(SHARED_CSS).toContain('--bj-table-card-stack-max-height');
+    expect(SHARED_CSS).toMatch(
+      /\.bj-arc__cards-stack \.playing-card \+ \.playing-card[\s\S]*margin-top:\s*calc\(-1 \* var\(--bj-table-card-overlap\)\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-arc__cards--stack-vertical[\s\S]*max-height:\s*var\(--bj-table-card-stack-max-height\)/,
+    );
+    expect(SHARED_CSS).toMatch(/\.bj-arc__cards-stack \.playing-card[\s\S]*pointer-events:\s*none/);
+  });
+
+  it('Full Table action zone clears player card stacks', () => {
+    expect(SHARED_CSS).toContain('--bj-table-actions-play-gap');
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-zone--actions[\s\S]*z-index:\s*6[\s\S]*margin-bottom:\s*var\(--bj-table-actions-play-gap\)/,
+    );
+    expect(SHARED_CSS).toMatch(/\.bj-view-full-mobile \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
+    expect(SHARED_CSS).toMatch(/\.bj-view-full-mobile \.bj-table-zone--play[\s\S]*min-height:\s*0/);
+  });
+
   it('exports arc stack and card command layout class names', () => {
     expect(TABLE_UX_SRC).toContain("arcCardsStackVertical: 'bj-arc__cards--stack-vertical'");
     expect(TABLE_UX_SRC).toContain("arcCardsStack: 'bj-arc__cards-stack'");

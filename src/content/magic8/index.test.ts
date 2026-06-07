@@ -1,6 +1,38 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getMagic8Wisdom, listMagic8WisdomPools } from './index';
 
+const LEGACY_ACTION_ADVICE_ANSWERS = [
+  'Bank Bot looks nervous.',
+  'Signs point to hit.',
+  'Signs point to stand.',
+  'Dealer says: maybe.',
+  'Your chips believe in you.',
+  'The deck says yes.',
+  'Fortune says: emotionally hit.',
+  'Fold now, thank me later.',
+  'Double down on vibes.',
+  'Signs point to hit.',
+];
+
+describe('magic8 wisdom repository', () => {
+  it('does not include legacy action-advice strings in active pools', () => {
+    for (const gameType of ['blackjack', 'poker', 'zilch'] as const) {
+      const pools = listMagic8WisdomPools(gameType);
+      const all = [...pools.global, ...pools.game, ...pools.rare];
+      for (const banned of LEGACY_ACTION_ADVICE_ANSWERS) {
+        expect(all).not.toContain(banned);
+      }
+    }
+  });
+
+  it('includes the new fortune-cookie global pack', () => {
+    const { global } = listMagic8WisdomPools();
+    expect(global).toContain('Fortune favours the brave.');
+    expect(global).toContain('Confucius say: never ask a black 8 ball for financial advice.');
+    expect(global).toContain('A little humility is cheaper.');
+  });
+});
+
 describe('getMagic8Wisdom', () => {
   it('returns a non-empty string from repository pools', () => {
     const wisdom = getMagic8Wisdom({ gameType: 'blackjack' });
