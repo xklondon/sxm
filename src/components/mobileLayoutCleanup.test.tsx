@@ -129,7 +129,9 @@ describe('mobile layout cleanup', () => {
 
   it('mobile Full Table arc fits shell without inner horizontal scroll', () => {
     expect(panelCss).toContain('contract: mobile-arc-fit');
-    expect(panelCss).toMatch(/\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*hidden/);
+    expect(sharedCss).toMatch(
+      /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,
+    );
     expect(panelCss).not.toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*min-width:\s*calc\(100% \+ 2\.5rem\)/);
   });
 });

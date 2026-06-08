@@ -287,22 +287,22 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
 
   it('felt scroller CSS keeps arc inside shell (no inner horizontal scroll)', () => {
     const css = mobileFullTableCss();
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     expect(css).toContain('contract: mobile-arc-fit');
-    expect(css).toMatch(
-      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*hidden[\s\S]*overflow-y:\s*hidden/,
+    expect(sharedCss).toMatch(
+      /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,
     );
     expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*width:\s*100%/);
     expect(css).toMatch(/\.bj-view-full-mobile[\s\S]*overflow-x:\s*hidden/);
   });
 
   it('mobile Full Table vertical spacing aligns with Card View (shared felt token, boxes at bottom)', () => {
-    const css = mobileFullTableCss();
     const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     expect(sharedCss).toContain('--bj-mobile-felt-min-height: 0');
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*min-height:\s*var\(--bj-mobile-felt-min-height\)/,
     );
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes/);
+    expect(sharedCss).toMatch(/\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*height:\s*var\(--bj-zone-boxes-height\)/);
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
     expect(layoutCss).toContain('--bj-card-row-hero-min: 0');

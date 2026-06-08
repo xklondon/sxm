@@ -146,6 +146,12 @@
     --bj-zone-cards-min-height: var(--bj-mobile-zone-cards-min-height);
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
     --bj-zone-tray-height: var(--bj-mobile-zone-tray-height);
+    --bj-cloth-mobile-width: min(118%, 100vw);
+    --bj-cloth-mobile-scale: 1.22;
+    --bj-cloth-mobile-bottom: calc(var(--bj-zone-tray-height) + 0.1rem);
+    --bj-cloth-mobile-top: calc(
+      var(--bj-zone-dealer-height) + var(--bj-zone-command-height) + var(--bj-zone-actions-height) + 0.06rem
+    );
     --bj-table-zone-dealer-min-height: var(--bj-mobile-zone-dealer-height);
     --bj-table-zone-summary-min-height: var(--bj-mobile-zone-command-height);
     --bj-table-zone-actions-min-height: var(--bj-mobile-zone-actions-height);
@@ -311,6 +317,12 @@
       --bj-mobile-zone-actions-height: 2.45rem;
       --bj-mobile-zone-boxes-height: 4.25rem;
       --bj-mobile-zone-tray-height: 2.85rem;
+      --bj-cloth-mobile-width: min(112%, 100vw);
+      --bj-cloth-mobile-scale: 1.1;
+      --bj-cloth-mobile-bottom: calc(var(--bj-zone-tray-height) + 0.06rem);
+      --bj-cloth-mobile-top: calc(
+        var(--bj-zone-dealer-height) + var(--bj-zone-command-height) + var(--bj-zone-actions-height) + 0.04rem
+      );
     }
 
     .bj-view-full-mobile.bj-casino,
@@ -374,8 +386,35 @@
     min-height: 0;
     width: 100%;
     min-width: 0;
+    max-width: none;
+    margin: 0;
+    align-items: stretch;
+    align-self: stretch;
     overflow: hidden;
+    padding: 0.1rem 0.38rem 0.08rem;
     box-sizing: border-box;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell,
+  .bj-view-card-mobile .bj-table-layout-shell {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    align-self: stretch;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > :not(.bj-felt-cloth-layer),
+  .bj-view-card-mobile .bj-table-layout-shell > :not(.bj-felt-cloth-layer) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-inline: 0;
+  }
+
+  .bj-view-full-mobile .dealer-block,
+  .bj-view-card-mobile .dealer-block {
+    margin-bottom: 0;
+    max-width: 100%;
   }
 
   .bj-view-full-mobile .bj-arc--player-boxes,

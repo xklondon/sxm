@@ -1292,8 +1292,8 @@
 
 .bj-view-card-mobile .dealer-block,
 .bj-view-full-mobile .dealer-block {
-  padding: 0.22rem 0.3rem 0.18rem;
-  margin-bottom: 0.2rem;
+  padding: 0.18rem 0.24rem 0.12rem;
+  margin-bottom: 0;
 }
 
 .bj-view-card-mobile .bj-casino__felt--card-view,
@@ -1417,20 +1417,7 @@
   flex-direction: column;
 }
 
-.bj-view-full-mobile .bj-casino__felt-main,
-.bj-view-card-mobile .bj-casino__felt-main {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow-x: hidden;
-  overflow-y: hidden;
-  padding: 0.35rem 0.85rem 0.2rem;
-  box-sizing: border-box;
-}
+/* Mobile felt-main stack — canonical sizing in bj-table-shared.css */
 
 .bj-view-full-mobile .bj-arc-separator {
   flex: 1 1 auto;
@@ -1458,35 +1445,6 @@
   flex-shrink: 1;
   transform: rotate(var(--arc-rot, 0deg)) scale(0.88);
   transform-origin: center bottom;
-}
-
-.bj-view-full-mobile .bj-arc--player-boxes,
-.bj-view-card-mobile .bj-arc--player-boxes {
-  flex: 0 0 auto;
-  margin-top: 0;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  align-items: flex-end;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  gap: 0.04rem;
-  padding: 0 0.06rem 0.06rem;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot,
-.bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot {
-  flex: 1 1 0;
-  min-width: 0;
-  flex-shrink: 1;
-}
-
-.bj-view-full-mobile .bj-arc__slot--owned,
-.bj-view-card-mobile .bj-arc__slot--owned {
-  background: none;
-  padding: 0;
 }
 
 .bj-view-full-mobile .bj-arc__play-zone,
@@ -1519,27 +1477,7 @@
   flex-shrink: 0;
 }
 
-/* Mobile Card View — hero flexes inside shell cards zone; no legacy mini-row layout. */
-.bj-view-card-mobile .bj-phone-view__play-area {
-  gap: 0.25rem;
-  padding-top: 0.1rem;
-}
-
-.bj-view-card-mobile .bj-phone-view__play-stack,
-.bj-view-full-mobile .bj-phone-view__play-stack {
-  flex: 1 1 auto;
-  min-height: 0;
-  max-width: 100%;
-}
-
-.bj-view-card-mobile .bj-phone-view__stage,
-.bj-view-full-mobile .bj-phone-view__stage {
-  flex: 1 1 auto;
-  min-height: 0;
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
+/* Legacy Card View mini-row — never mounted in shell layout. */
 .bj-view-card-mobile .bj-phone-view__mini-row,
 .bj-view-card-mobile .bj-phone-view__betting-stage--row {
   display: none;

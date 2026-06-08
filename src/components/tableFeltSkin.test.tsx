@@ -234,9 +234,17 @@ describe('table felt cloth layer', () => {
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*overflow:\s*hidden/);
   });
 
-  it('classic cloth SVG sits in cards area not on chip tray', () => {
+  it('classic cloth SVG sits in cards/boxes region on mobile via scale vars', () => {
     const css = readSrc('src/styles/bj-felt-skins.css');
+    const sharedCss = readSrc('src/styles/bj-table-shared.css');
     expect(css).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*bottom:\s*24%/);
+    expect(sharedCss).toContain('--bj-cloth-mobile-width');
+    expect(css).toMatch(
+      /\.bj-view-card-mobile \.bj-felt-cloth-layer__svg[\s\S]*var\(--bj-cloth-mobile-top\)/,
+    );
+    expect(css).toMatch(
+      /\.bj-view-card-mobile \.bj-felt-cloth-layer__svg[\s\S]*max-height:\s*none/,
+    );
   });
 
   it('settings storage round-trips cloth visual prefs', () => {

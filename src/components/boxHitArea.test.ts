@@ -65,7 +65,9 @@ describe('mobile landscape Full Table fit', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,
     );
-    expect(PANEL_CSS).toMatch(/\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-y:\s*hidden/);
+    expect(PANEL_CSS).not.toMatch(
+      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-y:\s*hidden[\s\S]*padding:/,
+    );
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*overflow:\s*hidden/,
     );
