@@ -103,13 +103,13 @@ function playingState(): GameState {
 describe('mobile Card View layout contract', () => {
   it('betting phase: page overflow hidden, arc player boxes fit shell width', () => {
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
-    const cardLayoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
     expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*overflow-x:\s*hidden/);
-    expect(cardLayoutCss).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden|\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden/,
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    expect(sharedCss).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
     );
-    expect(cardLayoutCss).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--boxes \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*min-width:\s*0|\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*min-width:\s*0/,
+    expect(sharedCss).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*min-width:\s*0/,
     );
   });
 

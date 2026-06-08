@@ -10,19 +10,20 @@ const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.
 
 describe('mobile Card View chip tray layout', () => {
   it('uses separate flex rows for boxes and chip tray', () => {
-    expect(LAYOUT_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*min-height:\s*var\(--bj-card-row-boxes\)/);
-    expect(LAYOUT_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*min-height:\s*var\(--bj-card-row-tray\)/);
+    expect(SHARED_CSS).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*height:\s*var\(--bj-zone-boxes-height\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-zone-tray-height\)/,
+    );
     expect(LAYOUT_CSS).toMatch(/\.bj-table-layout-shell[\s\S]*flex-direction:\s*column/);
   });
 
   it('places chip tray row below boxes with extra height on mobile', () => {
-    expect(LAYOUT_CSS).toContain(MOBILE_LAYOUT_MEDIA);
-    expect(LAYOUT_CSS).toMatch(/--bj-card-row-tray:\s*3\.35rem/);
-    expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--bottom[\s\S]*padding|\.bj-view-card-mobile \.bj-card-layout__tray[\s\S]*padding-top/,
-    );
+    expect(SHARED_CSS).toContain(MOBILE_LAYOUT_MEDIA);
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 3.35rem');
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--bottom[\s\S]*flex-shrink:\s*0|\.bj-view-card-mobile \.bj-card-layout__tray[\s\S]*flex-shrink:\s*0/,
+      /\.bj-view-full-mobile \.bj-casino__tray-wrap,\s*\n\s*\.bj-view-card-mobile \.bj-casino__tray-wrap[\s\S]*flex-shrink:\s*0/,
     );
   });
 
@@ -32,7 +33,7 @@ describe('mobile Card View chip tray layout', () => {
       /\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*gap:|\.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*gap:/,
     );
     expect(panelCss).toMatch(
-      /\.bj-view-full-mobile \.bj-arc__slot[\s\S]*scale\(0\.88\)|\.bj-arc__slot[\s\S]*rotate\(var\(--arc-rot/,
+      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*scale\(0\.88\)|\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*rotate\(var\(--arc-rot/,
     );
     expect(TABLE_UX.tableZoneBoxes).toBe('bj-table-zone--boxes');
     expect(TABLE_UX.tableZoneBottom).toBe('bj-table-zone--bottom');

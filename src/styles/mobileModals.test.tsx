@@ -26,19 +26,19 @@ describe('mobile Full Table arc fit (CSS contract)', () => {
   it('felt-main hides horizontal overflow; arc stays within shell width', () => {
     expect(css).toContain('contract: mobile-arc-fit');
     expect(css).toMatch(
-      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*hidden[\s\S]*overflow-y:\s*hidden/,
+      /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow-x:\s*hidden[\s\S]*overflow-y:\s*hidden/,
     );
   });
 
-  it('page root hides horizontal overflow; arc uses full shell width', () => {
+  it('page root hides horizontal overflow; card arc uses full shell width', () => {
     expect(css).toMatch(/\.bj-view-full-mobile[\s\S]*overflow-x:\s*hidden/);
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*width:\s*100%/);
+    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc--cards[\s\S]*width:\s*100%/);
     expect(css).not.toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*min-width:\s*calc\(100% \+ 2\.5rem\)/);
   });
 
-  it('arc slots keep center-bottom transform origin and mobile scale', () => {
+  it('card arc slots keep center-bottom transform origin and mobile scale', () => {
     expect(css).toMatch(
-      /\.bj-view-full-mobile \.bj-arc__slot[\s\S]*transform-origin:\s*center bottom/,
+      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*transform-origin:\s*center bottom/,
     );
   });
 });

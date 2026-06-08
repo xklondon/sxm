@@ -38,80 +38,53 @@
 /* MOBILE_LAYOUT_MEDIA — sync with src/styles/mobileLayoutContract.ts */
 @media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
   :root {
-    --bj-card-row-dealer: 6.5rem;
-    --bj-card-row-summary: 2rem;
-    --bj-card-row-hero-min: 10rem;
-    --bj-card-row-actions: 4.5rem;
-    --bj-card-row-boxes: 6rem;
-    --bj-card-row-tray: 3.35rem;
+    --bj-card-row-dealer: var(--bj-mobile-zone-dealer-height, var(--bj-zone-dealer-height));
+    --bj-card-row-summary: var(--bj-mobile-zone-command-height, var(--bj-zone-command-height));
+    --bj-card-row-hero-min: 0;
+    --bj-card-row-actions: var(--bj-mobile-zone-actions-height, var(--bj-zone-actions-height));
+    --bj-card-row-boxes: var(--bj-mobile-zone-boxes-height, var(--bj-zone-boxes-height));
+    --bj-card-row-tray: var(--bj-mobile-zone-tray-height, var(--bj-zone-tray-height));
     --bj-card-boxes-padding-bottom: 0.08rem;
     --bj-card-desktop-table-height: min(84vh, 50rem);
     --bj-card-hero-card-width: min(22vw, 6.5rem);
     --bj-card-hero-card-max-height: min(28vw, 8.75rem);
   }
 
-  .bj-view-card-mobile .bj-card-layout__boxes .bj-phone-view__mini-row {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 0.06rem;
-    padding-bottom: 0.04rem;
-    overflow-x: hidden;
-    overflow-y: visible;
-    width: 100%;
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-stack,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__stage,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: visible;
     max-width: 100%;
   }
 
-  .bj-view-card-mobile .bj-card-layout__boxes .bj-phone-view__mini-hand-column {
-    min-width: 0;
-    width: 100%;
-  }
-
-  .bj-view-card-mobile .bj-card-layout__tray {
-    padding-top: 0.18rem;
-    align-items: flex-start;
-  }
-
-  .bj-table-layout-shell .bj-table-zone--dealer {
-    flex: 0 0 auto;
-    height: var(--bj-card-row-dealer);
-    min-height: var(--bj-card-row-dealer);
-    max-height: var(--bj-card-row-dealer);
-  }
-
-  .bj-table-layout-shell .bj-table-zone--summary {
-    flex: 0 0 auto;
-    height: var(--bj-card-row-summary);
-    min-height: var(--bj-card-row-summary);
-    max-height: var(--bj-card-row-summary);
-  }
-
-  .bj-table-layout-shell .bj-table-zone--actions {
-    flex: 0 0 auto;
-    height: var(--bj-card-row-actions);
-    min-height: var(--bj-card-row-actions);
-    max-height: var(--bj-card-row-actions);
-  }
-
-  .bj-table-layout-shell .bj-table-zone--cards,
-  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero,
-  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table {
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot {
     flex: 1 1 auto;
     min-height: 0;
+    overflow: visible;
+    align-items: center;
+    justify-content: center;
   }
 
-  .bj-table-layout-shell .bj-table-zone--boxes {
-    flex: 0 0 auto;
-    min-height: var(--bj-card-row-boxes);
-    height: var(--bj-card-row-boxes);
-    max-height: var(--bj-card-row-boxes);
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards {
+    overflow: visible;
+    align-items: center;
+    justify-content: center;
+    flex: 0 1 auto;
+    max-height: 100%;
   }
 
-  .bj-table-layout-shell .bj-table-zone--bottom {
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.bj-phone-card--hero,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.ds-card--hero {
+    width: var(--bj-card-hero-card-width);
+    max-height: min(var(--bj-card-hero-card-max-height), 100%);
+    height: auto;
+    aspect-ratio: var(--bj-card-hero-card-aspect-ratio);
     flex: 0 0 auto;
-    min-height: var(--bj-card-row-tray);
-    height: var(--bj-card-row-tray);
-    max-height: var(--bj-card-row-tray);
-    flex-shrink: 0;
   }
 }
 

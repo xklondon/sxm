@@ -631,10 +631,13 @@
   flex-direction: column;
   align-items: center;
   width: 4.5rem;
-  transform: rotate(var(--arc-rot, 0deg));
-  transform-origin: center bottom;
   cursor: pointer;
   transition: filter 0.12s ease;
+}
+
+.bj-arc--cards .bj-arc__slot {
+  transform: rotate(var(--arc-rot, 0deg));
+  transform-origin: center bottom;
 }
 
 @media (min-width: 721px) {
@@ -649,7 +652,6 @@
 
   .bj-view-full-desktop .bj-arc--player-boxes .bj-arc__slot,
   .bj-view-card-desktop .bj-arc--player-boxes .bj-arc__slot {
-    transform: none;
     flex: 0 1 auto;
     width: var(--bj-player-box-width);
     max-width: calc(var(--bj-player-box-width) + 0.35rem);
@@ -657,7 +659,6 @@
 
   .bj-view-full-desktop .bj-arc--player-boxes .bj-arc__open,
   .bj-view-card-desktop .bj-arc--player-boxes .bj-arc__open {
-    transform: none;
     margin-bottom: 0.35rem;
   }
 }
@@ -962,8 +963,6 @@
   color: rgb(255 255 255 / 0.5);
   font: inherit;
   cursor: pointer;
-  transform: rotate(var(--arc-rot, 0deg));
-  transform-origin: center bottom;
   margin-bottom: 1.5rem;
 }
 
@@ -1304,7 +1303,7 @@
 .bj-view-card-mobile .bj-casino__felt-main {
   min-width: 0;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .bj-view-card-mobile .bj-casino__felt--with-account {
@@ -1390,35 +1389,39 @@
 }
 
 /* ============================================================
-   MOBILE FULL TABLE — scaled desktop felt (same arc positions/order).
-   Scoped to .bj-view-full-mobile; Card View mobile is unchanged.
+   MOBILE FULL TABLE + CARD VIEW — shared felt shell (same arc/box contract).
    ============================================================ */
-.bj-view-full-mobile {
+.bj-view-full-mobile,
+.bj-view-card-mobile {
   overflow: hidden;
   min-height: 0;
 }
 
-.bj-view-full-mobile .bj-casino__rail-wrap {
+.bj-view-full-mobile .bj-casino__rail-wrap,
+.bj-view-card-mobile .bj-casino__rail-wrap {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
-.bj-view-full-mobile .bj-casino__felt--with-account {
+.bj-view-full-mobile .bj-casino__felt--with-account,
+.bj-view-card-mobile .bj-casino__felt--with-account {
   flex-direction: column;
   align-items: stretch;
   gap: 0.45rem;
 }
 
-.bj-view-full-mobile .bj-casino__rail {
+.bj-view-full-mobile .bj-casino__rail,
+.bj-view-card-mobile .bj-casino__rail {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
-.bj-view-full-mobile .bj-casino__felt-main {
+.bj-view-full-mobile .bj-casino__felt-main,
+.bj-view-card-mobile .bj-casino__felt-main {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
@@ -1438,7 +1441,7 @@
 }
 
 /* contract: mobile-arc-fit — seven boxes fit shell width, no inner horizontal scroll */
-.bj-view-full-mobile .bj-arc {
+.bj-view-full-mobile .bj-arc--cards {
   flex: 0 0 auto;
   margin-top: auto;
   flex-wrap: nowrap;
@@ -1452,12 +1455,35 @@
   box-sizing: border-box;
 }
 
-.bj-view-full-mobile .bj-arc__slot {
+.bj-view-full-mobile .bj-arc--cards .bj-arc__slot {
   flex: 1 1 0;
   min-width: 0;
   flex-shrink: 1;
   transform: rotate(var(--arc-rot, 0deg)) scale(0.88);
   transform-origin: center bottom;
+}
+
+.bj-view-full-mobile .bj-arc--player-boxes,
+.bj-view-card-mobile .bj-arc--player-boxes {
+  flex: 0 0 auto;
+  margin-top: 0;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  gap: 0.04rem;
+  padding: 0 0.06rem 0.06rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot,
+.bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot {
+  flex: 1 1 0;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .bj-view-full-mobile .bj-arc__slot--owned {
@@ -1488,8 +1514,10 @@
   font-size: 0.44rem;
 }
 
-.bj-view-full-mobile .bj-casino__tray-wrap {
+.bj-view-full-mobile .bj-casino__tray-wrap,
+.bj-view-card-mobile .bj-casino__tray-wrap {
   width: 100%;
+  flex-shrink: 0;
 }
 
 /* Mobile Card View betting — one ordered row, internal horizontal scroll, room for hero below. */
@@ -1523,64 +1551,12 @@
   overflow-x: visible;
 }
 
-.bj-view-card-mobile .bj-phone-view__betting-stage--row {
-  flex: 1 1 auto;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  overflow-y: hidden;
-  align-items: flex-end;
-  justify-content: flex-start;
-  gap: 0.3rem;
-  padding: 0.2rem 0.35rem;
-  max-height: 4.85rem;
-  max-width: 100%;
-  min-width: 0;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-}
-
-.bj-view-card-mobile .bj-phone-view__betting-stage--row .bj-phone-view__bet-chip-wrap--small {
-  flex: 0 0 auto;
-  width: 3.2rem;
-  max-width: 3.2rem;
-  min-width: 0;
-}
-
-.bj-view-card-mobile .bj-phone-view__action-bar-primary {
-  flex: 1 1 52%;
-}
-
-.bj-view-card-mobile .bj-phone-view__slot--stage {
-  max-height: min(42dvh, 14rem);
-}
-
 .bj-view-card-mobile .bj-phone-view__mini-row {
-  flex: 0 0 auto;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.06rem;
-  overflow-x: hidden;
-  overflow-y: visible;
-  padding: 0.1rem 0.2rem 0.04rem;
-  max-width: 100%;
-  width: 100%;
-  box-sizing: border-box;
+  display: none;
 }
 
-.bj-view-card-mobile .bj-phone-view__mini-hand-column {
-  min-width: 0;
-  width: 100%;
-}
-
-.bj-view-card-mobile .bj-phone-view__mini-hand-cards {
-  gap: 0;
-  transform: scale(0.5);
-  min-height: 1.35rem;
-}
-
-.bj-view-card-mobile .bj-phone-view__mini-card + .bj-phone-view__mini-card {
-  margin-left: -0.5rem;
+.bj-view-card-mobile .bj-phone-view__betting-stage--row {
+  display: none;
 }
 
 /* Mobile landscape — shared shell compresses felt; tray stays pinned (see bj-table-shared.css). */
@@ -1592,16 +1568,17 @@
     min-height: 0;
   }
 
-  .bj-view-full-mobile .bj-casino__felt-main {
+  .bj-view-full-mobile .bj-casino__felt-main,
+  .bj-view-card-mobile .bj-casino__felt-main {
     min-height: 0;
   }
 
   .bj-view-full-mobile .bj-arc-separator {
-    min-height: min(8dvh, 2.5rem);
+    min-height: min(4dvh, 1.25rem);
   }
 
   .bj-view-full-mobile .bj-casino__tray-wrap,
-  .bj-view-card-mobile .bj-card-layout__tray {
+  .bj-view-card-mobile .bj-casino__tray-wrap {
     flex-shrink: 0;
   }
 }

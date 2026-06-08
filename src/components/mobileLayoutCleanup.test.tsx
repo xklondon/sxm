@@ -53,7 +53,6 @@ describe('mobile layout cleanup', () => {
   const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
   const sharedCss = readCss('src/styles/bj-table-shared.css');
   const panelCss = readCss('src/components/BlackjackPanel.css');
-  const cardLayoutCss = readCss('src/styles/bj-card-layout.css');
 
   it('uses shared mobile table shell class on rail-wrap', () => {
     expect(panelSrc).toContain('TABLE_UX.mobileTableShell');
@@ -65,6 +64,7 @@ describe('mobile layout cleanup', () => {
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*min-height:\s*var\(--bj-mobile-felt-min-height\)/,
     );
+    expect(sharedCss).toContain('--bj-mobile-felt-min-height: 0');
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-casino__rail,\s*\n\s*\.bj-view-card-mobile \.bj-casino__rail[\s\S]*padding:\s*var\(--bj-mobile-rail-padding\)/,
     );
@@ -105,12 +105,12 @@ describe('mobile layout cleanup', () => {
     expect(desktop).not.toContain('bj-casino__this-table--below');
   });
 
-  it('mobile Card View arc row fits seven boxes without horizontal scroll', () => {
-    expect(cardLayoutCss).toMatch(
-      /\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden/,
+  it('mobile Full Table and Card View share player box arc contract', () => {
+    expect(sharedCss).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
     );
-    expect(cardLayoutCss).toMatch(
-      /\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*1 1 0/,
+    expect(sharedCss).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*1 1 0/,
     );
     const mobile = renderAt({ width: 390, height: 844 }, 'card');
     expect(mobile).toContain('bj-arc--player-boxes');
@@ -136,7 +136,6 @@ describe('mobile layout cleanup', () => {
 
 describe('mobile landscape layout source of truth', () => {
   const sharedCss = readCss('src/styles/bj-table-shared.css');
-  const cardLayoutCss = readCss('src/styles/bj-card-layout.css');
 
   it('keeps mobile classification when landscape width exceeds 720px', () => {
     const landscapePhone = renderAt({ width: 844, height: 390 }, 'card');
@@ -156,15 +155,12 @@ describe('mobile landscape layout source of truth', () => {
 
   it('shared CSS pins chip tray with flex-shrink and flexible card grid rows', () => {
     expect(sharedCss).toMatch(
-      /\.bj-view-full-mobile \.bj-casino__tray-wrap[\s\S]*flex-shrink:\s*0/,
+      /\.bj-view-full-mobile \.bj-casino__tray-wrap[\s\S]*flex-shrink:\s*0|\.bj-view-card-mobile \.bj-casino__tray-wrap[\s\S]*flex-shrink:\s*0/,
     );
     expect(sharedCss).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--bottom[\s\S]*flex-shrink:\s*0|\.bj-view-card-mobile \.bj-card-layout__tray[\s\S]*flex-shrink:\s*0/,
+      /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-zone-tray-height\)/,
     );
-    expect(cardLayoutCss).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*min-height:\s*var\(--bj-card-row-tray\)|\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-card-row-tray\)/,
-    );
-    expect(cardLayoutCss).toContain(MOBILE_LAYOUT_MEDIA);
+    expect(sharedCss).toContain(MOBILE_LAYOUT_MEDIA);
   });
 
   it('landscape overlay sheet leaves room to dismiss and see table', () => {

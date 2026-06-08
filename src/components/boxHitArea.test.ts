@@ -60,20 +60,20 @@ describe('box hit area — single reliable tap target', () => {
 describe('mobile landscape Full Table fit', () => {
   it('compresses Full Table zones and hides vertical overflow in landscape', () => {
     expect(SHARED_CSS).toMatch(
-      /@media \(orientation: landscape\)[\s\S]*--bj-table-zone-play-min-height:\s*0/,
+      /@media \(orientation: landscape\)[\s\S]*--bj-mobile-zone-boxes-height:\s*4\.25rem/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,
+      /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,
     );
     expect(PANEL_CSS).toMatch(/\.bj-view-full-mobile \.bj-casino__felt-main[\s\S]*overflow-y:\s*hidden/);
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-zone--boxes[\s\S]*min-height:\s*0/,
+      /\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*overflow:\s*hidden/,
     );
   });
 
   it('keeps chip tray pinned in mobile landscape', () => {
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-casino__tray-wrap[\s\S]*flex-shrink:\s*0/,
+      /\.bj-view-full-mobile \.bj-casino__tray-wrap,\s*\n\s*\.bj-view-card-mobile \.bj-casino__tray-wrap[\s\S]*flex-shrink:\s*0/,
     );
   });
 });
