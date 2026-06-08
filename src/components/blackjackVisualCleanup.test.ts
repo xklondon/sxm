@@ -7,10 +7,12 @@ const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.
 const MAGIC8_CSS = readFileSync(join(process.cwd(), 'src/components/magic8/Magic8Ball.css'), 'utf8');
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 
-describe('blackjack visual cleanup — cloth, player boxes, Magic 8', () => {
-  it('uses larger responsive classic cloth title tokens', () => {
-    expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 56px');
-    expect(FELT_CSS).toContain('--bj-cloth-title-font-size-mobile: 42px');
+describe('blackjack visual cleanup — cloth, player boxes, desktop tray', () => {
+  it('uses larger responsive classic cloth title and red rule tokens', () => {
+    expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 72px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 26px');
+    expect(FELT_CSS).toContain('--bj-cloth-title-font-size-mobile: 54px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size-mobile: 20px');
     expect(FELT_CSS).toMatch(
       /\.bj-felt-cloth-layer__title[\s\S]*font-size:\s*var\(--bj-cloth-title-font-size\)/,
     );
@@ -20,8 +22,8 @@ describe('blackjack visual cleanup — cloth, player boxes, Magic 8', () => {
     expect(FELT_CSS).toMatch(
       /\.bj-felt-cloth-layer__insurance[\s\S]*font-size:\s*var\(--bj-cloth-insurance-font-size\)/,
     );
-    expect(FELT_CSS).toMatch(
-      /\.bj-felt-cloth-layer__dealer-rule[\s\S]*font-size:\s*var\(--bj-cloth-dealer-rule-font-size\)/,
+    expect(Number.parseInt(FELT_CSS.match(/--bj-cloth-title-font-size:\s*(\d+)px/)?.[1] ?? '0', 10)).toBeGreaterThan(
+      Number.parseInt(FELT_CSS.match(/--bj-cloth-insurance-font-size:\s*(\d+)px/)?.[1] ?? '0', 10),
     );
   });
 
@@ -39,6 +41,18 @@ describe('blackjack visual cleanup — cloth, player boxes, Magic 8', () => {
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-arc--player-boxes \.bj-bet-zone[\s\S]*border:\s*none[\s\S]*background:\s*transparent/,
+    );
+  });
+
+  it('removes inner stake/bet frame inside owned player boxes', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc \.bj-phone-view__mini-stake-slot[\s\S]*background:\s*transparent[\s\S]*box-shadow:\s*none/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-arc--player-boxes \.bj-phone-view__mini-stake-slot--reserved[\s\S]*opacity:\s*0/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-arc--player-boxes \.bj-arc__leave[\s\S]*background:\s*transparent[\s\S]*border:\s*none/,
     );
   });
 
@@ -61,6 +75,19 @@ describe('blackjack visual cleanup — cloth, player boxes, Magic 8', () => {
   it('uses consistent ownership border width on mini-hand', () => {
     expect(SHARED_CSS).toMatch(/\.bj-phone-view__mini-hand\.bj-box--native-assigned[\s\S]*border:\s*1\.5px solid/);
     expect(SHARED_CSS).toMatch(/\.bj-phone-view__mini-hand\.bj-box--co-box[\s\S]*border:\s*1\.5px solid/);
+  });
+
+  it('adds desktop-only tray separation without changing mobile gap token', () => {
+    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 2.85rem');
+    expect(SHARED_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*var\(--bj-desktop-zone-boxes-tray-gap\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*overflow:\s*visible/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /@media \(max-width: 720px\)[\s\S]*--bj-zone-boxes-tray-gap:\s*0\.85rem/,
+    );
   });
 
   it('routes mobile Magic 8 response away from dealer centerline', () => {

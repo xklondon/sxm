@@ -26,14 +26,14 @@
 }
 
 :root {
-  --bj-cloth-title-font-size: 56px;
-  --bj-cloth-insurance-font-size: 18px;
-  --bj-cloth-dealer-rule-font-size: 15px;
-  --bj-cloth-wager-font-size: 16px;
-  --bj-cloth-title-font-size-mobile: 42px;
-  --bj-cloth-insurance-font-size-mobile: 15px;
-  --bj-cloth-dealer-rule-font-size-mobile: 12px;
-  --bj-cloth-wager-font-size-mobile: 13px;
+  --bj-cloth-title-font-size: 72px;
+  --bj-cloth-insurance-font-size: 26px;
+  --bj-cloth-dealer-rule-font-size: 17px;
+  --bj-cloth-wager-font-size: 18px;
+  --bj-cloth-title-font-size-mobile: 54px;
+  --bj-cloth-insurance-font-size-mobile: 20px;
+  --bj-cloth-dealer-rule-font-size-mobile: 14px;
+  --bj-cloth-wager-font-size-mobile: 14px;
 }
 
 .bj-table-layout-shell > :not(.bj-felt-cloth-layer) {

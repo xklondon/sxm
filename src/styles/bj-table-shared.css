@@ -68,6 +68,8 @@
   --bj-zone-tray-height: 2.75rem;
   --bj-zone-boxes-tray-gap: 1.35rem;
   --bj-zone-tray-padding-bottom: 0.42rem;
+  --bj-desktop-zone-boxes-tray-gap: 2.85rem;
+  --bj-desktop-zone-tray-separation: 0.35rem;
   --bj-player-box-width: 4.85rem;
   --bj-player-box-height: 4.35rem;
   --bj-action-panel-width: var(--bj-actions-panel-max-width);
@@ -1148,10 +1150,35 @@
   border: none;
   background: transparent;
   box-shadow: none;
+  outline: none;
   min-height: var(--bj-full-table-stake-min-height);
+  max-height: var(--bj-full-table-stake-min-height);
   width: 100%;
   margin: 0;
   padding: 0;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,
+.bj-arc--player-boxes .bj-phone-view__mini-stake-slot--reserved {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  min-height: var(--bj-full-table-stake-min-height);
+  max-height: var(--bj-full-table-stake-min-height);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-stake-slot--reserved {
+  opacity: 0;
+}
+
+.bj-arc--player-boxes .bj-arc__leave {
+  margin-top: 0.08rem;
+  padding: 0.06rem 0.2rem;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  flex-shrink: 0;
 }
 
 .bj-phone-view__mini-hand--full-arc {
@@ -1976,13 +2003,30 @@
     max-width: calc(var(--bj-player-box-width) + 0.35rem);
   }
 
-  .bj-view-full-desktop .bj-arc__slot .bj-bet-zone {
+  .bj-view-full-desktop .bj-arc__slot .bj-bet-zone,
+  .bj-view-card-desktop .bj-arc__slot .bj-bet-zone {
     width: 100%;
-    min-height: 0;
+    min-height: var(--bj-full-table-stake-min-height);
+    max-height: var(--bj-full-table-stake-min-height);
     margin: 0;
     border: none;
     background: transparent;
+    box-shadow: none;
     padding: 0;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--boxes {
+    padding-bottom: calc(var(--bj-card-boxes-padding-bottom) + var(--bj-desktop-zone-boxes-tray-gap));
+    overflow: visible;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes {
+    overflow: visible;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--bottom {
+    margin-top: var(--bj-desktop-zone-tray-separation);
+    padding-top: 0.12rem;
   }
 
   .bj-view-full-desktop .bj-casino__tray-wrap,
