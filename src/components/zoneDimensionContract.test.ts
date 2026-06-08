@@ -56,7 +56,7 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
     expect(shellZoneBlock('.bj-table-zone--bottom')).toContain('height: var(--bj-zone-tray-height)');
   });
 
-  it('gives hero and table cards areas the same outer zone flex contract', () => {
+  it('gives hero and table cards areas the same outer zone flex contract on mobile', () => {
     const cardsBlock = SHARED_CSS.match(
       /\.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table\s*\{[\s\S]*?\}/,
     )?.[0];
@@ -64,6 +64,14 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
     expect(cardsBlock).toContain('flex: 1 1 auto');
     expect(cardsBlock).toContain('min-height: var(--bj-zone-cards-min-height)');
     expect(cardsBlock).not.toContain('bj-card-row-hero-min');
+  });
+
+  it('uses fixed desktop cards zone height mapped from desktop tokens', () => {
+    const desktop = SHARED_CSS.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
+    expect(desktop).toContain('--bj-zone-cards-height: var(--bj-desktop-zone-cards-height)');
+    expect(desktop).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*height:\s*var\(--bj-zone-cards-height\)/,
+    );
   });
 
   it('does not set unique desktop zone heights on view roots', () => {

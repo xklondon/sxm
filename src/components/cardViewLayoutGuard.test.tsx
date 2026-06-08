@@ -245,7 +245,11 @@ describe('Card View layout guard', () => {
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--dealer\s*\{[\s\S]*flex:\s*0\s*0\s*auto/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--summary\s*\{[\s\S]*flex:\s*0\s*0\s*auto/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions\s*\{[\s\S]*flex:\s*0\s*0\s*auto/);
-    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*flex:\s*1\s*1\s*auto/);
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*flex:\s*1\s*1\s*auto/);
+    const desktop = sharedCss.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
+    expect(desktop).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*flex:\s*0\s*0\s*auto[\s\S]*height:\s*var\(--bj-zone-cards-height\)/,
+    );
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*flex:\s*0\s*0\s*auto/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom\s*\{[\s\S]*flex:\s*0\s*0\s*auto/);
   });

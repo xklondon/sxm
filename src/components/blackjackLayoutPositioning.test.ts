@@ -9,7 +9,7 @@ const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPane
 const ACTION_PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackActionPanel.tsx'), 'utf8');
 
 describe('player boxes bottom placement and cards area growth', () => {
-  it('uses flex-column shell with cards flex-grow and boxes pinned above tray', () => {
+  it('uses flex-column shell with mobile cards flex-grow and boxes pinned above tray', () => {
     expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell\s*\{[\s\S]*display:\s*flex[\s\S]*flex-direction:\s*column/);
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*flex:\s*1\s*1\s*auto/,
@@ -20,6 +20,14 @@ describe('player boxes bottom placement and cards area growth', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-zone-boxes-tray-gap\)/,
     );
+  });
+
+  it('uses fixed desktop grid rows without margin-top:auto on boxes', () => {
+    const desktop = SHARED_CSS.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
+    expect(desktop).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*flex:\s*0\s*0\s*auto[\s\S]*height:\s*var\(--bj-zone-cards-height\)/,
+    );
+    expect(desktop).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*margin-top:\s*0/);
   });
 
   it('does not reserve tray gap inside player boxes zone padding', () => {

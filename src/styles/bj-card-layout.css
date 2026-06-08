@@ -176,13 +176,29 @@
 
 @media (min-width: 721px) {
   :root {
-    --bj-card-hero-card-width: min(24vw, 12rem);
-    --bj-card-hero-card-max-height: min(36vw, 18rem);
+    --bj-card-hero-card-width: min(16vw, 8.5rem);
+    --bj-card-hero-card-max-height: min(
+      calc(var(--bj-desktop-zone-cards-height) - 2.75rem),
+      11rem
+    );
+  }
+
+  .bj-table-zone--cards.bj-cards-area--hero,
+  .bj-table-zone--cards.bj-cards-area--table {
+    flex: 0 0 auto;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .bj-table-zone--cards.bj-cards-area--hero {
     justify-content: center;
-    padding: 0.15rem 0 0.25rem;
+    padding: 0.12rem 0 0.18rem;
+  }
+
+  .bj-table-zone--cards.bj-cards-area--table {
+    justify-content: flex-end;
+    padding: 0.12rem 0 0.18rem;
   }
 
   .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center {
@@ -190,20 +206,31 @@
     gap: 0.12rem;
   }
 
-  .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,
-  .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-stack,
-  .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__stage,
-  .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
-  .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
-  .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area {
-    overflow: visible;
-    max-height: none;
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-stack,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__stage,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
   }
 
-  .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot,
-  .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards {
-    overflow: visible;
-    max-height: none;
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-arc--cards {
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__card-wrap {

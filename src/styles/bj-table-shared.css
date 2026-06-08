@@ -68,9 +68,25 @@
   --bj-zone-tray-height: 2.75rem;
   --bj-zone-boxes-tray-gap: 1.35rem;
   --bj-zone-tray-padding-bottom: 0.42rem;
+  --bj-desktop-zone-dealer-height: 7.5rem;
+  --bj-desktop-zone-command-height: 2.25rem;
+  --bj-desktop-zone-actions-height: 5rem;
   --bj-desktop-zone-boxes-height: 6.65rem;
   --bj-desktop-zone-tray-height: 3.35rem;
   --bj-desktop-zone-boxes-tray-gap: 1.85rem;
+  --bj-desktop-zone-cards-height: calc(
+    var(--bj-shell-height)
+    - var(--bj-desktop-zone-dealer-height)
+    - var(--bj-desktop-zone-command-height)
+    - var(--bj-desktop-zone-actions-height)
+    - var(--bj-table-actions-play-gap)
+    - var(--bj-desktop-zone-boxes-height)
+    - var(--bj-card-boxes-padding-bottom)
+    - var(--bj-desktop-zone-boxes-tray-gap)
+    - var(--bj-desktop-zone-tray-height)
+    - var(--bj-zone-tray-padding-bottom)
+    - 1.3rem
+  );
   --bj-player-box-width: 4.85rem;
   --bj-player-box-height: 4.35rem;
   --bj-action-panel-width: var(--bj-actions-panel-max-width);
@@ -1945,9 +1961,40 @@
 /* Desktop table shell — one fixed size; content flexes inside (no page scroll). */
 @media (min-width: 721px) {
   :root {
+    --bj-zone-dealer-height: var(--bj-desktop-zone-dealer-height);
+    --bj-zone-command-height: var(--bj-desktop-zone-command-height);
+    --bj-zone-command-max-height: var(--bj-desktop-zone-command-height);
+    --bj-zone-actions-height: var(--bj-desktop-zone-actions-height);
+    --bj-zone-cards-height: var(--bj-desktop-zone-cards-height);
+    --bj-zone-cards-min-height: var(--bj-desktop-zone-cards-height);
     --bj-zone-boxes-height: var(--bj-desktop-zone-boxes-height);
     --bj-zone-tray-height: var(--bj-desktop-zone-tray-height);
     --bj-zone-boxes-tray-gap: var(--bj-desktop-zone-boxes-tray-gap);
+  }
+
+  .bj-table-layout-shell .bj-table-zone--summary {
+    height: var(--bj-zone-command-height);
+    min-height: var(--bj-zone-command-height);
+    max-height: var(--bj-zone-command-height);
+    overflow: hidden;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--cards,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero,
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table {
+    flex: 0 0 auto;
+    height: var(--bj-zone-cards-height);
+    min-height: var(--bj-zone-cards-height);
+    max-height: var(--bj-zone-cards-height);
+    overflow: hidden;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table {
+    justify-content: flex-end;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--boxes {
+    margin-top: 0;
   }
 
   .bj-casino.bj-view-full-desktop,
@@ -2164,13 +2211,15 @@
 
   .bj-view-full-desktop .bj-arc--cards {
     flex: 0 0 auto;
-    margin-top: auto;
+    margin-top: 0;
     align-items: flex-end;
     width: 100%;
+    max-height: 100%;
     justify-content: space-between;
     gap: 0.12rem;
     padding: 0 var(--bj-card-boxes-padding-inline, 0.75rem) 0.08rem;
     flex-wrap: nowrap;
+    overflow: hidden;
   }
 
   .bj-view-full-desktop .bj-arc--player-boxes .bj-arc__slot,
@@ -2229,14 +2278,16 @@
   .bj-view-card-desktop .bj-phone-view__stage {
     flex: 1 1 auto;
     min-height: 0;
-    overflow: visible;
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .bj-view-card-desktop .bj-phone-view__hero-stage,
   .bj-view-card-desktop .bj-phone-view__hand,
   .bj-view-card-desktop .bj-phone-view__cards-slot {
     min-height: 0;
-    overflow: visible;
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .bj-view-card-desktop .bj-phone-view__action-bar--playing {

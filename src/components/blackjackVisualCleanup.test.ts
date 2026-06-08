@@ -92,6 +92,7 @@ describe('blackjack visual cleanup — cloth, player boxes, desktop tray', () =>
     expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-height: 6.65rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-tray-height: 3.35rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 1.85rem');
+    expect(SHARED_CSS).toContain('--bj-desktop-zone-cards-height: calc(');
     expect(SHARED_CSS).toMatch(
       /@media \(min-width: 721px\)[\s\S]*--bj-zone-boxes-height:\s*var\(--bj-desktop-zone-boxes-height\)/,
     );

@@ -212,11 +212,10 @@ describe('table felt cloth layer', () => {
       /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*justify-content:\s*flex-end/,
     );
     expect(sharedCss).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*margin-top:\s*auto/,
-    );
-    expect(sharedCss).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-zone-boxes-tray-gap\)/,
     );
+    const desktop = sharedCss.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
+    expect(desktop).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*margin-top:\s*0/);
   });
 
   it('Card View player boxes arc does not expand shell scroll', () => {

@@ -79,7 +79,7 @@ describe('TABLE_UX class contract', () => {
     expect(css).toMatch(/\.bj-table-column-surface[\s\S]*var\(--bj-table-felt-bg\)/);
     expect(css).toMatch(/\.bj-bet-zone[\s\S]*--bj-seat-radius/);
     expect(css).toMatch(/\.bj-table-actions[\s\S]*--bj-actions-panel-bg/);
-    expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc--cards[\s\S]*margin-top:\s*auto/);
+    expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc--cards[\s\S]*overflow:\s*hidden/);
   });
 
   it('exports bet zone and player action class names', () => {
