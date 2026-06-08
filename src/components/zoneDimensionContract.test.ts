@@ -28,7 +28,7 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
 
   it('defines mobile zone height tokens mapped to canonical zone vars', () => {
     expect(SHARED_CSS).toContain('--bj-mobile-zone-dealer-height: 6.5rem');
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2.25rem');
     expect(SHARED_CSS).toContain('--bj-mobile-zone-actions-height: 4.5rem');
     expect(SHARED_CSS).toContain('--bj-mobile-zone-boxes-height: 6rem');
     expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 3.35rem');
@@ -49,7 +49,8 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
 
   it('applies identical shell zone heights for all canonical zones', () => {
     expect(shellZoneBlock('.bj-table-zone--dealer')).toContain('height: var(--bj-zone-dealer-height)');
-    expect(shellZoneBlock('.bj-table-zone--summary')).toContain('height: var(--bj-zone-command-height)');
+    expect(shellZoneBlock('.bj-table-zone--summary')).toContain('min-height: var(--bj-zone-command-height)');
+    expect(shellZoneBlock('.bj-table-zone--summary')).toContain('max-height: var(--bj-zone-command-max-height)');
     expect(shellZoneBlock('.bj-table-zone--actions')).toContain('height: var(--bj-zone-actions-height)');
     expect(shellZoneBlock('.bj-table-zone--boxes')).toContain('height: var(--bj-zone-boxes-height)');
     expect(shellZoneBlock('.bj-table-zone--bottom')).toContain('height: var(--bj-zone-tray-height)');

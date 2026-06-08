@@ -15,7 +15,6 @@ import { resolveShowRoundSummaryOverlay } from '../types/table';
 
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const FLOW_SETTINGS_SRC = readFileSync(join(process.cwd(), 'src/engine/blackjack/flowSettings.ts'), 'utf8');
 
 function settledRoundState() {
@@ -171,8 +170,8 @@ describe('table center alignment polish', () => {
     expect(SHARED_CSS).toContain('--bj-table-center-column-max-width');
     expect(SHARED_CSS).toMatch(/\.bj-table-zone--dealer[\s\S]*align-items:\s*center/);
     expect(SHARED_CSS).toMatch(/\.bj-table-zone--actions[\s\S]*justify-content:\s*center/);
-    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-card-layout__dealer[\s\S]*justify-content:\s*center/);
-    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-card-layout__actions[\s\S]*margin-inline:\s*auto/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--dealer[\s\S]*justify-content:\s*center/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*align-items:\s*center/);
   });
 });
 

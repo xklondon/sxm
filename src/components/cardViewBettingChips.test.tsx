@@ -161,15 +161,12 @@ describe('Card View betting chips and layout', () => {
   });
 
   it('desktop Card View has no horizontal overflow contract', () => {
-    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
     const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     const cardCss = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
     expect(sharedCss).toMatch(/\.bj-casino\.bj-view-card-desktop[\s\S]*overflow:\s*hidden/);
     expect(sharedCss).toMatch(/\.bj-table-desktop-shell[\s\S]*overflow:\s*hidden/);
-    expect(layoutCss).toMatch(
-      /\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden|\.bj-view-card-desktop \.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
-    );
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/);
     expect(sharedCss).toMatch(/\.bj-casino__this-table--dock[\s\S]*max-width:\s*12\.5rem/);
     expect(cardCss).toMatch(/\.bj-phone-view[\s\S]*overflow-x:\s*hidden/);
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.dealer-block[\s\S]*padding:\s*0\.1rem/);

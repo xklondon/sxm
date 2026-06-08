@@ -261,24 +261,22 @@ describe('Card View layout guard', () => {
   });
 
   it('boxes row fits mini-hand height plus bottom padding without vertical clip', () => {
-    const layoutCss = readSrc(CARD_LAYOUT_CSS);
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
     const boxesBlock = sharedCss.match(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*?\}/)?.[0] ?? '';
     const miniRowReset =
-      layoutCss.match(
-        /\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*?min-height:\s*0[\s\S]*?\n\}/,
+      sharedCss.match(
+        /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*?overflow:\s*hidden[\s\S]*?\n\}/,
       )?.[0] ?? '';
     expect(boxesBlock).toMatch(/overflow:\s*hidden/);
     expect(miniRowReset).toMatch(/overflow:\s*hidden/);
-    expect(miniRowReset).toMatch(/min-height:\s*0/);
-    expect(miniRowReset).toMatch(/max-height:\s*100%/);
+    expect(miniRowReset).toMatch(/min-width:\s*0/);
     expect(sharedCss).toMatch(/\.bj-casino\.bj-view-card-desktop[\s\S]*overflow:\s*hidden/);
     const boxesRem = parseFloat(/--bj-zone-boxes-height:\s*([\d.]+rem)/.exec(sharedCss)?.[1] ?? '8');
     const handRem = parseFloat(
       /--bj-cardview-desktop-mini-hand-height:\s*([\d.]+rem)/.exec(sharedCss)?.[1] ?? '4.75',
     );
     const padRem = parseFloat(
-      /--bj-card-boxes-padding-bottom:\s*([\d.]+rem)/.exec(layoutCss)?.[1] ?? '0.35',
+      /--bj-card-boxes-padding-bottom:\s*([\d.]+rem)/.exec(sharedCss)?.[1] ?? '0.35',
     );
     expect(boxesRem).toBeGreaterThanOrEqual(handRem + padRem);
   });

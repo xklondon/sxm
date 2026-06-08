@@ -55,14 +55,15 @@ describe('launch layout fixes — BUST / Next Round separation', () => {
 });
 
 describe('launch layout fixes — hero top clipping guards', () => {
-  it('hero zone centers hero cards with reserved meta padding', () => {
+  it('hero zone centers hero cards with visible overflow', () => {
     expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*justify-content:\s*center/);
     expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/);
-    expect(CARD_LAYOUT_CSS).toContain('--bj-card-hero-meta-reserve');
+    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__hand-meta[\s\S]*flex:\s*0 0 auto/);
   });
 
-  it('does not use negative margin or translateY on hero card fan/wrap', () => {
-    const heroBlock = CARD_LAYOUT_CSS.match(/\.bj-card-layout__hero\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
+  it('does not use negative margin or translateY on hero cards area', () => {
+    const heroBlock =
+      CARD_LAYOUT_CSS.match(/\.bj-table-zone--cards\.bj-cards-area--hero\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
     expect(heroBlock).not.toMatch(/margin-top:\s*-/);
     expect(heroBlock).not.toMatch(/translateY\(-/);
   });

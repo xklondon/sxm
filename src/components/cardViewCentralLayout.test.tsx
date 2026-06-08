@@ -121,8 +121,11 @@ describe('Card View central layout', () => {
     expect(cardsIdx).toBeGreaterThan(stackIdx);
     expect(cardsIdx).toBeLessThan(commandIdx);
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     expect(layoutCss).toContain('.bj-card-layout__command');
-    expect(layoutCss).toMatch(/\.bj-card-layout__command \.dealer-block__command[\s\S]*max-height:/);
+    expect(sharedCss).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--summary \.dealer-block__command[\s\S]*max-height:\s*none/,
+    );
   });
 
   it('betting phase does not render central selected-box card', () => {
@@ -171,9 +174,9 @@ describe('Card View central layout', () => {
     expect(html).toMatch(/sxm-secondary-actions[\s\S]*2×/);
   });
 
-  it('hero content is contained inside the hero grid row', () => {
+  it('hero content is contained inside the cards area zone', () => {
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-    expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero\s*\{[\s\S]*overflow:\s*hidden/);
-    expect(layoutCss).toMatch(/\.bj-card-layout__hero \.bj-phone-view__hand[\s\S]*max-height:\s*100%/);
+    expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/);
+    expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__hand[\s\S]*max-height:\s*100%/);
   });
 });

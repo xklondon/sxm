@@ -81,8 +81,8 @@ describe('Card View shared arc player boxes layout', () => {
     expect(html).toContain('bj-phone-view__mini-stake-slot');
   });
 
-  it('uses arc smile CSS in card layout boxes zone', () => {
-    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-    expect(layoutCss).toMatch(/\.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden/);
+  it('uses arc smile CSS in shared shell boxes zone', () => {
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/);
   });
 });

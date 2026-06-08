@@ -123,11 +123,11 @@ describe('Card View layout polish', () => {
     expect(heroIdx).toBeGreaterThan(actionsIdx);
   });
 
-  it('hero action CSS uses two centered rows with smaller extras', () => {
-    const css = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-    expect(css).toContain('.bj-card-layout__actions .bj-table-actions');
-    expect(css).toContain('.bj-card-layout__actions .bj-table-actions__row');
-    expect(css).toContain('.bj-card-layout__actions .bj-table-actions__btn--sm');
-    expect(css).toMatch(/\.bj-table-zone--boxes \.bj-phone-view__mini-hand-card-stack|\.bj-card-layout__boxes \.bj-phone-view__mini-hand-card-stack/);
+  it('hero action CSS uses shared shell action panel and player box stack', () => {
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions/);
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions__row/);
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions__btn--sm/);
+    expect(sharedCss).toMatch(/\.bj-phone-view__mini-hand-card-stack[\s\S]*position:\s*relative/);
   });
 });

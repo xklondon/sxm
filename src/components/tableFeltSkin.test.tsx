@@ -218,12 +218,11 @@ describe('table felt cloth layer', () => {
 
   it('Card View player boxes arc does not expand shell scroll', () => {
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
-    const layoutCss = readSrc('src/styles/bj-card-layout.css');
     const boxesBlock =
       sharedCss.match(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*?\}/)?.[0] ?? '';
     expect(boxesBlock).toMatch(/overflow:\s*hidden/);
-    expect(layoutCss).toMatch(
-      /\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
+    expect(sharedCss).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
     );
   });
 

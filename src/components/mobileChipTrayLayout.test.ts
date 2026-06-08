@@ -29,8 +29,8 @@ describe('mobile Card View chip tray layout', () => {
 
   it('uses reduced horizontal gap between player boxes on mobile', () => {
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
-    expect(LAYOUT_CSS).toMatch(
-      /\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*gap:|\.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*gap:/,
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*gap:\s*0\.04rem/,
     );
     expect(panelCss).toMatch(
       /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*scale\(0\.88\)|\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*rotate\(var\(--arc-rot/,

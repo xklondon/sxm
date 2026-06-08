@@ -12,7 +12,6 @@ import { addChipToBoxStake } from '../engine/blackjack/stakes';
 
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
-const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 
 const noop = () => {};
 
@@ -89,7 +88,8 @@ describe('shared player boxes arc', () => {
 
   it('Card View boxes zone uses arc smile layout CSS', () => {
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
-    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--boxes \.bj-arc--player-boxes|\.bj-card-layout__boxes \.bj-arc--player-boxes/);
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/);
     expect(panelCss).toMatch(/\.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*rotate\(var\(--arc-rot/);
   });
 

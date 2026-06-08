@@ -20,9 +20,11 @@ describe('blackjack display layout contract', () => {
     expect(SHELL_SRC).toMatch(/BlackjackCommandZone[\s\S]*BlackjackActionsZone/);
     expect(SHELL_SRC).toMatch(/BlackjackActionsZone[\s\S]*BlackjackCardsAreaZone/);
     expect(COMMAND_BOX_SRC).toContain('TABLE_UX.cardLayoutCommand');
-    expect(CARD_LAYOUT_CSS).toContain('.bj-card-layout__command');
-    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-card-layout__command \.dealer-block__command[\s\S]*max-height:/);
-    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--actions[\s\S]*flex:/);
+    expect(SHARED_CSS).toContain('.bj-card-layout__command');
+    expect(SHARED_CSS).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--summary \.dealer-block__command[\s\S]*border-radius:\s*999px/,
+    );
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*height:/);
     expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*flex:/);
   });
 

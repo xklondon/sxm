@@ -126,24 +126,25 @@ describe('Card View polish guards', () => {
     expect(layoutCss).toContain('--bj-card-hero-card-max-height: min(32vw, 14rem)');
     expect(layoutCss).toContain('--bj-card-hero-card-aspect-ratio: 5 / 7');
     expect(layoutCss).toMatch(
-      /\.bj-card-layout__hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*width:\s*var\(--bj-card-hero-card-width\)/,
+      /\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*width:\s*var\(--bj-card-hero-card-width\)/,
     );
   });
 
   it('uses compact table action buttons in Card View actions row', () => {
     const html = renderCardPanel(playingState());
     expect(html).toContain('bj-table-actions__btn--sm');
-    const layoutCss = readSrc('src/styles/bj-card-layout.css');
-    expect(layoutCss).toMatch(
-      /\.bj-table-zone--actions \.bj-table-actions__btn--sm[\s\S]*min-height:\s*var\(--bj-actions-secondary-btn-min-height|\.bj-card-layout__actions \.bj-table-actions__btn--sm[\s\S]*min-height:\s*var\(--bj-card-action-secondary-height\)/,
+    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    expect(sharedCss).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions__btn--sm[\s\S]*font-size:/,
     );
   });
 
   it('does not introduce page scroll when cards are dealt', () => {
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
-    expect(layoutCss).toMatch(/\.bj-table-layout-shell[\s\S]*overflow:\s*hidden/);
-    expect(sharedCss).toMatch(/\.bj-view-card-desktop \.bj-phone-view\.bj-card-layout[\s\S]*overflow:\s*hidden/);
+    const panelCss = readSrc('src/components/BlackjackPanel.css');
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell[\s\S]*overflow:\s*hidden/);
+    expect(panelCss).toMatch(/\.bj-view-card-desktop[\s\S]*overflow-x:\s*hidden/);
     expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/);
     expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__hand[\s\S]*min-height:\s*0/);
   });
