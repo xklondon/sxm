@@ -231,9 +231,9 @@
     overflow: hidden;
   }
 
-  .bj-view-full-mobile .bj-phone-view__mini-hand,
-  .bj-view-full-mobile .bj-arc__slot .bj-phone-view__mini-hand,
-  .bj-view-card-mobile .bj-phone-view__mini-hand {
+  .bj-view-full-mobile .bj-phone-view__mini-hand:not(.bj-phone-view__mini-hand--full-arc),
+  .bj-view-full-mobile .bj-arc__slot .bj-phone-view__mini-hand:not(.bj-phone-view__mini-hand--full-arc),
+  .bj-view-card-mobile .bj-phone-view__mini-hand:not(.bj-phone-view__mini-hand--full-arc) {
     flex: 1 1 0;
     min-width: 0;
     max-width: none;
@@ -241,6 +241,17 @@
     min-height: var(--bj-mobile-mini-hand-height);
     height: var(--bj-mobile-mini-hand-height);
     padding: 0.1rem 0.04rem;
+  }
+
+  .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc {
+    flex: 0 0 auto;
+    min-width: var(--bj-full-table-box-width);
+    max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+    min-height: var(--bj-full-table-box-height);
+    height: var(--bj-full-table-box-height);
+    width: 100%;
+    padding: var(--bj-full-table-box-padding);
+    box-sizing: border-box;
   }
 
   .bj-view-full-mobile .bj-phone-view__box-value,
@@ -425,6 +436,8 @@
   .bj-view-card-mobile .bj-arc__slot--owned {
     background: none;
     padding: 0;
+    border: none;
+    box-shadow: none;
   }
 
   /* Mobile Full Table + Card View — shared shell fit (one layout contract). */
@@ -737,20 +750,30 @@
 }
 
 .bj-arc__slot--owned {
-  border-radius: var(--bj-seat-radius);
+  border-radius: 0;
 }
 
 /* Player boxes: mini-hand is the sole visual frame — no outer slot chrome (all views). */
-.bj-arc--player-boxes .bj-arc__slot--owned {
+.bj-arc--player-boxes .bj-arc__slot,
+.bj-arc--player-boxes .bj-arc__slot--owned,
+.bj-arc--player-boxes .bj-arc__slot--empty {
   background: none;
   padding: 0;
   border: none;
   box-shadow: none;
+  outline: none;
+  min-height: 0;
+  width: auto;
+  max-width: none;
+}
+
+.bj-arc--player-boxes .bj-arc__slot--owned {
+  border-radius: 0;
 }
 
 /* Semantic box border states — Full Table + Card View (classes from resolveBoxBorderVisualState). */
 .bj-phone-view__mini-hand.bj-box--native-assigned {
-  border: 1px solid rgb(251 191 36 / 0.82);
+  border: 1.5px solid rgb(251 191 36 / 0.82);
   background: rgb(251 191 36 / 0.06);
 }
 
@@ -760,15 +783,13 @@
 }
 
 .bj-phone-view__mini-hand.bj-box--co-box {
-  border: 1px solid rgb(251 146 60 / 0.88);
+  border: 1.5px solid rgb(251 146 60 / 0.88);
   background: rgb(251 146 60 / 0.07);
 }
 
 /* Local chip target — inset ring avoids horizontal scroll from outline overflow. */
 .bj-phone-view__mini-hand.bj-box--selected {
-  box-shadow:
-    inset 0 0 0 2px var(--ds-color-gold),
-    var(--bj-seat-frame-shadow);
+  box-shadow: inset 0 0 0 2px var(--ds-color-gold);
   background: rgb(251 191 36 / 0.12);
 }
 
@@ -778,31 +799,35 @@
     var(--bj-seat-frame-shadow);
 }
 
-/* Local chip target + active turn — layers on ownership borders. */
+/* Local chip target + active turn — visual pulse only; no layout-affecting transforms. */
 @keyframes bj-bet-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(251 191 36 / 0.45);
+    box-shadow: inset 0 0 0 2px rgb(251 191 36 / 0.45);
   }
 
   50% {
-    box-shadow: 0 0 0 6px rgb(251 191 36 / 0);
+    box-shadow:
+      inset 0 0 0 2px rgb(251 191 36 / 0.95),
+      0 0 10px rgb(251 191 36 / 0.28);
   }
 }
 
 .bj-phone-view__bet-chip--pulse {
   animation: bj-bet-pulse 1.8s ease-in-out infinite;
   box-sizing: border-box;
+  transform: none;
+  margin: 0;
 }
 
 .bj-arc--player-boxes .bj-phone-view__bet-chip--pulse {
-  contain: layout paint;
+  contain: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .bj-phone-view__bet-chip--pulse {
     animation: none;
-    box-shadow: 0 0 0 2px rgb(251 191 36 / 0.4);
+    box-shadow: inset 0 0 0 2px rgb(251 191 36 / 0.55);
   }
 }
 
@@ -1114,6 +1139,21 @@
 }
 
 /* Full Table arc seats — compact box shell; cards render in bj-table-zone--cards. */
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
+.bj-arc--player-boxes .bj-phone-view__mini-hand--empty {
+  box-shadow: none;
+}
+
+.bj-arc--player-boxes .bj-bet-zone {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  min-height: var(--bj-full-table-stake-min-height);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .bj-phone-view__mini-hand--full-arc {
   justify-content: flex-start;
   gap: var(--bj-full-table-box-gap);
@@ -1123,6 +1163,7 @@
   min-height: var(--bj-full-table-box-height);
   height: var(--bj-full-table-box-height);
   padding: var(--bj-full-table-box-padding);
+  box-sizing: border-box;
 }
 
 .bj-phone-view__mini-hand--full-arc .bj-phone-view__box-value,
@@ -1297,17 +1338,15 @@
 @keyframes bj-turn-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 6px var(--ds-color-gold-glow));
     box-shadow:
-      0 0 0 1px var(--bj-seat-active-border),
+      inset 0 0 0 1px var(--bj-seat-active-border),
       0 0 8px var(--ds-color-gold-glow);
   }
 
   50% {
-    filter: drop-shadow(0 0 14px var(--ds-color-gold-glow));
     box-shadow:
-      0 0 0 1px var(--bj-seat-active-border),
-      0 0 16px var(--ds-color-gold-glow);
+      inset 0 0 0 2px var(--bj-seat-active-border),
+      0 0 14px var(--ds-color-gold-glow);
   }
 }
 
@@ -1318,6 +1357,8 @@
   border-color: var(--bj-seat-active-border);
   background: var(--bj-seat-active-bg);
   animation: bj-turn-pulse 1.6s ease-in-out infinite;
+  transform: none;
+  filter: none;
 }
 
 .bj-arc__slot--turn {
@@ -1511,6 +1552,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 5;
 }
 
 .bj-table-layout-shell .bj-table-zone--dealer .dealer-block {

@@ -24,9 +24,9 @@
   position: absolute;
   top: 12px;
   left: 14px;
-  z-index: 8;
+  z-index: 2;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   pointer-events: none;
 }
@@ -296,13 +296,15 @@
   .magic8__shake-btn {
     display: none;
   }
-}
 
-@media (max-width: 640px) {
   .magic8-table-zone {
-    top: 8px;
-    left: 8px;
-    gap: 6px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    top: 0.35rem;
+    left: 0.35rem;
+    max-width: min(36vw, 8.75rem);
+    z-index: 2;
   }
 
   .magic8-table-zone .magic8-ball {
@@ -311,15 +313,23 @@
   }
 
   .magic8-table-answer {
-    width: clamp(140px, 44vw, 210px);
-    min-height: 32px;
-    max-height: 48px;
-    padding: 5px 8px;
+    width: 100%;
+    max-width: min(36vw, 8.75rem);
+    min-height: 28px;
+    max-height: 42px;
+    padding: 4px 7px;
     border-radius: 10px;
   }
 
   .magic8-table-answer__text {
-    font-size: 11px;
+    font-size: 10px;
     line-height: 1.15;
+  }
+}
+
+@media (max-width: 640px) {
+  .magic8-table-zone {
+    top: 0.35rem;
+    left: 0.35rem;
   }
 }

@@ -107,6 +107,9 @@ describe('mobile table dimension parity — Full Table vs Card View', () => {
   it('keeps Magic 8 oracle out of dealer/command layout flow', () => {
     expect(MAGIC8_CSS).toMatch(/\.magic8-table-zone[\s\S]*position:\s*absolute/);
     expect(MAGIC8_CSS).toMatch(/\.magic8-table-zone[\s\S]*pointer-events:\s*none/);
+    expect(MAGIC8_CSS).toMatch(
+      /@media \(max-width: 720px\)[\s\S]*\.magic8-table-zone[\s\S]*flex-direction:\s*column/,
+    );
     expect(PANEL_CSS).toMatch(/\.bj-casino__felt > \.magic8-table-zone[\s\S]*position:\s*absolute/);
     expect(PANEL_CSS).toMatch(/\.bj-casino__felt > \.magic8-table-zone[\s\S]*pointer-events:\s*none/);
   });
