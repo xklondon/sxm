@@ -123,7 +123,6 @@ import {
 import {
   canShowPlayerDecisionControls,
   resolveViewerActionPermission,
-  formatDecisionOwnerWaitMessage,
   getInsuranceActionsForController,
   getActiveTurnBoxId,
   isPlayerTurnPhase,
@@ -1107,32 +1106,10 @@ export function BlackjackPanel({
     if (!activeRound.activeHandKey) {
       return null;
     }
-    const { playerId } = parseBlackjackHandKey(activeRound.activeHandKey);
 
     const actionPermission = resolveViewerActionPermission(gameState, viewerPersonId);
     if (!actionPermission.canAct) {
-      const waitMessage =
-        actionPermission.waitMessage ??
-        formatDecisionOwnerWaitMessage(gameState, playerId);
-      return (
-        <BlackjackActionPanel
-          variant="table"
-          waitMessage={waitMessage}
-          actionsEnabled={false}
-          canHit={false}
-          canStand={false}
-          canDouble={false}
-          canSplit={false}
-          showDouble={false}
-          showSplit={false}
-          showAid={false}
-          onHit={() => {}}
-          onStand={() => {}}
-          onDouble={() => {}}
-          onSplit={() => {}}
-          onAid={() => {}}
-        />
-      );
+      return null;
     }
 
     const actionable = actionPermission.actionable!;

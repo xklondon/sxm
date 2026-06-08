@@ -63,10 +63,12 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         tableName,
         req.auth!.email,
       );
+      const memberPersonId = table.state.tableMeta.ownerPersonId!;
       res.status(201).json({
         tableId: table.id,
         version: table.version,
         state: table.state,
+        memberPersonId,
       });
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
@@ -78,12 +80,15 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
 
   router.get('/:tableId', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      const table = await tables.getTableForUser(
-        req.params.tableId!,
+      const tableId = req.params.tableId!;
+      const table = await tables.getTableForUser(tableId, req.auth!.userId, req.auth!.email);
+      const memberPersonId = await tables.getMemberPersonIdForSession(
+        tableId,
         req.auth!.userId,
         req.auth!.email,
+        'GET /api/tables/:id',
       );
-      res.json({ tableId: table.id, version: table.version, state: table.state });
+      res.json({ tableId: table.id, version: table.version, state: table.state, memberPersonId });
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
         return;
@@ -145,7 +150,7 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
 
   router.post('/join', requireAuth, async (req: AuthedRequest, res) => {
     try {
-      const table = await tables.joinTable({
+      const joined = await tables.joinTable({
         userId: req.auth!.userId,
         displayName: String(req.body?.displayName ?? req.auth!.email.split('@')[0]),
         tableId: String(req.body?.tableId ?? ''),
@@ -153,7 +158,12 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         token: String(req.body?.token ?? ''),
         sessionEmail: req.auth!.email,
       });
-      res.json({ tableId: table.id, version: table.version, state: table.state });
+      res.json({
+        tableId: joined.table.id,
+        version: joined.table.version,
+        state: joined.table.state,
+        memberPersonId: joined.memberPersonId,
+      });
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
         return;

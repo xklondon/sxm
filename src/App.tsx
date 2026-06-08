@@ -35,7 +35,7 @@ import { clearStaleOnlineTableContext } from './onlineTableRecovery';
 import { resolveEffectiveOnlineTableId } from './onlineTableBootstrap';
 import { useIsMobileViewport } from './hooks/useIsMobileViewport';
 import { consumePendingTable, rememberPendingTable } from './session/pendingTable';
-import { syncStoredViewerPersonId } from './components/viewerIdentity';
+import { syncStoredViewerPersonId, applyOnlineTableBootstrap } from './components/viewerIdentity';
 import './index.css';
 
 type AppScreen = 'start' | 'setup' | 'table' | 'people';
@@ -185,6 +185,11 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
           showStakeSetup: true,
         },
       });
+      applyOnlineTableBootstrap({
+        tableId: result.tableId,
+        state: result.state,
+        memberPersonId: result.memberPersonId,
+      });
       setActiveTableId(result.tableId);
       setTableVersion(result.version);
       setStoredOnlineTableId(result.tableId);
@@ -256,6 +261,11 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
           return;
         }
         setGameState(normalizeLoadedGameState(data.state));
+        applyOnlineTableBootstrap({
+          tableId: data.tableId,
+          state: normalizeLoadedGameState(data.state),
+          memberPersonId: data.memberPersonId,
+        });
         setActiveTableId(data.tableId);
         setTableVersion(data.version);
         setStoredOnlineTableId(data.tableId);
@@ -317,6 +327,11 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
           input,
         );
         setGameState(configured);
+        applyOnlineTableBootstrap({
+          tableId: result.tableId,
+          state: configured,
+          memberPersonId: result.memberPersonId,
+        });
         setActiveTableId(result.tableId);
         setTableVersion(result.version);
         setStoredOnlineTableId(result.tableId);
@@ -464,7 +479,13 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     if (onlineMode && activeTableId) {
       try {
         const data = await fetchTable(activeTableId);
-        setGameState(normalizeLoadedGameState(data.state));
+        const normalized = normalizeLoadedGameState(data.state);
+        applyOnlineTableBootstrap({
+          tableId: data.tableId,
+          state: normalized,
+          memberPersonId: data.memberPersonId,
+        });
+        setGameState(normalized);
         setTableVersion(data.version);
         setStoredOnlineTableId(data.tableId);
         setScreen('table');

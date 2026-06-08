@@ -101,7 +101,8 @@ describe('SXMCards multiplayer API', () => {
       token,
     });
 
-    expect(join.id).toBe(table.id);
+    expect(join.table.id).toBe(table.id);
+    expect(join.memberPersonId).toBe(store.getMember(table.id, guest.id)!.personId);
 
     expect(store.getMember(table.id, guest.id)).toBeTruthy();
 

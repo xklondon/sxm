@@ -4,9 +4,8 @@ import { joinOnlineTable } from '../api/client';
 import { isOnlineModeEnabled } from '../api/config';
 import { setStoredOnlineTableId } from '../hooks/useOnlineMultiplayer';
 import {
-  personIdFromJoinedState,
+  applyOnlineTableBootstrap,
 } from './viewerIdentity';
-import { setStoredViewerPersonIdForTable } from '../storage/profileStorage';
 import { consumePendingJoin } from '../AppRoot';
 import type { AuthUser } from '../api/client';
 import './JoinTableCurtain.css';
@@ -43,10 +42,11 @@ export function JoinTableCurtain({ user, onJoined, onDismiss }: JoinTableCurtain
         token: params.token,
         displayName: name,
       });
-      const personId = personIdFromJoinedState(result.state, name);
-      if (personId) {
-        setStoredViewerPersonIdForTable(result.tableId, personId);
-      }
+      applyOnlineTableBootstrap({
+        tableId: result.tableId,
+        state: result.state,
+        memberPersonId: result.memberPersonId,
+      });
       setStoredOnlineTableId(result.tableId);
       onJoined(result.tableId);
     } catch (err) {

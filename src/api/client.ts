@@ -121,6 +121,13 @@ export async function logout(): Promise<void> {
   await apiFetch('/api/auth/logout', { method: 'POST' });
 }
 
+export interface OnlineTablePayload {
+  tableId: string;
+  version: number;
+  state: import('../types').GameState;
+  memberPersonId: string;
+}
+
 export async function createOnlineTable(displayName: string, name?: string) {
   const res = await apiFetch('/api/tables', {
     method: 'POST',
@@ -137,7 +144,7 @@ export async function createOnlineTable(displayName: string, name?: string) {
   if (!res.ok) {
     throw new Error(data.error ?? 'Create table failed');
   }
-  return data as { tableId: string; version: number; state: import('../types').GameState };
+  return data as OnlineTablePayload;
 }
 
 export async function joinOnlineTable(params: {
@@ -154,7 +161,7 @@ export async function joinOnlineTable(params: {
   if (!res.ok) {
     throw new Error(data.error ?? 'Join failed');
   }
-  return data as { tableId: string; version: number; state: import('../types').GameState };
+  return data as OnlineTablePayload;
 }
 
 export async function sendTableAction(
@@ -194,7 +201,7 @@ export async function fetchTable(tableId: string) {
   if (!res.ok) {
     throw new Error(data.error ?? 'Could not load table');
   }
-  return data as { tableId: string; version: number; state: import('../types').GameState };
+  return data as OnlineTablePayload;
 }
 
 export async function invitePersonToTable(

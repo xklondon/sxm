@@ -155,4 +155,12 @@ describe('command text routing separation', () => {
     expect(CARD_VIEW_SRC).not.toMatch(/commandMessage:\s*aidTip/);
     expect(CARD_VIEW_SRC).not.toMatch(/BlackjackCommandBox/);
   });
+
+  it('does not duplicate wait text in actions zone when command already shows it', () => {
+    expect(PANEL_SRC).toMatch(/buildBlackjackCommandText/);
+    expect(PANEL_SRC).toMatch(/command=\{\s*<BlackjackCommandBox/);
+    expect(PANEL_SRC).not.toMatch(/waitMessage=\{waitMessage\}/);
+    expect(PANEL_SRC).not.toMatch(/BlackjackActionPanel[\s\S]*waitMessage/);
+    expect(PANEL_SRC).toMatch(/!actionPermission\.canAct[\s\S]*return null/);
+  });
 });

@@ -68,8 +68,9 @@
   --bj-zone-tray-height: 2.75rem;
   --bj-zone-boxes-tray-gap: 1.35rem;
   --bj-zone-tray-padding-bottom: 0.42rem;
-  --bj-desktop-zone-boxes-tray-gap: 2.85rem;
-  --bj-desktop-zone-tray-separation: 0.35rem;
+  --bj-desktop-zone-boxes-height: 7.15rem;
+  --bj-desktop-zone-tray-height: 3.15rem;
+  --bj-desktop-zone-boxes-tray-gap: 1.1rem;
   --bj-player-box-width: 4.85rem;
   --bj-player-box-height: 4.35rem;
   --bj-action-panel-width: var(--bj-actions-panel-max-width);
@@ -1181,6 +1182,66 @@
   flex-shrink: 0;
 }
 
+/* Player boxes — frozen shell; selection/turn pulse uses inset box-shadow only. */
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc {
+  border: 1.5px solid rgb(251 191 36 / 0.38);
+  background: var(--bj-seat-bg);
+  box-shadow: none;
+  transform: none;
+  margin: 0;
+  padding: var(--bj-full-table-box-padding);
+  width: 100%;
+  min-width: var(--bj-full-table-box-width);
+  max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+  min-height: var(--bj-full-table-box-height);
+  height: var(--bj-full-table-box-height);
+  position: relative;
+  top: auto;
+  bottom: auto;
+  box-sizing: border-box;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--native-assigned {
+  border-color: rgb(251 191 36 / 0.82);
+  background: rgb(251 191 36 / 0.06);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--running {
+  border-style: dashed;
+  border-color: rgb(251 191 36 / 0.88);
+  background: rgb(251 191 36 / 0.05);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--co-box {
+  border-color: rgb(251 146 60 / 0.88);
+  background: rgb(251 146 60 / 0.07);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--drop-hover {
+  box-shadow: inset 0 0 0 2px rgb(110 231 183 / 0.75);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected {
+  box-shadow: none;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse {
+  animation: bj-bet-pulse 1.8s ease-in-out infinite;
+  transform: none;
+  margin: 0;
+  padding: var(--bj-full-table-box-padding);
+  width: 100%;
+  min-width: var(--bj-full-table-box-width);
+  max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+  min-height: var(--bj-full-table-box-height);
+  height: var(--bj-full-table-box-height);
+  border-width: 1.5px;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake {
+  max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+}
+
 .bj-phone-view__mini-hand--full-arc {
   justify-content: flex-start;
   gap: var(--bj-full-table-box-gap);
@@ -1773,6 +1834,11 @@
 
 /* Desktop table shell — one fixed size; content flexes inside (no page scroll). */
 @media (min-width: 721px) {
+  :root {
+    --bj-zone-boxes-height: var(--bj-desktop-zone-boxes-height);
+    --bj-zone-tray-height: var(--bj-desktop-zone-tray-height);
+  }
+
   .bj-casino.bj-view-full-desktop,
   .bj-casino.bj-view-card-desktop {
     overflow: hidden;
@@ -2016,17 +2082,17 @@
   }
 
   .bj-table-layout-shell .bj-table-zone--boxes {
-    padding-bottom: calc(var(--bj-card-boxes-padding-bottom) + var(--bj-desktop-zone-boxes-tray-gap));
-    overflow: visible;
+    padding-bottom: calc(var(--bj-card-boxes-padding-bottom) + var(--bj-zone-boxes-tray-gap));
+    overflow: hidden;
   }
 
   .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes {
-    overflow: visible;
+    overflow: hidden;
   }
 
   .bj-table-layout-shell .bj-table-zone--bottom {
-    margin-top: var(--bj-desktop-zone-tray-separation);
-    padding-top: 0.12rem;
+    margin-top: var(--bj-desktop-zone-boxes-tray-gap);
+    padding-top: 0.04rem;
   }
 
   .bj-view-full-desktop .bj-casino__tray-wrap,

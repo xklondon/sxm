@@ -4,6 +4,7 @@ import type { GameState } from '../types';
 
 import { fetchMe, fetchTable, sendTableAction, type AuthUser } from '../api/client';
 import { AuthFetchError } from '../auth/authErrors';
+import { applyOnlineTableBootstrap } from '../components/viewerIdentity';
 
 import { isOnlineModeEnabled } from '../api/config';
 
@@ -90,6 +91,11 @@ export function useOnlineTable(
       onConnectionState: setConnectionState,
       pollTable: async () => {
         const refreshed = await fetchTable(tableId);
+        applyOnlineTableBootstrap({
+          tableId: refreshed.tableId,
+          state: refreshed.state,
+          memberPersonId: refreshed.memberPersonId,
+        });
         versionRef.current = refreshed.version;
         setVersion(refreshed.version);
         onGameStateChangeRef.current(refreshed.state);
@@ -121,6 +127,11 @@ export function useOnlineTable(
       if (/stale/i.test(message)) {
         try {
           const refreshed = await fetchTable(tableId);
+          applyOnlineTableBootstrap({
+            tableId: refreshed.tableId,
+            state: refreshed.state,
+            memberPersonId: refreshed.memberPersonId,
+          });
           versionRef.current = refreshed.version;
           setVersion(refreshed.version);
           onGameStateChangeRef.current(refreshed.state);

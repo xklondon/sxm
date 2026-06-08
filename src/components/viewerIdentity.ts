@@ -1,12 +1,17 @@
 import type { GameState } from '../types';
 import type { AuthUser } from '../api/client';
-import { resolveViewerPersonId, type ViewerIdentityHints } from '../engine/session';
+import { resolveViewerPersonId, type ViewerIdentityHints, isSeatedPersonAtTable } from '../engine/session';
 import {
   getStoredViewerPersonIdForTable,
   loadProfile,
   setStoredViewerPersonIdForTable,
 } from '../storage/profileStorage';
-import { isSeatedPersonAtTable } from '../engine/session';
+
+export interface OnlineTableBootstrap {
+  tableId: string;
+  state: GameState;
+  memberPersonId?: string | null;
+}
 
 export function buildViewerIdentityHints(
   _state: GameState,
@@ -33,13 +38,40 @@ export function resolveViewerPersonIdForTable(
   return resolveViewerPersonId(state, buildViewerIdentityHints(state, onlineTableId, auth));
 }
 
+/** Persist authoritative server member person id for online action visibility. */
+export function applyOnlineTableBootstrap(bootstrap: OnlineTableBootstrap): void {
+  const tableId = bootstrap.tableId.trim();
+  if (!tableId) {
+    return;
+  }
+  const memberPersonId = bootstrap.memberPersonId?.trim();
+  if (memberPersonId && isSeatedPersonAtTable(bootstrap.state, memberPersonId)) {
+    setStoredViewerPersonIdForTable(tableId, memberPersonId);
+    return;
+  }
+  const fromHighlight = bootstrap.state.tableMeta.joinHighlight?.personId?.trim();
+  if (fromHighlight && isSeatedPersonAtTable(bootstrap.state, fromHighlight)) {
+    setStoredViewerPersonIdForTable(tableId, fromHighlight);
+    return;
+  }
+  const fromNotice = bootstrap.state.tableMeta.tableNotice?.personId?.trim();
+  if (fromNotice && isSeatedPersonAtTable(bootstrap.state, fromNotice)) {
+    setStoredViewerPersonIdForTable(tableId, fromNotice);
+  }
+}
+
 /** Persist viewer person id when join or invite-email mapping identifies the seated player. */
 export function syncStoredViewerPersonId(
   tableId: string,
   state: GameState,
   auth?: Pick<AuthUser, 'email' | 'displayName'> | null,
+  memberPersonId?: string | null,
 ): void {
   if (!tableId.trim()) {
+    return;
+  }
+  if (memberPersonId?.trim() && isSeatedPersonAtTable(state, memberPersonId)) {
+    setStoredViewerPersonIdForTable(tableId, memberPersonId);
     return;
   }
   const hints = buildViewerIdentityHints(state, tableId, auth);

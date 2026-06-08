@@ -150,7 +150,8 @@ describe('people access control', () => {
       inviteId: invite.id,
       token,
     });
-    expect(joined.id).toBe(table.id);
+    expect(joined.table.id).toBe(table.id);
+    expect(joined.memberPersonId).toBe(store.getMember(table.id, invited.id)!.personId);
   });
 
   it('invite email uses PUBLIC_ORIGIN and no localhost in production config', async () => {

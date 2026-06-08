@@ -56,6 +56,19 @@ describe('blackjack visual cleanup — cloth, player boxes, desktop tray', () =>
     );
   });
 
+  it('locks player box dimensions; selection adds pulse only', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc[\s\S]*height:\s*var\(--bj-full-table-box-height\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-phone-view__bet-chip--pulse[\s\S]*transform:\s*none[\s\S]*height:\s*var\(--bj-full-table-box-height\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--selected[\s\S]*box-shadow:\s*none/,
+    );
+    expect(SHARED_CSS).toMatch(/@keyframes bj-bet-pulse[\s\S]*inset 0 0 0 2px/);
+  });
+
   it('uses one visible frame on player box mini-hand tiles', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc[\s\S]*box-shadow:\s*none/,
@@ -77,13 +90,18 @@ describe('blackjack visual cleanup — cloth, player boxes, desktop tray', () =>
     expect(SHARED_CSS).toMatch(/\.bj-phone-view__mini-hand\.bj-box--co-box[\s\S]*border:\s*1\.5px solid/);
   });
 
-  it('adds desktop-only tray separation without changing mobile gap token', () => {
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 2.85rem');
+  it('adds desktop tray separation via margin and taller zone heights', () => {
+    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-height: 7.15rem');
+    expect(SHARED_CSS).toContain('--bj-desktop-zone-tray-height: 3.15rem');
+    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 1.1rem');
     expect(SHARED_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*var\(--bj-desktop-zone-boxes-tray-gap\)/,
+      /@media \(min-width: 721px\)[\s\S]*--bj-zone-boxes-height:\s*var\(--bj-desktop-zone-boxes-height\)/,
     );
     expect(SHARED_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*overflow:\s*visible/,
+      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-desktop-zone-boxes-tray-gap\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*overflow:\s*hidden/,
     );
     expect(SHARED_CSS).toMatch(
       /@media \(max-width: 720px\)[\s\S]*--bj-zone-boxes-tray-gap:\s*0\.85rem/,

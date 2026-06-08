@@ -70,18 +70,29 @@ export class TableService {
     userId: string,
     sessionEmail?: string,
   ): Promise<TableRecord> {
-    const resolvedUserId = sessionEmail
-      ? (await this.people.resolveSessionUser(userId, sessionEmail, 'GET /api/tables/:id')).id
-      : userId;
+    await this.getMemberPersonIdForSession(tableId, userId, sessionEmail, 'GET /api/tables/:id');
     const table = this.store.getTable(tableId);
     if (!table) {
       throw new Error('Table not found');
     }
+    return table;
+  }
+
+  /** Authoritative seated person id for the authenticated session member. */
+  async getMemberPersonIdForSession(
+    tableId: string,
+    userId: string,
+    sessionEmail?: string,
+    context = 'table member lookup',
+  ): Promise<string> {
+    const resolvedUserId = sessionEmail
+      ? (await this.people.resolveSessionUser(userId, sessionEmail, context)).id
+      : userId;
     const member = this.store.getMember(tableId, resolvedUserId);
     if (!member) {
       throw new Error('Not a member of this table');
     }
-    return table;
+    return member.personId;
   }
 
   async joinTable(params: {
@@ -91,19 +102,18 @@ export class TableService {
     inviteId: string;
     token: string;
     sessionEmail?: string;
-  }): Promise<TableRecord> {
+  }): Promise<{ table: TableRecord; memberPersonId: string }> {
     const invite = await this.store.getInvite(params.tableId, params.inviteId);
     if (!invite || invite.token !== params.token) {
       throw new Error('Invalid invite');
     }
-    return (
-      await this.joinWithInvite({
-        userId: params.userId,
-        displayName: params.displayName,
-        invite,
-        sessionEmail: params.sessionEmail,
-      })
-    ).table;
+    const joined = await this.joinWithInvite({
+      userId: params.userId,
+      displayName: params.displayName,
+      invite,
+      sessionEmail: params.sessionEmail,
+    });
+    return { table: joined.table, memberPersonId: joined.memberPersonId };
   }
 
   async previewInviteByToken(token: string): Promise<{
@@ -204,7 +214,12 @@ export class TableService {
     displayName: string;
     invite: TableInviteRecord;
     sessionEmail?: string;
-  }): Promise<{ table: TableRecord; boxAssigned: boolean; spectator: boolean }> {
+  }): Promise<{
+    table: TableRecord;
+    boxAssigned: boolean;
+    spectator: boolean;
+    memberPersonId: string;
+  }> {
     const table = this.store.getTable(params.invite.tableId);
     if (!table) {
       throw new Error('Table not found');
@@ -266,6 +281,7 @@ export class TableService {
       table: this.store.getTable(params.invite.tableId)!,
       boxAssigned,
       spectator,
+      memberPersonId: personId,
     };
   }
 
