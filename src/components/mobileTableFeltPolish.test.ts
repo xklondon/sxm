@@ -54,7 +54,7 @@ describe('mobile table felt polish — Full Table + Card View parity', () => {
   });
 
   it('adds mobile command gap below dealer and centers command on table axis', () => {
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-top-gap: 0.55rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-top-gap: 0.62rem');
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--summary,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*margin-top:\s*var\(--bj-mobile-zone-command-top-gap\)/,
     );

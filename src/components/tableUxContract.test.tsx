@@ -270,11 +270,8 @@ describe('TABLE_UX markup across views', () => {
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt/,
     );
     expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc__slot \.bj-phone-view__mini-hand/);
-    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-hand--card-compact/);
-    expect(css).toMatch(
-      /\.bj-view-full-mobile \.bj-phone-view__box-value,\s*\n\s*\.bj-view-card-mobile \.bj-phone-view__box-value/,
-    );
     expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-hand[\s\S]*var\(--bj-mobile-mini-hand-height\)/);
+    expect(css).toMatch(/\.bj-phone-view__mini-hand--card-compact[\s\S]*display:\s*none\s*!important/);
   });
 
   it('mobile Full/Card player boxes share mini-hand class family on render', () => {

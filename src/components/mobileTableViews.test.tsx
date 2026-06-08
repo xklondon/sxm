@@ -480,7 +480,8 @@ describe('mobile Card View width contract', () => {
   it('CSS constrains casino rail and hides horizontal overflow on arc player boxes', () => {
     const panelCss = mobileFullTableCss();
     const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-    expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*max-width:\s*100vw/);
+    expect(panelCss).toMatch(/\.bj-view-full-mobile[\s\S]*max-width:\s*100%/);
+    expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*max-width:\s*100%/);
     expect(panelCss).toMatch(/\.bj-view-card-mobile \.bj-casino__rail[\s\S]*max-width:\s*100%/);
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
