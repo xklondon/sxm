@@ -83,7 +83,6 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: center;
   overflow: visible;
   padding: 0.2rem 0 0.28rem;
   box-sizing: border-box;
@@ -91,6 +90,10 @@
   min-height: 0;
   flex: 1 1 auto;
   max-height: none;
+}
+
+.bj-table-zone--cards.bj-cards-area--table {
+  justify-content: flex-end;
 }
 
 .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,

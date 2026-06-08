@@ -137,7 +137,8 @@ const FULL_TABLE_PLAYING_SECTIONS = [
 
 const FULL_TABLE_BETTING_SECTIONS = [
   ...FULL_TABLE_SECTIONS,
-  'bj-casino__tray',
+  'bj-value-chips',
+  'chip-tray',
 ] as const;
 
 const CARD_VIEW_SECTIONS = [
@@ -172,7 +173,8 @@ const CARD_VIEW_BETTING_SECTIONS = [
   'bj-phone-view__cards-placeholder',
   'bj-arc--player-boxes',
   TABLE_UX.tableZoneActions,
-  'bj-casino__tray',
+  'bj-value-chips',
+  'chip-tray',
 ] as const;
 
 function sectionPresence(html: string, marker: string): boolean {
@@ -251,7 +253,7 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
 
   it('exposes the chip tray during betting', () => {
     const html = renderPanelAt(390, withView(bettingState(), 'full'));
-    expect(html).toContain('bj-casino__tray');
+    expect(html).toContain('bj-value-chips');
   });
 
   it('chip tray hides denominations below table minimum bet (same on Full Table and Card View)', () => {

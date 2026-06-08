@@ -32,7 +32,7 @@
   --bj-seat-total-size: 1.25rem;
   --bj-seat-meta-size: 0.42rem;
 
-  --bj-actions-panel-bg: rgb(0 0 0 / 0.32);
+  --bj-actions-panel-bg: rgb(10 24 18 / 0.94);
   --bj-actions-panel-border: 1px solid rgb(110 231 183 / 0.28);
   --bj-actions-panel-radius: var(--ds-radius-md);
   --bj-actions-panel-padding: 0.28rem 0.5rem 0.24rem;
@@ -572,6 +572,7 @@
     padding: var(--bj-full-table-box-padding);
     box-sizing: border-box;
     border-width: 1.5px;
+    overflow: hidden;
   }
 
   .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected,
@@ -1336,17 +1337,18 @@
   transform: none;
   margin: 0;
   padding: var(--bj-full-table-box-padding);
-  width: 100%;
+  width: var(--bj-full-table-box-width);
   min-width: var(--bj-full-table-box-width);
   max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
   min-height: var(--bj-full-table-box-height);
   height: var(--bj-full-table-box-height);
   border-width: 1.5px;
+  box-sizing: border-box;
 }
 
 .bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake,
 .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__mini-hand--has-stake {
-  width: 100%;
+  width: var(--bj-full-table-box-width);
   min-width: var(--bj-full-table-box-width);
   max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
   min-height: var(--bj-full-table-box-height);
@@ -1355,6 +1357,13 @@
   padding: var(--bj-full-table-box-padding);
   transform: none;
   box-sizing: border-box;
+}
+
+.bj-arc--player-boxes .stake-chips--bet {
+  min-height: 0;
+  max-height: 100%;
+  transform: scale(0.52);
+  transform-origin: center center;
 }
 
 .bj-phone-view__mini-hand--full-arc {
@@ -1533,8 +1542,12 @@
   display: none !important;
 }
 
-.bj-phone-view__mini-hand--has-stake {
-  max-width: 4.85rem;
+.bj-arc--player-boxes .bj-phone-view__mini-stake-slot {
+  flex: 0 0 var(--bj-full-table-stake-min-height);
+  min-height: var(--bj-full-table-stake-min-height);
+  max-height: var(--bj-full-table-stake-min-height);
+  height: var(--bj-full-table-stake-min-height);
+  overflow: hidden;
 }
 
 /* Active / turn highlight — one animation for all views */
@@ -1623,6 +1636,15 @@
   border-radius: 0;
   padding: 0;
   box-shadow: none;
+}
+
+.bj-table-layout-shell .bj-table-zone--actions .bj-player-actions,
+.bj-table-layout-shell .bj-table-zone--actions .bj-table-actions,
+.bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar--bare {
+  background: var(--bj-actions-panel-bg);
+  border: var(--bj-actions-panel-border);
+  border-radius: var(--bj-actions-panel-radius);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.28);
 }
 
 .bj-table-actions__btn,
@@ -1914,6 +1936,19 @@
   overflow: visible;
   display: flex;
   flex-direction: column;
+}
+
+.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table {
+  justify-content: flex-end;
+}
+
+.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-arc--cards {
+  flex: 1 1 auto;
+  align-self: stretch;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  align-items: flex-end;
 }
 
 .bj-table-layout-shell .bj-table-zone--boxes {

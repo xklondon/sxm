@@ -45,7 +45,7 @@ import {
   createChipPointerDragHandlers,
   type ChipDropTarget,
 } from './chipPointerDrag';
-import { ChipTray, StakeChips, type ChipValue } from './ChipStack';
+import { StakeChips, ValueAndChipsBar, type ChipValue } from './ChipStack';
 import { PlayingCard } from './PlayingCard';
 import { useBlackjackTableFlow } from './useBlackjackTableFlow';
 import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
@@ -943,36 +943,17 @@ export function BlackjackPanel({
     const { playerAvailable } = buildTableInfoDisplay(gameState, viewerPersonId);
     return (
       <div className="bj-casino__tray-wrap">
-        <div
-          {...sxmSectionProps(
-            SXM_LAYOUT.chipTray,
-            'bj-casino__tray',
-            inBetting ? '' : TABLE_UX.trayReserved,
-          )}
-        >
-          {inBetting && (
-            <ChipTray
-              onChipClick={handleChipTrayClick}
-              onChipPointerDown={chipPointerDrag.onChipPointerDown}
-              disabled={!bettingOpen}
-              minimumBet={minimumBet}
-            />
-          )}
-        </div>
+        <ValueAndChipsBar
+          available={playerAvailable}
+          showChips={inBetting}
+          onChipClick={handleChipTrayClick}
+          onChipPointerDown={chipPointerDrag.onChipPointerDown}
+          disabled={!bettingOpen}
+          minimumBet={minimumBet}
+        />
         {inBetting && chipTrayHint && (
           <p className="bj-casino__tray-hint" role="status">{chipTrayHint}</p>
         )}
-        <p
-          {...sxmSectionProps(
-            SXM_LAYOUT.playerBalance,
-            'bj-casino__player-balance',
-            playerAvailable === null ? 'bj-casino__player-balance--placeholder' : '',
-          )}
-          aria-label={playerAvailable !== null ? `Available ${playerAvailable} chips` : undefined}
-          aria-hidden={playerAvailable === null}
-        >
-          {playerAvailable !== null ? `You: ${playerAvailable}` : '\u00a0'}
-        </p>
       </div>
     );
   }

@@ -1044,8 +1044,9 @@
 .bj-casino__tray-wrap {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 0.2rem;
+  width: 100%;
 }
 
 .bj-casino__tray-hint {
@@ -1420,14 +1421,15 @@
 
 /* contract: mobile-arc-fit — seven boxes fit shell width, no inner horizontal scroll */
 .bj-view-full-mobile .bj-arc--cards {
-  flex: 0 0 auto;
-  margin-top: auto;
+  flex: 1 1 auto;
+  margin-top: 0;
   flex-wrap: nowrap;
   justify-content: space-between;
   align-items: flex-end;
   width: 100%;
   min-width: 0;
   max-width: 100%;
+  max-height: 100%;
   gap: 0.04rem;
   padding: 0 0.12rem 0.08rem;
   box-sizing: border-box;

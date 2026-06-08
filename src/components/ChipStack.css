@@ -118,6 +118,68 @@
   flex: 1 1 100%;
 }
 
+.chip-tray--inline {
+  flex-wrap: nowrap;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  gap: 0.35rem;
+}
+
+.bj-value-chips {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  width: 100%;
+  min-height: 2.65rem;
+  padding: 0.32rem 0.55rem;
+  background: var(--ds-color-surface);
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: var(--ds-radius-md);
+  box-sizing: border-box;
+}
+
+.bj-value-chips__balance {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.bj-value-chips__stash {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.bj-value-chips__stash--reserved {
+  min-width: 3.5rem;
+}
+
+.bj-value-chips__stash-placeholder {
+  display: block;
+  min-height: 2.15rem;
+  min-width: 3.5rem;
+}
+
+.bj-value-chips .chip-tray__chips {
+  gap: 0.4rem;
+}
+
+.bj-value-chips .chip-token--btn {
+  width: 2.15rem;
+  height: 2.15rem;
+  min-width: 2.15rem;
+  min-height: 2.15rem;
+  font-size: 0.72rem;
+  touch-action: manipulation;
+}
+
 .compact-balance {
   display: inline-flex;
   align-items: center;

@@ -150,9 +150,10 @@ describe('mobile landscape layout source of truth', () => {
     const card = renderAt({ width: 844, height: 390 }, 'card');
     const full = renderAt({ width: 844, height: 390 }, 'full');
     expect(card).toContain(TABLE_UX.tableZoneBottom);
-    expect(card).toContain('bj-casino__tray');
+    expect(card).toContain('bj-value-chips');
+    expect(card).toContain('chip-tray');
     expect(full).toContain('bj-casino__tray-wrap');
-    expect(full).toContain('bj-casino__tray');
+    expect(full).toContain('bj-value-chips');
   });
 
   it('shared CSS pins chip tray with flex-shrink and flexible card grid rows', () => {

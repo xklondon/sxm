@@ -125,8 +125,8 @@ describe('table layout stabilization contract', () => {
       expect(full).toContain(TABLE_UX.headerBankInfo);
       expect(full).toContain('Bank:');
       expect(full).toContain('Bank chips:');
-      expect(full).toContain('bj-casino__player-balance');
-      expect(full).toContain('You:');
+      expect(full).toContain('bj-value-chips');
+      expect(full).toContain('Available:');
       const headerEnd = full.indexOf('</header>');
       const infoIdx = full.indexOf(TABLE_UX.headerBankInfo);
       expect(headerEnd).toBeGreaterThan(-1);

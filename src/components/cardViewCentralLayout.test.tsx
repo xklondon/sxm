@@ -152,7 +152,7 @@ describe('Card View central layout', () => {
       expect(html).not.toContain('bj-phone-view__slot--betting');
       expect(html).not.toContain('bj-phone-view__slot--boxes-placeholder');
     }
-    expect(betting).toContain('bj-casino__tray');
+    expect(betting).toContain('bj-value-chips');
     expect(betting).toContain(TABLE_UX.actionsPlaceholder);
     expect(boxSlotIndex(betting)).toBeGreaterThan(-1);
     expect(boxSlotIndex(playing)).toBeGreaterThan(-1);
