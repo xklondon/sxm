@@ -9,7 +9,7 @@ function shellZoneBlock(zone: string): string {
   const escaped = zone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return (
     SHARED_CSS.match(
-      new RegExp(`\\.bj-table-layout-shell ${escaped}\\s*\\{[\\s\\S]*?\\}`, 'm'),
+      new RegExp(`^\\.bj-table-layout-shell ${escaped}\\s*\\{[\\s\\S]*?\\}`, 'm'),
     )?.[0] ?? ''
   );
 }

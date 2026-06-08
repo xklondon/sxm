@@ -1260,7 +1260,11 @@
 
   .bj-casino__felt {
     border-radius: 0.85rem;
-    min-height: 24rem;
+  }
+
+  .bj-view-full-mobile .bj-casino__felt,
+  .bj-view-card-mobile .bj-casino__felt {
+    min-height: var(--bj-mobile-felt-min-height, 0);
   }
 
   .bj-arc__slot {
@@ -1292,15 +1296,8 @@
 
 .bj-view-card-mobile .dealer-block,
 .bj-view-full-mobile .dealer-block {
-  padding: 0.18rem 0.24rem 0.12rem;
+  padding: 0.18rem 0.24rem 0.08rem;
   margin-bottom: 0;
-}
-
-.bj-view-card-mobile .bj-casino__felt--card-view,
-.bj-view-card-mobile .bj-casino__felt-main {
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
 }
 
 .bj-view-card-mobile .bj-casino__felt--with-account {
