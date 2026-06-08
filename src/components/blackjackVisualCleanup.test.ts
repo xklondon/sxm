@@ -51,9 +51,7 @@ describe('blackjack visual cleanup — cloth, player boxes, desktop tray', () =>
     expect(SHARED_CSS).toMatch(
       /\.bj-arc--player-boxes \.bj-phone-view__mini-stake-slot--reserved[\s\S]*opacity:\s*0/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-arc--player-boxes \.bj-arc__leave[\s\S]*background:\s*transparent[\s\S]*border:\s*none/,
-    );
+    expect(SHARED_CSS).toMatch(/\.bj-arc--player-boxes \.bj-arc__leave[\s\S]*display:\s*none/);
   });
 
   it('locks player box dimensions; selection adds pulse only', () => {
@@ -91,9 +89,9 @@ describe('blackjack visual cleanup — cloth, player boxes, desktop tray', () =>
   });
 
   it('adds desktop tray separation via margin and taller zone heights', () => {
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-height: 7.15rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-tray-height: 3.15rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 1.1rem');
+    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-height: 6.65rem');
+    expect(SHARED_CSS).toContain('--bj-desktop-zone-tray-height: 3.35rem');
+    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 1.85rem');
     expect(SHARED_CSS).toMatch(
       /@media \(min-width: 721px\)[\s\S]*--bj-zone-boxes-height:\s*var\(--bj-desktop-zone-boxes-height\)/,
     );

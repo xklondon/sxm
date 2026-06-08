@@ -7,7 +7,6 @@ import {
   defaultBlackjackSeatId,
   isBankerReady,
   movePlayerInOrder,
-  releaseBoxSlot,
   resolveControllerPersonId,
   canControllerCallBox,
 } from '../engine/session';
@@ -645,10 +644,6 @@ export function BlackjackPanel({
     }
 
     selectLocalTarget({ kind: 'slot', slotNumber });
-  }
-
-  function handleReleaseSlot(slotNumber: number) {
-    run((state) => releaseBoxSlot(state, slotNumber));
   }
 
   function handleChipTrayClick(value: ChipValue) {
@@ -1365,7 +1360,6 @@ export function BlackjackPanel({
             getBoxCardVisualClasses(borderState),
             TABLE_UX.fullArcBox,
             getBoxActivePulseClassName(borderState),
-            showBettingChips ? 'bj-phone-view__mini-hand--has-stake' : '',
           )}
           {...{
             [CHIP_DROP_SLOT_ATTR]: slotNumber,
@@ -1412,17 +1406,6 @@ export function BlackjackPanel({
             )}
           </span>
         </div>
-
-        <button
-          type="button"
-          className="bj-arc__leave"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleReleaseSlot(slotNumber);
-          }}
-        >
-          Leave
-        </button>
       </div>
     );
   }

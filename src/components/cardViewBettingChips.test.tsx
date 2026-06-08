@@ -116,7 +116,7 @@ describe('Card View betting chips and layout', () => {
     expect(html).toContain('stake-chips--bet');
     expect(html).toContain(TABLE_UX.fullArcBox);
     expect(html).toContain('bj-phone-view__mini-stake-slot');
-    expect(html).toContain('bj-phone-view__mini-hand--has-stake');
+    expect(html).not.toContain('bj-phone-view__mini-hand--has-stake');
     expect(html).not.toContain('bj-phone-view__bet-chip-wrap--main');
     expect(html).not.toContain('bj-phone-view__bet-chip--hero');
     const resolved = resolveBoxBorderVisualState({

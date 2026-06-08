@@ -10,7 +10,8 @@
   .table-stake-overlay,
   .ds-modal-backdrop,
   .admin-panel-overlay,
-  .custom-protocol-overlay {
+  .custom-protocol-overlay,
+  .bj-round-summary-overlay {
     align-items: flex-end;
     justify-content: center;
     padding: 0.5rem;

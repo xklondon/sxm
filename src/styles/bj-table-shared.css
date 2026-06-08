@@ -68,9 +68,9 @@
   --bj-zone-tray-height: 2.75rem;
   --bj-zone-boxes-tray-gap: 1.35rem;
   --bj-zone-tray-padding-bottom: 0.42rem;
-  --bj-desktop-zone-boxes-height: 7.15rem;
-  --bj-desktop-zone-tray-height: 3.15rem;
-  --bj-desktop-zone-boxes-tray-gap: 1.1rem;
+  --bj-desktop-zone-boxes-height: 6.65rem;
+  --bj-desktop-zone-tray-height: 3.35rem;
+  --bj-desktop-zone-boxes-tray-gap: 1.85rem;
   --bj-player-box-width: 4.85rem;
   --bj-player-box-height: 4.35rem;
   --bj-action-panel-width: var(--bj-actions-panel-max-width);
@@ -772,6 +772,7 @@
 
 .bj-arc--player-boxes .bj-arc__slot--owned {
   border-radius: 0;
+  gap: 0;
 }
 
 /* Semantic box border states — Full Table + Card View (classes from resolveBoxBorderVisualState). */
@@ -1165,8 +1166,19 @@
   background: transparent;
   box-shadow: none;
   outline: none;
+  flex: 0 0 var(--bj-full-table-stake-min-height);
   min-height: var(--bj-full-table-stake-min-height);
   max-height: var(--bj-full-table-stake-min-height);
+  height: var(--bj-full-table-stake-min-height);
+  overflow: hidden;
+  contain: layout;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips--bet {
+  transform: scale(0.48);
+  transform-origin: center center;
+  max-height: 100%;
+  flex-shrink: 0;
 }
 
 .bj-arc--player-boxes .bj-phone-view__mini-stake-slot--reserved {
@@ -1174,12 +1186,15 @@
 }
 
 .bj-arc--player-boxes .bj-arc__leave {
-  margin-top: 0.08rem;
-  padding: 0.06rem 0.2rem;
+  display: none !important;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
   border: none;
-  background: transparent;
-  box-shadow: none;
-  flex-shrink: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 /* Player boxes — frozen shell; selection/turn pulse uses inset box-shadow only. */
@@ -1225,6 +1240,13 @@
   box-shadow: none;
 }
 
+.bj-arc--player-boxes
+  .bj-phone-view__mini-hand--full-arc.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
+    .bj-box--co-box
+  ) {
+  background: var(--bj-seat-bg);
+}
+
 .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse {
   animation: bj-bet-pulse 1.8s ease-in-out infinite;
   transform: none;
@@ -1238,8 +1260,17 @@
   border-width: 1.5px;
 }
 
-.bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake {
+.bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake,
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__mini-hand--has-stake {
+  width: 100%;
+  min-width: var(--bj-full-table-box-width);
   max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+  min-height: var(--bj-full-table-box-height);
+  height: var(--bj-full-table-box-height);
+  margin: 0;
+  padding: var(--bj-full-table-box-padding);
+  transform: none;
+  box-sizing: border-box;
 }
 
 .bj-phone-view__mini-hand--full-arc {
