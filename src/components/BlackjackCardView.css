@@ -1887,22 +1887,7 @@
 
 }
 
-/* ── Betting pulse — derived from state, survives WebSocket updates ── */
-@keyframes bj-bet-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(251 191 36 / 0.45); }
-  50% { box-shadow: 0 0 0 6px rgb(251 191 36 / 0); }
-}
-
-.bj-phone-view__bet-chip--pulse {
-  animation: bj-bet-pulse 1.8s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bj-phone-view__bet-chip--pulse {
-    animation: none;
-    box-shadow: 0 0 0 2px rgb(251 191 36 / 0.4);
-  }
-}
+/* Betting pulse — canonical rules in bj-table-shared.css (.bj-phone-view__bet-chip--pulse) */
 
 /* Box value label — desktop Card View shows via min-width media; mobile Card View via .bj-view-card-mobile in BlackjackPanel.css. */
 .bj-phone-view__box-value {

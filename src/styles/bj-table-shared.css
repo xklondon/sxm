@@ -361,7 +361,8 @@
     border: none;
   }
 
-  .bj-view-full-mobile .bj-arc__slot--owned {
+  .bj-view-full-mobile .bj-arc__slot--owned,
+  .bj-view-card-mobile .bj-arc__slot--owned {
     background: none;
     padding: 0;
   }
@@ -579,6 +580,14 @@
 
 .bj-arc__slot--owned {
   border-radius: var(--bj-seat-radius);
+}
+
+/* Player boxes: mini-hand is the sole visual frame — no outer slot chrome (all views). */
+.bj-arc--player-boxes .bj-arc__slot--owned {
+  background: none;
+  padding: 0;
+  border: none;
+  box-shadow: none;
 }
 
 /* Semantic box border states — Full Table + Card View (classes from resolveBoxBorderVisualState). */
@@ -812,14 +821,16 @@
 }
 
 .bj-view-full-desktop .bj-table-zone--actions,
-.bj-view-full-mobile .bj-table-zone--actions {
+.bj-view-full-mobile .bj-table-zone--actions,
+.bj-view-card-mobile .bj-table-zone--actions {
   display: flex;
   justify-content: center;
 }
 
 .bj-view-full-desktop .bj-table-zone--actions .bj-table-actions,
 .bj-view-full-mobile .bj-table-zone--actions .bj-player-actions,
-.bj-view-full-mobile .bj-table-zone--actions .bj-table-actions {
+.bj-view-full-mobile .bj-table-zone--actions .bj-table-actions,
+.bj-view-card-mobile .bj-table-zone--actions .bj-table-actions {
   max-width: var(--bj-table-center-column-max-width);
   margin-inline: auto;
 }
@@ -884,7 +895,8 @@
 }
 
 .bj-view-full-desktop .bj-table-zone--actions,
-.bj-view-full-mobile .bj-table-zone--actions {
+.bj-view-full-mobile .bj-table-zone--actions,
+.bj-view-card-mobile .bj-table-zone--actions {
   display: flex;
   justify-content: center;
   position: relative;
@@ -892,7 +904,8 @@
 }
 
 .bj-view-full-desktop .bj-table-zone--cards,
-.bj-view-full-mobile .bj-table-zone--cards {
+.bj-view-full-mobile .bj-table-zone--cards,
+.bj-view-card-mobile .bj-table-zone--cards {
   position: relative;
   z-index: 2;
   overflow: visible;
@@ -976,7 +989,9 @@
 }
 
 .bj-view-full-desktop .bj-arc__slot--owned,
-.bj-view-full-mobile .bj-arc__slot--owned {
+.bj-view-full-mobile .bj-arc__slot--owned,
+.bj-view-card-desktop .bj-arc__slot--owned,
+.bj-view-card-mobile .bj-arc__slot--owned {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -984,7 +999,9 @@
 }
 
 .bj-view-full-desktop .bj-arc__slot .bj-arc__play-zone,
-.bj-view-full-mobile .bj-arc__slot .bj-arc__play-zone {
+.bj-view-full-mobile .bj-arc__slot .bj-arc__play-zone,
+.bj-view-card-desktop .bj-arc__slot .bj-arc__play-zone,
+.bj-view-card-mobile .bj-arc__slot .bj-arc__play-zone {
   flex: 0 1 auto;
   width: 100%;
   border: none;

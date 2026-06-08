@@ -479,12 +479,14 @@ describe('stable dealer layout slots across phases', () => {
 describe('mobile Card View width contract', () => {
   it('CSS constrains casino rail and hides horizontal overflow on arc player boxes', () => {
     const panelCss = mobileFullTableCss();
-    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*max-width:\s*100vw/);
     expect(panelCss).toMatch(/\.bj-view-card-mobile \.bj-casino__rail[\s\S]*max-width:\s*100%/);
-    expect(layoutCss).toMatch(/\.bj-view-card-mobile \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden|\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden/);
-    expect(layoutCss).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--boxes \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*1 1 0|\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*1 1 0/,
+    expect(sharedCss).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
+    );
+    expect(sharedCss).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*1 1 0/,
     );
   });
 });

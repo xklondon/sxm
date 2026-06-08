@@ -409,10 +409,7 @@
   justify-content: center;
 }
 
-.bj-arc__slot--owned {
-  background: rgb(0 0 0 / 0.12);
-  padding: 0.15rem;
-}
+/* Owned player-box chrome lives on .bj-phone-view__mini-hand — see bj-table-shared.css */
 
 /* Empty join slot + bet zone shell: bj-table-shared.css */
 
@@ -1486,7 +1483,9 @@
   flex-shrink: 1;
 }
 
-.bj-view-full-mobile .bj-arc__slot--owned {
+.bj-view-full-mobile .bj-arc__slot--owned,
+.bj-view-card-mobile .bj-arc__slot--owned {
+  background: none;
   padding: 0;
 }
 
@@ -1520,41 +1519,28 @@
   flex-shrink: 0;
 }
 
-/* Mobile Card View betting — one ordered row, internal horizontal scroll, room for hero below. */
-/* Mobile Card View — slightly more compact vertically; table-order box row on mobile. */
-.bj-view-card-mobile .bj-phone-view__card-bar {
-  min-height: 1.75rem;
-  padding-top: 0.05rem;
-  padding-bottom: 0.05rem;
-}
-
+/* Mobile Card View — hero flexes inside shell cards zone; no legacy mini-row layout. */
 .bj-view-card-mobile .bj-phone-view__play-area {
   gap: 0.25rem;
   padding-top: 0.1rem;
 }
 
-.bj-view-card-mobile .bj-phone-view__play-stack {
+.bj-view-card-mobile .bj-phone-view__play-stack,
+.bj-view-full-mobile .bj-phone-view__play-stack {
   flex: 1 1 auto;
   min-height: 0;
   max-width: 100%;
 }
 
-.bj-view-card-mobile .bj-phone-view__action-bar {
-  min-height: 2.55rem;
-  padding-bottom: 0.15rem;
-}
-
-.bj-view-card-mobile .bj-phone-view__stage {
-  gap: 0.2rem;
+.bj-view-card-mobile .bj-phone-view__stage,
+.bj-view-full-mobile .bj-phone-view__stage {
+  flex: 1 1 auto;
+  min-height: 0;
   max-width: 100%;
-  min-height: 7.25rem;
-  overflow-x: visible;
+  overflow-x: hidden;
 }
 
-.bj-view-card-mobile .bj-phone-view__mini-row {
-  display: none;
-}
-
+.bj-view-card-mobile .bj-phone-view__mini-row,
 .bj-view-card-mobile .bj-phone-view__betting-stage--row {
   display: none;
 }

@@ -502,18 +502,6 @@
   flex-wrap: nowrap;
 }
 
-.bj-view-card-mobile .bj-table-zone--boxes .bj-arc--player-boxes,
-.bj-view-card-mobile .bj-card-layout__boxes .bj-arc--player-boxes {
-  flex-wrap: nowrap;
-  overflow-x: hidden;
-}
-
-.bj-view-card-mobile .bj-table-zone--boxes .bj-arc--player-boxes .bj-arc__slot,
-.bj-view-card-mobile .bj-card-layout__boxes .bj-arc--player-boxes .bj-arc__slot {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
 .bj-card-layout__dealer .bj-table-zone--dealer {
   width: 100%;
   display: flex;
