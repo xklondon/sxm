@@ -143,6 +143,8 @@ describe('round summary overlay', () => {
     expect(PANEL_SRC).toContain('RoundSummaryOverlay');
     expect(PANEL_SRC).toContain('resolveShowRoundSummaryOverlay');
     expect(PANEL_SRC).toContain('showRoundSummaryOverlay');
+    expect(PANEL_SRC).toContain('roundSummaryDelayReady');
+    expect(PANEL_SRC).toContain('ROUND_SUMMARY_OVERLAY_DELAY_MS');
     expect(PANEL_SRC).toMatch(/onPlayOn=\{\(\) => \{[\s\S]*handleNextRound/);
   });
 

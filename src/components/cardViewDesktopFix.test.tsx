@@ -115,7 +115,10 @@ function bettingStateWithTwoBoxes(selectedBoxId: string, freeBoxStake = 0): Game
 describe('Card View desktop targeted fixes', () => {
   it('adds desktop gap between boxes row and chip tray in both views', () => {
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*padding-bottom:\s*calc\(var\(--bj-card-boxes-padding-bottom\) \+ var\(--bj-zone-boxes-tray-gap\)\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-zone-boxes-tray-gap\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*margin-top:\s*auto/,
     );
     expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-zone-tray-height\)/);
   });

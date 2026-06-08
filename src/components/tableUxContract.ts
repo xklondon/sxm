@@ -112,6 +112,8 @@ export const TABLE_UX = {
   feltSkinClassicCasino: 'bj-felt-skin--classic-casino',
   /** Decorative printed cloth layer (Classic Casino skin). */
   feltClothLayer: 'bj-felt-cloth-layer',
+  /** Mobile Card View hero gameplay backdrop — shell ::after (see BlackjackCardView.css). */
+  mobileHeroGameplayPanel: 'bj-mobile-hero-gameplay-panel',
   /** @deprecated Use feltClothLayer */
   feltClothDecor: 'bj-felt-cloth-layer',
 } as const;

@@ -257,7 +257,7 @@ describe('Card View layout guard', () => {
     expect(sharedCss).toContain('--bj-zone-boxes-height: 6.25rem');
     expect(layoutCss).toMatch(/\.bj-table-layout-shell[\s\S]*flex-direction:\s*column/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*height:\s*var\(--bj-zone-boxes-height\)/);
-    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*padding-bottom:\s*calc/);
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*margin-top:\s*auto/);
   });
 
   it('boxes row fits mini-hand height plus bottom padding without vertical clip', () => {

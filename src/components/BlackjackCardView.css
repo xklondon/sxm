@@ -1945,4 +1945,83 @@
   }
 }
 
+/*
+ * Mobile Card View only — hero gameplay backdrop (.bj-mobile-hero-gameplay-panel)
+ * Covers actions + hero cards zone; cloth stays visible above/below/around.
+ * z-index: cloth layer 0 → gameplay panel (::after) 0 → zones/content 1+
+ */
+@media (max-width: 720px) {
+  .bj-view-card-mobile .bj-table-layout-shell {
+    --bj-mobile-hero-panel-inset-x: 0.42rem;
+    --bj-mobile-hero-panel-top: calc(
+      var(--bj-zone-dealer-height) + var(--bj-mobile-zone-command-top-gap, 0.62rem) + var(--bj-zone-command-height)
+    );
+    --bj-mobile-hero-panel-bottom: calc(
+      var(--bj-zone-boxes-height) + var(--bj-zone-tray-height) + var(--bj-zone-boxes-tray-gap, 0.85rem) + 0.1rem
+    );
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell::after {
+    content: '';
+    position: absolute;
+    left: var(--bj-mobile-hero-panel-inset-x);
+    right: var(--bj-mobile-hero-panel-inset-x);
+    top: var(--bj-mobile-hero-panel-top);
+    bottom: var(--bj-mobile-hero-panel-bottom);
+    z-index: 0;
+    pointer-events: none;
+    border-radius: var(--ds-radius-lg, 0.75rem);
+    background: linear-gradient(
+      165deg,
+      rgb(8 28 22 / 0.94) 0%,
+      rgb(4 18 14 / 0.92) 48%,
+      rgb(6 22 18 / 0.94) 100%
+    );
+    border: 1px solid rgb(110 231 183 / 0.22);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.07),
+      0 10px 28px rgb(0 0 0 / 0.32);
+  }
+
+  .bj-view-card-mobile .bj-table-zone--actions,
+  .bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero {
+    background: transparent;
+  }
+
+  .bj-view-card-mobile .bj-table-zone--actions .bj-table-actions,
+  .bj-view-card-mobile .bj-table-zone--actions .bj-player-actions {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .bj-view-card-mobile .bj-phone-view__play-area--controls {
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+  }
+
+  .bj-view-card-mobile .bj-phone-view__play-area--controls .bj-phone-view__hero-center {
+    flex: 1 1 auto;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bj-view-card-mobile .bj-phone-view__play-area--controls .bj-phone-view__side-action {
+    align-self: center;
+    flex-shrink: 0;
+  }
+
+  .bj-view-card-mobile .bj-table-zone--actions .bj-table-actions > .bj-table-actions__row:first-child {
+    display: none;
+  }
+
+  .bj-view-card-mobile .bj-phone-view__play-area,
+  .bj-view-card-mobile .bj-phone-view__hero-center,
+  .bj-view-card-mobile .bj-phone-view__side-action {
+    position: relative;
+    z-index: 1;
+  }
+}
 

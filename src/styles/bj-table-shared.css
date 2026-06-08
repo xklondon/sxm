@@ -183,6 +183,7 @@
     --bj-table-play-actions-buffer: 0.12rem;
     --bj-table-zone-cards-min-height: 2.85rem;
     --bj-full-table-box-height: 3.15rem;
+    --bj-full-table-box-width: var(--bj-mobile-mini-hand-width);
     --bj-full-table-stake-min-height: 0.95rem;
   }
 
@@ -252,7 +253,7 @@
     max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
     min-height: var(--bj-full-table-box-height);
     height: var(--bj-full-table-box-height);
-    width: 100%;
+    width: var(--bj-full-table-box-width);
     padding: var(--bj-full-table-box-padding);
     box-sizing: border-box;
   }
@@ -524,10 +525,77 @@
 
   .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot {
-    flex: 1 1 0;
+    flex: 0 1 auto;
+    width: var(--bj-full-table-box-width);
+    max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
     min-width: 0;
-    max-width: none;
-    width: auto;
+  }
+
+  /* Mobile player boxes — fixed tile dimensions across selection/stake/semantic states. */
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--native-assigned,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--native-assigned,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--running,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--running,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--co-box,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--co-box,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake {
+    width: var(--bj-full-table-box-width);
+    min-width: var(--bj-full-table-box-width);
+    max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+    height: var(--bj-full-table-box-height);
+    min-height: var(--bj-full-table-box-height);
+    transform: none;
+    margin: 0;
+    padding: var(--bj-full-table-box-padding);
+    box-sizing: border-box;
+    border-width: 1.5px;
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected {
+    box-shadow: none;
+  }
+
+  .bj-view-full-mobile
+    .bj-arc--player-boxes
+    .bj-phone-view__mini-hand--full-arc.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
+      .bj-box--co-box
+    ),
+  .bj-view-card-mobile
+    .bj-arc--player-boxes
+    .bj-phone-view__mini-hand--full-arc.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
+      .bj-box--co-box
+    ) {
+    background: var(--bj-seat-bg);
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-bet-zone,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-bet-zone {
+    flex: 0 0 var(--bj-full-table-stake-min-height);
+    min-height: var(--bj-full-table-stake-min-height);
+    max-height: var(--bj-full-table-stake-min-height);
+    height: var(--bj-full-table-stake-min-height);
+    overflow: hidden;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  @media (max-width: 480px) {
+    .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot,
+    .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot {
+      width: var(--bj-full-table-box-width);
+      max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+    }
   }
 
   .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__open,
@@ -1662,6 +1730,17 @@
  * Canonical shell zone dimensions — identical for Full Table + Card View (all viewports).
  * CardsArea modifiers style inner content only; outer zone size never diverges.
  */
+.bj-table-layout-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
 .bj-table-layout-shell .bj-table-zone--dealer {
   flex: 0 0 auto;
   height: var(--bj-zone-dealer-height);
@@ -1826,12 +1905,12 @@
   height: var(--bj-zone-boxes-height);
   min-height: var(--bj-zone-boxes-height);
   max-height: var(--bj-zone-boxes-height);
+  margin-top: auto;
   overflow: hidden;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 0.08rem var(--bj-card-boxes-padding-inline) 0;
-  padding-bottom: calc(var(--bj-card-boxes-padding-bottom) + var(--bj-zone-boxes-tray-gap));
+  padding: 0.08rem var(--bj-card-boxes-padding-inline) var(--bj-card-boxes-padding-bottom);
   box-sizing: border-box;
 }
 
@@ -1854,7 +1933,7 @@
   padding: 0.04rem 0.35rem var(--bj-zone-tray-padding-bottom);
   box-sizing: border-box;
   flex-shrink: 0;
-  margin-top: 0;
+  margin-top: var(--bj-zone-boxes-tray-gap);
 }
 
 .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions,
@@ -1868,6 +1947,7 @@
   :root {
     --bj-zone-boxes-height: var(--bj-desktop-zone-boxes-height);
     --bj-zone-tray-height: var(--bj-desktop-zone-tray-height);
+    --bj-zone-boxes-tray-gap: var(--bj-desktop-zone-boxes-tray-gap);
   }
 
   .bj-casino.bj-view-full-desktop,
@@ -2113,7 +2193,6 @@
   }
 
   .bj-table-layout-shell .bj-table-zone--boxes {
-    padding-bottom: calc(var(--bj-card-boxes-padding-bottom) + var(--bj-zone-boxes-tray-gap));
     overflow: hidden;
   }
 
@@ -2122,7 +2201,7 @@
   }
 
   .bj-table-layout-shell .bj-table-zone--bottom {
-    margin-top: var(--bj-desktop-zone-boxes-tray-gap);
+    margin-top: var(--bj-zone-boxes-tray-gap);
     padding-top: 0.04rem;
   }
 

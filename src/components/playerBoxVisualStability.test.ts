@@ -58,10 +58,63 @@ describe('player box visual stability contract', () => {
   it('separates desktop chip tray from player boxes without mobile regression', () => {
     expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 1.85rem');
     expect(SHARED_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-desktop-zone-boxes-tray-gap\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-zone-boxes-tray-gap\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*--bj-zone-boxes-tray-gap:\s*var\(--bj-desktop-zone-boxes-tray-gap\)/,
     );
     expect(SHARED_CSS).toMatch(
       /@media \(max-width: 720px\)[\s\S]*--bj-zone-boxes-tray-gap:\s*0\.85rem/,
+    );
+  });
+});
+
+describe('mobile player box visual stability contract', () => {
+  it('uses mobile box width token and fixed slot width (not flex stretch)', () => {
+    expect(SHARED_CSS).toMatch(
+      /@media \(max-width: 720px\)[\s\S]*--bj-full-table-box-width:\s*var\(--bj-mobile-mini-hand-width\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*width:\s*var\(--bj-full-table-box-width\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*width:\s*var\(--bj-full-table-box-width\)/,
+    );
+  });
+
+  it('locks mobile player box dimensions across selected, stake, and semantic states', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--selected[\s\S]*height:\s*var\(--bj-full-table-box-height\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--native-assigned[\s\S]*border-width:\s*1\.5px/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--has-stake[\s\S]*height:\s*var\(--bj-full-table-box-height\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-phone-view__bet-chip--pulse[\s\S]*transform:\s*none/,
+    );
+  });
+
+  it('reserves identical mobile stake slot height for empty and chipped states', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc \.bj-phone-view__mini-stake-slot[\s\S]*height:\s*var\(--bj-full-table-stake-min-height\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-bet-zone[\s\S]*height:\s*var\(--bj-full-table-stake-min-height\)/,
+    );
+  });
+
+  it('neutralizes 480px arc slot width override for mobile player boxes', () => {
+    expect(SHARED_CSS).toMatch(
+      /@media \(max-width: 480px\)[\s\S]*\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*var\(--bj-full-table-box-width\)/,
+    );
+  });
+
+  it('uses pulse/glow only for mobile selected player boxes', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--selected[\s\S]*box-shadow:\s*none/,
     );
   });
 });

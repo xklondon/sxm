@@ -100,6 +100,7 @@ import { buildRoundResultSummary } from '../engine/blackjack';
 import { buildRoundSummaryOverlayModel } from '../engine/blackjack/roundSummaryOverlay';
 import { buildBlackjackCommandText } from './tableCommandDisplay';
 import { RoundSummaryOverlay } from './RoundSummaryOverlay';
+import { ROUND_SUMMARY_OVERLAY_DELAY_MS } from './roundSummaryOverlayTiming';
 import {
   formatPlaceBetError,
   getChipPlacementTarget,
@@ -232,6 +233,7 @@ export function BlackjackPanel({
   const [tableAidTip, setTableAidTip] = useState<string | null>(null);
   const [magic8Answer, setMagic8Answer] = useState<string | null>(null);
   const [roundSummaryDismissed, setRoundSummaryDismissed] = useState(false);
+  const [roundSummaryDelayReady, setRoundSummaryDelayReady] = useState(false);
   /** Single local chip target — tray pulse and placement both read from here. */
   const [localChipSelection, setLocalChipSelection] = useState<LocalSelectedChipTarget>(() =>
     createEmptyLocalChipTarget(),
@@ -387,7 +389,9 @@ export function BlackjackPanel({
   const showRoundSummaryOverlay =
     Boolean(roundSummaryOverlayModel) &&
     resolveShowRoundSummaryOverlay(tableMeta) &&
-    !roundSummaryDismissed;
+    !roundSummaryDismissed &&
+    cardRevealComplete &&
+    roundSummaryDelayReady;
   const tableCommand = useMemo(
     () =>
       buildBlackjackCommandText({
@@ -417,8 +421,19 @@ export function BlackjackPanel({
   useEffect(() => {
     if (!awaitingNextRound) {
       setRoundSummaryDismissed(false);
+      setRoundSummaryDelayReady(false);
+      return;
     }
-  }, [awaitingNextRound]);
+    if (gameEnded || !cardRevealComplete) {
+      setRoundSummaryDelayReady(false);
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setRoundSummaryDelayReady(true),
+      ROUND_SUMMARY_OVERLAY_DELAY_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [awaitingNextRound, gameEnded, cardRevealComplete]);
 
   function handleAddToPersonalLedger() {
     setError(null);
