@@ -154,6 +154,9 @@ describe('mobile layout parity audit — Full Table vs Card View', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-full-mobile \.bj-casino__felt--card-view,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt--card-view[\s\S]*flex:\s*var\(--bj-mobile-felt-fill-grow\)/,
     );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*height:\s*var\(--bj-mobile-felt-height\)/,
+    );
   });
 
   it('does not keep Card View-only mobile layout selectors on shell zones in panel CSS', () => {

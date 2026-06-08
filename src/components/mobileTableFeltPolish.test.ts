@@ -21,7 +21,7 @@ describe('mobile table felt polish — Full Table + Card View parity', () => {
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*flex:\s*var\(--bj-mobile-felt-fill-grow\)/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*height:\s*100%/,
+      /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*height:\s*var\(--bj-mobile-layout-shell-height\)/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-mobile-table-shell,\s*\n\s*\.bj-view-card-mobile \.bj-mobile-table-shell[\s\S]*flex:\s*var\(--bj-mobile-felt-fill-grow\)/,
