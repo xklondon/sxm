@@ -1,20 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { GameState } from '../types';
-import { BlackjackCardView } from './BlackjackCardView';
 import { createNewBlackjackTable } from '../engine/session';
 import { allocateChipsToBankrollOwner } from '../engine/session/allocation';
 import { addChipToBoxStake } from '../engine/blackjack/stakes';
 import {
+  BET_BOX_PULSE,
+  BOX_BORDER_NATIVE,
+  BOX_BORDER_RUNNING,
+  getBoxActivePulseClassName,
+  getBoxBorderVisualClasses,
+  getBoxCardVisualClasses,
   isCardViewBettingBoxVisuallyAssigned,
   isCardViewBoxNativeForPerson,
+  resolveBoxBorderVisualState,
 } from './cardViewBox';
 
-const noop = () => {};
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 
 function bettingStateWithTwoBoxes(selectedBoxId: string, freeBoxStake = 0): GameState {
   let state = createNewBlackjackTable();
@@ -107,49 +112,18 @@ function bettingStateWithTwoBoxes(selectedBoxId: string, freeBoxStake = 0): Game
   return state;
 }
 
-function renderBettingCardView(state: GameState): string {
-  return renderToStaticMarkup(
-    <BlackjackCardView
-      dealer={<div className="dealer-block" />}
-      tray={<div className="bj-casino__tray-wrap" />}
-      gameState={state}
-      focusBoxId={state.selectedSeatId ?? undefined}
-      selectedBettingBoxId={state.selectedSeatId}
-      activeBoxId={null}
-      showHoleHidden={false}
-      protocolPhase="betting"
-      bettingOpen
-      gameEnded={false}
-      deviceView="desktop"
-      viewerPersonId="person-1"
-      onSelectBox={noop}
-      onClaimSlot={noop}
-      onReleaseSlot={noop}
-      onAddChip={noop}
-      onClearStake={noop}
-      onRemoveLastChip={noop}
-      onSlotChipDrop={noop}
-      onStay={noop}
-      onCard={noop}
-      onDouble={noop}
-      onSplit={noop}
-      onBack={noop}
-    />,
-  );
-}
-
 describe('Card View desktop targeted fixes', () => {
-  it('adds desktop-only gap between boxes row and chip tray', () => {
-    expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-card-layout__boxes[\s\S]*padding-bottom:\s*calc\(var\(--bj-card-boxes-padding-bottom\) \+ 0\.45rem\)/,
+  it('adds desktop gap between boxes row and chip tray in both views', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*padding-bottom:\s*calc\(var\(--bj-card-boxes-padding-bottom\) \+ var\(--bj-zone-boxes-tray-gap\)\)/,
     );
-    expect(LAYOUT_CSS).toMatch(/\.bj-view-card-desktop \.bj-card-layout__tray[\s\S]*padding-top:\s*0\.1rem/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-zone-tray-height\)/);
   });
 
-  it('aligns hero cards to the top so rank/suit stay visible when clipped', () => {
-    expect(LAYOUT_CSS).toMatch(/\.bj-card-layout__hero \.bj-phone-view__cards[\s\S]*align-items:\s*flex-start/);
-    expect(LAYOUT_CSS).toMatch(/\.bj-card-layout__hero \.bj-phone-view__cards-slot[\s\S]*align-items:\s*flex-start/);
-    expect(LAYOUT_CSS).toMatch(/\.bj-card-layout__hero \.bj-phone-view__card-wrap[\s\S]*align-self:\s*flex-start/);
+  it('aligns hero cards in the hero row without clipping', () => {
+    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards[\s\S]*overflow:\s*visible/);
+    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*overflow:\s*visible/);
+    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__card-wrap[\s\S]*align-self:\s*center/);
   });
 
   it('does not mark a free box assigned/active when only selected without stake', () => {
@@ -158,33 +132,58 @@ describe('Card View desktop targeted fixes', () => {
     expect(isCardViewBettingBoxVisuallyAssigned(state, 'box-native', 0, 'person-1')).toBe(true);
     expect(isCardViewBettingBoxVisuallyAssigned(state, 'box-free', 0, 'person-1')).toBe(false);
 
-    const html = renderBettingCardView(state);
-    const freeShell =
-      html.match(/data-chip-drop-box="box-free"[\s\S]*?(?=data-chip-drop-slot="2")/)?.[0] ?? '';
-    expect(freeShell).toContain('bj-phone-view__bet-chip--pulse');
-    expect(freeShell).not.toContain('bj-box--selected');
-    expect(freeShell).not.toContain('bj-box--running');
-    expect(freeShell).not.toContain('bj-box--native-assigned');
+    const freeResolved = resolveBoxBorderVisualState({
+      state,
+      boxPlayerId: 'box-free',
+      viewerPersonId: 'person-1',
+      selectedBettingBoxId: 'box-free',
+      openStake: 0,
+      bettingStage: true,
+    });
+    expect(getBoxActivePulseClassName(freeResolved)).toBe(BET_BOX_PULSE);
+    expect(getBoxBorderVisualClasses(freeResolved)).not.toContain('bj-box--selected');
+    expect(getBoxBorderVisualClasses(freeResolved)).not.toContain('bj-box--running');
+    expect(getBoxBorderVisualClasses(freeResolved)).not.toContain('bj-box--native-assigned');
   });
 
   it('marks a free box running only after chips when not selected', () => {
-    let state = bettingStateWithTwoBoxes('box-native', 10);
-    const htmlSelected = renderBettingCardView(bettingStateWithTwoBoxes('box-free', 10));
-    expect(htmlSelected).toContain('bj-phone-view__bet-chip--pulse');
-    expect(htmlSelected).toContain('bj-box--running');
+    const stateSelected = bettingStateWithTwoBoxes('box-free', 10);
+    const freeSelected = resolveBoxBorderVisualState({
+      state: stateSelected,
+      boxPlayerId: 'box-free',
+      viewerPersonId: 'person-1',
+      selectedBettingBoxId: 'box-free',
+      openStake: 10,
+      bettingStage: true,
+    });
+    expect(getBoxActivePulseClassName(freeSelected)).toBe(BET_BOX_PULSE);
+    expect(getBoxBorderVisualClasses(freeSelected)).toContain(BOX_BORDER_RUNNING);
 
-    state = bettingStateWithTwoBoxes('box-native', 10);
-    const htmlRunning = renderBettingCardView({ ...state, selectedSeatId: state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)!.playerId! });
-    expect(htmlRunning).toContain('bj-box--running');
-    expect(htmlRunning).toMatch(/aria-label="Box 3[^"]*10c staked"/);
+    const stateNativeSelected = bettingStateWithTwoBoxes('box-native', 10);
+    const freeRunning = resolveBoxBorderVisualState({
+      state: stateNativeSelected,
+      boxPlayerId: 'box-free',
+      viewerPersonId: 'person-1',
+      selectedBettingBoxId: 'box-native',
+      openStake: 10,
+      bettingStage: true,
+    });
+    expect(getBoxBorderVisualClasses(freeRunning)).toContain(BOX_BORDER_RUNNING);
+    expect(freeRunning.isSelected).toBe(false);
   });
 
   it('keeps native box selected styling without stake when it is the chip target', () => {
     const state = bettingStateWithTwoBoxes('box-native', 0);
-    const html = renderBettingCardView(state);
-    expect(html).toMatch(/data-chip-drop-box="box-native"[\s\S]*bj-phone-view__bet-chip--pulse/);
-    expect(html).toMatch(/data-chip-drop-box="box-native"[\s\S]*bj-box--native-assigned/);
-    expect(html).not.toMatch(/data-chip-drop-box="box-native"[\s\S]*bj-box--selected/);
-    expect(html).toContain('Host');
+    const nativeResolved = resolveBoxBorderVisualState({
+      state,
+      boxPlayerId: 'box-native',
+      viewerPersonId: 'person-1',
+      selectedBettingBoxId: 'box-native',
+      openStake: 0,
+      bettingStage: true,
+    });
+    expect(getBoxActivePulseClassName(nativeResolved)).toBe(BET_BOX_PULSE);
+    expect(getBoxCardVisualClasses(nativeResolved)).toContain(BOX_BORDER_NATIVE);
+    expect(getBoxCardVisualClasses(nativeResolved)).not.toContain('bj-box--selected');
   });
 });

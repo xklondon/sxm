@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { GameState } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
 import { BlackjackPanel } from './BlackjackPanel';
+import { TABLE_UX } from './tableUxContract';
 import {
   tableAfterStartPlaying,
   boxPlayerId,
@@ -92,18 +93,18 @@ function renderAt(width: number): string {
 describe('Card View layout polish', () => {
   it('action rows render in actions zone above hero hand meta', () => {
     const html = renderAt(390);
-    const actionsIdx = html.indexOf('bj-card-layout__actions');
-    const heroIdx = html.indexOf('bj-card-layout__hero');
+    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
+    const heroIdx = html.indexOf(TABLE_UX.cardsAreaHero);
     const metaIdx = html.indexOf('bj-phone-view__hand-meta');
-    const primaryIdx = html.indexOf('bj-phone-view__action-bar-row--primary');
+    const primaryIdx = html.indexOf('sxm-primary-actions');
     expect(actionsIdx).toBeGreaterThan(-1);
     expect(heroIdx).toBeGreaterThan(actionsIdx);
     expect(metaIdx).toBeGreaterThan(heroIdx);
     expect(primaryIdx).toBeGreaterThan(actionsIdx);
     expect(primaryIdx).toBeLessThan(metaIdx);
-    expect(html).toContain('bj-phone-view__action-bar-row--secondary');
-    expect(html).toMatch(/bj-phone-view__action-bar-row--primary[\s\S]*Stand/);
-    expect(html).toMatch(/bj-phone-view__action-bar-row--secondary[\s\S]*2×/);
+    expect(html).toContain('sxm-secondary-actions');
+    expect(html).toMatch(/sxm-primary-actions[\s\S]*Stay/);
+    expect(html).toMatch(/sxm-secondary-actions[\s\S]*2×/);
   });
 
   it('command box sits between dealer stack and actions, then hero display', () => {
@@ -115,18 +116,18 @@ describe('Card View layout polish', () => {
     expect(html).toMatch(/Box \d+: Alice, you have \d+\./);
     const stackIdx = html.indexOf('dealer-block__stack');
     const commandIdx = html.indexOf('bj-card-layout__command');
-    const actionsIdx = html.indexOf('bj-card-layout__actions');
-    const heroIdx = html.indexOf('bj-card-layout__hero');
+    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
+    const heroIdx = html.indexOf(TABLE_UX.cardsAreaHero);
     expect(commandIdx).toBeGreaterThan(stackIdx);
     expect(actionsIdx).toBeGreaterThan(commandIdx);
     expect(heroIdx).toBeGreaterThan(actionsIdx);
   });
 
   it('hero action CSS uses two centered rows with smaller extras', () => {
-    const css = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
-    expect(css).toContain('.bj-phone-view__action-bar--playing');
-    expect(css).toContain('.bj-phone-view__action-bar-row--primary');
-    expect(css).toContain('.bj-phone-view__action-bar-row--secondary');
-    expect(css).toContain('.bj-phone-view__mini-hand-card-stack');
+    const css = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    expect(css).toContain('.bj-card-layout__actions .bj-table-actions');
+    expect(css).toContain('.bj-card-layout__actions .bj-table-actions__row');
+    expect(css).toContain('.bj-card-layout__actions .bj-table-actions__btn--sm');
+    expect(css).toMatch(/\.bj-table-zone--boxes \.bj-phone-view__mini-hand-card-stack|\.bj-card-layout__boxes \.bj-phone-view__mini-hand-card-stack/);
   });
 });

@@ -98,13 +98,42 @@ describe('localChipTargetSelection', () => {
 
     const reconciled = reconcileLocalChipTarget(local, stripped, false);
     expect(reconciled.hasUserSelected).toBe(true);
-    expect(reconciled.target).toEqual({ kind: 'box', boxId: box3 });
+    expect(reconciled.target).toEqual({ kind: 'slot', slotNumber: 3 });
     expect(
       resolveTrayTargetFromLocalSelection(reconciled, stripped, false, null),
-    ).toEqual({ kind: 'box', boxId: box3 });
+    ).toEqual({ kind: 'slot', slotNumber: 3 });
   });
 
-  it('clears user selection only when the target row is truly gone', () => {
+  it('rebinds user-selected box when online slot occupant id rotates', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 3);
+    const oldBox = boxPlayerId(state, 3)!;
+    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: oldBox });
+    const newBox = 'rotated-box-id';
+    const rotated = {
+      ...state,
+      players: {
+        ...state.players,
+        [newBox]: { ...state.players[oldBox]!, id: newBox },
+      },
+      session: {
+        ...state.session,
+        boxSlotNumbers: { ...state.session.boxSlotNumbers, [oldBox]: 3, [newBox]: 3 },
+        playerIds: [...state.session.playerIds.filter((id) => id !== oldBox), newBox],
+      },
+      tableMeta: {
+        ...state.tableMeta,
+        boxSlots: state.tableMeta.boxSlots.map((slot) =>
+          slot.slotNumber === 3 ? { ...slot, playerId: newBox } : slot,
+        ),
+      },
+    };
+    const reconciled = reconcileLocalChipTarget(local, rotated, true);
+    expect(reconciled.hasUserSelected).toBe(true);
+    expect(reconciled.target).toEqual({ kind: 'box', boxId: newBox });
+  });
+
+  it('clears user selection only when the target row is genuinely removed', () => {
     let state = createNewBlackjackTable();
     state = claimBoxSlot(state, 5);
     const box5 = state.tableMeta.boxSlots.find((s) => s.slotNumber === 5)!.playerId!;
@@ -116,6 +145,10 @@ describe('localChipTargetSelection', () => {
         players: Object.fromEntries(
           Object.entries(state.players).filter(([id]) => id !== box5),
         ),
+        session: {
+          ...state.session,
+          boxSlotNumbers: {},
+        },
         tableMeta: {
           ...state.tableMeta,
           boxSlots: state.tableMeta.boxSlots.map((slot) =>

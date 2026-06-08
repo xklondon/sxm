@@ -60,9 +60,6 @@ export const SXM_CARD_VIEW_SECTIONS: readonly SxmLayoutSection[] = [
   SXM_LAYOUT.heroCards,
   SXM_LAYOUT.handTotal,
   SXM_LAYOUT.playerBox,
-  SXM_LAYOUT.playerBoxValue,
-  SXM_LAYOUT.playerBoxCards,
-  SXM_LAYOUT.playerBoxBet,
 ] as const;
 
 /** Sections required in full-table modes (hero zone is a reserved slot). */

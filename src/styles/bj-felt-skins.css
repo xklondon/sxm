@@ -1,0 +1,103 @@
+/* Blackjack table cloth skins — visual only; layout shell dimensions unchanged. */
+
+.bj-casino__felt.bj-felt-skin--clean {
+  /* Preserve current clean SXM felt — no extra artwork. */
+}
+
+.bj-casino__felt.bj-felt-skin--classic-casino {
+  background-image:
+    radial-gradient(ellipse 120% 85% at 50% 38%, rgb(255 255 255 / 0.04), transparent 58%);
+}
+
+/*
+ * Cloth layer lives inside .bj-table-layout-shell (behind zones).
+ * Felt background < cloth layer (z-index 0) < gameplay zones (z-index 1).
+ */
+.bj-table-layout-shell {
+  position: relative;
+}
+
+.bj-felt-cloth-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bj-table-layout-shell > :not(.bj-felt-cloth-layer) {
+  position: relative;
+  z-index: 1;
+}
+
+.bj-felt-cloth-layer__svg {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  transform: translateX(-50%);
+  width: min(96%, 44rem);
+  height: auto;
+  max-height: 72%;
+  opacity: 0.82;
+}
+
+.bj-felt-cloth-layer__title {
+  fill: var(--ds-color-gold, #d4af37);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.bj-felt-cloth-layer__insurance {
+  fill: #c41e3a;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.bj-felt-cloth-layer__dealer-rule {
+  fill: rgb(0 0 0 / 0.58);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  font-style: italic;
+}
+
+.bj-felt-cloth-layer__wager {
+  fill: var(--ds-color-gold, #d4af37);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 16px;
+  font-style: italic;
+  opacity: 0.92;
+}
+
+.bj-felt-cloth-layer__box-guide {
+  stroke: rgb(212 175 55 / 0.42);
+  stroke-width: 1.5;
+}
+
+@media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
+  .bj-felt-cloth-layer__svg {
+    bottom: 4%;
+    width: min(98%, 26rem);
+    max-height: 66%;
+    opacity: 0.72;
+  }
+
+  .bj-felt-cloth-layer__title {
+    font-size: 26px;
+  }
+
+  .bj-felt-cloth-layer__insurance {
+    font-size: 14px;
+  }
+
+  .bj-felt-cloth-layer__dealer-rule {
+    font-size: 12px;
+  }
+
+  .bj-felt-cloth-layer__wager {
+    font-size: 13px;
+  }
+}

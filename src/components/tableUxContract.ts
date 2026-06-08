@@ -61,7 +61,13 @@ export const TABLE_UX = {
   tableHeader: 'bj-casino__table-header',
   /** Full Table arc seat layout: value → cards → chips. */
   fullArcBox: 'bj-phone-view__mini-hand--full-arc',
-  /** Card View fixed grid layout — see bj-card-layout.css. */
+  /** Canonical felt shell — Full Table and Card View share one column stack. */
+  tableLayoutShell: 'bj-table-layout-shell',
+  /** Full Table per-box arc card stacks. */
+  cardsAreaTable: 'bj-cards-area--table',
+  /** Card View hero card fan for active/selected box. */
+  cardsAreaHero: 'bj-cards-area--hero',
+  /** @deprecated Card View used a separate grid — layout is bj-table-layout-shell now. */
   cardLayout: 'bj-card-layout',
   cardLayoutDealer: 'bj-card-layout__dealer',
   cardLayoutSummary: 'bj-card-layout__summary',
@@ -101,4 +107,11 @@ export const TABLE_UX = {
   boxHitArea: 'bj-box-hit-area',
   /** Chip drop / remove controls — pointer-events: auto above the hit area. */
   boxInteractive: 'bj-box-interactive',
+  /** Visual-only felt cloth skin modifiers on .bj-casino__felt. */
+  feltSkinClean: 'bj-felt-skin--clean',
+  feltSkinClassicCasino: 'bj-felt-skin--classic-casino',
+  /** Decorative printed cloth layer (Classic Casino skin). */
+  feltClothLayer: 'bj-felt-cloth-layer',
+  /** @deprecated Use feltClothLayer */
+  feltClothDecor: 'bj-felt-cloth-layer',
 } as const;

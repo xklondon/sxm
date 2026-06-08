@@ -17,10 +17,9 @@ describe('launch layout fixes — table vertical positioning', () => {
     expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
   });
 
-  it('desktop Card View shifts felt up and reserves chip tray space', () => {
-    expect(SHARED_CSS).toMatch(/\.bj-view-card-desktop \.bj-casino__felt\.bj-casino__felt--card-view[\s\S]*padding-bottom:\s*0\.32rem/);
-    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-view-card-desktop \.bj-card-layout__tray[\s\S]*padding-bottom:\s*0\.38rem/);
-    expect(CARD_LAYOUT_CSS).toMatch(/@media \(min-width: 721px\)[\s\S]*--bj-card-row-dealer:\s*7\.35rem/);
+  it('desktop Card View uses shared felt padding with Full Table', () => {
+    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-casino__felt,\s*\n\s*\.bj-view-card-desktop \.bj-casino__felt[\s\S]*padding-top:\s*0\.35rem/);
+    expect(SHARED_CSS).toContain('--bj-zone-dealer-height: 7.5rem');
   });
 });
 
@@ -56,9 +55,9 @@ describe('launch layout fixes — BUST / Next Round separation', () => {
 });
 
 describe('launch layout fixes — hero top clipping guards', () => {
-  it('hero zone aligns from top with reserved meta padding', () => {
-    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-card-layout__hero[\s\S]*justify-content:\s*flex-start/);
-    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-card-layout__hero[\s\S]*padding-top:\s*0\.28rem/);
+  it('hero zone centers hero cards with reserved meta padding', () => {
+    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*justify-content:\s*center/);
+    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/);
     expect(CARD_LAYOUT_CSS).toContain('--bj-card-hero-meta-reserve');
   });
 

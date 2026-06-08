@@ -103,7 +103,7 @@ describe('blackjack polish — active turn highlight source', () => {
   it('views use getActiveTurnBoxId / activeHandKey for highlight', () => {
     const cardView = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
     const panel = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-    expect(cardView).toContain('getActiveTurnBoxId');
+    expect(cardView).toContain('activeBoxId');
     expect(panel).toContain('getActiveTurnBoxId');
   });
 });

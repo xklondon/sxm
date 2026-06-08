@@ -9,6 +9,7 @@ import { DEFAULT_TABLE_ADMIN_SETTINGS } from '../types/admin';
 import { normalizeFlowSettings } from '../engine/blackjack/flowSettings';
 import { DEFAULT_ZILCH_SETTINGS } from '../engine/zilch/settings';
 import { normalizeLoadedGameState } from '../engine/session/tableKind';
+import { DEFAULT_TABLE_CLOTH_NAME, DEFAULT_TABLE_FELT_SKIN, isTableFeltSkin } from '../types/tableFeltSkin';
 
 const CURRENT_GAME_KEY = 'sxmcards:current-game:v1';
 const SAVED_GAMES_KEY = 'sxmcards:saved-games:v1';
@@ -73,6 +74,16 @@ export function deserializeGameState(raw: string): GameState {
         parsed.blackjackSettings?.minBet ??
         5,
       awaitingNextRound: parsed.tableMeta.awaitingNextRound ?? false,
+      showRoundSummaryOverlay: parsed.tableMeta.showRoundSummaryOverlay ?? true,
+      tableFeltSkin: isTableFeltSkin(parsed.tableMeta?.tableFeltSkin)
+        ? parsed.tableMeta.tableFeltSkin
+        : DEFAULT_TABLE_FELT_SKIN,
+      tableClothName:
+        typeof parsed.tableMeta?.tableClothName === 'string'
+          ? parsed.tableMeta.tableClothName
+          : DEFAULT_TABLE_CLOTH_NAME,
+      tableClothWager:
+        typeof parsed.tableMeta?.tableClothWager === 'string' ? parsed.tableMeta.tableClothWager : '',
       gameStatus: parsed.tableMeta.gameStatus ?? 'active',
       winnerId: parsed.tableMeta.winnerId ?? null,
       endedAt: parsed.tableMeta.endedAt ?? null,

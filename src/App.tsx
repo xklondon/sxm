@@ -7,6 +7,7 @@ import {
 } from './engine/session';
 import type { TableStakeSetupInput } from './engine/session/tableSetup';
 import { applySettingsToGameState, loadSettings } from './storage/settingsStorage';
+import { applyTableVisualPrefs } from './types/tableFeltSkin';
 import {
   loadProfile,
   needsLocalProfileSetup,
@@ -138,9 +139,10 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
   const handleGameStateChange = useCallback(
     (next: GameState) => {
       const normalized = normalizeLoadedGameState(next);
-      setGameState(normalized);
+      const withVisualPrefs = applyTableVisualPrefs(normalized, loadSettings());
+      setGameState(withVisualPrefs);
       if (onlineMode && activeTableId) {
-        syncStoredViewerPersonId(activeTableId, normalized, user);
+        syncStoredViewerPersonId(activeTableId, withVisualPrefs, user);
       }
     },
     [onlineMode, activeTableId, user],

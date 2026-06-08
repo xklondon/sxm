@@ -3,8 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { GameState } from '../types';
-import { BlackjackCardView } from './BlackjackCardView';
-import { TABLE_UX } from './tableUxContract';
+import { BlackjackPanel } from './BlackjackPanel';
 import { createNewBlackjackTable } from '../engine/session';
 import { allocateChipsToBankrollOwner } from '../engine/session/allocation';
 import { addChipToBoxStake } from '../engine/blackjack/stakes';
@@ -17,6 +16,7 @@ function bettingState(stakeChips: number[]): GameState {
   const personId = 'person-1';
   state = {
     ...state,
+    tableViewMode: 'card',
     players: {
       [boxId]: {
         id: boxId,
@@ -71,60 +71,18 @@ function bettingState(stakeChips: number[]): GameState {
   return state;
 }
 
-function render(state: GameState): string {
-  return renderToStaticMarkup(
-    <BlackjackCardView
-      dealer={<div className="dealer-block" />}
-      tray={<div className="bj-casino__tray-wrap" />}
-      gameState={state}
-      focusBoxId="box-test"
-      activeBoxId={null}
-      showHoleHidden={false}
-      protocolPhase="betting"
-      bettingOpen
-      gameEnded={false}
-      onSelectBox={noop}
-      onClaimSlot={noop}
-      onReleaseSlot={noop}
-      onAddChip={noop}
-      onClearStake={noop}
-      onRemoveLastChip={noop}
-      onSlotChipDrop={noop}
-      onStay={noop}
-      onCard={noop}
-      onDouble={noop}
-      onSplit={noop}
-      onBack={noop}
-    />,
-  );
-}
-
-describe('Card View mini row layout contract', () => {
-  it('renders stake under the tile when chips are placed', () => {
-    const before = render(bettingState([]));
-    const after = render(bettingState([10, 5]));
-    expect(before).toContain(TABLE_UX.cardViewBoxColumn);
-    expect(before).toContain(TABLE_UX.cardViewBoxStakeLabelReserved);
-    expect(before).toContain(TABLE_UX.cardViewBoxChipStackReserved);
-    expect(after).toContain(TABLE_UX.cardViewBoxChipStack);
-    expect(after).toContain(TABLE_UX.cardViewBoxStakeLabel);
-    expect(after).toContain('Bet: 15');
-    expect(after).toContain('stake-chips--bet');
-    const columnCountBefore = (before.match(/bj-phone-view__mini-hand-column/g) ?? []).length;
-    const columnCountAfter = (after.match(/bj-phone-view__mini-hand-column/g) ?? []).length;
-    expect(columnCountBefore).toBe(columnCountAfter);
-    expect(columnCountBefore).toBeGreaterThan(0);
+describe('Card View shared arc player boxes layout', () => {
+  it('renders stake chips under the shared arc player box tile', () => {
+    const html = renderToStaticMarkup(
+      <BlackjackPanel gameState={bettingState([10, 5])} onGameStateChange={noop} />,
+    );
+    expect(html).toContain('bj-arc--player-boxes');
+    expect(html).toContain('stake-chips--bet');
+    expect(html).toContain('bj-phone-view__mini-stake-slot');
   });
 
-  it('CSS fixes mini tile height in the grid boxes row so stake does not expand layout', () => {
+  it('uses arc smile CSS in card layout boxes zone', () => {
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-    expect(layoutCss).toContain('--bj-card-row-boxes: 9rem');
-    expect(layoutCss).toMatch(
-      /\.bj-card-layout__boxes \.bj-phone-view__mini-hand[\s\S]*max-height:\s*var\(--bj-cardview-desktop-mini-hand-height/,
-    );
-    expect(layoutCss).toMatch(
-      /\.bj-card-layout__boxes \.bj-phone-view__box-chip-stack[\s\S]*max-height:\s*var\(--bj-card-box-chip-stack-height\)/,
-    );
-    expect(layoutCss).toMatch(/\.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*max-height:\s*100%/);
+    expect(layoutCss).toMatch(/\.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden/);
   });
 });

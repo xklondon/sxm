@@ -107,6 +107,12 @@ export interface TableMeta {
   awaitingNextRound: boolean;
   /** Show structured round summary overlay after settlement (default on). */
   showRoundSummaryOverlay?: boolean;
+  /** Visual-only felt / table cloth artwork in the cards area. */
+  tableFeltSkin?: import('./tableFeltSkin').TableFeltSkin;
+  /** Printed table name on classic cloth (header stays BLACKJACK). */
+  tableClothName?: string;
+  /** Optional social wager label on classic cloth — visual only. */
+  tableClothWager?: string;
   /** Active play vs table ended (one side holds all chips). */
   gameStatus: TableGameStatus;
   /** Bank or person bankroll id when gameStatus is ended. */

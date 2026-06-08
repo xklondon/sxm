@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useMemo, type CSSProperties } from 'react';
 import type { GameState, TableViewMode } from '../types';
 import { resolveShowRoundSummaryOverlay } from '../types/table';
+import { feltSkinModifierClass, resolveTableClothName, resolveTableClothWager, resolveTableFeltSkin } from '../types/tableFeltSkin';
 import {
   claimBoxSlot,
   defaultBlackjackSeatId,
@@ -54,13 +55,9 @@ import { BankerSetupPanel } from './BankerSetupPanel';
 import { dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
 import { BlackjackActionPanel } from './BlackjackActionPanel';
 import { BlackjackCommandBox } from './BlackjackCommandBox';
-import { BlackjackDealerArea, BlackjackDealerAreaCardSlot } from './BlackjackDealerArea';
-import {
-  BlackjackActionsZone,
-  BlackjackCardsAreaZone,
-  BlackjackCommandZone,
-  BlackjackPlayerBoxesZone,
-} from './blackjackViewZones';
+import { BlackjackDealerArea } from './BlackjackDealerArea';
+import { BlackjackTableLayoutShell } from './BlackjackTableLayoutShell';
+import { BlackjackFeltClothLayer } from './BlackjackFeltClothLayer';
 import { Magic8Ball } from './magic8/Magic8Ball';
 import { buildBlackjackPlayerBoxInfo } from './blackjackPlayerBoxInfo';
 import { BlackjackPlayerBoxHead } from './BlackjackPlayerBoxes';
@@ -244,6 +241,7 @@ export function BlackjackPanel({
   const localSelectedChipTargetRef = useRef(localChipSelection);
   localSelectedChipTargetRef.current = localChipSelection;
   const tapSelectRef = useRef(createTapSelectHandler());
+  const SHUFFLE_ANIM_DURATION_MS = 3000;
   const [shuffleAnimating, setShuffleAnimating] = useState(false);
   const shuffleAnimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -519,7 +517,6 @@ export function BlackjackPanel({
   }
 
   function placeBetAtTarget(target: PlaceBetTarget, amount: ChipValue) {
-    selectLocalTarget(target);
     const payload = placeBetPayloadFromTarget(target, amount);
 
     if (onlineDispatch) {
@@ -590,14 +587,6 @@ export function BlackjackPanel({
     return bindTapSelect(tapSelectRef.current, action);
   }
 
-  function addChipToBox(boxId: string, amount: ChipValue) {
-    const target = getChipPlacementTargetFromBoxId(
-      gameStateRef.current,
-      boxId,
-      Boolean(onlineDispatch),
-    );
-    placeBetAtTarget(target, amount);
-  }
 
   function clearBoxStakeOnBox(boxId: string) {
     run((s) => clearBoxStake(s, boxId), { type: 'clearBet', payload: { boxId } });
@@ -841,7 +830,7 @@ export function BlackjackPanel({
     shuffleAnimTimerRef.current = setTimeout(() => {
       setShuffleAnimating(false);
       shuffleAnimTimerRef.current = null;
-    }, 700);
+    }, SHUFFLE_ANIM_DURATION_MS);
     handleShuffleToStart();
   }
 
@@ -890,15 +879,10 @@ export function BlackjackPanel({
     );
   }
 
-  function renderSummaryZone() {
+  function renderSummaryContent() {
     const alert = renderTableAlert();
     return (
-      <BlackjackCommandZone variant="table">
-        <BlackjackCommandBox
-          commandMessage={tableCommand.commandMessage}
-          commandLines={tableCommand.commandLines}
-          gameEnded={gameEnded}
-        />
+      <>
         {alert ?? (
           <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />
         )}
@@ -914,20 +898,21 @@ export function BlackjackPanel({
             </button>
           </div>
         ) : null}
-      </BlackjackCommandZone>
+      </>
     );
   }
 
-  function renderActionsZone() {
+  function renderActionsContent() {
     const insurance = renderInsuranceActions();
     const playerActions = renderTablePlayerActions();
     const content = insurance ?? playerActions;
     const hasPrimarySecondary = Boolean(playerActions);
+    if (content) {
+      return content;
+    }
     return (
-      <BlackjackActionsZone variant="table">
-        {content ?? (
-          <div className={TABLE_UX.actionsPlaceholder} aria-hidden="true" />
-        )}
+      <>
+        <div className={TABLE_UX.actionsPlaceholder} aria-hidden="true" />
         {!hasPrimarySecondary && (
           <>
             <div
@@ -940,30 +925,10 @@ export function BlackjackPanel({
             />
           </>
         )}
-      </BlackjackActionsZone>
-    );
-  }
-
-  function renderCardViewSummaryExtras() {
-    const alert = renderTableAlert();
-    return (
-      <>
-        {alert}
-        {showPersonalLedgerOffer ? (
-          <div className="bj-personal-ledger-offer">
-            <button
-              type="button"
-              className="ds-btn ds-btn--secondary"
-              disabled={personalLedgerAdded}
-              onClick={handleAddToPersonalLedger}
-            >
-              {personalLedgerAdded ? 'Added to personal ledger' : 'Add game to personal ledger'}
-            </button>
-          </div>
-        ) : null}
       </>
     );
   }
+
 
   function renderTrayInner() {
     const { playerAvailable } = buildTableInfoDisplay(gameState, viewerPersonId);
@@ -999,14 +964,6 @@ export function BlackjackPanel({
         >
           {playerAvailable !== null ? `You: ${playerAvailable}` : '\u00a0'}
         </p>
-      </div>
-    );
-  }
-
-  function renderBottomTrayZone() {
-    return (
-      <div className={`bj-table-zone ${TABLE_UX.tableZoneBottom}`}>
-        {renderTrayInner()}
       </div>
     );
   }
@@ -1348,6 +1305,7 @@ export function BlackjackPanel({
       viewerPersonId,
       openStake,
       selectedBettingBoxId: selectedBettingBoxIdForUi,
+      selectedBettingSlotNumber,
       activeBoxId,
       isDropHover: dropTargetId === chipDropKey({ slotNumber, boxId }),
       bettingStage: inBetting,
@@ -1535,6 +1493,21 @@ export function BlackjackPanel({
           <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
           <span className="bj-phone-view__mini-hand-name">Join</span>
         </div>
+      </div>
+    );
+  }
+
+  function renderPlayerBoxesArc() {
+    return (
+      <div
+        className="bj-arc bj-arc--rtl bj-arc--player-boxes"
+        style={{ '--slot-count': MAX_BOXES } as CSSProperties}
+      >
+        {displaySlots.map((slot) =>
+          slot.playerId
+            ? renderArcBoxSlot(slot.playerId, slot.slotNumber)
+            : renderEmptyBoxSlot(slot.slotNumber),
+        )}
       </div>
     );
   }
@@ -1839,7 +1812,7 @@ export function BlackjackPanel({
       {renderTableHeader()}
       <div className={`bj-casino__rail ${TABLE_UX.rail}`}>
           <div
-            className={`bj-casino__felt ${TABLE_UX.surface}${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''}`}
+            className={`bj-casino__felt ${TABLE_UX.surface}${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''} ${feltSkinModifierClass(resolveTableFeltSkin(tableMeta))}`}
         >
           <Magic8Ball
             variant="table"
@@ -1849,16 +1822,33 @@ export function BlackjackPanel({
             answer={magic8Answer}
             onAnswer={setMagic8Answer}
           />
-          {viewMode === 'full' && (
-            <>
-              <div className="bj-casino__felt-main">
-              <BlackjackDealerArea {...dealerBlockProps} dealerCards={dealerCardNodes} omitCommand />
-
-              {renderSummaryZone()}
-
-              {renderActionsZone()}
-
-              <BlackjackCardsAreaZone variant="table">
+          <BlackjackTableLayoutShell
+            feltClothLayer={
+              resolveTableFeltSkin(tableMeta) === 'classic-casino' ? (
+                <BlackjackFeltClothLayer
+                  tableName={resolveTableClothName(tableMeta)}
+                  wagerText={resolveTableClothWager(tableMeta)}
+                />
+              ) : null
+            }
+            dealer={
+              <BlackjackDealerArea
+                {...dealerBlockProps}
+                dealerCards={dealerCardNodes}
+                omitCommand
+              />
+            }
+            command={
+              <BlackjackCommandBox
+                commandMessage={tableCommand.commandMessage}
+                commandLines={tableCommand.commandLines}
+                gameEnded={gameEnded}
+              />
+            }
+            summaryExtras={renderSummaryContent()}
+            actions={renderActionsContent()}
+            cardsArea={
+              viewMode === 'full' ? (
                 <div
                   className="bj-arc bj-arc--cards bj-arc--rtl"
                   style={{ '--slot-count': MAX_BOXES } as CSSProperties}
@@ -1869,56 +1859,15 @@ export function BlackjackPanel({
                       : renderEmptyCardColumn(slot.slotNumber),
                   )}
                 </div>
-              </BlackjackCardsAreaZone>
-
-              <BlackjackPlayerBoxesZone variant="table">
-                <div
-                  className="bj-arc bj-arc--rtl"
-                  style={{ '--slot-count': MAX_BOXES } as CSSProperties}
-                >
-                  {displaySlots.map((slot) =>
-                    slot.playerId
-                      ? renderArcBoxSlot(slot.playerId, slot.slotNumber)
-                      : renderEmptyBoxSlot(slot.slotNumber),
-                  )}
-                </div>
-              </BlackjackPlayerBoxesZone>
-
-              {renderBottomTrayZone()}
-              </div>
-            </>
-          )}
-
-          {viewMode === 'card' && (
-            <BlackjackCardView
-              dealer={
-                <BlackjackDealerAreaCardSlot>
-                  <BlackjackDealerArea
-                    variant="card"
-                    {...dealerBlockProps}
-                    dealerCards={dealerCardNodes}
-                    omitCommand
-                  />
-                </BlackjackDealerAreaCardSlot>
-              }
-              dealerCommand={
-                <BlackjackCommandBox
-                  commandMessage={tableCommand.commandMessage}
-                  commandLines={tableCommand.commandLines}
-                  gameEnded={gameEnded}
-                />
-              }
-              tray={renderTrayInner()}
-              summaryExtras={renderCardViewSummaryExtras()}
-              gameState={tableVisualState}
+              ) : (
+                <BlackjackCardView
+                  gameState={tableVisualState}
                   logicalGameState={gameState}
                   viewerPersonId={viewerPersonId}
                   onlineTableId={onlineTableId}
                   viewerAuth={viewerAuth}
                   deviceView={deviceView}
                   focusBoxId={focusBoxId ?? undefined}
-                  selectedBettingBoxId={selectedBettingBoxIdForUi}
-                  selectedBettingSlotNumber={selectedBettingSlotNumber}
                   activeBoxId={activeBoxId}
                   showHoleHidden={showHoleHidden}
                   protocolPhase={protocolPhase}
@@ -1926,25 +1875,18 @@ export function BlackjackPanel({
                   activeHandRevealComplete={activeHandRevealComplete}
                   bettingOpen={bettingOpen}
                   gameEnded={gameEnded}
-                  onSelectBox={selectBox}
-                  onClaimSlot={handleClaimOrSelectSlot}
-                  onReleaseSlot={handleReleaseSlot}
-                  onAddChip={addChipToBox}
-                  onClearStake={clearBoxStakeOnBox}
-                  onRemoveLastChip={removeLastChipFromBox}
-                  onSlotChipDrop={handleSlotChipDrop}
-                  dropTargetId={dropTargetId}
-                  onStay={(hk) => run((s) => standBlackjackOnState(s, hk), { type: 'stand', payload: {} })}
+                  onStay={(hk) =>
+                    run((s) => standBlackjackOnState(s, hk), { type: 'stand', payload: {} })
+                  }
                   onCard={(hk) => run((s) => hitBlackjackOnState(s, hk), { type: 'hit', payload: {} })}
-                  onDouble={(hk) => run((s) => doubleDownBlackjackOnState(s, hk), { type: 'double', payload: {} })}
-                  onSplit={(hk) => run((s) => splitBlackjackOnState(s, hk), { type: 'split', payload: {} })}
-                  onTakeEvenMoney={(hk) => run((s) => takeEvenMoneyOnState(s, hk), { type: 'takeEvenMoney', payload: { handKey: hk } })}
-                  onWaitForBlackjackPayout={(hk) => run((s) => waitForBlackjackPayoutOnState(s, hk), { type: 'waitFor3to2', payload: { handKey: hk } })}
-                  onTakeInsurance={(pid) => run((s) => takeInsuranceOnState(s, pid), { type: 'takeInsurance', payload: { playerId: pid } })}
-                  onDeclineInsurance={(pid) => run((s) => declineInsuranceOnState(s, pid), { type: 'declineInsurance', payload: { playerId: pid } })}
                   onBack={() => setViewMode('full')}
-            />
-          )}
+                />
+              )
+            }
+            cardsAreaMode={viewMode === 'full' ? 'table' : 'hero'}
+            playerBoxes={renderPlayerBoxesArc()}
+            chipTray={renderTrayInner()}
+          />
         </div>
         </div>
       </div>

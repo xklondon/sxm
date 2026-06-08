@@ -124,8 +124,9 @@ describe('box selection — single chip target', () => {
   it('Card View and Full Table share selectedBettingBoxId in BlackjackPanel', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
     expect(src).toContain('selectedBettingBoxId');
-    expect(src).toContain('selectedBettingBoxId={selectedBettingBoxIdForUi}');
-    expect(src).toContain('selectedBettingSlotNumber={selectedBettingSlotNumber}');
+    expect(src).toContain('selectedBettingBoxId: selectedBettingBoxIdForUi');
+    expect(src).toContain('selectedBettingSlotNumber');
+    expect(src).not.toContain('selectedBettingBoxId={selectedBettingBoxIdForUi}');
     expect(src).not.toMatch(/effectiveBoxId\s*=\s*gameState\.selectedSeatId\s*\?\?\s*defaultBlackjackSeatId/);
     expect(src).not.toMatch(/function selectBox\(boxId: string\) \{[\s\S]*selectedSeatId: boxId/);
   });
@@ -236,9 +237,31 @@ describe('box selection — single chip target', () => {
     expect(src).toMatch(/uiFromLocalChipTarget\(localChipSelection\.target\)/);
   });
 
+  it('does not overwrite local selection during chip placement', () => {
+    const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(src).toMatch(/function placeBetAtTarget\(target: PlaceBetTarget[\s\S]*?const payload = placeBetPayloadFromTarget/);
+    expect(src).not.toMatch(/function placeBetAtTarget[\s\S]*?selectLocalTarget\(target\)/);
+  });
+
   it('selectBox sets canonical local chip target for occupied boxes', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
     expect(src).toMatch(/function selectBox\(boxId: string\) \{[\s\S]*selectLocalTarget/);
+  });
+
+  it('pulse matches selected slot number on occupied box row', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 3);
+    const box3 = boxPlayerId(state, 3)!;
+    const resolved = resolveBoxBorderVisualState({
+      state,
+      boxPlayerId: box3,
+      viewerPersonId: null,
+      selectedBettingBoxId: null,
+      selectedBettingSlotNumber: 3,
+      bettingStage: true,
+    });
+    expect(resolved.isSelected).toBe(true);
+    expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
   });
 
   it('reconcile effect upgrades slot targets instead of clearing after materialization', () => {

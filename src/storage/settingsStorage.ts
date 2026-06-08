@@ -36,6 +36,10 @@ import { DEFAULT_TABLE_ADMIN_SETTINGS } from '../types/admin';
 
 import type { TableAdminSettings } from '../types/admin';
 
+import type { TableFeltSkin } from '../types/tableFeltSkin';
+
+import { DEFAULT_TABLE_CLOTH_NAME, DEFAULT_TABLE_FELT_SKIN } from '../types/tableFeltSkin';
+
 import { log } from '../utils/logger';
 
 
@@ -64,6 +68,15 @@ export interface PersistedSettings {
 
   tableAdminSettings?: TableAdminSettings;
 
+  /** Device-local table cloth / felt skin preference. */
+  tableFeltSkin?: TableFeltSkin;
+
+  /** Printed name on classic casino cloth. */
+  tableClothName?: string;
+
+  /** Optional social wager label on classic cloth. */
+  tableClothWager?: string;
+
 }
 
 
@@ -85,6 +98,12 @@ export function defaultPersistedSettings(): PersistedSettings {
     blackjackTableTheme: null,
 
     tableAdminSettings: { ...DEFAULT_TABLE_ADMIN_SETTINGS },
+
+    tableFeltSkin: DEFAULT_TABLE_FELT_SKIN,
+
+    tableClothName: DEFAULT_TABLE_CLOTH_NAME,
+
+    tableClothWager: '',
 
   };
 
@@ -148,6 +167,12 @@ export function mergeSettingsWithDefaults(partial?: Partial<PersistedSettings>):
         : validateBlackjackTableThemeOverrides(partial.blackjackTableTheme),
 
     tableAdminSettings: mergeAdminSettings(partial?.tableAdminSettings),
+
+    tableFeltSkin: partial?.tableFeltSkin ?? defaults.tableFeltSkin,
+
+    tableClothName: partial?.tableClothName ?? defaults.tableClothName,
+
+    tableClothWager: partial?.tableClothWager ?? defaults.tableClothWager,
   };
 }
 
@@ -229,6 +254,12 @@ export function settingsFromGameState(state: GameState): PersistedSettings {
 
     tableAdminSettings: state.tableAdminSettings,
 
+    tableFeltSkin: state.tableMeta.tableFeltSkin ?? DEFAULT_TABLE_FELT_SKIN,
+
+    tableClothName: state.tableMeta.tableClothName ?? DEFAULT_TABLE_CLOTH_NAME,
+
+    tableClothWager: state.tableMeta.tableClothWager ?? '',
+
   };
 
 }
@@ -256,6 +287,13 @@ export function applySettingsToGameState(state: GameState, settings: PersistedSe
     blackjackTableTheme: merged.blackjackTableTheme ?? null,
 
     tableAdminSettings: mergeAdminSettings(merged.tableAdminSettings),
+
+    tableMeta: {
+      ...state.tableMeta,
+      tableFeltSkin: merged.tableFeltSkin ?? DEFAULT_TABLE_FELT_SKIN,
+      tableClothName: merged.tableClothName ?? DEFAULT_TABLE_CLOTH_NAME,
+      tableClothWager: merged.tableClothWager ?? '',
+    },
   };
 }
 

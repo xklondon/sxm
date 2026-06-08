@@ -138,8 +138,10 @@ describe('multiplayer turn-owner visibility (UI)', () => {
   });
 
   it('mobile action bar has compact playing layout styles', () => {
-    const css = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
-    expect(css).toMatch(/@media \(max-width: 720px\)[\s\S]*bj-phone-view__action-bar--playing/);
-    expect(css).toMatch(/\.bj-phone-view__mini-hand-card-stack[\s\S]*position:\s*relative/);
+    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    expect(layoutCss).toMatch(/\.bj-card-layout__actions \.bj-table-actions[\s\S]*gap:/);
+    expect(layoutCss).toMatch(
+      /\.bj-card-layout__boxes \.bj-phone-view__mini-hand-card-stack[\s\S]*position:\s*relative/,
+    );
   });
 });

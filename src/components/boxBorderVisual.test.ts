@@ -131,11 +131,11 @@ describe('box border visual states', () => {
     expect(getBoxCardVisualClasses(resolved)).not.toContain(BOX_BORDER_NATIVE);
   });
 
-  it('Full Table and Card View share resolveBoxBorderVisualState helper', () => {
+  it('Full Table and Card View share resolveBoxBorderVisualState via Panel player boxes', () => {
     expect(PANEL_SRC).toContain('resolveBoxBorderVisualState');
-    expect(CARD_VIEW_SRC).toContain('resolveBoxBorderVisualState');
     expect(PANEL_SRC).toContain('getBoxCardVisualClasses(borderState)');
-    expect(CARD_VIEW_SRC).toContain('getBoxCardVisualClasses(borderState)');
+    expect(PANEL_SRC).toContain('renderPlayerBoxesArc');
+    expect(CARD_VIEW_SRC).not.toContain('resolveBoxBorderVisualState');
   });
 
   it('shared CSS defines semantic bj-box--* border classes', () => {
@@ -149,21 +149,21 @@ describe('box border visual states', () => {
 });
 
 describe('Full Table desktop vertical stretch', () => {
-  it('uses taller shell and bottom tray padding token like Card View stretch', () => {
-    expect(SHARED_CSS).toContain('--bj-full-desktop-table-height: min(88vh, 56rem)');
+  it('uses one desktop shell height token for Full Table and Card View', () => {
+    expect(SHARED_CSS).toContain('--bj-shell-height: min(88vh, 56rem)');
+    expect(SHARED_CSS).toContain('--bj-shell-width: min(98vw, 86rem)');
+    expect(SHARED_CSS).toContain('--bj-desktop-table-height: var(--bj-shell-height)');
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-desktop-shell[\s\S]*var\(--bj-full-desktop-table-height\)/,
+      /\.bj-table-desktop-shell[\s\S]*height:\s*var\(--bj-shell-height\)/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-casino__felt[\s\S]*var\(--bj-full-desktop-tray-padding-bottom\)/,
-    );
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-table-zone--bottom[\s\S]*flex:\s*0\s*0\s*auto/);
+    expect(SHARED_CSS).not.toMatch(/\.bj-view-full-desktop \.bj-table-desktop-shell[\s\S]*--bj-full-desktop-table-height/);
+    expect(CARD_LAYOUT_CSS).not.toMatch(/\.bj-view-card-desktop \.bj-table-desktop-shell[\s\S]*height:/);
   });
 
-  it('does not change Card View desktop shell height token', () => {
-    expect(CARD_LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-desktop-shell[\s\S]*var\(--bj-card-desktop-table-height\)/,
+  it('uses bottom tray padding token on both desktop views', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-casino__felt,\s*\n\s*\.bj-view-card-desktop \.bj-casino__felt[\s\S]*padding-bottom:\s*var\(--bj-full-desktop-tray-padding-bottom\)/,
     );
-    expect(SHARED_CSS).not.toMatch(/\.bj-view-card-desktop \.bj-table-desktop-shell[\s\S]*--bj-full-desktop-table-height/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-zone-tray-height\)/);
   });
 });

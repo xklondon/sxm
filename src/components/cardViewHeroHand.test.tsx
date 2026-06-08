@@ -25,8 +25,6 @@ function renderCardView(
 ): string {
   return renderToStaticMarkup(
     <BlackjackCardView
-      dealer={<div className="dealer-block" />}
-      tray={<div className="bj-casino__tray-wrap" />}
       gameState={state}
       logicalGameState={opts.logicalGameState ?? state}
       activeBoxId={opts.activeBoxId ?? state.blackjack?.activePlayerId ?? null}
@@ -34,17 +32,8 @@ function renderCardView(
       protocolPhase={opts.protocolPhase}
       bettingOpen={opts.protocolPhase === 'betting'}
       gameEnded={false}
-      onSelectBox={noop}
-      onClaimSlot={noop}
-      onReleaseSlot={noop}
-      onAddChip={noop}
-      onClearStake={noop}
-      onRemoveLastChip={noop}
-      onSlotChipDrop={noop}
       onStay={noop}
       onCard={noop}
-      onDouble={noop}
-      onSplit={noop}
       onBack={noop}
     />,
   );

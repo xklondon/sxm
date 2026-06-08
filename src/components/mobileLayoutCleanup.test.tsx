@@ -105,14 +105,15 @@ describe('mobile layout cleanup', () => {
     expect(desktop).not.toContain('bj-casino__this-table--below');
   });
 
-  it('mobile Card View mini-row fits seven boxes without horizontal scroll', () => {
-    expect(panelCss).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*hidden/);
-    expect(panelCss).toMatch(/grid-template-columns:\s*repeat\(7,\s*minmax\(0,\s*1fr\)\)/);
+  it('mobile Card View arc row fits seven boxes without horizontal scroll', () => {
     expect(cardLayoutCss).toMatch(
-      /\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*hidden/,
+      /\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden/,
+    );
+    expect(cardLayoutCss).toMatch(
+      /\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*1 1 0/,
     );
     const mobile = renderAt({ width: 390, height: 844 }, 'card');
-    expect(mobile).toContain('bj-phone-view__mini-row');
+    expect(mobile).toContain('bj-arc--player-boxes');
     expect(mobile.match(/aria-label="(?:Join )?[Bb]ox \d/g)?.length ?? 0).toBeGreaterThanOrEqual(7);
   });
 
@@ -147,7 +148,7 @@ describe('mobile landscape layout source of truth', () => {
   it('Card View and Full Table landscape render chip tray in mobile shell', () => {
     const card = renderAt({ width: 844, height: 390 }, 'card');
     const full = renderAt({ width: 844, height: 390 }, 'full');
-    expect(card).toContain('bj-card-layout__tray');
+    expect(card).toContain(TABLE_UX.tableZoneBottom);
     expect(card).toContain('bj-casino__tray');
     expect(full).toContain('bj-casino__tray-wrap');
     expect(full).toContain('bj-casino__tray');
@@ -158,10 +159,10 @@ describe('mobile landscape layout source of truth', () => {
       /\.bj-view-full-mobile \.bj-casino__tray-wrap[\s\S]*flex-shrink:\s*0/,
     );
     expect(sharedCss).toMatch(
-      /\.bj-view-card-mobile \.bj-card-layout__tray[\s\S]*flex-shrink:\s*0/,
+      /\.bj-view-card-mobile \.bj-table-zone--bottom[\s\S]*flex-shrink:\s*0|\.bj-view-card-mobile \.bj-card-layout__tray[\s\S]*flex-shrink:\s*0/,
     );
-    expect(sharedCss).toMatch(
-      /\.bj-view-card-mobile \.bj-card-layout[\s\S]*minmax\(2\.75rem,\s*var\(--bj-card-row-tray\)\)/,
+    expect(cardLayoutCss).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*min-height:\s*var\(--bj-card-row-tray\)|\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-card-row-tray\)/,
     );
     expect(cardLayoutCss).toContain(MOBILE_LAYOUT_MEDIA);
   });

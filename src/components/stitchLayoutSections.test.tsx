@@ -199,9 +199,10 @@ describe('Stitch layout sections', () => {
 
   it('renders player box sub-sections in card view', () => {
     const html = renderPanelAt(1280, withView(bettingState(), 'card'));
-    expect(html).toContain(SXM_LAYOUT.playerBoxValue);
-    expect(html).toContain(SXM_LAYOUT.playerBoxCards);
-    expect(html).toContain(SXM_LAYOUT.playerBoxBet);
+    expect(html).toContain(SXM_LAYOUT.playerBox);
+    expect(html).toContain('bj-phone-view__box-value');
+    expect(html).toContain('bj-phone-view__mini-stake-slot');
+    expect(html).toContain('stake-chips--bet');
   });
 
   it('exposes ledger and settings panels with stable section names', () => {

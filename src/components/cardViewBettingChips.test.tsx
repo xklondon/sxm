@@ -1,10 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { GameState } from '../types';
-import { BlackjackCardView } from './BlackjackCardView';
+import { BlackjackPanel } from './BlackjackPanel';
+import {
+  BET_BOX_PULSE,
+  getBoxActivePulseClassName,
+  resolveBoxBorderVisualState,
+} from './cardViewBox';
 import { TABLE_UX } from './tableUxContract';
 import { createNewBlackjackTable } from '../engine/session';
 import { allocateChipsToBankrollOwner } from '../engine/session/allocation';
@@ -12,12 +17,42 @@ import { addChipToBoxStake } from '../engine/blackjack/stakes';
 
 const noop = () => {};
 
-function bettingCardViewWithStake(): { state: GameState; boxId: string; html: string } {
+let simulatedWidth = 1280;
+const globalRef = globalThis as unknown as { window?: unknown };
+const hadWindow = 'window' in globalRef;
+
+beforeAll(() => {
+  globalRef.window = {
+    matchMedia: (query: string) => {
+      const m = /max-width:\s*(\d+)/.exec(query);
+      const max = m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+      return {
+        matches: simulatedWidth <= max,
+        media: query,
+        addEventListener: noop,
+        removeEventListener: noop,
+        addListener: noop,
+        removeListener: noop,
+        onchange: null,
+        dispatchEvent: () => false,
+      };
+    },
+  };
+});
+
+afterAll(() => {
+  if (!hadWindow) {
+    delete globalRef.window;
+  }
+});
+
+function bettingPanelWithStake(): { state: GameState; boxId: string; html: string } {
   let state = createNewBlackjackTable();
   const boxId = 'box-test';
   const personId = 'person-1';
   state = {
     ...state,
+    tableViewMode: 'card',
     players: {
       [boxId]: {
         id: boxId,
@@ -69,55 +104,38 @@ function bettingCardViewWithStake(): { state: GameState; boxId: string; html: st
   state = addChipToBoxStake(state, boxId, 10, personId);
   state = addChipToBoxStake(state, boxId, 5, personId);
 
-  const html = renderToStaticMarkup(
-    <BlackjackCardView
-      dealer={<div className="dealer-block" />}
-      tray={<div className="bj-casino__tray-wrap" />}
-      gameState={state}
-      focusBoxId={boxId}
-      selectedBettingBoxId={boxId}
-      activeBoxId={null}
-      showHoleHidden={false}
-      protocolPhase="betting"
-      bettingOpen
-      gameEnded={false}
-      onSelectBox={noop}
-      onClaimSlot={noop}
-      onReleaseSlot={noop}
-      onAddChip={noop}
-      onClearStake={noop}
-      onRemoveLastChip={noop}
-      onSlotChipDrop={noop}
-      onStay={noop}
-      onCard={noop}
-      onDouble={noop}
-      onSplit={noop}
-      onBack={noop}
-    />,
-  );
+  simulatedWidth = 1280;
+  const html = renderToStaticMarkup(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
 
   return { state, boxId, html };
 }
 
 describe('Card View betting chips and layout', () => {
   it('renders chip stack on selected bottom box tile', () => {
-    const { html } = bettingCardViewWithStake();
+    const { state, boxId, html } = bettingPanelWithStake();
     expect(html).toContain('stake-chips--bet');
-    expect(html).toContain(TABLE_UX.cardViewBoxChipStack);
-    expect(html).toContain(TABLE_UX.cardViewBoxStakeLabel);
-    expect(html).toContain('Bet:');
-    expect(html).not.toContain('bj-phone-view__mini-hand--has-stake');
-    expect(html).toContain('bj-phone-view__bet-chip--pulse');
-    expect(html).toContain('aria-current="true"');
-    const selectedIdx = html.indexOf('bj-phone-view__bet-chip--pulse');
-    const chipIdx = html.indexOf('stake-chips--bet', selectedIdx);
-    expect(chipIdx).toBeGreaterThan(selectedIdx);
+    expect(html).toContain(TABLE_UX.fullArcBox);
+    expect(html).toContain('bj-phone-view__mini-stake-slot');
+    expect(html).toContain('bj-phone-view__mini-hand--has-stake');
     expect(html).not.toContain('bj-phone-view__bet-chip-wrap--main');
     expect(html).not.toContain('bj-phone-view__bet-chip--hero');
+    const resolved = resolveBoxBorderVisualState({
+      state,
+      boxPlayerId: boxId,
+      viewerPersonId: 'person-1',
+      selectedBettingBoxId: boxId,
+      openStake: 15,
+      bettingStage: true,
+    });
+    expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
+    const boxesStart = html.indexOf(TABLE_UX.tableZoneBoxes);
+    expect(boxesStart).toBeGreaterThan(-1);
+    const stakeIdx = html.indexOf('stake-chips--bet', boxesStart);
+    expect(stakeIdx).toBeGreaterThan(boxesStart);
   });
 
   it('reserves hero total slot without Betting/Bet label text', () => {
-    const { html } = bettingCardViewWithStake();
+    const { html } = bettingPanelWithStake();
     expect(html).toContain('bj-phone-view__total--placeholder');
     expect(html).toContain(TABLE_UX.cardViewTotalCompact);
     expect(html).toContain('bj-phone-view__hand-meta');
@@ -128,14 +146,14 @@ describe('Card View betting chips and layout', () => {
   });
 
   it('betting and playing share hero/total/box-strip slots', () => {
-    const betting = bettingCardViewWithStake().html;
+    const betting = bettingPanelWithStake().html;
     const slots = [
-      TABLE_UX.cardLayoutHero,
+      TABLE_UX.cardsAreaHero,
       'bj-phone-view__hand-meta',
       'bj-phone-view__cards-slot',
-      TABLE_UX.cardLayoutActions,
-      TABLE_UX.cardLayoutBoxes,
-      'bj-phone-view__mini-row',
+      TABLE_UX.tableZoneActions,
+      TABLE_UX.tableZoneBoxes,
+      'bj-arc--player-boxes',
     ];
     for (const slot of slots) {
       expect(betting).toContain(slot);
@@ -150,7 +168,7 @@ describe('Card View betting chips and layout', () => {
     expect(sharedCss).toMatch(/\.bj-casino\.bj-view-card-desktop[\s\S]*overflow:\s*hidden/);
     expect(sharedCss).toMatch(/\.bj-table-desktop-shell[\s\S]*overflow:\s*hidden/);
     expect(layoutCss).toMatch(
-      /\.bj-view-card-desktop \.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*auto/,
+      /\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden|\.bj-view-card-desktop \.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden/,
     );
     expect(sharedCss).toMatch(/\.bj-casino__this-table--dock[\s\S]*max-width:\s*12\.5rem/);
     expect(cardCss).toMatch(/\.bj-phone-view[\s\S]*overflow-x:\s*hidden/);

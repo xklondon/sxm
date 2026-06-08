@@ -74,7 +74,7 @@
 
 .dealer-block__cards-slot {
   width: 100%;
-  min-height: 2.65rem;
+  min-height: var(--bj-dealer-cards-slot-min-height, 3.35rem);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -233,7 +233,7 @@
 
 .dealer-block__card-stack--shuffling,
 .dealer-block__cards--shuffling {
-  animation: dealer-shuffle-jitter 0.7s ease-in-out;
+  animation: dealer-shuffle-jitter 0.35s ease-in-out infinite;
 }
 
 @keyframes dealer-shuffle-jitter {
@@ -311,9 +311,37 @@
     padding: 0.35rem 0.5rem 0.2rem;
     background: transparent;
     border: none;
-    max-width: 24rem;
+    max-width: 100%;
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-desktop .dealer-block__grid,
+  .bj-view-card-desktop .dealer-block__grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 100%;
+  }
+
+  .bj-view-full-desktop .dealer-block__commentary-col,
+  .bj-view-card-desktop .dealer-block__commentary-col {
+    position: absolute;
+    left: 0;
+    top: 0.1rem;
+    width: 4.75rem;
+    z-index: 2;
+  }
+
+  .bj-view-full-desktop .dealer-block__center-col,
+  .bj-view-card-desktop .dealer-block__center-col {
+    grid-area: unset;
+    width: 100%;
+    max-width: 20rem;
+    margin-inline: auto;
   }
 
   .dealer-block__grid {

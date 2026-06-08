@@ -637,6 +637,31 @@
   transition: filter 0.12s ease;
 }
 
+@media (min-width: 721px) {
+  .bj-view-full-desktop .bj-arc--player-boxes,
+  .bj-view-card-desktop .bj-arc--player-boxes {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 0.12rem;
+    padding: 0 0.75rem 0.06rem;
+  }
+
+  .bj-view-full-desktop .bj-arc--player-boxes .bj-arc__slot,
+  .bj-view-card-desktop .bj-arc--player-boxes .bj-arc__slot {
+    transform: none;
+    flex: 0 1 auto;
+    width: var(--bj-player-box-width);
+    max-width: calc(var(--bj-player-box-width) + 0.35rem);
+  }
+
+  .bj-view-full-desktop .bj-arc--player-boxes .bj-arc__open,
+  .bj-view-card-desktop .bj-arc--player-boxes .bj-arc__open {
+    transform: none;
+    margin-bottom: 0.35rem;
+  }
+}
+
 
 .bj-arc__turn-badge {
   font-size: 0.45rem;

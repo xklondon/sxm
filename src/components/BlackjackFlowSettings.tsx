@@ -17,6 +17,14 @@ import {
 } from '../storage/settingsStorage';
 import { CustomProtocolBuilder } from './CustomProtocolBuilder';
 import { BlackjackTableThemeControls } from './BlackjackTableThemeControls';
+import {
+  DEFAULT_TABLE_CLOTH_NAME,
+  resolveTableClothName,
+  resolveTableClothWager,
+  resolveTableFeltSkin,
+  TABLE_FELT_SKIN_OPTIONS,
+  type TableFeltSkin,
+} from '../types/tableFeltSkin';
 import './BlackjackFlowSettings.css';
 import './InviteModal.css';
 
@@ -74,6 +82,33 @@ function dealSpeedLabel(preset: DealSpeedPreset): string {
     default:
       return 'Normal (3s)';
   }
+}
+
+function persistTableClothVisuals(
+  gameState: GameState,
+  onGameStateChange: (state: GameState) => void,
+  patch: {
+    tableFeltSkin?: TableFeltSkin;
+    tableClothName?: string;
+    tableClothWager?: string;
+  },
+) {
+  const next: GameState = {
+    ...gameState,
+    tableMeta: {
+      ...gameState.tableMeta,
+      ...(patch.tableFeltSkin !== undefined ? { tableFeltSkin: patch.tableFeltSkin } : {}),
+      ...(patch.tableClothName !== undefined ? { tableClothName: patch.tableClothName } : {}),
+      ...(patch.tableClothWager !== undefined ? { tableClothWager: patch.tableClothWager } : {}),
+    },
+  };
+  onGameStateChange(next);
+  saveSettings({
+    ...settingsFromGameState(next),
+    tableFeltSkin: next.tableMeta.tableFeltSkin ?? 'clean',
+    tableClothName: next.tableMeta.tableClothName ?? DEFAULT_TABLE_CLOTH_NAME,
+    tableClothWager: next.tableMeta.tableClothWager ?? '',
+  });
 }
 
 export function BlackjackFlowSettingsMenu({
@@ -179,6 +214,50 @@ export function BlackjackFlowSettingsMenu({
                   </option>
                 ))}
               </select>
+            </label>
+            <label className="bj-flow-settings__field">
+              <span className="bj-flow-settings__label">Table cloth / felt skin</span>
+              <select
+                value={resolveTableFeltSkin(gameState.tableMeta)}
+                onChange={(e) =>
+                  persistTableClothVisuals(gameState, onGameStateChange, {
+                    tableFeltSkin: e.target.value as TableFeltSkin,
+                  })
+                }
+              >
+                {TABLE_FELT_SKIN_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="bj-flow-settings__field">
+              <span className="bj-flow-settings__label">Table name (on cloth)</span>
+              <input
+                type="text"
+                value={resolveTableClothName(gameState.tableMeta)}
+                maxLength={48}
+                onChange={(e) =>
+                  persistTableClothVisuals(gameState, onGameStateChange, {
+                    tableClothName: e.target.value,
+                  })
+                }
+              />
+            </label>
+            <label className="bj-flow-settings__field">
+              <span className="bj-flow-settings__label">Playing for (optional)</span>
+              <input
+                type="text"
+                value={resolveTableClothWager(gameState.tableMeta)}
+                maxLength={64}
+                placeholder="e.g. Dinner"
+                onChange={(e) =>
+                  persistTableClothVisuals(gameState, onGameStateChange, {
+                    tableClothWager: e.target.value,
+                  })
+                }
+              />
             </label>
           </section>
 

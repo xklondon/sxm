@@ -101,13 +101,15 @@ function playingState(): GameState {
 }
 
 describe('mobile Card View layout contract', () => {
-  it('betting phase: page overflow hidden, mini box strip fits shell width', () => {
+  it('betting phase: page overflow hidden, arc player boxes fit shell width', () => {
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     const cardLayoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
     expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*overflow-x:\s*hidden/);
-    expect(panelCss).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*hidden/);
     expect(cardLayoutCss).toMatch(
-      /\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*hidden/,
+      /\.bj-view-card-mobile \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden|\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden/,
+    );
+    expect(cardLayoutCss).toMatch(
+      /\.bj-view-card-mobile \.bj-table-zone--boxes \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*min-width:\s*0|\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*min-width:\s*0/,
     );
   });
 
@@ -115,10 +117,10 @@ describe('mobile Card View layout contract', () => {
     const betting = renderPanelAt(390, withView(bettingState(), 'card'));
     const playing = renderPanelAt(390, withView(playingState(), 'card'));
     for (const html of [betting, playing]) {
-      expect(html).toContain(TABLE_UX.cardLayoutHero);
-      expect(html).toContain(TABLE_UX.cardLayoutActions);
-      expect(html).toContain(TABLE_UX.cardLayoutBoxes);
-      expect(html).toContain('bj-phone-view__mini-row');
+      expect(html).toContain(TABLE_UX.cardsAreaHero);
+      expect(html).toContain(TABLE_UX.tableZoneActions);
+      expect(html).toContain(TABLE_UX.tableZoneBoxes);
+      expect(html).toContain('bj-arc--player-boxes');
       expect(html).not.toContain('bj-phone-view__slot--betting');
     }
     expect(betting).toContain('bj-phone-view__hand--waiting');
@@ -129,11 +131,11 @@ describe('mobile Card View layout contract', () => {
 
   it('playing phase: two centered action rows under total', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__action-bar-row--primary');
-    expect(html).toContain('bj-phone-view__action-bar-row--secondary');
-    expect(html).toContain('bj-phone-view__side-action--stand');
-    expect(html).toContain('bj-phone-view__side-action--hit');
-    expect(html).toContain('bj-phone-view__action-bar--playing');
+    expect(html).toContain('bj-table-actions__row');
+    expect(html).toContain('sxm-secondary-actions');
+    expect(html).toContain('ds-btn--stand');
+    expect(html).toContain('ds-btn--hit');
+    expect(html).toContain('bj-table-actions');
   });
 
   it('removes redundant hero label and in-card Full Table button', () => {

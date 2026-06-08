@@ -12,8 +12,6 @@ const noop = () => {};
 function renderCardView(state: GameState, focusBoxId?: string | null): string {
   return renderToStaticMarkup(
     <BlackjackCardView
-      dealer={<div className="dealer-block" />}
-      tray={<div className="bj-casino__tray-wrap" />}
       gameState={state}
       focusBoxId={focusBoxId ?? undefined}
       activeBoxId={state.blackjack?.activePlayerId ?? null}
@@ -27,17 +25,8 @@ function renderCardView(state: GameState, focusBoxId?: string | null): string {
       }
       bettingOpen={false}
       gameEnded={false}
-      onSelectBox={noop}
-      onClaimSlot={noop}
-      onReleaseSlot={noop}
-      onAddChip={noop}
-      onClearStake={noop}
-      onRemoveLastChip={noop}
-      onSlotChipDrop={noop}
       onStay={noop}
       onCard={noop}
-      onDouble={noop}
-      onSplit={noop}
       onBack={noop}
     />,
   );
@@ -86,25 +75,14 @@ describe('Card View dealer vs hero', () => {
     state = { ...state, selectedSeatId: boxId };
     const html = renderToStaticMarkup(
       <BlackjackCardView
-        dealer={<div className="dealer-block" />}
-        tray={<div className="bj-casino__tray-wrap" />}
         gameState={state}
         activeBoxId={null}
         showHoleHidden={false}
         protocolPhase="betting"
         bettingOpen
         gameEnded={false}
-        onSelectBox={noop}
-        onClaimSlot={noop}
-        onReleaseSlot={noop}
-        onAddChip={noop}
-        onClearStake={noop}
-        onRemoveLastChip={noop}
-        onSlotChipDrop={noop}
         onStay={noop}
         onCard={noop}
-        onDouble={noop}
-        onSplit={noop}
         onBack={noop}
       />,
     );

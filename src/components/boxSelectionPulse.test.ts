@@ -121,9 +121,10 @@ describe('box selection + turn pulse', () => {
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
   });
 
-  it('Full Table and Card View use getBoxActivePulseClassName on borderState', () => {
+  it('Full Table and Panel player boxes use getBoxActivePulseClassName on borderState', () => {
     expect(PANEL_SRC).toContain('getBoxActivePulseClassName(borderState)');
-    expect(CARD_VIEW_SRC).toContain('getBoxActivePulseClassName(borderState)');
+    expect(PANEL_SRC).toContain('renderPlayerBoxesArc');
+    expect(CARD_VIEW_SRC).not.toContain('getBoxActivePulseClassName');
     expect(PANEL_SRC).not.toMatch(/getBetBoxPulseClassName\(bettingOpen/);
     expect(CARD_VIEW_SRC).not.toMatch(/getBetBoxPulseClassName\(bettingOpen/);
   });

@@ -24,11 +24,12 @@ describe('box hit area — single reliable tap target', () => {
     expect(PANEL_SRC).toMatch(/function renderEmptyBoxSlot[\s\S]*bindBoxTapSelect[\s\S]*handleClaimOrSelectSlot/);
   });
 
-  it('Card View columns use TABLE_UX.boxHitArea covering value, tile, and chip rows', () => {
-    expect(CARD_SRC).toContain('TABLE_UX.boxHitArea');
-    expect(CARD_SRC).toContain('TABLE_UX.boxHitZone');
-    expect(CARD_SRC).toContain('onPointerDown');
-    expect(CARD_SRC).toMatch(/function renderCardViewBoxColumn[\s\S]*TABLE_UX\.boxHitArea[\s\S]*onHitAreaClick/);
+  it('Card View and Full Table player boxes use shared arc hit areas from Panel', () => {
+    expect(CARD_SRC).not.toContain('renderPlayerBoxesArc');
+    expect(PANEL_SRC).toContain('renderPlayerBoxesArc');
+    expect(PANEL_SRC).toContain('TABLE_UX.boxHitArea');
+    expect(PANEL_SRC).toContain('bindBoxTapSelect');
+    expect(PANEL_SRC).toMatch(/function renderArcBoxSlot[\s\S]*TABLE_UX\.boxHitArea/);
   });
 
   it('bet zone no longer blocks selection with stopPropagation on click', () => {

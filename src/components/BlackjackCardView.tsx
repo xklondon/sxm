@@ -3,7 +3,6 @@ import {
   useState,
   useEffect,
   type CSSProperties,
-  type ReactNode,
   type TouchEvent,
 } from "react";
 
@@ -12,13 +11,8 @@ import type { GameState } from "../types";
 import type { BlackjackProtocolPhase } from "../engine/blackjack/protocol";
 
 import {
-  canDoubleBlackjackForState,
   canHitBlackjack,
-  canSplitBlackjackForState,
   canStandBlackjack,
-  getAidAdvice,
-  getStakeForBox,
-  getStakeChipsForBox,
   parseBlackjackHandKey,
 } from "../engine/blackjack";
 
@@ -29,13 +23,8 @@ import { resolveViewerPersonIdForTable } from "./viewerIdentity";
 import type { AuthUser } from "../api/client";
 
 import {
-  canCallEvenMoneyForHand,
-  formatCardViewBoxStatus,
-  getCardViewBoxStatus,
-  getCardViewHandKeyForBox,
   getCardViewHeroBoxId,
   getCardViewHeroHandKey,
-  getPrimaryInsuranceActionForController,
   showHeroPlayerCards,
   isBettingPhase,
   isDealingPhase,
@@ -45,104 +34,36 @@ import {
   showInsuranceControls,
   canShowPlayerDecisionControls,
   resolveViewerActionPermission,
-  getActiveTurnBoxId,
 } from "./blackjackViewPhase";
-import { getDisplayedHandValue, getVisibleHandCardIds } from "../engine/blackjack/dealing/cardRevealDisplay";
+import { getDisplayedHandValue } from "../engine/blackjack/dealing/cardRevealDisplay";
 
-import { sortBoxSlotsForCardViewDisplay, type DeviceView } from "./tableViewContract";
+import { type DeviceView } from "./tableViewContract";
 import { TABLE_UX } from "./tableUxContract";
-import {
-  CHIP_DROP_BOX_ATTR,
-  CHIP_DROP_SLOT_ATTR,
-  chipDropKey,
-} from "./chipPointerDrag";
-
-import { StakeChips, type ChipValue } from "./ChipStack";
 
 import { PlayingCard } from "./PlayingCard";
 
-import {
-  BET_BOX_PULSE,
-  getBoxActivePulseClassName,
-  getBoxCardVisualClasses,
-  getBoxCardValueLabel,
-  isCardViewBettingBoxVisuallyAssigned,
-  resolveBoxBorderVisualState,
-  BOX_CARD_VALUE,
-  BOX_CARD_VALUE_ABOVE,
-  BOX_CARD_VALUE_BUST,
-  BOX_CARD_VALUE_RESERVED,
-  BOX_CARD_COLUMN,
-  BOX_CARD_STAKE_LABEL,
-  BOX_CARD_STAKE_LABEL_RESERVED,
-  BOX_CARD_CHIP_STACK,
-  BOX_CARD_CHIP_STACK_RESERVED,
-} from "./cardViewBox";
-import { BlackjackActionPanel } from "./BlackjackActionPanel";
-import { buildBlackjackPlayerBoxInfo } from "./blackjackPlayerBoxInfo";
-import { BlackjackPlayerBoxHead } from "./BlackjackPlayerBoxes";
-import {
-  BlackjackActionsZone,
-  BlackjackCardsAreaZone,
-  BlackjackCommandZone,
-  BlackjackPlayerBoxesZone,
-} from "./blackjackViewZones";
 import { SXM_LAYOUT, sxmSectionProps } from "./sxmLayoutContract";
 
 import "./BlackjackCardView.css";
 
 interface BlackjackCardViewProps {
-  /** Dealer zone content — rendered in bj-card-layout__dealer only. */
-  dealer: ReactNode;
-  /** Command text — rendered between dealer row and hero display. */
-  dealerCommand?: ReactNode;
-  /** Tray + balance row — rendered in bj-card-layout__tray only. */
-  tray: ReactNode;
-  /** Panel summary extras (alerts, ledger offer) above insurance/even-money. */
-  summaryExtras?: ReactNode;
   /** Display state (may mask card visibility during natural dealing). */
   gameState: GameState;
   /** Authoritative engine state for hand keys, totals, and hero visibility. */
   logicalGameState?: GameState;
-  /** Drives desktop vs mobile betting layout; defaults to mobile-canonical. */
   deviceView?: DeviceView;
   focusBoxId?: string;
-  /** Client-local chip target — same source as Full Table selection. */
-  selectedBettingBoxId?: string | null;
-  /** Client-local empty-slot chip target — same source as Full Table selection. */
-  selectedBettingSlotNumber?: number | null;
   activeBoxId: string | null;
   showHoleHidden: boolean;
   protocolPhase: BlackjackProtocolPhase;
-  /** False while natural-deal reveal is catching up — hides decision buttons. */
   cardRevealComplete?: boolean;
-  /** Active hand cards fully revealed in natural dealing (may lead full-table reveal). */
   activeHandRevealComplete?: boolean;
   bettingOpen: boolean;
   gameEnded: boolean;
-  onSelectBox: (boxId: string) => void;
-  onClaimSlot: (slotNumber: number) => void;
-  onReleaseSlot: (slotNumber: number) => void;
-  onAddChip: (boxId: string, value: ChipValue) => void;
-  onClearStake: (boxId: string) => void;
-  onRemoveLastChip: (boxId: string) => void;
-  onSlotChipDrop: (
-    slotNumber: number,
-    boxId: string | null,
-    e: React.DragEvent,
-  ) => void;
-  dropTargetId?: string | null;
   onStay: (handKey: string) => void;
   onCard: (handKey: string) => void;
-  onDouble: (handKey: string) => void;
-  onSplit: (handKey: string) => void;
-  onTakeEvenMoney?: (handKey: string) => void;
-  onWaitForBlackjackPayout?: (handKey: string) => void;
-  onTakeInsurance?: (playerId: string) => void;
-  onDeclineInsurance?: (playerId: string) => void;
-  /** @deprecated View toggle lives in table toolbar; kept for API compatibility. */
+  /** @deprecated View toggle lives in table toolbar. */
   onBack: () => void;
-  /** Seated person id for this client — drives Hit/Stand visibility in multiplayer. */
   viewerPersonId?: string | null;
   onlineTableId?: string | null;
   viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
@@ -150,38 +71,21 @@ interface BlackjackCardViewProps {
 
 const SWIPE_THRESHOLD = 48;
 
+/** Card View hero cards area — rendered inside the shared table layout shell. */
 export function BlackjackCardView({
-  dealer,
-  dealerCommand,
-  tray,
-  summaryExtras,
   gameState,
   logicalGameState: logicalGameStateProp,
   deviceView = "mobile",
   focusBoxId,
-  selectedBettingBoxId = null,
-  selectedBettingSlotNumber = null,
   activeBoxId,
   showHoleHidden: _showHoleHidden,
   protocolPhase,
   cardRevealComplete = true,
   activeHandRevealComplete = true,
-  bettingOpen,
+  bettingOpen: _bettingOpen,
   gameEnded,
-  onSelectBox,
-  onClaimSlot,
-  onClearStake: _onClearStake,
-  onRemoveLastChip,
-  onSlotChipDrop,
-  dropTargetId = null,
   onStay,
   onCard,
-  onDouble,
-  onSplit,
-  onTakeEvenMoney,
-  onWaitForBlackjackPayout,
-  onTakeInsurance,
-  onDeclineInsurance,
   viewerPersonId: viewerPersonIdProp,
   onlineTableId = null,
   viewerAuth = null,
@@ -192,12 +96,8 @@ export function BlackjackCardView({
     players,
     deck,
     blackjack: round,
-    blackjackSettings,
-    blackjackFlowSettings,
   } = gameState;
   const logicalRound = logicalGameState.blackjack;
-
-  const [aidTip, setAidTip] = useState<string | null>(null);
 
   const [swipeHint, setSwipeHint] = useState<string | null>(null);
 
@@ -217,7 +117,7 @@ export function BlackjackCardView({
   const heroBoxId = getCardViewHeroBoxId(
     protocolPhase,
     activeBoxId,
-    selectedBettingBoxId,
+    null,
     focusBoxId ?? null,
   );
   const heroHandKey = getCardViewHeroHandKey(protocolPhase, logicalRound, heroBoxId);
@@ -227,7 +127,6 @@ export function BlackjackCardView({
     viewerPersonIdProp ??
     resolveViewerPersonIdForTable(logicalGameState, onlineTableId, viewerAuth);
 
-  const activeTurnBoxId = getActiveTurnBoxId(logicalGameState, protocolPhase);
   const actionPermission = resolveViewerActionPermission(
     logicalGameState,
     viewerPersonId,
@@ -267,8 +166,6 @@ export function BlackjackCardView({
   const heroDisplayValue =
     heroHandKey !== null ? getDisplayedHandValue(deck, round, heroHandKey) : null;
 
-  const slots = sortBoxSlotsForCardViewDisplay(gameState.tableMeta.boxSlots, deviceView);
-
   const heroCardsVisible = showHeroPlayerCards(
     protocolPhase,
     gameEnded,
@@ -276,8 +173,6 @@ export function BlackjackCardView({
   );
   const showSideControls =
     stitchedActionsActive && !evenMoneyActive && !insuranceActive;
-  const mountPlayerActionBar =
-    isPlayerPhase && !evenMoneyActive && !insuranceActive && !bettingMainStage;
 
   function getActionDisabledReason(): string | null {
     if (isBettingPhase(protocolPhase)) {
@@ -326,11 +221,6 @@ export function BlackjackCardView({
   }
 
   const disabledReason = getActionDisabledReason();
-
-  const evenMoneyHandKey = evenMoneyActive ? round?.evenMoneyOfferHandKey ?? null : null;
-  const canCallEvenMoney =
-    evenMoneyHandKey !== null &&
-    canCallEvenMoneyForHand(gameState, evenMoneyHandKey, viewerPersonId);
 
   useEffect(() => {
     if (!import.meta.env.DEV) {
@@ -564,245 +454,6 @@ export function BlackjackCardView({
     onCard(actionableHandKey);
   }
 
-  function handleAid() {
-    if (!round || !deck || !actionableHandKey || !isActiveTurn) {
-      return;
-    }
-
-    const advice = getAidAdvice(
-      round,
-      actionableHandKey,
-      deck,
-      blackjackFlowSettings,
-      gameState,
-      gameState.ledger,
-    );
-
-    if (advice) {
-      setAidTip(advice.text);
-    }
-  }
-
-  function renderCardViewBoxColumn({
-    aboveLabel,
-    aboveBust,
-    tile,
-    wager,
-    stakeChips,
-    showBetStakeChips,
-    bettingOpen,
-    boxId,
-    onHitAreaClick,
-    hitAreaLabel,
-    hitAreaSelected,
-  }: {
-    aboveLabel: string;
-    aboveBust: boolean;
-    tile: ReactNode;
-    wager: number;
-    stakeChips: ChipValue[];
-    showBetStakeChips: boolean;
-    bettingOpen: boolean;
-    boxId?: string;
-    onHitAreaClick: () => void;
-    hitAreaLabel: string;
-    hitAreaSelected?: boolean;
-  }) {
-    const valueReserved = aboveLabel.length === 0;
-    const betReserved = wager <= 0;
-    const chipsReserved = !showBetStakeChips;
-
-    return (
-      <div {...sxmSectionProps(SXM_LAYOUT.playerBox, BOX_CARD_COLUMN, TABLE_UX.boxHitZone)}>
-        <button
-          type="button"
-          className={TABLE_UX.boxHitArea}
-          onPointerDown={(e) => {
-            if (e.pointerType === 'mouse' && e.button !== 0) {
-              return;
-            }
-            onHitAreaClick();
-          }}
-          onClick={onHitAreaClick}
-          aria-label={hitAreaLabel}
-          aria-current={hitAreaSelected ? 'true' : undefined}
-        />
-        <span
-          {...sxmSectionProps(
-            SXM_LAYOUT.playerBoxValue,
-            BOX_CARD_VALUE,
-            BOX_CARD_VALUE_ABOVE,
-            aboveBust ? BOX_CARD_VALUE_BUST : "",
-            valueReserved ? BOX_CARD_VALUE_RESERVED : "",
-          )}
-          aria-hidden={valueReserved || undefined}
-        >
-          {aboveLabel || "\u00a0"}
-        </span>
-        <div {...sxmSectionProps(SXM_LAYOUT.playerBoxCards)}>{tile}</div>
-        <span
-          {...sxmSectionProps(
-            SXM_LAYOUT.playerBoxBet,
-            BOX_CARD_STAKE_LABEL,
-            betReserved ? BOX_CARD_STAKE_LABEL_RESERVED : "",
-          )}
-          aria-hidden={betReserved || undefined}
-        >
-          {wager > 0 ? `Bet: ${wager}` : "\u00a0"}
-        </span>
-        <div
-          className={[
-            BOX_CARD_CHIP_STACK,
-            TABLE_UX.boxInteractive,
-            chipsReserved ? BOX_CARD_CHIP_STACK_RESERVED : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          aria-hidden={chipsReserved || undefined}
-        >
-          {showBetStakeChips && boxId ? (
-            <StakeChips
-              chips={stakeChips}
-              variant="bet"
-              removable={bettingOpen}
-              onRemoveTopChip={() => onRemoveLastChip(boxId)}
-            />
-          ) : (
-            <span aria-hidden="true">&nbsp;</span>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  function renderMiniHandBox(slotNumber: number, boxId: string) {
-    const handKey = getCardViewHandKeyForBox(protocolPhase, logicalRound, boxId);
-    const displayBoxHand = round?.playerHands[handKey];
-    const ids = getVisibleHandCardIds(round, handKey);
-    const miniTotal = getDisplayedHandValue(deck, round, handKey);
-    const openStake = getStakeForBox(gameState, boxId);
-    const stakeChips = getStakeChipsForBox(gameState, boxId);
-    const wager = bettingMainStage ? openStake : (displayBoxHand?.currentBet ?? openStake);
-    const showBetStakeChips = bettingMainStage && openStake > 0 && stakeChips.length > 0;
-    const isTurnBox = activeTurnBoxId === boxId;
-    const borderState = resolveBoxBorderVisualState({
-      state: gameState,
-      boxPlayerId: boxId,
-      viewerPersonId,
-      openStake,
-      selectedBettingBoxId,
-      activeBoxId: activeTurnBoxId,
-      isDropHover: dropTargetId === chipDropKey({ slotNumber, boxId }),
-      bettingStage: bettingOpen,
-      playerPhase: isPlayerPhase,
-    });
-    const isSelected = borderState.isSelected;
-    const isTurn = borderState.isTurn;
-    const bettingBoxAssigned = isCardViewBettingBoxVisuallyAssigned(
-      gameState,
-      boxId,
-      openStake,
-      viewerPersonId,
-    );
-    const status = getCardViewBoxStatus(
-      protocolPhase,
-      gameEnded,
-      round,
-      handKey,
-      openStake,
-      isTurnBox && isPlayerPhase,
-    );
-    const boxInfo = buildBlackjackPlayerBoxInfo(gameState, slotNumber, boxId);
-    const valueLabel = getBoxCardValueLabel(miniTotal, status);
-    const aboveLabel =
-      valueLabel ||
-      (status !== "betting" && status !== "waiting" ? formatCardViewBoxStatus(status) : "");
-    const showHeadInTile = ids.length === 0 && bettingMainStage;
-    const showAssignedHead = showHeadInTile && bettingBoxAssigned;
-
-    const handTile = renderCardViewBoxColumn({
-      aboveLabel,
-      aboveBust: status === "bust",
-      wager,
-      stakeChips,
-      showBetStakeChips,
-      bettingOpen,
-      boxId,
-      onHitAreaClick: () => onSelectBox(boxId),
-      hitAreaLabel: `Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`,
-      hitAreaSelected: isSelected || isTurn,
-      tile: (
-        <div
-          className={[
-            getBoxCardVisualClasses(borderState),
-            TABLE_UX.cardViewCompactBox,
-            getBoxActivePulseClassName(borderState),
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          {showHeadInTile ? (
-            showAssignedHead ? (
-              <BlackjackPlayerBoxHead
-                boxLabel={boxInfo.boxLabel}
-                callerDisplayName={boxInfo.callerDisplayName}
-              />
-            ) : (
-              <span className="bj-phone-view__mini-hand-head">
-                <span className="bj-phone-view__mini-hand-box">{boxInfo.boxLabel}</span>
-              </span>
-            )
-          ) : null}
-          <span
-            className="bj-phone-view__mini-hand-card-stack"
-            aria-hidden={ids.length === 0}
-          >
-            {ids.length > 0 && deck
-              ? ids.slice(0, 3).map((id, i) => (
-                  <span
-                    key={id}
-                    className="bj-phone-view__mini-card"
-                    style={{ "--mini-card-i": i } as CSSProperties}
-                  >
-                    <PlayingCard card={getCardById(deck, id)!} compact />
-                  </span>
-                ))
-              : null}
-          </span>
-        </div>
-      ),
-    });
-
-    if (bettingMainStage && bettingOpen) {
-      const dropKey = chipDropKey({ slotNumber, boxId });
-      const isDrop = dropTargetId === dropKey;
-      return (
-        <div
-          key={boxId}
-          className={[
-            "bj-phone-view__mini-hand-shell",
-            isDrop ? "bj-phone-view__mini-hand-shell--drop" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          {...{
-            [CHIP_DROP_SLOT_ATTR]: slotNumber,
-            [CHIP_DROP_BOX_ATTR]: boxId,
-          }}
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "copy";
-          }}
-          onDrop={(e) => onSlotChipDrop(slotNumber, boxId, e)}
-        >
-          {handTile}
-        </div>
-      );
-    }
-
-    return <div key={boxId}>{handTile}</div>;
-  }
-
   function renderBettingHeroPlaceholder() {
     return (
       <div className="bj-phone-view__hand bj-phone-view__hand--waiting">
@@ -832,163 +483,6 @@ export function BlackjackCardView({
               aria-hidden="true"
             />
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderMiniEmptySlot(slotNumber: number) {
-    const isSelected = bettingOpen && selectedBettingSlotNumber === slotNumber;
-    const joinTile = renderCardViewBoxColumn({
-      aboveLabel: "",
-      aboveBust: false,
-      wager: 0,
-      stakeChips: [],
-      showBetStakeChips: false,
-      bettingOpen,
-      onHitAreaClick: () => onClaimSlot(slotNumber),
-      hitAreaLabel: `Join box ${slotNumber}`,
-      hitAreaSelected: isSelected,
-      tile: (
-        <div
-          className={[
-            "bj-phone-view__mini-hand",
-            "bj-phone-view__mini-hand--empty",
-            TABLE_UX.cardViewCompactBox,
-            isSelected ? BET_BOX_PULSE : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
-          <span className="bj-phone-view__mini-hand-name">Join</span>
-        </div>
-      ),
-    });
-
-    if (bettingMainStage && bettingOpen) {
-      const dropKey = chipDropKey({ slotNumber, boxId: null });
-      const isDrop = dropTargetId === dropKey;
-      return (
-        <div
-          key={`mini-empty-${slotNumber}`}
-          className={[
-            "bj-phone-view__mini-hand-shell",
-            isDrop ? "bj-phone-view__mini-hand-shell--drop" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          {...{
-            [CHIP_DROP_SLOT_ATTR]: slotNumber,
-            [CHIP_DROP_BOX_ATTR]: "",
-          }}
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "copy";
-          }}
-          onDrop={(e) => onSlotChipDrop(slotNumber, null, e)}
-        >
-          {joinTile}
-        </div>
-      );
-    }
-
-    return <div key={`mini-empty-${slotNumber}`}>{joinTile}</div>;
-  }
-
-  function renderMiniBoxesRow() {
-    return (
-      <div className="bj-phone-view__mini-row">
-        {slots.map((s) =>
-          s.playerId
-            ? renderMiniHandBox(s.slotNumber, s.playerId)
-            : renderMiniEmptySlot(s.slotNumber),
-        )}
-      </div>
-    );
-  }
-
-  function renderInsuranceActions() {
-    if (!insuranceActive || !round) {
-      return null;
-    }
-
-    const action = getPrimaryInsuranceActionForController(gameState, round, viewerPersonId);
-
-    if (!action) {
-      return null;
-    }
-
-    const { playerId, maxBet, canAfford, slotNumber } = action;
-
-    return (
-      <div className={`${TABLE_UX.playerActions} bj-phone-view__phase-actions bj-phone-view__phase-actions--insurance`} aria-live="polite">
-        <div className="bj-phone-view__ins-row">
-          <span className="bj-phone-view__ins-label">
-            Box {slotNumber ?? "?"} — up to {maxBet}c
-            {!canAfford && " (not enough chips)"}
-          </span>
-          {canAfford ? (
-            <button
-              type="button"
-              className={[
-                "ds-btn",
-                "ds-btn--secondary",
-                "bj-phone-view__ins-btn",
-                "bj-table-actions__btn--legal",
-                "bj-phone-view__extra-btn--legal",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={() => onTakeInsurance?.(playerId)}
-            >
-              Insure {maxBet}
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className="ds-btn ds-btn--ghost bj-phone-view__ins-btn"
-            onClick={() => onDeclineInsurance?.(playerId)}
-          >
-            No thanks
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  function renderEvenMoneyActions() {
-    if (!evenMoneyActive || !evenMoneyHandKey) {
-      return null;
-    }
-
-    if (!canCallEvenMoney) {
-      const { playerId } = parseBlackjackHandKey(evenMoneyHandKey);
-      const slotNum = session.boxSlotNumbers?.[playerId];
-      return (
-        <p className={`${TABLE_UX.playerActions} bj-phone-view__phase-actions bj-phone-view__phase-actions--wait`}>
-          Box {slotNum ?? "?"} — even-money decision pending…
-        </p>
-      );
-    }
-
-    return (
-      <div className={`${TABLE_UX.playerActions} bj-phone-view__phase-actions bj-phone-view__phase-actions--even-money`} aria-live="polite">
-        <div className="bj-phone-view__even-money-actions">
-          <button
-            type="button"
-            className="ds-btn ds-btn--secondary"
-            onClick={() => onTakeEvenMoney?.(evenMoneyHandKey)}
-          >
-            Take 1:1
-          </button>
-          <button
-            type="button"
-            className="ds-btn ds-btn--ghost"
-            onClick={() => onWaitForBlackjackPayout?.(evenMoneyHandKey)}
-          >
-            Wait for 3:2
-          </button>
         </div>
       </div>
     );
@@ -1204,142 +698,21 @@ export function BlackjackCardView({
     );
   }
 
-  function renderActionBarPlaceholder() {
-    return (
-      <div
-        className="bj-phone-view__action-bar bj-phone-view__action-bar--play-placeholder"
-        aria-hidden="true"
-      >
-        <div
-          {...sxmSectionProps(
-            SXM_LAYOUT.primaryActions,
-            'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--primary',
-          )}
-        />
-        <div
-          {...sxmSectionProps(
-            SXM_LAYOUT.secondaryActions,
-            'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--secondary',
-          )}
-        />
-      </div>
-    );
-  }
-
-  function renderActionBar() {
-    if (bettingMainStage) {
-      return renderActionBarPlaceholder();
-    }
-
-    if (!mountPlayerActionBar) {
-      return renderActionBarPlaceholder();
-    }
-
-    const actionsEnabled = showSideControls && isActiveTurn;
-
-    if (!actionsEnabled && disabledReason) {
-      return (
-        <BlackjackActionPanel
-          variant="card"
-          waitMessage={disabledReason}
-          actionsEnabled={false}
-          canHit={false}
-          canStand={false}
-          canDouble={false}
-          canSplit={false}
-          showDouble={false}
-          showSplit={false}
-          showAid={false}
-          onHit={() => {}}
-          onStand={() => {}}
-          onDouble={() => {}}
-          onSplit={() => {}}
-          onAid={() => {}}
-        />
-      );
-    }
-
-    const canDoubleNow =
-      actionsEnabled &&
-      actionableHandKey &&
-      blackjackSettings.allowDoubleDown &&
-      canDoubleBlackjackForState(logicalGameState, actionableHandKey);
-    const canSplitNow =
-      actionsEnabled &&
-      actionableHandKey &&
-      blackjackSettings.allowSplit &&
-      deck &&
-      canSplitBlackjackForState(gameState, actionableHandKey);
-    const showDouble = blackjackSettings.allowDoubleDown;
-    const showSplit = blackjackSettings.allowSplit && Boolean(deck);
-    const showAid = blackjackFlowSettings.adviceEnabled;
-
-    return (
-      <BlackjackActionPanel
-        variant="card"
-        actionsEnabled={actionsEnabled}
-        canHit={canHit}
-        canStand={canStand}
-        canDouble={Boolean(canDoubleNow)}
-        canSplit={Boolean(canSplitNow)}
-        showDouble={showDouble}
-        showSplit={showSplit}
-        showAid={showAid}
-        onStand={handleStayClick}
-        onHit={handleHitClick}
-        onDouble={() => actionableHandKey && onDouble(actionableHandKey)}
-        onSplit={() => actionableHandKey && onSplit(actionableHandKey)}
-        onAid={handleAid}
-      />
-    );
-  }
-
-  function renderSummaryZoneContent() {
-    if (bettingMainStage) {
-      return <div className={TABLE_UX.cardLayoutSummaryPlaceholder} aria-hidden="true" />;
-    }
-    const insurance = renderInsuranceActions();
-    const evenMoney = renderEvenMoneyActions();
-    const content = insurance ?? evenMoney;
-    return content ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />;
-  }
-
-  /** Card View uses fixed grid rows. Do not position boxes with flex or phase-dependent margins. */
   return (
-    <div className={`${TABLE_UX.cardLayout} bj-phone-view ${TABLE_UX.columnSurface}`}>
-      {dealer}
+    <div className="bj-phone-view__axis">
+      <div className="bj-phone-view__play-stack">
+        <div
+          className="bj-phone-view__stage"
+          onTouchStart={bettingMainStage ? undefined : handleTouchStart}
+          onTouchEnd={bettingMainStage ? undefined : handleTouchEnd}
+        >
+          {bettingMainStage ? renderBettingHeroPlaceholder() : renderStageContent()}
 
-      <BlackjackCommandZone variant="card">
-        {dealerCommand}
-        {summaryExtras}
-        {renderSummaryZoneContent()}
-      </BlackjackCommandZone>
-
-      <BlackjackActionsZone variant="card">{renderActionBar()}</BlackjackActionsZone>
-
-      <BlackjackCardsAreaZone variant="card">
-        <div className="bj-phone-view__axis">
-          <div className="bj-phone-view__play-stack">
-            <div
-              className="bj-phone-view__stage"
-              onTouchStart={bettingMainStage ? undefined : handleTouchStart}
-              onTouchEnd={bettingMainStage ? undefined : handleTouchEnd}
-            >
-              {bettingMainStage ? renderBettingHeroPlaceholder() : renderStageContent()}
-
-              {!bettingMainStage && swipeHint && (
-                <p className="bj-phone-view__swipe-hint">{swipeHint}</p>
-              )}
-
-              {!bettingMainStage && aidTip && <p className="bj-phone-view__aid">{aidTip}</p>}
-            </div>
-          </div>
+          {!bettingMainStage && swipeHint && (
+            <p className="bj-phone-view__swipe-hint">{swipeHint}</p>
+          )}
         </div>
-      </BlackjackCardsAreaZone>
-
-      <BlackjackPlayerBoxesZone variant="card">{renderMiniBoxesRow()}</BlackjackPlayerBoxesZone>
-
-      <div className={TABLE_UX.cardLayoutTray}>{tray}</div>
+      </div>
     </div>
   );
 }

@@ -9,14 +9,7 @@ const CARD_VIEW_CSS = readFileSync(
 );
 
 describe('Desktop Card View hero card clipping guards', () => {
-  it('derives desktop hero row min-height from card max-height plus meta reserve', () => {
-    expect(LAYOUT_CSS).toContain('--bj-card-hero-meta-reserve');
-    expect(LAYOUT_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*--bj-card-row-hero-min:\s*calc\(\s*var\(--bj-card-hero-card-max-height\) \+ var\(--bj-card-hero-meta-reserve\)/,
-    );
-  });
-
-  it('caps hero card size to the hero row budget without breaking aspect ratio', () => {
+  it('caps hero card size with aspect ratio preserved', () => {
     expect(LAYOUT_CSS).toMatch(
       /\.bj-card-layout__hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*aspect-ratio:\s*var\(--bj-card-hero-card-aspect-ratio\)/,
     );
@@ -24,25 +17,25 @@ describe('Desktop Card View hero card clipping guards', () => {
       /\.bj-card-layout__hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*height:\s*auto/,
     );
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-card-layout__hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*max-height:\s*min\(/,
+      /\.bj-card-layout__hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*max-height:\s*var\(--bj-card-hero-card-max-height\)/,
     );
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*max-width:\s*min\(/,
+      /\.bj-view-card-desktop \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*max-width:\s*var\(--bj-card-hero-card-width\)/,
     );
   });
 
-  it('clips hero cards from the bottom only on desktop (overflow hidden + top alignment)', () => {
+  it('keeps hero cards fully visible on desktop (no overflow clip)', () => {
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__cards-slot[\s\S]*overflow:\s*hidden/,
+      /\.bj-view-card-desktop \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*overflow:\s*visible/,
     );
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__cards[\s\S]*overflow:\s*hidden/,
+      /\.bj-view-card-desktop \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards[\s\S]*overflow:\s*visible/,
     );
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__cards-slot[\s\S]*align-items:\s*flex-start/,
+      /\.bj-view-card-desktop \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*max-height:\s*none/,
     );
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-card-layout__hero \.bj-phone-view__card-wrap[\s\S]*transform-origin:\s*top center/,
+      /\.bj-view-card-desktop \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__card-wrap[\s\S]*transform-origin:\s*center center/,
     );
   });
 
@@ -56,8 +49,8 @@ describe('Desktop Card View hero card clipping guards', () => {
   });
 
   it('aligns hero cards to the top so rank/suit stay readable', () => {
-    expect(LAYOUT_CSS).toMatch(/\.bj-card-layout__hero \.bj-phone-view__cards[\s\S]*align-items:\s*flex-start/);
-    expect(LAYOUT_CSS).toMatch(/\.bj-card-layout__hero \.bj-phone-view__cards-slot[\s\S]*align-items:\s*flex-start/);
-    expect(LAYOUT_CSS).toMatch(/\.bj-view-card-desktop \.bj-card-layout__hero[\s\S]*padding-top:\s*0\.38rem/);
+    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards[\s\S]*align-items:\s*center/);
+    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*align-items:\s*center/);
+    expect(LAYOUT_CSS).toMatch(/\.bj-view-card-desktop \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/);
   });
 });

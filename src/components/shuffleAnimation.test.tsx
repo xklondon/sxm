@@ -41,7 +41,12 @@ describe('dealer shuffle animation', () => {
   });
 
   it('clears animation class after timeout in Panel', () => {
+    expect(PANEL_SRC).toMatch(/SHUFFLE_ANIM_DURATION_MS\s*=\s*3000/);
     expect(PANEL_SRC).toMatch(/setTimeout[\s\S]*setShuffleAnimating\(false\)/);
+  });
+
+  it('loops shuffle jitter while animating class is active', () => {
+    expect(DEALER_CSS).toMatch(/dealer-block__card-stack--shuffling[\s\S]*infinite/);
   });
 
   it('defines shuffle jitter keyframes with reduced-motion fallback', () => {

@@ -108,11 +108,11 @@ function arcBoxOrder(html: string): string[] {
 }
 
 function cardViewMiniBoxOrder(html: string): string[] {
-  if (!html.includes('bj-phone-view__mini-row')) {
+  if (!html.includes('bj-arc--player-boxes')) {
     return [];
   }
-  const start = html.indexOf('bj-phone-view__mini-row');
-  const end = html.indexOf('bj-card-layout__tray', start);
+  const start = html.indexOf('bj-arc--player-boxes');
+  const end = html.indexOf(TABLE_UX.tableZoneBottom, start);
   const section = end > start ? html.slice(start, end) : html.slice(start);
   return [...section.matchAll(/aria-label="(?:Join )?[Bb]ox (\d)/g)].map((m) => m[1]!);
 }
@@ -148,29 +148,30 @@ const CARD_VIEW_SECTIONS = [
 
 const CARD_VIEW_PLAYING_SECTIONS = [
   ...CARD_VIEW_SECTIONS,
+  TABLE_UX.tableLayoutShell,
   'dealer-block__status',
   'dealer-block__command',
-  'bj-card-layout__command',
+  TABLE_UX.cardLayoutCommand,
   'dealer-block__stack',
-  'bj-card-layout__hero',
-  'bj-card-layout__actions',
-  'bj-card-layout__boxes',
-  'bj-phone-view__action-bar',
-  'bj-phone-view__action-bar-row--primary',
-  'bj-phone-view__action-bar-row--secondary',
+  TABLE_UX.cardsAreaHero,
+  TABLE_UX.tableZoneActions,
+  TABLE_UX.tableZoneBoxes,
+  'bj-table-actions',
+  'bj-table-actions__row',
   'bj-phone-view__hero-stage',
-  'bj-phone-view__mini-row',
+  'bj-arc--player-boxes',
 ] as const;
 
 const CARD_VIEW_BETTING_SECTIONS = [
   ...CARD_VIEW_SECTIONS,
+  TABLE_UX.tableLayoutShell,
   'dealer-block__stack',
-  'bj-card-layout__hero',
-  'bj-card-layout__boxes',
+  TABLE_UX.cardsAreaHero,
+  TABLE_UX.tableZoneBoxes,
   'bj-phone-view__hand--waiting',
   'bj-phone-view__cards-placeholder',
-  'bj-phone-view__mini-row',
-  'bj-phone-view__action-bar--play-placeholder',
+  'bj-arc--player-boxes',
+  TABLE_UX.tableZoneActions,
   'bj-casino__tray',
 ] as const;
 
@@ -302,8 +303,9 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*min-height:\s*var\(--bj-mobile-felt-min-height\)/,
     );
     expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*margin-top:\s*auto/);
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*height:\s*var\(--bj-zone-boxes-height\)/);
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-    expect(layoutCss).toMatch(/\.bj-card-layout__hero\s*\{[\s\S]*min-height:\s*var\(--bj-card-row-hero-min\)/);
+    expect(layoutCss).toContain('--bj-card-row-hero-min: 0');
   });
 
   it('falls back only on ultra-narrow widths (< 360px)', () => {
@@ -340,10 +342,9 @@ describe('mobile Card View structure', () => {
     expect(panelSrc).toContain('TableAccountsPanel');
   });
 
-  it('mini row includes all slots in order with BUST, active highlight, and join boxes', () => {
+  it('arc player boxes row includes all slots in order with BUST, active highlight, and join boxes', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__mini-row');
-    expect(html).toContain('bj-phone-view__box-value--bust');
+    expect(html).toContain('bj-arc--player-boxes');
     expect(html).toContain('BUST');
     expect(html).toContain('bj-phone-view__bet-chip--pulse');
     expect(html).toContain('Join');
@@ -353,7 +354,7 @@ describe('mobile Card View structure', () => {
     expect(order[order.length - 1]).toBe('1');
   });
 
-  it('mobile Card View mini row uses table visual order; occupied boxes match Full Table arc', () => {
+  it('mobile Card View arc boxes use table visual order; occupied boxes match Full Table arc', () => {
     const state = withView(playingState(), 'card');
     const card = renderPanelAt(390, state);
     const full = renderPanelAt(390, withView(playingState(), 'full'));
@@ -374,8 +375,8 @@ describe('mobile Card View structure', () => {
 
   it('highlights the active box as the live hero with central controls', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__action-bar-row--primary');
-    expect(html).toContain('bj-phone-view__mini-row');
+    expect(html).toContain('bj-table-actions__row');
+    expect(html).toContain('bj-arc--player-boxes');
   });
 });
 
@@ -418,7 +419,8 @@ describe('shared table UX classes (Full Table + Card View)', () => {
         expect(html).toContain('bj-table-rail');
         expect(html).toContain('bj-table-surface');
         if (mode === 'card') {
-          expect(html).toContain('bj-table-column-surface');
+          expect(html).toContain(TABLE_UX.tableLayoutShell);
+          expect(html).toContain(TABLE_UX.cardsAreaHero);
         }
       }
     }
@@ -455,10 +457,10 @@ describe('stable dealer layout slots across phases', () => {
     }
     expect(betting).toContain('dealer-block__card-placeholder');
     expect(playing).toContain('dealer-block__cards');
-    expect(betting).toContain('bj-phone-view__action-bar');
-    expect(playing).toContain('bj-phone-view__action-bar');
-    expect(betting).toContain('bj-phone-view__mini-row');
-    expect(playing).toContain('bj-phone-view__mini-row');
+    expect(betting).toContain(TABLE_UX.tableZoneActions);
+    expect(playing).toContain('bj-table-actions');
+    expect(betting).toContain('bj-arc--player-boxes');
+    expect(playing).toContain('bj-arc--player-boxes');
   });
 
   it('Full Table mobile: dealer slots and action bar area across phases', () => {
@@ -475,11 +477,14 @@ describe('stable dealer layout slots across phases', () => {
 });
 
 describe('mobile Card View width contract', () => {
-  it('CSS constrains casino rail and hides horizontal overflow on mini-row', () => {
-    const css = mobileFullTableCss();
-    expect(css).toMatch(/\.bj-view-card-mobile[\s\S]*max-width:\s*100vw/);
-    expect(css).toMatch(/\.bj-view-card-mobile \.bj-casino__rail[\s\S]*max-width:\s*100%/);
-    expect(css).toMatch(/\.bj-view-card-mobile \.bj-phone-view__mini-row[\s\S]*overflow-x:\s*hidden/);
-    expect(css).toMatch(/grid-template-columns:\s*repeat\(7,\s*minmax\(0,\s*1fr\)\)/);
+  it('CSS constrains casino rail and hides horizontal overflow on arc player boxes', () => {
+    const panelCss = mobileFullTableCss();
+    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*max-width:\s*100vw/);
+    expect(panelCss).toMatch(/\.bj-view-card-mobile \.bj-casino__rail[\s\S]*max-width:\s*100%/);
+    expect(layoutCss).toMatch(/\.bj-view-card-mobile \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden|\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden/);
+    expect(layoutCss).toMatch(
+      /\.bj-view-card-mobile \.bj-table-zone--boxes \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*1 1 0|\.bj-view-card-mobile \.bj-card-layout__boxes \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*1 1 0/,
+    );
   });
 });

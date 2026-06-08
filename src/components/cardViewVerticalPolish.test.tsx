@@ -37,21 +37,22 @@ describe('Card View vertical-space polish', () => {
   });
 
   it('secondary actions use compact height and padding', () => {
-    expect(LAYOUT_CSS).toContain(`${CARD_VIEW_CSS_TOKENS.actionSecondaryHeight}: 1.05rem`);
+    expect(LAYOUT_CSS).toContain(`${CARD_VIEW_CSS_TOKENS.actionSecondaryHeight}: 1.25rem`);
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-card-layout__actions \.bj-phone-view__action-bar-extra--compact[\s\S]*min-height:\s*var\(--bj-card-action-secondary-height\)/,
+      /\.bj-table-zone--actions \.bj-table-actions__btn--sm[\s\S]*min-height:\s*var\(--bj-actions-secondary-btn-min-height|\.bj-card-layout__actions \.bj-table-actions__btn--sm[\s\S]*min-height:\s*var\(--bj-card-action-secondary-height\)/,
     );
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-card-layout__actions \.bj-phone-view__action-bar-extra--compact[\s\S]*padding:\s*0\.04rem 0\.2rem/,
+      /\.bj-table-zone--actions \.bj-table-actions__btn--sm[\s\S]*padding:\s*0\.18rem 0\.45rem|\.bj-card-layout__actions \.bj-table-actions__btn--sm[\s\S]*padding:\s*0\.18rem 0\.45rem/,
     );
   });
 
-  it('primary actions sit lower in the action row', () => {
-    expect(LAYOUT_CSS).toMatch(/\.bj-card-layout__actions[\s\S]*align-items:\s*flex-end/);
+  it('primary actions are centered in the bounded action row', () => {
+    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--actions[\s\S]*align-items:\s*center/);
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-card-layout__actions \.bj-phone-view__action-bar[\s\S]*justify-content:\s*flex-end/,
+      /\.bj-table-zone--actions \.bj-table-actions[\s\S]*justify-content:\s*center|\.bj-table-zone--actions \.bj-player-actions[\s\S]*justify-content:\s*center/,
     );
-    expect(LAYOUT_CSS).toContain('--bj-card-action-primary-height: 1.48rem');
+    expect(LAYOUT_CSS).toContain('--bj-card-action-primary-height: 1.85rem');
+    expect(LAYOUT_CSS).toContain('--bj-card-row-actions: var(--bj-zone-actions-height');
   });
 
   it('bottom box mini-cards use increased scale inside fixed stack height', () => {

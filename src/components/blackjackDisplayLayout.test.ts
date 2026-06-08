@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
+const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
 const COMMAND_BOX_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCommandBox.tsx'), 'utf8');
 const ACTION_PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackActionPanel.tsx'), 'utf8');
 const DEALER_AREA_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackDealerArea.tsx'), 'utf8');
@@ -13,68 +14,66 @@ const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-lay
 const TABLE_UX_SRC = readFileSync(join(process.cwd(), 'src/components/tableUxContract.ts'), 'utf8');
 
 describe('blackjack display layout contract', () => {
-  it('Card View places command in summary before actions and hero cards', () => {
-    expect(CARD_VIEW_SRC).toContain('dealerCommand');
+  it('Card View and Full Table share one layout shell with command before actions and hero cards', () => {
+    expect(PANEL_SRC).toContain('BlackjackTableLayoutShell');
+    expect(SHELL_SRC).toContain('BlackjackCommandZone');
+    expect(SHELL_SRC).toMatch(/BlackjackCommandZone[\s\S]*BlackjackActionsZone/);
+    expect(SHELL_SRC).toMatch(/BlackjackActionsZone[\s\S]*BlackjackCardsAreaZone/);
     expect(COMMAND_BOX_SRC).toContain('TABLE_UX.cardLayoutCommand');
-    expect(CARD_VIEW_SRC).toContain('BlackjackCommandZone');
-    expect(CARD_VIEW_SRC).toMatch(/BlackjackCommandZone[\s\S]*BlackjackActionsZone/);
-    expect(CARD_VIEW_SRC).toMatch(/BlackjackActionsZone[\s\S]*BlackjackCardsAreaZone/);
     expect(CARD_LAYOUT_CSS).toContain('.bj-card-layout__command');
     expect(CARD_LAYOUT_CSS).toMatch(/\.bj-card-layout__command \.dealer-block__command[\s\S]*max-height:/);
-    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-card-layout__actions[\s\S]*grid-row:\s*3/);
-    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-card-layout__hero[\s\S]*grid-row:\s*4/);
+    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--actions[\s\S]*flex:/);
+    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*flex:/);
   });
 
   it('Full Table and Card View share dealer, command, action, and box zone components', () => {
     expect(PANEL_SRC).toContain('BlackjackDealerArea');
     expect(PANEL_SRC).toContain('BlackjackCommandBox');
     expect(PANEL_SRC).toContain('BlackjackActionPanel');
-    expect(PANEL_SRC).toContain('BlackjackCommandZone');
-    expect(PANEL_SRC).toContain('BlackjackActionsZone');
-    expect(PANEL_SRC).toContain('BlackjackPlayerBoxesZone');
-    expect(PANEL_SRC).toContain('BlackjackCardsAreaZone');
-    expect(CARD_VIEW_SRC).toContain('BlackjackActionPanel');
-    expect(CARD_VIEW_SRC).toContain('BlackjackCommandZone');
-    expect(CARD_VIEW_SRC).toContain('BlackjackActionsZone');
-    expect(CARD_VIEW_SRC).toContain('BlackjackPlayerBoxesZone');
-    expect(CARD_VIEW_SRC).toContain('BlackjackCardsAreaZone');
-    expect(PANEL_SRC).toMatch(/viewMode === 'card'[\s\S]*BlackjackDealerArea/);
-    expect(DEALER_AREA_SRC).toContain("variant?: 'table' | 'card'");
+    expect(SHELL_SRC).toContain('BlackjackCommandZone');
+    expect(SHELL_SRC).toContain('BlackjackActionsZone');
+    expect(SHELL_SRC).toContain('BlackjackPlayerBoxesZone');
+    expect(SHELL_SRC).toContain('BlackjackCardsAreaZone');
+    expect(PANEL_SRC).toMatch(/BlackjackTableLayoutShell[\s\S]*BlackjackDealerArea/);
+    expect(DEALER_AREA_SRC).toContain('TABLE_UX.tableZoneDealer');
     expect(VIEW_ZONES_SRC).toContain('BlackjackCommandZone');
     expect(VIEW_ZONES_SRC).toContain('BlackjackActionsZone');
     expect(VIEW_ZONES_SRC).toContain('BlackjackPlayerBoxesZone');
     expect(VIEW_ZONES_SRC).toContain('BlackjackCardsAreaZone');
+    expect(CARD_VIEW_SRC).toContain('bj-phone-view__axis');
+    expect(CARD_VIEW_SRC).not.toContain('BlackjackCommandZone');
   });
 
   it('Full Table and Card View dealer blocks omit inline command', () => {
     expect(PANEL_SRC).toContain('omitCommand');
     expect(PANEL_SRC).toContain('BlackjackCommandBox');
-    expect(PANEL_SRC).toMatch(/renderSummaryZone[\s\S]*BlackjackCommandBox/);
-    expect(PANEL_SRC).toMatch(/viewMode === 'card'[\s\S]*BlackjackCommandBox/);
+    expect(PANEL_SRC).toMatch(/BlackjackTableLayoutShell[\s\S]*BlackjackCommandBox/);
   });
 
-  it('Full Table and Card View share BlackjackActionPanel', () => {
+  it('Full Table and Card View share BlackjackActionPanel from Panel actions slot', () => {
     expect(PANEL_SRC).toContain('BlackjackActionPanel');
-    expect(CARD_VIEW_SRC).toContain('BlackjackActionPanel');
+    expect(PANEL_SRC).toContain('renderActionsContent');
     expect(ACTION_PANEL_SRC).toContain('TABLE_UX.playerActions');
+    expect(CARD_VIEW_SRC).not.toContain('BlackjackActionPanel');
   });
 
-  it('Full Table uses canonical zone order in felt main', () => {
-    expect(PANEL_SRC).toMatch(/renderSummaryZone[\s\S]*BlackjackCommandZone/);
-    expect(PANEL_SRC).toMatch(/renderBottomTrayZone[\s\S]*TABLE_UX\.tableZoneBottom/);
-    const feltBlock =
-      PANEL_SRC.match(/bj-casino__felt-main[\s\S]*renderBottomTrayZone\(\)/)?.[0] ?? '';
-    const inlineOrder = [
-      'BlackjackDealerArea',
-      'renderSummaryZone()',
-      'renderActionsZone()',
+  it('both views use canonical zone order in the layout shell', () => {
+    expect(PANEL_SRC).toContain('BlackjackTableLayoutShell');
+    expect(SHELL_SRC).toContain('TABLE_UX.tableLayoutShell');
+    expect(SHELL_SRC).toMatch(/BlackjackCommandZone[\s\S]*BlackjackActionsZone[\s\S]*BlackjackCardsAreaZone[\s\S]*BlackjackPlayerBoxesZone/);
+    expect(SHELL_SRC).toContain('TABLE_UX.tableZoneBottom');
+    const shellBody = SHELL_SRC.slice(SHELL_SRC.indexOf('return ('));
+    const shellOrder = [
+      '{dealer}',
+      'BlackjackCommandZone',
+      'BlackjackActionsZone',
       'BlackjackCardsAreaZone',
       'BlackjackPlayerBoxesZone',
-      'renderBottomTrayZone()',
+      'TABLE_UX.tableZoneBottom',
     ] as const;
     let lastIndex = -1;
-    for (const token of inlineOrder) {
-      const idx = feltBlock.indexOf(token);
+    for (const token of shellOrder) {
+      const idx = shellBody.indexOf(token);
       expect(idx).toBeGreaterThan(-1);
       expect(idx).toBeGreaterThan(lastIndex);
       lastIndex = idx;
@@ -82,8 +81,7 @@ describe('blackjack display layout contract', () => {
   });
 
   it('Full Table renders cards in dedicated cards zone above player boxes zone', () => {
-    expect(PANEL_SRC).toContain('BlackjackCardsAreaZone');
-    expect(PANEL_SRC).toContain('BlackjackPlayerBoxesZone');
+    expect(SHELL_SRC).toContain('BlackjackCardsAreaZone');
     expect(PANEL_SRC).toContain('renderArcCardColumn');
     expect(PANEL_SRC).toContain('renderArcBoxSlot');
     expect(PANEL_SRC).toContain('TABLE_UX.arcCardsStackVertical');
@@ -91,8 +89,9 @@ describe('blackjack display layout contract', () => {
     expect(PANEL_SRC).toContain('bj-arc__play-zone');
     expect(PANEL_SRC).not.toMatch(/renderArcBoxSlot[\s\S]*TABLE_UX\.cardsFan/);
     expect(PANEL_SRC).toMatch(
-      /BlackjackCardsAreaZone[\s\S]*renderArcCardColumn[\s\S]*BlackjackPlayerBoxesZone[\s\S]*renderArcBoxSlot/,
+      /cardsAreaMode=\{viewMode === 'full' \? 'table' : 'hero'\}/,
     );
+    expect(PANEL_SRC).toContain('renderPlayerBoxesArc');
   });
 
   it('Full Table arc stack uses medium-large readable overlapping cards', () => {
@@ -149,11 +148,10 @@ describe('blackjack display layout contract', () => {
     expect(SHARED_CSS).toContain('--bj-table-actions-play-gap');
     expect(SHARED_CSS).toContain('--bj-table-play-actions-buffer');
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-zone--actions[\s\S]*z-index:\s*6[\s\S]*margin-bottom:\s*var\(--bj-table-actions-play-gap\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*margin-bottom:\s*var\(--bj-table-actions-play-gap\)/,
     );
     expect(SHARED_CSS).toMatch(/\.bj-view-full-mobile \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-table-zone--cards[\s\S]*padding-top:\s*var\(--bj-table-play-actions-buffer\)/);
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end|\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
   });
 
   it('exports arc stack and card command layout class names', () => {
@@ -162,6 +160,8 @@ describe('blackjack display layout contract', () => {
     expect(TABLE_UX_SRC).toContain("tableZoneCards: 'bj-table-zone--cards'");
     expect(TABLE_UX_SRC).toContain("tableZoneBoxes: 'bj-table-zone--boxes'");
     expect(TABLE_UX_SRC).toContain("cardLayoutCommand: 'bj-card-layout__command'");
+    expect(TABLE_UX_SRC).toContain("tableLayoutShell: 'bj-table-layout-shell'");
+    expect(TABLE_UX_SRC).toContain("cardsAreaHero: 'bj-cards-area--hero'");
     expect(PANEL_SRC).toContain('buildBlackjackCommandText');
     expect(PANEL_SRC).toContain('BlackjackCommandBox');
     expect(PANEL_SRC).toMatch(/tableCommand\.commandMessage[\s\S]*BlackjackCommandBox/);

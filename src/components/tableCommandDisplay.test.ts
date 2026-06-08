@@ -23,7 +23,7 @@ describe('buildBlackjackCommandText', () => {
     expect(PANEL_SRC).toContain('buildBlackjackCommandText');
     expect(PANEL_SRC).toContain('tableCommand.commandMessage');
     expect(PANEL_SRC).toContain('BlackjackCommandBox');
-    expect(PANEL_SRC).toMatch(/dealerCommand=\{\s*<BlackjackCommandBox[\s\S]*tableCommand\.commandMessage/);
+    expect(PANEL_SRC).toMatch(/command=\{\s*<BlackjackCommandBox[\s\S]*tableCommand\.commandMessage/);
     expect(PANEL_SRC).not.toMatch(/commandMessage:\s*tableAidTip/);
     expect(PANEL_SRC).not.toMatch(/commandMessage:\s*magic8Answer/);
   });
@@ -137,11 +137,12 @@ describe('command text routing separation', () => {
   it('Card View command row uses DealerCommandArea from Panel canonical source', () => {
     expect(PANEL_SRC).toContain('omitCommand');
     expect(PANEL_SRC).toMatch(/tableCommand\.commandMessage[\s\S]*tableCommand\.commandLines/);
-    expect(CARD_VIEW_SRC).toContain('dealerCommand');
+    expect(CARD_VIEW_SRC).not.toContain('BlackjackCommandBox');
     expect(COMMAND_BOX_SRC).toContain('TABLE_UX.cardLayoutCommand');
     expect(COMMAND_BOX_SRC).toContain('DealerCommandArea');
     expect(CARD_VIEW_SRC).not.toContain('buildTableCommandDisplay');
     expect(CARD_VIEW_SRC).not.toContain('buildBlackjackCommandText');
+    expect(PANEL_SRC).toMatch(/command=\{\s*<BlackjackCommandBox/);
   });
 
   it('AID and Magic 8 do not route through command builder', () => {
@@ -150,8 +151,8 @@ describe('command text routing separation', () => {
     expect(PANEL_SRC).toContain('controlOnly');
     expect(PANEL_SRC).not.toMatch(/commandMessage:\s*tableAidTip/);
     expect(PANEL_SRC).not.toMatch(/commandMessage:\s*magic8Answer/);
-    expect(CARD_VIEW_SRC).toContain('aidTip');
+    expect(CARD_VIEW_SRC).not.toContain('buildBlackjackCommandText');
     expect(CARD_VIEW_SRC).not.toMatch(/commandMessage:\s*aidTip/);
-    expect(CARD_VIEW_SRC).not.toMatch(/dealerCommand=\{[\s\S]*aidTip/);
+    expect(CARD_VIEW_SRC).not.toMatch(/BlackjackCommandBox/);
   });
 });

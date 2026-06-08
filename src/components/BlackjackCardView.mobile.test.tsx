@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { BlackjackCardView } from './BlackjackCardView';
+import { BlackjackPanel } from './BlackjackPanel';
+import { BET_BOX_PULSE, getBoxActivePulseClassName, resolveBoxBorderVisualState } from './cardViewBox';
 import { TABLE_UX } from './tableUxContract';
 import { createNewBlackjackTable } from '../engine/session';
 import { allocateChipsToBankrollOwner } from '../engine/session/allocation';
@@ -20,6 +23,7 @@ function bettingTableWithBox(): { state: GameState; boxId: string } {
   const personId = 'person-1';
   state = {
     ...state,
+    tableViewMode: 'card',
     players: {
       [boxId]: {
         id: boxId,
@@ -72,50 +76,25 @@ function bettingTableWithBox(): { state: GameState; boxId: string } {
   return { state, boxId };
 }
 
-function renderBettingCardView(state: GameState, boxId: string): string {
-  return renderToStaticMarkup(
-    <BlackjackCardView
-      dealer={<div className="dealer-block" />}
-      tray={<div className="bj-casino__tray-wrap" />}
-      gameState={state}
-      focusBoxId={boxId}
-      selectedBettingBoxId={boxId}
-      activeBoxId={null}
-      showHoleHidden={false}
-      protocolPhase="betting"
-      bettingOpen
-      gameEnded={false}
-      onSelectBox={noop}
-      onClaimSlot={noop}
-      onReleaseSlot={noop}
-      onAddChip={noop}
-      onClearStake={noop}
-      onRemoveLastChip={noop}
-      onSlotChipDrop={noop}
-      onStay={noop}
-      onCard={noop}
-      onDouble={noop}
-      onSplit={noop}
-      onBack={noop}
-    />,
-  );
+function renderBettingCardPanel(state: GameState): string {
+  return renderToStaticMarkup(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
 }
 
 describe('mobile Card View render contract', () => {
   it('renders the phone-view root without in-card view toggle', () => {
-    const { state, boxId } = bettingTableWithBox();
-    const html = renderBettingCardView(state, boxId);
+    const { state } = bettingTableWithBox();
+    const html = renderBettingCardPanel(state);
     expect(html).toContain('bj-phone-view');
     expect(html).not.toContain('bj-phone-view__table-btn');
   });
 
-  it('uses hero placeholder and bottom mini box strip during betting', () => {
-    const { state, boxId } = bettingTableWithBox();
-    const html = renderBettingCardView(state, boxId);
+  it('uses hero placeholder and bottom arc player boxes during betting', () => {
+    const { state } = bettingTableWithBox();
+    const html = renderBettingCardPanel(state);
     expect(html).toContain('bj-phone-view__hand--waiting');
     expect(html).toContain('bj-phone-view__cards-placeholder');
-    expect(html).toContain('bj-phone-view__mini-row');
-    expect(html).toContain(TABLE_UX.cardLayoutBoxes);
+    expect(html).toContain('bj-arc--player-boxes');
+    expect(html).toContain(TABLE_UX.tableZoneBoxes);
     expect(html).not.toContain('bj-phone-view__betting-center');
     expect(html).not.toContain('bj-phone-view__bet-chip-wrap--main');
     expect(html).not.toContain('bj-phone-view__betting-stage--row');
@@ -124,44 +103,37 @@ describe('mobile Card View render contract', () => {
 
   it('pulses valid betting boxes while betting is open', () => {
     const { state, boxId } = bettingTableWithBox();
-    const html = renderBettingCardView(state, boxId);
-    expect(html).toContain('bj-phone-view__bet-chip--pulse');
+    const personId = 'person-1';
+    const resolved = resolveBoxBorderVisualState({
+      state,
+      boxPlayerId: boxId,
+      viewerPersonId: personId,
+      selectedBettingBoxId: boxId,
+      bettingStage: true,
+    });
+    expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(panelSrc).toContain('getBoxActivePulseClassName(borderState)');
+    const html = renderBettingCardPanel(state);
+    expect(html).toContain('stake-chips--bet');
   });
 
   it('does not render a side-panel column inside the card view', () => {
-    const { state, boxId } = bettingTableWithBox();
-    const html = renderBettingCardView(state, boxId);
-    expect(html).not.toContain('bj-accounts-panel');
+    const { state } = bettingTableWithBox();
+    const html = renderBettingCardPanel(state);
+    const shellStart = html.indexOf(TABLE_UX.tableLayoutShell);
+    expect(shellStart).toBeGreaterThan(-1);
+    const shellEnd = html.indexOf(TABLE_UX.tableZoneBottom, shellStart);
+    const shellMarkup = html.slice(shellStart, shellEnd);
+    expect(shellMarkup).not.toContain('bj-accounts-panel');
   });
 
   it('stops pulsing once betting closes', () => {
-    const { state, boxId } = bettingTableWithBox();
-    const html = renderToStaticMarkup(
-      <BlackjackCardView
-        dealer={<div className="dealer-block" />}
-        tray={<div className="bj-casino__tray-wrap" />}
-        gameState={state}
-        focusBoxId={boxId}
-      selectedBettingBoxId={boxId}
-        activeBoxId={null}
-        showHoleHidden={false}
-        protocolPhase="player"
-        bettingOpen={false}
-        gameEnded={false}
-        onSelectBox={noop}
-        onClaimSlot={noop}
-        onReleaseSlot={noop}
-        onAddChip={noop}
-        onClearStake={noop}
-        onRemoveLastChip={noop}
-        onSlotChipDrop={noop}
-        onStay={noop}
-        onCard={noop}
-        onDouble={noop}
-        onSplit={noop}
-        onBack={noop}
-      />,
-    );
+    const { state } = bettingTableWithBox();
+    const html = renderBettingCardPanel({
+      ...state,
+      tableMeta: { ...state.tableMeta, bettingLocked: true },
+    });
     expect(html).not.toContain('bj-phone-view__bet-chip--pulse');
   });
 });

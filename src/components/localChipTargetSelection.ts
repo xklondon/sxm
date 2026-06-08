@@ -81,6 +81,48 @@ function resolveTargetOnTable(
   }
 }
 
+/** Rebind a user-selected box to the current occupant at its mapped slot (online id rotation). */
+function rebindUserBoxTarget(state: GameState, boxId: string): PlaceBetTarget | null {
+  const slotNum = state.session.boxSlotNumbers?.[boxId];
+  if (slotNum == null) {
+    return null;
+  }
+  const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNum);
+  if (!row) {
+    return null;
+  }
+  if (row.playerId) {
+    return { kind: 'box', boxId: row.playerId };
+  }
+  return { kind: 'slot', slotNumber: slotNum };
+}
+
+/** True only when the selected row is genuinely gone — not during transient online sync. */
+export function isUserChipTargetRemoved(
+  state: GameState,
+  target: PlaceBetTarget,
+  online: boolean,
+): boolean {
+  if (target.kind === 'slot') {
+    return !state.tableMeta.boxSlots.some((s) => s.slotNumber === target.slotNumber);
+  }
+
+  if (state.tableMeta.boxSlots.some((s) => s.playerId === target.boxId)) {
+    return false;
+  }
+
+  const slotNum = state.session.boxSlotNumbers?.[target.boxId];
+  if (slotNum != null && state.tableMeta.boxSlots.some((s) => s.slotNumber === slotNum)) {
+    return false;
+  }
+
+  if (!online && state.players[target.boxId]) {
+    return false;
+  }
+
+  return true;
+}
+
 /** Upgrade materialized slots; clear only when the target row is truly gone. */
 export function reconcileLocalChipTarget(
   local: LocalSelectedChipTarget,
@@ -92,13 +134,30 @@ export function reconcileLocalChipTarget(
   }
 
   const currentTarget = local.target;
+
   if (currentTarget.kind === 'slot') {
     const slot = state.tableMeta.boxSlots.find((s) => s.slotNumber === currentTarget.slotNumber);
     if (!slot) {
-      return { ...local, target: null };
+      return local.hasUserSelected ? local : { ...local, target: null };
     }
     if (slot.playerId) {
       return { ...local, target: { kind: 'box', boxId: slot.playerId } };
+    }
+    return local;
+  }
+
+  if (local.hasUserSelected) {
+    const rebound = rebindUserBoxTarget(state, currentTarget.boxId);
+    if (rebound) {
+      if (rebound.kind === 'box' && rebound.boxId !== currentTarget.boxId) {
+        return { ...local, target: rebound };
+      }
+      if (rebound.kind === 'slot') {
+        return { ...local, target: rebound };
+      }
+    }
+    if (isUserChipTargetRemoved(state, currentTarget, online)) {
+      return { ...local, target: null };
     }
     return local;
   }
@@ -114,11 +173,6 @@ export function reconcileLocalChipTarget(
     resolved.boxId !== currentTarget.boxId
   ) {
     return { ...local, target: resolved };
-  }
-
-  // User selection must survive transient resolve failures during sync/optimistic refresh.
-  if (local.hasUserSelected) {
-    return local;
   }
 
   if (!resolved) {

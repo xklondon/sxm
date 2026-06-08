@@ -98,7 +98,8 @@ describe('table layout stabilization contract', () => {
 
   it('uses wider shared desktop shell width token', () => {
     const css = readSrc('src/styles/bj-table-shared.css');
-    expect(css).toContain('--bj-desktop-table-max-width: min(98vw, 86rem)');
+    expect(css).toContain('--bj-shell-width: min(98vw, 86rem)');
+    expect(css).toContain('--bj-desktop-table-max-width: var(--bj-shell-width)');
   });
 
   it('does not clip play area with overflow hidden on desktop felt chain', () => {
@@ -156,9 +157,10 @@ describe('table layout stabilization contract', () => {
     expect(full).toContain(BLACKJACK_TABLE_LAYOUT.chipTrayWrap);
 
     const card = renderAt(1280, 'card');
-    expect(card).toContain(TABLE_UX.cardLayout);
-    expect(card).toContain(TABLE_UX.cardLayoutDealer);
-    expect(card).toContain(TABLE_UX.cardLayoutTray);
+    expect(card).toContain(TABLE_UX.tableLayoutShell);
+    expect(card).toContain(TABLE_UX.tableZoneDealer);
+    expect(card).toContain(TABLE_UX.tableZoneBottom);
+    expect(card).toContain(TABLE_UX.cardsAreaHero);
     expect(card).toContain(BLACKJACK_TABLE_LAYOUT.chipTrayWrap);
   });
 
@@ -295,25 +297,27 @@ describe('table layout polish contract', () => {
     expect(full).toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*stake-chips--bet/);
   });
 
-  it('Card View uses fixed six-row grid with bottom-anchored compact boxes', () => {
+  it('Card View uses fixed flex-column shell with bottom-anchored compact boxes', () => {
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
+    const sharedCss = readSrc('src/styles/bj-table-shared.css');
     const cardCss = readSrc('src/components/BlackjackCardView.css');
-    expect(layoutCss).toContain('--bj-card-row-boxes: 9rem');
-    expect(layoutCss).toContain('--bj-card-row-hero-min: 11rem');
-    expect(layoutCss).toMatch(/\.bj-card-layout[\s\S]*grid-template-rows/);
-    expect(layoutCss).toContain('Do not position boxes with flex or phase-dependent margins');
+    expect(layoutCss).toContain('--bj-card-row-boxes: var(--bj-zone-boxes-height');
+    expect(layoutCss).toContain('--bj-card-row-hero-min: 0');
+    expect(layoutCss).toMatch(/\.bj-table-layout-shell[\s\S]*flex-direction:\s*column/);
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*height:\s*var\(--bj-zone-boxes-height\)/);
     expect(cardCss).not.toContain('.bj-phone-view.bj-phone-view--phased');
     const card = renderAt(1280, 'card');
-    expect(card).toContain(TABLE_UX.cardLayout);
-    expect(card).toContain(TABLE_UX.cardLayoutBoxes);
-    expect(card).toContain(TABLE_UX.cardViewCompactBox);
+    expect(card).toContain(TABLE_UX.tableLayoutShell);
+    expect(card).toContain(TABLE_UX.tableZoneBoxes);
+    expect(card).toContain(TABLE_UX.fullArcBox);
+    expect(card).toContain('bj-arc--player-boxes');
     const betting = renderToStaticMarkup(
       <BlackjackPanel
         gameState={{ ...tableAfterStartPlaying(500), tableViewMode: 'card' }}
         onGameStateChange={noop}
       />,
     );
-    expect(betting).toContain(TABLE_UX.cardLayoutSummaryPlaceholder);
+    expect(betting).toContain(TABLE_UX.summaryPlaceholder);
   });
 
   it('Card View zones exist across betting and play phases', () => {
@@ -325,12 +329,12 @@ describe('table layout polish contract', () => {
     );
     const playing = renderAt(1280, 'card');
     for (const html of [betting, playing]) {
-      expect(html).toContain(TABLE_UX.cardLayout);
-      expect(html).toContain(TABLE_UX.cardLayoutSummary);
-      expect(html).toContain(TABLE_UX.cardLayoutHero);
-      expect(html).toContain(TABLE_UX.cardLayoutActions);
-      expect(html).toContain(TABLE_UX.cardLayoutBoxes);
-      expect(html).toContain(TABLE_UX.cardLayoutTray);
+      expect(html).toContain(TABLE_UX.tableLayoutShell);
+      expect(html).toContain(TABLE_UX.tableZoneSummary);
+      expect(html).toContain(TABLE_UX.cardsAreaHero);
+      expect(html).toContain(TABLE_UX.tableZoneActions);
+      expect(html).toContain(TABLE_UX.tableZoneBoxes);
+      expect(html).toContain(TABLE_UX.tableZoneBottom);
     }
   });
 });

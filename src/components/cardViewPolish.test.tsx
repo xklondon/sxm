@@ -80,16 +80,14 @@ function renderCardPanel(state: GameState): string {
   );
 }
 
-function miniBoxColumn(html: string, slotNumber: number): string {
+function arcBoxSlot(html: string, slotNumber: number): string {
   const marker = `aria-label="Box ${slotNumber}`;
   const start = html.indexOf(marker);
   expect(start).toBeGreaterThan(-1);
-  const sectionMarker = 'data-sxm-section="sxm-player-box"';
-  const columnStart = html.lastIndexOf(sectionMarker, start);
-  expect(columnStart).toBeGreaterThan(-1);
-  const nextBox = html.indexOf(sectionMarker, columnStart + sectionMarker.length);
-  const sliceEnd = nextBox > columnStart ? nextBox : html.indexOf('bj-card-layout__tray', columnStart);
-  return html.slice(columnStart, sliceEnd > columnStart ? sliceEnd : undefined);
+  const slotStart = html.lastIndexOf('bj-arc__slot', start);
+  expect(slotStart).toBeGreaterThan(-1);
+  const nextSlot = html.indexOf('bj-arc__slot', slotStart + 1);
+  return html.slice(slotStart, nextSlot > slotStart ? nextSlot : undefined);
 }
 
 describe('Card View polish guards', () => {
@@ -124,66 +122,51 @@ describe('Card View polish guards', () => {
 
   it('uses increased hero card size tokens inside hero row', () => {
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
-    expect(layoutCss).toContain('--bj-card-hero-card-width: min(19vw, 7.5rem)');
-    expect(layoutCss).toContain('--bj-card-hero-card-max-height: min(26vw, 10.5rem)');
+    expect(layoutCss).toContain('--bj-card-hero-card-width: min(22vw, 10rem)');
+    expect(layoutCss).toContain('--bj-card-hero-card-max-height: min(32vw, 14rem)');
     expect(layoutCss).toContain('--bj-card-hero-card-aspect-ratio: 5 / 7');
     expect(layoutCss).toMatch(
       /\.bj-card-layout__hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*width:\s*var\(--bj-card-hero-card-width\)/,
     );
   });
 
-  it('uses compact secondary action buttons in Card View actions row', () => {
+  it('uses compact table action buttons in Card View actions row', () => {
     const html = renderCardPanel(playingState());
-    expect(html).toContain(TABLE_UX.cardViewActionCompact);
+    expect(html).toContain('bj-table-actions__btn--sm');
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
     expect(layoutCss).toMatch(
-      /\.bj-card-layout__actions \.bj-phone-view__action-bar-extra--compact[\s\S]*min-height:\s*var\(--bj-card-action-secondary-height\)/,
+      /\.bj-table-zone--actions \.bj-table-actions__btn--sm[\s\S]*min-height:\s*var\(--bj-actions-secondary-btn-min-height|\.bj-card-layout__actions \.bj-table-actions__btn--sm[\s\S]*min-height:\s*var\(--bj-card-action-secondary-height\)/,
     );
   });
 
   it('does not introduce page scroll when cards are dealt', () => {
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
-    expect(layoutCss).toMatch(/\.bj-card-layout[\s\S]*overflow:\s*hidden/);
+    expect(layoutCss).toMatch(/\.bj-table-layout-shell[\s\S]*overflow:\s*hidden/);
     expect(sharedCss).toMatch(/\.bj-view-card-desktop \.bj-phone-view\.bj-card-layout[\s\S]*overflow:\s*hidden/);
-    expect(layoutCss).toMatch(/\.bj-card-layout__hero[\s\S]*overflow:\s*hidden/);
-    expect(layoutCss).toMatch(/\.bj-card-layout__hero \.bj-phone-view__hand[\s\S]*min-height:\s*0/);
+    expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/);
+    expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__hand[\s\S]*min-height:\s*0/);
   });
 
-  it('renders box value/status above the tile frame', () => {
+  it('renders hand value above shared arc player box tile', () => {
     const html = renderCardPanel(playingState());
-    const column = miniBoxColumn(html, 1);
-    expect(column).toContain(TABLE_UX.cardViewBoxValueAbove);
-    expect(column).toContain('13');
-    const valueIdx = column.indexOf(TABLE_UX.cardViewBoxValueAbove);
-    const buttonIdx = column.indexOf('bj-phone-view__bet-chip--pulse');
-    expect(valueIdx).toBeGreaterThan(-1);
-    expect(buttonIdx).toBeGreaterThan(valueIdx);
+    const slot = arcBoxSlot(html, 1);
+    expect(slot).toContain('bj-phone-view__box-value');
+    expect(slot).toContain('13');
   });
 
-  it('renders mini dealt cards inside the top of the tile', () => {
+  it('shared arc player boxes use the same mini-hand shell as Full Table', () => {
     const html = renderCardPanel(playingState());
-    const column = miniBoxColumn(html, 1);
-    const hitAreaIdx = column.indexOf(TABLE_UX.boxHitArea);
-    const tileIdx = column.indexOf('bj-phone-view__bet-chip--pulse', hitAreaIdx);
-    const stackIdx = column.indexOf('bj-phone-view__mini-hand-card-stack', tileIdx);
-    const tileClose = column.indexOf('</div>', stackIdx);
-    expect(hitAreaIdx).toBeGreaterThan(-1);
-    expect(stackIdx).toBeGreaterThan(tileIdx);
-    expect(stackIdx).toBeLessThan(tileClose);
-    expect(column).toContain('bj-phone-view__mini-card');
+    const slot = arcBoxSlot(html, 1);
+    expect(slot).toContain(TABLE_UX.fullArcBox);
+    expect(slot).toContain('bj-phone-view__mini-hand-head');
+    expect(slot).toContain('bj-phone-view__bet-chip--pulse');
   });
 
-  it('renders bet/stake value under the tile using existing wager data', () => {
+  it('renders stake chips under shared arc player box tile', () => {
     const html = renderCardPanel(playingState());
-    const column = miniBoxColumn(html, 1);
-    expect(column).toContain(TABLE_UX.cardViewBoxChipStack);
-    expect(column).toContain(TABLE_UX.cardViewBoxStakeLabel);
-    expect(column).toContain('Bet: 50');
-    const cardsSlotClose = column.indexOf('</div>', column.indexOf('data-sxm-zone="playerBoxCards"'));
-    const betIdx = column.indexOf(TABLE_UX.cardViewBoxStakeLabel);
-    const chipIdx = column.indexOf(TABLE_UX.cardViewBoxChipStack);
-    expect(betIdx).toBeGreaterThan(cardsSlotClose);
-    expect(chipIdx).toBeGreaterThan(betIdx);
+    const slot = arcBoxSlot(html, 1);
+    expect(slot).toContain('stake-chips--bet');
+    expect(slot).toContain('bj-phone-view__mini-stake-slot');
   });
 });

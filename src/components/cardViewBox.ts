@@ -97,6 +97,7 @@ export interface BoxBorderVisualInput {
   viewerPersonId: string | null | undefined;
   openStake?: number;
   selectedBettingBoxId?: string | null;
+  selectedBettingSlotNumber?: number | null;
   activeBoxId?: string | null;
   isDropHover?: boolean;
   /** True during betting / chip placement. */
@@ -121,13 +122,21 @@ export function resolveBoxBorderVisualState(input: BoxBorderVisualInput): BoxBor
     boxPlayerId,
     viewerPersonId,
     selectedBettingBoxId,
+    selectedBettingSlotNumber,
     activeBoxId,
     isDropHover,
     bettingStage = false,
     playerPhase = false,
   } = input;
   const openStake = input.openStake ?? getStakeForBox(state, boxPlayerId);
-  const isSelected = Boolean(bettingStage && selectedBettingBoxId === boxPlayerId);
+  const slotNumber = state.tableMeta.boxSlots.find((s) => s.playerId === boxPlayerId)?.slotNumber;
+  const isSelected = Boolean(
+    bettingStage &&
+      (selectedBettingBoxId === boxPlayerId ||
+        (selectedBettingSlotNumber != null &&
+          slotNumber != null &&
+          selectedBettingSlotNumber === slotNumber)),
+  );
   const isTurn = Boolean(playerPhase && activeBoxId === boxPlayerId);
   const isNative = isCardViewBoxNativeForPerson(state, boxPlayerId, viewerPersonId);
 
