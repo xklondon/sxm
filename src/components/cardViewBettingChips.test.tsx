@@ -168,7 +168,7 @@ describe('Card View betting chips and layout', () => {
     expect(sharedCss).toMatch(/\.bj-casino\.bj-view-card-desktop[\s\S]*overflow:\s*hidden/);
     expect(sharedCss).toMatch(/\.bj-table-desktop-shell[\s\S]*overflow:\s*hidden/);
     expect(layoutCss).toMatch(
-      /\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden|\.bj-view-card-desktop \.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow-x:\s*hidden/,
+      /\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden|\.bj-view-card-desktop \.bj-card-layout__boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
     );
     expect(sharedCss).toMatch(/\.bj-casino__this-table--dock[\s\S]*max-width:\s*12\.5rem/);
     expect(cardCss).toMatch(/\.bj-phone-view[\s\S]*overflow-x:\s*hidden/);

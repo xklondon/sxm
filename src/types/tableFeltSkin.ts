@@ -4,7 +4,7 @@ import type { TableMeta } from './table';
 /** Visual-only blackjack table cloth / felt artwork. */
 export type TableFeltSkin = 'clean' | 'classic-casino';
 
-export const DEFAULT_TABLE_FELT_SKIN: TableFeltSkin = 'clean';
+export const DEFAULT_TABLE_FELT_SKIN: TableFeltSkin = 'classic-casino';
 export const DEFAULT_TABLE_CLOTH_NAME = "Slinki's Black Jack";
 
 export const TABLE_FELT_SKIN_OPTIONS: ReadonlyArray<{
@@ -26,7 +26,10 @@ export function isTableFeltSkin(value: unknown): value is TableFeltSkin {
 }
 
 export function resolveTableFeltSkin(meta: Pick<TableMeta, 'tableFeltSkin'>): TableFeltSkin {
-  return meta.tableFeltSkin === 'classic-casino' ? 'classic-casino' : 'clean';
+  if (meta.tableFeltSkin === 'clean') {
+    return 'clean';
+  }
+  return 'classic-casino';
 }
 
 export function resolveTableFeltSkinPref(

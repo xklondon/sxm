@@ -268,9 +268,8 @@ describe('Card View layout guard', () => {
       layoutCss.match(
         /\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*?min-height:\s*0[\s\S]*?\n\}/,
       )?.[0] ?? '';
-    expect(boxesBlock).not.toMatch(/overflow:\s*hidden/);
-    expect(boxesBlock).toMatch(/overflow:\s*visible/);
-    expect(miniRowReset).toMatch(/overflow-y:\s*visible/);
+    expect(boxesBlock).toMatch(/overflow:\s*hidden/);
+    expect(miniRowReset).toMatch(/overflow:\s*hidden/);
     expect(miniRowReset).toMatch(/min-height:\s*0/);
     expect(miniRowReset).toMatch(/max-height:\s*100%/);
     expect(sharedCss).toMatch(/\.bj-casino\.bj-view-card-desktop[\s\S]*overflow:\s*hidden/);
@@ -291,11 +290,10 @@ describe('Card View layout guard', () => {
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-zone-tray-height\)/);
   });
 
-  it('does not clip Card View boxes row with overflow:hidden', () => {
+  it('boxes row contains player arc without expanding page scroll', () => {
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
     const boxesBlock = sharedCss.match(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*?\}/)?.[0] ?? '';
-    expect(boxesBlock).not.toMatch(/overflow:\s*hidden/);
-    expect(boxesBlock).toMatch(/overflow:\s*visible/);
+    expect(boxesBlock).toMatch(/overflow:\s*hidden/);
   });
 
   it('uses the same zone structure for betting, play, and settlement snapshots', () => {

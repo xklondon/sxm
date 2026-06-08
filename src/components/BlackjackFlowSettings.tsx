@@ -19,6 +19,7 @@ import { CustomProtocolBuilder } from './CustomProtocolBuilder';
 import { BlackjackTableThemeControls } from './BlackjackTableThemeControls';
 import {
   DEFAULT_TABLE_CLOTH_NAME,
+  DEFAULT_TABLE_FELT_SKIN,
   resolveTableClothName,
   resolveTableClothWager,
   resolveTableFeltSkin,
@@ -105,7 +106,7 @@ function persistTableClothVisuals(
   onGameStateChange(next);
   saveSettings({
     ...settingsFromGameState(next),
-    tableFeltSkin: next.tableMeta.tableFeltSkin ?? 'clean',
+    tableFeltSkin: next.tableMeta.tableFeltSkin ?? DEFAULT_TABLE_FELT_SKIN,
     tableClothName: next.tableMeta.tableClothName ?? DEFAULT_TABLE_CLOTH_NAME,
     tableClothWager: next.tableMeta.tableClothWager ?? '',
   });

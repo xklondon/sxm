@@ -33,12 +33,12 @@
 .bj-felt-cloth-layer__svg {
   position: absolute;
   left: 50%;
-  bottom: 8%;
+  bottom: 24%;
   transform: translateX(-50%);
-  width: min(96%, 44rem);
+  width: min(92%, 40rem);
   height: auto;
-  max-height: 72%;
-  opacity: 0.82;
+  max-height: 48%;
+  opacity: 0.75;
 }
 
 .bj-felt-cloth-layer__title {
@@ -79,10 +79,10 @@
 
 @media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
   .bj-felt-cloth-layer__svg {
-    bottom: 4%;
-    width: min(98%, 26rem);
-    max-height: 66%;
-    opacity: 0.72;
+    bottom: 18%;
+    width: min(96%, 28rem);
+    max-height: 44%;
+    opacity: 0.68;
   }
 
   .bj-felt-cloth-layer__title {

@@ -46,13 +46,20 @@ function playingState(): GameState {
 }
 
 describe('table felt cloth layer', () => {
-  it('defaults to clean SXM cloth when unset', () => {
+  it('defaults to classic casino cloth when unset', () => {
     const meta = createDefaultTableMeta();
     expect(meta.tableFeltSkin).toBeUndefined();
-    expect(resolveTableFeltSkin(meta)).toBe('clean');
+    expect(resolveTableFeltSkin(meta)).toBe('classic-casino');
     expect(resolveTableClothName(meta)).toBe(DEFAULT_TABLE_CLOTH_NAME);
     expect(resolveTableClothWager(meta)).toBe('');
-    expect(DEFAULT_TABLE_FELT_SKIN).toBe('clean');
+    expect(DEFAULT_TABLE_FELT_SKIN).toBe('classic-casino');
+  });
+
+  it('respects explicit clean saved setting', () => {
+    expect(resolveTableFeltSkin({ tableFeltSkin: 'clean' })).toBe('clean');
+    expect(feltSkinModifierClass('clean')).toBe(TABLE_UX.feltSkinClean);
+    const merged = mergeSettingsWithDefaults({ tableFeltSkin: 'clean' });
+    expect(merged.tableFeltSkin).toBe('clean');
   });
 
   it('shows cloth settings fields in Table settings', () => {
@@ -196,6 +203,40 @@ describe('table felt cloth layer', () => {
     expect(panelSrc).toContain('>BLACKJACK</h1>');
     expect(panelSrc).not.toMatch(/pageTitle\)[^>]*>Slinki/);
     expect(panelSrc).not.toContain("Slinki's Black Jack");
+  });
+
+  it('chip tray zone is bottom-aligned with boxes separation in shared shell CSS', () => {
+    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    expect(sharedCss).toContain('--bj-zone-boxes-tray-gap: 1.35rem');
+    expect(sharedCss).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*justify-content:\s*flex-end/,
+    );
+    expect(sharedCss).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*padding-bottom:\s*calc\(var\(--bj-card-boxes-padding-bottom\) \+ var\(--bj-zone-boxes-tray-gap\)\)/,
+    );
+  });
+
+  it('Card View player boxes arc does not expand shell scroll', () => {
+    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const layoutCss = readSrc('src/styles/bj-card-layout.css');
+    const boxesBlock =
+      sharedCss.match(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*?\}/)?.[0] ?? '';
+    expect(boxesBlock).toMatch(/overflow:\s*hidden/);
+    expect(layoutCss).toMatch(
+      /\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
+    );
+  });
+
+  it('dealer and command zones use shell sizing without overlap selectors', () => {
+    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--dealer[\s\S]*justify-content:\s*center/);
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*justify-content:\s*center/);
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*overflow:\s*hidden/);
+  });
+
+  it('classic cloth SVG sits in cards area not on chip tray', () => {
+    const css = readSrc('src/styles/bj-felt-skins.css');
+    expect(css).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*bottom:\s*24%/);
   });
 
   it('settings storage round-trips cloth visual prefs', () => {

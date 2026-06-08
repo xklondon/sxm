@@ -202,7 +202,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: visible;
+  overflow: hidden;
   padding: 0.06rem 0;
   box-sizing: border-box;
   position: relative;
@@ -240,7 +240,7 @@
 }
 
 .bj-card-layout__boxes {
-  overflow: visible;
+  overflow: hidden;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -517,10 +517,10 @@
   min-height: 0;
   max-height: 100%;
   width: 100%;
+  max-width: 100%;
   height: auto;
   flex: 0 1 auto;
-  overflow-x: hidden;
-  overflow-y: visible;
+  overflow: hidden;
   align-items: flex-end;
   justify-content: space-between;
   padding: 0 var(--bj-card-boxes-padding-inline) 0.06rem;
@@ -557,7 +557,7 @@
   gap: var(--bj-card-action-panel-gap);
   padding: var(--bj-card-action-panel-padding);
   box-sizing: border-box;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .bj-card-layout__actions .bj-table-actions__row {
