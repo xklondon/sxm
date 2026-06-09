@@ -22,61 +22,61 @@ function shellCardsGapBlock(): string {
   return start >= 0 ? SHARED_CSS.slice(start, start + 220) : '';
 }
 
-describe('blackjack canonical shell order — Dealer → Actions → Command → Cards', () => {
+describe('blackjack canonical shell order — Dealer → Command → Actions → Cards', () => {
   it('renders shell zones in canonical DOM order', () => {
     const render = shellRenderBlock();
     const dealerIdx = render.indexOf('{dealer}');
-    const actionsIdx = render.indexOf('BlackjackActionsZone');
     const commandIdx = render.indexOf('BlackjackCommandZone');
+    const actionsIdx = render.indexOf('BlackjackActionsZone');
     const cardsIdx = render.indexOf('BlackjackCardsAreaZone');
     const boxesIdx = render.indexOf('BlackjackPlayerBoxesZone');
     const trayIdx = render.indexOf('{chipTray}');
     expect(dealerIdx).toBeGreaterThan(-1);
-    expect(dealerIdx).toBeLessThan(actionsIdx);
-    expect(actionsIdx).toBeLessThan(commandIdx);
-    expect(commandIdx).toBeLessThan(cardsIdx);
+    expect(dealerIdx).toBeLessThan(commandIdx);
+    expect(commandIdx).toBeLessThan(actionsIdx);
+    expect(actionsIdx).toBeLessThan(cardsIdx);
     expect(cardsIdx).toBeLessThan(boxesIdx);
     expect(boxesIdx).toBeLessThan(trayIdx);
   });
 
-  it('places Hit/Stay directly after dealer zone in desktop grid', () => {
+  it('places command directly after dealer zone in desktop grid', () => {
     const desktopStart = SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows');
     const desktop = SHARED_CSS.slice(desktopStart, SHARED_CSS.indexOf('/* Desktop stage:', desktopStart));
-    expect(desktop).toMatch(/\[dealer\][\s\S]*\[actions\][\s\S]*\[command\][\s\S]*\[cards\]/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/);
+    expect(desktop).toMatch(/\[dealer\][\s\S]*\[command\][\s\S]*\[actions\][\s\S]*\[cards\]/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*grid-row:\s*command/);
+    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/);
   });
 
-  it('keeps Actions→Command gap smaller than Command→Cards gap', () => {
+  it('keeps Command→Actions gap smaller than Actions→Cards gap', () => {
     const cards = shellCardsGapBlock();
-    expect(SHARED_CSS).toContain('--bj-dealer-actions-gap: 0.08rem');
-    expect(SHARED_CSS).toContain('--bj-actions-command-gap: 0.08rem');
-    expect(SHARED_CSS).toContain('--bj-command-cards-safe-gap: 0.75rem');
+    expect(SHARED_CSS).toContain('--bj-dealer-command-gap: 0.08rem');
+    expect(SHARED_CSS).toContain('--bj-command-actions-gap: 0.08rem');
+    expect(SHARED_CSS).toContain('--bj-actions-cards-safe-gap: 0.75rem');
     expect(SHARED_CSS).toMatch(
-      /@media \(max-width: 720px\)[\s\S]*--bj-command-cards-safe-gap:\s*0\.55rem/,
+      /@media \(max-width: 720px\)[\s\S]*--bj-actions-cards-safe-gap:\s*0\.55rem/,
     );
-    expect(cards).toMatch(/margin-top:\s*var\(--bj-command-cards-safe-gap\)/);
+    expect(cards).toMatch(/margin-top:\s*var\(--bj-actions-cards-safe-gap\)/);
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*padding-top:\s*var\(--bj-actions-command-gap\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*padding[^;]*var\(--bj-dealer-command-gap\)/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-dealer-actions-gap\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-command-actions-gap\)/,
     );
   });
 
-  it('anchors compact action panel without overlapping command or cards', () => {
+  it('anchors compact action panel below command without overlapping hero cards', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-start/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions[\s\S]*max-height:\s*var\(--bj-actions-panel-compact-max-height\)/,
     );
-    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*3/);
-    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*z-index:\s*4/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*z-index:\s*3/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*4/);
     expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*z-index:\s*5/);
   });
 
-  it('reveals hero card tops below command in Card View', () => {
+  it('reveals hero card tops below actions in Card View', () => {
     expect(LAYOUT_CSS).toMatch(
       /\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__play-area[\s\S]*justify-content:\s*flex-start/,
     );

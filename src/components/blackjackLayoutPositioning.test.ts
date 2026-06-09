@@ -62,7 +62,7 @@ describe('Card View actions route', () => {
     expect(ACTION_PANEL_SRC).toContain('bj-table-actions__btn');
   });
 
-  it('routes mobile Card View Hit/Stand through the actions zone above command', () => {
+  it('routes mobile Card View Hit/Stand through the actions zone below command', () => {
     expect(CARD_VIEW_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--actions \.bj-table-actions > \.bj-table-actions__row:first-child[\s\S]*display:\s*none/,
     );

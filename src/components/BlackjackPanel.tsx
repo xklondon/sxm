@@ -47,6 +47,7 @@ import {
 } from './chipPointerDrag';
 import { StakeChips, ValueAndChipsBar, type ChipValue } from './ChipStack';
 import { PlayingCard } from './PlayingCard';
+import { formatShortCardLabel, isRedSuit } from './cardDisplay';
 import { useBlackjackTableFlow } from './useBlackjackTableFlow';
 import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
 import { BlackjackCardView } from './BlackjackCardView';
@@ -1313,6 +1314,9 @@ export function BlackjackPanel({
       ? getDisplayedHandValue(visualDeck, visualRound, primaryHandKey)
       : null;
     const primaryHand = primaryHandKey ? visualRound?.playerHands[primaryHandKey] : null;
+    const visibleCardIds = primaryHandKey
+      ? getVisibleHandCardIds(visualRound, primaryHandKey)
+      : [];
     const isBusted = primaryHand?.actionStatus === 'busted';
     const valueLabel = isBusted
       ? 'BUST'
@@ -1399,6 +1403,46 @@ export function BlackjackPanel({
             boxLabel={boxInfo.boxLabel}
             callerDisplayName={boxInfo.callerDisplayName}
           />
+          {visibleCardIds.length > 0 && visualDeck ? (
+            <span
+              className="bj-phone-view__mini-hand-composition"
+              aria-label={`Cards: ${visibleCardIds
+                .map((id) => {
+                  const card = getCardById(visualDeck, id);
+                  return card ? formatShortCardLabel(card) : '';
+                })
+                .filter(Boolean)
+                .join(' ')}`}
+            >
+              {visibleCardIds.map((id, index) => {
+                const card = getCardById(visualDeck, id);
+                if (!card) {
+                  return null;
+                }
+                return (
+                  <span
+                    key={`${boxId}-composition-${id}-${index}`}
+                    className={[
+                      'bj-phone-view__mini-hand-composition-card',
+                      isRedSuit(card.suit) ? 'bj-phone-view__mini-hand-composition-card--red' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
+                    {formatShortCardLabel(card)}
+                    {index < visibleCardIds.length - 1 ? ' ' : ''}
+                  </span>
+                );
+              })}
+            </span>
+          ) : (
+            <span
+              className="bj-phone-view__mini-hand-composition bj-phone-view__mini-hand-composition--placeholder"
+              aria-hidden="true"
+            >
+              &nbsp;
+            </span>
+          )}
           <span
             className={['bj-phone-view__mini-stake-slot', TABLE_UX.boxInteractive]
               .filter(Boolean)

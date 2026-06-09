@@ -17,8 +17,8 @@ describe('desktop canonical grid — Full Table and Card View parity', () => {
     expect(SHARED_CSS).toContain('--bj-desktop-zone-dealer-height: 7.75rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-command-height: 4rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-command-gap: 0');
-    expect(SHARED_CSS).toContain('--bj-actions-command-gap: 0.08rem');
-    expect(SHARED_CSS).toContain('--bj-dealer-actions-gap: 0.08rem');
+    expect(SHARED_CSS).toContain('--bj-command-actions-gap: 0.08rem');
+    expect(SHARED_CSS).toContain('--bj-dealer-command-gap: 0.08rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-actions-height: 2.9rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-height: 6.65rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-tray-height: 4.35rem');
@@ -32,8 +32,8 @@ describe('desktop canonical grid — Full Table and Card View parity', () => {
     const desktop = desktopShellBlock();
     expect(desktop).toMatch(/\.bj-table-layout-shell\s*\{[\s\S]*display:\s*grid/);
     expect(desktop).toContain('[dealer] var(--bj-desktop-zone-dealer-height)');
-    expect(desktop).toContain('[actions] var(--bj-desktop-zone-actions-height)');
     expect(desktop).toContain('[command] var(--bj-desktop-zone-command-height)');
+    expect(desktop).toContain('[actions] var(--bj-desktop-zone-actions-height)');
     expect(desktop).toContain('[cards] var(--bj-desktop-grid-row-cards)');
     expect(desktop).toContain('[boxes] var(--bj-desktop-zone-boxes-height)');
     expect(desktop).toContain('[tray] var(--bj-desktop-zone-tray-height)');

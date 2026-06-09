@@ -115,9 +115,9 @@ describe('mobile Card View composition contract', () => {
     const boxesIdx = html.indexOf(TABLE_UX.tableZoneBoxes);
     const trayIdx = html.indexOf(TABLE_UX.tableZoneBottom);
     expect(dealerIdx).toBeGreaterThan(shellIdx);
-    expect(actionsIdx).toBeGreaterThan(dealerIdx);
-    expect(summaryIdx).toBeGreaterThan(actionsIdx);
-    expect(cardsIdx).toBeGreaterThan(summaryIdx);
+    expect(summaryIdx).toBeGreaterThan(dealerIdx);
+    expect(actionsIdx).toBeGreaterThan(summaryIdx);
+    expect(cardsIdx).toBeGreaterThan(actionsIdx);
     expect(boxesIdx).toBeGreaterThan(cardsIdx);
     expect(trayIdx).toBeGreaterThan(boxesIdx);
   });

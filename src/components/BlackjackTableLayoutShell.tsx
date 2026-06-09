@@ -24,7 +24,7 @@ export interface BlackjackTableLayoutShellProps {
 
 /**
  * Canonical blackjack table layout — same DOM order for Full Table and Card View.
- * Dealer → Actions → Command → CardsArea → PlayerBoxes → ChipTray
+ * Dealer → Command → Actions → CardsArea → PlayerBoxes → ChipTray
  */
 export function BlackjackTableLayoutShell({
   feltClothLayer,
@@ -50,12 +50,12 @@ export function BlackjackTableLayoutShell({
     >
       {dealer}
 
-      <BlackjackActionsZone>{actions}</BlackjackActionsZone>
-
       <BlackjackCommandZone>
         {command}
         {summaryExtras}
       </BlackjackCommandZone>
+
+      <BlackjackActionsZone>{actions}</BlackjackActionsZone>
 
       <BlackjackCardsAreaZone mode={cardsAreaMode}>
         {feltClothLayer}

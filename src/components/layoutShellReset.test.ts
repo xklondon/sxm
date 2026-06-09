@@ -23,8 +23,8 @@ describe('layout shell reset — Full Table + Card View', () => {
     const body = SHELL_SRC.slice(SHELL_SRC.indexOf('return ('));
     const order = [
       '{dealer}',
-      'BlackjackActionsZone',
       'BlackjackCommandZone',
+      'BlackjackActionsZone',
       'BlackjackCardsAreaZone',
       'BlackjackPlayerBoxesZone',
       'TABLE_UX.tableZoneBottom',

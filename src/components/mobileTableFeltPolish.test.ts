@@ -53,10 +53,10 @@ describe('mobile table felt polish — Full Table + Card View parity', () => {
     );
   });
 
-  it('adds mobile dealer-to-actions gap and centers command on table axis', () => {
+  it('adds mobile dealer-to-command gap and centers command on table axis', () => {
     expect(SHARED_CSS).toContain('--bj-mobile-zone-command-top-gap: 0.62rem');
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*margin-top:\s*var\(--bj-mobile-zone-command-top-gap\)/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--summary,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*padding-top:\s*var\(--bj-mobile-zone-command-top-gap\)/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--summary \.bj-card-layout__command,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--summary \.bj-card-layout__command[\s\S]*margin-inline:\s*auto/,

@@ -97,3 +97,8 @@ export function isPipRank(rank: Rank): rank is Exclude<Rank, 'J' | 'Q' | 'K' | '
 export function isFaceRank(rank: Rank): boolean {
   return rank === 'J' || rank === 'Q' || rank === 'K';
 }
+
+/** Compact rank+suit label for player-box hand composition (e.g. `10♠`). */
+export function formatShortCardLabel(card: { rank: Rank; suit: Suit }): string {
+  return `${card.rank}${SUIT_SYMBOLS[card.suit]}`;
+}

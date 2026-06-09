@@ -106,18 +106,20 @@ function boxSlotIndex(html: string): number {
 }
 
 describe('Card View central layout', () => {
-  it('dealer command sits between dealer stack and hero display', () => {
+  it('dealer command sits between dealer stack and actions, with hero below actions', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).toContain('dealer-block__stack');
     expect(html).toContain('bj-card-layout__command');
     expect(html).not.toContain('dealer-block__hero-row');
     const stackIdx = html.indexOf('dealer-block__stack');
     const commandIdx = html.indexOf('bj-card-layout__command');
+    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
     const heroIdx = html.indexOf(TABLE_UX.cardsAreaHero);
     const cardsIdx = html.indexOf('dealer-block__cards-slot');
     expect(stackIdx).toBeGreaterThan(-1);
     expect(commandIdx).toBeGreaterThan(stackIdx);
-    expect(heroIdx).toBeGreaterThan(commandIdx);
+    expect(actionsIdx).toBeGreaterThan(commandIdx);
+    expect(heroIdx).toBeGreaterThan(actionsIdx);
     expect(cardsIdx).toBeGreaterThan(stackIdx);
     expect(cardsIdx).toBeLessThan(commandIdx);
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');

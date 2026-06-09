@@ -24,7 +24,7 @@ describe('blackjack actions + cloth tuning', () => {
 
   it('keeps action panel between command and cards with top-aligned compact chrome', () => {
     const desktop = desktopShellBlock();
-    expect(desktop).toMatch(/\[actions\][\s\S]*\[command\][\s\S]*\[cards\]/);
+    expect(desktop).toMatch(/\[command\][\s\S]*\[actions\][\s\S]*\[cards\]/);
     expect(desktop).toMatch(
       /\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*align-items:\s*flex-start/,
     );

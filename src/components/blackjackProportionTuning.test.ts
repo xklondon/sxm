@@ -66,8 +66,8 @@ describe('blackjack proportion tuning — zone tokens and Stitch-aligned surface
   it('does not change shell zone order or API', () => {
     expect(SHELL_SRC).toContain('feltClothLayer?: ReactNode');
     const renderBlock = SHELL_SRC.match(/return \(\s*[\s\S]*?\n  \);/)?.[0] ?? '';
-    expect(renderBlock.indexOf('{dealer}')).toBeLessThan(renderBlock.indexOf('BlackjackActionsZone'));
-    expect(renderBlock.indexOf('BlackjackActionsZone')).toBeLessThan(renderBlock.indexOf('BlackjackCommandZone'));
+    expect(renderBlock.indexOf('{dealer}')).toBeLessThan(renderBlock.indexOf('BlackjackCommandZone'));
+    expect(renderBlock.indexOf('BlackjackCommandZone')).toBeLessThan(renderBlock.indexOf('BlackjackActionsZone'));
     expect(renderBlock.indexOf('BlackjackActionsZone')).toBeLessThan(renderBlock.indexOf('BlackjackCardsAreaZone'));
     expect(renderBlock.indexOf('BlackjackCardsAreaZone')).toBeLessThan(renderBlock.indexOf('BlackjackPlayerBoxesZone'));
   });
