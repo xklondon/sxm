@@ -321,6 +321,34 @@
   overflow: hidden;
   margin-top: var(--bj-cardview-actions-cards-gap);
   padding-top: var(--bj-cardview-hero-top-inset);
+  position: relative;
+}
+
+.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area {
+  justify-content: center;
+  align-items: flex-start;
+  overflow: visible;
+}
+
+.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center {
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot,
+.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
+.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
+  justify-content: center;
+  align-items: flex-start;
+  overflow: visible;
 }
 
 .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view,
@@ -334,30 +362,23 @@
 .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
 .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
 .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
-.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
-.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area,
-.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area,
-.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center,
-.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center,
-.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot,
-.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot,
-.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
-.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
-.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan,
-.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
-  justify-content: center;
-  align-items: flex-start;
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage {
+  justify-content: flex-start;
+  align-items: stretch;
   overflow: visible;
 }
 
 .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card,
-.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card {
+  margin-top: 0;
+  top: 0;
+}
+
 .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__card-wrap,
 .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__card-wrap {
   margin-top: 0;
-  transform: none;
   top: 0;
-  align-self: flex-start;
+  align-self: center;
 }
 
 /* Deprecated grid wrapper — shell is .bj-table-layout-shell. */

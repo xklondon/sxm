@@ -102,15 +102,15 @@ describe('Card View polish guards', () => {
     expect(playing).toContain('disabled');
     expect(playing).toContain('dealer-block__action--disabled');
 
-    const shuffle = renderDealerBlock({
+    const firstStart = renderDealerBlock({
       shoeStarted: false,
       bettingOpen: true,
       hasStakes: false,
       bankerReady: false,
     });
-    expect(shuffle).toContain('Shuffle to start');
-    expect(shuffle).toContain('disabled');
-    expect(shuffle).toContain(TABLE_UX.dealerActionReserved);
+    expect(firstStart).toContain('Deal Cards');
+    expect(firstStart).toContain('disabled');
+    expect(firstStart).toContain(TABLE_UX.dealerActionReserved);
   });
 
   it('uses compact total badge class in Card View hero markup', () => {

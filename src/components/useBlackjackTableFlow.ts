@@ -153,13 +153,76 @@ export function useBlackjackTableFlow(
       logDealSanity(state, { dealResult: `error: ${msg}` });
       reportFlowError(msg);
     }
-  }, [
-    actionPending,
-    clearFlowError,
-    onGameStateChange,
-    onlineDispatch,
-    reportFlowError,
-  ]);
+  }, [actionPending, clearFlowError, onGameStateChange, onlineDispatch, reportFlowError]);
+
+  const handlePrimaryDealAction = useCallback(
+    (options: {
+      firstStartShuffleDelayMs?: number;
+      onFirstStartShuffleAnimationStart?: () => void;
+      onFirstStartShuffleAnimationEnd?: () => void;
+    } = {}) => {
+      if (actionPending) {
+        return;
+      }
+      clearFlowError();
+      const state = gameStateRef.current;
+      const isFirstStart = !state.tableMeta.shoeStarted;
+
+      if (!isFirstStart) {
+        handleDealCards();
+        return;
+      }
+
+      if (!hasAnyStakes(state)) {
+        reportFlowError('Place bets first.');
+        return;
+      }
+
+      const delay = options.firstStartShuffleDelayMs ?? 0;
+      options.onFirstStartShuffleAnimationStart?.();
+      setActionPending(true);
+
+      void (async () => {
+        try {
+          if (delay > 0) {
+            await sleep(delay);
+          }
+          options.onFirstStartShuffleAnimationEnd?.();
+
+          if (onlineDispatch) {
+            await onlineDispatch('shuffleToStart', {});
+            await onlineDispatch('dealCards', {});
+            clearFlowError();
+            logDealSanity(gameStateRef.current, { dealResult: 'ok' });
+            return;
+          }
+
+          let next = shuffleToStartOnState(gameStateRef.current);
+          logDealCardsAudit(next);
+          next = dealCardsButtonOnState(next);
+          logDealCardsAudit(next, { blockReason: null });
+          logDealSanity(state, { dealResult: 'ok' });
+          onGameStateChange(next);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : 'Cannot deal';
+          logDealCardsAudit(state, { blockReason: msg });
+          log.info('Deal Cards blocked', { reason: msg });
+          logDealSanity(state, { dealResult: `error: ${msg}` });
+          reportFlowError(msg);
+        } finally {
+          setActionPending(false);
+        }
+      })();
+    },
+    [
+      actionPending,
+      clearFlowError,
+      handleDealCards,
+      onGameStateChange,
+      onlineDispatch,
+      reportFlowError,
+    ],
+  );
 
   const handleRecordWagerResult = useCallback(() => {
     setFlowError(null);
@@ -432,6 +495,7 @@ export function useBlackjackTableFlow(
     hasStakes: hasAnyStakes(gameState),
     hasEligibleStakes: hasEligibleDealBoxes(gameState),
     handleDealCards,
+    handlePrimaryDealAction,
     handleNextRound,
     handleShuffleToStart,
     handleShuffleFresh,

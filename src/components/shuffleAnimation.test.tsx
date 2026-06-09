@@ -8,11 +8,9 @@ const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPane
 const DEALER_CSS = readFileSync(join(process.cwd(), 'src/components/DealerBlock.css'), 'utf8');
 
 describe('dealer shuffle animation', () => {
-  it('Panel triggers shuffle animation before existing shuffle handler', () => {
-    expect(PANEL_SRC).toContain('handleShuffleWithAnimation');
-    expect(PANEL_SRC).toMatch(/setShuffleAnimating\(true\)/);
-    expect(PANEL_SRC).toMatch(/handleShuffleWithAnimation[\s\S]*handleShuffleToStart\(\)/);
-    expect(PANEL_SRC).toContain('shuffleAnimating');
+  it('Panel wires primary deal handler with shuffle animation hooks', () => {
+    expect(PANEL_SRC).toMatch(/runPrimaryDealAction\([\s\S]*firstStartShuffleDelayMs/);
+    expect(PANEL_SRC).toMatch(/onFirstStartShuffleAnimationStart/);
   });
 
   it('applies shuffling class to dealer card stack when animating', () => {

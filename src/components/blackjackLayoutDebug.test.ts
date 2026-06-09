@@ -101,7 +101,7 @@ describe('canonical blackjack zone order and separation', () => {
       /\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards--fan[\s\S]*align-items:\s*flex-start/,
     );
     expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-phone-view__play-area--controls \.bj-phone-view__hero-center[\s\S]*align-items:\s*flex-start/,
+      /\.bj-view-card-mobile \.bj-phone-view__play-area--controls \.bj-phone-view__hero-center[\s\S]*align-items:\s*center/,
     );
     expect(LAYOUT_CSS).not.toMatch(
       /\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*margin-top:\s*-/,

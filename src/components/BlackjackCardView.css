@@ -2001,14 +2001,16 @@
 
   .bj-view-card-mobile .bj-phone-view__play-area--controls {
     align-items: stretch;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 0.2rem;
   }
 
   .bj-view-card-mobile .bj-phone-view__play-area--controls .bj-phone-view__hero-center {
     flex: 1 1 auto;
     min-width: 0;
-    align-items: flex-start;
+    width: 100%;
+    max-width: 100%;
+    align-items: center;
     justify-content: flex-start;
   }
 

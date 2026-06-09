@@ -108,7 +108,7 @@ export function DealerBlock({
   bettingOpen,
   canDeal,
   hasStakes,
-  onShuffleToStart,
+  onShuffleToStart: _onShuffleToStart,
   onDealCards,
   onDealNextCard,
   onDrawBank,
@@ -171,10 +171,12 @@ export function DealerBlock({
     }
 
     if (!shoeStarted) {
+      const pending = dealActionPending || shuffleAnimating;
       return {
-        label: 'Shuffle to start',
-        disabled: !bankerReady || !hasStakes || dealActionPending,
-        onClick: onShuffleToStart,
+        label: pending ? 'Dealing…' : 'Deal Cards',
+        disabled: !bankerReady || !hasStakes || pending,
+        onClick: onDealCards,
+        cardsVariant: true,
       };
     }
 

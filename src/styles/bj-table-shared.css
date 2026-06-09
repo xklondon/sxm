@@ -1467,9 +1467,11 @@
 .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot {
   order: 2;
   flex: 0 0 auto;
-  margin-top: 0;
+  margin-top: auto;
+  padding-top: 0.08rem;
   min-height: var(--bj-full-table-stake-min-height);
   width: 100%;
+  align-items: flex-end;
 }
 
 .bj-view-full-desktop .bj-arc__slot--owned,
@@ -2643,5 +2645,6 @@
     justify-content: flex-start;
     align-items: stretch;
     overflow: hidden;
+    position: relative;
   }
 }

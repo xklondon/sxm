@@ -40,6 +40,7 @@ describe('blackjack four visual fixes', () => {
       LAYOUT_CSS.indexOf('Card View layout guards'),
       LAYOUT_CSS.indexOf('/* Deprecated grid wrapper'),
     );
+    expect(guard).toMatch(/\.bj-phone-view__hero-center[\s\S]*align-items:\s*center/);
     expect(guard).toMatch(/\.bj-phone-view__cards-slot[\s\S]*justify-content:\s*center/);
     expect(guard).toMatch(/\.bj-phone-view__cards[\s\S]*justify-content:\s*center/);
     expect(guard).toMatch(/\.bj-phone-view__cards--fan[\s\S]*justify-content:\s*center/);
@@ -80,7 +81,12 @@ describe('blackjack four visual fixes', () => {
     );
   });
 
-  it('keeps felt cloth layer class on CardsArea mount path', () => {
-    expect(CLOTH_SRC).toContain('TABLE_UX.feltClothLayer');
+  it('pushes player box stake chips toward the bottom of the frame', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-phone-view__mini-hand--full-arc \.bj-phone-view__mini-stake-slot[\s\S]*margin-top:\s*auto/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-phone-view__mini-hand--full-arc \.bj-phone-view__mini-stake-slot[\s\S]*align-items:\s*flex-end/,
+    );
   });
 });

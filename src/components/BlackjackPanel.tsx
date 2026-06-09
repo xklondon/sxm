@@ -274,7 +274,7 @@ export function BlackjackPanel({
     awaitingNextRound,
     gameEnded,
     gameOverMessage,
-    handleDealCards,
+    handlePrimaryDealAction: runPrimaryDealAction,
     handleNextRound,
     handleDealNextCard,
     handleDrawBank,
@@ -845,16 +845,27 @@ export function BlackjackPanel({
       : undefined,
   };
 
-  function handleShuffleWithAnimation() {
-    setShuffleAnimating(true);
-    if (shuffleAnimTimerRef.current) {
-      clearTimeout(shuffleAnimTimerRef.current);
-    }
-    shuffleAnimTimerRef.current = setTimeout(() => {
-      setShuffleAnimating(false);
-      shuffleAnimTimerRef.current = null;
-    }, SHUFFLE_ANIM_DURATION_MS);
-    handleShuffleToStart();
+  function handlePrimaryDealAction() {
+    runPrimaryDealAction({
+      firstStartShuffleDelayMs: tableMeta.shoeStarted ? 0 : SHUFFLE_ANIM_DURATION_MS,
+      onFirstStartShuffleAnimationStart: () => {
+        setShuffleAnimating(true);
+        if (shuffleAnimTimerRef.current) {
+          clearTimeout(shuffleAnimTimerRef.current);
+        }
+        shuffleAnimTimerRef.current = setTimeout(() => {
+          setShuffleAnimating(false);
+          shuffleAnimTimerRef.current = null;
+        }, SHUFFLE_ANIM_DURATION_MS);
+      },
+      onFirstStartShuffleAnimationEnd: () => {
+        setShuffleAnimating(false);
+        if (shuffleAnimTimerRef.current) {
+          clearTimeout(shuffleAnimTimerRef.current);
+          shuffleAnimTimerRef.current = null;
+        }
+      },
+    });
   }
 
   const dealerBlockProps = {
@@ -877,9 +888,9 @@ export function BlackjackPanel({
     bettingOpen,
     canDeal,
     hasStakes,
-    onShuffleToStart: handleShuffleWithAnimation,
+    onShuffleToStart: handleShuffleToStart,
     shuffleAnimating,
-    onDealCards: handleDealCards,
+    onDealCards: handlePrimaryDealAction,
     onDealNextCard: handleDealNextCard,
     onDrawBank: handleDrawBank,
     dealActionPending,

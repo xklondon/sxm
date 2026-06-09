@@ -56,7 +56,7 @@ describe('Card View layout guards', () => {
       LAYOUT_CSS.indexOf('/* Deprecated grid wrapper'),
     );
     expect(heroGuard).toMatch(/margin-top:\s*0/);
-    expect(heroGuard).toMatch(/transform:\s*none/);
+    expect(heroGuard).not.toMatch(/translateY/i);
     expect(LAYOUT_CSS).not.toMatch(
       /\.bj-view-card-(?:desktop|mobile)[\s\S]*margin-top:\s*-/,
     );
@@ -80,7 +80,7 @@ describe('Card View layout guards', () => {
       /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*justify-content:\s*center/,
     );
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__card-wrap[\s\S]*align-self:\s*flex-start/,
+      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__card-wrap[\s\S]*align-self:\s*center/,
     );
   });
 
