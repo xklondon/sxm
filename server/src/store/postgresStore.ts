@@ -270,6 +270,26 @@ export function createPostgresStore(prisma: PrismaClient): Store {
       });
     },
 
+    createJoinRequest(request) {
+      return game.createJoinRequest(request);
+    },
+
+    getJoinRequest(tableId, requestId) {
+      return game.getJoinRequest(tableId, requestId);
+    },
+
+    listJoinRequestsForTable(tableId) {
+      return game.listJoinRequestsForTable(tableId);
+    },
+
+    listJoinRequestsForUser(userId) {
+      return game.listJoinRequestsForUser(userId);
+    },
+
+    updateJoinRequestStatus(tableId, requestId, status) {
+      return game.updateJoinRequestStatus(tableId, requestId, status);
+    },
+
     async createPerson(record) {
       const normalized = record.email.trim().toLowerCase();
       const row = await prisma.person.create({

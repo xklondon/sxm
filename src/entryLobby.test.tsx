@@ -1,8 +1,7 @@
 // @vitest-environment happy-dom
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import App from './App';
-import { TableNotFoundError } from './api/client';
 import { ONLINE_TABLE_STORAGE_KEY } from './onlineTableStorage';
 
 const VALID_TABLE = 'a1b2c3d4-e5f6-4789-a012-3456789abcde';
@@ -44,17 +43,8 @@ vi.mock('./design/templates', async (importOriginal) => {
 });
 
 const { createOnlineTableMock, fetchTableMock } = vi.hoisted(() => ({
-  createOnlineTableMock: vi.fn(async () => {
-    const { createNewBlackjackTable } = await import('./engine/session');
-    return {
-      tableId: '11111111-1111-4111-8111-111111111111',
-      version: 1,
-      state: createNewBlackjackTable(),
-    };
-  }),
-  fetchTableMock: vi.fn(async (tableId: string) => {
-    throw new TableNotFoundError(tableId);
-  }),
+  createOnlineTableMock: vi.fn(),
+  fetchTableMock: vi.fn(),
 }));
 
 vi.mock('./api/client', async (importOriginal) => {
@@ -75,7 +65,7 @@ const rootUser = {
   isRoot: true,
 };
 
-describe('App render (hooks order / online bootstrap)', () => {
+describe('entry lobby boot flow', () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
@@ -83,24 +73,29 @@ describe('App render (hooks order / online bootstrap)', () => {
     fetchTableMock.mockClear();
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('does not auto-create when stored id exists without URL table param', async () => {
+  it('shows Entry Lobby when stored table id exists but no URL table param', async () => {
     localStorage.setItem(ONLINE_TABLE_STORAGE_KEY, VALID_TABLE);
     render(<App user={rootUser} onlineMode bootTableId={null} />);
     await waitFor(() => {
       expect(screen.getByText('Open New Table')).toBeTruthy();
+      expect(screen.getByText('Join a Table')).toBeTruthy();
+      expect(screen.getByText('Load a Table')).toBeTruthy();
     });
-    expect(createOnlineTableMock).not.toHaveBeenCalled();
     expect(fetchTableMock).not.toHaveBeenCalled();
+    expect(createOnlineTableMock).not.toHaveBeenCalled();
   });
 
-  it('ignores stale localStorage table id without crashing', async () => {
-    localStorage.setItem(ONLINE_TABLE_STORAGE_KEY, 'stale-not-uuid');
-    expect(() =>
-      render(<App user={rootUser} onlineMode bootTableId={null} forceNewTable={false} />),
-    ).not.toThrow();
+  it('loads table when bootTableId comes from invite URL param', async () => {
+    const { createNewBlackjackTable } = await import('./engine/session');
+    fetchTableMock.mockResolvedValue({
+      tableId: VALID_TABLE,
+      version: 1,
+      state: createNewBlackjackTable(),
+      memberPersonId: 'p1',
+    });
+    render(<App user={rootUser} onlineMode bootTableId={VALID_TABLE} />);
+    await waitFor(() => {
+      expect(fetchTableMock).toHaveBeenCalledWith(VALID_TABLE);
+    });
   });
 });

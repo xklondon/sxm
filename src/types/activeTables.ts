@@ -1,6 +1,6 @@
 import type { TableMode } from './table';
 
-export type ActiveTableAccess = 'open' | 'join';
+export type ActiveTableAccess = 'open' | 'join' | 'request' | 'pending';
 
 export interface ActiveTableSummary {
   tableId: string;
@@ -10,9 +10,13 @@ export interface ActiveTableSummary {
   wager: string | null;
   players: string[];
   bank: string;
+  host: string;
+  hostEmail: string | null;
+  playerCount: number;
   status: 'active' | 'ended' | 'setup';
   createdAt: string;
   access: ActiveTableAccess;
   inviteId?: string;
   inviteToken?: string;
+  joinRequestId?: string;
 }

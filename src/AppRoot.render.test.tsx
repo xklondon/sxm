@@ -77,7 +77,7 @@ describe('AppRoot render', () => {
     });
   });
 
-  it('ignores stale localStorage table id', async () => {
+  it('ignores stale localStorage table id without auto-fetch on boot', async () => {
     localStorage.setItem(ONLINE_TABLE_STORAGE_KEY, 'bad-table');
     vi.stubGlobal(
       'fetch',
@@ -95,9 +95,10 @@ describe('AppRoot render', () => {
         return Response.json({ error: 'not found' }, { status: 404 });
       }),
     );
-    expect(() => render(<AppRoot />)).not.toThrow();
+    render(<AppRoot />);
     await waitFor(() => {
-      expect(localStorage.getItem(ONLINE_TABLE_STORAGE_KEY)).toBeNull();
+      expect(screen.getByText('Open New Table')).toBeTruthy();
     });
+    expect(localStorage.getItem(ONLINE_TABLE_STORAGE_KEY)).toBe('bad-table');
   });
 });

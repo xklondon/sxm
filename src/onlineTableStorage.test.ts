@@ -5,6 +5,7 @@ import {
   isValidOnlineTableId,
   readStoredOnlineTableId,
   resolveOnlineTableId,
+  resolveBootTableId,
   writeStoredOnlineTableId,
 } from './onlineTableStorage';
 
@@ -36,5 +37,11 @@ describe('onlineTableStorage', () => {
   it('forceNewTable ignores storage', () => {
     writeStoredOnlineTableId(VALID);
     expect(resolveOnlineTableId(null, true)).toBeNull();
+  });
+
+  it('resolveBootTableId ignores stored table id', () => {
+    writeStoredOnlineTableId(VALID);
+    expect(resolveBootTableId(null, false)).toBeNull();
+    expect(resolveBootTableId(VALID, false)).toBe(VALID);
   });
 });

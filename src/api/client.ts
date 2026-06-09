@@ -201,6 +201,27 @@ export async function fetchMyTables(): Promise<import('../types/activeTables').A
   return data.tables as import('../types/activeTables').ActiveTableSummary[];
 }
 
+export async function fetchActiveTables(): Promise<import('../types/activeTables').ActiveTableSummary[]> {
+  const res = await apiFetch('/api/tables/active');
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error ?? 'Could not load active tables');
+  }
+  return data.tables as import('../types/activeTables').ActiveTableSummary[];
+}
+
+export async function requestTableAccess(tableId: string, displayName: string): Promise<{ requestId: string }> {
+  const res = await apiFetch(`/api/tables/${tableId}/request-access`, {
+    method: 'POST',
+    body: JSON.stringify({ displayName }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error ?? 'Could not request access');
+  }
+  return data as { requestId: string };
+}
+
 export async function fetchTable(tableId: string) {
   const res = await apiFetch(`/api/tables/${tableId}`);
   const data = (await res.json()) as { error?: string };

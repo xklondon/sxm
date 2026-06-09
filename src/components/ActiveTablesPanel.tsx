@@ -64,6 +64,13 @@ export function ActiveTablesPanel({
       onClose();
       return;
     }
+    if (table.access === 'pending') {
+      return;
+    }
+    if (table.access === 'request') {
+      setError('Use Join a Table from the entry lobby to request access.');
+      return;
+    }
     if (!table.inviteId || !table.inviteToken) {
       setError('Invite details missing — ask the host for a new link.');
       return;
@@ -149,7 +156,11 @@ export function ActiveTablesPanel({
                     ? 'Joining…'
                     : table.access === 'join'
                       ? 'Join'
-                      : 'Open'}
+                      : table.access === 'pending'
+                        ? 'Pending'
+                        : table.access === 'request'
+                          ? 'Request in lobby'
+                          : 'Open'}
               </button>
             </li>
           ))}

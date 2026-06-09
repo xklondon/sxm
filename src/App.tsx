@@ -7,6 +7,7 @@ import {
 } from './engine/session';
 import type { TableStakeSetupInput } from './engine/session/tableSetup';
 import { applySettingsToGameState, loadSettings } from './storage/settingsStorage';
+import { loadArchivedGame } from './storage/gameStorage';
 import { applyTableVisualPrefs } from './types/tableFeltSkin';
 import {
   loadProfile,
@@ -15,6 +16,8 @@ import {
 } from './storage/profileStorage';
 import { applyDesignTemplateToDocument } from './design/templates';
 import { StartScreen } from './screens/StartScreen';
+import { EntryLobbyScreen, type EntryLobbyPanel } from './screens/EntryLobbyScreen';
+import type { LoadTableEntry } from './components/LoadTableList';
 import { GameSetupScreen } from './screens/GameSetupScreen';
 import { TableScreen, type TableNavHandlers } from './screens/TableScreen';
 import { LocalProfileSetup } from './components/LocalProfileSetup';
@@ -42,12 +45,12 @@ import { consumePendingTable, rememberPendingTable } from './session/pendingTabl
 import { syncStoredViewerPersonId, applyOnlineTableBootstrap } from './components/viewerIdentity';
 import './index.css';
 
-type AppScreen = 'start' | 'setup' | 'table' | 'people';
+type AppScreen = 'lobby' | 'start' | 'setup' | 'table' | 'people';
 
 interface AppProps {
   user?: AuthUser | null;
   onlineMode?: boolean;
-  onlineTableId?: string | null;
+  bootTableId?: string | null;
   forceNewTable?: boolean;
 }
 
@@ -110,18 +113,24 @@ function formatRoleLabel(user?: AuthUser | null): string {
   }
 }
 
-export default function App({ user, onlineMode = false, onlineTableId = null, forceNewTable = false }: AppProps) {
+export default function App({ user, onlineMode = false, bootTableId = null, forceNewTable = false }: AppProps) {
   const [dismissStoredTable, setDismissStoredTable] = useState(false);
   const [tableMissingNotice, setTableMissingNotice] = useState<string | null>(null);
   const [activeTableId, setActiveTableId] = useState<string | null>(() =>
-    resolveEffectiveOnlineTableId(null, false, onlineTableId),
+    resolveEffectiveOnlineTableId(null, false, bootTableId),
   );
   const resolvedTableId = resolveEffectiveOnlineTableId(
     activeTableId,
     dismissStoredTable,
-    onlineTableId,
+    bootTableId,
   );
-  const [screen, setScreen] = useState<AppScreen>(resolvedTableId ? 'table' : 'start');
+  const initialScreen: AppScreen = resolvedTableId
+    ? 'table'
+    : onlineMode && user
+      ? 'lobby'
+      : 'start';
+  const [screen, setScreen] = useState<AppScreen>(initialScreen);
+  const [lobbyPanel, setLobbyPanel] = useState<EntryLobbyPanel>('home');
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loadingOnline, setLoadingOnline] = useState(Boolean(resolvedTableId));
   const [profileSetupOpen, setProfileSetupOpen] = useState(false);
@@ -130,14 +139,12 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
   const [inviteTableName, setInviteTableName] = useState<string | null>(null);
   const [tableVersion, setTableVersion] = useState<number | null>(null);
   const [tableNavHandlers, setTableNavHandlers] = useState<TableNavHandlers | null>(null);
-  const [tableBootstrapDone, setTableBootstrapDone] = useState(Boolean(resolvedTableId));
   const [bootstrappingTable, setBootstrappingTable] = useState(false);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
   const [activeTablesOpen, setActiveTablesOpen] = useState(false);
   const navMenuRef = useRef<HTMLDivElement>(null);
   const fetchGenerationRef = useRef(0);
-  const autoCreateStartedRef = useRef(false);
   const recoverInFlightRef = useRef(false);
   const isMobileViewport = useIsMobileViewport();
 
@@ -226,10 +233,11 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
       setTableVersion(null);
       setInviteTableName(null);
       setTableNavHandlers(null);
-      setTableBootstrapDone(true);
       fetchGenerationRef.current += 1;
 
-      const autoCreate = options?.autoCreate ?? userCanCreateOnlineTable(user);
+      const autoCreate =
+        options?.autoCreate ??
+        (Boolean(bootTableId) && userCanCreateOnlineTable(user));
       if (autoCreate) {
         setTableMissingNotice(null);
         setScreen('table');
@@ -246,9 +254,9 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
         options?.notice ??
           'This table is no longer on the server (it may have been cleared after a restart). Ask the host for a new invite link.',
       );
-      setScreen('start');
+      setScreen(onlineMode && user ? 'lobby' : 'start');
     },
-    [user, handleNewOnlineGame],
+    [user, handleNewOnlineGame, bootTableId, onlineMode],
   );
 
   useEffect(() => {
@@ -278,14 +286,15 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
         setDismissStoredTable(false);
         setInviteTableName(data.state.tableMeta.controllerName || null);
         setScreen('table');
-        setTableBootstrapDone(true);
       })
       .catch((err) => {
         if (fetchGenerationRef.current !== fetchGen) {
           return;
         }
         if (err instanceof TableNotFoundError) {
-          recoverMissingOnlineTable({ autoCreate: userCanCreateOnlineTable(user) });
+          recoverMissingOnlineTable({
+            autoCreate: Boolean(bootTableId) && userCanCreateOnlineTable(user),
+          });
           return;
         }
         setStoredOnlineTableId(null);
@@ -294,19 +303,43 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
         setActiveTableId(null);
         setGameState(null);
         setTableVersion(null);
-        setTableBootstrapDone(false);
-        autoCreateStartedRef.current = false;
         setTableMissingNotice(
           err instanceof Error ? err.message : 'Could not load table',
         );
-        setScreen('start');
+        setScreen(onlineMode && user ? 'lobby' : 'start');
       })
       .finally(() => {
         if (fetchGenerationRef.current === fetchGen) {
           setLoadingOnline(false);
         }
       });
-  }, [onlineMode, resolvedTableId, user, recoverMissingOnlineTable]);
+  }, [onlineMode, resolvedTableId, user, recoverMissingOnlineTable, bootTableId]);
+
+  const enterOnlineTable = useCallback((tableId: string) => {
+    setDismissStoredTable(false);
+    setActiveTableId(tableId);
+    setTableMissingNotice(null);
+    setScreen('table');
+  }, []);
+
+  const handleLoadEntry = useCallback(
+    (entry: LoadTableEntry) => {
+      if (entry.source === 'local' && entry.savedGameId) {
+        const state = loadArchivedGame(entry.savedGameId);
+        if (!state) {
+          window.alert('Saved game not found.');
+          return;
+        }
+        setGameState(normalizeLoadedGameState(state));
+        setScreen('table');
+        return;
+      }
+      if (entry.tableId) {
+        enterOnlineTable(entry.tableId);
+      }
+    },
+    [enterOnlineTable],
+  );
 
   const handleNewGame = useCallback(() => {
     if (onlineMode) {
@@ -376,34 +409,13 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
   );
 
   useEffect(() => {
-    if (!onlineMode || !user || resolvedTableId || loadingOnline || tableBootstrapDone) {
+    if (!onlineMode || !forceNewTable) {
       return;
     }
-    if (autoCreateStartedRef.current) {
-      return;
-    }
-    autoCreateStartedRef.current = true;
-    setTableBootstrapDone(true);
-    if (forceNewTable) {
-      window.history.replaceState({}, '', '/');
-    }
-    const canCreate = user.canOwnTables ?? true;
-    if (!canCreate) {
-      setScreen('start');
-      return;
-    }
-    setScreen('table');
-    setBootstrappingTable(true);
-    void handleNewOnlineGame().finally(() => setBootstrappingTable(false));
-  }, [
-    onlineMode,
-    user,
-    resolvedTableId,
-    loadingOnline,
-    tableBootstrapDone,
-    forceNewTable,
-    handleNewOnlineGame,
-  ]);
+    window.history.replaceState({}, '', '/');
+    setScreen('lobby');
+    setLobbyPanel('home');
+  }, [onlineMode, forceNewTable]);
 
   useEffect(() => {
     if (!navMenuOpen) {
@@ -425,8 +437,9 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     setStoredOnlineTableId(null);
     setTableNavHandlers(null);
     consumePendingTable();
-    setTableBootstrapDone(false);
-    setScreen('start');
+    setDismissStoredTable(true);
+    setLobbyPanel('home');
+    setScreen(onlineMode && user ? 'lobby' : 'start');
   }
 
   async function handleLogout() {
@@ -470,7 +483,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
             className="secondary"
             onClick={() => {
               setTableMissingNotice(null);
-              setScreen('start');
+              setScreen(onlineMode && user ? 'lobby' : 'start');
             }}
           >
             Back
@@ -487,7 +500,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
   const personalName =
     user?.displayName ?? user?.email ?? (profile.name.trim() || 'Player');
   const roleLabel = formatRoleLabel(user);
-  const showPersonalNav = screen === 'table' || screen === 'start';
+  const showPersonalNav = screen === 'table' || screen === 'start' || screen === 'lobby';
   const canOwnTables = user?.canOwnTables ?? !onlineMode;
   const onTableScreen = screen === 'table' && Boolean(gameState);
 
@@ -567,9 +580,8 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
           currentTableId={activeTableId}
           onOpenTable={(tableId) => {
             setDismissStoredTable(false);
-            setActiveTableId(tableId);
-            setScreen('table');
-            setTableBootstrapDone(false);
+            enterOnlineTable(tableId);
+            setActiveTablesOpen(false);
           }}
         />
       )}
@@ -717,9 +729,20 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
           </div>
         </header>
       )}
-      {screen === 'start' &&
-        !resolvedTableId &&
-        !(onlineMode && user && userCanCreateOnlineTable(user) && !tableMissingNotice) && (
+      {screen === 'lobby' && (
+        <EntryLobbyScreen
+          panel={lobbyPanel}
+          onPanelChange={setLobbyPanel}
+          onOpenNewTable={handleNewGame}
+          onOpenTable={enterOnlineTable}
+          onLoadEntry={handleLoadEntry}
+          onlineMode={onlineMode}
+          canOwnTables={canOwnTables}
+          showPeopleAdmin={isPeopleAdmin(user)}
+          onOpenPeople={() => setScreen('people')}
+        />
+      )}
+      {screen === 'start' && !onlineMode && (
         <StartScreen
           onNewGame={handleNewGame}
           onlineMode={onlineMode}
@@ -729,7 +752,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
         />
       )}
       {screen === 'people' && isPeopleAdmin(user) && (
-        <PeopleScreen onBack={() => setScreen('start')} />
+        <PeopleScreen onBack={() => setScreen(onlineMode && user ? 'lobby' : 'start')} />
       )}
       {screen === 'setup' && (
         <GameSetupScreen

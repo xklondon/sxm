@@ -1,0 +1,133 @@
+.entry-lobby {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1rem 2rem;
+  min-height: 0;
+}
+
+.entry-lobby__card {
+  width: min(100%, 28rem);
+  border-radius: var(--ds-radius-lg, 0.75rem);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: linear-gradient(180deg, rgb(12 28 22 / 0.96) 0%, rgb(6 16 12 / 0.98) 100%);
+  box-shadow: var(--ds-shadow-lg, 0 8px 24px rgb(0 0 0 / 0.35));
+  padding: 1.35rem 1.25rem 1.5rem;
+}
+
+.entry-lobby__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.55);
+}
+
+.entry-lobby__title {
+  margin: 0 0 0.45rem;
+  font-size: 1.55rem;
+  color: var(--ds-color-gold, #fbbf24);
+}
+
+.entry-lobby__subtitle {
+  margin: 0 0 1.1rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgb(255 255 255 / 0.72);
+}
+
+.entry-lobby__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.entry-lobby__actions button {
+  width: 100%;
+}
+
+.entry-lobby__hint {
+  margin: 0.65rem 0 0;
+  font-size: 0.72rem;
+  color: rgb(255 255 255 / 0.55);
+}
+
+.entry-lobby__back {
+  margin-bottom: 0.85rem;
+}
+
+.entry-lobby-panel__status,
+.entry-lobby-panel__empty {
+  margin: 0.5rem 0;
+  font-size: 0.78rem;
+  color: rgb(255 255 255 / 0.65);
+}
+
+.entry-lobby-panel__error {
+  margin: 0.5rem 0;
+  font-size: 0.78rem;
+  color: #fca5a5;
+}
+
+.entry-lobby-panel__list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: min(52vh, 22rem);
+  overflow-y: auto;
+}
+
+.entry-lobby-panel__item {
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: var(--ds-radius-md, 0.5rem);
+  padding: 0.65rem 0.7rem;
+  background: rgb(0 0 0 / 0.22);
+}
+
+.entry-lobby-panel__item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.entry-lobby-panel__item-head strong {
+  font-size: 0.88rem;
+}
+
+.entry-lobby-panel__badge {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.12rem 0.35rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  color: rgb(255 255 255 / 0.7);
+}
+
+.entry-lobby-panel__meta {
+  margin: 0 0 0.55rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: rgb(255 255 255 / 0.62);
+}
+
+.entry-lobby-panel__meta dt {
+  display: inline;
+  font-weight: 600;
+  color: rgb(255 255 255 / 0.78);
+}
+
+.entry-lobby-panel__meta dd {
+  display: inline;
+  margin: 0 0.65rem 0 0.25rem;
+}
+
+.entry-lobby-panel__action {
+  width: 100%;
+}

@@ -41,6 +41,17 @@ export interface TableMemberRecord {
   joinedAt: string;
 }
 
+export interface TableJoinRequestRecord {
+  id: string;
+  tableId: string;
+  userId: string;
+  userEmail: string;
+  displayName: string;
+  status: 'pending' | 'approved' | 'denied';
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
 export interface TableRecord {
   id: string;
   hostUserId: string;
@@ -105,6 +116,16 @@ export interface Store {
     tableId: string,
     inviteId: string,
     status: TableInviteRecord['status'],
+  ): MaybePromise<void>;
+
+  createJoinRequest(request: TableJoinRequestRecord): MaybePromise<void>;
+  getJoinRequest(tableId: string, requestId: string): MaybePromise<TableJoinRequestRecord | null>;
+  listJoinRequestsForTable(tableId: string): MaybePromise<TableJoinRequestRecord[]>;
+  listJoinRequestsForUser(userId: string): MaybePromise<TableJoinRequestRecord[]>;
+  updateJoinRequestStatus(
+    tableId: string,
+    requestId: string,
+    status: TableJoinRequestRecord['status'],
   ): MaybePromise<void>;
 
   createPerson(record: PersonRecord): MaybePromise<PersonRecord>;

@@ -87,7 +87,7 @@ describe('infra stability — socket disconnect', () => {
   });
 
   it('keeps table UI mounted when socket disconnects', async () => {
-    render(<App user={rootUser} onlineMode onlineTableId={tableId} />);
+    render(<App user={rootUser} onlineMode bootTableId={tableId} />);
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'This Table' })).toBeTruthy();

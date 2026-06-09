@@ -1,11 +1,10 @@
 import { sanitizeOnlineTableId } from './onlineTableStorage';
-import { getPendingTable } from './session/pendingTable';
 
-/** Prefer in-app active id so stale AppRoot props cannot re-trigger fetch loops. */
+/** Prefer in-app active id; boot uses URL-only table id (no localStorage auto-resume). */
 export function resolveEffectiveOnlineTableId(
   activeTableId: string | null,
   dismissStoredTable: boolean,
-  onlineTableIdProp: string | null,
+  bootTableId: string | null,
 ): string | null {
   const active = sanitizeOnlineTableId(activeTableId);
   if (active) {
@@ -14,5 +13,5 @@ export function resolveEffectiveOnlineTableId(
   if (dismissStoredTable) {
     return null;
   }
-  return sanitizeOnlineTableId(onlineTableIdProp) ?? sanitizeOnlineTableId(getPendingTable());
+  return sanitizeOnlineTableId(bootTableId);
 }

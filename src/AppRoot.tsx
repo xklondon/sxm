@@ -10,7 +10,7 @@ import {
 } from './api/client';
 import { isPublicAuthPath, shouldShowGlobalSessionLoading } from './auth/authBoot';
 import { isOnlineModeEnabled, apiPath } from './api/config';
-import { resolveOnlineTableId } from './onlineTableStorage';
+import { resolveBootTableId } from './onlineTableStorage';
 import { parseJoinTableParams } from './engine/table/invites';
 import { BOOT_STAGES, markBootStage, markBootSucceeded } from './debug/bootDiagnostics';
 import { AuthFetchError, accessDeniedMessage } from './auth/authErrors';
@@ -243,7 +243,7 @@ export function AppRoot() {
 
   const tableFromUrl = new URLSearchParams(window.location.search).get('table');
   const forceNewTable = new URLSearchParams(window.location.search).get('newTable') === '1';
-  const onlineTableId = resolveOnlineTableId(tableFromUrl, forceNewTable);
+  const bootTableId = resolveBootTableId(tableFromUrl, forceNewTable);
 
-  return <App user={user} onlineMode={onlineMode} onlineTableId={onlineTableId} forceNewTable={forceNewTable} />;
+  return <App user={user} onlineMode={onlineMode} bootTableId={bootTableId} forceNewTable={forceNewTable} />;
 }

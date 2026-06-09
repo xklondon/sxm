@@ -69,3 +69,14 @@ export function resolveOnlineTableId(
   }
   return readStoredOnlineTableId();
 }
+
+/** Normal app boot — only explicit URL table params (invite accept, deep links). */
+export function resolveBootTableId(
+  tableFromUrl: string | null,
+  forceNewTable: boolean,
+): string | null {
+  if (forceNewTable) {
+    return null;
+  }
+  return sanitizeOnlineTableId(tableFromUrl);
+}

@@ -5,6 +5,7 @@ import type {
   PersonRecord,
   Store,
   TableInviteRecord,
+  TableJoinRequestRecord,
   TableMemberRecord,
   TableRecord,
   UserRecord,
@@ -19,12 +20,17 @@ export function createMemoryStore(): Store {
   const members = new Map<string, TableMemberRecord[]>();
   const invites = new Map<string, TableInviteRecord>();
   const invitesByToken = new Map<string, TableInviteRecord>();
+  const joinRequests = new Map<string, TableJoinRequestRecord>();
   const peopleByEmail = new Map<string, PersonRecord>();
   const peopleById = new Map<string, PersonRecord>();
   const auditLogs: AuditLogRecord[] = [];
 
   function inviteKey(tableId: string, inviteId: string): string {
     return `${tableId}:${inviteId}`;
+  }
+
+  function joinRequestKey(tableId: string, requestId: string): string {
+    return `${tableId}:${requestId}`;
   }
 
   return {
@@ -151,6 +157,34 @@ export function createMemoryStore(): Store {
         const updated = { ...invite, status };
         invites.set(key, updated);
         invitesByToken.set(updated.token, updated);
+      }
+    },
+
+    createJoinRequest(request) {
+      joinRequests.set(joinRequestKey(request.tableId, request.id), request);
+    },
+
+    getJoinRequest(tableId, requestId) {
+      return joinRequests.get(joinRequestKey(tableId, requestId)) ?? null;
+    },
+
+    listJoinRequestsForTable(tableId) {
+      return [...joinRequests.values()].filter((request) => request.tableId === tableId);
+    },
+
+    listJoinRequestsForUser(userId) {
+      return [...joinRequests.values()].filter((request) => request.userId === userId);
+    },
+
+    updateJoinRequestStatus(tableId, requestId, status) {
+      const key = joinRequestKey(tableId, requestId);
+      const request = joinRequests.get(key);
+      if (request) {
+        joinRequests.set(key, {
+          ...request,
+          status,
+          resolvedAt: new Date().toISOString(),
+        });
       }
     },
 

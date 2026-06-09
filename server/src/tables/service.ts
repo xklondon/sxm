@@ -390,7 +390,14 @@ export class TableService {
 
       const member = this.store.getMember(table.id, user.id);
       if (table.hostUserId === user.id || member) {
-        summaries.set(table.id, buildActiveTableSummary(table, 'open'));
+        const hostUser = await this.store.getUserById(table.hostUserId);
+        summaries.set(
+          table.id,
+          buildActiveTableSummary(table, 'open', {
+            hostName: hostUser?.displayName ?? 'Host',
+            hostEmail: hostUser?.email ?? null,
+          }),
+        );
       }
     }
 
@@ -406,13 +413,187 @@ export class TableService {
       if (!table || table.state.tableMeta.gameStatus === 'ended') {
         continue;
       }
+      const hostUser = await this.store.getUserById(table.hostUserId);
       summaries.set(
         invite.tableId,
-        buildActiveTableSummary(table, 'join', invite),
+        buildActiveTableSummary(table, 'join', {
+          invite,
+          hostName: hostUser?.displayName ?? 'Host',
+          hostEmail: hostUser?.email ?? null,
+        }),
       );
     }
 
     return [...summaries.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  async listActiveTables(userId: string, sessionEmail?: string): Promise<ActiveTableSummary[]> {
+    const user = await this.people.resolveSessionUser(userId, sessionEmail, 'GET /api/tables/active');
+    const normalizedEmail = user.email.trim().toLowerCase();
+    const pendingRequests = await this.store.listJoinRequestsForUser(user.id);
+    const pendingByTable = new Map(
+      pendingRequests.filter((r) => r.status === 'pending').map((r) => [r.tableId, r]),
+    );
+    const invites = await this.store.listInvitesForEmail(normalizedEmail);
+    const inviteByTable = new Map(
+      invites.filter((i) => i.status === 'pending').map((i) => [i.tableId, i]),
+    );
+
+    const summaries: ActiveTableSummary[] = [];
+    for (const table of this.store.listAllTables()) {
+      if (table.state.tableMeta.gameStatus === 'ended') {
+        continue;
+      }
+      const hostUser = await this.store.getUserById(table.hostUserId);
+      const hostName = hostUser?.displayName ?? table.state.tableMeta.controllerName ?? 'Host';
+      const hostEmail = hostUser?.email ?? null;
+      const member = this.store.getMember(table.id, user.id);
+      let access: ActiveTableSummary['access'];
+      let invite: TableInviteRecord | undefined;
+      let joinRequestId: string | undefined;
+
+      if (table.hostUserId === user.id || member) {
+        access = 'open';
+      } else if (inviteByTable.has(table.id)) {
+        access = 'join';
+        invite = inviteByTable.get(table.id);
+      } else if (pendingByTable.has(table.id)) {
+        access = 'pending';
+        joinRequestId = pendingByTable.get(table.id)!.id;
+      } else {
+        access = 'request';
+      }
+
+      summaries.push(
+        buildActiveTableSummary(table, access, {
+          invite,
+          hostName,
+          hostEmail,
+          joinRequestId,
+        }),
+      );
+    }
+
+    return summaries.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  async requestTableAccess(params: {
+    tableId: string;
+    userId: string;
+    displayName: string;
+    sessionEmail?: string;
+  }): Promise<{ requestId: string }> {
+    const user = await this.people.resolveSessionUser(
+      params.userId,
+      params.sessionEmail,
+      'POST /api/tables/:id/request-access',
+    );
+    const table = this.store.getTable(params.tableId);
+    if (!table || table.state.tableMeta.gameStatus === 'ended') {
+      throw new Error('Table not found');
+    }
+    if (table.hostUserId === user.id || this.store.getMember(params.tableId, user.id)) {
+      throw new Error('You already have access to this table');
+    }
+    const existing = (await this.store.listJoinRequestsForUser(user.id)).find(
+      (request) => request.tableId === params.tableId && request.status === 'pending',
+    );
+    if (existing) {
+      return { requestId: existing.id };
+    }
+    const requestId = randomUUID();
+    await this.store.createJoinRequest({
+      id: requestId,
+      tableId: params.tableId,
+      userId: user.id,
+      userEmail: user.email,
+      displayName: params.displayName.trim() || user.email.split('@')[0] || 'Player',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      resolvedAt: null,
+    });
+    return { requestId };
+  }
+
+  async approveJoinRequest(params: {
+    tableId: string;
+    requestId: string;
+    userId: string;
+    sessionEmail?: string;
+  }): Promise<{ memberPersonId: string }> {
+    const host = await this.people.resolveSessionUser(
+      params.userId,
+      params.sessionEmail,
+      'POST /api/tables/:id/requests/:requestId/approve',
+    );
+    const table = await this.getTableForUser(params.tableId, host.id, params.sessionEmail);
+    if (table.hostUserId !== host.id) {
+      throw new Error('Only the host can approve join requests');
+    }
+    const request = await this.store.getJoinRequest(params.tableId, params.requestId);
+    if (!request || request.status !== 'pending') {
+      throw new Error('Join request not found');
+    }
+    const memberPersonId = await this.grantTableMembership({
+      tableId: params.tableId,
+      userId: request.userId,
+      displayName: request.displayName,
+    });
+    await this.store.updateJoinRequestStatus(params.tableId, params.requestId, 'approved');
+    return { memberPersonId };
+  }
+
+  async denyJoinRequest(params: {
+    tableId: string;
+    requestId: string;
+    userId: string;
+    sessionEmail?: string;
+  }): Promise<void> {
+    const host = await this.people.resolveSessionUser(
+      params.userId,
+      params.sessionEmail,
+      'POST /api/tables/:id/requests/:requestId/deny',
+    );
+    const table = await this.getTableForUser(params.tableId, host.id, params.sessionEmail);
+    if (table.hostUserId !== host.id) {
+      throw new Error('Only the host can deny join requests');
+    }
+    const request = await this.store.getJoinRequest(params.tableId, params.requestId);
+    if (!request || request.status !== 'pending') {
+      throw new Error('Join request not found');
+    }
+    await this.store.updateJoinRequestStatus(params.tableId, params.requestId, 'denied');
+  }
+
+  private async grantTableMembership(params: {
+    tableId: string;
+    userId: string;
+    displayName: string;
+  }): Promise<string> {
+    const table = this.store.getTable(params.tableId);
+    if (!table) {
+      throw new Error('Table not found');
+    }
+    let personId = this.store.getMember(params.tableId, params.userId)?.personId;
+    let state = table.state;
+    if (!personId) {
+      state = addSeatAtTable(state, {
+        displayName: params.displayName,
+        controllerName: params.displayName,
+        role: 'person',
+        startingChips: 0,
+      });
+      personId = state.session.playerIds[state.session.playerIds.length - 1]!;
+      this.store.addMember({
+        tableId: params.tableId,
+        userId: params.userId,
+        personId,
+        role: 'player',
+        joinedAt: new Date().toISOString(),
+      });
+      this.store.updateTable(params.tableId, state, table.version + 1);
+    }
+    return personId;
   }
 
   async applyAction(
@@ -458,7 +639,12 @@ function resolveTableModeFromState(state: GameState): TableMode | 'unknown' {
 function buildActiveTableSummary(
   table: TableRecord,
   access: ActiveTableSummary['access'],
-  invite?: TableInviteRecord,
+  options?: {
+    invite?: TableInviteRecord;
+    hostName?: string;
+    hostEmail?: string | null;
+    joinRequestId?: string;
+  },
 ): ActiveTableSummary {
   const meta = table.state.tableMeta;
   const mode = resolveTableModeFromState(table.state);
@@ -486,10 +672,14 @@ function buildActiveTableSummary(
     wager: mode === 'challenge' ? meta.agreement?.stakeDescription ?? null : null,
     players: uniquePlayers,
     bank: bankName,
+    host: options?.hostName ?? meta.controllerName ?? 'Host',
+    hostEmail: options?.hostEmail ?? meta.owner?.ownerEmail ?? null,
+    playerCount: table.state.session.playerIds.length,
     status,
     createdAt: table.createdAt,
     access,
-    inviteId: invite?.id,
-    inviteToken: invite?.token,
+    inviteId: options?.invite?.id,
+    inviteToken: options?.invite?.token,
+    joinRequestId: options?.joinRequestId,
   };
 }

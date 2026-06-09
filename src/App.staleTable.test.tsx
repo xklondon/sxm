@@ -92,7 +92,7 @@ describe('stale localStorage table id (GET /api/tables/:id 404)', () => {
   });
 
   it('clears stored id and auto-opens new table for owner (no blank screen)', async () => {
-    render(<App user={rootUser} onlineMode onlineTableId={STALE_TABLE} />);
+    render(<App user={rootUser} onlineMode bootTableId={STALE_TABLE} />);
 
     await waitFor(() => {
       expect(fetchTableMock).toHaveBeenCalledWith(STALE_TABLE);
@@ -115,7 +115,7 @@ describe('stale localStorage table id (GET /api/tables/:id 404)', () => {
       canOwnTables: false,
       canPlay: true,
     };
-    render(<App user={guest} onlineMode onlineTableId={STALE_TABLE} />);
+    render(<App user={guest} onlineMode bootTableId={STALE_TABLE} />);
 
     await waitFor(() => {
       expect(

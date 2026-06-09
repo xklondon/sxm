@@ -163,6 +163,20 @@ export function listSavedGames(): SavedGameMeta[] {
   }
 }
 
+export function loadArchivedGame(savedGameId: string): GameState | null {
+  try {
+    const raw = localStorage.getItem(SAVED_GAMES_KEY);
+    if (!raw) {
+      return null;
+    }
+    const records = JSON.parse(raw) as SavedGameRecord[];
+    const match = records.find((record) => record.meta.id === savedGameId);
+    return match ? deserializeGameState(serializeGameState(match.state)) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Optional archive slot — keeps last few named saves. */
 export function archiveGame(state: GameState, label?: string): void {
   const record: SavedGameRecord = {

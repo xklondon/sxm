@@ -65,6 +65,18 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
     }
   });
 
+  router.get('/active', requireAuth, async (req: AuthedRequest, res) => {
+    try {
+      const active = await tables.listActiveTables(req.auth!.userId, req.auth!.email);
+      res.json({ tables: active });
+    } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      res.status(400).json({ error: err instanceof Error ? err.message : 'List failed' });
+    }
+  });
+
   router.post('/', requireAuth, async (req: AuthedRequest, res) => {
     try {
       const displayName = String(req.body?.displayName ?? req.auth!.email.split('@')[0]);
@@ -181,6 +193,57 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         return;
       }
       res.status(400).json({ error: err instanceof Error ? err.message : 'Join failed' });
+    }
+  });
+
+  router.post('/:tableId/request-access', requireAuth, async (req: AuthedRequest, res) => {
+    try {
+      const result = await tables.requestTableAccess({
+        tableId: req.params.tableId!,
+        userId: req.auth!.userId,
+        displayName: String(req.body?.displayName ?? req.auth!.email.split('@')[0]),
+        sessionEmail: req.auth!.email,
+      });
+      res.status(201).json(result);
+    } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Request failed' });
+    }
+  });
+
+  router.post('/:tableId/requests/:requestId/approve', requireAuth, async (req: AuthedRequest, res) => {
+    try {
+      const result = await tables.approveJoinRequest({
+        tableId: req.params.tableId!,
+        requestId: req.params.requestId!,
+        userId: req.auth!.userId,
+        sessionEmail: req.auth!.email,
+      });
+      res.json(result);
+    } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Approve failed' });
+    }
+  });
+
+  router.post('/:tableId/requests/:requestId/deny', requireAuth, async (req: AuthedRequest, res) => {
+    try {
+      await tables.denyJoinRequest({
+        tableId: req.params.tableId!,
+        requestId: req.params.requestId!,
+        userId: req.auth!.userId,
+        sessionEmail: req.auth!.email,
+      });
+      res.json({ ok: true });
+    } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Deny failed' });
     }
   });
 
