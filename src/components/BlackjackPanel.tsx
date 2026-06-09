@@ -1408,6 +1408,7 @@ export function BlackjackPanel({
             SXM_LAYOUT.playerBox,
             getBoxCardVisualClasses(borderState),
             TABLE_UX.fullArcBox,
+            'bj-player-box-mobile',
             getBoxActivePulseClassName(borderState),
           )}
           {...{
@@ -1520,13 +1521,29 @@ export function BlackjackPanel({
         <div
           className={[
             'bj-phone-view__mini-hand',
+            TABLE_UX.fullArcBox,
+            'bj-player-box-mobile',
             'bj-phone-view__mini-hand--empty',
+            isSelected ? 'bj-box--selected' : '',
             isSelected ? BET_BOX_PULSE : '',
             isDrop ? 'bj-bet-zone--drop' : '',
           ].filter(Boolean).join(' ')}
         >
-          <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
-          <span className="bj-phone-view__mini-hand-name">Join</span>
+          <span className="bj-phone-view__mini-hand-head">
+            <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
+            <span className="bj-phone-view__mini-hand-name">Join</span>
+          </span>
+          <span
+            className="bj-phone-view__mini-hand-composition bj-phone-view__mini-hand-composition--placeholder"
+            aria-hidden="true"
+          >
+            &nbsp;
+          </span>
+          <span className="bj-phone-view__mini-stake-slot" aria-hidden="true">
+            <span className={TABLE_UX.stakeSlotReserved} aria-hidden="true">
+              &nbsp;
+            </span>
+          </span>
         </div>
       </div>
     );
@@ -1732,11 +1749,10 @@ export function BlackjackPanel({
             <button type="button" className={viewMode === 'full' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('full')}>Full Table</button>
             <button type="button" className={viewMode === 'card' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('card')}>Card View</button>
           </div>
-          <h1 {...sxmSectionProps(SXM_LAYOUT.gameTitle, TABLE_UX.pageTitle)}>BLACKJACK</h1>
+          <div {...sxmSectionProps(SXM_LAYOUT.balanceDisplay, 'bj-casino__header-bank')}>
+            <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="header" />
+          </div>
           {renderTableNav()}
-        </div>
-        <div {...sxmSectionProps(SXM_LAYOUT.balanceDisplay, 'bj-casino__header-bank')}>
-          <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="header" />
         </div>
       </header>
     );

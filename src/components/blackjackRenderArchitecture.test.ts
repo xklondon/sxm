@@ -65,7 +65,7 @@ describe('blackjack render architecture — single canonical shell', () => {
 describe('blackjack cloth sizing — dominant tokens and desktop fill', () => {
   it('defines readable title and insurance font tokens', () => {
     expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 56px');
-    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 28px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 35px');
     expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer__title[\s\S]*var\(--bj-cloth-title-font-size\)/);
     expect(FELT_CSS).toMatch(
       /\.bj-felt-cloth-layer__insurance[\s\S]*var\(--bj-cloth-insurance-font-size\)/,

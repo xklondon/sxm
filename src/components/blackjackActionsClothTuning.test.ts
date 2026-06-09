@@ -45,12 +45,12 @@ describe('blackjack actions + cloth tuning', () => {
 
   it('uses balanced cloth typography tokens and centered arc paths inside CardsArea', () => {
     expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 56px');
-    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 28px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 35px');
     expect(FELT_CSS).toContain('--bj-cloth-title-font-size-mobile: 48px');
-    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size-mobile: 24px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size-mobile: 30px');
     expect(CLOTH_SRC).toContain('viewBox="0 0 1000 280"');
     expect(CLOTH_SRC).toContain('preserveAspectRatio="xMidYMid meet"');
-    expect(CLOTH_SRC).toContain('M 90 78 Q 500 58 910 78');
+    expect(CLOTH_SRC).toContain('M 72 88 Q 500 46 928 88');
     expect(FELT_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--cards > \.bj-felt-cloth-layer/);
     expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*var\(--bj-cloth-svg-width\)/);
   });

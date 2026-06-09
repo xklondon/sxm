@@ -40,7 +40,7 @@ export const SXM_CORE_SECTIONS: readonly SxmLayoutSection[] = [
   SXM_LAYOUT.layoutRoot,
   SXM_LAYOUT.appHeader,
   SXM_LAYOUT.viewSwitcher,
-  SXM_LAYOUT.gameTitle,
+  SXM_LAYOUT.balanceDisplay,
   SXM_LAYOUT.tableShell,
   SXM_LAYOUT.dealerZone,
   SXM_LAYOUT.statusZone,
@@ -56,7 +56,6 @@ export const SXM_CORE_SECTIONS: readonly SxmLayoutSection[] = [
 /** Sections required in card-view modes. */
 export const SXM_CARD_VIEW_SECTIONS: readonly SxmLayoutSection[] = [
   ...SXM_CORE_SECTIONS,
-  SXM_LAYOUT.balanceDisplay,
   SXM_LAYOUT.heroCards,
   SXM_LAYOUT.handTotal,
   SXM_LAYOUT.playerBox,

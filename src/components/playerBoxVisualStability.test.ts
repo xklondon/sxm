@@ -24,9 +24,14 @@ describe('player box visual stability contract', () => {
       /\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--selected[\s\S]*box-shadow:\s*none/,
     );
     expect(SHARED_CSS).toMatch(/@keyframes bj-bet-pulse[\s\S]*inset 0 0 0 2px/);
-    expect(SHARED_CSS).toMatch(
-      /\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-phone-view__bet-chip--pulse[\s\S]*transform:\s*none/,
+    expect(SHARED_CSS).toContain(
+      '.bj-player-box-mobile.bj-box--selected.bj-phone-view__bet-chip--pulse',
     );
+    expect(SHARED_CSS).toContain(
+      '.bj-player-box-mobile.bj-phone-view__bet-chip--pulse:not(.bj-box--selected)',
+    );
+    expect(SHARED_CSS).toContain('animation: bj-bet-pulse');
+    expect(SHARED_CSS).toContain('animation: none');
   });
 
   it('reserves fixed stake slot space without inner frame chrome', () => {
@@ -83,17 +88,19 @@ describe('mobile player box visual stability contract', () => {
   });
 
   it('locks mobile player box dimensions across selected, stake, and semantic states', () => {
+    expect(SHARED_CSS).toContain('.bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile');
+    expect(SHARED_CSS).toContain('.bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile');
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--selected[\s\S]*height:\s*var\(--bj-full-table-box-height\)/,
-    );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--native-assigned[\s\S]*border-width:\s*1\.5px/,
+      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-player-box-mobile\.bj-box--native-assigned[\s\S]*border-width:\s*1\.5px/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--has-stake[\s\S]*height:\s*var\(--bj-full-table-box-height\)/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-phone-view__bet-chip--pulse[\s\S]*transform:\s*none/,
+    expect(SHARED_CSS).toContain(
+      '.bj-player-box-mobile.bj-box--selected.bj-phone-view__bet-chip--pulse',
+    );
+    expect(SHARED_CSS).toContain(
+      '.bj-player-box-mobile.bj-phone-view__bet-chip--pulse:not(.bj-box--selected)',
     );
   });
 

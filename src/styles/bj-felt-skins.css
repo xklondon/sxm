@@ -36,12 +36,12 @@
 :root {
   /* Font sizes are SVG user units — matched to viewBox height (280). */
   --bj-cloth-title-font-size: 56px;
-  --bj-cloth-insurance-font-size: 28px;
-  --bj-cloth-dealer-rule-font-size: var(--bj-cloth-insurance-font-size);
+  --bj-cloth-insurance-font-size: 35px;
+  --bj-cloth-dealer-rule-font-size: 33px;
   --bj-cloth-wager-font-size: 22px;
   --bj-cloth-title-font-size-mobile: 48px;
-  --bj-cloth-insurance-font-size-mobile: 24px;
-  --bj-cloth-dealer-rule-font-size-mobile: 24px;
+  --bj-cloth-insurance-font-size-mobile: 30px;
+  --bj-cloth-dealer-rule-font-size-mobile: 28px;
   --bj-cloth-wager-font-size-mobile: 18px;
   --bj-cloth-svg-width: min(92%, 42rem);
   --bj-cloth-svg-max-height: 78%;

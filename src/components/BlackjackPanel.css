@@ -85,9 +85,13 @@
 }
 
 .bj-casino__header-bank {
+  grid-column: 2;
+  justify-self: center;
   display: flex;
   justify-content: center;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .bj-casino__nav-btn--this-table {

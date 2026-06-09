@@ -139,6 +139,7 @@ export function TableStakePanel({
   const [cardTimerPreset, setCardTimerPreset] = useState(flow.cardTimerPreset);
   const [bankDrawAuto, setBankDrawAuto] = useState(flow.bankDrawMode === 'auto');
   const [submitting, setSubmitting] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
 
   const selectedProtocol = getBlackjackProtocolOrDefault(protocolId);
   const protocolRules = getProtocolDisplayRules(selectedProtocol);
@@ -261,6 +262,19 @@ export function TableStakePanel({
   }
 
   async function handleConfirm() {
+    setSetupError(null);
+
+    if (isStagedNew && setupTab === 'cards' && tableMode === 'challenge') {
+      if (!stake.trim()) {
+        setSetupError('Enter what you are playing for.');
+        return;
+      }
+      if (invitedEmails.length === 0) {
+        setSetupError('Add at least one invited email.');
+        return;
+      }
+    }
+
     const input = buildSetupInput();
 
     log.info('setupStartingChipsInput', {
@@ -999,6 +1013,12 @@ export function TableStakePanel({
           </p>
           {renderStageIndicator()}
         </header>
+
+        {setupError && (
+          <p className="table-stake-panel__error" role="alert">
+            {setupError}
+          </p>
+        )}
 
         {isReset ? (
           <>

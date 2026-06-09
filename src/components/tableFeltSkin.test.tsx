@@ -199,9 +199,14 @@ describe('table felt cloth layer', () => {
     expect(src).not.toMatch(/tableClothName[\s\S]*boxStakes/);
   });
 
-  it('header title stays BLACKJACK and does not use cloth table name', () => {
+  it('header shows bank total and bank hand in toolbar row', () => {
     const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
-    expect(panelSrc).toContain('>BLACKJACK</h1>');
+    const infoSrc = readSrc('src/components/TableInfoBar.tsx');
+    expect(panelSrc).toContain('bj-casino__header-bank');
+    expect(panelSrc).toMatch(/variant="header"/);
+    expect(infoSrc).toContain('Bank Total:');
+    expect(infoSrc).toContain('Bank Hand:');
+    expect(panelSrc).not.toContain('>BLACKJACK</h1>');
     expect(panelSrc).not.toMatch(/pageTitle\)[^>]*>Slinki/);
     expect(panelSrc).not.toContain("Slinki's Black Jack");
   });

@@ -12,9 +12,9 @@ describe('blackjack four visual fixes', () => {
   it('renders classic cloth centered in CardsArea with readable arcs and no top clip', () => {
     expect(CLOTH_SRC).toContain('viewBox="0 0 1000 280"');
     expect(CLOTH_SRC).toContain('preserveAspectRatio="xMidYMid meet"');
-    expect(CLOTH_SRC).toContain('M 90 78 Q 500 58 910 78');
-    expect(CLOTH_SRC).toContain('M 110 148 Q 500 128 890 148');
-    expect(CLOTH_SRC).toContain('M 100 218 Q 500 198 900 218');
+    expect(CLOTH_SRC).toContain('M 72 88 Q 500 46 928 88');
+    expect(CLOTH_SRC).toContain('M 100 150 Q 500 126 900 150');
+    expect(CLOTH_SRC).toContain('M 92 220 Q 500 194 908 220');
     expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*overflow:\s*visible/);
     expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*align-items:\s*center/);
     expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*var\(--bj-cloth-svg-width\)/);

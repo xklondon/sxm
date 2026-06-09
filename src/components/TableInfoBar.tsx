@@ -17,13 +17,36 @@ export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: 
   const isDealer = variant === 'dealer';
   const isHeader = variant === 'header';
 
+  if (isHeader) {
+    return (
+      <div
+        {...sxmSectionProps(
+          SXM_LAYOUT.balanceDisplay,
+          TABLE_UX.tableInfoBar,
+          TABLE_UX.headerBankInfo,
+          'bj-table-info-bar--header-row',
+        )}
+        aria-label="Bank information"
+      >
+        <span className="bj-table-info-bar__item bj-table-info-bar__bank-chips">
+          Bank Total: {bankChips !== null ? bankChips : '—'}
+        </span>
+        <span className="bj-table-info-bar__divider" aria-hidden="true">
+          |
+        </span>
+        <span className="bj-table-info-bar__item bj-table-info-bar__bank-value">
+          Bank Hand: {bankValue !== null ? bankValue : '—'}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div
       {...sxmSectionProps(
-        isHeader ? SXM_LAYOUT.balanceDisplay : SXM_LAYOUT.bankSummary,
+        SXM_LAYOUT.bankSummary,
         TABLE_UX.tableInfoBar,
         isDealer ? TABLE_UX.dealerBankInfo : '',
-        isHeader ? TABLE_UX.headerBankInfo : '',
       )}
       aria-label="Bank information"
     >

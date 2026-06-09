@@ -1,13 +1,16 @@
+import { useMemo, useState } from 'react';
 import './EntryLobbyScreen.css';
 import { ActiveTablesList } from '../components/ActiveTablesList';
+import { EntryLobbySlideOut } from '../components/EntryLobbySlideOut';
 import { LoadTableList, type LoadTableEntry } from '../components/LoadTableList';
+import { TableStakePanel } from '../components/TableStakePanel';
+import { createNewBlackjackTable } from '../engine/session';
+import type { TableStakeSetupInput } from '../engine/session/tableSetup';
 
-export type EntryLobbyPanel = 'home' | 'join' | 'load';
+export type EntryLobbySlideOutKind = 'new' | 'join' | 'load';
 
 interface EntryLobbyScreenProps {
-  panel: EntryLobbyPanel;
-  onPanelChange: (panel: EntryLobbyPanel) => void;
-  onOpenNewTable: () => void;
+  onConfirmNewTable: (input: TableStakeSetupInput) => void | Promise<void>;
   onOpenTable: (tableId: string) => void;
   onLoadEntry: (entry: LoadTableEntry) => void;
   onlineMode: boolean;
@@ -17,9 +20,7 @@ interface EntryLobbyScreenProps {
 }
 
 export function EntryLobbyScreen({
-  panel,
-  onPanelChange,
-  onOpenNewTable,
+  onConfirmNewTable,
   onOpenTable,
   onLoadEntry,
   onlineMode,
@@ -27,24 +28,26 @@ export function EntryLobbyScreen({
   showPeopleAdmin,
   onOpenPeople,
 }: EntryLobbyScreenProps) {
-  if (panel === 'join') {
-    return (
-      <main className="entry-lobby">
-        <ActiveTablesList onOpenTable={onOpenTable} onBack={() => onPanelChange('home')} />
-      </main>
-    );
+  const [slideOut, setSlideOut] = useState<EntryLobbySlideOutKind | null>(null);
+  const newTableSeed = useMemo(() => createNewBlackjackTable(), [slideOut === 'new']);
+
+  function closeSlideOut() {
+    setSlideOut(null);
   }
 
-  if (panel === 'load') {
-    return (
-      <main className="entry-lobby">
-        <LoadTableList
-          onlineMode={onlineMode}
-          onLoad={onLoadEntry}
-          onBack={() => onPanelChange('home')}
-        />
-      </main>
-    );
+  async function handleConfirmNewTable(input: TableStakeSetupInput) {
+    await onConfirmNewTable(input);
+    closeSlideOut();
+  }
+
+  function handleLoadEntry(entry: LoadTableEntry) {
+    onLoadEntry(entry);
+    closeSlideOut();
+  }
+
+  function handleOpenTable(tableId: string) {
+    onOpenTable(tableId);
+    closeSlideOut();
   }
 
   return (
@@ -58,15 +61,19 @@ export function EntryLobbyScreen({
           Choose how to start. Your last table is not opened automatically on reload.
         </p>
         <div className="entry-lobby__actions">
-          <button type="button" onClick={onOpenNewTable} disabled={onlineMode && !canOwnTables}>
+          <button
+            type="button"
+            onClick={() => setSlideOut('new')}
+            disabled={onlineMode && !canOwnTables}
+          >
             Open New Table
           </button>
           {onlineMode && (
-            <button type="button" className="secondary" onClick={() => onPanelChange('join')}>
+            <button type="button" className="secondary" onClick={() => setSlideOut('join')}>
               Join a Table
             </button>
           )}
-          <button type="button" className="secondary" onClick={() => onPanelChange('load')}>
+          <button type="button" className="secondary" onClick={() => setSlideOut('load')}>
             Load a Table
           </button>
           {showPeopleAdmin && onOpenPeople && (
@@ -79,6 +86,35 @@ export function EntryLobbyScreen({
           <p className="entry-lobby__hint">You need table-owner permission to create a new table.</p>
         )}
       </div>
+
+      <EntryLobbySlideOut
+        open={slideOut === 'new'}
+        title="Open New Table"
+        onClose={closeSlideOut}
+      >
+        <TableStakePanel
+          gameState={newTableSeed}
+          mode="new"
+          onConfirm={() => {}}
+          onConfirmNewTable={handleConfirmNewTable}
+        />
+      </EntryLobbySlideOut>
+
+      <EntryLobbySlideOut
+        open={slideOut === 'join'}
+        title="Join a Table"
+        onClose={closeSlideOut}
+      >
+        <ActiveTablesList onOpenTable={handleOpenTable} />
+      </EntryLobbySlideOut>
+
+      <EntryLobbySlideOut
+        open={slideOut === 'load'}
+        title="Load a Table"
+        onClose={closeSlideOut}
+      >
+        <LoadTableList onlineMode={onlineMode} onLoad={handleLoadEntry} />
+      </EntryLobbySlideOut>
     </main>
   );
 }

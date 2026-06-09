@@ -41,6 +41,29 @@
   min-height: 1.35rem;
 }
 
+.bj-table-info-bar--header-row {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.55rem 0.75rem;
+  padding: 0;
+  min-height: 1.35rem;
+  width: auto;
+}
+
+.bj-table-info-bar--header-row .bj-table-info-bar__item {
+  font-size: 0.68rem;
+}
+
+.bj-table-info-bar__divider {
+  font-family: var(--ds-font-mono);
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-semibold);
+  color: rgb(255 255 255 / 0.35);
+  line-height: 1;
+}
+
 .bj-casino__player-balance {
   margin: 0;
   font-family: var(--ds-font-mono);

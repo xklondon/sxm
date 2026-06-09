@@ -25,9 +25,9 @@ describe('blackjack visual cleanup items', () => {
 
   it('increases cloth typography tokens within bounded range', () => {
     expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 56px');
-    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 28px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 35px');
     expect(FELT_CSS).toContain('--bj-cloth-title-font-size-mobile: 48px');
-    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size-mobile: 24px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size-mobile: 30px');
   });
 
   it('keeps chips mounted during play with inactive styling when betting closed', () => {

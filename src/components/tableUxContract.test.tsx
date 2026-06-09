@@ -97,7 +97,7 @@ describe('TABLE_UX class contract', () => {
     expect(panelSrc).toContain('TABLE_UX.desktopStage');
     expect(panelSrc).toContain('getBoxCardVisualClasses');
     expect(panelSrc).toContain('bj-phone-view__mini-hand');
-    expect(panelSrc).toContain('TABLE_UX.pageTitle');
+    expect(panelSrc).toContain('variant="header"');
     expect(panelSrc).toContain('TABLE_UX.playerActions');
     expect(panelSrc).toContain('TableSideRailShell');
   });
@@ -225,16 +225,17 @@ describe('TABLE_UX markup across views', () => {
     expect(readSrc('src/styles/bj-card-layout.css')).not.toMatch(/\.bj-view-card-desktop \.bj-table-desktop-shell[\s\S]*height:/);
   });
 
-  it('BLACKJACK title renders in table header inside shell, outside felt border', () => {
+  it('bank summary renders in table header inside shell, outside felt border', () => {
     for (const mode of ['full', 'card'] as const) {
       const html = renderAt(1280, mode);
       const headerIdx = html.indexOf(TABLE_UX.tableHeader);
-      const titleIdx = html.indexOf('bj-casino__title');
+      const bankIdx = html.indexOf(TABLE_UX.headerBankInfo);
       const railIdx = html.indexOf('bj-table-rail');
       const shellIdx = html.indexOf('bj-table-desktop-shell');
       expect(headerIdx).toBeGreaterThan(-1);
-      expect(titleIdx).toBeGreaterThan(headerIdx);
-      expect(html).toContain('BLACKJACK');
+      expect(bankIdx).toBeGreaterThan(headerIdx);
+      expect(html).toContain('Bank Total:');
+      expect(html).toContain('Bank Hand:');
       expect(shellIdx).toBeGreaterThan(-1);
       expect(headerIdx).toBeGreaterThan(shellIdx);
       expect(railIdx).toBeGreaterThan(headerIdx);

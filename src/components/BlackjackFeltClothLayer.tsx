@@ -23,9 +23,9 @@ export function BlackjackFeltClothLayer({ tableName, wagerText = '' }: Blackjack
         role="presentation"
       >
         <defs>
-          <path id={titleArcId} d="M 90 78 Q 500 58 910 78" />
-          <path id={insuranceArcId} d="M 110 148 Q 500 128 890 148" />
-          <path id={dealerArcId} d="M 100 218 Q 500 198 900 218" />
+          <path id={titleArcId} d="M 72 88 Q 500 46 928 88" />
+          <path id={insuranceArcId} d="M 100 150 Q 500 126 900 150" />
+          <path id={dealerArcId} d="M 92 220 Q 500 194 908 220" />
         </defs>
 
         <text className={`${TABLE_UX.feltClothLayer}__title`}>

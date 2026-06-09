@@ -16,7 +16,7 @@ import {
 } from './storage/profileStorage';
 import { applyDesignTemplateToDocument } from './design/templates';
 import { StartScreen } from './screens/StartScreen';
-import { EntryLobbyScreen, type EntryLobbyPanel } from './screens/EntryLobbyScreen';
+import { EntryLobbyScreen } from './screens/EntryLobbyScreen';
 import type { LoadTableEntry } from './components/LoadTableList';
 import { GameSetupScreen } from './screens/GameSetupScreen';
 import { TableScreen, type TableNavHandlers } from './screens/TableScreen';
@@ -130,7 +130,6 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
       ? 'lobby'
       : 'start';
   const [screen, setScreen] = useState<AppScreen>(initialScreen);
-  const [lobbyPanel, setLobbyPanel] = useState<EntryLobbyPanel>('home');
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loadingOnline, setLoadingOnline] = useState(Boolean(resolvedTableId));
   const [profileSetupOpen, setProfileSetupOpen] = useState(false);
@@ -414,7 +413,6 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
     }
     window.history.replaceState({}, '', '/');
     setScreen('lobby');
-    setLobbyPanel('home');
   }, [onlineMode, forceNewTable]);
 
   useEffect(() => {
@@ -438,7 +436,6 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
     setTableNavHandlers(null);
     consumePendingTable();
     setDismissStoredTable(true);
-    setLobbyPanel('home');
     setScreen(onlineMode && user ? 'lobby' : 'start');
   }
 
@@ -731,9 +728,7 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
       )}
       {screen === 'lobby' && (
         <EntryLobbyScreen
-          panel={lobbyPanel}
-          onPanelChange={setLobbyPanel}
-          onOpenNewTable={handleNewGame}
+          onConfirmNewTable={handleConfirmNavNewTable}
           onOpenTable={enterOnlineTable}
           onLoadEntry={handleLoadEntry}
           onlineMode={onlineMode}

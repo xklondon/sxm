@@ -9,13 +9,18 @@ import { loadProfile } from '../storage/profileStorage';
 
 interface ActiveTablesListProps {
   onOpenTable: (tableId: string) => void;
-  onBack: () => void;
 }
 
 function formatGameLabel(game: string): string {
   if (game === 'zilch') return 'Zilch';
-  if (game === 'holdem') return "Texas Hold'em";
+  if (game === 'holdem' || game === 'texas-holdem') return "Texas Hold'em";
   return 'Blackjack';
+}
+
+function formatModeLabel(mode: ActiveTableSummary['mode']): string {
+  if (mode === 'practice') return 'Practice';
+  if (mode === 'challenge') return 'Challenge';
+  return 'Unknown';
 }
 
 function formatAccessLabel(access: ActiveTableSummary['access']): string {
@@ -34,13 +39,12 @@ function formatAccessLabel(access: ActiveTableSummary['access']): string {
 }
 
 function actionLabel(table: ActiveTableSummary): string {
-  if (table.access === 'open') return 'Open';
-  if (table.access === 'join') return 'Join';
+  if (table.access === 'open' || table.access === 'join') return 'Join';
   if (table.access === 'pending') return 'Pending';
-  return 'Request Access';
+  return 'Knock';
 }
 
-export function ActiveTablesList({ onOpenTable, onBack }: ActiveTablesListProps) {
+export function ActiveTablesList({ onOpenTable }: ActiveTablesListProps) {
   const [tables, setTables] = useState<ActiveTableSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,13 +114,9 @@ export function ActiveTablesList({ onOpenTable, onBack }: ActiveTablesListProps)
   }
 
   return (
-    <div className="entry-lobby__card">
-      <button type="button" className="secondary entry-lobby__back" onClick={onBack}>
-        Back
-      </button>
-      <h2 className="entry-lobby__title">Join a Table</h2>
-      <p className="entry-lobby__subtitle">
-        Active online tables you can open, join with an invite, or request access to enter.
+    <>
+      <p className="entry-lobby__subtitle entry-lobby__subtitle--panel">
+        Active online tables you can join, or knock on the door to request access.
       </p>
       {loading && <p className="entry-lobby-panel__status">Loading active tables…</p>}
       {error && (
@@ -133,6 +133,9 @@ export function ActiveTablesList({ onOpenTable, onBack }: ActiveTablesListProps)
             <div className="entry-lobby-panel__item-head">
               <strong>{table.name || formatGameLabel(table.game)}</strong>
               <span className="entry-lobby-panel__badge">{formatGameLabel(table.game)}</span>
+              {table.mode !== 'unknown' && (
+                <span className="entry-lobby-panel__badge">{formatModeLabel(table.mode)}</span>
+              )}
               <span className="entry-lobby-panel__badge">{formatAccessLabel(table.access)}</span>
             </div>
             <dl className="entry-lobby-panel__meta">
@@ -144,6 +147,12 @@ export function ActiveTablesList({ onOpenTable, onBack }: ActiveTablesListProps)
                 <dt>Status</dt>
                 <dd>{table.status}</dd>
               </div>
+              {table.wager && (
+                <div>
+                  <dt>Wager</dt>
+                  <dd>{table.wager}</dd>
+                </div>
+              )}
               <div>
                 <dt>Players</dt>
                 <dd>{table.playerCount}</dd>
@@ -160,6 +169,6 @@ export function ActiveTablesList({ onOpenTable, onBack }: ActiveTablesListProps)
           </li>
         ))}
       </ul>
-    </div>
+    </>
   );
 }

@@ -311,15 +311,14 @@ describe('Card View layout guard', () => {
     }
   });
 
-  it('Card View shows bank info under page title outside felt', () => {
+  it('Card View shows bank total and bank hand in header outside felt', () => {
     const html = renderCardPanel(playingState());
     expect(html).toContain(TABLE_UX.headerBankInfo);
-    expect(html).toContain('Bank chips:');
-    const titleIdx = html.indexOf('BLACKJACK');
+    expect(html).toContain('Bank Total:');
+    expect(html).toContain('Bank Hand:');
     const headerEnd = html.indexOf('</header>');
     const infoIdx = html.indexOf(TABLE_UX.headerBankInfo);
-    expect(titleIdx).toBeGreaterThan(-1);
-    expect(infoIdx).toBeGreaterThan(titleIdx);
+    expect(infoIdx).toBeGreaterThan(-1);
     expect(infoIdx).toBeLessThan(headerEnd);
     expect(html).not.toContain(TABLE_UX.dealerBankInfo);
   });

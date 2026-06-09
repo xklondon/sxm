@@ -119,12 +119,12 @@ describe('table layout stabilization contract', () => {
     expect(full).not.toContain(TABLE_UX.cardsFan);
   });
 
-  it('shows bank value, bank chips in table chrome', () => {
+  it('shows bank total and bank hand in table header chrome', () => {
     for (const width of [1280, 390]) {
       const full = renderAt(width, 'full');
       expect(full).toContain(TABLE_UX.headerBankInfo);
-      expect(full).toContain('Bank:');
-      expect(full).toContain('Bank chips:');
+      expect(full).toContain('Bank Total:');
+      expect(full).toContain('Bank Hand:');
       expect(full).toContain('bj-value-chips');
       expect(full).toContain('Available:');
       const headerEnd = full.indexOf('</header>');
@@ -135,13 +135,12 @@ describe('table layout stabilization contract', () => {
 
       const card = renderAt(width, 'card');
       expect(card).toContain(TABLE_UX.headerBankInfo);
-      expect(card).toContain('Bank:');
-      expect(card).toContain('Bank chips:');
+      expect(card).toContain('Bank Total:');
+      expect(card).toContain('Bank Hand:');
       expect(card).not.toContain(TABLE_UX.dealerBankInfo);
-      const titleIdx = card.indexOf('BLACKJACK');
       const cardHeaderEnd = card.indexOf('</header>');
       const headerInfoIdx = card.indexOf(TABLE_UX.headerBankInfo);
-      expect(headerInfoIdx).toBeGreaterThan(titleIdx);
+      expect(headerInfoIdx).toBeGreaterThan(-1);
       expect(headerInfoIdx).toBeLessThan(cardHeaderEnd);
     }
   });
@@ -183,8 +182,8 @@ describe('table layout stabilization contract', () => {
 
   it('bank visible value excludes hidden hole card in markup', () => {
     const html = renderAt(1280, 'full');
-    expect(html).toContain('Bank: 7');
-    expect(html).not.toContain('Bank: 17');
+    expect(html).toContain('Bank Hand: 7');
+    expect(html).not.toContain('Bank Hand: 17');
   });
 
   it('player boxes use shared framed mini-hand shell', () => {
@@ -262,17 +261,18 @@ describe('table layout polish contract', () => {
     );
   }
 
-  it('centers BLACKJACK title with bank chips under title in header', () => {
+  it('centers bank total and bank hand row in header toolbar', () => {
     const css = readSrc('src/components/BlackjackPanel.css');
     const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
-    expect(css).toMatch(/\.bj-casino__title[\s\S]*grid-column:\s*2/);
+    expect(css).toMatch(/\.bj-casino__header-bank[\s\S]*grid-column:\s*2/);
     expect(panelSrc).toContain('TABLE_UX.tableHeader');
     expect(panelSrc).toContain('bj-casino__header-bank');
     expect(panelSrc).toContain('variant="header"');
     for (const mode of ['full', 'card'] as const) {
       const html = renderAt(1280, mode);
       expect(html).toContain(TABLE_UX.tableHeader);
-      expect(html).toContain('BLACKJACK');
+      expect(html).toContain('Bank Total:');
+      expect(html).toContain('Bank Hand:');
       const headerEnd = html.indexOf('</header>');
       const infoIdx = html.indexOf(TABLE_UX.headerBankInfo);
       expect(headerEnd).toBeGreaterThan(-1);

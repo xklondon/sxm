@@ -131,3 +131,50 @@
 .entry-lobby-panel__action {
   width: 100%;
 }
+
+.entry-lobby__subtitle--panel {
+  margin: 0 0 0.75rem;
+}
+
+.entry-lobby-panel__item-toggle {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.entry-lobby-panel__saved-at {
+  margin: 0.15rem 0 0;
+  font-size: 0.68rem;
+  color: rgb(255 255 255 / 0.52);
+}
+
+.entry-lobby-panel__item--expanded {
+  border-color: rgb(251 191 36 / 0.35);
+}
+
+.entry-lobby-panel__details {
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.entry-lobby-slide-drawer__body .table-stake-overlay {
+  position: static;
+  inset: auto;
+  background: transparent;
+  padding: 0;
+}
+
+.entry-lobby-slide-drawer__body .table-stake-panel {
+  max-width: none;
+  max-height: none;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  background: transparent;
+}

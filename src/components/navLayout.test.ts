@@ -29,7 +29,7 @@ describe('header and table nav layout', () => {
     expect(dealer).not.toContain('dealer-block__top-row');
   });
 
-  it('centers bank chips under BLACKJACK title', () => {
+  it('centers bank total and bank hand row in header toolbar', () => {
     const panel = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
     const css = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     expect(panel).toContain('bj-casino__header-bank');

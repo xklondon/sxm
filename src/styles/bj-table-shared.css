@@ -589,18 +589,28 @@
   }
 
   /* Mobile player boxes — fixed tile dimensions across selection/stake/semantic states. */
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile,
   .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--selected,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--selected,
   .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--native-assigned,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--native-assigned,
   .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--native-assigned,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--native-assigned,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--running,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--running,
   .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--running,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--running,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--co-box,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--co-box,
   .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--co-box,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--co-box,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--has-stake,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--has-stake,
   .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake {
     width: var(--bj-full-table-box-width);
@@ -616,12 +626,20 @@
     overflow: hidden;
   }
 
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--selected,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--selected,
   .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected {
     box-shadow: inset 0 0 0 2px var(--ds-color-gold);
     outline: none;
   }
 
+  .bj-view-full-mobile
+    .bj-arc--player-boxes
+    .bj-player-box-mobile.bj-box--selected.bj-phone-view__bet-chip--pulse,
+  .bj-view-card-mobile
+    .bj-arc--player-boxes
+    .bj-player-box-mobile.bj-box--selected.bj-phone-view__bet-chip--pulse,
   .bj-view-full-mobile
     .bj-arc--player-boxes
     .bj-phone-view__mini-hand--full-arc.bj-box--selected.bj-phone-view__bet-chip--pulse,
@@ -631,6 +649,31 @@
     animation: bj-bet-pulse 1.8s ease-in-out infinite;
   }
 
+  .bj-view-full-mobile
+    .bj-arc--player-boxes
+    .bj-player-box-mobile.bj-phone-view__bet-chip--pulse:not(.bj-box--selected),
+  .bj-view-card-mobile
+    .bj-arc--player-boxes
+    .bj-player-box-mobile.bj-phone-view__bet-chip--pulse:not(.bj-box--selected),
+  .bj-view-full-mobile
+    .bj-arc--player-boxes
+    .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse:not(.bj-box--selected),
+  .bj-view-card-mobile
+    .bj-arc--player-boxes
+    .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse:not(.bj-box--selected) {
+    animation: none;
+  }
+
+  .bj-view-full-mobile
+    .bj-arc--player-boxes
+    .bj-player-box-mobile.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
+      .bj-box--co-box
+    ),
+  .bj-view-card-mobile
+    .bj-arc--player-boxes
+    .bj-player-box-mobile.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
+      .bj-box--co-box
+    ),
   .bj-view-full-mobile
     .bj-arc--player-boxes
     .bj-phone-view__mini-hand--full-arc.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
@@ -644,6 +687,20 @@
     background: var(--bj-seat-bg);
   }
 
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--empty,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--empty,
+  .bj-view-full-mobile
+    .bj-arc--player-boxes
+    .bj-phone-view__mini-hand--full-arc.bj-phone-view__mini-hand--empty,
+  .bj-view-card-mobile
+    .bj-arc--player-boxes
+    .bj-phone-view__mini-hand--full-arc.bj-phone-view__mini-hand--empty {
+    border: 1.5px solid rgb(251 191 36 / 0.38);
+    background: transparent;
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile .bj-phone-view__mini-stake-slot,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile .bj-phone-view__mini-stake-slot,
   .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,
   .bj-view-full-mobile .bj-arc--player-boxes .bj-bet-zone,
@@ -1449,6 +1506,12 @@
     .bj-box--co-box
   ) {
   background: var(--bj-seat-bg);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__mini-hand--empty,
+.bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--empty {
+  border: 1.5px solid rgb(251 191 36 / 0.38);
+  background: transparent;
 }
 
 .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse {
