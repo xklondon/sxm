@@ -38,18 +38,30 @@ export function createChipPointerDragHandlers(options: {
 }): {
   onChipPointerDown: (value: ChipValue, e: ReactPointerEvent<HTMLElement>) => void;
 } {
+  const DRAG_THRESHOLD_PX = 8;
+
   function onChipPointerDown(value: ChipValue, e: ReactPointerEvent<HTMLElement>) {
     if (!options.enabled || e.button !== 0) {
       return;
     }
-    e.preventDefault();
     const pointerId = e.pointerId;
     const origin = e.currentTarget;
-    origin.setPointerCapture(pointerId);
+    const startX = e.clientX;
+    const startY = e.clientY;
+    let dragging = false;
 
     const onMove = (ev: PointerEvent) => {
       if (ev.pointerId !== pointerId) {
         return;
+      }
+      if (!dragging) {
+        const dx = ev.clientX - startX;
+        const dy = ev.clientY - startY;
+        if (dx * dx + dy * dy < DRAG_THRESHOLD_PX * DRAG_THRESHOLD_PX) {
+          return;
+        }
+        dragging = true;
+        origin.setPointerCapture(pointerId);
       }
       const target = resolveChipDropTargetFromElement(
         document.elementFromPoint(ev.clientX, ev.clientY),
@@ -61,16 +73,18 @@ export function createChipPointerDragHandlers(options: {
       if (ev.pointerId !== pointerId) {
         return;
       }
-      origin.releasePointerCapture(pointerId);
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', finish);
       document.removeEventListener('pointercancel', finish);
-      const target = resolveChipDropTargetFromElement(
-        document.elementFromPoint(ev.clientX, ev.clientY),
-      );
-      options.onHighlight(null);
-      if (target) {
-        options.onDrop(value, target);
+      if (dragging) {
+        origin.releasePointerCapture(pointerId);
+        const target = resolveChipDropTargetFromElement(
+          document.elementFromPoint(ev.clientX, ev.clientY),
+        );
+        options.onHighlight(null);
+        if (target) {
+          options.onDrop(value, target);
+        }
       }
     };
 

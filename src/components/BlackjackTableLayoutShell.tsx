@@ -10,6 +10,8 @@ import { TABLE_UX } from './tableUxContract';
 export type BlackjackCardsAreaMode = 'table' | 'hero';
 
 export interface BlackjackTableLayoutShellProps {
+  /** Bank total / hand — first row inside felt, above dealer cards. */
+  tableBankInfo?: ReactNode;
   feltClothLayer?: ReactNode;
   dealer: ReactNode;
   command: ReactNode;
@@ -27,6 +29,7 @@ export interface BlackjackTableLayoutShellProps {
  * Dealer → Command → Actions → CardsArea → PlayerBoxes → ChipTray
  */
 export function BlackjackTableLayoutShell({
+  tableBankInfo,
   feltClothLayer,
   dealer,
   command,
@@ -48,6 +51,8 @@ export function BlackjackTableLayoutShell({
         .join(' ')}
       data-layout-debug={layoutDebug ? '1' : undefined}
     >
+      {tableBankInfo}
+
       {dealer}
 
       <BlackjackCommandZone>

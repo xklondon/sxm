@@ -146,7 +146,7 @@ describe('box selection — single chip target', () => {
       bettingStage: true,
     });
     expect(resolved.isSelected).toBe(true);
-    expect(getBoxBorderVisualClasses(resolved)).toBe('');
+    expect(getBoxBorderVisualClasses(resolved)).toBe('bj-box--selected');
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
     expect(getBoxBorderVisualClasses(resolved)).not.toContain(BOX_BORDER_RUNNING);
   });
@@ -167,7 +167,7 @@ describe('box selection — single chip target', () => {
       bettingStage: true,
     });
     expect(getBoxBorderVisualClasses(resolved)).toContain(BOX_BORDER_RUNNING);
-    expect(getBoxCardVisualClasses(resolved)).not.toContain('bj-box--selected');
+    expect(getBoxCardVisualClasses(resolved)).toContain('bj-box--selected');
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
   });
 
@@ -194,7 +194,7 @@ describe('box selection — single chip target', () => {
     });
     expect(getBoxBorderVisualClasses(nativeResolved)).toBe(BOX_BORDER_NATIVE);
     expect(getBoxActivePulseClassName(nativeResolved)).toBe('');
-    expect(getBoxBorderVisualClasses(freeResolved)).toBe('');
+    expect(getBoxBorderVisualClasses(freeResolved)).toBe('bj-box--selected');
     expect(getBoxActivePulseClassName(freeResolved)).toBe(BET_BOX_PULSE);
   });
 
@@ -211,7 +211,7 @@ describe('box selection — single chip target', () => {
       bettingStage: true,
     });
     expect(getBoxCardVisualClasses(resolved)).toContain(BOX_BORDER_NATIVE);
-    expect(getBoxCardVisualClasses(resolved)).not.toContain('bj-box--selected');
+    expect(getBoxCardVisualClasses(resolved)).toContain('bj-box--selected');
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
   });
 

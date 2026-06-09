@@ -85,6 +85,14 @@
   font-weight: 600;
 }
 
+.bj-felt-cloth-layer__custom-rules {
+  fill: #d97706;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: var(--bj-cloth-dealer-rule-font-size);
+  font-style: italic;
+  font-weight: 600;
+}
+
 .bj-felt-cloth-layer__wager {
   fill: var(--ds-color-gold, #d4af37);
   font-family: Georgia, 'Times New Roman', serif;
@@ -129,6 +137,10 @@
   }
 
   .bj-felt-cloth-layer__dealer-rule {
+    font-size: var(--bj-cloth-dealer-rule-font-size-mobile);
+  }
+
+  .bj-felt-cloth-layer__custom-rules {
     font-size: var(--bj-cloth-dealer-rule-font-size-mobile);
   }
 

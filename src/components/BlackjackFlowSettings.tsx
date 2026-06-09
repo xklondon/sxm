@@ -21,9 +21,11 @@ import { TableDetailsPanelContent, type TableDetailsPanelProps } from './TableDe
 import {
   DEFAULT_TABLE_CLOTH_NAME,
   DEFAULT_TABLE_FELT_SKIN,
+  DEFAULT_TABLE_TRAY_LABEL,
   resolveTableClothName,
   resolveTableClothWager,
   resolveTableFeltSkin,
+  resolveTableTrayLabel,
   TABLE_FELT_SKIN_OPTIONS,
   type TableFeltSkin,
 } from '../types/tableFeltSkin';
@@ -95,6 +97,7 @@ function persistTableClothVisuals(
     tableFeltSkin?: TableFeltSkin;
     tableClothName?: string;
     tableClothWager?: string;
+    tableTrayLabel?: string;
   },
 ) {
   const next: GameState = {
@@ -104,6 +107,7 @@ function persistTableClothVisuals(
       ...(patch.tableFeltSkin !== undefined ? { tableFeltSkin: patch.tableFeltSkin } : {}),
       ...(patch.tableClothName !== undefined ? { tableClothName: patch.tableClothName } : {}),
       ...(patch.tableClothWager !== undefined ? { tableClothWager: patch.tableClothWager } : {}),
+      ...(patch.tableTrayLabel !== undefined ? { tableTrayLabel: patch.tableTrayLabel } : {}),
     },
   };
   onGameStateChange(next);
@@ -112,6 +116,7 @@ function persistTableClothVisuals(
     tableFeltSkin: next.tableMeta.tableFeltSkin ?? DEFAULT_TABLE_FELT_SKIN,
     tableClothName: next.tableMeta.tableClothName ?? DEFAULT_TABLE_CLOTH_NAME,
     tableClothWager: next.tableMeta.tableClothWager ?? '',
+    tableTrayLabel: next.tableMeta.tableTrayLabel ?? DEFAULT_TABLE_TRAY_LABEL,
   });
 }
 
@@ -272,6 +277,25 @@ export function BlackjackFlowSettingsMenu({
                 }
               />
             </label>
+            {canChangeDesign ? (
+              <label className="bj-flow-settings__field">
+                <span className="bj-flow-settings__label">Chip tray label (mobile)</span>
+                <input
+                  type="text"
+                  value={resolveTableTrayLabel(gameState.tableMeta)}
+                  maxLength={48}
+                  onChange={(e) =>
+                    persistTableClothVisuals(gameState, onGameStateChange, {
+                      tableTrayLabel: e.target.value,
+                    })
+                  }
+                />
+              </label>
+            ) : (
+              <p className="bj-flow-settings__hint">
+                Chip tray label: {resolveTableTrayLabel(gameState.tableMeta)}
+              </p>
+            )}
           </section>
 
           {canChangeDesign && (

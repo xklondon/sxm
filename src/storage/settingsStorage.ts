@@ -38,7 +38,7 @@ import type { TableAdminSettings } from '../types/admin';
 
 import type { TableFeltSkin } from '../types/tableFeltSkin';
 
-import { DEFAULT_TABLE_CLOTH_NAME, DEFAULT_TABLE_FELT_SKIN } from '../types/tableFeltSkin';
+import { DEFAULT_TABLE_CLOTH_NAME, DEFAULT_TABLE_FELT_SKIN, DEFAULT_TABLE_TRAY_LABEL } from '../types/tableFeltSkin';
 
 import { log } from '../utils/logger';
 
@@ -77,6 +77,9 @@ export interface PersistedSettings {
   /** Optional social wager label on classic cloth. */
   tableClothWager?: string;
 
+  /** Mobile chip tray footer label. */
+  tableTrayLabel?: string;
+
 }
 
 
@@ -104,6 +107,8 @@ export function defaultPersistedSettings(): PersistedSettings {
     tableClothName: DEFAULT_TABLE_CLOTH_NAME,
 
     tableClothWager: '',
+
+    tableTrayLabel: DEFAULT_TABLE_TRAY_LABEL,
 
   };
 
@@ -173,6 +178,8 @@ export function mergeSettingsWithDefaults(partial?: Partial<PersistedSettings>):
     tableClothName: partial?.tableClothName ?? defaults.tableClothName,
 
     tableClothWager: partial?.tableClothWager ?? defaults.tableClothWager,
+
+    tableTrayLabel: partial?.tableTrayLabel ?? defaults.tableTrayLabel,
   };
 }
 
@@ -260,6 +267,8 @@ export function settingsFromGameState(state: GameState): PersistedSettings {
 
     tableClothWager: state.tableMeta.tableClothWager ?? '',
 
+    tableTrayLabel: state.tableMeta.tableTrayLabel ?? DEFAULT_TABLE_TRAY_LABEL,
+
   };
 
 }
@@ -293,6 +302,7 @@ export function applySettingsToGameState(state: GameState, settings: PersistedSe
       tableFeltSkin: merged.tableFeltSkin ?? DEFAULT_TABLE_FELT_SKIN,
       tableClothName: merged.tableClothName ?? DEFAULT_TABLE_CLOTH_NAME,
       tableClothWager: merged.tableClothWager ?? '',
+      tableTrayLabel: merged.tableTrayLabel ?? DEFAULT_TABLE_TRAY_LABEL,
     },
   };
 }

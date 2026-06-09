@@ -311,16 +311,17 @@ describe('Card View layout guard', () => {
     }
   });
 
-  it('Card View shows bank total and bank hand in header outside felt', () => {
+  it('Card View shows bank total and bank hand inside table shell above dealer', () => {
     const html = renderCardPanel(playingState());
-    expect(html).toContain(TABLE_UX.headerBankInfo);
+    expect(html).toContain('bj-table-info-bar--felt-row');
     expect(html).toContain('Bank Total:');
     expect(html).toContain('Bank Hand:');
-    const headerEnd = html.indexOf('</header>');
-    const infoIdx = html.indexOf(TABLE_UX.headerBankInfo);
-    expect(infoIdx).toBeGreaterThan(-1);
-    expect(infoIdx).toBeLessThan(headerEnd);
-    expect(html).not.toContain(TABLE_UX.dealerBankInfo);
+    expect(html).toContain('data-sxm-section="sxm-balance-display"');
+    const shellIdx = html.indexOf(TABLE_UX.tableLayoutShell);
+    const infoIdx = html.indexOf('bj-table-info-bar--felt-row');
+    expect(shellIdx).toBeGreaterThan(-1);
+    expect(infoIdx).toBeGreaterThan(shellIdx);
+    expect(html).not.toContain('bj-casino__header-bank');
   });
 
   it('Full Table layout tests still pass canonical zone markers', () => {
@@ -337,7 +338,7 @@ describe('Card View layout guard', () => {
     expect(full).toContain(TABLE_UX.tableZoneBoxes);
     expect(full).toContain(TABLE_UX.tableZoneBottom);
     expect(full).toContain(TABLE_UX.arcCards);
-    expect(full).toContain(TABLE_UX.headerBankInfo);
+    expect(full).toContain('bj-table-info-bar--felt-row');
     expect(full).not.toMatch(/\bbj-card-layout bj-phone-view\b/);
   });
 });

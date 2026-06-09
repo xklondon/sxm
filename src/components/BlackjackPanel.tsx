@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useMemo, type CSSProperties } from 'react';
 import type { GameState, TableViewMode } from '../types';
 import { resolveShowRoundSummaryOverlay } from '../types/table';
-import { feltSkinModifierClass, resolveTableClothName, resolveTableClothWager, resolveTableFeltSkin } from '../types/tableFeltSkin';
+import { feltSkinModifierClass, resolveTableClothName, resolveTableClothWager, resolveTableFeltSkin, resolveTableTrayLabel } from '../types/tableFeltSkin';
 import {
   claimBoxSlot,
   defaultBlackjackSeatId,
@@ -117,6 +117,7 @@ import {
 import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
 import {
   getBlackjackProtocolForState,
+  getBlackjackProtocolOrDefault,
   listBlackjackProtocolPresets,
   setBlackjackProtocolOnState,
   updateBlackjackFlowSettings,
@@ -145,6 +146,7 @@ import {
 import type { AuthUser } from '../api/client';
 import { MAX_TABLE_BOXES } from '../types/table';
 import { loadProfile, type PlayFlowAutoStand } from '../storage/profileStorage';
+import { loadSettings } from '../storage/settingsStorage';
 import { isOnlineModeEnabled } from '../api/config';
 import {
   useIsMobileViewport,
@@ -511,10 +513,11 @@ export function BlackjackPanel({
     commitLocalChipTarget(selectLocalChipTarget(localSelectedChipTargetRef.current, target));
   }
 
-  function preserveLocalChipTargetAfterStateSync() {
+  function preserveLocalChipTargetAfterStateSync(nextState?: GameState) {
+    const state = nextState ?? gameStateRef.current;
     const next = reconcileLocalChipTarget(
       localSelectedChipTargetRef.current,
-      gameStateRef.current,
+      state,
       Boolean(onlineDispatch),
     );
     commitLocalChipTarget(next);
@@ -557,14 +560,14 @@ export function BlackjackPanel({
       try {
         const optimistic = applyOptimisticChipPlacement(target, amount);
         onGameStateChange(optimistic);
-        preserveLocalChipTargetAfterStateSync();
+        preserveLocalChipTargetAfterStateSync(optimistic);
       } catch (err) {
         setError(formatPlaceBetError(err));
         return;
       }
       void onlineDispatch('placeBet', payload).catch((err) => {
         onGameStateChange(snapshot);
-        preserveLocalChipTargetAfterStateSync();
+        preserveLocalChipTargetAfterStateSync(snapshot);
         setError(formatPlaceBetError(err));
       });
       return;
@@ -584,15 +587,15 @@ export function BlackjackPanel({
           throw new Error('Could not claim box');
         }
         const personId = resolveControllerPersonId(state, controllerName);
-        onGameStateChange(addChipToBoxStake(state, boxId, amount, personId ?? undefined));
-        preserveLocalChipTargetAfterStateSync();
+        const nextState = addChipToBoxStake(state, boxId, amount, personId ?? undefined);
+        onGameStateChange(nextState);
+        preserveLocalChipTargetAfterStateSync(nextState);
         return;
       }
       const personId = resolveControllerPersonId(state, controllerName);
-      onGameStateChange(
-        addChipToBoxStake(state, target.boxId, amount, personId ?? undefined),
-      );
-      preserveLocalChipTargetAfterStateSync();
+      const nextState = addChipToBoxStake(state, target.boxId, amount, personId ?? undefined);
+      onGameStateChange(nextState);
+      preserveLocalChipTargetAfterStateSync(nextState);
     } catch (err) {
       setError(formatPlaceBetError(err));
     }
@@ -973,6 +976,7 @@ export function BlackjackPanel({
 
   function renderTrayInner() {
     const { playerAvailable } = buildTableInfoDisplay(gameState, viewerPersonId);
+    const trayLabel = resolveTableTrayLabel(tableMeta, loadSettings());
     return (
       <div className="bj-casino__tray-wrap">
         <ValueAndChipsBar
@@ -982,6 +986,7 @@ export function BlackjackPanel({
           onChipPointerDown={chipPointerDrag.onChipPointerDown}
           disabled={!bettingOpen}
           minimumBet={minimumBet}
+          trayLabel={deviceView === 'mobile' ? trayLabel : undefined}
         />
         {inBetting && chipTrayHint && (
           <p className="bj-casino__tray-hint" role="status">{chipTrayHint}</p>
@@ -1749,14 +1754,17 @@ export function BlackjackPanel({
             <button type="button" className={viewMode === 'full' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('full')}>Full Table</button>
             <button type="button" className={viewMode === 'card' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('card')}>Card View</button>
           </div>
-          <div {...sxmSectionProps(SXM_LAYOUT.balanceDisplay, 'bj-casino__header-bank')}>
-            <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="header" />
-          </div>
           {renderTableNav()}
         </div>
       </header>
     );
   }
+
+  const clothProtocolLabel = getBlackjackProtocolOrDefault(gameState.blackjackProtocolId).displayName;
+  const clothWagerText =
+    tableMeta.tableMode === 'practice'
+      ? resolveTableClothWager(tableMeta) || 'Practice'
+      : resolveTableClothWager(tableMeta) || getTableWagerDisplay(gameState);
 
   return (
     <div
@@ -1876,11 +1884,20 @@ export function BlackjackPanel({
           />
           <BlackjackTableLayoutShell
             layoutDebug={layoutDebug}
+            tableBankInfo={
+              <TableInfoBar
+                gameState={gameState}
+                viewerPersonId={viewerPersonId}
+                variant="felt"
+              />
+            }
             feltClothLayer={
               resolveTableFeltSkin(tableMeta) === 'classic-casino' ? (
                 <BlackjackFeltClothLayer
                   tableName={resolveTableClothName(tableMeta)}
-                  wagerText={resolveTableClothWager(tableMeta)}
+                  wagerText={clothWagerText}
+                  protocolText={clothProtocolLabel}
+                  customRulesText="House Rules: Standard"
                 />
               ) : null
             }

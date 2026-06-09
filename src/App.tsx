@@ -20,6 +20,7 @@ import { EntryLobbyScreen } from './screens/EntryLobbyScreen';
 import type { LoadTableEntry } from './components/LoadTableList';
 import { GameSetupScreen } from './screens/GameSetupScreen';
 import { TableScreen, type TableNavHandlers } from './screens/TableScreen';
+import { LeaveTableConfirmDialog } from './components/LeaveTableConfirmDialog';
 import { LocalProfileSetup } from './components/LocalProfileSetup';
 import { ScoreLedgerModal } from './components/LedgerModals';
 import {
@@ -138,6 +139,7 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
   const [inviteTableName, setInviteTableName] = useState<string | null>(null);
   const [tableVersion, setTableVersion] = useState<number | null>(null);
   const [tableNavHandlers, setTableNavHandlers] = useState<TableNavHandlers | null>(null);
+  const [leaveTableConfirmOpen, setLeaveTableConfirmOpen] = useState(false);
   const [bootstrappingTable, setBootstrappingTable] = useState(false);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
@@ -428,7 +430,7 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
     return () => document.removeEventListener('mousedown', handlePointerDown);
   }, [navMenuOpen]);
 
-  function handleLeaveTable() {
+  function exitTableScreen() {
     setGameState(null);
     setActiveTableId(null);
     setTableVersion(null);
@@ -437,6 +439,27 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
     consumePendingTable();
     setDismissStoredTable(true);
     setScreen(onlineMode && user ? 'lobby' : 'start');
+  }
+
+  function requestLeaveTable() {
+    setLeaveTableConfirmOpen(true);
+  }
+
+  function handleCancelLeaveTable() {
+    setLeaveTableConfirmOpen(false);
+  }
+
+  function handleLeaveTableWithoutSaving() {
+    setLeaveTableConfirmOpen(false);
+    exitTableScreen();
+  }
+
+  function handleSaveAndLeaveTable() {
+    setLeaveTableConfirmOpen(false);
+    if (tableNavHandlers) {
+      tableNavHandlers.saveTable();
+    }
+    exitTableScreen();
   }
 
   async function handleLogout() {
@@ -688,7 +711,7 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
                       role="menuitem"
                       onClick={() => {
                         setNavMenuOpen(false);
-                        handleLeaveTable();
+                        requestLeaveTable();
                       }}
                     >
                       Leave table
@@ -764,7 +787,7 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
         <TableScreen
           gameState={gameState}
           onGameStateChange={handleGameStateChange}
-          onLeave={handleLeaveTable}
+          onLeave={requestLeaveTable}
           onlineTableId={isOnline ? activeTableId : null}
           viewerAuth={user}
           onlineDispatch={isOnline ? dispatchAction : undefined}
@@ -775,6 +798,12 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
           onConfirmNavNewTable={handleConfirmNavNewTable}
         />
       )}
+      <LeaveTableConfirmDialog
+        open={leaveTableConfirmOpen}
+        onSaveAndLeave={handleSaveAndLeaveTable}
+        onLeaveWithoutSaving={handleLeaveTableWithoutSaving}
+        onCancel={handleCancelLeaveTable}
+      />
     </>
   );
 }

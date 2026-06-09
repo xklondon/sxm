@@ -97,7 +97,8 @@ describe('TABLE_UX class contract', () => {
     expect(panelSrc).toContain('TABLE_UX.desktopStage');
     expect(panelSrc).toContain('getBoxCardVisualClasses');
     expect(panelSrc).toContain('bj-phone-view__mini-hand');
-    expect(panelSrc).toContain('variant="header"');
+    expect(panelSrc).toContain('variant="felt"');
+    expect(panelSrc).toContain('tableBankInfo');
     expect(panelSrc).toContain('TABLE_UX.playerActions');
     expect(panelSrc).toContain('TableSideRailShell');
   });
@@ -225,20 +226,16 @@ describe('TABLE_UX markup across views', () => {
     expect(readSrc('src/styles/bj-card-layout.css')).not.toMatch(/\.bj-view-card-desktop \.bj-table-desktop-shell[\s\S]*height:/);
   });
 
-  it('bank summary renders in table header inside shell, outside felt border', () => {
+  it('bank summary renders inside table shell above dealer', () => {
     for (const mode of ['full', 'card'] as const) {
       const html = renderAt(1280, mode);
-      const headerIdx = html.indexOf(TABLE_UX.tableHeader);
-      const bankIdx = html.indexOf(TABLE_UX.headerBankInfo);
-      const railIdx = html.indexOf('bj-table-rail');
-      const shellIdx = html.indexOf('bj-table-desktop-shell');
-      expect(headerIdx).toBeGreaterThan(-1);
-      expect(bankIdx).toBeGreaterThan(headerIdx);
+      const shellIdx = html.indexOf(TABLE_UX.tableLayoutShell);
+      const bankIdx = html.indexOf('bj-table-info-bar--felt-row');
+      expect(shellIdx).toBeGreaterThan(-1);
+      expect(bankIdx).toBeGreaterThan(shellIdx);
       expect(html).toContain('Bank Total:');
       expect(html).toContain('Bank Hand:');
-      expect(shellIdx).toBeGreaterThan(-1);
-      expect(headerIdx).toBeGreaterThan(shellIdx);
-      expect(railIdx).toBeGreaterThan(headerIdx);
+      expect(html).not.toContain('bj-casino__header-bank');
       expect(html).not.toContain('dealer-block__brand');
     }
   });

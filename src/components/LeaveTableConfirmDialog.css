@@ -1,0 +1,33 @@
+.leave-table-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.55);
+  padding: 1rem;
+}
+
+.leave-table-dialog {
+  background: #1a3d2e;
+  border: 2px solid rgb(255 255 255 / 0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  max-width: 22rem;
+  width: 100%;
+  color: var(--color-cream, #f5f0e6);
+}
+
+.leave-table-dialog__title {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.leave-table-dialog__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

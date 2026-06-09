@@ -116,6 +116,8 @@ export interface TableMeta {
   tableClothName?: string;
   /** Optional social wager label on classic cloth — visual only. */
   tableClothWager?: string;
+  /** Chip tray footer label (mobile). Admin-editable; defaults to SxM Casino Challenge. */
+  tableTrayLabel?: string;
   /** Practice or challenge — drives setup UX and end-of-game ledger offer. */
   tableMode?: TableMode;
   /** Emails invited during challenge setup (before/at table start). */

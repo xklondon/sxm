@@ -6,6 +6,8 @@ export type TableFeltSkin = 'clean' | 'classic-casino';
 
 export const DEFAULT_TABLE_FELT_SKIN: TableFeltSkin = 'classic-casino';
 export const DEFAULT_TABLE_CLOTH_NAME = "Slinki's Black Jack";
+export const DEFAULT_PRACTICE_TABLE_NAME = 'Practice Table';
+export const DEFAULT_TABLE_TRAY_LABEL = 'SxM Casino Challenge';
 
 export const TABLE_FELT_SKIN_OPTIONS: ReadonlyArray<{
   value: TableFeltSkin;
@@ -19,6 +21,7 @@ export interface TableVisualPrefsSettings {
   tableFeltSkin?: TableFeltSkin;
   tableClothName?: string;
   tableClothWager?: string;
+  tableTrayLabel?: string;
 }
 
 export function isTableFeltSkin(value: unknown): value is TableFeltSkin {
@@ -52,6 +55,21 @@ export function resolveTableClothName(meta: Pick<TableMeta, 'tableClothName'>): 
 
 export function resolveTableClothWager(meta: Pick<TableMeta, 'tableClothWager'>): string {
   return meta.tableClothWager?.trim() ?? '';
+}
+
+export function resolveTableTrayLabel(
+  meta: Pick<TableMeta, 'tableTrayLabel'>,
+  settings?: Pick<TableVisualPrefsSettings, 'tableTrayLabel'>,
+): string {
+  const fromMeta = meta.tableTrayLabel?.trim();
+  if (fromMeta) {
+    return fromMeta;
+  }
+  const fromSettings = settings?.tableTrayLabel?.trim();
+  if (fromSettings) {
+    return fromSettings;
+  }
+  return DEFAULT_TABLE_TRAY_LABEL;
 }
 
 export function feltSkinModifierClass(skin: TableFeltSkin): string {
@@ -96,5 +114,6 @@ export function visualPrefsFromSettings(settings: TableVisualPrefsSettings): Tab
     tableFeltSkin: settings.tableFeltSkin,
     tableClothName: settings.tableClothName,
     tableClothWager: settings.tableClothWager,
+    tableTrayLabel: settings.tableTrayLabel,
   };
 }

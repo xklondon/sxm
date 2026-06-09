@@ -28,7 +28,7 @@ import { invitePersonToTable } from '../api/client';
 import { isOnlineModeEnabled } from '../api/config';
 import { createTableInvite } from '../engine/table/invites';
 
-import './TableStakePanel.css';
+import { DEFAULT_PRACTICE_TABLE_NAME } from '../types/tableFeltSkin';
 
 const STAKE_EXAMPLES = ['Dinner', '€20', 'Loser buys drinks', 'Just pride', 'car wash', 'favour'];
 
@@ -94,6 +94,9 @@ export function TableStakePanel({
   const [challengeBank, setChallengeBank] = useState<'self' | 'dealer' | string>('self');
 
   const [stake, setStake] = useState(() => agreement?.stakeDescription ?? '');
+  const [tableName, setTableName] = useState(
+    () => gameState.tableMeta.tableClothName?.trim() || DEFAULT_PRACTICE_TABLE_NAME,
+  );
   const [inviteNote, setInviteNote] = useState('');
   const [seatChips, setSeatChips] = useState(
     String(gameState.tableMeta.startingChipsEachSeat ?? DEFAULT_TABLE_CHIPS),
@@ -166,6 +169,7 @@ export function TableStakePanel({
       if (tableMode === 'practice') {
         return {
           stakeDescription: 'Practice',
+          tableName: tableName.trim() || DEFAULT_PRACTICE_TABLE_NAME,
           seatChips: seatAmount,
           bankChips: bankAmount,
           bankerMode: 'bot',
@@ -184,6 +188,7 @@ export function TableStakePanel({
       const bank = resolveChallengeBanker();
       return {
         stakeDescription: stake.trim() || 'Friendly wager',
+        tableName: tableName.trim() || stake.trim() || 'Challenge Table',
         seatChips: seatAmount,
         bankChips: bankAmount,
         bankerMode: bank.bankerMode,
@@ -647,6 +652,17 @@ export function TableStakePanel({
           Dealer is the bank. No wager or invites required — default chip allocation is fine.
         </p>
         <label className="table-stake-panel__field">
+          <span>Table name</span>
+          <input
+            type="text"
+            className="table-stake-panel__input"
+            placeholder={DEFAULT_PRACTICE_TABLE_NAME}
+            value={tableName}
+            onChange={(e) => setTableName(e.target.value)}
+            maxLength={48}
+          />
+        </label>
+        <label className="table-stake-panel__field">
           <span>Starting chips each seat</span>
           <input
             type="number"
@@ -677,6 +693,17 @@ export function TableStakePanel({
   function renderChallengeConfigure() {
     return (
       <>
+        <label className="table-stake-panel__field">
+          <span>Table name</span>
+          <input
+            type="text"
+            className="table-stake-panel__input"
+            placeholder="Friday Night Blackjack"
+            value={tableName}
+            onChange={(e) => setTableName(e.target.value)}
+            maxLength={48}
+          />
+        </label>
         <label className="table-stake-panel__field">
           <span>Play for what</span>
           <input

@@ -31,7 +31,7 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
     expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2.65rem');
     expect(SHARED_CSS).toContain('--bj-mobile-zone-actions-height: 2.9rem');
     expect(SHARED_CSS).toContain('--bj-mobile-zone-boxes-height: 6rem');
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 3.75rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 4.35rem');
     expect(SHARED_CSS).toContain('--bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height)');
   });
 

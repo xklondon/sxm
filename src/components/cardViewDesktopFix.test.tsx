@@ -148,7 +148,7 @@ describe('Card View desktop targeted fixes', () => {
       bettingStage: true,
     });
     expect(getBoxActivePulseClassName(freeResolved)).toBe(BET_BOX_PULSE);
-    expect(getBoxBorderVisualClasses(freeResolved)).not.toContain('bj-box--selected');
+    expect(getBoxBorderVisualClasses(freeResolved)).toContain('bj-box--selected');
     expect(getBoxBorderVisualClasses(freeResolved)).not.toContain('bj-box--running');
     expect(getBoxBorderVisualClasses(freeResolved)).not.toContain('bj-box--native-assigned');
   });
@@ -191,6 +191,6 @@ describe('Card View desktop targeted fixes', () => {
     });
     expect(getBoxActivePulseClassName(nativeResolved)).toBe(BET_BOX_PULSE);
     expect(getBoxCardVisualClasses(nativeResolved)).toContain(BOX_BORDER_NATIVE);
-    expect(getBoxCardVisualClasses(nativeResolved)).not.toContain('bj-box--selected');
+    expect(getBoxCardVisualClasses(nativeResolved)).toContain('bj-box--selected');
   });
 });

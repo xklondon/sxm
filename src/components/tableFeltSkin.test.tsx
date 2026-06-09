@@ -143,7 +143,8 @@ describe('table felt cloth layer', () => {
     expect(html).toContain('Custom Table');
     expect(html).toContain('Playing for Dinner');
     expect(html).not.toContain('Playing for: Dinner');
-    expect(html).toContain('Dealer must stand on 17 and draw to 16');
+    expect(html).toContain('Standard protocol');
+    expect(html).toContain('House Rules: Standard');
     expect(html).toContain('<svg');
   });
 
@@ -199,16 +200,15 @@ describe('table felt cloth layer', () => {
     expect(src).not.toMatch(/tableClothName[\s\S]*boxStakes/);
   });
 
-  it('header shows bank total and bank hand in toolbar row', () => {
+  it('felt row shows bank total and bank hand inside table shell', () => {
     const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
     const infoSrc = readSrc('src/components/TableInfoBar.tsx');
-    expect(panelSrc).toContain('bj-casino__header-bank');
-    expect(panelSrc).toMatch(/variant="header"/);
+    expect(panelSrc).toContain('tableBankInfo');
+    expect(panelSrc).toMatch(/variant="felt"/);
     expect(infoSrc).toContain('Bank Total:');
     expect(infoSrc).toContain('Bank Hand:');
-    expect(panelSrc).not.toContain('>BLACKJACK</h1>');
-    expect(panelSrc).not.toMatch(/pageTitle\)[^>]*>Slinki/);
-    expect(panelSrc).not.toContain("Slinki's Black Jack");
+    expect(infoSrc).toContain('bj-table-info-bar--felt-row');
+    expect(panelSrc).not.toContain('bj-casino__header-bank');
   });
 
   it('chip tray zone is bottom-aligned with boxes separation in shared shell CSS', () => {

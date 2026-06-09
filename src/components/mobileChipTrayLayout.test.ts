@@ -21,7 +21,7 @@ describe('mobile Card View chip tray layout', () => {
 
   it('places chip tray row below boxes with extra height on mobile', () => {
     expect(SHARED_CSS).toContain(MOBILE_LAYOUT_MEDIA);
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 3.75rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 4.35rem');
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-casino__tray-wrap,\s*\n\s*\.bj-view-card-mobile \.bj-casino__tray-wrap[\s\S]*flex-shrink:\s*0/,
     );

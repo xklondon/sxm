@@ -34,6 +34,21 @@
   min-width: 4.5rem;
 }
 
+.bj-table-info-bar--felt-row {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.55rem 0.75rem;
+  padding: 0.08rem 0.35rem 0.12rem;
+  min-height: 1.35rem;
+  width: 100%;
+}
+
+.bj-table-info-bar--felt-row .bj-table-info-bar__item {
+  font-size: 0.68rem;
+}
+
 .bj-table-info-bar--header {
   flex-direction: row;
   gap: 0.5rem 1rem;

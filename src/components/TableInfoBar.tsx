@@ -7,8 +7,8 @@ import './TableInfoBar.css';
 interface TableInfoBarProps {
   gameState: GameState;
   viewerPersonId: string | null;
-  /** Dealer placement stacks bank value/chips under dealer cards. Header variant sits under page title. */
-  variant?: 'dealer' | 'header';
+  /** Dealer placement stacks bank value/chips under dealer cards. Header variant sits under page title. Felt variant is first row inside table shell. */
+  variant?: 'dealer' | 'header' | 'felt';
 }
 
 /** Bank value + bank chip balance — dealer variant under cards; header variant under page title. */
@@ -16,15 +16,16 @@ export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: 
   const { bankValue, bankChips } = buildTableInfoDisplay(gameState, viewerPersonId);
   const isDealer = variant === 'dealer';
   const isHeader = variant === 'header';
+  const isFelt = variant === 'felt';
 
-  if (isHeader) {
+  if (isHeader || isFelt) {
     return (
       <div
         {...sxmSectionProps(
           SXM_LAYOUT.balanceDisplay,
           TABLE_UX.tableInfoBar,
-          TABLE_UX.headerBankInfo,
-          'bj-table-info-bar--header-row',
+          isHeader ? TABLE_UX.headerBankInfo : '',
+          isFelt ? 'bj-table-info-bar--felt-row' : 'bj-table-info-bar--header-row',
         )}
         aria-label="Bank information"
       >

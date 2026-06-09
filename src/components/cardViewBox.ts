@@ -183,6 +183,9 @@ export function getBoxBorderVisualClasses(resolved: BoxBorderVisualState): strin
   if (resolved.isDropHover) {
     parts.push(BOX_BORDER_DROP_HOVER);
   }
+  if (resolved.isSelected) {
+    parts.push(BOX_BORDER_SELECTED);
+  }
   return parts.join(' ');
 }
 

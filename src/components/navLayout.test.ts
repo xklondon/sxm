@@ -29,11 +29,12 @@ describe('header and table nav layout', () => {
     expect(dealer).not.toContain('dealer-block__top-row');
   });
 
-  it('centers bank total and bank hand row in header toolbar', () => {
+  it('renders bank total and bank hand inside table shell, not header toolbar', () => {
     const panel = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-    const css = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
-    expect(panel).toContain('bj-casino__header-bank');
-    expect(panel).toMatch(/variant="header"/);
-    expect(css).toContain('.bj-casino__header-bank');
+    const shell = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
+    expect(panel).toContain('tableBankInfo');
+    expect(panel).toContain('variant="felt"');
+    expect(panel).not.toContain('bj-casino__header-bank');
+    expect(shell).toMatch(/tableBankInfo[\s\S]*\{dealer\}/);
   });
 });

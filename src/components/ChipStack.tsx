@@ -222,6 +222,7 @@ export function ValueAndChipsBar({
   onChipPointerDown,
   disabled,
   minimumBet = 1,
+  trayLabel,
 }: {
   available: number | null;
   showChips: boolean;
@@ -229,45 +230,61 @@ export function ValueAndChipsBar({
   onChipPointerDown?: (value: ChipValue, e: ReactPointerEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
   minimumBet?: number;
+  trayLabel?: string;
 }) {
   return (
-    <div className={[TABLE_UX.valueAndChips, 'bj-value-chips'].filter(Boolean).join(' ')}>
-      <p
-        {...sxmSectionProps(
-          SXM_LAYOUT.playerBalance,
-          'bj-value-chips__balance',
-          'bj-casino__player-balance',
-          available === null ? 'bj-casino__player-balance--placeholder' : '',
-        )}
-        aria-label={available !== null ? `Available ${available} chips` : undefined}
-        aria-hidden={available === null}
-      >
-        {available !== null ? `Available: ${available}` : '\u00a0'}
-      </p>
-      <div
-        {...sxmSectionProps(
-          SXM_LAYOUT.chipTray,
-          'bj-value-chips__stash',
-          showChips ? '' : TABLE_UX.trayReserved,
-          showChips ? '' : 'bj-value-chips__stash--reserved',
-          showChips && disabled ? 'bj-value-chips__stash--inactive' : '',
-        )}
-      >
-        {showChips ? (
-          <ChipTray
-            onChipClick={onChipClick}
-            onChipPointerDown={onChipPointerDown}
-            disabled={disabled}
-            minimumBet={minimumBet}
-            showLabel={false}
-            className="chip-tray--inline"
-          />
-        ) : (
-          <span className="bj-value-chips__stash-placeholder" aria-hidden="true">
-            &nbsp;
-          </span>
-        )}
+    <div
+      className={[
+        TABLE_UX.valueAndChips,
+        'bj-value-chips',
+        trayLabel ? 'bj-value-chips--with-label' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <div className="bj-value-chips__row bj-value-chips__row--main">
+        <p
+          {...sxmSectionProps(
+            SXM_LAYOUT.playerBalance,
+            'bj-value-chips__balance',
+            'bj-casino__player-balance',
+            available === null ? 'bj-casino__player-balance--placeholder' : '',
+          )}
+          aria-label={available !== null ? `Available ${available} chips` : undefined}
+          aria-hidden={available === null}
+        >
+          {available !== null ? `Available: ${available}` : '\u00a0'}
+        </p>
+        <div
+          {...sxmSectionProps(
+            SXM_LAYOUT.chipTray,
+            'bj-value-chips__stash',
+            showChips ? '' : TABLE_UX.trayReserved,
+            showChips ? '' : 'bj-value-chips__stash--reserved',
+            showChips && disabled ? 'bj-value-chips__stash--inactive' : '',
+          )}
+        >
+          {showChips ? (
+            <ChipTray
+              onChipClick={onChipClick}
+              onChipPointerDown={onChipPointerDown}
+              disabled={disabled}
+              minimumBet={minimumBet}
+              showLabel={false}
+              className="chip-tray--inline"
+            />
+          ) : (
+            <span className="bj-value-chips__stash-placeholder" aria-hidden="true">
+              &nbsp;
+            </span>
+          )}
+        </div>
       </div>
+      {trayLabel ? (
+        <p className="bj-value-chips__row bj-value-chips__row--label" aria-label="Table label">
+          {trayLabel}
+        </p>
+      ) : null}
     </div>
   );
 }

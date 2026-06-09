@@ -159,7 +159,7 @@
     --bj-mobile-mini-hand-height: 2.45rem;
     --bj-mobile-felt-min-height: 0;
     --bj-mobile-felt-fill-grow: 1 1 auto;
-    --bj-mobile-table-canvas-height: min(100dvh, 100svh);
+    --bj-mobile-table-canvas-height: min(calc(100dvh - 0.75rem), calc(100svh - 0.75rem));
     --bj-mobile-table-width: 100%;
     --bj-mobile-rail-width: 100%;
     --bj-mobile-felt-width: 100%;
@@ -171,14 +171,14 @@
     --bj-mobile-zone-command-top-gap: 0.62rem;
     --bj-mobile-safe-area-bottom: env(safe-area-inset-bottom, 0px);
     --bj-mobile-rail-padding: 0.28rem 0.55rem max(0.28rem, env(safe-area-inset-bottom, 0px));
-    --bj-zone-tray-padding-bottom: max(0.28rem, env(safe-area-inset-bottom, 0px));
+    --bj-zone-tray-padding-bottom: max(0.55rem, env(safe-area-inset-bottom, 0px));
     --bj-mobile-zone-dealer-height: 6.25rem;
     --bj-mobile-zone-command-height: 2.65rem;
     --bj-zone-command-max-height: 4rem;
     --bj-mobile-zone-actions-height: 2.9rem;
     --bj-mobile-zone-cards-min-height: 0;
     --bj-mobile-zone-boxes-height: 6rem;
-    --bj-mobile-zone-tray-height: 3.75rem;
+    --bj-mobile-zone-tray-height: 4.35rem;
     --bj-zone-boxes-tray-gap: 0.65rem;
     --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
     --bj-zone-command-height: var(--bj-mobile-zone-command-height);
@@ -230,7 +230,7 @@
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
     --bj-zone-tray-height: var(--bj-mobile-zone-tray-height);
     --bj-zone-boxes-tray-gap: 0.65rem;
-    --bj-zone-tray-padding-bottom: max(0.28rem, env(safe-area-inset-bottom, 0px));
+    --bj-zone-tray-padding-bottom: max(0.55rem, env(safe-area-inset-bottom, 0px));
     width: var(--bj-mobile-table-width);
     max-width: var(--bj-mobile-table-width);
     min-width: 0;
@@ -2769,7 +2769,7 @@
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height, 6rem);
     --bj-zone-tray-height: var(--bj-mobile-zone-tray-height, 3.75rem);
     --bj-zone-boxes-tray-gap: 0.65rem;
-    --bj-zone-tray-padding-bottom: max(0.28rem, env(safe-area-inset-bottom, 0px));
+    --bj-zone-tray-padding-bottom: max(0.55rem, env(safe-area-inset-bottom, 0px));
     width: 100%;
     max-width: 100%;
     min-width: 0;

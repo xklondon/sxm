@@ -5,12 +5,14 @@ import { ensureTableOwnerPersonBankroll } from './ownerBankroll';
 import { setTableOwner } from './invites';
 import { confirmTableAgreement, DEFAULT_TABLE_CHIPS, } from './table';
 import { logDerivedBalances, logLedgerAfterAllocation, logTableMetaStartingChips, } from './tokens';
+import { DEFAULT_PRACTICE_TABLE_NAME } from '../../types/tableFeltSkin';
 export function parseTableStakeSetupPayload(payload, fallbackController) {
     const seatChips = Number(payload.seatChips);
     const bankChips = Number(payload.bankChips);
     const bankerMode = payload.bankerMode;
     return {
         stakeDescription: String(payload.stakeDescription ?? 'Friendly game'),
+        tableName: typeof payload.tableName === 'string' ? payload.tableName : undefined,
         seatChips: Number.isFinite(seatChips) && seatChips > 0 ? seatChips : DEFAULT_TABLE_CHIPS,
         bankChips: Number.isFinite(bankChips) && bankChips > 0 ? bankChips : DEFAULT_TABLE_CHIPS,
         bankerMode: bankerMode === 'self' || bankerMode === 'other' ? bankerMode : 'bot',
@@ -45,6 +47,9 @@ export function applyTableStakeSetup(state, input) {
     const stakeDescription = isPractice
         ? input.stakeDescription.trim() || 'Practice'
         : input.stakeDescription.trim() || 'Friendly wager';
+    const tableClothName = isPractice
+        ? input.tableName?.trim() || DEFAULT_PRACTICE_TABLE_NAME
+        : input.tableName?.trim() || stakeDescription;
     let next = confirmTableAgreement(state, stakeDescription, seatAmount, bankAmount);
     next = setTableOwner(next, input.controllerName, input.controllerEmail);
     const invitedEmails = (input.invitedEmails ?? []).map((e) => e.trim().toLowerCase()).filter(Boolean);
@@ -57,7 +62,8 @@ export function applyTableStakeSetup(state, input) {
             showStakeSetup: false,
             tableMode,
             setupInvitedEmails: invitedEmails.length > 0 ? invitedEmails : undefined,
-            tableClothWager: isPractice ? undefined : stakeDescription,
+            tableClothName,
+            tableClothWager: isPractice ? 'Practice' : stakeDescription,
         },
     };
     if (isPractice || input.bankerMode === 'bot') {

@@ -119,29 +119,26 @@ describe('table layout stabilization contract', () => {
     expect(full).not.toContain(TABLE_UX.cardsFan);
   });
 
-  it('shows bank total and bank hand in table header chrome', () => {
+  it('shows bank total and bank hand inside table shell above dealer', () => {
     for (const width of [1280, 390]) {
       const full = renderAt(width, 'full');
-      expect(full).toContain(TABLE_UX.headerBankInfo);
+      expect(full).toContain('bj-table-info-bar--felt-row');
       expect(full).toContain('Bank Total:');
       expect(full).toContain('Bank Hand:');
       expect(full).toContain('bj-value-chips');
       expect(full).toContain('Available:');
-      const headerEnd = full.indexOf('</header>');
-      const infoIdx = full.indexOf(TABLE_UX.headerBankInfo);
-      expect(headerEnd).toBeGreaterThan(-1);
-      expect(infoIdx).toBeGreaterThan(-1);
-      expect(infoIdx).toBeLessThan(headerEnd);
+      const shellIdx = full.indexOf(TABLE_UX.tableLayoutShell);
+      const infoIdx = full.indexOf('bj-table-info-bar--felt-row');
+      expect(shellIdx).toBeGreaterThan(-1);
+      expect(infoIdx).toBeGreaterThan(shellIdx);
+      expect(full).not.toContain('bj-casino__header-bank');
 
       const card = renderAt(width, 'card');
-      expect(card).toContain(TABLE_UX.headerBankInfo);
+      expect(card).toContain('bj-table-info-bar--felt-row');
       expect(card).toContain('Bank Total:');
       expect(card).toContain('Bank Hand:');
       expect(card).not.toContain(TABLE_UX.dealerBankInfo);
-      const cardHeaderEnd = card.indexOf('</header>');
-      const headerInfoIdx = card.indexOf(TABLE_UX.headerBankInfo);
-      expect(headerInfoIdx).toBeGreaterThan(-1);
-      expect(headerInfoIdx).toBeLessThan(cardHeaderEnd);
+      expect(card).not.toContain('bj-casino__header-bank');
     }
   });
 
@@ -261,23 +258,19 @@ describe('table layout polish contract', () => {
     );
   }
 
-  it('centers bank total and bank hand row in header toolbar', () => {
-    const css = readSrc('src/components/BlackjackPanel.css');
+  it('renders bank total and bank hand inside table shell above dealer', () => {
     const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
-    expect(css).toMatch(/\.bj-casino__header-bank[\s\S]*grid-column:\s*2/);
-    expect(panelSrc).toContain('TABLE_UX.tableHeader');
-    expect(panelSrc).toContain('bj-casino__header-bank');
-    expect(panelSrc).toContain('variant="header"');
+    const shellSrc = readSrc('src/components/BlackjackTableLayoutShell.tsx');
+    expect(panelSrc).toContain('tableBankInfo');
+    expect(panelSrc).toContain('variant="felt"');
+    expect(panelSrc).not.toContain('bj-casino__header-bank');
+    expect(shellSrc).toMatch(/tableBankInfo[\s\S]*\{dealer\}/);
     for (const mode of ['full', 'card'] as const) {
       const html = renderAt(1280, mode);
-      expect(html).toContain(TABLE_UX.tableHeader);
       expect(html).toContain('Bank Total:');
       expect(html).toContain('Bank Hand:');
-      const headerEnd = html.indexOf('</header>');
-      const infoIdx = html.indexOf(TABLE_UX.headerBankInfo);
-      expect(headerEnd).toBeGreaterThan(-1);
-      expect(infoIdx).toBeGreaterThan(-1);
-      expect(infoIdx).toBeLessThan(headerEnd);
+      expect(html).toContain('bj-table-info-bar--felt-row');
+      expect(html).not.toContain('bj-casino__header-bank');
     }
   });
 
