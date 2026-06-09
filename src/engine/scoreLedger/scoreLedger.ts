@@ -1,5 +1,5 @@
 import type { GameState } from '../../types';
-import type { ScoreLedgerEntry } from '../../types/scoreLedger';
+import type { ScoreLedgerEntry, ScoreLedgerParticipantResult } from '../../types/scoreLedger';
 import { generateId } from '../utils/id';
 import { appendScoreLedgerEntry, loadScoreLedgerEntries } from '../../storage/scoreLedgerStorage';
 import {
@@ -15,9 +15,16 @@ export function isBotBankGame(state: GameState): boolean {
   return bank?.playerType === 'virtual';
 }
 
-/** Personal (score) ledger only applies to human-vs-human games, not Bot Bank. */
+export function resolveTableModeFromState(state: GameState): 'practice' | 'challenge' {
+  if (state.tableMeta.tableMode) {
+    return state.tableMeta.tableMode;
+  }
+  return isBotBankGame(state) ? 'practice' : 'challenge';
+}
+
+/** Personal (score) ledger applies to challenge games when the table has ended. */
 export function canAddGameToPersonalLedger(state: GameState): boolean {
-  return state.tableMeta.gameStatus === 'ended' && !isBotBankGame(state);
+  return state.tableMeta.gameStatus === 'ended' && resolveTableModeFromState(state) === 'challenge';
 }
 
 function bankShortName(state: GameState, bankId: string): string {
@@ -26,7 +33,7 @@ function bankShortName(state: GameState, bankId: string): string {
     return 'Bank';
   }
   if (bank.playerType === 'virtual') {
-    return bank.displayName.replace(/^Bank\s+/i, '').trim() || 'Bank Bot';
+    return bank.displayName.replace(/^Bank\s+/i, '').trim() || 'Dealer';
   }
   return bank.controllerName?.trim() || bank.displayName;
 }
@@ -34,6 +41,39 @@ function bankShortName(state: GameState, bankId: string): string {
 function personShortName(state: GameState, personId: string): string {
   const person = state.players[personId];
   return person?.controllerName?.trim() || person?.displayName || 'Player';
+}
+
+function buildParticipantResults(state: GameState, winnerId: string | null): ScoreLedgerParticipantResult[] {
+  const seatStart = state.tableMeta.startingChipsEachSeat;
+  const bankStart = state.tableMeta.startingChipsBank;
+  const bankId = state.session.bankPlayerId;
+  const results: ScoreLedgerParticipantResult[] = [];
+
+  for (const personId of listPersonBankrollOwnerIds(state)) {
+    const ending = getLedgerBalanceForBankrollOwner(state, personId);
+    results.push({
+      email: '',
+      name: personShortName(state, personId),
+      personId,
+      startingChips: seatStart,
+      endingChips: ending,
+      outcome: winnerId === personId ? 'winner' : ending <= 0 ? 'loser' : 'participant',
+    });
+  }
+
+  if (bankId) {
+    const ending = getLedgerBalanceForBankrollOwner(state, bankId);
+    results.push({
+      email: '',
+      name: bankShortName(state, bankId),
+      personId: state.players[bankId]?.playerType === 'real' ? bankId : null,
+      startingChips: bankStart,
+      endingChips: ending,
+      outcome: winnerId === bankId ? 'winner' : ending <= 0 ? 'loser' : 'participant',
+    });
+  }
+
+  return results;
 }
 
 /** Build wager-level game-over message and optional score ledger entry. */
@@ -91,16 +131,31 @@ export function buildGameOverSummary(state: GameState): {
     ].filter(Boolean) as string[]),
   ];
 
+  const participants = buildParticipantResults(state, winnerId);
+  const participantEmails = [
+    ...new Set([
+      ...(state.tableMeta.setupInvitedEmails ?? []),
+      state.tableMeta.owner?.ownerEmail?.trim().toLowerCase() ?? '',
+      ...participants.map((p) => p.email).filter(Boolean),
+    ].filter(Boolean)),
+  ];
+
   const entry: ScoreLedgerEntry = {
     id: generateId(),
     tableId: state.session.id,
     wagerDescription: wager,
     winnerPersonId: winnerIsBank ? null : winnerId,
     winnerName,
-    loserPersonId: winnerIsBank ? loserId : null,
+    loserPersonId: winnerIsBank ? loserId : bankId && !winnerIsBank ? bankId : null,
     loserName,
     owedDescription,
     playersInvolved,
+    gameType: state.tableGame ?? 'blackjack',
+    protocolId: state.blackjackProtocolId,
+    mode: resolveTableModeFromState(state),
+    bankName: bankId ? bankShortName(state, bankId) : undefined,
+    participantEmails,
+    participants,
     createdAt: state.tableMeta.endedAt ?? new Date().toISOString(),
     status: 'open',
   };
@@ -117,8 +172,7 @@ export function addGameToPersonalLedger(state: GameState): ScoreLedgerEntry | nu
   if (state.tableMeta.gameStatus !== 'ended') {
     throw new Error('Game must be fully completed before adding to personal ledger');
   }
-  // Bot Bank games are solo practice — nothing to settle person-to-person.
-  if (isBotBankGame(state)) {
+  if (!canAddGameToPersonalLedger(state)) {
     return null;
   }
   const { entry } = buildGameOverSummary(state);

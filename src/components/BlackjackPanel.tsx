@@ -56,6 +56,7 @@ import { BlackjackActionPanel } from './BlackjackActionPanel';
 import { BlackjackCommandBox } from './BlackjackCommandBox';
 import { BlackjackDealerArea } from './BlackjackDealerArea';
 import { BlackjackTableLayoutShell } from './BlackjackTableLayoutShell';
+import { isBlackjackLayoutDebugEnabled } from './blackjackLayoutDebug';
 import { BlackjackFeltClothLayer } from './BlackjackFeltClothLayer';
 import { Magic8Ball } from './magic8/Magic8Ball';
 import { buildBlackjackPlayerBoxInfo } from './blackjackPlayerBoxInfo';
@@ -92,8 +93,8 @@ import { isTableOwner } from '../engine/session';
 import { getTableWagerDisplay } from '../engine/session/wagerDisplay';
 import {
   addGameToPersonalLedger,
+  canAddGameToPersonalLedger,
   hasPersonalLedgerEntryForTable,
-  isBotBankGame,
 } from '../engine/scoreLedger/scoreLedger';
 import { buildRoundResultSummary } from '../engine/blackjack';
 import { buildRoundSummaryOverlayModel } from '../engine/blackjack/roundSummaryOverlay';
@@ -295,6 +296,23 @@ export function BlackjackPanel({
   const [localViewMode, setLocalViewMode] = useState<TableViewMode>(() =>
     resolveInitialViewMode(isMobileViewport, tableViewMode),
   );
+  const [layoutDebug, setLayoutDebug] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return isBlackjackLayoutDebugEnabled(window.location?.search ?? '');
+  });
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    const syncLayoutDebug = () => {
+      setLayoutDebug(isBlackjackLayoutDebugEnabled(window.location?.search ?? ''));
+    };
+    syncLayoutDebug();
+    window.addEventListener('popstate', syncLayoutDebug);
+    return () => window.removeEventListener('popstate', syncLayoutDebug);
+  }, []);
   const round = blackjack;
   const visualRound = tableVisualState.blackjack;
   const visualDeck = tableVisualState.deck;
@@ -374,7 +392,7 @@ export function BlackjackPanel({
   const displaySlots = [...tableMeta.boxSlots].sort((a, b) => b.slotNumber - a.slotNumber);
   const bankerReady = isBankerReady(gameState);
   // Personal (score) ledger is human-vs-human only — never for a Bot Bank game.
-  const showPersonalLedgerOffer = gameEnded && !isBotBankGame(gameState);
+  const showPersonalLedgerOffer = gameEnded && canAddGameToPersonalLedger(gameState);
   // Consolidated end-of-round summary, shown once (in the dealer block, above
   // the Next Round button). Per-box result chips are intentionally not repeated.
   const roundSummaryLines = useMemo(
@@ -891,12 +909,21 @@ export function BlackjackPanel({
           <div className="bj-personal-ledger-offer">
             <button
               type="button"
-              className="ds-btn ds-btn--secondary"
+              className="ds-btn ds-btn--primary"
               disabled={personalLedgerAdded}
               onClick={handleAddToPersonalLedger}
             >
-              {personalLedgerAdded ? 'Added to personal ledger' : 'Add game to personal ledger'}
+              {personalLedgerAdded ? 'Added to ledger' : 'Add game to ledger'}
             </button>
+            {!personalLedgerAdded && (
+              <button
+                type="button"
+                className="ds-btn ds-btn--secondary"
+                onClick={() => setPersonalLedgerAdded(true)}
+              >
+                Close without ledger
+              </button>
+            )}
           </div>
         ) : null}
       </>
@@ -1633,7 +1660,13 @@ export function BlackjackPanel({
 
   function renderTableHeader() {
     return (
-      <header {...sxmSectionProps(SXM_LAYOUT.appHeader, TABLE_UX.tableHeader)}>
+      <header
+        {...sxmSectionProps(
+          SXM_LAYOUT.appHeader,
+          TABLE_UX.tableHeader,
+          layoutDebug ? TABLE_UX.layoutDebug : '',
+        )}
+      >
         <div className="bj-casino__toolbar">
           <div {...sxmSectionProps(SXM_LAYOUT.viewSwitcher, 'bj-casino__view-toggle')}>
             <button type="button" className={viewMode === 'full' ? 'bj-casino__view-btn--active' : 'bj-casino__view-btn'} onClick={() => setViewMode('full')}>Full Table</button>
@@ -1766,6 +1799,7 @@ export function BlackjackPanel({
             onAnswer={setMagic8Answer}
           />
           <BlackjackTableLayoutShell
+            layoutDebug={layoutDebug}
             feltClothLayer={
               resolveTableFeltSkin(tableMeta) === 'classic-casino' ? (
                 <BlackjackFeltClothLayer

@@ -105,6 +105,7 @@ export function assertActionAuthorized(state: GameState, ctx: ActionContext): vo
       return;
     }
 
+    case 'configureTable':
     case 'resetTable':
       assertTableHost(state, ctx.personId);
       return;

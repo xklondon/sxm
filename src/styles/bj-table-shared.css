@@ -1812,6 +1812,11 @@
 
 .bj-table-layout-shell > .bj-table-zone--actions {
   position: relative;
+  z-index: 3;
+}
+
+.bj-table-layout-shell > .bj-table-zone--summary {
+  position: relative;
   z-index: 4;
 }
 

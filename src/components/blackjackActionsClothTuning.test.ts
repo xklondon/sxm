@@ -34,6 +34,15 @@ describe('blackjack actions + cloth tuning', () => {
     expect(SHARED_CSS).toContain('--bj-actions-panel-max-width: 20rem');
   });
 
+  it('hides Card View protocol subtext inside the cloth band', () => {
+    expect(FELT_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-felt-cloth-layer__insurance[\s\S]*visibility:\s*hidden/,
+    );
+    expect(FELT_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-felt-cloth-layer__dealer-rule[\s\S]*visibility:\s*hidden/,
+    );
+  });
+
   it('uses balanced cloth typography tokens and lowered arc paths inside CardsArea', () => {
     expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 104px');
     expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 52px');

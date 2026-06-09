@@ -1,0 +1,137 @@
+/*
+ * Dev-only blackjack zone map — active only when `.bj-layout-debug` is on the shell or rail-wrap.
+ * Enable via `?layoutDebug=1`. Off by default.
+ */
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--dealer,
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--actions,
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--summary,
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--cards,
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--boxes,
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--bottom {
+  position: relative;
+  outline: 2px dashed;
+  outline-offset: -2px;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--dealer {
+  outline-color: #e63946;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--actions {
+  outline-color: #f4a261;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--summary {
+  outline-color: #2a9d8f;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--cards {
+  outline-color: #457b9d;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--boxes {
+  outline-color: #9b5de5;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--bottom {
+  outline-color: #ffd166;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--dealer::before,
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--actions::before,
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--summary::before,
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--cards::before,
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--boxes::before,
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--bottom::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  padding: 0.1rem 0.35rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: #0b1d14;
+  background: rgb(255 255 255 / 0.92);
+  border: 1px solid currentcolor;
+  border-radius: 0 0 0.25rem 0;
+  pointer-events: none;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--dealer::before {
+  content: '1 · dealer';
+  color: #e63946;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--actions::before {
+  content: '2 · actions (HIT/STAY)';
+  color: #c45d00;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--summary::before {
+  content: '3 · command / status';
+  color: #1d6f63;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--cards::before {
+  content: '4 · hero / cards';
+  color: #2c5282;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--boxes::before {
+  content: '5 · player boxes';
+  color: #6b3fa0;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--bottom::before {
+  content: '6 · chip tray';
+  color: #9a7b1a;
+}
+
+.bj-layout-debug.bj-casino__table-header {
+  position: relative;
+  outline: 2px dashed #8338ec;
+  outline-offset: -2px;
+}
+
+.bj-layout-debug.bj-casino__table-header::before {
+  content: '0 · header';
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 9999;
+  padding: 0.1rem 0.35rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8338ec;
+  background: rgb(255 255 255 / 0.92);
+  border: 1px solid currentcolor;
+  border-radius: 0 0 0 0.25rem;
+  pointer-events: none;
+}
+
+.bj-layout-debug.bj-table-layout-shell > .bj-table-zone--cards .bj-felt-cloth-layer::after {
+  content: 'cloth (decor)';
+  position: absolute;
+  top: 0.15rem;
+  right: 0.15rem;
+  z-index: 2;
+  padding: 0.08rem 0.28rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b4c2a;
+  background: rgb(255 248 220 / 0.9);
+  border: 1px dashed #6b4c2a;
+  border-radius: 0.2rem;
+  pointer-events: none;
+}

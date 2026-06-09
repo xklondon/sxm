@@ -47,7 +47,8 @@
     min-height: 0;
     overflow: visible;
     align-items: flex-start;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-top: 0.12rem;
   }
 
   .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards {

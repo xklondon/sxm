@@ -20,6 +20,7 @@ export const TABLE_ACTIONS = [
   'addGameToPersonalLedger',
   'assignChips',
   'resetTable',
+  'configureTable',
   'zilchRandomiseStarter',
   'zilchConfirmStarter',
   'zilchRollDice',

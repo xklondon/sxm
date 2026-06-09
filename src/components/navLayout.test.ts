@@ -10,6 +10,7 @@ describe('header and table nav layout', () => {
     expect(src).toContain('Score Ledger');
     expect(src).toContain('Profile');
     expect(src).toContain('Start New Table');
+    expect(src).toContain('Active Tables');
     expect(src).toContain('Sign out');
   });
 

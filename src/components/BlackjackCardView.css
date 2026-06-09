@@ -2001,24 +2001,20 @@
   }
 
   .bj-view-card-mobile .bj-phone-view__play-area--controls {
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    justify-content: flex-start;
     gap: 0.2rem;
   }
 
   .bj-view-card-mobile .bj-phone-view__play-area--controls .bj-phone-view__hero-center {
     flex: 1 1 auto;
     min-width: 0;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-start;
+    justify-content: flex-start;
   }
 
-  .bj-view-card-mobile .bj-phone-view__play-area--controls .bj-phone-view__side-action {
-    align-self: center;
-    flex-shrink: 0;
-  }
-
-  .bj-view-card-mobile .bj-table-zone--actions .bj-table-actions > .bj-table-actions__row:first-child {
+  /* Swipe still works on the stage; duplicate Hit/Stand chrome stays in the actions zone. */
+  .bj-view-card-mobile .bj-phone-view__side-action {
     display: none;
   }
 

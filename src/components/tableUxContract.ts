@@ -65,6 +65,8 @@ export const TABLE_UX = {
   fullArcBox: 'bj-phone-view__mini-hand--full-arc',
   /** Canonical felt shell — Full Table and Card View share one column stack. */
   tableLayoutShell: 'bj-table-layout-shell',
+  /** Dev-only zone debug overlay — `?layoutDebug=1`; off by default. */
+  layoutDebug: 'bj-layout-debug',
   /** Full Table per-box arc card stacks. */
   cardsAreaTable: 'bj-cards-area--table',
   /** Card View hero card fan for active/selected box. */

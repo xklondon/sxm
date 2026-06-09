@@ -77,6 +77,89 @@
   opacity: 0.75;
 }
 
+.table-stake-panel__steps {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  font-size: 0.72rem;
+}
+
+.table-stake-panel__steps li {
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.08);
+  opacity: 0.55;
+}
+
+.table-stake-panel__step--active {
+  opacity: 1;
+  background: rgb(255 255 255 / 0.18);
+}
+
+.table-stake-panel__nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.table-stake-panel__nav .table-stake-panel__confirm {
+  margin-top: 0;
+  flex: 1;
+}
+
+.table-stake-panel__mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.table-stake-panel__mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  text-align: left;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 0.2);
+  background: rgb(0 0 0 / 0.15);
+  color: inherit;
+  cursor: pointer;
+}
+
+.table-stake-panel__mode-card span {
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+.table-stake-panel__invite-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.table-stake-panel__invite-row .table-stake-panel__input {
+  flex: 1;
+}
+
+.table-stake-panel__invite-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.table-stake-panel__invite-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .table-stake-panel__field {
   display: flex;
   flex-direction: column;

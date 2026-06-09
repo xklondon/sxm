@@ -22,11 +22,15 @@ import { ScoreLedgerModal } from './components/LedgerModals';
 import {
   createOnlineTable,
   fetchTable,
+  invitePersonToTable,
   isPeopleAdmin,
   logout,
+  sendTableAction,
   TableNotFoundError,
   type AuthUser,
 } from './api/client';
+import { createTableInvite } from './engine/table/invites';
+import { ActiveTablesPanel } from './components/ActiveTablesPanel';
 import { AuthFetchError, accessDeniedMessage, isHandledAuthRejection } from './auth/authErrors';
 import { PeopleScreen } from './screens/PeopleScreen';
 import { setStoredOnlineTableId, useOnlineTable } from './hooks/useOnlineMultiplayer';
@@ -130,6 +134,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
   const [bootstrappingTable, setBootstrappingTable] = useState(false);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
+  const [activeTablesOpen, setActiveTablesOpen] = useState(false);
   const navMenuRef = useRef<HTMLDivElement>(null);
   const fetchGenerationRef = useRef(0);
   const autoCreateStartedRef = useRef(false);
@@ -312,6 +317,16 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
     setScreen('table');
   }, [handleNewOnlineGame, onlineMode]);
 
+  const sendChallengeInvites = useCallback(
+    async (tableId: string, emails: string[]) => {
+      for (const email of emails) {
+        const displayName = email.split('@')[0] || 'Guest';
+        await invitePersonToTable(tableId, email, displayName);
+      }
+    },
+    [],
+  );
+
   const handleConfirmNavNewTable = useCallback(
     async (input: TableStakeSetupInput) => {
       if (onlineMode) {
@@ -319,13 +334,16 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
         const displayName = profile.name.trim() || user?.email.split('@')[0] || 'Host';
         const result = await createOnlineTable(displayName);
         consumePendingTable();
-        const configured = applyTableStakeSetup(
-          {
-            ...result.state,
-            tableMeta: { ...result.state.tableMeta, showStakeSetup: false },
-          },
-          input,
+        const actionResult = await sendTableAction(
+          result.tableId,
+          'configureTable',
+          input as unknown as Record<string, unknown>,
+          result.version,
         );
+        if (input.tableMode === 'challenge' && input.invitedEmails?.length) {
+          await sendChallengeInvites(result.tableId, input.invitedEmails);
+        }
+        const configured = normalizeLoadedGameState(actionResult.state);
         setGameState(configured);
         applyOnlineTableBootstrap({
           tableId: result.tableId,
@@ -333,7 +351,7 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
           memberPersonId: result.memberPersonId,
         });
         setActiveTableId(result.tableId);
-        setTableVersion(result.version);
+        setTableVersion(actionResult.version);
         setStoredOnlineTableId(result.tableId);
         rememberPendingTable(result.tableId);
         setDismissStoredTable(false);
@@ -345,10 +363,16 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
         { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
         input,
       );
+      if (input.invitedEmails?.length) {
+        for (const email of input.invitedEmails) {
+          const inviteResult = createTableInvite(state, email.split('@')[0] || 'Guest', email);
+          state = inviteResult.state;
+        }
+      }
       setGameState(state);
       setScreen('table');
     },
-    [onlineMode, user?.email],
+    [onlineMode, user?.email, sendChallengeInvites],
   );
 
   useEffect(() => {
@@ -536,6 +560,19 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
         activeTableId={gameState?.session.id ?? activeTableId}
         gameStatus={gameState?.tableMeta.gameStatus}
       />
+      {onlineMode && user && (
+        <ActiveTablesPanel
+          open={activeTablesOpen}
+          onClose={() => setActiveTablesOpen(false)}
+          currentTableId={activeTableId}
+          onOpenTable={(tableId) => {
+            setDismissStoredTable(false);
+            setActiveTableId(tableId);
+            setScreen('table');
+            setTableBootstrapDone(false);
+          }}
+        />
+      )}
       {showPersonalNav && (
         <header className={`personal-nav${isMobileViewport ? ' personal-nav--mobile' : ''} personal-nav--menu-only`}>
           <div className="personal-nav__identity">
@@ -579,6 +616,18 @@ export default function App({ user, onlineMode = false, onlineTableId = null, fo
                   >
                     Profile
                   </button>
+                  {onlineMode && user && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setNavMenuOpen(false);
+                        setActiveTablesOpen(true);
+                      }}
+                    >
+                      Active Tables
+                    </button>
+                  )}
                   <button
                     type="button"
                     role="menuitem"

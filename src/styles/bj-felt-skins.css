@@ -116,10 +116,24 @@
   opacity: 0.92;
 }
 
+/* Card View — hide protocol subtext so cloth never bleeds into command/hero zones. */
+.bj-view-card-desktop .bj-felt-cloth-layer__insurance,
+.bj-view-card-mobile .bj-felt-cloth-layer__insurance,
+.bj-view-card-desktop .bj-felt-cloth-layer__dealer-rule,
+.bj-view-card-mobile .bj-felt-cloth-layer__dealer-rule {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--hero .bj-felt-cloth-layer,
+.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .bj-felt-cloth-layer {
+  --bj-cloth-band-height: min(22%, 4.75rem);
+}
+
 @media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
   .bj-view-full-mobile .bj-table-zone--cards .bj-felt-cloth-layer,
   .bj-view-card-mobile .bj-table-zone--cards .bj-felt-cloth-layer {
-    overflow: visible;
+    overflow: hidden;
   }
 
   .bj-view-full-mobile .bj-table-zone--cards .bj-felt-cloth-layer__svg,

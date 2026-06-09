@@ -53,6 +53,18 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
     }
   });
 
+  router.get('/mine', requireAuth, async (req: AuthedRequest, res) => {
+    try {
+      const accessible = await tables.listAccessibleTables(req.auth!.userId, req.auth!.email);
+      res.json({ tables: accessible });
+    } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      res.status(400).json({ error: err instanceof Error ? err.message : 'List failed' });
+    }
+  });
+
   router.post('/', requireAuth, async (req: AuthedRequest, res) => {
     try {
       const displayName = String(req.body?.displayName ?? req.auth!.email.split('@')[0]);

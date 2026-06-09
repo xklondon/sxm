@@ -192,6 +192,15 @@ export class TableNotFoundError extends Error {
   }
 }
 
+export async function fetchMyTables(): Promise<import('../types/activeTables').ActiveTableSummary[]> {
+  const res = await apiFetch('/api/tables/mine');
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error ?? 'Could not load active tables');
+  }
+  return data.tables as import('../types/activeTables').ActiveTableSummary[];
+}
+
 export async function fetchTable(tableId: string) {
   const res = await apiFetch(`/api/tables/${tableId}`);
   const data = (await res.json()) as { error?: string };

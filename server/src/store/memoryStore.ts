@@ -93,6 +93,10 @@ export function createMemoryStore(): Store {
       return tables.get(id) ?? null;
     },
 
+    listAllTables() {
+      return [...tables.values()];
+    },
+
     updateTable(id, state, version) {
       const table = tables.get(id);
       if (!table) return;
@@ -131,6 +135,13 @@ export function createMemoryStore(): Store {
 
     getInviteByToken(token) {
       return invitesByToken.get(token) ?? null;
+    },
+
+    listInvitesForEmail(email) {
+      const normalized = email.trim().toLowerCase();
+      return [...invites.values()].filter(
+        (invite) => invite.invitedEmail.trim().toLowerCase() === normalized,
+      );
     },
 
     updateInviteStatus(tableId, inviteId, status) {

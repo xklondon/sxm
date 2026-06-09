@@ -11,6 +11,7 @@ describe('Start New Table nav setup', () => {
       <TableStakePanel gameState={createNewBlackjackTable()} mode="new" onConfirm={() => {}} />,
     );
     expect(html).toContain('New Table');
+    expect(html).toContain('Game / protocol');
     expect(html).not.toContain('Reset table');
     expect(html).not.toContain('New Game');
   });

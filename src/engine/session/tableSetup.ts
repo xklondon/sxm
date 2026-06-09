@@ -1,4 +1,4 @@
-import type { GameState } from '../../types';
+import type { GameState, TableMode } from '../../types';
 import type { CardTimerPreset, DealSpeedPreset } from '../blackjack/flowSettings';
 import { updateBlackjackFlowSettings } from '../blackjack';
 import { setBlackjackProtocolOnState } from '../blackjack/protocolState';
@@ -33,6 +33,8 @@ export interface TableStakeSetupInput {
   dealSpeedPreset: DealSpeedPreset;
   cardTimerPreset: CardTimerPreset;
   bankDrawAuto: boolean;
+  tableMode?: TableMode;
+  invitedEmails?: string[];
 }
 
 export function parseTableStakeSetupPayload(
@@ -55,21 +57,38 @@ export function parseTableStakeSetupPayload(
     dealSpeedPreset: (payload.dealSpeedPreset as DealSpeedPreset) ?? 'fast',
     cardTimerPreset: (Number(payload.cardTimerPreset) || 0) as CardTimerPreset,
     bankDrawAuto: payload.bankDrawAuto !== false,
+    tableMode:
+      payload.tableMode === 'practice' || payload.tableMode === 'challenge'
+        ? payload.tableMode
+        : undefined,
+    invitedEmails: Array.isArray(payload.invitedEmails)
+      ? payload.invitedEmails.map((e) => String(e).trim().toLowerCase()).filter(Boolean)
+      : undefined,
   };
+}
+
+export function resolveTableMode(input: TableStakeSetupInput): TableMode {
+  if (input.tableMode) {
+    return input.tableMode;
+  }
+  return input.bankerMode === 'bot' ? 'practice' : 'challenge';
 }
 
 /** First-time table setup (new table or post–stake-panel confirm). */
 export function applyTableStakeSetup(state: GameState, input: TableStakeSetupInput): GameState {
   const seatAmount = input.seatChips;
   const bankAmount = input.bankChips;
-  const showPlayingFor = input.bankerMode === 'bot';
-  const stakeDescription = showPlayingFor
-    ? input.stakeDescription.trim() || 'Friendly wager'
-    : 'Table session';
+  const tableMode = resolveTableMode(input);
+  const isPractice = tableMode === 'practice';
+  const stakeDescription = isPractice
+    ? input.stakeDescription.trim() || 'Practice'
+    : input.stakeDescription.trim() || 'Friendly wager';
 
   let next = confirmTableAgreement(state, stakeDescription, seatAmount, bankAmount);
 
   next = setTableOwner(next, input.controllerName, input.controllerEmail);
+
+  const invitedEmails = (input.invitedEmails ?? []).map((e) => e.trim().toLowerCase()).filter(Boolean);
 
   next = {
     ...next,
@@ -78,10 +97,13 @@ export function applyTableStakeSetup(state: GameState, input: TableStakeSetupInp
       controllerName: input.controllerName,
       showBankerSetup: false,
       showStakeSetup: false,
+      tableMode,
+      setupInvitedEmails: invitedEmails.length > 0 ? invitedEmails : undefined,
+      tableClothWager: isPractice ? undefined : stakeDescription,
     },
   };
 
-  if (input.bankerMode === 'bot') {
+  if (isPractice || input.bankerMode === 'bot') {
     next = assignBankBot(next, bankAmount);
   } else if (input.bankerMode === 'self') {
     next = assignBankPerson(next, input.controllerName, bankAmount);

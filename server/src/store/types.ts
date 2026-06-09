@@ -90,6 +90,7 @@ export interface Store {
 
   createTable(record: TableRecord): void;
   getTable(id: string): TableRecord | null;
+  listAllTables(): TableRecord[];
   updateTable(id: string, state: GameState, version: number): void;
 
   addMember(member: TableMemberRecord): void;
@@ -99,6 +100,7 @@ export interface Store {
   createInvite(invite: TableInviteRecord): MaybePromise<void>;
   getInvite(tableId: string, inviteId: string): MaybePromise<TableInviteRecord | null>;
   getInviteByToken(token: string): MaybePromise<TableInviteRecord | null>;
+  listInvitesForEmail(email: string): MaybePromise<TableInviteRecord[]>;
   updateInviteStatus(
     tableId: string,
     inviteId: string,

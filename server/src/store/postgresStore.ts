@@ -207,6 +207,10 @@ export function createPostgresStore(prisma: PrismaClient): Store {
       return game.getTable(id);
     },
 
+    listAllTables() {
+      return game.listAllTables();
+    },
+
     updateTable(id: string, state: GameState, version: number) {
       return game.updateTable(id, state, version);
     },
@@ -249,6 +253,14 @@ export function createPostgresStore(prisma: PrismaClient): Store {
     async getInviteByToken(token) {
       const row = await prisma.tableInvite.findUnique({ where: { token } });
       return row ? toInvite(row) : null;
+    },
+
+    async listInvitesForEmail(email) {
+      const normalized = email.trim().toLowerCase();
+      const rows = await prisma.tableInvite.findMany({
+        where: { invitedEmail: normalized },
+      });
+      return rows.map(toInvite);
     },
 
     async updateInviteStatus(tableId, inviteId, status) {

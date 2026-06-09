@@ -19,6 +19,7 @@ export interface BlackjackTableLayoutShellProps {
   cardsAreaMode: BlackjackCardsAreaMode;
   playerBoxes: ReactNode;
   chipTray: ReactNode;
+  layoutDebug?: boolean;
 }
 
 /**
@@ -35,9 +36,18 @@ export function BlackjackTableLayoutShell({
   cardsAreaMode,
   playerBoxes,
   chipTray,
+  layoutDebug = false,
 }: BlackjackTableLayoutShellProps) {
   return (
-    <div className={`bj-casino__felt-main ${TABLE_UX.tableLayoutShell}`}>
+    <div
+      className={[
+        `bj-casino__felt-main ${TABLE_UX.tableLayoutShell}`,
+        layoutDebug ? TABLE_UX.layoutDebug : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      data-layout-debug={layoutDebug ? '1' : undefined}
+    >
       {dealer}
 
       <BlackjackActionsZone>{actions}</BlackjackActionsZone>

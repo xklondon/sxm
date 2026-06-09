@@ -7,6 +7,8 @@ import { applyTableAction, createHostedTableState } from './applyAction.js';
 import { assertActionAuthorized } from './authority.js';
 import type { TableActionType } from './actions.js';
 import type { GameState } from '../../../src/types/index.js';
+import type { ActiveTableSummary } from '../../../src/types/activeTables.js';
+import type { TableMode } from '../../../src/types/table.js';
 import { finalizeInviteJoinAtTable } from './inviteJoin.js';
 import { getAssignedSlotForPerson } from '../../../src/engine/session/playerAssignment.js';
 import { log } from '../../../src/utils/logger.js';
@@ -375,6 +377,44 @@ export class TableService {
     return { inviteId, joinUrl, personId: person.id, emailSent };
   }
 
+  async listAccessibleTables(userId: string, sessionEmail?: string): Promise<ActiveTableSummary[]> {
+    const user = await this.people.resolveSessionUser(userId, sessionEmail, 'GET /api/tables/mine');
+    const normalizedEmail = user.email.trim().toLowerCase();
+    const summaries = new Map<string, ActiveTableSummary>();
+
+    for (const table of this.store.listAllTables()) {
+      const meta = table.state.tableMeta;
+      if (meta.gameStatus === 'ended') {
+        continue;
+      }
+
+      const member = this.store.getMember(table.id, user.id);
+      if (table.hostUserId === user.id || member) {
+        summaries.set(table.id, buildActiveTableSummary(table, 'open'));
+      }
+    }
+
+    const invites = await this.store.listInvitesForEmail(normalizedEmail);
+    for (const invite of invites) {
+      if (invite.status === 'revoked') {
+        continue;
+      }
+      if (summaries.has(invite.tableId)) {
+        continue;
+      }
+      const table = this.store.getTable(invite.tableId);
+      if (!table || table.state.tableMeta.gameStatus === 'ended') {
+        continue;
+      }
+      summaries.set(
+        invite.tableId,
+        buildActiveTableSummary(table, 'join', invite),
+      );
+    }
+
+    return [...summaries.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
   async applyAction(
     tableId: string,
     userId: string,
@@ -404,4 +444,52 @@ export class TableService {
     this.store.updateTable(tableId, nextState, version);
     return { state: nextState, version };
   }
+}
+
+function resolveTableModeFromState(state: GameState): TableMode | 'unknown' {
+  if (state.tableMeta.tableMode) {
+    return state.tableMeta.tableMode;
+  }
+  const bankId = state.session.bankPlayerId;
+  const bank = bankId ? state.players[bankId] : null;
+  return bank?.playerType === 'virtual' ? 'practice' : 'challenge';
+}
+
+function buildActiveTableSummary(
+  table: TableRecord,
+  access: ActiveTableSummary['access'],
+  invite?: TableInviteRecord,
+): ActiveTableSummary {
+  const meta = table.state.tableMeta;
+  const mode = resolveTableModeFromState(table.state);
+  const bankName =
+    meta.bankerSetup.displayName?.trim() ||
+    (meta.bankerSetup.mode === 'bot' ? 'Dealer' : 'Bank');
+  const playerEmails = [
+    meta.owner?.ownerEmail?.trim().toLowerCase() ?? '',
+    ...(meta.setupInvitedEmails ?? []),
+    ...meta.invites.map((i) => i.invitedEmail.trim().toLowerCase()).filter(Boolean),
+  ].filter(Boolean);
+  const uniquePlayers = [...new Set(playerEmails)];
+
+  const status: ActiveTableSummary['status'] = meta.showStakeSetup
+    ? 'setup'
+    : meta.gameStatus === 'ended'
+      ? 'ended'
+      : 'active';
+
+  return {
+    tableId: table.id,
+    name: table.name,
+    game: table.state.tableGame ?? 'blackjack',
+    mode,
+    wager: mode === 'challenge' ? meta.agreement?.stakeDescription ?? null : null,
+    players: uniquePlayers,
+    bank: bankName,
+    status,
+    createdAt: table.createdAt,
+    access,
+    inviteId: invite?.id,
+    inviteToken: invite?.token,
+  };
 }

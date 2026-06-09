@@ -323,6 +323,7 @@ export function TableScreen({
                 setStakePanelMode('new');
               }}
               onlineDispatch={onlineDispatch}
+              onlineTableId={onlineTableId}
             />
           )}
 

@@ -18,6 +18,9 @@ export type TableSessionStatus = 'open' | 'complete';
 
 export type TableGameStatus = 'active' | 'ended';
 
+/** Practice = dealer bank, no wager; Challenge = friends, wager, player bank. */
+export type TableMode = 'practice' | 'challenge';
+
 export type WagerVoucherStatus = 'pending' | 'not-created';
 
 export type BankerMode = 'unset' | 'bot' | 'person';
@@ -113,6 +116,10 @@ export interface TableMeta {
   tableClothName?: string;
   /** Optional social wager label on classic cloth — visual only. */
   tableClothWager?: string;
+  /** Practice or challenge — drives setup UX and end-of-game ledger offer. */
+  tableMode?: TableMode;
+  /** Emails invited during challenge setup (before/at table start). */
+  setupInvitedEmails?: string[];
   /** Active play vs table ended (one side holds all chips). */
   gameStatus: TableGameStatus;
   /** Bank or person bankroll id when gameStatus is ended. */

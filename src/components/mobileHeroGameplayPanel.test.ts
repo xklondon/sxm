@@ -33,15 +33,15 @@ describe('mobile Card View hero gameplay panel', () => {
     );
   });
 
-  it('centers stand, hero cards, and hit on one horizontal axis', () => {
+  it('top-aligns hero cards in play area while Hit/Stand stay in the actions zone', () => {
     expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-phone-view__play-area--controls[\s\S]*align-items:\s*center/,
+      /\.bj-view-card-mobile \.bj-phone-view__play-area--controls[\s\S]*justify-content:\s*flex-start/,
     );
     expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-phone-view__play-area--controls \.bj-phone-view__side-action[\s\S]*align-self:\s*center/,
+      /\.bj-view-card-mobile \.bj-phone-view__side-action[\s\S]*display:\s*none/,
     );
     expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-phone-view__play-area--controls \.bj-phone-view__hero-center[\s\S]*align-items:\s*center/,
+      /\.bj-view-card-mobile \.bj-phone-view__play-area--controls \.bj-phone-view__hero-center[\s\S]*align-items:\s*flex-start/,
     );
   });
 
