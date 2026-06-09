@@ -8,6 +8,7 @@ describe('ChipTray', () => {
       <ChipTray minimumBet={5} onChipClick={() => {}} disabled={false} />,
     );
     expect(html).toContain('aria-label="Add 50 to bet"');
+    expect(html).toContain('aria-label="Add 20 to bet"');
     expect(html).toContain('aria-label="Add 10 to bet"');
     expect(html).toContain('aria-label="Add 5 to bet"');
     expect(html).not.toContain('aria-label="Add 2 to bet"');
@@ -19,6 +20,7 @@ describe('ChipTray', () => {
       <ChipTray minimumBet={10} onChipClick={() => {}} />,
     );
     expect(html).toContain('aria-label="Add 50 to bet"');
+    expect(html).toContain('aria-label="Add 20 to bet"');
     expect(html).toContain('aria-label="Add 10 to bet"');
     expect(html).not.toContain('aria-label="Add 5 to bet"');
     expect(html).not.toContain('aria-label="Add 2 to bet"');

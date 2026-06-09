@@ -124,6 +124,7 @@ describe('Card View polish guards', () => {
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
     expect(layoutCss).toContain('--bj-card-hero-card-width: min(22vw, 10rem)');
     expect(layoutCss).toContain('--bj-card-hero-card-max-height: min(32vw, 14rem)');
+    expect(layoutCss).toContain('--bj-card-hero-card-max-height: min(22vh, 9.5rem)');
     expect(layoutCss).toContain('--bj-card-hero-card-aspect-ratio: 5 / 7');
     expect(layoutCss).toMatch(
       /\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*width:\s*var\(--bj-card-hero-card-width\)/,

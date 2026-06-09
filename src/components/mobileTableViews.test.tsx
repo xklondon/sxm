@@ -143,7 +143,6 @@ const FULL_TABLE_BETTING_SECTIONS = [
 
 const CARD_VIEW_SECTIONS = [
   'dealer-block',
-  'dealer-block__details-btn',
   'bj-phone-view',
 ] as const;
 
@@ -383,12 +382,12 @@ describe('mobile Card View structure', () => {
 });
 
 describe('Table Details side rail (same slot as This Table)', () => {
-  it('does not render inline info chips in the dealer header', () => {
+  it('does not render inline info chips or dealer Table Details button in the header', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).not.toContain('dealer-block__info-panel');
     expect(html).not.toContain('dealer-block__info-chip');
-    expect(html).toContain('dealer-block__details-btn');
-    expect(html).toContain('Table details');
+    expect(html).not.toContain('dealer-block__details-btn');
+    expect(html).not.toContain('Table details');
   });
 
   it('does not use table-details slide overlay markup', () => {

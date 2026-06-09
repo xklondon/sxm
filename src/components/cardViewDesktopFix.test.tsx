@@ -122,12 +122,13 @@ describe('Card View desktop targeted fixes', () => {
     expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-zone-tray-height\)/);
   });
 
-  it('contains hero cards inside the fixed desktop cards zone', () => {
+  it('sizes Card View hero cards from CardsArea via container queries', () => {
     expect(LAYOUT_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards[\s\S]*overflow:\s*hidden/,
+      /\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*container-type:\s*size/,
     );
+    expect(LAYOUT_CSS).toMatch(/@container bj-hero-cards[\s\S]*58cqh/);
     expect(LAYOUT_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*overflow:\s*hidden/,
+      /\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards[\s\S]*overflow:\s*visible/,
     );
     expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__card-wrap[\s\S]*align-self:\s*center/);
   });

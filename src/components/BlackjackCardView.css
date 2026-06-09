@@ -1958,7 +1958,8 @@
   .bj-view-card-mobile .bj-table-layout-shell {
     --bj-mobile-hero-panel-inset-x: 0.42rem;
     --bj-mobile-hero-panel-top: calc(
-      var(--bj-zone-dealer-height) + var(--bj-mobile-zone-command-top-gap, 0.62rem) + var(--bj-zone-command-height)
+      var(--bj-zone-dealer-height) + var(--bj-mobile-zone-command-top-gap, 0.62rem) + var(--bj-zone-actions-height) +
+        var(--bj-actions-command-gap, 0.08rem) + var(--bj-zone-command-height) + var(--bj-command-cards-safe-gap, 0.55rem)
     );
     --bj-mobile-hero-panel-bottom: calc(
       var(--bj-zone-boxes-height) + var(--bj-zone-tray-height) + var(--bj-zone-boxes-tray-gap, 0.85rem) + 0.1rem

@@ -1,4 +1,4 @@
-export const CHIP_VALUES = [50, 10, 5, 2, 1] as const;
+export const CHIP_VALUES = [50, 20, 10, 5, 2, 1] as const;
 export type ChipValue = (typeof CHIP_VALUES)[number];
 
 /** Tray denominations valid for the table minimum bet (multiples, not below min). */
@@ -7,7 +7,7 @@ export function chipValuesForMinimumBet(minimumBet: number): ChipValue[] {
   return CHIP_VALUES.filter((value) => value >= min && value % min === 0);
 }
 
-const BREAKDOWN_ORDER: ChipValue[] = [50, 10, 5, 2, 1];
+const BREAKDOWN_ORDER: ChipValue[] = [...CHIP_VALUES];
 
 /** Greedy breakdown of balance into chip denominations. */
 export function breakdownChips(amount: number): Record<ChipValue, number> {

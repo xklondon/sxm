@@ -10,10 +10,10 @@
 }
 
 /*
- * Cloth layer lives inside .bj-table-layout-shell (behind zones).
- * Felt background < cloth layer (z-index 0) < gameplay zones (z-index 1).
+ * Cloth layer lives inside .bj-table-zone--cards only (never dealer/command/actions).
+ * CardsArea (position:relative) < cloth (z-index 0) < card stacks (z-index 1).
  */
-.bj-table-layout-shell {
+.bj-table-layout-shell .bj-table-zone--cards {
   position: relative;
 }
 
@@ -26,17 +26,22 @@
 }
 
 :root {
-  --bj-cloth-title-font-size: 72px;
-  --bj-cloth-insurance-font-size: 26px;
-  --bj-cloth-dealer-rule-font-size: 17px;
-  --bj-cloth-wager-font-size: 18px;
-  --bj-cloth-title-font-size-mobile: 54px;
-  --bj-cloth-insurance-font-size-mobile: 20px;
-  --bj-cloth-dealer-rule-font-size-mobile: 14px;
-  --bj-cloth-wager-font-size-mobile: 14px;
+  /* Font sizes are SVG user units — matched to cropped viewBox height (260). */
+  --bj-cloth-title-font-size: 104px;
+  --bj-cloth-insurance-font-size: 52px;
+  --bj-cloth-dealer-rule-font-size: var(--bj-cloth-insurance-font-size);
+  --bj-cloth-wager-font-size: 28px;
+  --bj-cloth-title-font-size-mobile: 88px;
+  --bj-cloth-insurance-font-size-mobile: 44px;
+  --bj-cloth-dealer-rule-font-size-mobile: 44px;
+  --bj-cloth-wager-font-size-mobile: 22px;
+  --bj-cloth-band-height: min(36%, 11rem);
+  --bj-cloth-svg-width: min(96%, 44rem);
+  --bj-cloth-svg-max-height: var(--bj-cloth-band-height);
+  --bj-cloth-svg-bottom: 24%;
 }
 
-.bj-table-layout-shell > :not(.bj-felt-cloth-layer) {
+.bj-table-layout-shell .bj-table-zone--cards > :not(.bj-felt-cloth-layer) {
   position: relative;
   z-index: 1;
 }
@@ -44,13 +49,14 @@
 .bj-felt-cloth-layer__svg {
   position: absolute;
   left: 50%;
-  bottom: 24%;
+  top: 0;
+  bottom: auto;
   transform: translateX(-50%);
-  width: min(92%, 40rem);
-  height: auto;
-  max-height: 48%;
-  opacity: 0.75;
-  transform-origin: center bottom;
+  width: var(--bj-cloth-svg-width);
+  height: var(--bj-cloth-band-height);
+  max-height: var(--bj-cloth-svg-max-height);
+  opacity: 0.82;
+  transform-origin: center top;
 }
 
 .bj-felt-cloth-layer__title {
@@ -70,10 +76,36 @@
 }
 
 .bj-felt-cloth-layer__dealer-rule {
-  fill: rgb(0 0 0 / 0.58);
+  fill: rgb(0 0 0 / 0.78);
   font-family: Georgia, 'Times New Roman', serif;
   font-size: var(--bj-cloth-dealer-rule-font-size);
   font-style: italic;
+  font-weight: 600;
+}
+
+@media (min-width: 721px) {
+  .bj-table-layout-shell .bj-table-zone--cards > .bj-felt-cloth-layer {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .bj-felt-cloth-layer__svg {
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: auto;
+    width: 100%;
+    height: var(--bj-cloth-band-height);
+    max-height: var(--bj-cloth-svg-max-height);
+    max-width: none;
+    transform: none;
+    opacity: 0.92;
+  }
 }
 
 .bj-felt-cloth-layer__wager {
@@ -84,26 +116,24 @@
   opacity: 0.92;
 }
 
-.bj-felt-cloth-layer__box-guide {
-  stroke: rgb(212 175 55 / 0.42);
-  stroke-width: 1.5;
-}
-
 @media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
-  .bj-view-full-mobile .bj-felt-cloth-layer,
-  .bj-view-card-mobile .bj-felt-cloth-layer {
+  .bj-view-full-mobile .bj-table-zone--cards .bj-felt-cloth-layer,
+  .bj-view-card-mobile .bj-table-zone--cards .bj-felt-cloth-layer {
     overflow: visible;
   }
 
-  .bj-view-full-mobile .bj-felt-cloth-layer__svg,
-  .bj-view-card-mobile .bj-felt-cloth-layer__svg {
-    top: var(--bj-cloth-mobile-top);
-    bottom: var(--bj-cloth-mobile-bottom);
-    width: var(--bj-cloth-mobile-width);
-    max-height: none;
-    opacity: 0.72;
-    transform: translateX(-50%) scale(var(--bj-cloth-mobile-scale));
-    transform-origin: center bottom;
+  .bj-view-full-mobile .bj-table-zone--cards .bj-felt-cloth-layer__svg,
+  .bj-view-card-mobile .bj-table-zone--cards .bj-felt-cloth-layer__svg {
+    top: 0;
+    bottom: auto;
+    left: 50%;
+    right: auto;
+    width: min(108%, 100vw);
+    height: var(--bj-cloth-band-height);
+    max-height: var(--bj-cloth-band-height);
+    opacity: 0.84;
+    transform: translateX(-50%);
+    transform-origin: center top;
   }
 
   .bj-felt-cloth-layer__title {

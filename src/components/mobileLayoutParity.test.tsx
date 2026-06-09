@@ -201,20 +201,20 @@ describe('mobile layout parity audit — Full Table vs Card View', () => {
     expect(card).not.toContain(TABLE_UX.cardsAreaTable);
   });
 
-  it('keeps command zone after dealer and before actions without overlap selectors', () => {
+  it('keeps actions after dealer and command after actions without overlap selectors', () => {
     const html = renderAt('card');
     const section = shellSection(html);
     const dealerIdx = zoneIndex(section, TABLE_UX.tableZoneDealer);
-    const commandIdx = zoneIndex(section, 'bj-card-layout__command');
     const actionsIdx = zoneIndex(section, TABLE_UX.tableZoneActions);
-    expect(dealerIdx).toBeLessThan(commandIdx);
-    expect(commandIdx).toBeLessThan(actionsIdx);
+    const commandIdx = zoneIndex(section, 'bj-card-layout__command');
+    expect(dealerIdx).toBeLessThan(actionsIdx);
+    expect(actionsIdx).toBeLessThan(commandIdx);
 
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--dealer,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--dealer[\s\S]*overflow:\s*visible/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--summary,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*margin-top:\s*var\(--bj-mobile-zone-command-top-gap\)/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*margin-top:\s*var\(--bj-mobile-zone-command-top-gap\)/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--summary \.dealer-block__status\s*\{[\s\S]*?white-space:\s*normal[\s\S]*?\}/,

@@ -17,8 +17,6 @@ interface DealerBlockProps {
   commandMessage?: string | null;
   /** Extra command lines (round summary, legal-action hints). */
   commandLines?: string[];
-  onOpenTableDetails?: () => void;
-  tableDetailsOpen?: boolean;
   onNextRound: () => void;
   /** Finished table — opens reset setup (owner only). */
   onNewGame?: () => void;
@@ -98,8 +96,6 @@ export function DealerBlock({
   dynamicTextSlot,
   commandMessage,
   commandLines = [],
-  onOpenTableDetails,
-  tableDetailsOpen = false,
   onNextRound,
   onNewGame,
   canStartNewGame = false,
@@ -271,16 +267,6 @@ export function DealerBlock({
               </div>
             )}
             <div className="dealer-block__action-slot">{primaryAction}</div>
-            {onOpenTableDetails && (
-              <button
-                type="button"
-                className="dealer-block__details-btn"
-                onClick={onOpenTableDetails}
-                aria-expanded={tableDetailsOpen}
-              >
-                Table details
-              </button>
-            )}
           </div>
           {!omitCommand ? (
             <DealerCommandArea

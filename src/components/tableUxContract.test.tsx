@@ -53,9 +53,11 @@ describe('TABLE_UX class contract', () => {
     expect(css).toContain('--bj-desktop-seat-width: var(--bj-player-box-width)');
     expect(css).toContain('--bj-desktop-mini-hand-width: var(--bj-player-box-width)');
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-casino__felt,\s*\n\s*\.bj-view-card-desktop \.bj-casino__felt/);
-    expect(css).toMatch(/background:\s*var\(--bj-desktop-felt-bg\)/);
-    expect(css).toMatch(/--bj-desktop-felt-bg:\s*var\(--ds-color-felt\)/);
-    expect(css).not.toMatch(/--bj-desktop-felt-bg:[\s\S]*felt-mid/);
+    expect(css).toMatch(/\.bj-table-layout-shell\s*\{[\s\S]*background:\s*var\(--bj-table-felt-bg\)/);
+    expect(css).toMatch(/--bj-desktop-felt-bg:\s*var\(--bj-table-felt-bg\)/);
+    expect(css).toMatch(
+      /\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*background:\s*transparent/,
+    );
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc__slot \.bj-phone-view__mini-hand/);
     expect(css).toMatch(/\.bj-view-card-desktop \.bj-arc__slot \.bj-phone-view__mini-hand[\s\S]*--bj-desktop-mini-hand-width/);

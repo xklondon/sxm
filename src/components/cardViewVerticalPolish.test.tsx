@@ -45,7 +45,7 @@ describe('Card View vertical-space polish', () => {
   });
 
   it('secondary actions use compact height from shared shell', () => {
-    expect(SHARED_CSS).toContain('--bj-actions-secondary-btn-min-height: 1.3rem');
+    expect(SHARED_CSS).toContain('--bj-actions-secondary-btn-min-height: 1.22rem');
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions__btn--sm[\s\S]*font-size:/,
     );

@@ -17,6 +17,7 @@ import {
 } from '../storage/settingsStorage';
 import { CustomProtocolBuilder } from './CustomProtocolBuilder';
 import { BlackjackTableThemeControls } from './BlackjackTableThemeControls';
+import { TableDetailsPanelContent, type TableDetailsPanelProps } from './TableDetailsPanel';
 import {
   DEFAULT_TABLE_CLOTH_NAME,
   DEFAULT_TABLE_FELT_SKIN,
@@ -36,6 +37,8 @@ interface BlackjackFlowSettingsMenuProps {
   onClose: () => void;
   /** Inline body for mobile This Table overlay (no modal shell). */
   embedded?: boolean;
+  /** Table details controls (min bet, shoe, reset) — entry point moved from dealer zone. */
+  tableDetails?: TableDetailsPanelProps;
 }
 
 function persistAndApply(
@@ -118,6 +121,7 @@ export function BlackjackFlowSettingsMenu({
   open,
   onClose,
   embedded = false,
+  tableDetails,
 }: BlackjackFlowSettingsMenuProps) {
   const s = gameState.blackjackFlowSettings;
   const profile = loadProfile();
@@ -154,6 +158,14 @@ export function BlackjackFlowSettingsMenu({
       </p>
 
       <div className="bj-settings-modal__body">
+        {tableDetails ? (
+          <section className="bj-flow-settings__card" aria-labelledby="bj-settings-table-details">
+            <h3 id="bj-settings-table-details" className="bj-flow-settings__card-title">
+              Table details
+            </h3>
+            <TableDetailsPanelContent {...tableDetails} />
+          </section>
+        ) : null}
         <div className="bj-flow-settings__grid">
           <section className="bj-flow-settings__card" aria-labelledby="bj-settings-protocol">
             <h3 id="bj-settings-protocol" className="bj-flow-settings__card-title">

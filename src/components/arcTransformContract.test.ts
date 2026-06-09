@@ -38,7 +38,7 @@ describe('arc transform CSS contract', () => {
       /\.bj-view-card-mobile \.bj-arc\s*\{[\s\S]*margin-top:\s*auto/,
     );
     expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-arc--cards[\s\S]*margin-top:\s*auto/);
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-arc--player-boxes[\s\S]*margin-top:\s*0/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*margin-top:\s*0/);
   });
 
   it('keeps player-box arcs flat in desktop and mobile view roots', () => {

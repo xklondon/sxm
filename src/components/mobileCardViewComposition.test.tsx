@@ -115,9 +115,9 @@ describe('mobile Card View composition contract', () => {
     const boxesIdx = html.indexOf(TABLE_UX.tableZoneBoxes);
     const trayIdx = html.indexOf(TABLE_UX.tableZoneBottom);
     expect(dealerIdx).toBeGreaterThan(shellIdx);
-    expect(summaryIdx).toBeGreaterThan(dealerIdx);
-    expect(actionsIdx).toBeGreaterThan(summaryIdx);
-    expect(cardsIdx).toBeGreaterThan(actionsIdx);
+    expect(actionsIdx).toBeGreaterThan(dealerIdx);
+    expect(summaryIdx).toBeGreaterThan(actionsIdx);
+    expect(cardsIdx).toBeGreaterThan(summaryIdx);
     expect(boxesIdx).toBeGreaterThan(cardsIdx);
     expect(trayIdx).toBeGreaterThan(boxesIdx);
   });
@@ -197,37 +197,30 @@ describe('mobile Card View composition contract', () => {
       /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*align-items:\s*stretch/,
     );
     expect(css).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell > :not\(\.bj-felt-cloth-layer\)[\s\S]*width:\s*100%/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \*[\s\S]*width:\s*100%/,
     );
     const full = renderPanelAt(390, withView(bettingStateWithSelection(), 'full'));
     expect(full).toContain(TABLE_UX.tableLayoutShell);
     expect(full).toContain(TABLE_UX.tableZoneBottom);
   });
 
-  it('classic cloth uses mobile scale vars, spans cards/boxes, stays non-interactive', () => {
+  it('classic cloth uses band height inside CardsArea and stays non-interactive', () => {
     const feltCss = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
-    const shared = sharedCss();
-    expect(shared).toContain('--bj-cloth-mobile-width');
-    expect(shared).toContain('--bj-cloth-mobile-scale');
-    expect(shared).toContain('--bj-cloth-mobile-bottom');
-    expect(shared).toContain('--bj-cloth-mobile-top');
+    expect(feltCss).toContain('--bj-cloth-band-height');
     expect(feltCss).toMatch(
-      /\.bj-view-card-mobile \.bj-felt-cloth-layer__svg[\s\S]*max-height:\s*none/,
-    );
-    expect(feltCss).toMatch(
-      /\.bj-view-card-mobile \.bj-felt-cloth-layer__svg[\s\S]*scale\(var\(--bj-cloth-mobile-scale\)\)/,
+      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer__svg[\s\S]*height:\s*var\(--bj-cloth-band-height\)/,
     );
     expect(feltCss).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*pointer-events:\s*none/);
     expect(feltCss).toMatch(
-      /\.bj-table-layout-shell > :not\(\.bj-felt-cloth-layer\)\s*\{[\s\S]*z-index:\s*1/,
+      /\.bj-table-layout-shell \.bj-table-zone--cards > :not\(\.bj-felt-cloth-layer\)\s*\{[\s\S]*z-index:\s*1/,
     );
 
     const html = renderPanelAt(390, withView(bettingStateWithSelection(), 'card'));
     expect(html).toContain(TABLE_UX.feltClothLayer);
-    expect(html).toContain('bj-felt-cloth-layer__box-guide');
-    const boxesIdx = html.indexOf(TABLE_UX.tableZoneBoxes);
+    const cardsIdx = html.indexOf(TABLE_UX.tableZoneCards);
     const clothIdx = html.indexOf(TABLE_UX.feltClothLayer);
-    expect(clothIdx).toBeGreaterThan(-1);
+    const boxesIdx = html.indexOf(TABLE_UX.tableZoneBoxes);
+    expect(clothIdx).toBeGreaterThan(cardsIdx);
     expect(boxesIdx).toBeGreaterThan(clothIdx);
   });
 

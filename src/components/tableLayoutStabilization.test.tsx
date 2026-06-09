@@ -164,9 +164,11 @@ describe('table layout stabilization contract', () => {
     expect(card).toContain(BLACKJACK_TABLE_LAYOUT.chipTrayWrap);
   });
 
-  it('reserves tray slot outside betting to prevent layout jump', () => {
+  it('keeps chip tray mounted during play with chips visible outside betting', () => {
     const playing = renderAt(1280, 'full');
-    expect(playing).toContain(TABLE_UX.trayReserved);
+    expect(playing).toContain('bj-value-chips');
+    expect(playing).toContain('chip-tray');
+    expect(playing).not.toContain(TABLE_UX.trayReserved);
   });
 
   it('reserves action slot during betting when no player actions show', () => {

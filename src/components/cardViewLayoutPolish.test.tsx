@@ -107,7 +107,7 @@ describe('Card View layout polish', () => {
     expect(html).toMatch(/sxm-secondary-actions[\s\S]*2×/);
   });
 
-  it('command box sits between dealer stack and actions, then hero display', () => {
+  it('actions sit under dealer stack, command below actions, then hero display', () => {
     const html = renderAt(390);
     expect(html).toContain('dealer-block__stack');
     expect(html).not.toContain('dealer-block__hero-row');
@@ -115,12 +115,12 @@ describe('Card View layout polish', () => {
     expect(html).toContain('dealer-block__command');
     expect(html).toMatch(/Box \d+: Alice, you have \d+\./);
     const stackIdx = html.indexOf('dealer-block__stack');
-    const commandIdx = html.indexOf('bj-card-layout__command');
     const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
+    const commandIdx = html.indexOf('bj-card-layout__command');
     const heroIdx = html.indexOf(TABLE_UX.cardsAreaHero);
-    expect(commandIdx).toBeGreaterThan(stackIdx);
-    expect(actionsIdx).toBeGreaterThan(commandIdx);
-    expect(heroIdx).toBeGreaterThan(actionsIdx);
+    expect(actionsIdx).toBeGreaterThan(stackIdx);
+    expect(commandIdx).toBeGreaterThan(actionsIdx);
+    expect(heroIdx).toBeGreaterThan(commandIdx);
   });
 
   it('hero action CSS uses shared shell action panel and player box stack', () => {

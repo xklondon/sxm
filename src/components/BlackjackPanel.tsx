@@ -78,7 +78,6 @@ import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
 import { TABLE_UX } from './tableUxContract';
 import { TableInfoBar } from './TableInfoBar';
 import { buildTableInfoDisplay } from './tableInfoDisplay';
-import { TableDetailsPanelContent } from './TableDetailsPanel';
 import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
 import { TableAccountsPanel } from './TableAccountsPanel';
@@ -751,11 +750,6 @@ export function BlackjackPanel({
     run((s) => setBlackjackProtocolOnState(s, next.protocolId, controllerName));
   }
 
-  function toggleTableDetails() {
-    setActiveTablePanel(null);
-    setSideRailPanel((current) => toggleSideRailPanel(current, 'tableDetails'));
-  }
-
   function renderTableNav(className = 'bj-casino__table-nav') {
     const isMobile = deviceView === 'mobile';
     return (
@@ -856,8 +850,6 @@ export function BlackjackPanel({
     commentaryText: tableAidTip,
     commandMessage: tableCommand.commandMessage,
     commandLines: tableCommand.commandLines,
-    onOpenTableDetails: toggleTableDetails,
-    tableDetailsOpen: sideRailPanel === 'tableDetails',
     onNextRound: handleNextRound,
     protocolPhase,
     bankerReady,
@@ -945,7 +937,7 @@ export function BlackjackPanel({
       <div className="bj-casino__tray-wrap">
         <ValueAndChipsBar
           available={playerAvailable}
-          showChips={inBetting}
+          showChips
           onChipClick={handleChipTrayClick}
           onChipPointerDown={chipPointerDrag.onChipPointerDown}
           disabled={!bettingOpen}
@@ -1543,9 +1535,6 @@ export function BlackjackPanel({
   }
 
   function renderMobileSidePanelBody() {
-    if (sideRailPanel === 'tableDetails') {
-      return <TableDetailsPanelContent {...tableDetailsProps} />;
-    }
     switch (mobileSidePanelTab) {
       case 'playLedger':
         return <PlayLedgerPanel gameState={gameState} />;
@@ -1557,6 +1546,7 @@ export function BlackjackPanel({
             onGameStateChange={onGameStateChange}
             open
             onClose={() => setMobileSidePanelTab('thisTable')}
+            tableDetails={tableDetailsProps}
           />
         );
       default:
@@ -1582,16 +1572,14 @@ export function BlackjackPanel({
     }
     const isOverlay = variant === 'overlay';
     const title =
-      sideRailPanel === 'tableDetails'
-        ? 'Table Details'
-        : mobileSidePanelTab === 'playLedger'
-          ? 'Play Ledger'
-          : mobileSidePanelTab === 'settings'
-            ? 'Settings'
-            : 'This Table';
+      mobileSidePanelTab === 'playLedger'
+        ? 'Play Ledger'
+        : mobileSidePanelTab === 'settings'
+          ? 'Settings'
+          : 'This Table';
     const panelContent = isOverlay ? (
       renderMobileSidePanelBody()
-    ) : sideRailPanel === 'thisTable' ? (
+    ) : (
       <TableAccountsPanel
         gameState={gameState}
         showAssignButton={canAssignChips}
@@ -1603,8 +1591,6 @@ export function BlackjackPanel({
         onPlayFlowChange={handlePlayFlowChange}
         variant="inline"
       />
-    ) : (
-      <TableDetailsPanelContent {...tableDetailsProps} />
     );
 
     const shell = (
@@ -1689,6 +1675,7 @@ export function BlackjackPanel({
           onGameStateChange={onGameStateChange}
           open
           onClose={() => setActiveTablePanel(null)}
+          tableDetails={tableDetailsProps}
         />
       )}
 

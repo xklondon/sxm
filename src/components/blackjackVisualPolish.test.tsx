@@ -38,8 +38,14 @@ describe('Value & Chips bottom row', () => {
   });
 
   it('uses larger chip button hit targets in the combined row', () => {
-    expect(CHIP_CSS).toMatch(/\.bj-value-chips \.chip-token--btn[\s\S]*min-width:\s*2\.15rem/);
-    expect(CHIP_CSS).toMatch(/\.bj-value-chips \.chip-token--btn[\s\S]*min-height:\s*2\.15rem/);
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips \.chip-token--btn[\s\S]*min-width:\s*2\.35rem/);
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips \.chip-token--btn[\s\S]*min-height:\s*2\.35rem/);
+  });
+
+  it('centers available balance and chips as one horizontal unit', () => {
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips\s*\{[\s\S]*justify-content:\s*center/);
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips__stash\s*\{[\s\S]*justify-content:\s*center/);
+    expect(CHIP_CSS).not.toMatch(/\.bj-value-chips\s*\{[\s\S]*justify-content:\s*space-between/);
   });
 
   it('routes BlackjackPanel tray through ValueAndChipsBar', () => {
@@ -81,13 +87,26 @@ describe('mobile player box dimension stability', () => {
 
 describe('Hit/Stand action panel background', () => {
   it('uses opaque casino panel background in shell actions zone', () => {
-    expect(SHARED_CSS).toContain('--bj-actions-panel-bg: rgb(10 24 18 / 0.94)');
+    expect(SHARED_CSS).toContain('--bj-actions-panel-bg: transparent');
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions[\s\S]*background:\s*var\(--bj-actions-panel-bg\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions[\s\S]*background:\s*transparent/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-phone-view__action-bar--bare[\s\S]*background:\s*var\(--bj-actions-panel-bg\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-phone-view__action-bar--bare[\s\S]*background:\s*transparent/,
     );
+  });
+});
+
+describe('desktop canonical vertical grid polish', () => {
+  it('scopes cloth decor to cards/boxes band and enlarges rule text tokens', () => {
+    const feltCss = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
+    const clothSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackFeltClothLayer.tsx'), 'utf8');
+    const desktopBlock = feltCss.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
+    expect(desktopBlock).not.toMatch(/top:\s*calc\(/);
+    expect(desktopBlock).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*100%/);
+    expect(feltCss).toContain('--bj-cloth-insurance-font-size: 52px');
+    expect(feltCss).toContain('--bj-cloth-dealer-rule-font-size: var(--bj-cloth-insurance-font-size)');
+    expect(clothSrc).toMatch(/trimmedWager \? `Playing for \$\{trimmedWager\}` : 'Insurance Pays 2 to 1'/);
   });
 });
 

@@ -22,12 +22,14 @@ describe('player boxes bottom placement and cards area growth', () => {
     );
   });
 
-  it('uses fixed desktop grid rows without margin-top:auto on boxes', () => {
-    const desktop = SHARED_CSS.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
-    expect(desktop).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*flex:\s*0\s*0\s*auto[\s\S]*height:\s*var\(--bj-zone-cards-height\)/,
+  it('uses fixed desktop CSS grid rows without margin-top:auto on boxes', () => {
+    const desktop = SHARED_CSS.slice(
+      SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows'),
+      SHARED_CSS.indexOf('/* Desktop stage:'),
     );
-    expect(desktop).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*margin-top:\s*0/);
+    expect(desktop).toMatch(/\.bj-table-layout-shell\s*\{[\s\S]*display:\s*grid/);
+    expect(desktop).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
+    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*margin:\s*0/);
   });
 
   it('does not reserve tray gap inside player boxes zone padding', () => {
@@ -42,6 +44,9 @@ describe('player boxes bottom placement and cards area growth', () => {
   it('bottom-aligns player boxes in all view roots', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/,

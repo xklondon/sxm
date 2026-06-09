@@ -250,6 +250,7 @@ export function ValueAndChipsBar({
           'bj-value-chips__stash',
           showChips ? '' : TABLE_UX.trayReserved,
           showChips ? '' : 'bj-value-chips__stash--reserved',
+          showChips && disabled ? 'bj-value-chips__stash--inactive' : '',
         )}
       >
         {showChips ? (

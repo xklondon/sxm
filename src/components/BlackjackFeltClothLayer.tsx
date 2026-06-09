@@ -12,29 +12,21 @@ export function BlackjackFeltClothLayer({ tableName, wagerText = '' }: Blackjack
   const titleArcId = `bj-cloth-title-${uid}`;
   const insuranceArcId = `bj-cloth-insurance-${uid}`;
   const dealerArcId = `bj-cloth-dealer-${uid}`;
-  const boxArcId = `bj-cloth-box-${uid}`;
   const trimmedWager = wagerText.trim();
 
   return (
     <div className={TABLE_UX.feltClothLayer} aria-hidden="true">
       <svg
         className={`${TABLE_UX.feltClothLayer}__svg`}
-        viewBox="0 0 1000 620"
-        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 1000 260"
+        preserveAspectRatio="xMidYMin meet"
         role="presentation"
       >
         <defs>
-          <path id={titleArcId} d="M 90 300 Q 500 170 910 300" />
-          <path id={insuranceArcId} d="M 150 360 Q 500 270 850 360" />
-          <path id={dealerArcId} d="M 120 410 Q 500 330 880 410" />
-          <path id={boxArcId} d="M 70 520 Q 500 455 930 520" />
+          <path id={titleArcId} d="M 80 42 Q 500 8 920 42" />
+          <path id={insuranceArcId} d="M 110 108 Q 500 78 890 108" />
+          <path id={dealerArcId} d="M 90 182 Q 500 152 910 182" />
         </defs>
-
-        <path
-          className={`${TABLE_UX.feltClothLayer}__box-guide`}
-          d="M 70 520 Q 500 455 930 520"
-          fill="none"
-        />
 
         <text className={`${TABLE_UX.feltClothLayer}__title`}>
           <textPath href={`#${titleArcId}`} startOffset="50%" textAnchor="middle">
@@ -44,7 +36,7 @@ export function BlackjackFeltClothLayer({ tableName, wagerText = '' }: Blackjack
 
         <text className={`${TABLE_UX.feltClothLayer}__insurance`}>
           <textPath href={`#${insuranceArcId}`} startOffset="50%" textAnchor="middle">
-            Insurance Pays 2 to 1
+            {trimmedWager ? `Playing for ${trimmedWager}` : 'Insurance Pays 2 to 1'}
           </textPath>
         </text>
 
@@ -53,12 +45,6 @@ export function BlackjackFeltClothLayer({ tableName, wagerText = '' }: Blackjack
             Dealer must stand on 17 and draw to 16
           </textPath>
         </text>
-
-        {trimmedWager ? (
-          <text className={`${TABLE_UX.feltClothLayer}__wager`} x="500" y="470" textAnchor="middle">
-            Playing for: {trimmedWager}
-          </text>
-        ) : null}
       </svg>
     </div>
   );

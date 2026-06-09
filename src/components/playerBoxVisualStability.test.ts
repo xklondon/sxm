@@ -56,7 +56,7 @@ describe('player box visual stability contract', () => {
   });
 
   it('separates desktop chip tray from player boxes without mobile regression', () => {
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 1.85rem');
+    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 1.1rem');
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-zone-boxes-tray-gap\)/,
     );

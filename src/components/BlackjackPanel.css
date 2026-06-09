@@ -325,11 +325,6 @@
     flex: 1;
     min-height: 0;
   }
-
-  .bj-casino__felt--card-view > .bj-card-layout {
-    flex: 1 1 auto;
-    min-height: 0;
-  }
 }
 
 .bj-game-info--center {
@@ -647,30 +642,6 @@
   transform: rotate(var(--arc-rot, 0deg));
   transform-origin: center bottom;
 }
-
-@media (min-width: 721px) {
-  .bj-view-full-desktop .bj-arc--player-boxes,
-  .bj-view-card-desktop .bj-arc--player-boxes {
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 0.12rem;
-    padding: 0 0.75rem 0.06rem;
-  }
-
-  .bj-view-full-desktop .bj-arc--player-boxes .bj-arc__slot,
-  .bj-view-card-desktop .bj-arc--player-boxes .bj-arc__slot {
-    flex: 0 1 auto;
-    width: var(--bj-player-box-width);
-    max-width: calc(var(--bj-player-box-width) + 0.35rem);
-  }
-
-  .bj-view-full-desktop .bj-arc--player-boxes .bj-arc__open,
-  .bj-view-card-desktop .bj-arc--player-boxes .bj-arc__open {
-    margin-bottom: 0.35rem;
-  }
-}
-
 
 .bj-arc__turn-badge {
   font-size: 0.45rem;
@@ -1002,14 +973,6 @@
 
 .bj-cards-fan .playing-card:first-child {
   margin-left: 0;
-}
-
-.bj-casino__tray {
-  margin-top: auto;
-  padding-top: 0.35rem;
-  width: 100%;
-  display: flex;
-  justify-content: center;
 }
 
 .bj-casino__round-end,

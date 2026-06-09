@@ -135,15 +135,16 @@ describe('This Table panel placement', () => {
     expect(css).toContain('.bj-table-slide-overlay');
   });
 
-  it('Table Details shares this-table panel slot (no details slide overlay)', () => {
+  it('Table Details lives in Settings menu (not dealer button or side-rail slot)', () => {
     const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-    expect(panelSrc).toContain('TableDetailsPanelContent');
-    expect(panelSrc).toContain('data-side-panel={sideRailPanel}');
+    const settingsSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackFlowSettings.tsx'), 'utf8');
+    expect(settingsSrc).toContain('TableDetailsPanelContent');
+    expect(panelSrc).toContain('tableDetails={tableDetailsProps}');
+    expect(panelSrc).not.toContain('onOpenTableDetails');
     expect(panelSrc).not.toContain('TableDetailsSlidePanel');
     const html = renderAt(1280, playingState());
     expect(html).not.toContain('bj-table-slide-overlay--details');
-    expect(html).toContain(TABLE_UX.sideRailDock);
-    expect(html).toContain('data-side-panel="thisTable"');
+    expect(html).not.toContain('dealer-block__details-btn');
   });
 
   it('Settings modal markup remains on desktop; mobile uses overlay tab', () => {

@@ -23,8 +23,8 @@ describe('layout shell reset — Full Table + Card View', () => {
     const body = SHELL_SRC.slice(SHELL_SRC.indexOf('return ('));
     const order = [
       '{dealer}',
-      'BlackjackCommandZone',
       'BlackjackActionsZone',
+      'BlackjackCommandZone',
       'BlackjackCardsAreaZone',
       'BlackjackPlayerBoxesZone',
       'TABLE_UX.tableZoneBottom',
@@ -82,8 +82,8 @@ describe('layout shell reset — Full Table + Card View', () => {
 
     expect(SHARED_CSS).toContain(MOBILE_LAYOUT_MEDIA);
     expect(SHARED_CSS).toMatch(/@media \(orientation: landscape\)/);
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-dealer-height: 6.5rem');
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2.25rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-dealer-height: 6.25rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2.65rem');
 
     const cardsBlock =
       SHARED_CSS.match(

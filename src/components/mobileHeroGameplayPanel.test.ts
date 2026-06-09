@@ -28,7 +28,9 @@ describe('mobile Card View hero gameplay panel', () => {
     expect(CARD_VIEW_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-phone-view__play-area[\s\S]*\.bj-view-card-mobile \.bj-phone-view__side-action[\s\S]*z-index:\s*1/,
     );
-    expect(FELT_CSS).toMatch(/\.bj-table-layout-shell > :not\(\.bj-felt-cloth-layer\)\s*\{[\s\S]*z-index:\s*1/);
+    expect(FELT_CSS).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--cards > :not\(\.bj-felt-cloth-layer\)\s*\{[\s\S]*z-index:\s*1/,
+    );
   });
 
   it('centers stand, hero cards, and hit on one horizontal axis', () => {

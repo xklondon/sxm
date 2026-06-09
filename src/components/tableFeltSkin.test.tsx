@@ -141,9 +141,9 @@ describe('table felt cloth layer', () => {
     );
     expect(html).toContain(TABLE_UX.feltClothLayer);
     expect(html).toContain('Custom Table');
-    expect(html).toContain('Insurance Pays 2 to 1');
+    expect(html).toContain('Playing for Dinner');
+    expect(html).not.toContain('Playing for: Dinner');
     expect(html).toContain('Dealer must stand on 17 and draw to 16');
-    expect(html).toContain('Playing for: Dinner');
     expect(html).toContain('<svg');
   });
 
@@ -151,7 +151,8 @@ describe('table felt cloth layer', () => {
     const html = renderToStaticMarkup(
       <BlackjackFeltClothLayer tableName={DEFAULT_TABLE_CLOTH_NAME} wagerText="" />,
     );
-    expect(html).not.toContain('Playing for:');
+    expect(html).not.toContain('Playing for');
+    expect(html).toContain('Insurance Pays 2 to 1');
   });
 
   it('keeps cloth layer non-interactive and behind gameplay zones', () => {
@@ -159,7 +160,7 @@ describe('table felt cloth layer', () => {
     expect(css).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*pointer-events:\s*none/);
     expect(css).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*z-index:\s*0/);
     expect(css).toMatch(
-      /\.bj-table-layout-shell > :not\(\.bj-felt-cloth-layer\)\s*\{[\s\S]*z-index:\s*1/,
+      /\.bj-table-layout-shell \.bj-table-zone--cards > :not\(\.bj-felt-cloth-layer\)\s*\{[\s\S]*z-index:\s*1/,
     );
   });
 
@@ -231,20 +232,23 @@ describe('table felt cloth layer', () => {
   it('dealer and command zones use shell sizing without overlap selectors', () => {
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--dealer[\s\S]*justify-content:\s*center/);
-    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*justify-content:\s*center/);
+    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*justify-content:\s*flex-end/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*overflow:\s*hidden/);
   });
 
-  it('classic cloth SVG sits in cards/boxes region on mobile via scale vars', () => {
+  it('classic cloth SVG uses cropped text band in CardsArea; mobile uses band height', () => {
     const css = readSrc('src/styles/bj-felt-skins.css');
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
-    expect(css).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*bottom:\s*24%/);
-    expect(sharedCss).toContain('--bj-cloth-mobile-width');
+    expect(css).toContain('--bj-cloth-band-height');
+    expect(css).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*height:\s*var\(--bj-cloth-band-height\)/);
+    const desktopBlock = css.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
+    expect(desktopBlock).not.toMatch(/top:\s*calc\(/);
+    expect(desktopBlock).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*100%/);
+    expect(desktopBlock).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*height:\s*var\(--bj-cloth-band-height\)/);
     expect(css).toMatch(
-      /\.bj-view-card-mobile \.bj-felt-cloth-layer__svg[\s\S]*var\(--bj-cloth-mobile-top\)/,
+      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer__svg[\s\S]*height:\s*var\(--bj-cloth-band-height\)/,
     );
     expect(css).toMatch(
-      /\.bj-view-card-mobile \.bj-felt-cloth-layer__svg[\s\S]*max-height:\s*none/,
+      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer__svg[\s\S]*max-height:\s*var\(--bj-cloth-band-height\)/,
     );
   });
 

@@ -27,18 +27,18 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
   });
 
   it('defines mobile zone height tokens mapped to canonical zone vars', () => {
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-dealer-height: 6.5rem');
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2.25rem');
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-actions-height: 4.5rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-dealer-height: 6.25rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2.65rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-actions-height: 2.9rem');
     expect(SHARED_CSS).toContain('--bj-mobile-zone-boxes-height: 6rem');
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 3.35rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 3.75rem');
     expect(SHARED_CSS).toContain('--bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height)');
   });
 
   it('defines canonical zone height tokens', () => {
     expect(SHARED_CSS).toContain('--bj-zone-dealer-height: 7.5rem');
     expect(SHARED_CSS).toContain('--bj-zone-command-height: 2rem');
-    expect(SHARED_CSS).toContain('--bj-zone-actions-height: 5rem');
+    expect(SHARED_CSS).toContain('--bj-zone-actions-height: 4.25rem');
     expect(SHARED_CSS).toContain('--bj-zone-boxes-height: 6.25rem');
     expect(SHARED_CSS).toContain('--bj-zone-tray-height: 2.75rem');
     expect(SHARED_CSS).toContain('--bj-player-box-width: 4.85rem');
@@ -66,10 +66,14 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
     expect(cardsBlock).not.toContain('bj-card-row-hero-min');
   });
 
-  it('uses fixed desktop cards zone height mapped from desktop tokens', () => {
-    const desktop = SHARED_CSS.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
-    expect(desktop).toContain('--bj-zone-cards-height: var(--bj-desktop-zone-cards-height)');
-    expect(desktop).toMatch(
+  it('uses flexible CardsArea grid row on desktop instead of calc height token', () => {
+    const desktop = SHARED_CSS.slice(
+      SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows'),
+      SHARED_CSS.indexOf('/* Desktop stage:'),
+    );
+    expect(SHARED_CSS).toContain('--bj-desktop-grid-row-cards: minmax(0, 1fr)');
+    expect(desktop).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
+    expect(desktop).not.toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*height:\s*var\(--bj-zone-cards-height\)/,
     );
   });

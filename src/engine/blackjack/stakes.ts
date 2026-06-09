@@ -17,7 +17,7 @@ import {
   isBetValidUnderProtocol,
 } from './protocols/activeRules';
 
-export type StakeChipValue = 1 | 2 | 5 | 10 | 50;
+export type StakeChipValue = 1 | 2 | 5 | 10 | 20 | 50;
 
 function occupiedBoxIds(state: GameState): string[] {
   return state.tableMeta.boxSlots
