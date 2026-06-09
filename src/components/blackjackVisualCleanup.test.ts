@@ -129,7 +129,7 @@ describe('blackjack visual cleanup — cloth, player boxes, desktop tray', () =>
       /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*overflow:\s*hidden/,
     );
     expect(SHARED_CSS).toMatch(
-      /@media \(max-width: 720px\)[\s\S]*--bj-zone-boxes-tray-gap:\s*0\.85rem/,
+      /@media \(max-width: 720px\)[\s\S]*--bj-zone-boxes-tray-gap:\s*0\.65rem/,
     );
   });
 

@@ -60,7 +60,10 @@ describe('box hit area — single reliable tap target', () => {
 describe('mobile landscape Full Table fit', () => {
   it('compresses Full Table zones and hides vertical overflow in landscape', () => {
     expect(SHARED_CSS).toMatch(
-      /@media \(orientation: landscape\)[\s\S]*--bj-mobile-zone-boxes-height:\s*4\.25rem/,
+      /@media \(orientation: landscape\)[\s\S]*--bj-mobile-zone-boxes-height:\s*calc\([\s\S]*--bj-box-value-band-height/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /@media \(min-width: 721px\) and \(orientation: landscape\)[\s\S]*--bj-zone-dealer-height:\s*4\.75rem/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,

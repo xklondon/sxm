@@ -64,7 +64,7 @@ describe('player box visual stability contract', () => {
       /@media \(min-width: 721px\)[\s\S]*--bj-zone-boxes-tray-gap:\s*var\(--bj-desktop-zone-boxes-tray-gap\)/,
     );
     expect(SHARED_CSS).toMatch(
-      /@media \(max-width: 720px\)[\s\S]*--bj-zone-boxes-tray-gap:\s*0\.85rem/,
+      /@media \(max-width: 720px\)[\s\S]*--bj-zone-boxes-tray-gap:\s*0\.65rem/,
     );
   });
 });
@@ -112,9 +112,9 @@ describe('mobile player box visual stability contract', () => {
     );
   });
 
-  it('uses pulse/glow only for mobile selected player boxes', () => {
+  it('uses inset glow for mobile selected player boxes', () => {
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--selected[\s\S]*box-shadow:\s*none/,
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--selected[\s\S]*box-shadow:\s*inset 0 0 0 2px/,
     );
   });
 });

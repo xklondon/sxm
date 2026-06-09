@@ -53,9 +53,11 @@ describe('mobile Card View hero gameplay panel', () => {
     expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*pointer-events:\s*none/);
   });
 
-  it('uses opaque panel styling so cloth does not show through hero zone', () => {
+  it('uses translucent classic-casino panel styling so cloth shows through hero zone', () => {
     expect(CARD_VIEW_CSS).toMatch(/\.bj-view-card-mobile \.bj-table-layout-shell::after[\s\S]*border:/);
-    expect(CARD_VIEW_CSS).toMatch(/\.bj-view-card-mobile \.bj-table-layout-shell::after[\s\S]*box-shadow:/);
+    expect(CARD_VIEW_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-casino__felt\.bj-felt-skin--classic-casino \.bj-table-layout-shell::after[\s\S]*rgb\(8 28 22 \/ 0\.42\)/,
+    );
     expect(CARD_VIEW_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*background:\s*transparent/,
     );

@@ -67,8 +67,11 @@ describe('mobile table dimension parity — Full Table vs Card View', () => {
     for (const pattern of PAIRED_HEIGHT_SELECTORS) {
       expect(SHARED_CSS).toMatch(pattern);
     }
-    expect(SHARED_CSS).not.toMatch(
-      /\.bj-view-full-mobile \.bj-casino__felt[\s\S]*height:\s*auto[\s\S]*\.bj-view-card-mobile \.bj-casino__felt/,
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-casino__felt[\s\S]*height:\s*var\(--bj-mobile-felt-height\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-casino__felt[\s\S]*height:\s*var\(--bj-mobile-felt-height\)/,
     );
   });
 

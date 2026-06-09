@@ -108,9 +108,9 @@ describe('canonical blackjack zone order and separation', () => {
     );
   });
 
-  it('hides Card View cloth layer so protocol text cannot overlap command or hero', () => {
+  it('shows Card View mobile cloth behind hero; desktop Card View still hides cloth', () => {
     expect(FELT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
+      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
     expect(FELT_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,

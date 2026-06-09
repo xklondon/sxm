@@ -72,12 +72,12 @@ describe('blackjack four visual fixes', () => {
     expect(SHARED_CSS).toMatch(/\.bj-table-actions__btn[\s\S]*border-radius/);
   });
 
-  it('still hides cloth in Card View', () => {
+  it('hides cloth in Card View desktop only; mobile Card View keeps classic cloth', () => {
     expect(FELT_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
     );
     expect(FELT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
+      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
   });
 

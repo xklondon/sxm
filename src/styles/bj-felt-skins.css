@@ -93,9 +93,8 @@
   opacity: 0.92;
 }
 
-/* Card View — hide all cloth/protocol decor; Full Table keeps the layer. */
-.bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer,
-.bj-view-card-mobile .bj-table-zone--cards .bj-felt-cloth-layer {
+/* Card View desktop — hide cloth/protocol decor; mobile Card View + Full Table keep the layer. */
+.bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer {
   display: none !important;
 }
 
@@ -104,9 +103,20 @@
     overflow: visible;
   }
 
+  .bj-view-card-mobile .bj-table-zone--cards .bj-felt-cloth-layer {
+    display: flex !important;
+    overflow: visible;
+  }
+
   .bj-view-full-mobile .bj-table-zone--cards .bj-felt-cloth-layer__svg {
     width: min(96%, 100vw);
     max-height: 72%;
+    opacity: 0.88;
+  }
+
+  .bj-view-card-mobile .bj-table-zone--cards .bj-felt-cloth-layer__svg {
+    width: min(94%, 100vw);
+    max-height: 70%;
     opacity: 0.88;
   }
 

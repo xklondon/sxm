@@ -243,7 +243,7 @@ describe('table felt cloth layer', () => {
     expect(css).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*align-items:\s*center/);
     expect(css).not.toMatch(/top:\s*calc\(/);
     expect(css).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
+      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
     expect(css).toMatch(
       /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,

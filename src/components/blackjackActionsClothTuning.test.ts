@@ -34,8 +34,8 @@ describe('blackjack actions + cloth tuning', () => {
     expect(SHARED_CSS).toContain('--bj-actions-panel-max-width: 20rem');
   });
 
-  it('hides the entire cloth layer in Card View', () => {
-    expect(FELT_CSS).toMatch(
+  it('hides the entire cloth layer in Card View desktop only', () => {
+    expect(FELT_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
     );
     expect(FELT_CSS).toMatch(
