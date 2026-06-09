@@ -132,6 +132,7 @@ import { getDisplayedHandValue, getVisibleHandCardIds } from '../engine/blackjac
 import {
   BET_BOX_PULSE,
   BOX_CARD_VALUE,
+  BOX_CARD_VALUE_ABOVE,
   BOX_CARD_VALUE_BUST,
   getBoxActivePulseClassName,
   getBoxCardVisualClasses,
@@ -1373,6 +1374,24 @@ export function BlackjackPanel({
           }
           onDrop={inBetting ? (e) => handleBetZoneDrop(boxId, slotNumber, e) : undefined}
         />
+        {valueLabel ? (
+          <span
+            className={[
+              BOX_CARD_VALUE,
+              BOX_CARD_VALUE_ABOVE,
+              isBusted ? BOX_CARD_VALUE_BUST : '',
+            ].filter(Boolean).join(' ')}
+          >
+            {valueLabel}
+          </span>
+        ) : (
+          <span
+            className={`${BOX_CARD_VALUE} ${BOX_CARD_VALUE_ABOVE} ${BOX_CARD_VALUE}--placeholder`}
+            aria-hidden="true"
+          >
+            &nbsp;
+          </span>
+        )}
         <div
           {...sxmSectionProps(
             SXM_LAYOUT.playerBox,
@@ -1385,20 +1404,6 @@ export function BlackjackPanel({
             [CHIP_DROP_BOX_ATTR]: boxId,
           }}
         >
-          {valueLabel ? (
-            <span
-              className={[
-                BOX_CARD_VALUE,
-                isBusted ? BOX_CARD_VALUE_BUST : '',
-              ].filter(Boolean).join(' ')}
-            >
-              {valueLabel}
-            </span>
-          ) : (
-            <span className={`${BOX_CARD_VALUE} ${BOX_CARD_VALUE}--placeholder`} aria-hidden="true">
-              &nbsp;
-            </span>
-          )}
           <BlackjackPlayerBoxHead
             boxLabel={boxInfo.boxLabel}
             callerDisplayName={boxInfo.callerDisplayName}

@@ -46,10 +46,10 @@ describe('blackjack proportion tuning — zone tokens and Stitch-aligned surface
   });
 
   it('fills CardsArea cloth band without moving cloth out of CardsArea', () => {
-    expect(FELT_CSS).toContain('--bj-cloth-band-height:');
-    expect(FELT_CSS).toContain('--bj-cloth-svg-max-height: var(--bj-cloth-band-height)');
+    expect(FELT_CSS).toContain('--bj-cloth-svg-width:');
+    expect(FELT_CSS).toContain('--bj-cloth-svg-max-height:');
     expect(FELT_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-felt-cloth-layer__svg[\s\S]*max-height:\s*var\(--bj-cloth-svg-max-height\)/,
+      /\.bj-felt-cloth-layer__svg[\s\S]*max-height:\s*var\(--bj-cloth-svg-max-height\)/,
     );
     expect(FELT_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--cards > \.bj-felt-cloth-layer/);
     expect(SHELL_SRC).toMatch(

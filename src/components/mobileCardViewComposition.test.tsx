@@ -204,11 +204,14 @@ describe('mobile Card View composition contract', () => {
     expect(full).toContain(TABLE_UX.tableZoneBottom);
   });
 
-  it('classic cloth uses band height inside CardsArea and stays non-interactive', () => {
+  it('hides classic cloth decor in Card View while Full Table keeps the layer', () => {
     const feltCss = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
-    expect(feltCss).toContain('--bj-cloth-band-height');
+    expect(feltCss).toContain('--bj-cloth-svg-width');
     expect(feltCss).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer__svg[\s\S]*height:\s*var\(--bj-cloth-band-height\)/,
+      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
+    );
+    expect(feltCss).toMatch(
+      /\.bj-view-full-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer__svg[\s\S]*width:\s*min\(96%, 100vw\)/,
     );
     expect(feltCss).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*pointer-events:\s*none/);
     expect(feltCss).toMatch(

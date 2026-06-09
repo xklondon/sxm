@@ -289,7 +289,7 @@ describe('table layout polish contract', () => {
       /bj-table-zone--cards[\s\S]*bj-arc__cards-stack[\s\S]*bj-table-zone--boxes[\s\S]*bj-phone-view__mini-hand--full-arc/,
     );
     expect(full).toMatch(
-      /bj-phone-view__mini-hand--full-arc[\s\S]*bj-phone-view__box-value[\s\S]*bj-phone-view__mini-stake-slot/,
+      /bj-phone-view__box-value--above[\s\S]*bj-phone-view__mini-hand--full-arc[\s\S]*bj-phone-view__mini-stake-slot/,
     );
     expect(full).not.toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*bj-cards-fan/);
   });

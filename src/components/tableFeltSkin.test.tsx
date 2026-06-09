@@ -236,19 +236,17 @@ describe('table felt cloth layer', () => {
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*overflow:\s*hidden/);
   });
 
-  it('classic cloth SVG uses cropped text band in CardsArea; mobile uses band height', () => {
+  it('classic cloth SVG is centered in CardsArea with proportional sizing', () => {
     const css = readSrc('src/styles/bj-felt-skins.css');
-    expect(css).toContain('--bj-cloth-band-height');
-    expect(css).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*height:\s*var\(--bj-cloth-band-height\)/);
-    const desktopBlock = css.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
-    expect(desktopBlock).not.toMatch(/top:\s*calc\(/);
-    expect(desktopBlock).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*100%/);
-    expect(desktopBlock).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*height:\s*var\(--bj-cloth-band-height\)/);
+    expect(css).toContain('--bj-cloth-svg-width');
+    expect(css).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*var\(--bj-cloth-svg-width\)/);
+    expect(css).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*align-items:\s*center/);
+    expect(css).not.toMatch(/top:\s*calc\(/);
     expect(css).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer__svg[\s\S]*height:\s*var\(--bj-cloth-band-height\)/,
+      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
     );
     expect(css).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer__svg[\s\S]*max-height:\s*var\(--bj-cloth-band-height\)/,
+      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
     );
   });
 

@@ -88,12 +88,11 @@ describe('desktop canonical grid — Full Table and Card View parity', () => {
   });
 
   it('ties cloth layer to CardsArea child, not shell grid row', () => {
-    const feltDesktop = FELT_CSS.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
     const shellDesktop = desktopShellBlock();
     expect(shellDesktop).not.toMatch(/\.bj-table-layout-shell > \.bj-felt-cloth-layer/);
     expect(FELT_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--cards > \.bj-felt-cloth-layer/);
-    expect(feltDesktop).not.toMatch(/top:\s*calc\(/);
-    expect(feltDesktop).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*height:\s*var\(--bj-cloth-band-height\)/);
+    expect(FELT_CSS).not.toMatch(/top:\s*calc\(/);
+    expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*var\(--bj-cloth-svg-width\)/);
   });
 
   it('does not size outer cards zone in bj-card-layout.css', () => {

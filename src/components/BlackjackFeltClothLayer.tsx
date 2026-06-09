@@ -18,14 +18,14 @@ export function BlackjackFeltClothLayer({ tableName, wagerText = '' }: Blackjack
     <div className={TABLE_UX.feltClothLayer} aria-hidden="true">
       <svg
         className={`${TABLE_UX.feltClothLayer}__svg`}
-        viewBox="0 0 1000 260"
-        preserveAspectRatio="xMidYMin meet"
+        viewBox="0 0 1000 280"
+        preserveAspectRatio="xMidYMid meet"
         role="presentation"
       >
         <defs>
-          <path id={titleArcId} d="M 80 42 Q 500 8 920 42" />
-          <path id={insuranceArcId} d="M 110 108 Q 500 78 890 108" />
-          <path id={dealerArcId} d="M 90 182 Q 500 152 910 182" />
+          <path id={titleArcId} d="M 90 78 Q 500 58 910 78" />
+          <path id={insuranceArcId} d="M 110 148 Q 500 128 890 148" />
+          <path id={dealerArcId} d="M 100 218 Q 500 198 900 218" />
         </defs>
 
         <text className={`${TABLE_UX.feltClothLayer}__title`}>

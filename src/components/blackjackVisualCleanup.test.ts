@@ -18,11 +18,11 @@ function desktopShellBlock(): string {
 
 describe('blackjack visual cleanup — cloth, player boxes, desktop tray', () => {
   it('uses balanced cloth title and red rule tokens within readable max values', () => {
-    expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 104px');
-    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 52px');
+    expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 56px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 28px');
     expect(FELT_CSS).toContain('--bj-cloth-dealer-rule-font-size: var(--bj-cloth-insurance-font-size)');
-    expect(FELT_CSS).toContain('--bj-cloth-title-font-size-mobile: 88px');
-    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size-mobile: 44px');
+    expect(FELT_CSS).toContain('--bj-cloth-title-font-size-mobile: 48px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size-mobile: 24px');
     expect(FELT_CSS).toMatch(
       /\.bj-felt-cloth-layer__title[\s\S]*font-size:\s*var\(--bj-cloth-title-font-size\)/,
     );

@@ -63,20 +63,20 @@ describe('blackjack render architecture — single canonical shell', () => {
 });
 
 describe('blackjack cloth sizing — dominant tokens and desktop fill', () => {
-  it('defines large title and insurance font tokens', () => {
-    expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 104px');
-    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 52px');
+  it('defines readable title and insurance font tokens', () => {
+    expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 56px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 28px');
     expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer__title[\s\S]*var\(--bj-cloth-title-font-size\)/);
     expect(FELT_CSS).toMatch(
       /\.bj-felt-cloth-layer__insurance[\s\S]*var\(--bj-cloth-insurance-font-size\)/,
     );
   });
 
-  it('fills desktop CardsArea grid row without legacy shell calc band', () => {
-    const desktopBlock = FELT_CSS.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
-    expect(desktopBlock).not.toMatch(/top:\s*calc\(/);
-    expect(desktopBlock).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*100%/);
-    expect(desktopBlock).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*height:\s*var\(--bj-cloth-band-height\)/);
+  it('centers cloth SVG in CardsArea without legacy shell calc band', () => {
+    expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*align-items:\s*center/);
+    expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*var\(--bj-cloth-svg-width\)/);
+    expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*max-height:\s*var\(--bj-cloth-svg-max-height\)/);
+    expect(FELT_CSS).not.toMatch(/top:\s*calc\(/);
   });
 
   it('keeps cloth inside CardsArea behind card stacks', () => {

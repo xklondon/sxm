@@ -135,6 +135,7 @@
   --bj-full-table-box-padding: 0.1rem 0.16rem 0.08rem;
   --bj-full-table-box-gap: 0.02rem;
   --bj-full-table-stake-min-height: 1.2rem;
+  --bj-box-value-band-height: 0.9rem;
   --bj-cardview-zone-summary-height: 2.5rem;
   --bj-cardview-zone-actions-height: var(--bj-zone-actions-height);
   --bj-cardview-zone-boxes-height: var(--bj-zone-boxes-height);
@@ -283,10 +284,8 @@
     box-sizing: border-box;
   }
 
-  .bj-view-full-mobile .bj-phone-view__box-value,
-  .bj-view-card-mobile .bj-phone-view__box-value {
+  .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above {
     display: block;
-    order: -1;
   }
 
   .bj-view-full-mobile .bj-table-zone--cards .bj-arc__slot,
@@ -1119,13 +1118,25 @@
   color: #f87171;
 }
 
-.bj-phone-view__box-value {
+.bj-phone-view__box-value:not(.bj-phone-view__box-value--above) {
   display: none;
+}
+
+.bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above {
+  display: block;
+  flex: 0 0 var(--bj-box-value-band-height);
+  min-height: var(--bj-box-value-band-height);
+  max-height: var(--bj-box-value-band-height);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  line-height: var(--bj-box-value-band-height);
+  order: -1;
 }
 
 .bj-phone-view__box-value--placeholder {
   visibility: hidden;
-  min-height: 1em;
 }
 
 /* Canonical felt zones — stable shell across betting/dealing/player/round-complete. */
@@ -1443,11 +1454,6 @@
   box-sizing: border-box;
 }
 
-.bj-phone-view__mini-hand--full-arc .bj-phone-view__box-value,
-.bj-phone-view__mini-hand--full-arc .bj-phone-view__box-value--placeholder {
-  order: 1;
-  flex: 0 0 auto;
-}
 
 .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-hand-head {
   order: 0;
@@ -1666,7 +1672,7 @@
   gap: var(--bj-actions-row-gap);
   box-sizing: border-box;
   background: var(--bj-actions-panel-bg);
-  border: var(--bj-actions-panel-border);
+  border: none;
   border-radius: var(--bj-actions-panel-radius);
   padding: var(--bj-actions-panel-padding);
   max-width: var(--bj-actions-panel-max-width);
@@ -1680,7 +1686,7 @@
   gap: var(--bj-actions-row-gap);
   box-sizing: border-box;
   background: var(--bj-actions-panel-bg);
-  border: var(--bj-actions-panel-border);
+  border: none;
   border-radius: var(--bj-actions-panel-radius);
   padding: var(--bj-actions-panel-padding);
   max-width: var(--bj-actions-panel-max-width);
@@ -1707,7 +1713,7 @@
 .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions,
 .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar--bare {
   background: transparent;
-  border: var(--bj-actions-panel-border);
+  border: none;
   border-radius: var(--bj-actions-panel-radius);
   box-shadow: none;
 }
@@ -2409,9 +2415,8 @@
     box-sizing: border-box;
   }
 
-  .bj-phone-view__box-value {
+  .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above {
     display: block;
-    order: -1;
   }
 
   .bj-view-full-desktop .bj-phone-view.bj-table-column-surface,
@@ -2575,7 +2580,7 @@
     flex: 1 1 auto;
     min-height: 0;
     max-height: 100%;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view,
@@ -2601,5 +2606,42 @@
   .bj-view-card-desktop .bj-phone-view__action-bar--playing {
     flex: 0 0 auto;
     min-height: 0;
+  }
+
+  /* Card View desktop — compact command/actions rows, tight stack. */
+  .bj-view-card-desktop {
+    --bj-desktop-zone-command-height: 2.55rem;
+    --bj-desktop-zone-actions-height: 2.45rem;
+    --bj-cardview-command-actions-gap: 0.25rem;
+    --bj-cardview-actions-cards-gap: 0.35rem;
+    --bj-cardview-hero-top-inset: 0.5rem;
+    --bj-command-actions-gap: var(--bj-cardview-command-actions-gap);
+    --bj-actions-cards-safe-gap: var(--bj-cardview-actions-cards-gap);
+    --bj-hero-cards-top-inset: var(--bj-cardview-hero-top-inset);
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--summary {
+    padding-bottom: 0;
+    justify-content: flex-start;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
+    padding-top: var(--bj-cardview-command-actions-gap);
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-table-actions,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-player-actions {
+    padding: 0.06rem 0.32rem 0.04rem;
+    margin: 0;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
+    margin-top: var(--bj-cardview-actions-cards-gap);
+    padding-top: var(--bj-cardview-hero-top-inset);
+    justify-content: flex-start;
+    align-items: stretch;
+    overflow: hidden;
   }
 }

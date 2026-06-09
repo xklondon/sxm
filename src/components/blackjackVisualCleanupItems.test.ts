@@ -24,10 +24,10 @@ describe('blackjack visual cleanup items', () => {
   });
 
   it('increases cloth typography tokens within bounded range', () => {
-    expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 104px');
-    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 52px');
-    expect(FELT_CSS).toContain('--bj-cloth-title-font-size-mobile: 88px');
-    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size-mobile: 44px');
+    expect(FELT_CSS).toContain('--bj-cloth-title-font-size: 56px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size: 28px');
+    expect(FELT_CSS).toContain('--bj-cloth-title-font-size-mobile: 48px');
+    expect(FELT_CSS).toContain('--bj-cloth-insurance-font-size-mobile: 24px');
   });
 
   it('keeps chips mounted during play with inactive styling when betting closed', () => {
@@ -36,10 +36,13 @@ describe('blackjack visual cleanup items', () => {
     expect(CHIP_CSS).toContain('.bj-value-chips__stash--inactive');
   });
 
-  it('uses transparent action panel chrome in shell actions zone', () => {
+  it('uses transparent borderless action panel chrome in shell actions zone', () => {
     expect(SHARED_CSS).toContain('--bj-actions-panel-bg: transparent');
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions[\s\S]*background:\s*transparent/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions[\s\S]*border:\s*none/,
     );
   });
 

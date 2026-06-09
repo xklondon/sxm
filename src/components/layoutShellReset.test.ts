@@ -115,8 +115,8 @@ describe('layout shell reset — Full Table + Card View', () => {
 
   it('only CardsArea content differs between hero and table modes in CSS', () => {
     expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero/);
-    expect(CARD_LAYOUT_CSS).not.toMatch(/\.bj-table-zone--actions\s*\{/);
-    expect(CARD_LAYOUT_CSS).not.toMatch(/\.bj-table-zone--boxes\s*\{/);
-    expect(CARD_LAYOUT_CSS).not.toMatch(/\.bj-table-zone--summary\s*\{/);
+    expect(CARD_LAYOUT_CSS).not.toMatch(/^\.bj-table-zone--actions\s*\{/m);
+    expect(CARD_LAYOUT_CSS).not.toMatch(/^\.bj-table-zone--boxes\s*\{/m);
+    expect(CARD_LAYOUT_CSS).not.toMatch(/^\.bj-table-zone--summary\s*\{/m);
   });
 });

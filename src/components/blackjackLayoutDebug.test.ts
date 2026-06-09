@@ -108,15 +108,12 @@ describe('canonical blackjack zone order and separation', () => {
     );
   });
 
-  it('hides Card View cloth protocol subtext so it cannot overlap command or hero', () => {
+  it('hides Card View cloth layer so protocol text cannot overlap command or hero', () => {
     expect(FELT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-felt-cloth-layer__insurance[\s\S]*visibility:\s*hidden/,
+      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
     );
     expect(FELT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-felt-cloth-layer__dealer-rule[\s\S]*visibility:\s*hidden/,
-    );
-    expect(FELT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*overflow:\s*hidden/,
+      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
     );
   });
 });

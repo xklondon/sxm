@@ -101,10 +101,9 @@ describe('desktop canonical vertical grid polish', () => {
   it('scopes cloth decor to cards/boxes band and enlarges rule text tokens', () => {
     const feltCss = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
     const clothSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackFeltClothLayer.tsx'), 'utf8');
-    const desktopBlock = feltCss.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
-    expect(desktopBlock).not.toMatch(/top:\s*calc\(/);
-    expect(desktopBlock).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*100%/);
-    expect(feltCss).toContain('--bj-cloth-insurance-font-size: 52px');
+    expect(feltCss).not.toMatch(/top:\s*calc\(/);
+    expect(feltCss).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*var\(--bj-cloth-svg-width\)/);
+    expect(feltCss).toContain('--bj-cloth-insurance-font-size: 28px');
     expect(feltCss).toContain('--bj-cloth-dealer-rule-font-size: var(--bj-cloth-insurance-font-size)');
     expect(clothSrc).toMatch(/trimmedWager \? `Playing for \$\{trimmedWager\}` : 'Insurance Pays 2 to 1'/);
   });

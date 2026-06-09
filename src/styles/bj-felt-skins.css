@@ -17,28 +17,34 @@
   position: relative;
 }
 
+.bj-table-layout-shell .bj-table-zone--cards > .bj-felt-cloth-layer {
+  position: absolute;
+  inset: 0;
+}
+
 .bj-felt-cloth-layer {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  overflow: hidden;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 :root {
-  /* Font sizes are SVG user units — matched to cropped viewBox height (260). */
-  --bj-cloth-title-font-size: 104px;
-  --bj-cloth-insurance-font-size: 52px;
+  /* Font sizes are SVG user units — matched to viewBox height (280). */
+  --bj-cloth-title-font-size: 56px;
+  --bj-cloth-insurance-font-size: 28px;
   --bj-cloth-dealer-rule-font-size: var(--bj-cloth-insurance-font-size);
-  --bj-cloth-wager-font-size: 28px;
-  --bj-cloth-title-font-size-mobile: 88px;
-  --bj-cloth-insurance-font-size-mobile: 44px;
-  --bj-cloth-dealer-rule-font-size-mobile: 44px;
-  --bj-cloth-wager-font-size-mobile: 22px;
-  --bj-cloth-band-height: min(36%, 11rem);
-  --bj-cloth-svg-width: min(96%, 44rem);
-  --bj-cloth-svg-max-height: var(--bj-cloth-band-height);
-  --bj-cloth-svg-bottom: 24%;
+  --bj-cloth-wager-font-size: 22px;
+  --bj-cloth-title-font-size-mobile: 48px;
+  --bj-cloth-insurance-font-size-mobile: 24px;
+  --bj-cloth-dealer-rule-font-size-mobile: 24px;
+  --bj-cloth-wager-font-size-mobile: 18px;
+  --bj-cloth-svg-width: min(92%, 42rem);
+  --bj-cloth-svg-max-height: 78%;
 }
 
 .bj-table-layout-shell .bj-table-zone--cards > :not(.bj-felt-cloth-layer) {
@@ -47,16 +53,12 @@
 }
 
 .bj-felt-cloth-layer__svg {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: auto;
-  transform: translateX(-50%);
+  position: relative;
+  flex: 0 0 auto;
   width: var(--bj-cloth-svg-width);
-  height: var(--bj-cloth-band-height);
+  height: auto;
   max-height: var(--bj-cloth-svg-max-height);
-  opacity: 0.82;
-  transform-origin: center top;
+  opacity: 0.9;
 }
 
 .bj-felt-cloth-layer__title {
@@ -83,31 +85,6 @@
   font-weight: 600;
 }
 
-@media (min-width: 721px) {
-  .bj-table-layout-shell .bj-table-zone--cards > .bj-felt-cloth-layer {
-    position: absolute;
-    inset: 0;
-    width: auto;
-    height: auto;
-    min-height: 0;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  .bj-felt-cloth-layer__svg {
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: auto;
-    width: 100%;
-    height: var(--bj-cloth-band-height);
-    max-height: var(--bj-cloth-svg-max-height);
-    max-width: none;
-    transform: none;
-    opacity: 0.92;
-  }
-}
-
 .bj-felt-cloth-layer__wager {
   fill: var(--ds-color-gold, #d4af37);
   font-family: Georgia, 'Times New Roman', serif;
@@ -116,38 +93,21 @@
   opacity: 0.92;
 }
 
-/* Card View — hide protocol subtext so cloth never bleeds into command/hero zones. */
-.bj-view-card-desktop .bj-felt-cloth-layer__insurance,
-.bj-view-card-mobile .bj-felt-cloth-layer__insurance,
-.bj-view-card-desktop .bj-felt-cloth-layer__dealer-rule,
-.bj-view-card-mobile .bj-felt-cloth-layer__dealer-rule {
-  opacity: 0;
-  visibility: hidden;
-}
-
-.bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--hero .bj-felt-cloth-layer,
-.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .bj-felt-cloth-layer {
-  --bj-cloth-band-height: min(22%, 4.75rem);
+/* Card View — hide all cloth/protocol decor; Full Table keeps the layer. */
+.bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer,
+.bj-view-card-mobile .bj-table-zone--cards .bj-felt-cloth-layer {
+  display: none !important;
 }
 
 @media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
-  .bj-view-full-mobile .bj-table-zone--cards .bj-felt-cloth-layer,
-  .bj-view-card-mobile .bj-table-zone--cards .bj-felt-cloth-layer {
-    overflow: hidden;
+  .bj-view-full-mobile .bj-table-zone--cards .bj-felt-cloth-layer {
+    overflow: visible;
   }
 
-  .bj-view-full-mobile .bj-table-zone--cards .bj-felt-cloth-layer__svg,
-  .bj-view-card-mobile .bj-table-zone--cards .bj-felt-cloth-layer__svg {
-    top: 0;
-    bottom: auto;
-    left: 50%;
-    right: auto;
-    width: min(108%, 100vw);
-    height: var(--bj-cloth-band-height);
-    max-height: var(--bj-cloth-band-height);
-    opacity: 0.84;
-    transform: translateX(-50%);
-    transform-origin: center top;
+  .bj-view-full-mobile .bj-table-zone--cards .bj-felt-cloth-layer__svg {
+    width: min(96%, 100vw);
+    max-height: 72%;
+    opacity: 0.88;
   }
 
   .bj-felt-cloth-layer__title {

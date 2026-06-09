@@ -153,7 +153,8 @@ describe('Card View polish guards', () => {
   it('renders hand value above shared arc player box tile', () => {
     const html = renderCardPanel(playingState());
     const slot = arcBoxSlot(html, 1);
-    expect(slot).toContain('bj-phone-view__box-value');
+    expect(slot).toContain('bj-phone-view__box-value--above');
+    expect(slot.indexOf('bj-phone-view__box-value--above')).toBeLessThan(slot.indexOf('bj-phone-view__mini-hand--full-arc'));
     expect(slot).toContain('13');
   });
 

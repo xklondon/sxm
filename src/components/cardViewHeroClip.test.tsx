@@ -51,9 +51,16 @@ describe('Desktop Card View hero card clipping guards', () => {
     );
   });
 
-  it('aligns hero cards to the top so rank/suit stay readable', () => {
-    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards[\s\S]*align-items:\s*center/);
-    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*align-items:\s*center/);
+  it('aligns Card View hero cards from the top so rank/suit stay readable', () => {
+    expect(LAYOUT_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards--fan[\s\S]*align-items:\s*flex-start/,
+    );
+    expect(LAYOUT_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*align-items:\s*flex-start/,
+    );
+    expect(LAYOUT_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__card-wrap[\s\S]*align-self:\s*flex-start/,
+    );
     expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/);
   });
 });

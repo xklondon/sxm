@@ -1893,8 +1893,8 @@
 
 /* Betting pulse — canonical rules in bj-table-shared.css (.bj-phone-view__bet-chip--pulse) */
 
-/* Box value label — desktop Card View shows via min-width media; mobile Card View via .bj-view-card-mobile in BlackjackPanel.css. */
-.bj-phone-view__box-value {
+/* Box value label — above player box frame via .bj-phone-view__box-value--above in bj-table-shared.css. */
+.bj-phone-view__box-value:not(.bj-phone-view__box-value--above) {
   display: none;
 }
 
@@ -1915,9 +1915,8 @@
 
 /* ── Desktop Card View only (>=721px, matches MOBILE_MAX_WIDTH=720) ── */
 @media (min-width: 721px) {
-  .bj-phone-view__box-value {
+  .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above {
     display: block;
-    order: -1;
   }
 }
 
