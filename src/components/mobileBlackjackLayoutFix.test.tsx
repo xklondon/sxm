@@ -17,6 +17,7 @@ const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 
 const noop = () => {};
 
@@ -71,13 +72,11 @@ describe('mobile blackjack layout fix', () => {
       expect(SHARED_CSS).not.toMatch(/--bj-cloth-mobile-width:\s*min\(118%/);
     });
 
-    it('fits box width to slot count with mobile grid columns', () => {
-      expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]*grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*minmax\(0,\s*1fr\)\)/,
+    it('fits box width to slot count with canonical bj-table-slot-row grid', () => {
+      expect(PLAYER_ROW_CSS).toMatch(
+        /grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*minmax\(0,\s*1fr\)\)/,
       );
-      expect(SHARED_CSS).toMatch(
-        /@media \(min-width: 721px\)[\s\S]*\.bj-arc--visible-4[\s\S]*--bj-full-table-box-width:/,
-      );
+      expect(SHARED_CSS).not.toMatch(/@media \(max-width: 480px\)[\s\S]*\.bj-arc--player-boxes \.bj-arc__slot/);
     });
   });
 
@@ -110,47 +109,37 @@ describe('mobile blackjack layout fix', () => {
       );
     });
 
-    it('uses grid columns for mobile player boxes without pill min-width caps', () => {
-      expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-player-box-mobile[\s\S]{0,2200}min-width:\s*0/,
+    it('uses canonical slot row sizing without pill min-width caps', () => {
+      expect(PLAYER_ROW_CSS).toMatch(
+        /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]{0,1800}min-width:\s*0/,
       );
-      expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-player-box-mobile[\s\S]{0,2200}aspect-ratio:\s*1\.05 \/ 1/,
+      expect(PLAYER_ROW_CSS).toMatch(
+        /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]{0,1800}aspect-ratio:\s*1\.05 \/ 1/,
       );
-      expect(SHARED_CSS).not.toMatch(
-        /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]{0,2400}min-width:\s*var\(--bj-full-table-box-width\)/,
-      );
-      expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]*transform:\s*none/,
-      );
+      expect(PLAYER_ROW_CSS).not.toMatch(/min-width:\s*var\(--bj-full-table-box-width\)/);
     });
   });
 
   describe('C — add box + button', () => {
-    it('renders inline + control before player boxes on mobile during betting', () => {
+    it('renders inline + control before player boxes during betting', () => {
       const html = renderMobilePanel(tableAfterStartPlaying(500));
-      expect(html).toContain('bj-player-boxes-wrap__add');
+      expect(html).toContain('bj-table-slot-row__add');
       expect(html).toContain('aria-label="Add player box"');
-      expect(html).toContain('bj-player-boxes-wrap__add--leading');
       expect(html).toContain('>+</button>');
       expect(html).toContain('bj-arc--visible-4');
-      const addIdx = html.indexOf('bj-player-boxes-wrap__add');
-      const arcIdx = html.indexOf('bj-arc--player-boxes');
-      expect(addIdx).toBeGreaterThan(-1);
-      expect(arcIdx).toBeGreaterThan(addIdx);
+      const rowStart = html.indexOf('bj-table-slot-row bj-arc bj-arc--player-boxes');
+      expect(rowStart).toBeGreaterThan(-1);
+      const rowSlice = html.slice(rowStart, rowStart + 1200);
+      expect(rowSlice.indexOf('bj-table-slot-row__add')).toBeLessThan(rowSlice.indexOf('bj-arc__slot'));
     });
 
-    it('uses grid row with compact leading + button before boxes', () => {
-      expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-player-boxes-wrap__row[\s\S]*grid-template-columns:\s*auto minmax\(0,\s*1fr\)/,
-      );
-      expect(SHARED_CSS).toMatch(/--bj-mobile-add-button-width:\s*1\.5rem/);
-      expect(SHARED_CSS).toMatch(/--bj-mobile-box-gap:\s*0\.03rem/);
+    it('uses flat slot row with add column before box columns', () => {
+      expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row--with-add[\s\S]*auto repeat\(var\(--slot-count/);
     });
 
     it('wires + click to expand visible box count in panel source', () => {
-      expect(PANEL_SRC).toContain('setExpandedVisibleBoxCount');
-      expect(PANEL_SRC).toContain('canAddVisibleBox && inBetting');
+    expect(PANEL_SRC).toContain('setExpandedVisibleBoxCount');
+    expect(PANEL_SRC).toContain('canAddVisibleBox && inBetting');
     });
   });
 

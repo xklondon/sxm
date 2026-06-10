@@ -104,13 +104,9 @@ describe('mobile Card View layout contract', () => {
   it('betting phase: page overflow hidden, arc player boxes fit shell width', () => {
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*overflow-x:\s*hidden/);
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-    expect(sharedCss).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
-    );
-    expect(sharedCss).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*min-width:\s*0/,
-    );
+    const playerRowCss = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
+    expect(playerRowCss).toMatch(/\.bj-table-slot-row[\s\S]*display:\s*grid/);
+    expect(playerRowCss).toMatch(/\.bj-table-slot-row > \.bj-arc__slot[\s\S]*min-width:\s*0/);
   });
 
   it('betting and playing share stage, action, and box strip slots', () => {

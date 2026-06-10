@@ -2,7 +2,7 @@
 export const BLACKJACK_LAYOUT_DEBUG_PARAM = 'layoutDebug';
 
 /** Build marker — confirms production bundle includes this audit pass. */
-export const BLACKJACK_UI_FIX_VERSION = 'mobile-box-tray-audit-1';
+export const BLACKJACK_UI_FIX_VERSION = 'mobile-box-tray-final-2';
 
 /** Local override — set true while tuning zones; never ship enabled. */
 const BLACKJACK_LAYOUT_DEBUG_FORCE = false;
@@ -20,6 +20,8 @@ export function isBlackjackLayoutDebugEnabled(search = ''): boolean {
 export interface LayoutDebugComputedSnapshot {
   boxesRowDisplay: string;
   boxesRowGridTemplate: string;
+  addBoxWidth: string;
+  addBoxHeight: string;
   firstBoxWidth: string;
   firstBoxHeight: string;
   boxesGap: string;
@@ -31,40 +33,93 @@ export interface LayoutDebugComputedSnapshot {
   trayPaddingBottom: string;
   canvasHeight: string;
   playerBoxDomOrder: string;
+  trayBounds: string;
+  playerRowBounds: string;
+  trayOverlapsPlayerRow: boolean;
+  trayOverflowChain: string;
+}
+
+function readOverflowChain(el: Element | null): string {
+  if (!el || typeof window === 'undefined') {
+    return 'n/a';
+  }
+  const parts: string[] = [];
+  let node: Element | null = el;
+  while (node) {
+    const style = window.getComputedStyle(node);
+    if (
+      style.overflow !== 'visible' ||
+      style.overflowX !== 'visible' ||
+      style.overflowY !== 'visible'
+    ) {
+      const label =
+        node instanceof HTMLElement && node.className
+          ? `.${String(node.className).trim().split(/\s+/).slice(0, 2).join('.')}`
+          : node.tagName.toLowerCase();
+      parts.push(`${label}: ox=${style.overflowX} oy=${style.overflowY}`);
+    }
+    node = node.parentElement;
+  }
+  return parts.length ? parts.join(' | ') : 'all-visible';
+}
+
+function formatBounds(rect: DOMRect | undefined): string {
+  if (!rect) {
+    return 'n/a';
+  }
+  return `t=${Math.round(rect.top)} b=${Math.round(rect.bottom)} h=${Math.round(rect.height)}`;
+}
+
+function rectsOverlap(a: DOMRect, b: DOMRect): boolean {
+  return a.top < b.bottom && a.bottom > b.top && a.left < b.right && a.right > b.left;
 }
 
 export function readLayoutDebugComputedSnapshot(root: HTMLElement | null): LayoutDebugComputedSnapshot | null {
   if (!root || typeof window === 'undefined') {
     return null;
   }
-  const boxesArc = root.querySelector('.bj-arc--player-boxes');
+  const playerRow =
+    root.querySelector('.bj-table-slot-row.bj-arc--player-boxes') ??
+    root.querySelector('.bj-arc--player-boxes');
+  const addBox =
+    root.querySelector('.bj-table-slot-row__add') ??
+    root.querySelector('.bj-player-boxes-wrap__add');
   const firstBox =
     root.querySelector('.bj-arc--player-boxes .bj-player-box-mobile') ??
     root.querySelector('.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc');
   const boxesZone = root.querySelector('.bj-table-zone--boxes');
   const trayZone = root.querySelector('.bj-table-zone--bottom');
   const canvas = root.querySelector('.bj-table-layout-shell');
-  const addBtn = root.querySelector('.bj-player-boxes-wrap__add');
-  const arc = root.querySelector('.bj-arc--player-boxes');
   const styleOf = (el: Element | null) => (el ? window.getComputedStyle(el) : null);
-  const boxesArcStyle = styleOf(boxesArc);
+  const playerRowStyle = styleOf(playerRow);
+  const addBoxStyle = styleOf(addBox);
   const firstBoxStyle = styleOf(firstBox);
   const boxesZoneStyle = styleOf(boxesZone);
   const trayStyle = styleOf(trayZone);
   const canvasStyle = styleOf(canvas);
+
   const orderParts: string[] = [];
-  if (addBtn) {
-    orderParts.push('+');
+  if (playerRow) {
+    for (const child of playerRow.children) {
+      if (child.classList.contains('bj-table-slot-row__add') || child.classList.contains('bj-player-boxes-wrap__add')) {
+        orderParts.push('+');
+      } else if (child.classList.contains('bj-arc__slot')) {
+        orderParts.push(`box-${orderParts.filter((p) => p.startsWith('box-')).length + 1}`);
+      }
+    }
   }
-  root.querySelectorAll('.bj-arc--player-boxes .bj-arc__slot').forEach((_slot, index) => {
-    orderParts.push(`box-${index + 1}`);
-  });
+
+  const playerRowRect = playerRow?.getBoundingClientRect();
+  const trayRect = trayZone?.getBoundingClientRect();
+
   return {
-    boxesRowDisplay: boxesArcStyle?.display ?? 'n/a',
-    boxesRowGridTemplate: boxesArcStyle?.gridTemplateColumns ?? boxesArcStyle?.flexDirection ?? 'n/a',
+    boxesRowDisplay: playerRowStyle?.display ?? 'n/a',
+    boxesRowGridTemplate: playerRowStyle?.gridTemplateColumns ?? playerRowStyle?.flexDirection ?? 'n/a',
+    addBoxWidth: addBoxStyle?.width ?? 'n/a',
+    addBoxHeight: addBoxStyle?.height ?? 'n/a',
     firstBoxWidth: firstBoxStyle?.width ?? 'n/a',
     firstBoxHeight: firstBoxStyle?.height ?? 'n/a',
-    boxesGap: boxesArcStyle?.columnGap ?? boxesArcStyle?.gap ?? 'n/a',
+    boxesGap: playerRowStyle?.columnGap ?? playerRowStyle?.gap ?? 'n/a',
     boxesZoneOverflowX: boxesZoneStyle?.overflowX ?? 'n/a',
     boxesZoneOverflowY: boxesZoneStyle?.overflowY ?? 'n/a',
     trayPosition: trayStyle?.position ?? 'n/a',
@@ -72,7 +127,11 @@ export function readLayoutDebugComputedSnapshot(root: HTMLElement | null): Layou
     trayHeight: trayStyle?.height ?? 'n/a',
     trayPaddingBottom: trayStyle?.paddingBottom ?? 'n/a',
     canvasHeight: canvasStyle?.height ?? 'n/a',
-    playerBoxDomOrder: orderParts.length ? orderParts.join(' → ') : arc ? 'arc-without-slots' : 'missing',
+    playerBoxDomOrder: orderParts.length ? orderParts.join(' → ') : playerRow ? 'row-without-slots' : 'missing',
+    trayBounds: formatBounds(trayRect),
+    playerRowBounds: formatBounds(playerRowRect),
+    trayOverlapsPlayerRow: playerRowRect && trayRect ? rectsOverlap(playerRowRect, trayRect) : false,
+    trayOverflowChain: readOverflowChain(trayZone),
   };
 }
 

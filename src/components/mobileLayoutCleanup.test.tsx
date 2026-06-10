@@ -106,14 +106,14 @@ describe('mobile layout cleanup', () => {
   });
 
   it('mobile Full Table and Card View share player box arc contract', () => {
-    expect(sharedCss).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
-    );
-    expect(sharedCss).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*0 1 auto/,
+    const playerRowCss = readCss('src/styles/bj-player-row-layout.css');
+    expect(playerRowCss).toMatch(/\.bj-table-slot-row \{[\s\S]*display:\s*grid/);
+    expect(playerRowCss).toMatch(
+      /\.bj-table-slot-row > \.bj-arc__slot[\s\S]*min-width:\s*0/,
     );
     const mobile = renderAt({ width: 390, height: 844 }, 'card');
     expect(mobile).toContain('bj-arc--player-boxes');
+    expect(mobile).toContain('bj-table-slot-row');
     expect(mobile.match(/aria-label="(?:Join )?[Bb]ox \d/g)?.length ?? 0).toBe(4);
   });
 
@@ -129,8 +129,9 @@ describe('mobile layout cleanup', () => {
 
   it('mobile Full Table arc fits shell without inner horizontal scroll', () => {
     expect(panelCss).toContain('contract: mobile-arc-fit');
-    expect(sharedCss).toMatch(
-      /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,
+    const playerRowCss = readCss('src/styles/bj-player-row-layout.css');
+    expect(playerRowCss).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell[\s\S]*overflow:\s*visible/,
     );
     expect(panelCss).not.toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*min-width:\s*calc\(100% \+ 2\.5rem\)/);
   });

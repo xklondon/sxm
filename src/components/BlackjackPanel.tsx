@@ -1643,45 +1643,40 @@ export function BlackjackPanel({
   }
 
   function renderPlayerBoxesArc() {
-    const addBoxButton =
-      canAddVisibleBox && inBetting ? (
-        <button
-          type="button"
-          className={[
-            'bj-player-boxes-wrap__add',
-            deviceView === 'mobile' ? 'bj-player-boxes-wrap__add--leading' : '',
-          ].join(' ')}
-          aria-label="Add player box"
-          onClick={() =>
-            setExpandedVisibleBoxCount((count) =>
-              Math.min(MAX_BOXES, Math.max(count, effectiveVisibleBoxCount) + 1),
-            )
-          }
-        >
-          +
-        </button>
-      ) : null;
-
+    const showAddBox = canAddVisibleBox && inBetting;
     return (
       <div className="bj-player-boxes-wrap">
-        <div className="bj-player-boxes-wrap__row">
-          {deviceView === 'mobile' ? addBoxButton : null}
-          <div
-            className={[
-              'bj-arc',
-              'bj-arc--rtl',
-              'bj-arc--player-boxes',
-              visibleArcClass,
-            ].join(' ')}
-            style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
-          >
-            {displaySlots.map((slot) =>
-              slot.playerId
-                ? renderArcBoxSlot(slot.playerId, slot.slotNumber)
-                : renderEmptyBoxSlot(slot.slotNumber),
-            )}
-          </div>
-          {deviceView !== 'mobile' ? addBoxButton : null}
+        <div
+          className={[
+            'bj-table-slot-row',
+            'bj-arc',
+            'bj-arc--player-boxes',
+            visibleArcClass,
+            showAddBox ? 'bj-table-slot-row--with-add' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
+        >
+          {showAddBox ? (
+            <button
+              type="button"
+              className="bj-table-slot-row__add bj-player-boxes-wrap__add"
+              aria-label="Add player box"
+              onClick={() =>
+                setExpandedVisibleBoxCount((count) =>
+                  Math.min(MAX_BOXES, Math.max(count, effectiveVisibleBoxCount) + 1),
+                )
+              }
+            >
+              +
+            </button>
+          ) : null}
+          {displaySlots.map((slot) =>
+            slot.playerId
+              ? renderArcBoxSlot(slot.playerId, slot.slotNumber)
+              : renderEmptyBoxSlot(slot.slotNumber),
+          )}
         </div>
       </div>
     );
@@ -2038,7 +2033,9 @@ export function BlackjackPanel({
             cardsArea={
               viewMode === 'full' ? (
                 <div
-                  className={['bj-arc', 'bj-arc--cards', 'bj-arc--rtl', visibleArcClass].join(' ')}
+                  className={['bj-table-slot-row', 'bj-arc', 'bj-arc--cards', visibleArcClass].join(
+                    ' ',
+                  )}
                   style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
                 >
                   {displaySlots.map((slot) =>

@@ -303,8 +303,10 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*min-height:\s*var\(--bj-mobile-felt-min-height\)/,
     );
-    expect(sharedCss).toMatch(/\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes/);
-    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*height:\s*var\(--bj-zone-boxes-height\)/);
+    expect(sharedCss).toMatch(/\.bj-table-slot-row|\.bj-arc--player-boxes/);
+    expect(readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8')).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*height:\s*auto/,
+    );
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
     expect(layoutCss).toContain('--bj-card-row-hero-min: 0');
   });
@@ -482,15 +484,11 @@ describe('stable dealer layout slots across phases', () => {
 describe('mobile Card View width contract', () => {
   it('CSS constrains casino rail and hides horizontal overflow on arc player boxes', () => {
     const panelCss = mobileFullTableCss();
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     expect(panelCss).toMatch(/\.bj-view-full-mobile[\s\S]*max-width:\s*100%/);
     expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*max-width:\s*100%/);
     expect(panelCss).toMatch(/\.bj-view-card-mobile \.bj-casino__rail[\s\S]*max-width:\s*100%/);
-    expect(sharedCss).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
-    );
-    expect(sharedCss).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*0 1 auto/,
-    );
+    const playerRowCss = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
+    expect(playerRowCss).toMatch(/\.bj-table-slot-row[\s\S]*overflow:\s*visible/);
+    expect(playerRowCss).toMatch(/\.bj-table-slot-row > \.bj-arc__slot[\s\S]*min-width:\s*0/);
   });
 });

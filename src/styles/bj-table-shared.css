@@ -306,16 +306,7 @@
     padding: 0.1rem 0.04rem;
   }
 
-  .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc {
-    flex: 0 0 auto;
-    min-width: var(--bj-full-table-box-width);
-    max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
-    min-height: var(--bj-full-table-box-height);
-    height: var(--bj-full-table-box-height);
-    width: var(--bj-full-table-box-width);
-    padding: var(--bj-full-table-box-padding);
-    box-sizing: border-box;
-  }
+  /* Player box tile sizing — canonical rules in bj-player-row-layout.css (.bj-table-slot-row). */
 
   .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above {
     display: block;
@@ -592,212 +583,13 @@
     max-height: none;
   }
 
-  .bj-view-full-mobile .bj-arc--player-boxes,
-  .bj-view-card-mobile .bj-arc--player-boxes {
-    display: grid;
-    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
-    column-gap: min(0.08rem, var(--bj-mobile-box-gap, 0.03rem));
-    row-gap: 0;
-    align-items: end;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    padding: 0 0.02rem 0.06rem;
-    box-sizing: border-box;
-    overflow-x: hidden;
-    overflow-y: visible;
-    margin-top: 0;
-    --bj-full-table-box-width: calc(
-      (100% - (var(--slot-count, 4) - 1) * min(0.08rem, var(--bj-mobile-box-gap, 0.03rem))) /
-        var(--slot-count, 4)
-    );
-    --bj-full-table-box-height: max(
-      var(--bj-mobile-box-height),
-      calc(var(--bj-full-table-box-width) * 0.95)
-    );
-  }
-
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot {
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-    transform: none;
-  }
-
-  /* Mobile player boxes — fixed tile dimensions across selection/stake/semantic states. */
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--selected,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--selected,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--native-assigned,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--native-assigned,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--native-assigned,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--native-assigned,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--running,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--running,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--running,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--running,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--co-box,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--co-box,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--co-box,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--co-box,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--has-stake,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--has-stake,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake {
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-    height: auto;
-    min-height: 0;
-    aspect-ratio: 1.05 / 1;
-    transform: none;
-    margin: 0;
-    padding: var(--bj-full-table-box-padding);
-    box-sizing: border-box;
-    border-width: 1.5px;
-    overflow-x: hidden;
-    overflow-y: visible;
-  }
-
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--selected,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--selected,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected {
-    box-shadow: inset 0 0 0 2px var(--ds-color-gold);
-    outline: none;
-  }
-
-  .bj-view-full-mobile
-    .bj-arc--player-boxes
-    .bj-player-box-mobile.bj-box--selected.bj-phone-view__bet-chip--pulse,
-  .bj-view-card-mobile
-    .bj-arc--player-boxes
-    .bj-player-box-mobile.bj-box--selected.bj-phone-view__bet-chip--pulse,
-  .bj-view-full-mobile
-    .bj-arc--player-boxes
-    .bj-phone-view__mini-hand--full-arc.bj-box--selected.bj-phone-view__bet-chip--pulse,
-  .bj-view-card-mobile
-    .bj-arc--player-boxes
-    .bj-phone-view__mini-hand--full-arc.bj-box--selected.bj-phone-view__bet-chip--pulse {
-    animation: bj-bet-pulse 1.8s ease-in-out infinite;
-  }
-
-  .bj-view-full-mobile
-    .bj-arc--player-boxes
-    .bj-player-box-mobile.bj-phone-view__bet-chip--pulse:not(.bj-box--selected),
-  .bj-view-card-mobile
-    .bj-arc--player-boxes
-    .bj-player-box-mobile.bj-phone-view__bet-chip--pulse:not(.bj-box--selected),
-  .bj-view-full-mobile
-    .bj-arc--player-boxes
-    .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse:not(.bj-box--selected),
-  .bj-view-card-mobile
-    .bj-arc--player-boxes
-    .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse:not(.bj-box--selected) {
-    animation: none;
-  }
-
-  .bj-view-full-mobile
-    .bj-arc--player-boxes
-    .bj-player-box-mobile.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
-      .bj-box--co-box
-    ),
-  .bj-view-card-mobile
-    .bj-arc--player-boxes
-    .bj-player-box-mobile.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
-      .bj-box--co-box
-    ),
-  .bj-view-full-mobile
-    .bj-arc--player-boxes
-    .bj-phone-view__mini-hand--full-arc.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
-      .bj-box--co-box
-    ),
-  .bj-view-card-mobile
-    .bj-arc--player-boxes
-    .bj-phone-view__mini-hand--full-arc.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
-      .bj-box--co-box
-    ) {
-    background: var(--bj-seat-bg);
-  }
-
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--empty,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--empty,
-  .bj-view-full-mobile
-    .bj-arc--player-boxes
-    .bj-phone-view__mini-hand--full-arc.bj-phone-view__mini-hand--empty,
-  .bj-view-card-mobile
-    .bj-arc--player-boxes
-    .bj-phone-view__mini-hand--full-arc.bj-phone-view__mini-hand--empty {
-    border: 1.5px solid rgb(251 191 36 / 0.38);
-    background: transparent;
-  }
-
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile .bj-phone-view__mini-stake-slot,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile .bj-phone-view__mini-stake-slot,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-bet-zone,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-bet-zone {
-    flex: 0 0 var(--bj-full-table-stake-min-height);
-    min-height: var(--bj-full-table-stake-min-height);
-    max-height: var(--bj-full-table-stake-min-height);
-    height: var(--bj-full-table-stake-min-height);
-    overflow: visible;
-    border: none;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  @media (max-width: 480px) {
-    .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot,
-    .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot {
-      width: var(--bj-full-table-box-width);
-      max-width: var(--bj-full-table-box-width);
-    }
-  }
-
-  .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__open,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__open {
-    margin-bottom: 0.12rem;
-  }
+  /* Mobile player/card rows — canonical grid in bj-player-row-layout.css */
 
   .bj-view-full-mobile .bj-table-zone--boxes,
   .bj-view-card-mobile .bj-table-zone--boxes {
-    overflow-x: hidden;
-    overflow-y: visible;
+    overflow: visible;
     padding-top: 0.12rem;
     padding-bottom: 0.1rem;
-  }
-
-  .bj-view-full-mobile .bj-player-boxes-wrap__row,
-  .bj-view-card-mobile .bj-player-boxes-wrap__row {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: flex-end;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    gap: var(--bj-mobile-add-button-gap, 0.03rem);
-    box-sizing: border-box;
-  }
-
-  .bj-view-full-mobile .bj-player-boxes-wrap__add--leading,
-  .bj-view-card-mobile .bj-player-boxes-wrap__add--leading {
-    width: var(--bj-mobile-add-button-width, 1.5rem);
-    min-width: var(--bj-mobile-add-button-width, 1.5rem);
-    max-width: var(--bj-mobile-add-button-width, 1.5rem);
-  }
-
-  .bj-view-full-mobile .bj-player-boxes-wrap__row > .bj-arc--player-boxes,
-  .bj-view-card-mobile .bj-player-boxes-wrap__row > .bj-arc--player-boxes {
-    min-width: 0;
-    width: 100%;
   }
 
   .bj-view-full-mobile .bj-arc--player-boxes.bj-arc--visible-4,
@@ -844,30 +636,7 @@
     --bj-table-card-height: calc(var(--bj-full-table-box-width, 3.5rem) * 0.92);
   }
 
-  .bj-view-full-mobile .bj-arc--cards,
-  .bj-view-card-mobile .bj-arc--cards {
-    display: grid;
-    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
-    column-gap: min(0.08rem, var(--bj-mobile-box-gap, 0.03rem));
-    row-gap: 0;
-    align-items: end;
-    padding: 0 0.02rem 0.08rem;
-    box-sizing: border-box;
-    width: 100%;
-    min-width: 0;
-    --bj-full-table-box-width: calc(
-      (100% - (var(--slot-count, 4) - 1) * min(0.08rem, var(--bj-mobile-box-gap, 0.03rem))) /
-        var(--slot-count, 4)
-    );
-  }
-
-  .bj-view-full-mobile .bj-arc--cards .bj-arc__slot,
-  .bj-view-card-mobile .bj-arc--cards .bj-arc__slot {
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-    transform: none;
-  }
+  /* Card row grid — canonical rules in bj-player-row-layout.css (.bj-table-slot-row.bj-arc--cards) */
 
   .bj-view-full-mobile .bj-arc--cards .bj-arc__cards--stack-vertical .bj-arc__cards-stack,
   .bj-view-card-mobile .bj-arc--cards .bj-arc__cards-stack,
@@ -3200,40 +2969,16 @@
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+  overflow: visible;
 }
 
+/* Legacy row wrapper — unused; slot row is flat in bj-table-slot-row. */
 .bj-player-boxes-wrap__row {
-  display: flex;
-  align-items: flex-end;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  gap: 0.08rem;
+  display: contents;
 }
 
 .bj-player-boxes-wrap__add--leading {
-  order: -1;
-  flex-shrink: 0;
-}
-
-.bj-player-boxes-wrap__add {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  margin: 0 0 0.12rem;
-  padding: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  line-height: 1;
-  border-radius: 999px;
-  border: 1px solid rgb(251 191 36 / 0.55);
-  background: rgb(0 0 0 / 0.32);
-  color: rgb(251 191 36 / 0.98);
-  cursor: pointer;
-  touch-action: manipulation;
+  order: unset;
 }
 
 @media (max-width: 720px) {
@@ -3253,38 +2998,5 @@
   .bj-view-full-mobile .bj-casino__tray-hint,
   .bj-view-card-mobile .bj-casino__tray-hint {
     display: none;
-  }
-}
-
-/* Mobile cascade tail — wins over global full-arc min-width and shell overflow. */
-@media (max-width: 720px) {
-  .bj-view-full-mobile .bj-table-layout-shell,
-  .bj-view-card-mobile .bj-table-layout-shell {
-    overflow-x: hidden;
-    overflow-y: visible;
-  }
-
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes,
-  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes {
-    display: grid;
-    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
-    column-gap: min(0.08rem, var(--bj-mobile-box-gap, 0.03rem));
-  }
-
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
-  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes .bj-player-box-mobile,
-  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes .bj-player-box-mobile {
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-    transform: none;
-  }
-
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--cards .bj-arc--cards,
-  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards .bj-arc--cards {
-    display: grid;
-    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
-    column-gap: min(0.08rem, var(--bj-mobile-box-gap, 0.03rem));
   }
 }

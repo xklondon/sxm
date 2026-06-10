@@ -1,5 +1,6 @@
 @import './styles/tokens.css';
 @import './styles/bj-table-shared.css';
+@import './styles/bj-player-row-layout.css';
 @import './styles/bj-card-layout.css';
 @import './styles/bj-felt-skins.css';
 @import './styles/bj-layout-debug.css';

@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
 
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
@@ -99,8 +100,11 @@ describe('layout shell reset — Full Table + Card View', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow-y:\s*visible/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*overflow-y:\s*visible/,
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-table-slot-row[\s\S]*overflow:\s*visible/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*overflow:\s*visible/,
     );
     expect(PANEL_CSS).toMatch(/\.bj-view-card-mobile[\s\S]*overflow-x:\s*hidden/);
   });

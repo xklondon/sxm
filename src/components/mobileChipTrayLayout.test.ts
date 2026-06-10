@@ -27,11 +27,10 @@ describe('mobile Card View chip tray layout', () => {
     );
   });
 
-  it('uses reduced horizontal gap between player boxes on mobile grid', () => {
+  it('uses canonical slot row gap on mobile player row', () => {
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]*column-gap:\s*min\(0\.08rem/,
-    );
+    const playerRowCss = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
+    expect(playerRowCss).toMatch(/\.bj-table-slot-row \{[\s\S]*gap:\s*var\(--bj-table-slot-row-gap\)/);
     expect(panelCss).toMatch(
       /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*none/,
     );

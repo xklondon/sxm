@@ -109,6 +109,12 @@ export function BlackjackLayoutDebugPanel({
               </dd>
             </div>
             <div>
+              <dt>add box</dt>
+              <dd>
+                {computed.addBoxWidth} × {computed.addBoxHeight}
+              </dd>
+            </div>
+            <div>
               <dt>first box</dt>
               <dd>
                 {computed.firstBoxWidth} × {computed.firstBoxHeight}
@@ -138,6 +144,22 @@ export function BlackjackLayoutDebugPanel({
             <div>
               <dt>DOM order</dt>
               <dd>{computed.playerBoxDomOrder}</dd>
+            </div>
+            <div>
+              <dt>row bounds</dt>
+              <dd>{computed.playerRowBounds}</dd>
+            </div>
+            <div>
+              <dt>tray bounds</dt>
+              <dd>{computed.trayBounds}</dd>
+            </div>
+            <div>
+              <dt>tray overlap</dt>
+              <dd>{String(computed.trayOverlapsPlayerRow)}</dd>
+            </div>
+            <div>
+              <dt>tray overflow chain</dt>
+              <dd>{computed.trayOverflowChain}</dd>
             </div>
           </>
         )}

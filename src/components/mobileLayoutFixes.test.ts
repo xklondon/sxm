@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+
 import { MOBILE_LAYOUT_MEDIA, MOBILE_LAYOUT_MEDIA_LANDSCAPE } from '../styles/mobileLayoutContract';
 
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
 
@@ -20,8 +22,8 @@ describe('mobile layout fixes — portrait bottom safe area', () => {
     expect(SHARED_CSS).toMatch(
       /--bj-mobile-rail-padding:[\s\S]*env\(safe-area-inset-bottom/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*env\(safe-area-inset-bottom/,
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*overflow:\s*visible/,
     );
   });
 
@@ -31,31 +33,34 @@ describe('mobile layout fixes — portrait bottom safe area', () => {
     );
   });
 
-  it('reduces boxes-tray gap to keep tray above browser chrome', () => {
+  it('keeps boxes-tray gap token for separate tray zone', () => {
     expect(SHARED_CSS).toMatch(
       new RegExp(
-        `@media ${MOBILE_LAYOUT_MEDIA.replace(/[()]/g, '\\$&')}[\\s\\S]*--bj-zone-boxes-tray-gap:\\s*0\\.65rem`,
+        `@media ${MOBILE_LAYOUT_MEDIA.replace(/[()]/g, '\\$&')}[\\s\\S]*--bj-zone-boxes-tray-gap:\\s*0\\.32rem`,
       ),
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-zone-boxes-tray-gap\)/,
     );
   });
 });
 
 describe('mobile layout fixes — selected box dimensions', () => {
-  it('locks mobile player box width without +0.35rem slack on selected state', () => {
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--selected[\s\S]*max-width:\s*var\(--bj-full-table-box-width\)/,
+  it('locks mobile player box width via slot row without fixed min-width pills', () => {
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*\.bj-box--selected[\s\S]*max-width:\s*none/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*max-width:\s*var\(--bj-full-table-box-width\)/,
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-table-slot-row > \.bj-arc__slot[\s\S]*max-width:\s*none/,
     );
   });
 
-  it('uses inset glow for mobile selected boxes without layout-affecting outline', () => {
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--selected[\s\S]*box-shadow:\s*inset 0 0 0 2px/,
+  it('uses inset glow for selected boxes in slot row without layout-affecting outline', () => {
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*\.bj-box--selected[\s\S]*box-shadow:\s*inset 0 0 0 2px/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--selected[\s\S]*outline:\s*none/,
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*\.bj-box--selected[\s\S]*outline:\s*none/,
     );
   });
 });
