@@ -41,8 +41,8 @@ describe('blackjack layout debug overlay', () => {
     expect(INDEX_CSS).toContain('bj-layout-debug.css');
     expect(DEBUG_CSS).toMatch(/\.bj-layout-debug\.bj-table-layout-shell > \.bj-table-zone--dealer::before/);
     expect(DEBUG_CSS).toContain("content: '2 · command / status'");
-    expect(DEBUG_CSS).toContain("content: '3 · actions (HIT/STAY)'");
-    expect(DEBUG_CSS).toContain("content: '4 · hero / cards'");
+    expect(DEBUG_CSS).toContain("content: '3 · hero / cards'");
+    expect(DEBUG_CSS).toContain("content: '4 · actions (HIT/STAY)'");
     expect(DEBUG_CSS).toContain("content: '0 · header'");
     expect(DEBUG_CSS).not.toMatch(/^\.bj-table-zone--actions::before/m);
     expect(TABLE_UX.layoutDebug).toBe('bj-layout-debug');
@@ -50,43 +50,44 @@ describe('blackjack layout debug overlay', () => {
 });
 
 describe('canonical blackjack zone order and separation', () => {
-  it('keeps DOM order dealer → command → actions → hero → boxes → tray', () => {
+  it('keeps DOM order dealer → command → cards → actions → boxes → tray', () => {
     const render = shellRenderBlock();
     const dealerIdx = render.indexOf('{dealer}');
     const commandIdx = render.indexOf('BlackjackCommandZone');
-    const actionsIdx = render.indexOf('BlackjackActionsZone');
     const cardsIdx = render.indexOf('BlackjackCardsAreaZone');
+    const actionsIdx = render.indexOf('BlackjackActionsZone');
     const boxesIdx = render.indexOf('BlackjackPlayerBoxesZone');
     const trayIdx = render.indexOf('{chipTray}');
     expect(dealerIdx).toBeLessThan(commandIdx);
-    expect(commandIdx).toBeLessThan(actionsIdx);
-    expect(actionsIdx).toBeLessThan(cardsIdx);
-    expect(cardsIdx).toBeLessThan(boxesIdx);
+    expect(commandIdx).toBeLessThan(cardsIdx);
+    expect(cardsIdx).toBeLessThan(actionsIdx);
+    expect(actionsIdx).toBeLessThan(boxesIdx);
     expect(boxesIdx).toBeLessThan(trayIdx);
   });
 
-  it('places command zone before actions in desktop grid rows', () => {
+  it('places command zone before cards in desktop grid rows', () => {
     const desktop = SHARED_CSS.slice(
       SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows'),
       SHARED_CSS.indexOf('/* Desktop stage:', SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows')),
     );
-    expect(desktop).toMatch(/\[dealer\][\s\S]*\[command\][\s\S]*\[actions\][\s\S]*\[cards\]/);
+    expect(desktop).toMatch(/\[dealer\][\s\S]*\[command\][\s\S]*\[cards\][\s\S]*\[actions\]/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*grid-row:\s*command/);
+    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*grid-row:\s*cards/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/);
   });
 
-  it('places HIT/STAY actions zone below command with safe hero gap', () => {
+  it('places cards zone below command and actions below cards with safe gaps', () => {
     expect(SHARED_CSS).toContain('--bj-dealer-command-gap: 0.08rem');
-    expect(SHARED_CSS).toContain('--bj-command-actions-gap: 0.08rem');
-    expect(SHARED_CSS).toContain('--bj-actions-cards-safe-gap: 0.75rem');
+    expect(SHARED_CSS).toContain('--bj-command-cards-gap: 0.35rem');
+    expect(SHARED_CSS).toContain('--bj-cards-actions-gap: 0.55rem');
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*padding[^;]*var\(--bj-dealer-command-gap\)/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-command-actions-gap\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*margin-top:\s*var\(--bj-command-cards-gap\)/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*margin-top:\s*var\(--bj-actions-cards-safe-gap\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-cards-actions-gap\)/,
     );
     expect(CARD_VIEW_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--actions \.bj-table-actions > \.bj-table-actions__row:first-child[\s\S]*display:\s*none/,

@@ -234,3 +234,49 @@
   margin-bottom: 0.35rem;
   cursor: pointer;
 }
+
+.table-stake-panel--compact {
+  padding: 0.85rem 1rem;
+}
+
+.table-stake-panel--compact .table-stake-panel__header {
+  margin-bottom: 0.55rem;
+}
+
+.table-stake-panel--compact .table-stake-panel__sub {
+  display: none;
+}
+
+.table-stake-panel--compact .table-stake-panel__steps {
+  margin-bottom: 0.55rem;
+}
+
+.table-stake-panel--compact .table-stake-panel__mode-card {
+  padding: 0.55rem 0.7rem;
+  gap: 0.2rem;
+}
+
+.table-stake-panel--compact .table-stake-panel__mode-card span {
+  font-size: 0.68rem;
+}
+
+.table-stake-panel--compact .table-stake-panel__confirm,
+.table-stake-panel--compact .table-stake-panel__nav .table-stake-panel__confirm {
+  margin-top: 0.65rem;
+  padding: 0.42rem 0.75rem;
+  font-size: 0.82rem;
+  min-height: 0;
+}
+
+.table-stake-panel--compact .table-stake-panel__field {
+  margin-bottom: 0.55rem;
+}
+
+.table-stake-panel--compact .table-stake-panel__banker {
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.55rem;
+}
+
+.table-stake-panel--compact .table-stake-panel__hint--mode {
+  display: none;
+}

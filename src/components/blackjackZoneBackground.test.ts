@@ -57,9 +57,9 @@ describe('blackjack zone backgrounds — continuous felt surface', () => {
     expect(desktop).toContain('[cards] var(--bj-desktop-grid-row-cards)');
   });
 
-  it('places CardsArea directly between actions and boxes grid rows', () => {
+  it('places CardsArea directly between command and actions grid rows', () => {
     const desktop = desktopShellBlock();
-    expect(desktop).toMatch(/\[actions\][\s\S]*\[cards\][\s\S]*\[boxes\]/);
+    expect(desktop).toMatch(/\[command\][\s\S]*\[cards\][\s\S]*\[actions\]/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*grid-row:\s*cards/);
   });
 

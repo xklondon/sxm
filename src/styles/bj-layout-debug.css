@@ -73,12 +73,12 @@
 }
 
 .bj-layout-debug.bj-table-layout-shell > .bj-table-zone--actions::before {
-  content: '3 · actions (HIT/STAY)';
+  content: '3 · hero / cards';
   color: #c45d00;
 }
 
 .bj-layout-debug.bj-table-layout-shell > .bj-table-zone--cards::before {
-  content: '4 · hero / cards';
+  content: '4 · actions (HIT/STAY)';
   color: #2c5282;
 }
 

@@ -91,23 +91,23 @@ function renderAt(width: number): string {
 }
 
 describe('Card View layout polish', () => {
-  it('action rows render in actions zone above hero hand meta', () => {
+  it('action rows render in actions zone below hero hand meta', () => {
     const html = renderAt(390);
-    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
     const heroIdx = html.indexOf(TABLE_UX.cardsAreaHero);
+    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
     const metaIdx = html.indexOf('bj-phone-view__hand-meta');
     const primaryIdx = html.indexOf('sxm-primary-actions');
-    expect(actionsIdx).toBeGreaterThan(-1);
-    expect(heroIdx).toBeGreaterThan(actionsIdx);
+    expect(heroIdx).toBeGreaterThan(-1);
+    expect(actionsIdx).toBeGreaterThan(heroIdx);
     expect(metaIdx).toBeGreaterThan(heroIdx);
+    expect(metaIdx).toBeLessThan(actionsIdx);
     expect(primaryIdx).toBeGreaterThan(actionsIdx);
-    expect(primaryIdx).toBeLessThan(metaIdx);
     expect(html).toContain('sxm-secondary-actions');
     expect(html).toMatch(/sxm-primary-actions[\s\S]*Stay/);
     expect(html).toMatch(/sxm-secondary-actions[\s\S]*2×/);
   });
 
-  it('command sits under dealer stack, actions below command, then hero display', () => {
+  it('command sits under dealer stack, hero cards below command, then actions', () => {
     const html = renderAt(390);
     expect(html).toContain('dealer-block__stack');
     expect(html).not.toContain('dealer-block__hero-row');
@@ -116,11 +116,11 @@ describe('Card View layout polish', () => {
     expect(html).toMatch(/Box \d+: Alice, you have \d+\./);
     const stackIdx = html.indexOf('dealer-block__stack');
     const commandIdx = html.indexOf('bj-card-layout__command');
-    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
     const heroIdx = html.indexOf(TABLE_UX.cardsAreaHero);
+    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
     expect(commandIdx).toBeGreaterThan(stackIdx);
-    expect(actionsIdx).toBeGreaterThan(commandIdx);
-    expect(heroIdx).toBeGreaterThan(actionsIdx);
+    expect(heroIdx).toBeGreaterThan(commandIdx);
+    expect(actionsIdx).toBeGreaterThan(heroIdx);
   });
 
   it('hero action CSS uses shared shell action panel and player box stack', () => {

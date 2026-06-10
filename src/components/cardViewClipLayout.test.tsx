@@ -26,7 +26,7 @@ describe('Card View — full card visibility', () => {
     expect(cardCss).toMatch(/\.bj-phone-view__hero-stage[\s\S]*min-height:/);
   });
 
-  it('central hero actions use shared shell action panel above cards area', () => {
+  it('central hero actions use shared shell action panel below cards area', () => {
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions/);
     expect(sharedCss).toMatch(/\.bj-phone-view__mini-hand-card-stack[\s\S]*position:\s*relative/);
     expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__hero-center[\s\S]*justify-content:\s*center/);

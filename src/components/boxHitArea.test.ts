@@ -63,7 +63,7 @@ describe('mobile landscape Full Table fit', () => {
       /@media \(orientation: landscape\)[\s\S]*--bj-mobile-zone-boxes-height:\s*calc\([\s\S]*--bj-box-value-band-height/,
     );
     expect(SHARED_CSS).toMatch(
-      /@media \(min-width: 721px\) and \(orientation: landscape\)[\s\S]*--bj-zone-dealer-height:\s*4\.75rem/,
+      /@media \(min-width: 721px\) and \(orientation: landscape\)[\s\S]*--bj-zone-dealer-height:\s*4\.25rem/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,

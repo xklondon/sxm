@@ -106,20 +106,20 @@ function boxSlotIndex(html: string): number {
 }
 
 describe('Card View central layout', () => {
-  it('dealer command sits between dealer stack and actions, with hero below actions', () => {
+  it('dealer command sits between dealer stack and hero cards, with actions below hero', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).toContain('dealer-block__stack');
     expect(html).toContain('bj-card-layout__command');
     expect(html).not.toContain('dealer-block__hero-row');
     const stackIdx = html.indexOf('dealer-block__stack');
     const commandIdx = html.indexOf('bj-card-layout__command');
-    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
     const heroIdx = html.indexOf(TABLE_UX.cardsAreaHero);
+    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
     const cardsIdx = html.indexOf('dealer-block__cards-slot');
     expect(stackIdx).toBeGreaterThan(-1);
     expect(commandIdx).toBeGreaterThan(stackIdx);
-    expect(actionsIdx).toBeGreaterThan(commandIdx);
-    expect(heroIdx).toBeGreaterThan(actionsIdx);
+    expect(heroIdx).toBeGreaterThan(commandIdx);
+    expect(actionsIdx).toBeGreaterThan(heroIdx);
     expect(cardsIdx).toBeGreaterThan(stackIdx);
     expect(cardsIdx).toBeLessThan(commandIdx);
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
@@ -158,6 +158,8 @@ describe('Card View central layout', () => {
     expect(betting).toContain(TABLE_UX.actionsPlaceholder);
     expect(boxSlotIndex(betting)).toBeGreaterThan(-1);
     expect(boxSlotIndex(playing)).toBeGreaterThan(-1);
+    expect(betting.indexOf(TABLE_UX.cardsAreaHero)).toBeLessThan(betting.indexOf(TABLE_UX.tableZoneActions));
+    expect(playing.indexOf(TABLE_UX.cardsAreaHero)).toBeLessThan(playing.indexOf(TABLE_UX.tableZoneActions));
     expect(betting.indexOf(TABLE_UX.tableZoneActions)).toBeLessThan(boxSlotIndex(betting));
     expect(playing.indexOf(TABLE_UX.tableZoneActions)).toBeLessThan(boxSlotIndex(playing));
   });

@@ -193,8 +193,8 @@ describe('Stitch layout sections', () => {
     const boxesIdx = html.indexOf(`data-sxm-section="${SXM_LAYOUT.playerBoxesZone}"`);
     expect(heroIdx).toBeGreaterThan(-1);
     expect(actionIdx).toBeGreaterThan(-1);
-    expect(actionIdx).toBeLessThan(heroIdx);
-    expect(boxesIdx).toBeGreaterThan(heroIdx);
+    expect(heroIdx).toBeLessThan(actionIdx);
+    expect(boxesIdx).toBeGreaterThan(actionIdx);
   });
 
   it('renders player box sub-sections in card view', () => {

@@ -145,6 +145,13 @@ import {
 } from './viewerIdentity';
 import type { AuthUser } from '../api/client';
 import { MAX_TABLE_BOXES } from '../types/table';
+import {
+  arcSlotRotation,
+  DEFAULT_VISIBLE_TABLE_BOXES,
+  filterVisibleBoxSlots,
+  resolveEffectiveVisibleBoxCount,
+  visibleBoxArcClass,
+} from './tableBoxLayout';
 import { loadProfile, type PlayFlowAutoStand } from '../storage/profileStorage';
 import { loadSettings } from '../storage/settingsStorage';
 import { isOnlineModeEnabled } from '../api/config';
@@ -174,7 +181,6 @@ function initialSideRailPanel(): SideRailPanel {
 }
 
 const MAX_BOXES = MAX_TABLE_BOXES;
-const ARC_ROTATIONS = [-18, -12, -6, 0, 6, 12, 18];
 
 interface BlackjackPanelProps {
   gameState: GameState;
@@ -190,10 +196,6 @@ interface BlackjackPanelProps {
   onBeginTableReset?: (variant?: TableResetSetupVariant) => void;
   onlineTableId?: string | null;
   viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
-}
-
-function arcVisualIndex(slotNumber: number): number {
-  return MAX_BOXES - slotNumber;
 }
 
 export function BlackjackPanel({
@@ -238,6 +240,7 @@ export function BlackjackPanel({
   const [magic8Answer, setMagic8Answer] = useState<string | null>(null);
   const [roundSummaryDismissed, setRoundSummaryDismissed] = useState(false);
   const [roundSummaryDelayReady, setRoundSummaryDelayReady] = useState(false);
+  const [expandedVisibleBoxCount, setExpandedVisibleBoxCount] = useState(DEFAULT_VISIBLE_TABLE_BOXES);
   /** Single local chip target — tray pulse and placement both read from here. */
   const [localChipSelection, setLocalChipSelection] = useState<LocalSelectedChipTarget>(() =>
     createEmptyLocalChipTarget(),
@@ -393,7 +396,13 @@ export function BlackjackPanel({
   }, []);
 
   const playingFor = getTableWagerDisplay(gameState);
-  const displaySlots = [...tableMeta.boxSlots].sort((a, b) => b.slotNumber - a.slotNumber);
+  const effectiveVisibleBoxCount = resolveEffectiveVisibleBoxCount(
+    tableMeta.boxSlots,
+    expandedVisibleBoxCount,
+  );
+  const displaySlots = filterVisibleBoxSlots(tableMeta.boxSlots, effectiveVisibleBoxCount);
+  const visibleArcClass = visibleBoxArcClass(effectiveVisibleBoxCount);
+  const canAddVisibleBox = effectiveVisibleBoxCount < MAX_BOXES;
   const bankerReady = isBankerReady(gameState);
   // Personal (score) ledger is human-vs-human only — never for a Bot Bank game.
   const showPersonalLedgerOffer = gameEnded && canAddGameToPersonalLedger(gameState);
@@ -1238,11 +1247,6 @@ export function BlackjackPanel({
   }
 
 
-  function arcSlotRotation(slotNumber: number): number {
-    const visualIdx = arcVisualIndex(slotNumber);
-    return ARC_ROTATIONS[visualIdx] ?? 0;
-  }
-
   function renderArcCardStack(cardIds: string[]) {
     if (cardIds.length === 0 || !visualDeck) {
       return null;
@@ -1275,22 +1279,41 @@ export function BlackjackPanel({
         handKeys = [primaryKey];
       }
     }
-    const primaryHandKey = handKeys[0];
-    const cardIds = primaryHandKey ? getVisibleHandCardIds(visualRound, primaryHandKey) : [];
-    const rotation = arcSlotRotation(slotNumber);
+    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount);
+    const isSplit = handKeys.length > 1;
     return (
       <div
         key={`cards-${boxId}`}
-        className="bj-arc__slot bj-arc__slot--card-column"
+        className={[
+          'bj-arc__slot',
+          'bj-arc__slot--card-column',
+          isSplit ? 'bj-arc__slot--card-split' : '',
+        ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
+        data-box-slot={slotNumber}
       >
-        {renderArcCardStack(cardIds)}
+        {isSplit ? (
+          <div className="bj-arc__split-hands">
+            {handKeys.map((handKey) => {
+              const cardIds = getVisibleHandCardIds(visualRound, handKey);
+              return (
+                <div key={handKey} className="bj-arc__split-hand">
+                  {renderArcCardStack(cardIds)}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          renderArcCardStack(
+            handKeys[0] ? getVisibleHandCardIds(visualRound, handKeys[0]) : [],
+          )
+        )}
       </div>
     );
   }
 
   function renderEmptyCardColumn(slotNumber: number) {
-    const rotation = arcSlotRotation(slotNumber);
+    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount);
     return (
       <div
         key={`cards-empty-${slotNumber}`}
@@ -1351,7 +1374,7 @@ export function BlackjackPanel({
         : [];
     const showStakeContent = inBetting || displayChips.length > 0;
     const dropKey = chipDropKey({ slotNumber, boxId });
-    const rotation = arcSlotRotation(slotNumber);
+    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount);
 
     return (
       <div
@@ -1492,8 +1515,7 @@ export function BlackjackPanel({
   }
 
   function renderEmptyBoxSlot(slotNumber: number) {
-    const visualIdx = arcVisualIndex(slotNumber);
-    const rotation = ARC_ROTATIONS[visualIdx] ?? 0;
+    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount);
     const dropKey = `slot-${slotNumber}`;
     const isDrop = dropTargetId === dropKey;
     const isSelected = inBetting && selectedBettingSlotNumber === slotNumber;
@@ -1556,15 +1578,35 @@ export function BlackjackPanel({
 
   function renderPlayerBoxesArc() {
     return (
-      <div
-        className="bj-arc bj-arc--rtl bj-arc--player-boxes"
-        style={{ '--slot-count': MAX_BOXES } as CSSProperties}
-      >
-        {displaySlots.map((slot) =>
-          slot.playerId
-            ? renderArcBoxSlot(slot.playerId, slot.slotNumber)
-            : renderEmptyBoxSlot(slot.slotNumber),
+      <div className="bj-player-boxes-wrap">
+        {canAddVisibleBox && inBetting && (
+          <button
+            type="button"
+            className="bj-player-boxes-wrap__add"
+            onClick={() =>
+              setExpandedVisibleBoxCount((count) =>
+                Math.min(MAX_BOXES, Math.max(count, effectiveVisibleBoxCount) + 1),
+              )
+            }
+          >
+            Add box
+          </button>
         )}
+        <div
+          className={[
+            'bj-arc',
+            'bj-arc--rtl',
+            'bj-arc--player-boxes',
+            visibleArcClass,
+          ].join(' ')}
+          style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
+        >
+          {displaySlots.map((slot) =>
+            slot.playerId
+              ? renderArcBoxSlot(slot.playerId, slot.slotNumber)
+              : renderEmptyBoxSlot(slot.slotNumber),
+          )}
+        </div>
       </div>
     );
   }
@@ -1920,8 +1962,8 @@ export function BlackjackPanel({
             cardsArea={
               viewMode === 'full' ? (
                 <div
-                  className="bj-arc bj-arc--cards bj-arc--rtl"
-                  style={{ '--slot-count': MAX_BOXES } as CSSProperties}
+                  className={['bj-arc', 'bj-arc--cards', 'bj-arc--rtl', visibleArcClass].join(' ')}
+                  style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
                 >
                   {displaySlots.map((slot) =>
                     slot.playerId

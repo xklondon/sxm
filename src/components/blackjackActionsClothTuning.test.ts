@@ -22,9 +22,9 @@ describe('blackjack actions + cloth tuning', () => {
     expect(SHARED_CSS).not.toContain('--bj-actions-primary-btn-min-height: 2.35rem');
   });
 
-  it('keeps action panel between command and cards with top-aligned compact chrome', () => {
+  it('keeps action panel between cards and boxes with top-aligned compact chrome', () => {
     const desktop = desktopShellBlock();
-    expect(desktop).toMatch(/\[command\][\s\S]*\[actions\][\s\S]*\[cards\]/);
+    expect(desktop).toMatch(/\[command\][\s\S]*\[cards\][\s\S]*\[actions\]/);
     expect(desktop).toMatch(
       /\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*align-items:\s*flex-start/,
     );

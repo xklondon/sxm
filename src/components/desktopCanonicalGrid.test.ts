@@ -33,8 +33,8 @@ describe('desktop canonical grid — Full Table and Card View parity', () => {
     expect(desktop).toMatch(/\.bj-table-layout-shell\s*\{[\s\S]*display:\s*grid/);
     expect(desktop).toContain('[dealer] var(--bj-desktop-zone-dealer-height)');
     expect(desktop).toContain('[command] var(--bj-desktop-zone-command-height)');
-    expect(desktop).toContain('[actions] var(--bj-desktop-zone-actions-height)');
     expect(desktop).toContain('[cards] var(--bj-desktop-grid-row-cards)');
+    expect(desktop).toContain('[actions] var(--bj-desktop-zone-actions-height)');
     expect(desktop).toContain('[boxes] var(--bj-desktop-zone-boxes-height)');
     expect(desktop).toContain('[tray] var(--bj-desktop-zone-tray-height)');
     expect(desktop).not.toContain('[gap-dc]');

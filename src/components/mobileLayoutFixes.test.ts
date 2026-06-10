@@ -98,7 +98,7 @@ describe('mobile layout fixes — landscape wide phones', () => {
 
   it('compresses landscape zone tokens when width exceeds 720px', () => {
     expect(SHARED_CSS).toMatch(
-      /@media \(min-width: 721px\) and \(orientation: landscape\)[\s\S]*--bj-zone-dealer-height:\s*4\.75rem/,
+      /@media \(min-width: 721px\) and \(orientation: landscape\)[\s\S]*--bj-zone-dealer-height:\s*4\.25rem/,
     );
     expect(MOBILE_LAYOUT_MEDIA_LANDSCAPE).toContain('orientation: landscape');
   });

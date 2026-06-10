@@ -621,7 +621,7 @@ export function TableStakePanel({
       <>
         <fieldset className="table-stake-panel__banker">
           <legend>Blackjack mode</legend>
-          <p className="table-stake-panel__hint">
+          <p className="table-stake-panel__hint table-stake-panel__hint--mode">
             Practice is a quick solo game with the dealer as bank. Challenge adds a wager, invited
             players, and a player bank.
           </p>
@@ -1026,7 +1026,7 @@ export function TableStakePanel({
         isNewGameSetup ? 'New game setup' : isReset ? 'Reset table setup' : 'New table setup'
       }
     >
-      <div className="table-stake-panel">
+      <div className={`table-stake-panel${isStagedNew ? ' table-stake-panel--compact' : ''}`}>
         <header className="table-stake-panel__header">
           <h2 className="table-stake-panel__title">
             {isNewGameSetup ? 'New Game' : isReset ? 'Reset table' : 'New Table'}

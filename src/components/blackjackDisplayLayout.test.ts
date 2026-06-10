@@ -14,11 +14,11 @@ const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-lay
 const TABLE_UX_SRC = readFileSync(join(process.cwd(), 'src/components/tableUxContract.ts'), 'utf8');
 
 describe('blackjack display layout contract', () => {
-  it('Card View and Full Table share one layout shell with command before actions and hero cards', () => {
+  it('Card View and Full Table share one layout shell with command before cards and actions', () => {
     expect(PANEL_SRC).toContain('BlackjackTableLayoutShell');
     expect(SHELL_SRC).toContain('BlackjackCommandZone');
-    expect(SHELL_SRC).toMatch(/BlackjackCommandZone[\s\S]*BlackjackActionsZone/);
-    expect(SHELL_SRC).toMatch(/BlackjackActionsZone[\s\S]*BlackjackCardsAreaZone/);
+    expect(SHELL_SRC).toMatch(/BlackjackCommandZone[\s\S]*BlackjackCardsAreaZone/);
+    expect(SHELL_SRC).toMatch(/BlackjackCardsAreaZone[\s\S]*BlackjackActionsZone/);
     expect(COMMAND_BOX_SRC).toContain('TABLE_UX.cardLayoutCommand');
     expect(SHARED_CSS).toContain('.bj-card-layout__command');
     expect(SHARED_CSS).toMatch(
@@ -62,14 +62,14 @@ describe('blackjack display layout contract', () => {
   it('both views use canonical zone order in the layout shell', () => {
     expect(PANEL_SRC).toContain('BlackjackTableLayoutShell');
     expect(SHELL_SRC).toContain('TABLE_UX.tableLayoutShell');
-    expect(SHELL_SRC).toMatch(/BlackjackCommandZone[\s\S]*BlackjackActionsZone[\s\S]*BlackjackCardsAreaZone[\s\S]*BlackjackPlayerBoxesZone/);
+    expect(SHELL_SRC).toMatch(/BlackjackCommandZone[\s\S]*BlackjackCardsAreaZone[\s\S]*BlackjackActionsZone[\s\S]*BlackjackPlayerBoxesZone/);
     expect(SHELL_SRC).toContain('TABLE_UX.tableZoneBottom');
     const shellBody = SHELL_SRC.slice(SHELL_SRC.indexOf('return ('));
     const shellOrder = [
       '{dealer}',
       'BlackjackCommandZone',
-      'BlackjackActionsZone',
       'BlackjackCardsAreaZone',
+      'BlackjackActionsZone',
       'BlackjackPlayerBoxesZone',
       'TABLE_UX.tableZoneBottom',
     ] as const;
@@ -146,13 +146,14 @@ describe('blackjack display layout contract', () => {
     );
   });
 
-  it('Full Table action zone clears player card stacks', () => {
-    expect(SHARED_CSS).toContain('--bj-actions-cards-safe-gap');
+  it('Full Table action zone sits below cards and above player boxes', () => {
+    expect(SHARED_CSS).toContain('--bj-command-cards-gap');
+    expect(SHARED_CSS).toContain('--bj-cards-actions-gap');
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*margin-top:\s*var\(--bj-actions-cards-safe-gap\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*margin-top:\s*var\(--bj-command-cards-gap\)/,
     );
-    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*4/);
     expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*z-index:\s*5/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
     expect(SHARED_CSS).toMatch(/\.bj-view-full-mobile \.bj-table-zone--actions[\s\S]*z-index:\s*4/);
     expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end|\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
   });

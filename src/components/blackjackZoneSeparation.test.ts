@@ -40,28 +40,28 @@ describe('desktop zone separation — cloth scoped to CardsArea', () => {
     );
   });
 
-  it('keeps canonical shell DOM order Dealer → Command → Actions → CardsArea → PlayerBoxes → Tray', () => {
+  it('keeps canonical shell DOM order Dealer → Command → CardsArea → Actions → PlayerBoxes → Tray', () => {
     const renderBlock = SHELL_SRC.match(/return \(\s*[\s\S]*?\n  \);/)?.[0] ?? '';
     const dealerIdx = renderBlock.indexOf('{dealer}');
     const commandIdx = renderBlock.indexOf('BlackjackCommandZone');
-    const actionsIdx = renderBlock.indexOf('BlackjackActionsZone');
     const cardsIdx = renderBlock.indexOf('BlackjackCardsAreaZone');
+    const actionsIdx = renderBlock.indexOf('BlackjackActionsZone');
     const boxesIdx = renderBlock.indexOf('BlackjackPlayerBoxesZone');
     const trayIdx = renderBlock.indexOf('{chipTray}');
     expect(dealerIdx).toBeGreaterThan(-1);
     expect(dealerIdx).toBeLessThan(commandIdx);
-    expect(commandIdx).toBeLessThan(actionsIdx);
-    expect(actionsIdx).toBeLessThan(cardsIdx);
-    expect(cardsIdx).toBeLessThan(boxesIdx);
+    expect(commandIdx).toBeLessThan(cardsIdx);
+    expect(cardsIdx).toBeLessThan(actionsIdx);
+    expect(actionsIdx).toBeLessThan(boxesIdx);
     expect(boxesIdx).toBeLessThan(trayIdx);
   });
 
-  it('stacks zones with isolation: dealer, command, actions, cards', () => {
+  it('stacks zones with isolation: dealer, command, cards, actions', () => {
     const desktop = desktopShellBlock();
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--dealer[\s\S]*z-index:\s*2/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*z-index:\s*3/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*4/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*z-index:\s*5/);
+    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--dealer[\s\S]*isolation:\s*isolate/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*isolation:\s*isolate/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*isolation:\s*isolate/);
@@ -71,6 +71,6 @@ describe('desktop zone separation — cloth scoped to CardsArea', () => {
     const desktop = desktopShellBlock();
     expect(desktop).not.toMatch(/\.bj-table-layout-shell > \.bj-table-zone--dealer[\s\S]*margin-bottom:\s*-/);
     expect(desktop).not.toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*margin-top:\s*-/);
-    expect(desktop).not.toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*z-index:\s*[89]/);
+    expect(desktop).not.toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary\s*\{[^}]*z-index:\s*[89]/);
   });
 });

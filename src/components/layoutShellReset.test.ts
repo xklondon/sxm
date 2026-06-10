@@ -24,8 +24,8 @@ describe('layout shell reset — Full Table + Card View', () => {
     const order = [
       '{dealer}',
       'BlackjackCommandZone',
-      'BlackjackActionsZone',
       'BlackjackCardsAreaZone',
+      'BlackjackActionsZone',
       'BlackjackPlayerBoxesZone',
       'TABLE_UX.tableZoneBottom',
     ] as const;
@@ -104,12 +104,13 @@ describe('layout shell reset — Full Table + Card View', () => {
     expect(PANEL_CSS).toMatch(/\.bj-view-card-mobile[\s\S]*overflow-x:\s*hidden/);
   });
 
-  it('places action panel above cards area without absolute overlap', () => {
+  it('places action panel below cards area without absolute overlap', () => {
     const actionsBlock = shellZoneBlock('.bj-table-zone--actions');
     expect(actionsBlock).toContain('height: var(--bj-zone-actions-height)');
     expect(actionsBlock).not.toMatch(/position:\s*absolute/);
-    expect(SHELL_SRC.indexOf('BlackjackActionsZone')).toBeLessThan(
-      SHELL_SRC.indexOf('BlackjackCardsAreaZone'),
+    const renderBlock = SHELL_SRC.match(/return \(\s*[\s\S]*?\n  \);/)?.[0] ?? '';
+    expect(renderBlock.indexOf('BlackjackCardsAreaZone')).toBeLessThan(
+      renderBlock.indexOf('BlackjackActionsZone'),
     );
   });
 

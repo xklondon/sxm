@@ -28,25 +28,25 @@ describe('Card View layout guards', () => {
     );
   });
 
-  it('keeps command → actions gap at or below 0.25rem in Card View', () => {
-    expect(LAYOUT_CSS).toContain('--bj-cardview-command-actions-gap: 0.25rem');
-    expect(gapRem(LAYOUT_CSS, '--bj-cardview-command-actions-gap')).toBeLessThanOrEqual(0.25);
+  it('keeps command → cards gap at or below 0.25rem in Card View', () => {
+    expect(LAYOUT_CSS).toContain('--bj-cardview-command-cards-gap: 0.25rem');
+    expect(gapRem(LAYOUT_CSS, '--bj-cardview-command-cards-gap')).toBeLessThanOrEqual(0.25);
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-mobile[\s\S]*--bj-command-actions-gap:\s*var\(--bj-cardview-command-actions-gap\)/,
+      /\.bj-view-card-mobile[\s\S]*--bj-command-cards-gap:\s*var\(--bj-cardview-command-cards-gap\)/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*--bj-command-actions-gap:\s*var\(--bj-cardview-command-actions-gap\)/,
+      /\.bj-view-card-desktop[\s\S]*--bj-command-cards-gap:\s*var\(--bj-cardview-command-cards-gap\)/,
     );
   });
 
-  it('uses a small explicit actions → hero gap in Card View', () => {
-    expect(LAYOUT_CSS).toContain('--bj-cardview-actions-cards-gap: 0.35rem');
-    expect(gapRem(LAYOUT_CSS, '--bj-cardview-actions-cards-gap')).toBeLessThanOrEqual(0.5);
+  it('uses a small explicit cards → actions gap in Card View', () => {
+    expect(LAYOUT_CSS).toContain('--bj-cardview-cards-actions-gap: 0.35rem');
+    expect(gapRem(LAYOUT_CSS, '--bj-cardview-cards-actions-gap')).toBeLessThanOrEqual(0.5);
     expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*margin-top:\s*var\(--bj-cardview-actions-cards-gap\)/,
+      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-cardview-cards-actions-gap\)/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*margin-top:\s*var\(--bj-cardview-actions-cards-gap\)/,
+    expect(LAYOUT_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*margin-top:\s*var\(--bj-cardview-command-cards-gap\)/,
     );
   });
 
@@ -84,13 +84,13 @@ describe('Card View layout guards', () => {
     );
   });
 
-  it('keeps actions zone directly after command in DOM order', () => {
+  it('keeps cards zone directly after command in DOM order', () => {
     const render = SHELL_SRC.match(/return \(\s*[\s\S]*?\n  \);/)?.[0] ?? '';
     const commandIdx = render.indexOf('BlackjackCommandZone');
-    const actionsIdx = render.indexOf('BlackjackActionsZone');
     const cardsIdx = render.indexOf('BlackjackCardsAreaZone');
-    expect(commandIdx).toBeLessThan(actionsIdx);
-    expect(actionsIdx).toBeLessThan(cardsIdx);
+    const actionsIdx = render.indexOf('BlackjackActionsZone');
+    expect(commandIdx).toBeLessThan(cardsIdx);
+    expect(cardsIdx).toBeLessThan(actionsIdx);
   });
 
   it('does not change Full Table command/actions row height tokens globally', () => {

@@ -114,7 +114,7 @@ describe('mobile layout cleanup', () => {
     );
     const mobile = renderAt({ width: 390, height: 844 }, 'card');
     expect(mobile).toContain('bj-arc--player-boxes');
-    expect(mobile.match(/aria-label="(?:Join )?[Bb]ox \d/g)?.length ?? 0).toBeGreaterThanOrEqual(7);
+    expect(mobile.match(/aria-label="(?:Join )?[Bb]ox \d/g)?.length ?? 0).toBe(4);
   });
 
   it('mobile landscape uses shared shell tokens and compresses felt height', () => {

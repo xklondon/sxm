@@ -350,8 +350,8 @@ describe('mobile Card View structure', () => {
     expect(html).toContain('bj-phone-view__bet-chip--pulse');
     expect(html).toContain('Join');
     const order = cardViewMiniBoxOrder(html);
-    expect(order.length).toBeGreaterThanOrEqual(3);
-    expect(order[0]).toBe('7');
+    expect(order.length).toBe(4);
+    expect(order[0]).toBe('4');
     expect(order[order.length - 1]).toBe('1');
   });
 
@@ -361,7 +361,8 @@ describe('mobile Card View structure', () => {
     const full = renderPanelAt(390, withView(playingState(), 'full'));
     const cardOrder = cardViewMiniBoxOrder(card);
     const arcOrder = arcBoxOrder(full);
-    expect(cardOrder[0]).toBe('7');
+    expect(cardOrder.length).toBe(4);
+    expect(cardOrder[0]).toBe('4');
     expect(cardOrder[cardOrder.length - 1]).toBe('1');
     expect(cardOrder.filter((n) => arcOrder.includes(n))).toEqual(arcOrder);
   });
@@ -370,7 +371,8 @@ describe('mobile Card View structure', () => {
     const state = withView(playingState(), 'card');
     const desktop = renderPanelAt(1280, state);
     const order = cardViewMiniBoxOrder(desktop);
-    expect(order[0]).toBe('7');
+    expect(order.length).toBe(4);
+    expect(order[0]).toBe('4');
     expect(order[order.length - 1]).toBe('1');
   });
 

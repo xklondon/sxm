@@ -24,8 +24,8 @@ function readSrc(relativePath: string): string {
 const SHELL_ZONE_ORDER = [
   TABLE_UX.tableZoneDealer,
   TABLE_UX.tableZoneSummary,
-  TABLE_UX.tableZoneActions,
   TABLE_UX.tableZoneCards,
+  TABLE_UX.tableZoneActions,
   TABLE_UX.tableZoneBoxes,
   TABLE_UX.tableZoneBottom,
 ] as const;
@@ -235,7 +235,7 @@ describe('Card View layout guard', () => {
     const html = renderCardPanel(playingState());
     expect(html).toMatch(
       new RegExp(
-        `${TABLE_UX.tableLayoutShell}[\\s\\S]*${TABLE_UX.tableZoneActions}[\\s\\S]*${TABLE_UX.tableZoneCards}[\\s\\S]*${TABLE_UX.tableZoneBoxes}[\\s\\S]*${TABLE_UX.tableZoneBottom}`,
+        `${TABLE_UX.tableLayoutShell}[\\s\\S]*${TABLE_UX.tableZoneCards}[\\s\\S]*${TABLE_UX.tableZoneActions}[\\s\\S]*${TABLE_UX.tableZoneBoxes}[\\s\\S]*${TABLE_UX.tableZoneBottom}`,
       ),
     );
   });
