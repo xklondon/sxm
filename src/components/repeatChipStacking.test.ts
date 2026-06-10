@@ -24,6 +24,7 @@ function simulateTwoTrayBets(slotNumber: 1 | 2 | 3, amounts: [StakeChipValue, St
   const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
 
   let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: targetBox });
+  const visibleBoxCount = 4;
 
   for (const amount of amounts) {
     const resolved = resolveCurrentChipTarget({
@@ -31,7 +32,7 @@ function simulateTwoTrayBets(slotNumber: 1 | 2 | 3, amounts: [StakeChipValue, St
       state,
       online: false,
       viewerPersonId: personId,
-      visibleBoxCount: 7,
+      visibleBoxCount,
     });
     expect(resolved).toEqual({ kind: 'box', boxId: targetBox });
     state = addChipToBoxStake(state, targetBox, amount, personId);
@@ -43,6 +44,7 @@ function simulateTwoTrayBets(slotNumber: 1 | 2 | 3, amounts: [StakeChipValue, St
       state,
       online: false,
       viewerPersonId: personId,
+      visibleBoxCount,
     })).toEqual({ kind: 'box', boxId: targetBox });
   }
 
@@ -66,12 +68,14 @@ describe('repeat chip stacking — canonical target resolution', () => {
     const targetBox = boxPlayerId(state, 1)!;
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
     let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: targetBox });
+    const visibleBoxCount = 4;
     for (const amount of [5, 5] as const) {
       const resolved = resolveCurrentChipTarget({
         local,
         state,
         online: false,
         viewerPersonId: personId,
+        visibleBoxCount,
       });
       expect(resolved).toEqual({ kind: 'box', boxId: targetBox });
       state = addChipToBoxStake(state, targetBox, amount, personId);
@@ -79,6 +83,74 @@ describe('repeat chip stacking — canonical target resolution', () => {
       local = reconcileLocalChipTarget(local, state, false);
     }
     expect(getStakeForBox(state, targetBox)).toBe(10);
+  });
+
+  it('online snapshot after first chip keeps selectedBettingBoxId (production visibleBoxCount path)', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    state = claimBoxSlot(state, 3);
+    const box3 = boxPlayerId(state, 3)!;
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
+
+    const first = resolveCurrentChipTarget({
+      local,
+      state,
+      online: true,
+      viewerPersonId: personId,
+      visibleBoxCount: 4,
+    });
+    expect(first).toEqual({ kind: 'box', boxId: box3 });
+    state = addChipToBoxStake(state, box3, 10, personId);
+    local = affirmChipTargetAfterPlacement(local, state, first!, true);
+    local = reconcileLocalChipTarget(local, state, true);
+
+    expect(uiFromLocalChipTarget(local.target).selectedBettingBoxId).toBe(box3);
+    expect(
+      resolveCurrentChipTarget({
+        local,
+        state,
+        online: true,
+        viewerPersonId: personId,
+        visibleBoxCount: 4,
+      }),
+    ).toEqual({ kind: 'box', boxId: box3 });
+  });
+
+  it('drag/drop to box 3 then tray tap keeps box 3 target', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    state = claimBoxSlot(state, 3);
+    const box3 = boxPlayerId(state, 3)!;
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+    const dropTarget = { kind: 'box' as const, boxId: box3 };
+
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), dropTarget);
+    state = addChipToBoxStake(state, box3, 10, personId);
+    local = affirmChipTargetAfterPlacement(local, state, dropTarget, false);
+    local = reconcileLocalChipTarget(local, state, false);
+
+    expect(
+      resolveCurrentChipTarget({
+        local,
+        state,
+        online: false,
+        viewerPersonId: personId,
+        visibleBoxCount: 4,
+      }),
+    ).toEqual({ kind: 'box', boxId: box3 });
+
+    state = addChipToBoxStake(state, box3, 5, personId);
+    local = affirmChipTargetAfterPlacement(local, state, dropTarget, false);
+    expect(getStakeForBox(state, box3)).toBe(15);
+  });
+
+  it('Full Table and Card View share the same chip tray target route in BlackjackPanel', () => {
+    expect(PANEL_SRC).toContain('renderPlayerBoxesArc');
+    expect(PANEL_SRC).toContain('renderTrayInner');
+    expect(PANEL_SRC).toContain('onChipClick={handleChipTrayClick}');
+    expect(PANEL_SRC).not.toMatch(/viewMode === 'card'[\s\S]{0,400}resolveChipTrayBetTarget/);
+    expect(PANEL_SRC).not.toMatch(/viewMode === 'full'[\s\S]{0,400}resolveChipTrayBetTarget/);
   });
 
   it('affirmChipTargetAfterPlacement sets hasUserSelected after first chip from default target', () => {
@@ -142,6 +214,33 @@ describe('repeat chip stacking — canonical target resolution', () => {
         viewerPersonId: null,
       }),
     ).toBeNull();
+  });
+
+  it('user-selected target survives visibleBoxCount filter after first chip (production path)', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    state = claimBoxSlot(state, 2);
+    const box2 = boxPlayerId(state, 2)!;
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box2 });
+
+    state = addChipToBoxStake(state, box2, 5, personId);
+    local = affirmChipTargetAfterPlacement(local, state, { kind: 'box', boxId: box2 }, false);
+    local = reconcileLocalChipTarget(local, state, false);
+
+    expect(
+      resolveCurrentChipTarget({
+        local,
+        state,
+        online: false,
+        viewerPersonId: personId,
+        visibleBoxCount: 4,
+      }),
+    ).toEqual({ kind: 'box', boxId: box2 });
+  });
+
+  it('BlackjackPanel logs chip target null reason in dev/test', () => {
+    expect(PANEL_SRC).toContain('logChipTargetResolution');
   });
 
   it('BlackjackPanel uses resolveCurrentChipTarget for tray and affirm after placement', () => {

@@ -94,12 +94,13 @@ describe('layout shell reset — Full Table + Card View', () => {
   });
 
   it('keeps player boxes inside felt with overflow guard and shared arc styling', () => {
-    expect(shellZoneBlock('.bj-table-zone--boxes')).toMatch(/overflow:\s*hidden/);
+    expect(shellZoneBlock('.bj-table-zone--boxes')).toMatch(/overflow-x:\s*hidden/);
+    expect(shellZoneBlock('.bj-table-zone--boxes')).toMatch(/overflow-y:\s*visible/);
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
+      /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow-y:\s*visible/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
+      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*overflow-y:\s*visible/,
     );
     expect(PANEL_CSS).toMatch(/\.bj-view-card-mobile[\s\S]*overflow-x:\s*hidden/);
   });

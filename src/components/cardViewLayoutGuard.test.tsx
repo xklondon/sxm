@@ -269,10 +269,11 @@ describe('Card View layout guard', () => {
     const boxesBlock = sharedCss.match(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*?\}/)?.[0] ?? '';
     const miniRowReset =
       sharedCss.match(
-        /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*?overflow:\s*hidden[\s\S]*?\n\}/,
+        /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*?overflow-y:\s*visible[\s\S]*?\n\}/,
       )?.[0] ?? '';
-    expect(boxesBlock).toMatch(/overflow:\s*hidden/);
-    expect(miniRowReset).toMatch(/overflow:\s*hidden/);
+    expect(boxesBlock).toMatch(/overflow-x:\s*hidden/);
+    expect(boxesBlock).toMatch(/overflow-y:\s*visible/);
+    expect(miniRowReset).toMatch(/overflow-y:\s*visible/);
     expect(miniRowReset).toMatch(/min-width:\s*0/);
     expect(sharedCss).toMatch(/\.bj-casino\.bj-view-card-desktop[\s\S]*overflow:\s*hidden/);
     const boxesRem = parseFloat(/--bj-zone-boxes-height:\s*([\d.]+rem)/.exec(sharedCss)?.[1] ?? '8');
@@ -295,7 +296,8 @@ describe('Card View layout guard', () => {
   it('boxes row contains player arc without expanding page scroll', () => {
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
     const boxesBlock = sharedCss.match(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*?\}/)?.[0] ?? '';
-    expect(boxesBlock).toMatch(/overflow:\s*hidden/);
+    expect(boxesBlock).toMatch(/overflow-x:\s*hidden/);
+    expect(boxesBlock).toMatch(/overflow-y:\s*visible/);
   });
 
   it('uses the same zone structure for betting, play, and settlement snapshots', () => {

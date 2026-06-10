@@ -70,6 +70,7 @@ import {
   applyDefaultAssignedChipTarget,
   createEmptyLocalChipTarget,
   localChipTargetsEqual,
+  logChipTargetResolution,
   reconcileLocalChipTarget,
   resolveCurrentChipTarget,
   selectLocalChipTarget,
@@ -367,11 +368,15 @@ export function BlackjackPanel({
   }, [viewerPersonId, gameState.tableMeta.boxSlots, gameState.session.id]);
 
   useEffect(() => {
-    const next = reconcileLocalChipTarget(
-      localSelectedChipTargetRef.current,
-      gameState,
-      Boolean(onlineDispatch),
-    );
+    const local = localSelectedChipTargetRef.current;
+    let next = reconcileLocalChipTarget(local, gameState, Boolean(onlineDispatch));
+    if (next.hasUserSelected && next.target) {
+      next = affirmChipTargetAfterPlacement(next, gameState, next.target, Boolean(onlineDispatch));
+    }
+    if (next.hasUserSelected && !next.target && local.target) {
+      commitLocalChipTarget({ ...next, target: local.target });
+      return;
+    }
     if (!localChipTargetsEqual(localSelectedChipTargetRef.current, next)) {
       commitLocalChipTarget(next);
     }
@@ -710,8 +715,18 @@ export function BlackjackPanel({
   }
 
   function handleChipTrayClick(value: ChipValue) {
+    const local = localSelectedChipTargetRef.current;
     const target = resolveActiveChipTrayTarget();
     if (!target) {
+      const ui = uiFromLocalChipTarget(local.target);
+      logChipTargetResolution(
+        local.target || local.hasUserSelected ? 'tray-resolution-null' : 'no-local-target',
+        {
+          ...ui,
+          hasUserSelected: local.hasUserSelected,
+          visibleBoxCount: effectiveVisibleBoxCount,
+        },
+      );
       setError('Tap a box to bet');
       return;
     }
@@ -1297,9 +1312,12 @@ export function BlackjackPanel({
         handKeys = [primaryKey];
       }
     }
-    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
-      mobile: deviceView === 'mobile',
-    });
+    const rotation =
+      deviceView === 'mobile'
+        ? 0
+        : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
+            mobile: false,
+          });
     const isSplit = handKeys.length > 1;
     return (
       <div
@@ -1333,9 +1351,10 @@ export function BlackjackPanel({
   }
 
   function renderEmptyCardColumn(slotNumber: number) {
-    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
-      mobile: deviceView === 'mobile',
-    });
+    const rotation =
+      deviceView === 'mobile'
+        ? 0
+        : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
     return (
       <div
         key={`cards-empty-${slotNumber}`}
@@ -1396,9 +1415,10 @@ export function BlackjackPanel({
         : [];
     const showStakeContent = inBetting || displayChips.length > 0;
     const dropKey = chipDropKey({ slotNumber, boxId });
-    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
-      mobile: deviceView === 'mobile',
-    });
+    const rotation =
+      deviceView === 'mobile'
+        ? 0
+        : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
 
     return (
       <div
@@ -1539,9 +1559,10 @@ export function BlackjackPanel({
   }
 
   function renderEmptyBoxSlot(slotNumber: number) {
-    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
-      mobile: deviceView === 'mobile',
-    });
+    const rotation =
+      deviceView === 'mobile'
+        ? 0
+        : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
     const dropKey = `slot-${slotNumber}`;
     const isDrop = dropTargetId === dropKey;
     const isSelected = inBetting && selectedBettingSlotNumber === slotNumber;

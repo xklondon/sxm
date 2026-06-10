@@ -24,12 +24,15 @@ describe('arc transform CSS contract', () => {
     expect(openBlock).not.toMatch(/transform:\s*rotate/);
   });
 
-  it('scopes card-column rotation to .bj-arc--cards .bj-arc__slot', () => {
+  it('scopes card-column rotation to desktop .bj-arc--cards .bj-arc__slot only', () => {
     expect(PANEL_CSS).toMatch(
       /\.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*rotate\(var\(--arc-rot/,
     );
     expect(PANEL_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*rotate\(var\(--arc-rot/,
+      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*none/,
+    );
+    expect(PANEL_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*none/,
     );
   });
 

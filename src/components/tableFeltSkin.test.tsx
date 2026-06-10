@@ -228,9 +228,10 @@ describe('table felt cloth layer', () => {
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
     const boxesBlock =
       sharedCss.match(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*?\}/)?.[0] ?? '';
-    expect(boxesBlock).toMatch(/overflow:\s*hidden/);
+    expect(boxesBlock).toMatch(/overflow-x:\s*hidden/);
+    expect(boxesBlock).toMatch(/overflow-y:\s*visible/);
     expect(sharedCss).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/,
+      /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow-y:\s*visible/,
     );
   });
 

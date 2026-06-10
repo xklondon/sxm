@@ -30,10 +30,10 @@ describe('mobile Card View chip tray layout', () => {
   it('uses reduced horizontal gap between player boxes on mobile', () => {
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*gap:\s*0\.04rem/,
+      /\.bj-view-full-mobile \.bj-arc--player-boxes,\s*\n\s*\.bj-view-card-mobile \.bj-arc--player-boxes[\s\S]*gap:\s*var\(--bj-mobile-box-gap,\s*0\.03rem\)/,
     );
     expect(panelCss).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*scale\(0\.88\)|\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*rotate\(var\(--arc-rot/,
+      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*none/,
     );
     expect(TABLE_UX.tableZoneBoxes).toBe('bj-table-zone--boxes');
     expect(TABLE_UX.tableZoneBottom).toBe('bj-table-zone--bottom');

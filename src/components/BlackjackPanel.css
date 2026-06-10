@@ -1403,11 +1403,12 @@
   box-sizing: border-box;
 }
 
-.bj-view-full-mobile .bj-arc--cards .bj-arc__slot {
+.bj-view-full-mobile .bj-arc--cards .bj-arc__slot,
+.bj-view-card-mobile .bj-arc--cards .bj-arc__slot {
   flex: 1 1 0;
   min-width: 0;
   flex-shrink: 1;
-  transform: rotate(var(--arc-rot, 0deg)) scale(0.88);
+  transform: none;
   transform-origin: center bottom;
 }
 

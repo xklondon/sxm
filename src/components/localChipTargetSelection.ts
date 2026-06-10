@@ -189,20 +189,53 @@ export interface ResolveCurrentChipTargetInput {
   visibleBoxCount?: number;
 }
 
+export function localChipTargetSlotNumber(
+  state: GameState,
+  target: PlaceBetTarget,
+): number | null {
+  if (target.kind === 'slot') {
+    return target.slotNumber;
+  }
+  const slot = state.tableMeta.boxSlots.find((s) => s.playerId === target.boxId);
+  if (slot) {
+    return slot.slotNumber;
+  }
+  const slotNum = state.session.boxSlotNumbers?.[target.boxId];
+  return slotNum ?? null;
+}
+
 function isTargetOnVisibleBox(
   state: GameState,
   target: PlaceBetTarget,
   visibleBoxCount: number,
 ): boolean {
-  if (target.kind === 'slot') {
-    return target.slotNumber >= 1 && target.slotNumber <= visibleBoxCount;
+  const slotNumber = localChipTargetSlotNumber(state, target);
+  return slotNumber != null && slotNumber >= 1 && slotNumber <= visibleBoxCount;
+}
+
+export type ChipTargetResolutionReason =
+  | 'no-local-target'
+  | 'tray-resolution-null'
+  | 'hidden-box-filter';
+
+/** Dev/test logging when chip tray target resolves to null. */
+export function logChipTargetResolution(
+  reason: ChipTargetResolutionReason,
+  details: {
+    selectedBettingBoxId: string | null;
+    selectedBettingSlotNumber: number | null;
+    hasUserSelected: boolean;
+    visibleBoxCount?: number;
+    resolvedTarget?: PlaceBetTarget | null;
+  },
+): void {
+  const enabled =
+    typeof import.meta !== 'undefined' &&
+    (import.meta.env?.DEV === true || import.meta.env?.MODE === 'test');
+  if (!enabled) {
+    return;
   }
-  const slot = state.tableMeta.boxSlots.find((s) => s.playerId === target.boxId);
-  if (slot) {
-    return slot.slotNumber <= visibleBoxCount;
-  }
-  const slotNum = state.session.boxSlotNumbers?.[target.boxId];
-  return slotNum != null && slotNum >= 1 && slotNum <= visibleBoxCount;
+  console.debug('[SXMCards][chip-target]', reason, details);
 }
 
 /**
@@ -213,9 +246,31 @@ export function resolveCurrentChipTarget(input: ResolveCurrentChipTargetInput): 
   const { local, state, online, viewerPersonId, visibleBoxCount } = input;
   const target = resolveTrayTargetFromLocalSelection(local, state, online, viewerPersonId);
   if (!target) {
+    const ui = uiFromLocalChipTarget(local.target);
+    logChipTargetResolution(
+      local.target || local.hasUserSelected ? 'tray-resolution-null' : 'no-local-target',
+      {
+        ...ui,
+        hasUserSelected: local.hasUserSelected,
+        visibleBoxCount,
+      },
+    );
     return null;
   }
-  if (visibleBoxCount != null && !isTargetOnVisibleBox(state, target, visibleBoxCount)) {
+
+  // User picks are always from visible UI boxes — never null them during stake/sync churn.
+  if (
+    visibleBoxCount != null &&
+    !local.hasUserSelected &&
+    !isTargetOnVisibleBox(state, target, visibleBoxCount)
+  ) {
+    const ui = uiFromLocalChipTarget(local.target);
+    logChipTargetResolution('hidden-box-filter', {
+      ...ui,
+      hasUserSelected: local.hasUserSelected,
+      visibleBoxCount,
+      resolvedTarget: target,
+    });
     return null;
   }
   return target;
