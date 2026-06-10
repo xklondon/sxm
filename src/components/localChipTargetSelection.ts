@@ -157,7 +157,7 @@ export function reconcileLocalChipTarget(
       }
     }
     if (isUserChipTargetRemoved(state, currentTarget, online)) {
-      return { ...local, target: null };
+      return local;
     }
     return local;
   }

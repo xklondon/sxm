@@ -522,13 +522,19 @@ export function BlackjackPanel({
     commitLocalChipTarget(selectLocalChipTarget(localSelectedChipTargetRef.current, target));
   }
 
-  function preserveLocalChipTargetAfterStateSync(nextState?: GameState) {
+  function preserveLocalChipTargetAfterStateSync(
+    nextState?: GameState,
+    placedTarget?: PlaceBetTarget,
+  ) {
     const state = nextState ?? gameStateRef.current;
-    const next = reconcileLocalChipTarget(
-      localSelectedChipTargetRef.current,
-      state,
-      Boolean(onlineDispatch),
-    );
+    const base = placedTarget
+      ? selectLocalChipTarget(localSelectedChipTargetRef.current, placedTarget)
+      : localSelectedChipTargetRef.current;
+    const next = reconcileLocalChipTarget(base, state, Boolean(onlineDispatch));
+    if (next.hasUserSelected && !next.target && base.target) {
+      commitLocalChipTarget({ ...next, target: base.target });
+      return;
+    }
     commitLocalChipTarget(next);
   }
 
@@ -569,14 +575,14 @@ export function BlackjackPanel({
       try {
         const optimistic = applyOptimisticChipPlacement(target, amount);
         onGameStateChange(optimistic);
-        preserveLocalChipTargetAfterStateSync(optimistic);
+        preserveLocalChipTargetAfterStateSync(optimistic, target);
       } catch (err) {
         setError(formatPlaceBetError(err));
         return;
       }
       void onlineDispatch('placeBet', payload).catch((err) => {
         onGameStateChange(snapshot);
-        preserveLocalChipTargetAfterStateSync(snapshot);
+        preserveLocalChipTargetAfterStateSync(snapshot, target);
         setError(formatPlaceBetError(err));
       });
       return;
@@ -598,13 +604,13 @@ export function BlackjackPanel({
         const personId = resolveControllerPersonId(state, controllerName);
         const nextState = addChipToBoxStake(state, boxId, amount, personId ?? undefined);
         onGameStateChange(nextState);
-        preserveLocalChipTargetAfterStateSync(nextState);
+        preserveLocalChipTargetAfterStateSync(nextState, target);
         return;
       }
       const personId = resolveControllerPersonId(state, controllerName);
       const nextState = addChipToBoxStake(state, target.boxId, amount, personId ?? undefined);
       onGameStateChange(nextState);
-      preserveLocalChipTargetAfterStateSync(nextState);
+      preserveLocalChipTargetAfterStateSync(nextState, target);
     } catch (err) {
       setError(formatPlaceBetError(err));
     }
@@ -672,6 +678,7 @@ export function BlackjackPanel({
     }
 
     const target = getChipPlacementTarget(gameStateRef.current, { slotNumber, boxId });
+    selectLocalTarget(target);
     placeBetAtTarget(target, value);
   }
 
@@ -743,6 +750,7 @@ export function BlackjackPanel({
             return;
           }
           const placementTarget = getChipPlacementTarget(gameStateRef.current, target);
+          selectLocalTarget(placementTarget);
           placeBetAtTarget(placementTarget, value);
         },
       }),

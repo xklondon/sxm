@@ -16,7 +16,10 @@ describe('mobile table felt polish — Full Table + Card View parity', () => {
   it('uses identical mobile felt/table height tokens for both views', () => {
     expect(SHARED_CSS).toContain(MOBILE_LAYOUT_MEDIA);
     expect(SHARED_CSS).toContain('--bj-mobile-felt-fill-grow: 1 1 auto');
-    expect(SHARED_CSS).toContain('--bj-mobile-table-canvas-height: min(calc(100dvh - 0.35rem), calc(100svh - 0.35rem))');
+    expect(SHARED_CSS).toContain('--bj-mobile-table-canvas-height: min(');
+    expect(SHARED_CSS).toMatch(
+      /--bj-mobile-table-canvas-height:\s*min\([\s\S]*env\(safe-area-inset-top/,
+    );
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*flex:\s*var\(--bj-mobile-felt-fill-grow\)/,
     );
@@ -54,7 +57,7 @@ describe('mobile table felt polish — Full Table + Card View parity', () => {
   });
 
   it('adds mobile dealer-to-command gap and centers command on table axis', () => {
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-top-gap: 0.62rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-top-gap: 0.48rem');
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--summary,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*padding-top:\s*var\(--bj-mobile-zone-command-top-gap\)/,
     );

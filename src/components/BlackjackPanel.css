@@ -1359,6 +1359,7 @@
 .bj-view-card-mobile {
   overflow: hidden;
   min-height: 0;
+  max-height: var(--bj-mobile-table-canvas-height, 100svh);
 }
 
 .bj-view-full-mobile .bj-casino__rail-wrap,

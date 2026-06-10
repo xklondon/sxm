@@ -7,7 +7,7 @@ import {
   selectLocalChipTarget,
   uiFromLocalChipTarget,
 } from './localChipTargetSelection';
-import { addChipToBoxStake } from '../engine/blackjack/stakes';
+import { addChipToBoxStake, getStakeForBox } from '../engine/blackjack/stakes';
 import { createNewBlackjackTable } from '../engine/session';
 import { claimBoxSlot } from '../engine/session/boxOps';
 import { tableAfterStartPlaying, boxPlayerId } from '../engine/blackjack/sanity/fixtures';
@@ -158,8 +158,68 @@ describe('localChipTargetSelection', () => {
       },
       false,
     );
-    expect(cleared.target).toBeNull();
+    expect(cleared.target).toEqual({ kind: 'box', boxId: box5 });
     expect(cleared.hasUserSelected).toBe(true);
+  });
+
+  it('repeat tray taps keep routing to the same explicit box after two chip placements', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    state = claimBoxSlot(state, 3);
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+    const nativeBox = boxPlayerId(state, 1)!;
+    const box3 = boxPlayerId(state, 3)!;
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
+
+    state = addChipToBoxStake(state, box3, 10, personId);
+    local = reconcileLocalChipTarget(local, state, false);
+    expect(resolveTrayTargetFromLocalSelection(local, state, false, personId)).toEqual({
+      kind: 'box',
+      boxId: box3,
+    });
+
+    state = addChipToBoxStake(state, box3, 5, personId);
+    local = reconcileLocalChipTarget(local, state, false);
+    expect(resolveTrayTargetFromLocalSelection(local, state, false, personId)).toEqual({
+      kind: 'box',
+      boxId: box3,
+    });
+    expect(getStakeForBox(state, box3)).toBe(15);
+    expect(getStakeForBox(state, nativeBox)).toBe(0);
+  });
+
+  it('repeat tray taps keep routing to native box after two chip placements', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+    const nativeBox = boxPlayerId(state, 1)!;
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: nativeBox });
+
+    state = addChipToBoxStake(state, nativeBox, 10, personId);
+    local = reconcileLocalChipTarget(local, state, false);
+    state = addChipToBoxStake(state, nativeBox, 10, personId);
+    local = reconcileLocalChipTarget(local, state, false);
+    expect(resolveTrayTargetFromLocalSelection(local, state, false, personId)).toEqual({
+      kind: 'box',
+      boxId: nativeBox,
+    });
+  });
+
+  it('repeat tray taps keep routing to free box after two chip placements', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 3);
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 3)?.bankrollOwnerId ?? '';
+    const freeBox = boxPlayerId(state, 3)!;
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: freeBox });
+
+    state = addChipToBoxStake(state, freeBox, 10, personId);
+    local = reconcileLocalChipTarget(local, state, false);
+    state = addChipToBoxStake(state, freeBox, 10, personId);
+    local = reconcileLocalChipTarget(local, state, false);
+    expect(resolveTrayTargetFromLocalSelection(local, state, false, personId)).toEqual({
+      kind: 'box',
+      boxId: freeBox,
+    });
   });
 
   it('does not fall back to assigned box after user selected another target', () => {

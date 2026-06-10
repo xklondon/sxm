@@ -15,6 +15,7 @@ import {
 
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
+const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 
 const noop = () => {};
@@ -84,19 +85,19 @@ describe('mobile blackjack layout fix', () => {
     it('defines mobile box tokens per visible count with 4 largest and 7 smallest', () => {
       const four = mobilePlayerBoxBlock(4);
       const seven = mobilePlayerBoxBlock(7);
-      expect(four).toContain('--bj-mobile-box-width: 5.85rem');
-      expect(four).toContain('--bj-mobile-box-card-scale: 1.15');
-      expect(seven).toContain('--bj-mobile-box-width: 3.25rem');
-      expect(seven).toContain('--bj-mobile-box-card-scale: 0.78');
-      expect(5.85).toBeGreaterThan(5.35);
-      expect(1.15).toBeGreaterThan(0.78);
+      expect(four).toContain('--bj-mobile-box-width: 6.05rem');
+      expect(four).toContain('--bj-mobile-box-card-scale: 1.18');
+      expect(seven).toContain('--bj-mobile-box-width: 3.3rem');
+      expect(seven).toContain('--bj-mobile-box-card-scale: 0.8');
+      expect(6.05).toBeGreaterThan(5.85);
+      expect(1.18).toBeGreaterThan(0.8);
     });
 
     it('scales Full Table card tokens down as visible box count increases', () => {
       const four = mobileFullTableCardsBlock(4);
       const seven = mobileFullTableCardsBlock(7);
-      expect(four).toContain('--bj-table-card-width: calc(1.95rem * 1.32)');
-      expect(seven).toContain('--bj-table-card-width: calc(1.95rem * 0.88)');
+      expect(four).toContain('--bj-table-card-width: calc(1.95rem * 1.38)');
+      expect(seven).toContain('--bj-table-card-width: calc(1.95rem * 0.9)');
     });
 
     it('scales mini player cards with box card scale token', () => {
@@ -173,6 +174,24 @@ describe('mobile blackjack layout fix', () => {
       );
       expect(CHIP_CSS).toMatch(
         /padding-bottom:\s*max\(0\.85rem,\s*calc\(env\(safe-area-inset-bottom/,
+      );
+    });
+
+    it('does not force vertical overflow on mobile table shell', () => {
+      expect(SHARED_CSS).toMatch(
+        /--bj-mobile-table-canvas-height:\s*min\([\s\S]*env\(safe-area-inset-top/,
+      );
+      expect(PANEL_CSS).toMatch(
+        /\.bj-view-full-mobile,\s*\n\s*\.bj-view-card-mobile[\s\S]*max-height:\s*var\(--bj-mobile-table-canvas-height/,
+      );
+    });
+
+    it('keeps stake chips visible inside mobile player boxes', () => {
+      expect(SHARED_CSS).toMatch(
+        /--bj-full-table-stake-min-height:\s*1\.1rem/,
+      );
+      expect(SHARED_CSS).toMatch(
+        /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]*overflow-y:\s*visible/,
       );
     });
   });
