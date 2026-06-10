@@ -166,7 +166,8 @@ describe('Mobile chip target persistence', () => {
   it('uses same arc box render path for owned boxes', () => {
     expect(PANEL_SRC).toContain('renderArcBoxSlot');
     expect(PANEL_SRC).toContain('getBoxCardVisualClasses(borderState)');
-    expect(PANEL_SRC).toContain('preserveLocalChipTargetAfterStateSync(nextState, target)');
+    expect(PANEL_SRC).toContain('resolveCurrentChipTarget');
+    expect(PANEL_SRC).toContain('affirmChipTargetAfterPlacement');
   });
 });
 

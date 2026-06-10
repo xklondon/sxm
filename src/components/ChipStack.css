@@ -261,27 +261,30 @@
   .bj-view-card-mobile .bj-value-chips__row--main {
     flex-wrap: nowrap;
     justify-content: center;
-    gap: 0.35rem 0.45rem;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
     min-width: 0;
   }
 
   .bj-view-full-mobile .bj-value-chips__balance,
   .bj-view-card-mobile .bj-value-chips__balance {
     font-size: 0.74rem;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     min-width: 0;
+    order: -1;
   }
 
   .bj-view-full-mobile .bj-value-chips__stash,
   .bj-view-card-mobile .bj-value-chips__stash {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-width: 0;
-    justify-content: flex-end;
+    justify-content: center;
   }
 
   .bj-view-full-mobile .bj-value-chips .chip-tray__chips,
   .bj-view-card-mobile .bj-value-chips .chip-tray__chips {
     flex-wrap: nowrap;
+    justify-content: center;
     gap: 0.28rem;
     min-width: 0;
   }

@@ -85,19 +85,19 @@ describe('mobile blackjack layout fix', () => {
     it('defines mobile box tokens per visible count with 4 largest and 7 smallest', () => {
       const four = mobilePlayerBoxBlock(4);
       const seven = mobilePlayerBoxBlock(7);
-      expect(four).toContain('--bj-mobile-box-width: 6.05rem');
-      expect(four).toContain('--bj-mobile-box-card-scale: 1.18');
-      expect(seven).toContain('--bj-mobile-box-width: 3.3rem');
-      expect(seven).toContain('--bj-mobile-box-card-scale: 0.8');
-      expect(6.05).toBeGreaterThan(5.85);
-      expect(1.18).toBeGreaterThan(0.8);
+      expect(four).toContain('--bj-mobile-box-width: 6.25rem');
+      expect(four).toContain('--bj-mobile-box-card-scale: 1.2');
+      expect(seven).toContain('--bj-mobile-box-width: 3.5rem');
+      expect(seven).toContain('--bj-mobile-box-card-scale: 0.84');
+      expect(6.25).toBeGreaterThan(3.5);
+      expect(1.2).toBeGreaterThan(0.84);
     });
 
     it('scales Full Table card tokens down as visible box count increases', () => {
       const four = mobileFullTableCardsBlock(4);
       const seven = mobileFullTableCardsBlock(7);
-      expect(four).toContain('--bj-table-card-width: calc(1.95rem * 1.38)');
-      expect(seven).toContain('--bj-table-card-width: calc(1.95rem * 0.9)');
+      expect(four).toContain('--bj-table-card-width: calc(1.95rem * 1.42)');
+      expect(seven).toContain('--bj-table-card-width: calc(1.95rem * 0.94)');
     });
 
     it('scales mini player cards with box card scale token', () => {
@@ -127,6 +127,7 @@ describe('mobile blackjack layout fix', () => {
       const html = renderMobilePanel(tableAfterStartPlaying(500));
       expect(html).toContain('bj-player-boxes-wrap__add');
       expect(html).toContain('aria-label="Add player box"');
+      expect(html).toContain('bj-player-boxes-wrap__add--leading');
       expect(html).toContain('>+</button>');
       expect(html).toContain('bj-arc--visible-4');
       const addIdx = html.indexOf('bj-player-boxes-wrap__add');
@@ -157,9 +158,12 @@ describe('mobile blackjack layout fix', () => {
       expect(CHIP_CSS).toMatch(
         /@media \(max-width: 720px\)[\s\S]*\.bj-view-full-mobile \.bj-value-chips[\s\S]*flex-direction:\s*column/,
       );
-      expect(CHIP_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-value-chips__row--main[\s\S]*flex-wrap:\s*nowrap/,
-      );
+    expect(CHIP_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-value-chips__stash[\s\S]*justify-content:\s*center/,
+    );
+    expect(CHIP_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-value-chips .chip-tray__chips[\s\S]*justify-content:\s*center/,
+    );
     });
 
     it('keeps tray full width on mobile without horizontal overflow', () => {
@@ -188,7 +192,7 @@ describe('mobile blackjack layout fix', () => {
 
     it('keeps stake chips visible inside mobile player boxes', () => {
       expect(SHARED_CSS).toMatch(
-        /--bj-full-table-stake-min-height:\s*1\.1rem/,
+        /--bj-full-table-stake-min-height:\s*1\.15rem/,
       );
       expect(SHARED_CSS).toMatch(
         /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]*overflow-y:\s*visible/,

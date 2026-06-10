@@ -51,7 +51,9 @@ describe('tableBoxLayout — visible box count and arc sizing', () => {
     expect(visibleBoxArcClass(7)).toBe('bj-arc--visible-7');
   });
 
-  it('rotates arc slots for visible count', () => {
-    expect(arcSlotRotation(1, 4)).not.toBe(arcSlotRotation(1, 7));
+  it('uses lower mobile arc rotation than desktop at 7 boxes', () => {
+    expect(Math.abs(arcSlotRotation(1, 7, { mobile: true }))).toBeLessThan(
+      Math.abs(arcSlotRotation(1, 7)),
+    );
   });
 });

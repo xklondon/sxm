@@ -66,11 +66,12 @@ import { LocalProfileSetup } from './LocalProfileSetup';
 import { PlayLedgerModal, PlayLedgerPanel } from './LedgerModals';
 import { TableSideRailShell } from './TableSideRailShell';
 import {
+  affirmChipTargetAfterPlacement,
   applyDefaultAssignedChipTarget,
   createEmptyLocalChipTarget,
   localChipTargetsEqual,
   reconcileLocalChipTarget,
-  resolveTrayTargetFromLocalSelection,
+  resolveCurrentChipTarget,
   selectLocalChipTarget,
   uiFromLocalChipTarget,
   type LocalSelectedChipTarget,
@@ -527,24 +528,33 @@ export function BlackjackPanel({
     placedTarget?: PlaceBetTarget,
   ) {
     const state = nextState ?? gameStateRef.current;
-    const base = placedTarget
-      ? selectLocalChipTarget(localSelectedChipTargetRef.current, placedTarget)
-      : localSelectedChipTargetRef.current;
-    const next = reconcileLocalChipTarget(base, state, Boolean(onlineDispatch));
-    if (next.hasUserSelected && !next.target && base.target) {
-      commitLocalChipTarget({ ...next, target: base.target });
+    const online = Boolean(onlineDispatch);
+    const next = placedTarget
+      ? affirmChipTargetAfterPlacement(
+          localSelectedChipTargetRef.current,
+          state,
+          placedTarget,
+          online,
+        )
+      : reconcileLocalChipTarget(localSelectedChipTargetRef.current, state, online);
+    if (next.hasUserSelected && !next.target && localSelectedChipTargetRef.current.target) {
+      commitLocalChipTarget({
+        ...next,
+        target: localSelectedChipTargetRef.current.target,
+      });
       return;
     }
     commitLocalChipTarget(next);
   }
 
   function resolveActiveChipTrayTarget(): PlaceBetTarget | null {
-    return resolveTrayTargetFromLocalSelection(
-      localSelectedChipTargetRef.current,
-      gameStateRef.current,
-      Boolean(onlineDispatch),
+    return resolveCurrentChipTarget({
+      local: localSelectedChipTargetRef.current,
+      state: gameStateRef.current,
+      online: Boolean(onlineDispatch),
       viewerPersonId,
-    );
+      visibleBoxCount: effectiveVisibleBoxCount,
+    });
   }
 
   function applyOptimisticChipPlacement(target: PlaceBetTarget, amount: ChipValue): GameState {
@@ -1287,7 +1297,9 @@ export function BlackjackPanel({
         handKeys = [primaryKey];
       }
     }
-    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount);
+    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
+      mobile: deviceView === 'mobile',
+    });
     const isSplit = handKeys.length > 1;
     return (
       <div
@@ -1321,7 +1333,9 @@ export function BlackjackPanel({
   }
 
   function renderEmptyCardColumn(slotNumber: number) {
-    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount);
+    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
+      mobile: deviceView === 'mobile',
+    });
     return (
       <div
         key={`cards-empty-${slotNumber}`}
@@ -1382,7 +1396,9 @@ export function BlackjackPanel({
         : [];
     const showStakeContent = inBetting || displayChips.length > 0;
     const dropKey = chipDropKey({ slotNumber, boxId });
-    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount);
+    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
+      mobile: deviceView === 'mobile',
+    });
 
     return (
       <div
@@ -1523,7 +1539,9 @@ export function BlackjackPanel({
   }
 
   function renderEmptyBoxSlot(slotNumber: number) {
-    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount);
+    const rotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
+      mobile: deviceView === 'mobile',
+    });
     const dropKey = `slot-${slotNumber}`;
     const isDrop = dropTargetId === dropKey;
     const isSelected = inBetting && selectedBettingSlotNumber === slotNumber;
@@ -1589,7 +1607,10 @@ export function BlackjackPanel({
       canAddVisibleBox && inBetting ? (
         <button
           type="button"
-          className="bj-player-boxes-wrap__add"
+          className={[
+            'bj-player-boxes-wrap__add',
+            deviceView === 'mobile' ? 'bj-player-boxes-wrap__add--leading' : '',
+          ].join(' ')}
           aria-label="Add player box"
           onClick={() =>
             setExpandedVisibleBoxCount((count) =>

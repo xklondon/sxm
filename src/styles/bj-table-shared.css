@@ -159,16 +159,16 @@
     --bj-mobile-mini-hand-width: 2.55rem;
     --bj-mobile-mini-hand-max-width: 2.85rem;
     --bj-mobile-mini-hand-height: 2.45rem;
-    --bj-mobile-box-width: 6.05rem;
-    --bj-mobile-box-height: 5.2rem;
-    --bj-mobile-box-card-scale: 1.18;
-    --bj-mobile-box-gap: 0.04rem;
-    --bj-full-table-box-padding: 0.05rem 0.06rem 0.05rem;
+    --bj-mobile-box-width: 6.25rem;
+    --bj-mobile-box-height: 5.35rem;
+    --bj-mobile-box-card-scale: 1.2;
+    --bj-mobile-box-gap: 0.03rem;
+    --bj-full-table-box-padding: 0.05rem 0.06rem 0.08rem;
     --bj-mobile-felt-min-height: 0;
     --bj-mobile-felt-fill-grow: 1 1 auto;
     --bj-mobile-table-canvas-height: min(
-      calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.25rem),
-      calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.25rem)
+      calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.5rem),
+      calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.5rem)
     );
     --bj-mobile-table-width: 100%;
     --bj-mobile-rail-width: 100%;
@@ -183,14 +183,14 @@
     --bj-mobile-rail-padding: 0.22rem 0.38rem max(0.45rem, calc(env(safe-area-inset-bottom, 0px) + 0.28rem));
     --bj-zone-tray-padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.45rem));
     --bj-mobile-tray-inner-reserve: 0.4rem;
-    --bj-mobile-zone-dealer-height: 5.4rem;
-    --bj-mobile-zone-command-height: 2.4rem;
-    --bj-zone-command-max-height: 3.6rem;
-    --bj-mobile-zone-actions-height: 2.55rem;
+    --bj-mobile-zone-dealer-height: 5.15rem;
+    --bj-mobile-zone-command-height: 2.25rem;
+    --bj-zone-command-max-height: 3.4rem;
+    --bj-mobile-zone-actions-height: 2.45rem;
     --bj-mobile-zone-cards-min-height: 0;
-    --bj-mobile-zone-boxes-height: 5.85rem;
-    --bj-mobile-zone-tray-height: 3.95rem;
-    --bj-zone-boxes-tray-gap: 0.4rem;
+    --bj-mobile-zone-boxes-height: 5.75rem;
+    --bj-mobile-zone-tray-height: 3.85rem;
+    --bj-zone-boxes-tray-gap: 0.32rem;
     --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
     --bj-zone-command-height: var(--bj-mobile-zone-command-height);
     --bj-zone-actions-height: var(--bj-mobile-zone-actions-height);
@@ -222,7 +222,7 @@
     --bj-table-zone-cards-min-height: 2.85rem;
     --bj-full-table-box-width: var(--bj-mobile-box-width);
     --bj-full-table-box-height: var(--bj-mobile-box-height);
-    --bj-full-table-stake-min-height: 1.1rem;
+    --bj-full-table-stake-min-height: 1.15rem;
     --bj-mobile-zone-boxes-height: calc(
       var(--bj-mobile-box-height) + var(--bj-box-value-band-height) + 0.18rem
     );
@@ -233,18 +233,18 @@
   /* Mobile Full Table + Card View — one felt/rail/box visual system. */
   .bj-view-full-mobile,
   .bj-view-card-mobile {
-    --bj-mobile-box-width: 6.05rem;
-    --bj-mobile-box-height: 5.2rem;
-    --bj-mobile-box-card-scale: 1.18;
-    --bj-mobile-box-gap: 0.04rem;
-    --bj-full-table-box-padding: 0.05rem 0.06rem 0.05rem;
+    --bj-mobile-box-width: 6.25rem;
+    --bj-mobile-box-height: 5.35rem;
+    --bj-mobile-box-card-scale: 1.2;
+    --bj-mobile-box-gap: 0.03rem;
+    --bj-full-table-box-padding: 0.05rem 0.06rem 0.08rem;
     --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
     --bj-zone-command-height: var(--bj-mobile-zone-command-height);
     --bj-zone-actions-height: var(--bj-mobile-zone-actions-height);
     --bj-zone-cards-min-height: var(--bj-mobile-zone-cards-min-height);
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
     --bj-zone-tray-height: var(--bj-mobile-zone-tray-height);
-    --bj-zone-boxes-tray-gap: 0.4rem;
+    --bj-zone-boxes-tray-gap: 0.32rem;
     --bj-zone-tray-padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.45rem));
     width: var(--bj-mobile-table-width);
     max-width: var(--bj-mobile-table-width);
@@ -429,7 +429,10 @@
     :root {
       --bj-mobile-landscape-compact: 1;
       --bj-mobile-felt-min-height: 0;
-      --bj-mobile-table-canvas-height: 100dvh;
+      --bj-mobile-table-canvas-height: min(
+        calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.35rem),
+        calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.35rem)
+      );
       --bj-mobile-zone-dealer-height: 4.25rem;
       --bj-mobile-zone-command-height: 1.55rem;
       --bj-mobile-zone-actions-height: 2.15rem;
@@ -757,7 +760,8 @@
   .bj-view-card-mobile .bj-table-zone--boxes {
     overflow-x: hidden;
     overflow-y: visible;
-    padding-top: 0.08rem;
+    padding-top: 0.12rem;
+    padding-bottom: 0.1rem;
   }
 
   .bj-view-full-mobile .bj-player-boxes-wrap__row,
@@ -775,17 +779,17 @@
   .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-4,
   .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-4),
   .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-4) {
-    --bj-mobile-box-width: 6.05rem;
-    --bj-mobile-box-height: 5.2rem;
-    --bj-mobile-box-card-scale: 1.18;
-    --bj-mobile-box-gap: 0.04rem;
-    --bj-mobile-zone-boxes-height: calc(5.2rem + var(--bj-box-value-band-height) + 0.2rem);
+    --bj-mobile-box-width: 6.25rem;
+    --bj-mobile-box-height: 5.35rem;
+    --bj-mobile-box-card-scale: 1.2;
+    --bj-mobile-box-gap: 0.03rem;
+    --bj-mobile-zone-boxes-height: calc(5.35rem + var(--bj-box-value-band-height) + 0.22rem);
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
   }
 
   .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-4 {
-    --bj-table-card-width: calc(1.95rem * 1.38);
-    --bj-table-card-height: calc(2.65rem * 1.38);
+    --bj-table-card-width: calc(1.95rem * 1.42);
+    --bj-table-card-height: calc(2.65rem * 1.42);
     --bj-table-card-overlap-2: calc(0.95rem * 1.15);
     --bj-table-card-overlap-3: calc(1.35rem * 1.15);
     --bj-table-card-overlap-4plus: calc(1.65rem * 1.15);
@@ -795,17 +799,17 @@
   .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-5,
   .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-5),
   .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-5) {
-    --bj-mobile-box-width: 4.8rem;
-    --bj-mobile-box-height: 4.35rem;
-    --bj-mobile-box-card-scale: 1.05;
-    --bj-mobile-box-gap: 0.04rem;
-    --bj-mobile-zone-boxes-height: calc(4.2rem + var(--bj-box-value-band-height) + 0.18rem);
+    --bj-mobile-box-width: 5rem;
+    --bj-mobile-box-height: 4.55rem;
+    --bj-mobile-box-card-scale: 1.08;
+    --bj-mobile-box-gap: 0.03rem;
+    --bj-mobile-zone-boxes-height: calc(4.55rem + var(--bj-box-value-band-height) + 0.2rem);
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
   }
 
   .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-5 {
-    --bj-table-card-width: calc(1.95rem * 1.22);
-    --bj-table-card-height: calc(2.65rem * 1.22);
+    --bj-table-card-width: calc(1.95rem * 1.26);
+    --bj-table-card-height: calc(2.65rem * 1.26);
     --bj-table-card-overlap-2: calc(0.95rem * 1.05);
     --bj-table-card-overlap-3: calc(1.35rem * 1.05);
     --bj-table-card-overlap-4plus: calc(1.65rem * 1.05);
@@ -815,34 +819,34 @@
   .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-6,
   .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-6),
   .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-6) {
-    --bj-mobile-box-width: 3.95rem;
-    --bj-mobile-box-height: 3.65rem;
-    --bj-mobile-box-card-scale: 0.92;
-    --bj-mobile-box-gap: 0.03rem;
-    --bj-mobile-zone-boxes-height: calc(3.55rem + var(--bj-box-value-band-height) + 0.18rem);
+    --bj-mobile-box-width: 4.15rem;
+    --bj-mobile-box-height: 3.9rem;
+    --bj-mobile-box-card-scale: 0.96;
+    --bj-mobile-box-gap: 0.02rem;
+    --bj-mobile-zone-boxes-height: calc(3.9rem + var(--bj-box-value-band-height) + 0.18rem);
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
   }
 
   .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-6 {
-    --bj-table-card-width: calc(1.95rem * 1.08);
-    --bj-table-card-height: calc(2.65rem * 1.08);
+    --bj-table-card-width: calc(1.95rem * 1.1);
+    --bj-table-card-height: calc(2.65rem * 1.1);
   }
 
   .bj-view-full-mobile .bj-arc--player-boxes.bj-arc--visible-7,
   .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-7,
   .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-7),
   .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-7) {
-    --bj-mobile-box-width: 3.3rem;
-    --bj-mobile-box-height: 3.1rem;
-    --bj-mobile-box-card-scale: 0.8;
+    --bj-mobile-box-width: 3.5rem;
+    --bj-mobile-box-height: 3.25rem;
+    --bj-mobile-box-card-scale: 0.84;
     --bj-mobile-box-gap: 0.02rem;
-    --bj-mobile-zone-boxes-height: calc(3.1rem + var(--bj-box-value-band-height) + 0.18rem);
+    --bj-mobile-zone-boxes-height: calc(3.25rem + var(--bj-box-value-band-height) + 0.16rem);
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
   }
 
   .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-7 {
-    --bj-table-card-width: calc(1.95rem * 0.9);
-    --bj-table-card-height: calc(2.65rem * 0.9);
+    --bj-table-card-width: calc(1.95rem * 0.94);
+    --bj-table-card-height: calc(2.65rem * 0.94);
   }
 
   .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table,
@@ -864,8 +868,8 @@
 
   .bj-view-full-mobile .bj-phone-view__mini-hand-card-stack,
   .bj-view-card-mobile .bj-phone-view__mini-hand-card-stack {
-    min-height: calc(1.62rem * var(--bj-mobile-box-card-scale, 1));
-    height: calc(1.62rem * var(--bj-mobile-box-card-scale, 1));
+    min-height: calc(1.68rem * var(--bj-mobile-box-card-scale, 1));
+    height: calc(1.68rem * var(--bj-mobile-box-card-scale, 1));
     width: 100%;
     max-width: 100%;
   }
@@ -873,7 +877,7 @@
   .bj-view-full-mobile .bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card,
   .bj-view-card-mobile .bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card {
     transform: translateX(calc(-50% + var(--mini-card-i, 0) * 0.4rem))
-      scale(calc(0.46 * var(--bj-mobile-box-card-scale, 1)));
+      scale(calc(0.48 * var(--bj-mobile-box-card-scale, 1)));
   }
 
   .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions,
@@ -3048,7 +3052,10 @@
   .bj-view-full-mobile,
   .bj-view-card-mobile {
     --bj-mobile-landscape-compact: 1;
-    --bj-mobile-table-canvas-height: 100dvh;
+    --bj-mobile-table-canvas-height: min(
+      calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.35rem),
+      calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.35rem)
+    );
     --bj-zone-dealer-height: 4.25rem;
     --bj-zone-command-height: 1.55rem;
     --bj-zone-actions-height: 2.15rem;
@@ -3121,6 +3128,11 @@
   min-width: 0;
   max-width: 100%;
   gap: 0.08rem;
+}
+
+.bj-player-boxes-wrap__add--leading {
+  order: -1;
+  flex-shrink: 0;
 }
 
 .bj-player-boxes-wrap__add {

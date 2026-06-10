@@ -176,9 +176,63 @@ export function reconcileLocalChipTarget(
   }
 
   if (!resolved) {
-    return { ...local, target: null };
+    return local;
   }
   return local;
+}
+
+export interface ResolveCurrentChipTargetInput {
+  local: LocalSelectedChipTarget;
+  state: GameState;
+  online: boolean;
+  viewerPersonId: string | null;
+  visibleBoxCount?: number;
+}
+
+function isTargetOnVisibleBox(
+  state: GameState,
+  target: PlaceBetTarget,
+  visibleBoxCount: number,
+): boolean {
+  if (target.kind === 'slot') {
+    return target.slotNumber >= 1 && target.slotNumber <= visibleBoxCount;
+  }
+  const slot = state.tableMeta.boxSlots.find((s) => s.playerId === target.boxId);
+  if (slot) {
+    return slot.slotNumber <= visibleBoxCount;
+  }
+  const slotNum = state.session.boxSlotNumbers?.[target.boxId];
+  return slotNum != null && slotNum >= 1 && slotNum <= visibleBoxCount;
+}
+
+/**
+ * Canonical chip tray/drop target — local selection only, never selectedSeatId.
+ * Falls back to assigned box only before any user pick; survives transient sync gaps.
+ */
+export function resolveCurrentChipTarget(input: ResolveCurrentChipTargetInput): PlaceBetTarget | null {
+  const { local, state, online, viewerPersonId, visibleBoxCount } = input;
+  const target = resolveTrayTargetFromLocalSelection(local, state, online, viewerPersonId);
+  if (!target) {
+    return null;
+  }
+  if (visibleBoxCount != null && !isTargetOnVisibleBox(state, target, visibleBoxCount)) {
+    return null;
+  }
+  return target;
+}
+
+/** After a successful bet, lock the same target and mark it user-selected for repeat tray taps. */
+export function affirmChipTargetAfterPlacement(
+  local: LocalSelectedChipTarget,
+  state: GameState,
+  placedTarget: PlaceBetTarget,
+  online: boolean,
+): LocalSelectedChipTarget {
+  const picked = selectLocalChipTarget(local, placedTarget);
+  const reconciled = reconcileLocalChipTarget(picked, state, online);
+  const seed = reconciled.target ?? placedTarget;
+  const resolved = resolveTargetOnTable(state, seed, online) ?? seed;
+  return selectLocalChipTarget(reconciled, resolved);
 }
 
 /**

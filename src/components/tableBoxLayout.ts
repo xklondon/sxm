@@ -11,16 +11,31 @@ const ARC_ROTATIONS_BY_COUNT: Record<number, readonly number[]> = {
   7: [-18, -12, -6, 0, 6, 12, 18],
 };
 
-export function arcRotationsForVisibleCount(visibleCount: number): readonly number[] {
-  return ARC_ROTATIONS_BY_COUNT[visibleCount] ?? ARC_ROTATIONS_BY_COUNT[7]!;
+const MOBILE_ARC_ROTATIONS_BY_COUNT: Record<number, readonly number[]> = {
+  4: [-8, -3, 3, 8],
+  5: [-10, -5, 0, 5, 10],
+  6: [-10, -6, -2, 2, 6, 10],
+  7: [-8, -5, -2, 0, 2, 5, 8],
+};
+
+export function arcRotationsForVisibleCount(
+  visibleCount: number,
+  options?: { mobile?: boolean },
+): readonly number[] {
+  const table = options?.mobile ? MOBILE_ARC_ROTATIONS_BY_COUNT : ARC_ROTATIONS_BY_COUNT;
+  return table[visibleCount] ?? table[7]!;
 }
 
 export function arcVisualIndex(slotNumber: number, visibleCount: number): number {
   return visibleCount - slotNumber;
 }
 
-export function arcSlotRotation(slotNumber: number, visibleCount: number): number {
-  const rotations = arcRotationsForVisibleCount(visibleCount);
+export function arcSlotRotation(
+  slotNumber: number,
+  visibleCount: number,
+  options?: { mobile?: boolean },
+): number {
+  const rotations = arcRotationsForVisibleCount(visibleCount, options);
   const idx = arcVisualIndex(slotNumber, visibleCount);
   return rotations[idx] ?? 0;
 }

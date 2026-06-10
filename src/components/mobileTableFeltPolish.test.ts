@@ -16,9 +16,8 @@ describe('mobile table felt polish — Full Table + Card View parity', () => {
   it('uses identical mobile felt/table height tokens for both views', () => {
     expect(SHARED_CSS).toContain(MOBILE_LAYOUT_MEDIA);
     expect(SHARED_CSS).toContain('--bj-mobile-felt-fill-grow: 1 1 auto');
-    expect(SHARED_CSS).toContain('--bj-mobile-table-canvas-height: min(');
     expect(SHARED_CSS).toMatch(
-      /--bj-mobile-table-canvas-height:\s*min\([\s\S]*env\(safe-area-inset-top/,
+      /--bj-mobile-table-canvas-height:\s*min\([\s\S]*- 0\.5rem\)/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*flex:\s*var\(--bj-mobile-felt-fill-grow\)/,

@@ -92,10 +92,10 @@ describe('blackjack layout UX improvements', () => {
 
     it('uses larger mobile box tokens at 4 boxes than at 7', () => {
       expect(SHARED_CSS).toMatch(
-        /\.bj-arc--player-boxes\.bj-arc--visible-4[\s\S]*--bj-mobile-box-width:\s*6\.05rem/,
+        /\.bj-arc--player-boxes\.bj-arc--visible-4[\s\S]*--bj-mobile-box-width:\s*6\.25rem/,
       );
       expect(SHARED_CSS).toMatch(
-        /\.bj-arc--player-boxes\.bj-arc--visible-7[\s\S]*--bj-mobile-box-width:\s*3\.3rem/,
+        /\.bj-arc--player-boxes\.bj-arc--visible-7[\s\S]*--bj-mobile-box-width:\s*3\.5rem/,
       );
     });
 
@@ -126,7 +126,7 @@ describe('blackjack layout UX improvements', () => {
         /@media \(min-width: 721px\) and \(orientation: landscape\)[\s\S]*--bj-mobile-landscape-compact:\s*1/,
       );
       expect(SHARED_CSS).toMatch(
-        /@media \(min-width: 721px\) and \(orientation: landscape\)[\s\S]*--bj-mobile-table-canvas-height:\s*100dvh/,
+        /@media \(min-width: 721px\) and \(orientation: landscape\)[\s\S]*--bj-mobile-table-canvas-height:\s*min\([\s\S]*env\(safe-area-inset-bottom/,
       );
     });
 
