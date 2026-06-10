@@ -92,10 +92,10 @@ describe('blackjack layout UX improvements', () => {
 
     it('uses larger mobile box tokens at 4 boxes than at 7', () => {
       expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-arc--visible-4[\s\S]*--bj-mobile-box-width:\s*5\.35rem/,
+        /\.bj-arc--player-boxes\.bj-arc--visible-4[\s\S]*--bj-mobile-box-width:\s*5\.85rem/,
       );
       expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-arc--visible-7[\s\S]*--bj-mobile-box-width:\s*3\.05rem/,
+        /\.bj-arc--player-boxes\.bj-arc--visible-7[\s\S]*--bj-mobile-box-width:\s*3\.25rem/,
       );
     });
 
@@ -110,6 +110,7 @@ describe('blackjack layout UX improvements', () => {
       expect(STAKE_CSS).toContain('.table-stake-panel--compact');
       expect(STAKE_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__sub[\s\S]*display:\s*none/);
       expect(STAKE_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__confirm[\s\S]*font-size:\s*0\.82rem/);
+      expect(STAKE_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__confirm[\s\S]*background:\s*rgb\(8 22 16/);
     });
 
     it('keeps table name field and practice/challenge mode stage', () => {

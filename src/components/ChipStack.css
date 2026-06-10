@@ -136,7 +136,7 @@
   align-items: stretch;
   gap: 0.35rem;
   min-height: 4.35rem;
-  padding-bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.4rem));
 }
 
 .bj-value-chips__row {
@@ -246,7 +246,7 @@
     max-width: 100%;
     min-height: 0;
     margin-inline: 0;
-    padding: 0.32rem 0.45rem max(0.28rem, env(safe-area-inset-bottom, 0px));
+    padding: 0.32rem 0.45rem max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.4rem));
     gap: 0.22rem;
     box-sizing: border-box;
   }
@@ -254,7 +254,7 @@
   .bj-view-full-mobile .bj-value-chips--with-label,
   .bj-view-card-mobile .bj-value-chips--with-label {
     min-height: 0;
-    padding-bottom: max(0.28rem, env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.4rem));
   }
 
   .bj-view-full-mobile .bj-value-chips__row--main,

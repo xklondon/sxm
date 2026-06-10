@@ -42,12 +42,20 @@ function renderMobilePanel(state: GameState): string {
   );
 }
 
-function mobileVisibleBlock(count: 4 | 5 | 6 | 7): string {
-  const marker = `.bj-view-full-mobile .bj-arc--visible-${count},`;
+function mobilePlayerBoxBlock(count: 4 | 5 | 6 | 7): string {
+  const marker = `.bj-arc--player-boxes.bj-arc--visible-${count},`;
   const start = SHARED_CSS.indexOf(marker);
   if (start < 0) return '';
   const end = SHARED_CSS.indexOf('\n  }\n', start);
   return end > start ? SHARED_CSS.slice(start, end) : SHARED_CSS.slice(start, start + 900);
+}
+
+function mobileFullTableCardsBlock(count: 4 | 5 | 6 | 7): string {
+  const marker = `.bj-view-full-mobile .bj-arc--cards.bj-arc--visible-${count}`;
+  const start = SHARED_CSS.indexOf(marker);
+  if (start < 0) return '';
+  const end = SHARED_CSS.indexOf('\n  }\n', start);
+  return end > start ? SHARED_CSS.slice(start, end) : SHARED_CSS.slice(start, start + 500);
 }
 
 describe('mobile blackjack layout fix', () => {
@@ -74,14 +82,21 @@ describe('mobile blackjack layout fix', () => {
 
   describe('B — adaptive box and card sizing', () => {
     it('defines mobile box tokens per visible count with 4 largest and 7 smallest', () => {
-      const four = mobileVisibleBlock(4);
-      const seven = mobileVisibleBlock(7);
-      expect(four).toContain('--bj-mobile-box-width: 5.35rem');
-      expect(four).toContain('--bj-mobile-box-card-scale: 1.12');
-      expect(seven).toContain('--bj-mobile-box-width: 3.05rem');
-      expect(seven).toContain('--bj-mobile-box-card-scale: 0.76');
-      expect(5.35).toBeGreaterThan(3.05);
-      expect(1.12).toBeGreaterThan(0.76);
+      const four = mobilePlayerBoxBlock(4);
+      const seven = mobilePlayerBoxBlock(7);
+      expect(four).toContain('--bj-mobile-box-width: 5.85rem');
+      expect(four).toContain('--bj-mobile-box-card-scale: 1.15');
+      expect(seven).toContain('--bj-mobile-box-width: 3.25rem');
+      expect(seven).toContain('--bj-mobile-box-card-scale: 0.78');
+      expect(5.85).toBeGreaterThan(5.35);
+      expect(1.15).toBeGreaterThan(0.78);
+    });
+
+    it('scales Full Table card tokens down as visible box count increases', () => {
+      const four = mobileFullTableCardsBlock(4);
+      const seven = mobileFullTableCardsBlock(7);
+      expect(four).toContain('--bj-table-card-width: calc(1.95rem * 1.32)');
+      expect(seven).toContain('--bj-table-card-width: calc(1.95rem * 0.88)');
     });
 
     it('scales mini player cards with box card scale token', () => {
@@ -107,12 +122,16 @@ describe('mobile blackjack layout fix', () => {
   });
 
   describe('C — add box + button', () => {
-    it('renders inline + control with aria-label during betting', () => {
+    it('renders inline + control before player boxes on mobile during betting', () => {
       const html = renderMobilePanel(tableAfterStartPlaying(500));
       expect(html).toContain('bj-player-boxes-wrap__add');
       expect(html).toContain('aria-label="Add player box"');
       expect(html).toContain('>+</button>');
       expect(html).toContain('bj-arc--visible-4');
+      const addIdx = html.indexOf('bj-player-boxes-wrap__add');
+      const arcIdx = html.indexOf('bj-arc--player-boxes');
+      expect(addIdx).toBeGreaterThan(-1);
+      expect(arcIdx).toBeGreaterThan(addIdx);
     });
 
     it('wires + click to expand visible box count in panel source', () => {
@@ -145,6 +164,26 @@ describe('mobile blackjack layout fix', () => {
     it('keeps tray full width on mobile without horizontal overflow', () => {
       expect(SHARED_CSS).toMatch(
         /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--bottom \.bj-casino__tray-wrap[\s\S]*width:\s*100%/,
+      );
+    });
+
+    it('reserves safe-area padding above browser chrome for mobile tray', () => {
+      expect(SHARED_CSS).toMatch(
+        /--bj-zone-tray-padding-bottom:\s*max\(0\.85rem,\s*calc\(env\(safe-area-inset-bottom/,
+      );
+      expect(CHIP_CSS).toMatch(
+        /padding-bottom:\s*max\(0\.85rem,\s*calc\(env\(safe-area-inset-bottom/,
+      );
+    });
+  });
+
+  describe('E — mobile action button integration', () => {
+    it('uses compact casino-style hit/stand tokens in mobile actions zone', () => {
+      expect(SHARED_CSS).toMatch(
+        /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--hit[\s\S]*min-height:\s*1\.55rem/,
+      );
+      expect(SHARED_CSS).toMatch(
+        /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--stand[\s\S]*border-radius:\s*0\.38rem/,
       );
     });
   });

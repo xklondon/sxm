@@ -82,7 +82,7 @@ describe('layout shell reset — Full Table + Card View', () => {
 
     expect(SHARED_CSS).toContain(MOBILE_LAYOUT_MEDIA);
     expect(SHARED_CSS).toMatch(/@media \(orientation: landscape\)/);
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-dealer-height: 6.25rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-dealer-height: 6rem');
     expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2.65rem');
 
     const cardsBlock =

@@ -1577,9 +1577,26 @@ export function BlackjackPanel({
   }
 
   function renderPlayerBoxesArc() {
+    const addBoxButton =
+      canAddVisibleBox && inBetting ? (
+        <button
+          type="button"
+          className="bj-player-boxes-wrap__add"
+          aria-label="Add player box"
+          onClick={() =>
+            setExpandedVisibleBoxCount((count) =>
+              Math.min(MAX_BOXES, Math.max(count, effectiveVisibleBoxCount) + 1),
+            )
+          }
+        >
+          +
+        </button>
+      ) : null;
+
     return (
       <div className="bj-player-boxes-wrap">
         <div className="bj-player-boxes-wrap__row">
+          {deviceView === 'mobile' ? addBoxButton : null}
           <div
             className={[
               'bj-arc',
@@ -1595,20 +1612,7 @@ export function BlackjackPanel({
                 : renderEmptyBoxSlot(slot.slotNumber),
             )}
           </div>
-          {canAddVisibleBox && inBetting ? (
-            <button
-              type="button"
-              className="bj-player-boxes-wrap__add"
-              aria-label="Add player box"
-              onClick={() =>
-                setExpandedVisibleBoxCount((count) =>
-                  Math.min(MAX_BOXES, Math.max(count, effectiveVisibleBoxCount) + 1),
-                )
-              }
-            >
-              +
-            </button>
-          ) : null}
+          {deviceView !== 'mobile' ? addBoxButton : null}
         </div>
       </div>
     );

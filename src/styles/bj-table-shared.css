@@ -159,13 +159,14 @@
     --bj-mobile-mini-hand-width: 2.55rem;
     --bj-mobile-mini-hand-max-width: 2.85rem;
     --bj-mobile-mini-hand-height: 2.45rem;
-    --bj-mobile-box-width: 5.35rem;
-    --bj-mobile-box-height: 4.8rem;
-    --bj-mobile-box-card-scale: 1.12;
-    --bj-mobile-box-gap: 0.12rem;
+    --bj-mobile-box-width: 5.85rem;
+    --bj-mobile-box-height: 5.1rem;
+    --bj-mobile-box-card-scale: 1.15;
+    --bj-mobile-box-gap: 0.06rem;
+    --bj-full-table-box-padding: 0.06rem 0.08rem 0.06rem;
     --bj-mobile-felt-min-height: 0;
     --bj-mobile-felt-fill-grow: 1 1 auto;
-    --bj-mobile-table-canvas-height: min(calc(100dvh - 0.75rem), calc(100svh - 0.75rem));
+    --bj-mobile-table-canvas-height: min(calc(100dvh - 0.35rem), calc(100svh - 0.35rem));
     --bj-mobile-table-width: 100%;
     --bj-mobile-rail-width: 100%;
     --bj-mobile-felt-width: 100%;
@@ -176,9 +177,10 @@
     --bj-mobile-dealer-oracle-width: 4.75rem;
     --bj-mobile-zone-command-top-gap: 0.62rem;
     --bj-mobile-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-    --bj-mobile-rail-padding: 0.28rem 0.55rem max(0.28rem, env(safe-area-inset-bottom, 0px));
-    --bj-zone-tray-padding-bottom: max(0.55rem, env(safe-area-inset-bottom, 0px));
-    --bj-mobile-zone-dealer-height: 6.25rem;
+    --bj-mobile-rail-padding: 0.28rem 0.42rem max(0.55rem, calc(env(safe-area-inset-bottom, 0px) + 0.35rem));
+    --bj-zone-tray-padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.4rem));
+    --bj-mobile-tray-inner-reserve: 0.35rem;
+    --bj-mobile-zone-dealer-height: 6rem;
     --bj-mobile-zone-command-height: 2.65rem;
     --bj-zone-command-max-height: 4rem;
     --bj-mobile-zone-actions-height: 2.9rem;
@@ -228,10 +230,11 @@
   /* Mobile Full Table + Card View — one felt/rail/box visual system. */
   .bj-view-full-mobile,
   .bj-view-card-mobile {
-    --bj-mobile-box-width: 5.35rem;
-    --bj-mobile-box-height: 4.8rem;
-    --bj-mobile-box-card-scale: 1.12;
-    --bj-mobile-box-gap: 0.12rem;
+    --bj-mobile-box-width: 5.85rem;
+    --bj-mobile-box-height: 5.1rem;
+    --bj-mobile-box-card-scale: 1.15;
+    --bj-mobile-box-gap: 0.06rem;
+    --bj-full-table-box-padding: 0.06rem 0.08rem 0.06rem;
     --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
     --bj-zone-command-height: var(--bj-mobile-zone-command-height);
     --bj-zone-actions-height: var(--bj-mobile-zone-actions-height);
@@ -239,7 +242,7 @@
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
     --bj-zone-tray-height: var(--bj-mobile-zone-tray-height);
     --bj-zone-boxes-tray-gap: 0.65rem;
-    --bj-zone-tray-padding-bottom: max(0.55rem, env(safe-area-inset-bottom, 0px));
+    --bj-zone-tray-padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.4rem));
     width: var(--bj-mobile-table-width);
     max-width: var(--bj-mobile-table-width);
     min-width: 0;
@@ -764,63 +767,95 @@
     box-sizing: border-box;
   }
 
-  .bj-view-full-mobile .bj-arc--visible-4,
-  .bj-view-card-mobile .bj-arc--visible-4,
-  .bj-view-full-mobile:has(.bj-arc--visible-4),
-  .bj-view-card-mobile:has(.bj-arc--visible-4) {
-    --bj-mobile-box-width: 5.35rem;
-    --bj-mobile-box-height: 4.8rem;
-    --bj-mobile-box-card-scale: 1.12;
-    --bj-mobile-box-gap: 0.12rem;
-    --bj-table-card-width: calc(1.95rem * 1.12);
-    --bj-table-card-height: calc(2.65rem * 1.12);
-    --bj-table-card-overlap-2: calc(0.95rem * 1.08);
-    --bj-table-card-overlap-3: calc(1.35rem * 1.08);
-    --bj-table-card-overlap-4plus: calc(1.65rem * 1.08);
-    --bj-mobile-zone-boxes-height: calc(4.8rem + var(--bj-box-value-band-height) + 0.18rem);
+  .bj-view-full-mobile .bj-arc--player-boxes.bj-arc--visible-4,
+  .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-4,
+  .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-4),
+  .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-4) {
+    --bj-mobile-box-width: 5.85rem;
+    --bj-mobile-box-height: 5.1rem;
+    --bj-mobile-box-card-scale: 1.15;
+    --bj-mobile-box-gap: 0.06rem;
+    --bj-mobile-zone-boxes-height: calc(5.1rem + var(--bj-box-value-band-height) + 0.18rem);
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
   }
 
-  .bj-view-full-mobile .bj-arc--visible-5,
-  .bj-view-card-mobile .bj-arc--visible-5,
-  .bj-view-full-mobile:has(.bj-arc--visible-5),
-  .bj-view-card-mobile:has(.bj-arc--visible-5) {
-    --bj-mobile-box-width: 4.3rem;
-    --bj-mobile-box-height: 3.95rem;
-    --bj-mobile-box-card-scale: 1;
-    --bj-mobile-box-gap: 0.1rem;
-    --bj-table-card-width: 1.95rem;
-    --bj-table-card-height: 2.65rem;
-    --bj-mobile-zone-boxes-height: calc(3.95rem + var(--bj-box-value-band-height) + 0.18rem);
+  .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-4 {
+    --bj-table-card-width: calc(1.95rem * 1.32);
+    --bj-table-card-height: calc(2.65rem * 1.32);
+    --bj-table-card-overlap-2: calc(0.95rem * 1.15);
+    --bj-table-card-overlap-3: calc(1.35rem * 1.15);
+    --bj-table-card-overlap-4plus: calc(1.65rem * 1.15);
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes.bj-arc--visible-5,
+  .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-5,
+  .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-5),
+  .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-5) {
+    --bj-mobile-box-width: 4.65rem;
+    --bj-mobile-box-height: 4.2rem;
+    --bj-mobile-box-card-scale: 1.02;
+    --bj-mobile-box-gap: 0.05rem;
+    --bj-mobile-zone-boxes-height: calc(4.2rem + var(--bj-box-value-band-height) + 0.18rem);
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
   }
 
-  .bj-view-full-mobile .bj-arc--visible-6,
-  .bj-view-card-mobile .bj-arc--visible-6,
-  .bj-view-full-mobile:has(.bj-arc--visible-6),
-  .bj-view-card-mobile:has(.bj-arc--visible-6) {
-    --bj-mobile-box-width: 3.6rem;
-    --bj-mobile-box-height: 3.35rem;
-    --bj-mobile-box-card-scale: 0.88;
-    --bj-mobile-box-gap: 0.08rem;
+  .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-5 {
+    --bj-table-card-width: calc(1.95rem * 1.16);
+    --bj-table-card-height: calc(2.65rem * 1.16);
+    --bj-table-card-overlap-2: calc(0.95rem * 1.05);
+    --bj-table-card-overlap-3: calc(1.35rem * 1.05);
+    --bj-table-card-overlap-4plus: calc(1.65rem * 1.05);
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes.bj-arc--visible-6,
+  .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-6,
+  .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-6),
+  .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-6) {
+    --bj-mobile-box-width: 3.85rem;
+    --bj-mobile-box-height: 3.55rem;
+    --bj-mobile-box-card-scale: 0.9;
+    --bj-mobile-box-gap: 0.04rem;
+    --bj-mobile-zone-boxes-height: calc(3.55rem + var(--bj-box-value-band-height) + 0.18rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-6 {
+    --bj-table-card-width: calc(1.95rem * 1.02);
+    --bj-table-card-height: calc(2.65rem * 1.02);
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes.bj-arc--visible-7,
+  .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-7,
+  .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-7),
+  .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-7) {
+    --bj-mobile-box-width: 3.25rem;
+    --bj-mobile-box-height: 3.05rem;
+    --bj-mobile-box-card-scale: 0.78;
+    --bj-mobile-box-gap: 0.03rem;
+    --bj-mobile-zone-boxes-height: calc(3.05rem + var(--bj-box-value-band-height) + 0.18rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-7 {
     --bj-table-card-width: calc(1.95rem * 0.88);
     --bj-table-card-height: calc(2.65rem * 0.88);
-    --bj-mobile-zone-boxes-height: calc(3.35rem + var(--bj-box-value-band-height) + 0.18rem);
-    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
   }
 
-  .bj-view-full-mobile .bj-arc--visible-7,
-  .bj-view-card-mobile .bj-arc--visible-7,
-  .bj-view-full-mobile:has(.bj-arc--visible-7),
-  .bj-view-card-mobile:has(.bj-arc--visible-7) {
-    --bj-mobile-box-width: 3.05rem;
-    --bj-mobile-box-height: 2.9rem;
-    --bj-mobile-box-card-scale: 0.76;
-    --bj-mobile-box-gap: 0.06rem;
-    --bj-table-card-width: calc(1.95rem * 0.76);
-    --bj-table-card-height: calc(2.65rem * 0.76);
-    --bj-mobile-zone-boxes-height: calc(2.9rem + var(--bj-box-value-band-height) + 0.18rem);
-    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table {
+    flex: 1 1 auto;
+    min-height: 3.35rem;
+    max-height: none;
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-arc--cards .bj-arc__slot {
+    transform: rotate(var(--arc-rot, 0deg)) scale(0.96);
+    transform-origin: center bottom;
+  }
+
+  .bj-view-full-mobile .bj-arc--cards .bj-arc__cards--stack-vertical .bj-arc__cards-stack {
+    width: var(--bj-table-card-width);
   }
 
   .bj-view-full-mobile .bj-phone-view__mini-hand-card-stack,
@@ -835,10 +870,61 @@
       scale(calc(0.44 * var(--bj-mobile-box-card-scale, 1)));
   }
 
-  .bj-view-full-mobile .bj-arc--cards .bj-arc__slot,
-  .bj-view-card-mobile .bj-arc--cards .bj-arc__slot {
-    transform: rotate(var(--arc-rot, 0deg))
-      scale(calc(0.82 * var(--bj-mobile-box-card-scale, 1)));
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions {
+    margin-top: 0;
+    padding-top: var(--bj-cards-actions-gap);
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions {
+    gap: 0.1rem;
+    padding: 0.08rem 0.2rem;
+    max-width: 100%;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row {
+    gap: 0.32rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row + .bj-table-actions__row,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row + .bj-table-actions__row {
+    margin-top: 0.06rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--hit,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--hit {
+    background: rgb(8 22 16 / 0.82);
+    color: rgb(251 191 36 / 0.98);
+    border: 1px solid rgb(251 191 36 / 0.62);
+    box-shadow: none;
+    min-height: 1.55rem;
+    max-height: 1.55rem;
+    padding: 0.14rem 0.55rem;
+    border-radius: 0.38rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--stand,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--stand {
+    background: rgb(0 0 0 / 0.28);
+    color: rgb(235 245 240 / 0.95);
+    border: 1px solid rgb(255 255 255 / 0.22);
+    min-height: 1.55rem;
+    max-height: 1.55rem;
+    padding: 0.14rem 0.55rem;
+    border-radius: 0.38rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__btn--sm,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__btn--sm {
+    min-height: 1.35rem;
+    max-height: 1.35rem;
+    padding: 0.1rem 0.42rem;
+    border-radius: 0.32rem;
+    background: rgb(0 0 0 / 0.22);
+    border: 1px solid rgb(251 191 36 / 0.28);
+    color: rgb(251 191 36 / 0.88);
   }
 
   .bj-view-full-mobile .bj-table-zone--dealer .dealer-block,
@@ -853,12 +939,6 @@
     justify-content: flex-start;
     padding-top: var(--bj-mobile-zone-command-top-gap);
     padding-bottom: 0;
-  }
-
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions,
-  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions {
-    margin-top: 0;
-    padding-top: var(--bj-cards-actions-gap);
   }
 
   .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command,
@@ -2874,7 +2954,7 @@
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height, 6rem);
     --bj-zone-tray-height: var(--bj-mobile-zone-tray-height, 3.75rem);
     --bj-zone-boxes-tray-gap: 0.65rem;
-    --bj-zone-tray-padding-bottom: max(0.55rem, env(safe-area-inset-bottom, 0px));
+    --bj-zone-tray-padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.4rem));
     width: 100%;
     max-width: 100%;
     min-width: 0;
