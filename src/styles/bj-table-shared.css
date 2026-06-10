@@ -169,7 +169,7 @@
     --bj-mobile-felt-min-height: 0;
     --bj-mobile-felt-fill-grow: 1 1 auto;
     --bj-mobile-table-canvas-height: calc(
-      100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.5rem
+      100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2.75rem
     );
     --bj-mobile-table-width: 100%;
     --bj-mobile-rail-width: 100%;
@@ -548,7 +548,8 @@
     width: var(--bj-mobile-layout-shell-width);
     max-width: var(--bj-mobile-layout-shell-width);
     min-width: 0;
-    height: var(--bj-mobile-layout-shell-height);
+    height: auto;
+    max-height: var(--bj-mobile-table-canvas-height);
     align-self: stretch;
     box-sizing: border-box;
     overflow-x: hidden;
@@ -593,40 +594,34 @@
 
   .bj-view-full-mobile .bj-arc--player-boxes,
   .bj-view-card-mobile .bj-arc--player-boxes {
-    flex: 1 1 auto;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-items: flex-end;
+    display: grid;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+    column-gap: min(0.08rem, var(--bj-mobile-box-gap, 0.03rem));
+    row-gap: 0;
+    align-items: end;
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    gap: var(--bj-mobile-box-gap, 0.03rem);
     padding: 0 0.02rem 0.06rem;
     box-sizing: border-box;
     overflow-x: hidden;
     overflow-y: visible;
     margin-top: 0;
     --bj-full-table-box-width: calc(
-      (100% - (var(--slot-count, 4) - 1) * var(--bj-mobile-box-gap, 0.03rem)) / var(--slot-count, 4)
+      (100% - (var(--slot-count, 4) - 1) * min(0.08rem, var(--bj-mobile-box-gap, 0.03rem))) /
+        var(--slot-count, 4)
     );
     --bj-full-table-box-height: max(
       var(--bj-mobile-box-height),
-      calc(var(--bj-full-table-box-width) * 0.86)
+      calc(var(--bj-full-table-box-width) * 0.95)
     );
-  }
-
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes,
-  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes {
-    overflow-x: hidden;
-    overflow-y: visible;
   }
 
   .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot {
-    flex: 1 1 0;
-    width: auto;
-    max-width: none;
+    width: 100%;
     min-width: 0;
+    max-width: none;
     transform: none;
   }
 
@@ -655,11 +650,12 @@
   .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--has-stake,
   .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake {
-    width: var(--bj-full-table-box-width);
-    min-width: var(--bj-full-table-box-width);
-    max-width: var(--bj-full-table-box-width);
-    height: var(--bj-full-table-box-height);
-    min-height: var(--bj-full-table-box-height);
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1.05 / 1;
     transform: none;
     margin: 0;
     padding: var(--bj-full-table-box-padding);
@@ -850,23 +846,25 @@
 
   .bj-view-full-mobile .bj-arc--cards,
   .bj-view-card-mobile .bj-arc--cards {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: var(--bj-mobile-box-gap, 0.03rem);
+    display: grid;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+    column-gap: min(0.08rem, var(--bj-mobile-box-gap, 0.03rem));
+    row-gap: 0;
+    align-items: end;
     padding: 0 0.02rem 0.08rem;
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
     --bj-full-table-box-width: calc(
-      (100% - (var(--slot-count, 4) - 1) * var(--bj-mobile-box-gap, 0.03rem)) / var(--slot-count, 4)
+      (100% - (var(--slot-count, 4) - 1) * min(0.08rem, var(--bj-mobile-box-gap, 0.03rem))) /
+        var(--slot-count, 4)
     );
   }
 
   .bj-view-full-mobile .bj-arc--cards .bj-arc__slot,
   .bj-view-card-mobile .bj-arc--cards .bj-arc__slot {
-    flex: 1 1 0;
+    width: 100%;
     min-width: 0;
-    width: auto;
     max-width: none;
     transform: none;
   }
@@ -3255,5 +3253,38 @@
   .bj-view-full-mobile .bj-casino__tray-hint,
   .bj-view-card-mobile .bj-casino__tray-hint {
     display: none;
+  }
+}
+
+/* Mobile cascade tail — wins over global full-arc min-width and shell overflow. */
+@media (max-width: 720px) {
+  .bj-view-full-mobile .bj-table-layout-shell,
+  .bj-view-card-mobile .bj-table-layout-shell {
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes {
+    display: grid;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+    column-gap: min(0.08rem, var(--bj-mobile-box-gap, 0.03rem));
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes .bj-player-box-mobile,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes .bj-player-box-mobile {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    transform: none;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--cards .bj-arc--cards,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards .bj-arc--cards {
+    display: grid;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+    column-gap: min(0.08rem, var(--bj-mobile-box-gap, 0.03rem));
   }
 }

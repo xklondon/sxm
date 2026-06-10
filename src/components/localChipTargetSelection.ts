@@ -218,6 +218,32 @@ export type ChipTargetResolutionReason =
   | 'tray-resolution-null'
   | 'hidden-box-filter';
 
+export type ChipTargetBettingSource = 'ref' | 'state' | 'merged' | 'drop';
+
+export type GetCurrentChipTargetForBettingResult =
+  | { ok: true; target: PlaceBetTarget; source: ChipTargetBettingSource }
+  | { ok: false; reason: ChipTargetResolutionReason; source: ChipTargetBettingSource | null };
+
+/** Prefer synchronous ref over possibly stale React state during rapid tray taps. */
+export function mergeLocalChipTargetRefAndState(
+  ref: LocalSelectedChipTarget,
+  state: LocalSelectedChipTarget,
+): LocalSelectedChipTarget {
+  if (ref.hasUserSelected && ref.target) {
+    return ref;
+  }
+  if (state.hasUserSelected && state.target) {
+    return state;
+  }
+  if (ref.target) {
+    return {
+      target: ref.target,
+      hasUserSelected: ref.hasUserSelected || state.hasUserSelected,
+    };
+  }
+  return state;
+}
+
 /** Dev/test logging when chip tray target resolves to null. */
 export function logChipTargetResolution(
   reason: ChipTargetResolutionReason,
@@ -242,6 +268,58 @@ export function logChipTargetResolution(
  * Canonical chip tray/drop target — local selection only, never selectedSeatId.
  * Falls back to assigned box only before any user pick; survives transient sync gaps.
  */
+export interface GetCurrentChipTargetForBettingInput {
+  ref: LocalSelectedChipTarget;
+  state: LocalSelectedChipTarget;
+  gameState: GameState;
+  online: boolean;
+  viewerPersonId: string | null;
+  visibleBoxCount?: number;
+  explicitDropTarget?: PlaceBetTarget | null;
+}
+
+/**
+ * Canonical chip tray / drop target for betting — reads ref first, then state fallback.
+ * Never uses selectedSeatId.
+ */
+export function getCurrentChipTargetForBetting(
+  input: GetCurrentChipTargetForBettingInput,
+): GetCurrentChipTargetForBettingResult {
+  if (input.explicitDropTarget) {
+    return { ok: true, target: input.explicitDropTarget, source: 'drop' };
+  }
+
+  const merged = mergeLocalChipTargetRefAndState(input.ref, input.state);
+  const source: ChipTargetBettingSource =
+    input.ref.hasUserSelected && input.ref.target
+      ? 'ref'
+      : input.state.hasUserSelected && input.state.target
+        ? 'state'
+        : 'merged';
+
+  const target = resolveCurrentChipTarget({
+    local: merged,
+    state: input.gameState,
+    online: input.online,
+    viewerPersonId: input.viewerPersonId,
+    visibleBoxCount: input.visibleBoxCount,
+  });
+
+  if (!target) {
+    const ui = uiFromLocalChipTarget(merged.target);
+    const reason: ChipTargetResolutionReason =
+      merged.target || merged.hasUserSelected ? 'tray-resolution-null' : 'no-local-target';
+    logChipTargetResolution(reason, {
+      ...ui,
+      hasUserSelected: merged.hasUserSelected,
+      visibleBoxCount: input.visibleBoxCount,
+    });
+    return { ok: false, reason, source };
+  }
+
+  return { ok: true, target, source };
+}
+
 export function resolveCurrentChipTarget(input: ResolveCurrentChipTargetInput): PlaceBetTarget | null {
   const { local, state, online, viewerPersonId, visibleBoxCount } = input;
   const target = resolveTrayTargetFromLocalSelection(local, state, online, viewerPersonId);

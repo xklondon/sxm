@@ -71,9 +71,9 @@ describe('mobile blackjack layout fix', () => {
       expect(SHARED_CSS).not.toMatch(/--bj-cloth-mobile-width:\s*min\(118%/);
     });
 
-    it('fits box width to slot count instead of fixed desktop widths on mobile', () => {
+    it('fits box width to slot count with mobile grid columns', () => {
       expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]*--bj-full-table-box-width:\s*calc\([\s\S]*var\(--slot-count/,
+        /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]*grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*minmax\(0,\s*1fr\)\)/,
       );
       expect(SHARED_CSS).toMatch(
         /@media \(min-width: 721px\)[\s\S]*\.bj-arc--visible-4[\s\S]*--bj-full-table-box-width:/,
@@ -110,19 +110,19 @@ describe('mobile blackjack layout fix', () => {
       );
     });
 
-    it('reserves box top visibility without negative margin hacks', () => {
+    it('uses grid columns for mobile player boxes without pill min-width caps', () => {
       expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-table-zone--boxes[\s\S]*overflow-y:\s*visible/,
+        /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-player-box-mobile[\s\S]{0,2200}min-width:\s*0/,
       );
       expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-table-zone--boxes[\s\S]*padding-top:/,
+        /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-player-box-mobile[\s\S]{0,2200}aspect-ratio:\s*1\.05 \/ 1/,
       );
-      const mobileBoxBlock = SHARED_CSS.slice(
-        SHARED_CSS.indexOf('.bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile'),
-        SHARED_CSS.indexOf('.bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile') + 1200,
+      expect(SHARED_CSS).not.toMatch(
+        /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]{0,2400}min-width:\s*var\(--bj-full-table-box-width\)/,
       );
-      expect(mobileBoxBlock).not.toMatch(/margin-top:\s*-/);
-      expect(mobileBoxBlock).not.toMatch(/translateY\(/i);
+      expect(SHARED_CSS).toMatch(
+        /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]*transform:\s*none/,
+      );
     });
   });
 
@@ -168,7 +168,7 @@ describe('mobile blackjack layout fix', () => {
       expect(html).toContain('bj-value-chips__row--label');
       expect(html.indexOf('Available: 500')).toBeLessThan(html.indexOf(DEFAULT_TABLE_TRAY_LABEL));
       expect(CHIP_CSS).toMatch(
-        /@media \(max-width: 720px\)[\s\S]*\.bj-view-full-mobile \.bj-value-chips[\s\S]*flex-direction:\s*column/,
+        /@media \(max-width: 720px\)[\s\S]*\.bj-view-full-mobile \.bj-value-chips[\s\S]*display:\s*grid/,
       );
     expect(CHIP_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-value-chips__stash[\s\S]*justify-content:\s*center/,

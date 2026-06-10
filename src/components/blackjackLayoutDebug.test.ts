@@ -18,14 +18,27 @@ function shellRenderBlock(): string {
   return SHELL_SRC.match(/return \(\s*[\s\S]*?\n  \);/)?.[0] ?? '';
 }
 
+const DEBUG_PANEL_SRC = readFileSync(
+  join(process.cwd(), 'src/components/BlackjackLayoutDebugPanel.tsx'),
+  'utf8',
+);
+
 describe('blackjack layout debug overlay', () => {
   it('is disabled by default and only enables with ?layoutDebug=1', () => {
     expect(DEBUG_SRC).toContain('BLACKJACK_LAYOUT_DEBUG_FORCE = false');
+    expect(DEBUG_SRC).toContain('BLACKJACK_UI_FIX_VERSION');
     expect(isBlackjackLayoutDebugEnabled('')).toBe(false);
     expect(isBlackjackLayoutDebugEnabled('?foo=1')).toBe(false);
     expect(isBlackjackLayoutDebugEnabled('?layoutDebug=0')).toBe(false);
     expect(isBlackjackLayoutDebugEnabled('?layoutDebug=1')).toBe(true);
     expect(isBlackjackLayoutDebugEnabled('?view=card&layoutDebug=1')).toBe(true);
+  });
+
+  it('renders diagnostics panel only when layoutDebug is enabled', () => {
+    expect(PANEL_SRC).toContain('BlackjackLayoutDebugPanel');
+    expect(PANEL_SRC).toContain('enabled={layoutDebug}');
+    expect(DEBUG_PANEL_SRC).toContain('BLACKJACK_UI_FIX_VERSION');
+    expect(DEBUG_PANEL_SRC).toMatch(/if \(!enabled\) \{\s*return null;/);
   });
 
   it('wires debug class only when layoutDebug prop is true', () => {

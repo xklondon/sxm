@@ -8,6 +8,7 @@ import { tableAfterStartPlaying, boxPlayerId } from '../engine/blackjack/sanity/
 import {
   affirmChipTargetAfterPlacement,
   createEmptyLocalChipTarget,
+  getCurrentChipTargetForBetting,
   reconcileLocalChipTarget,
   resolveCurrentChipTarget,
   selectLocalChipTarget,
@@ -243,8 +244,61 @@ describe('repeat chip stacking — canonical target resolution', () => {
     expect(PANEL_SRC).toContain('logChipTargetResolution');
   });
 
-  it('BlackjackPanel uses resolveCurrentChipTarget for tray and affirm after placement', () => {
-    expect(PANEL_SRC).toContain('resolveCurrentChipTarget');
+  it('immediate second tray tap reads ref before React state commits', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    state = claimBoxSlot(state, 2);
+    const box2 = boxPlayerId(state, 2)!;
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+    const refTarget = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box2 });
+    const staleState = createEmptyLocalChipTarget();
+
+    for (const amount of [5, 5] as const) {
+      const result = getCurrentChipTargetForBetting({
+        ref: refTarget,
+        state: staleState,
+        gameState: state,
+        online: false,
+        viewerPersonId: personId,
+        visibleBoxCount: 4,
+      });
+      expect(result.ok).toBe(true);
+      if (!result.ok) continue;
+      expect(result.source).toBe('ref');
+      expect(result.target).toEqual({ kind: 'box', boxId: box2 });
+      state = addChipToBoxStake(state, box2, amount, personId);
+    }
+    expect(getStakeForBox(state, box2)).toBe(10);
+  });
+
+  it('Tap a box to bet path only when ref and state have no target', () => {
+    const state = tableAfterStartPlaying(500);
+    const empty = getCurrentChipTargetForBetting({
+      ref: createEmptyLocalChipTarget(),
+      state: createEmptyLocalChipTarget(),
+      gameState: state,
+      online: false,
+      viewerPersonId: null,
+      visibleBoxCount: 4,
+    });
+    expect(empty.ok).toBe(false);
+    if (empty.ok) return;
+    expect(empty.reason).toBe('no-local-target');
+
+    const box2 = boxPlayerId(claimBoxSlot(state, 2), 2)!;
+    const withRef = getCurrentChipTargetForBetting({
+      ref: selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box2 }),
+      state: createEmptyLocalChipTarget(),
+      gameState: state,
+      online: false,
+      viewerPersonId: null,
+      visibleBoxCount: 4,
+    });
+    expect(withRef.ok).toBe(true);
+  });
+
+  it('BlackjackPanel uses getCurrentChipTargetForBetting for tray and affirm after placement', () => {
+    expect(PANEL_SRC).toContain('getCurrentChipTargetForBetting');
     expect(PANEL_SRC).toContain('affirmChipTargetAfterPlacement');
     expect(PANEL_SRC).toMatch(
       /function handleChipTrayClick\(value: ChipValue\) \{[\s\S]*resolveActiveChipTrayTarget\(\)/,
@@ -252,5 +306,6 @@ describe('repeat chip stacking — canonical target resolution', () => {
     expect(PANEL_SRC).toContain('preserveLocalChipTargetAfterStateSync(nextState, target)');
     expect(PANEL_SRC).toContain('selectLocalTarget(placementTarget)');
     expect(PANEL_SRC).not.toContain('resolveChipTrayBetTarget');
+    expect(PANEL_SRC).not.toMatch(/localSelectedChipTargetRef\.current = localChipSelection/);
   });
 });

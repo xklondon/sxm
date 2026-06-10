@@ -126,7 +126,8 @@ describe('box selection — single chip target', () => {
     expect(src).toContain('selectedBettingBoxId');
     expect(src).toContain('selectedBettingBoxId: selectedBettingBoxIdForUi');
     expect(src).toContain('selectedBettingSlotNumber');
-    expect(src).not.toContain('selectedBettingBoxId={selectedBettingBoxIdForUi}');
+    expect(src).toContain('BlackjackLayoutDebugPanel');
+    expect(src.match(/selectedBettingBoxId=\{selectedBettingBoxIdForUi\}/g)?.length ?? 0).toBe(1);
     expect(src).not.toMatch(/effectiveBoxId\s*=\s*gameState\.selectedSeatId\s*\?\?\s*defaultBlackjackSeatId/);
     expect(src).not.toMatch(/function selectBox\(boxId: string\) \{[\s\S]*selectedSeatId: boxId/);
   });
@@ -307,7 +308,7 @@ describe('box selection — single chip target', () => {
     expect(src).not.toMatch(
       /function handleChipTrayClick\(value: ChipValue\) \{[\s\S]*selectedSeatId:/,
     );
-    expect(src).toContain('resolveCurrentChipTarget');
+    expect(src).toContain('getCurrentChipTargetForBetting');
     expect(src).toContain('localSelectedChipTargetRef');
     expect(src).not.toContain('resolveChipTrayBetTarget');
   });
@@ -343,13 +344,13 @@ describe('box selection — single chip target', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
     expect(src).toContain('localSelectedChipTargetRef');
     expect(src).toContain('selectLocalChipTarget');
-    expect(src).toContain('resolveCurrentChipTarget');
+    expect(src).toContain('getCurrentChipTargetForBetting');
     expect(src).not.toMatch(/if \(!bettingOpen\) \{\s*setSelectedBettingBoxId\(playerId\)/);
   });
 
   it('chip tray target uses canonical local selection only', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-    expect(src).toContain('resolveCurrentChipTarget');
+    expect(src).toContain('getCurrentChipTargetForBetting');
     expect(src).toContain('affirmChipTargetAfterPlacement');
     expect(src).not.toContain('resolveChipTrayBetTarget');
     expect(src).not.toMatch(/function resolveActiveChipTrayTarget\(\) \{[\s\S]*selectedSeatId/);

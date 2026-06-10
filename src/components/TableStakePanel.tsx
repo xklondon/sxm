@@ -1035,7 +1035,7 @@ export function TableStakePanel({
             {isReset
               ? 'Start a new game with the players currently at this table.'
               : isStagedNew
-                ? 'Pick a game, then choose how you want to play.'
+                ? null
                 : 'Set up who plays, who banks, and how the table runs.'}
           </p>
           {renderStageIndicator()}

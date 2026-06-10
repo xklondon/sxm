@@ -57,7 +57,8 @@ import { BlackjackActionPanel } from './BlackjackActionPanel';
 import { BlackjackCommandBox } from './BlackjackCommandBox';
 import { BlackjackDealerArea } from './BlackjackDealerArea';
 import { BlackjackTableLayoutShell } from './BlackjackTableLayoutShell';
-import { isBlackjackLayoutDebugEnabled } from './blackjackLayoutDebug';
+import { isBlackjackLayoutDebugEnabled, logLayoutDebugChipTarget } from './blackjackLayoutDebug';
+import { BlackjackLayoutDebugPanel } from './BlackjackLayoutDebugPanel';
 import { BlackjackFeltClothLayer } from './BlackjackFeltClothLayer';
 import { Magic8Ball } from './magic8/Magic8Ball';
 import { buildBlackjackPlayerBoxInfo } from './blackjackPlayerBoxInfo';
@@ -69,10 +70,10 @@ import {
   affirmChipTargetAfterPlacement,
   applyDefaultAssignedChipTarget,
   createEmptyLocalChipTarget,
+  getCurrentChipTargetForBetting,
   localChipTargetsEqual,
   logChipTargetResolution,
   reconcileLocalChipTarget,
-  resolveCurrentChipTarget,
   selectLocalChipTarget,
   uiFromLocalChipTarget,
   type LocalSelectedChipTarget,
@@ -247,8 +248,7 @@ export function BlackjackPanel({
   const [localChipSelection, setLocalChipSelection] = useState<LocalSelectedChipTarget>(() =>
     createEmptyLocalChipTarget(),
   );
-  const localSelectedChipTargetRef = useRef(localChipSelection);
-  localSelectedChipTargetRef.current = localChipSelection;
+  const localSelectedChipTargetRef = useRef<LocalSelectedChipTarget>(createEmptyLocalChipTarget());
   const tapSelectRef = useRef(createTapSelectHandler());
   const SHUFFLE_ANIM_DURATION_MS = 3000;
   const [shuffleAnimating, setShuffleAnimating] = useState(false);
@@ -369,9 +369,14 @@ export function BlackjackPanel({
 
   useEffect(() => {
     const local = localSelectedChipTargetRef.current;
-    let next = reconcileLocalChipTarget(local, gameState, Boolean(onlineDispatch));
-    if (next.hasUserSelected && next.target) {
-      next = affirmChipTargetAfterPlacement(next, gameState, next.target, Boolean(onlineDispatch));
+    const online = Boolean(onlineDispatch);
+    let next = reconcileLocalChipTarget(local, gameState, online);
+    if (bettingOpen && local.hasUserSelected && local.target) {
+      if (!next.target) {
+        next = { ...local, hasUserSelected: true };
+      }
+    } else if (next.hasUserSelected && next.target) {
+      next = affirmChipTargetAfterPlacement(next, gameState, next.target, online);
     }
     if (next.hasUserSelected && !next.target && local.target) {
       commitLocalChipTarget({ ...next, target: local.target });
@@ -380,7 +385,14 @@ export function BlackjackPanel({
     if (!localChipTargetsEqual(localSelectedChipTargetRef.current, next)) {
       commitLocalChipTarget(next);
     }
-  }, [gameState.tableMeta.boxSlots, gameState.tableMeta.boxStakes, gameState.session.boxSlotNumbers, onlineDispatch, gameState.session.id]);
+  }, [
+    gameState.tableMeta.boxSlots,
+    gameState.tableMeta.boxStakes,
+    gameState.session.boxSlotNumbers,
+    onlineDispatch,
+    gameState.session.id,
+    bettingOpen,
+  ]);
 
   useEffect(() => {
     if (round?.status !== 'player-turns' || !round.activeHandKey) {
@@ -552,13 +564,15 @@ export function BlackjackPanel({
     commitLocalChipTarget(next);
   }
 
-  function resolveActiveChipTrayTarget(): PlaceBetTarget | null {
-    return resolveCurrentChipTarget({
-      local: localSelectedChipTargetRef.current,
-      state: gameStateRef.current,
+  function resolveActiveChipTrayTarget(explicitDropTarget?: PlaceBetTarget | null) {
+    return getCurrentChipTargetForBetting({
+      ref: localSelectedChipTargetRef.current,
+      state: localChipSelection,
+      gameState: gameStateRef.current,
       online: Boolean(onlineDispatch),
       viewerPersonId,
       visibleBoxCount: effectiveVisibleBoxCount,
+      explicitDropTarget,
     });
   }
 
@@ -715,22 +729,27 @@ export function BlackjackPanel({
   }
 
   function handleChipTrayClick(value: ChipValue) {
-    const local = localSelectedChipTargetRef.current;
-    const target = resolveActiveChipTrayTarget();
-    if (!target) {
-      const ui = uiFromLocalChipTarget(local.target);
-      logChipTargetResolution(
-        local.target || local.hasUserSelected ? 'tray-resolution-null' : 'no-local-target',
-        {
-          ...ui,
-          hasUserSelected: local.hasUserSelected,
-          visibleBoxCount: effectiveVisibleBoxCount,
-        },
-      );
+    const result = resolveActiveChipTrayTarget();
+    if (layoutDebug) {
+      logLayoutDebugChipTarget({
+        refTarget: localSelectedChipTargetRef.current.target,
+        refHasUserSelected: localSelectedChipTargetRef.current.hasUserSelected,
+        stateTarget: localChipSelection.target,
+        result,
+      });
+    }
+    if (!result.ok) {
+      const local = localSelectedChipTargetRef.current;
+      const ui = uiFromLocalChipTarget(local.target ?? localChipSelection.target);
+      logChipTargetResolution(result.reason, {
+        ...ui,
+        hasUserSelected: local.hasUserSelected || localChipSelection.hasUserSelected,
+        visibleBoxCount: effectiveVisibleBoxCount,
+      });
       setError('Tap a box to bet');
       return;
     }
-    placeBetAtTarget(target, value);
+    placeBetAtTarget(result.target, value);
   }
 
   function renderCard(cardId: string, faceDown = false, compact = true, reactKey?: string) {
@@ -2063,6 +2082,18 @@ export function BlackjackPanel({
       {thisTableInline && sideRailPanel && renderSideRailPanel('dock')}
       </div>
       )}
+      <BlackjackLayoutDebugPanel
+        enabled={layoutDebug}
+        layoutRootRef={layoutRootRef}
+        viewRootClass={viewRootClass}
+        deviceView={deviceView}
+        isMobileViewport={isMobileViewport}
+        visibleBoxCount={effectiveVisibleBoxCount}
+        selectedBettingBoxId={selectedBettingBoxIdForUi}
+        selectedBettingSlotNumber={selectedBettingSlotNumber}
+        chipTargetPreview={layoutDebug ? resolveActiveChipTrayTarget() : null}
+        trayComponentLabel="ValueAndChipsBar · bj-value-chips · bj-table-zone--bottom"
+      />
     </div>
   );
 }
