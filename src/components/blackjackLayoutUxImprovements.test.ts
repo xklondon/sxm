@@ -73,16 +73,30 @@ describe('blackjack layout UX improvements', () => {
       expect(PANEL_SRC).toContain('DEFAULT_VISIBLE_TABLE_BOXES');
       expect(PANEL_SRC).toContain('expandedVisibleBoxCount');
       expect(PANEL_SRC).toContain('bj-player-boxes-wrap__add');
+      expect(PANEL_SRC).toContain('aria-label="Add player box"');
       expect(SHARED_CSS).toContain('.bj-arc--visible-4');
       expect(SHARED_CSS).toContain('.bj-arc--visible-7');
     });
 
-    it('uses larger box tokens at 4 boxes than at 7', () => {
-      const four = SHARED_CSS.match(/\.bj-arc--visible-4\s*\{[\s\S]*?\}/)?.[0] ?? '';
-      const seven = SHARED_CSS.match(/\.bj-arc--visible-7\s*\{[\s\S]*?\}/)?.[0] ?? '';
+    it('uses larger box tokens at 4 boxes than at 7 on desktop', () => {
+      const four = SHARED_CSS.match(
+        /@media \(min-width: 721px\)[\s\S]*\.bj-arc--visible-4\s*\{[\s\S]*?\}/,
+      )?.[0] ?? '';
+      const seven = SHARED_CSS.match(
+        /@media \(min-width: 721px\)[\s\S]*\.bj-arc--visible-7\s*\{[\s\S]*?\}/,
+      )?.[0] ?? '';
       expect(four).toContain('--bj-full-table-box-width');
       expect(four).toMatch(/\*\s*1\.22/);
       expect(seven).toContain('var(--bj-player-box-width)');
+    });
+
+    it('uses larger mobile box tokens at 4 boxes than at 7', () => {
+      expect(SHARED_CSS).toMatch(
+        /\.bj-view-full-mobile \.bj-arc--visible-4[\s\S]*--bj-mobile-box-width:\s*5\.35rem/,
+      );
+      expect(SHARED_CSS).toMatch(
+        /\.bj-view-full-mobile \.bj-arc--visible-7[\s\S]*--bj-mobile-box-width:\s*3\.05rem/,
+      );
     });
 
     it('avoids horizontal scroll on mobile table shell', () => {

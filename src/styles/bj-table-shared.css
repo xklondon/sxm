@@ -159,6 +159,10 @@
     --bj-mobile-mini-hand-width: 2.55rem;
     --bj-mobile-mini-hand-max-width: 2.85rem;
     --bj-mobile-mini-hand-height: 2.45rem;
+    --bj-mobile-box-width: 5.35rem;
+    --bj-mobile-box-height: 4.8rem;
+    --bj-mobile-box-card-scale: 1.12;
+    --bj-mobile-box-gap: 0.12rem;
     --bj-mobile-felt-min-height: 0;
     --bj-mobile-felt-fill-grow: 1 1 auto;
     --bj-mobile-table-canvas-height: min(calc(100dvh - 0.75rem), calc(100svh - 0.75rem));
@@ -188,7 +192,7 @@
     --bj-zone-cards-min-height: var(--bj-mobile-zone-cards-min-height);
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
     --bj-zone-tray-height: var(--bj-mobile-zone-tray-height);
-    --bj-cloth-mobile-width: min(118%, 100vw);
+    --bj-cloth-mobile-width: 100%;
     --bj-cloth-mobile-scale: 1.28;
     --bj-cloth-mobile-bottom: calc(var(--bj-zone-tray-height) + 0.1rem);
     --bj-cloth-mobile-top: calc(
@@ -211,11 +215,11 @@
     --bj-hero-cards-top-inset: 0.48rem;
     --bj-table-play-actions-buffer: 0.12rem;
     --bj-table-zone-cards-min-height: 2.85rem;
-    --bj-full-table-box-height: 3.15rem;
-    --bj-full-table-box-width: var(--bj-mobile-mini-hand-width);
+    --bj-full-table-box-width: var(--bj-mobile-box-width);
+    --bj-full-table-box-height: var(--bj-mobile-box-height);
     --bj-full-table-stake-min-height: 0.95rem;
     --bj-mobile-zone-boxes-height: calc(
-      var(--bj-full-table-box-height) + var(--bj-box-value-band-height) + 0.18rem
+      var(--bj-mobile-box-height) + var(--bj-box-value-band-height) + 0.18rem
     );
     --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
     --bj-table-zone-boxes-min-height: var(--bj-mobile-zone-boxes-height);
@@ -224,6 +228,10 @@
   /* Mobile Full Table + Card View — one felt/rail/box visual system. */
   .bj-view-full-mobile,
   .bj-view-card-mobile {
+    --bj-mobile-box-width: 5.35rem;
+    --bj-mobile-box-height: 4.8rem;
+    --bj-mobile-box-card-scale: 1.12;
+    --bj-mobile-box-gap: 0.12rem;
     --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
     --bj-zone-command-height: var(--bj-mobile-zone-command-height);
     --bj-zone-actions-height: var(--bj-mobile-zone-actions-height);
@@ -264,7 +272,7 @@
     min-height: var(--bj-mobile-felt-min-height);
     height: var(--bj-mobile-felt-height);
     align-self: stretch;
-    padding: 0.28rem 0.85rem 0.32rem;
+    padding: 0.28rem 0.42rem 0.32rem;
     width: var(--bj-mobile-felt-width);
     max-width: var(--bj-mobile-felt-width);
     min-width: 0;
@@ -422,7 +430,7 @@
       --bj-mobile-zone-tray-height: 2.65rem;
       --bj-mobile-zone-command-top-gap: 0.28rem;
       --bj-full-table-box-height: 2.55rem;
-      --bj-cloth-mobile-width: min(108%, 100vw);
+      --bj-cloth-mobile-width: 100%;
       --bj-cloth-mobile-scale: 1.02;
       --bj-cloth-mobile-bottom: calc(var(--bj-zone-tray-height) + 0.04rem);
       --bj-cloth-mobile-top: calc(
@@ -570,24 +578,29 @@
 
   .bj-view-full-mobile .bj-arc--player-boxes,
   .bj-view-card-mobile .bj-arc--player-boxes {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
     flex-wrap: nowrap;
     justify-content: space-between;
     align-items: flex-end;
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    gap: 0.04rem;
-    padding: 0 0.06rem 0.06rem;
+    gap: var(--bj-mobile-box-gap, 0.1rem);
+    padding: 0 0.02rem 0.06rem;
     box-sizing: border-box;
     overflow: hidden;
     margin-top: 0;
+    --bj-full-table-box-width: min(
+      var(--bj-mobile-box-width),
+      calc((100% - (var(--slot-count, 4) - 1) * var(--bj-mobile-box-gap, 0.1rem)) / var(--slot-count, 4))
+    );
+    --bj-full-table-box-height: var(--bj-mobile-box-height);
   }
 
   .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot,
   .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot {
-    flex: 0 1 auto;
-    width: var(--bj-full-table-box-width);
+    flex: 1 1 0;
+    width: auto;
     max-width: var(--bj-full-table-box-width);
     min-width: 0;
   }
@@ -627,7 +640,8 @@
     padding: var(--bj-full-table-box-padding);
     box-sizing: border-box;
     border-width: 1.5px;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
   .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile.bj-box--selected,
@@ -713,7 +727,7 @@
     min-height: var(--bj-full-table-stake-min-height);
     max-height: var(--bj-full-table-stake-min-height);
     height: var(--bj-full-table-stake-min-height);
-    overflow: hidden;
+    overflow: visible;
     border: none;
     background: transparent;
     box-shadow: none;
@@ -732,16 +746,99 @@
     margin-bottom: 0.12rem;
   }
 
-  .bj-view-full-mobile .bj-arc--cards .bj-arc__slot {
-    flex: 1 1 0;
-    min-width: 0;
-    transform: rotate(var(--arc-rot, 0deg)) scale(0.88);
-    transform-origin: center bottom;
-  }
-
   .bj-view-full-mobile .bj-table-zone--boxes,
   .bj-view-card-mobile .bj-table-zone--boxes {
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: visible;
+    padding-top: 0.08rem;
+  }
+
+  .bj-view-full-mobile .bj-player-boxes-wrap__row,
+  .bj-view-card-mobile .bj-player-boxes-wrap__row {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    gap: 0.08rem;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-mobile .bj-arc--visible-4,
+  .bj-view-card-mobile .bj-arc--visible-4,
+  .bj-view-full-mobile:has(.bj-arc--visible-4),
+  .bj-view-card-mobile:has(.bj-arc--visible-4) {
+    --bj-mobile-box-width: 5.35rem;
+    --bj-mobile-box-height: 4.8rem;
+    --bj-mobile-box-card-scale: 1.12;
+    --bj-mobile-box-gap: 0.12rem;
+    --bj-table-card-width: calc(1.95rem * 1.12);
+    --bj-table-card-height: calc(2.65rem * 1.12);
+    --bj-table-card-overlap-2: calc(0.95rem * 1.08);
+    --bj-table-card-overlap-3: calc(1.35rem * 1.08);
+    --bj-table-card-overlap-4plus: calc(1.65rem * 1.08);
+    --bj-mobile-zone-boxes-height: calc(4.8rem + var(--bj-box-value-band-height) + 0.18rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  .bj-view-full-mobile .bj-arc--visible-5,
+  .bj-view-card-mobile .bj-arc--visible-5,
+  .bj-view-full-mobile:has(.bj-arc--visible-5),
+  .bj-view-card-mobile:has(.bj-arc--visible-5) {
+    --bj-mobile-box-width: 4.3rem;
+    --bj-mobile-box-height: 3.95rem;
+    --bj-mobile-box-card-scale: 1;
+    --bj-mobile-box-gap: 0.1rem;
+    --bj-table-card-width: 1.95rem;
+    --bj-table-card-height: 2.65rem;
+    --bj-mobile-zone-boxes-height: calc(3.95rem + var(--bj-box-value-band-height) + 0.18rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  .bj-view-full-mobile .bj-arc--visible-6,
+  .bj-view-card-mobile .bj-arc--visible-6,
+  .bj-view-full-mobile:has(.bj-arc--visible-6),
+  .bj-view-card-mobile:has(.bj-arc--visible-6) {
+    --bj-mobile-box-width: 3.6rem;
+    --bj-mobile-box-height: 3.35rem;
+    --bj-mobile-box-card-scale: 0.88;
+    --bj-mobile-box-gap: 0.08rem;
+    --bj-table-card-width: calc(1.95rem * 0.88);
+    --bj-table-card-height: calc(2.65rem * 0.88);
+    --bj-mobile-zone-boxes-height: calc(3.35rem + var(--bj-box-value-band-height) + 0.18rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  .bj-view-full-mobile .bj-arc--visible-7,
+  .bj-view-card-mobile .bj-arc--visible-7,
+  .bj-view-full-mobile:has(.bj-arc--visible-7),
+  .bj-view-card-mobile:has(.bj-arc--visible-7) {
+    --bj-mobile-box-width: 3.05rem;
+    --bj-mobile-box-height: 2.9rem;
+    --bj-mobile-box-card-scale: 0.76;
+    --bj-mobile-box-gap: 0.06rem;
+    --bj-table-card-width: calc(1.95rem * 0.76);
+    --bj-table-card-height: calc(2.65rem * 0.76);
+    --bj-mobile-zone-boxes-height: calc(2.9rem + var(--bj-box-value-band-height) + 0.18rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  .bj-view-full-mobile .bj-phone-view__mini-hand-card-stack,
+  .bj-view-card-mobile .bj-phone-view__mini-hand-card-stack {
+    min-height: calc(1.55rem * var(--bj-mobile-box-card-scale, 1));
+    height: calc(1.55rem * var(--bj-mobile-box-card-scale, 1));
+  }
+
+  .bj-view-full-mobile .bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card,
+  .bj-view-card-mobile .bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card {
+    transform: translateX(calc(-50% + var(--mini-card-i, 0) * 0.38rem))
+      scale(calc(0.44 * var(--bj-mobile-box-card-scale, 1)));
+  }
+
+  .bj-view-full-mobile .bj-arc--cards .bj-arc__slot,
+  .bj-view-card-mobile .bj-arc--cards .bj-arc__slot {
+    transform: rotate(var(--arc-rot, 0deg))
+      scale(calc(0.82 * var(--bj-mobile-box-card-scale, 1)));
   }
 
   .bj-view-full-mobile .bj-table-zone--dealer .dealer-block,
@@ -2901,21 +2998,23 @@
   width: 100%;
 }
 
-/* Adaptive arc sizing by visible box count (layout only). */
-.bj-arc--visible-4 {
-  --bj-full-table-box-width: calc(var(--bj-player-box-width) * 1.22);
-  --bj-full-table-box-height: calc(var(--bj-player-box-height) * 1.14);
-}
+/* Desktop adaptive arc sizing by visible box count (layout only). */
+@media (min-width: 721px) {
+  .bj-arc--visible-4 {
+    --bj-full-table-box-width: calc(var(--bj-player-box-width) * 1.22);
+    --bj-full-table-box-height: calc(var(--bj-player-box-height) * 1.14);
+  }
 
-.bj-arc--visible-5 {
-  --bj-full-table-box-width: calc(var(--bj-player-box-width) * 1.08);
-  --bj-full-table-box-height: calc(var(--bj-player-box-height) * 1.06);
-}
+  .bj-arc--visible-5 {
+    --bj-full-table-box-width: calc(var(--bj-player-box-width) * 1.08);
+    --bj-full-table-box-height: calc(var(--bj-player-box-height) * 1.06);
+  }
 
-.bj-arc--visible-6,
-.bj-arc--visible-7 {
-  --bj-full-table-box-width: var(--bj-player-box-width);
-  --bj-full-table-box-height: var(--bj-player-box-height);
+  .bj-arc--visible-6,
+  .bj-arc--visible-7 {
+    --bj-full-table-box-width: var(--bj-player-box-width);
+    --bj-full-table-box-height: var(--bj-player-box-height);
+  }
 }
 
 .bj-player-boxes-wrap {
@@ -2925,18 +3024,55 @@
   align-items: stretch;
   width: 100%;
   min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.bj-player-boxes-wrap__row {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  gap: 0.08rem;
 }
 
 .bj-player-boxes-wrap__add {
-  align-self: flex-end;
-  margin: 0 0.35rem 0.12rem;
-  padding: 0.18rem 0.55rem;
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0 0 0.12rem;
+  padding: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
   border-radius: 999px;
-  border: 1px solid rgb(251 191 36 / 0.45);
-  background: rgb(0 0 0 / 0.28);
-  color: rgb(251 191 36 / 0.95);
+  border: 1px solid rgb(251 191 36 / 0.55);
+  background: rgb(0 0 0 / 0.32);
+  color: rgb(251 191 36 / 0.98);
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (max-width: 720px) {
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--bottom,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--bottom {
+    overflow-x: hidden;
+    padding-inline: 0.2rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .bj-view-full-mobile .bj-casino__tray-hint,
+  .bj-view-card-mobile .bj-casino__tray-hint {
+    display: none;
+  }
 }

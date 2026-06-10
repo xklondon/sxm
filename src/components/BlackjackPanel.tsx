@@ -1579,33 +1579,36 @@ export function BlackjackPanel({
   function renderPlayerBoxesArc() {
     return (
       <div className="bj-player-boxes-wrap">
-        {canAddVisibleBox && inBetting && (
-          <button
-            type="button"
-            className="bj-player-boxes-wrap__add"
-            onClick={() =>
-              setExpandedVisibleBoxCount((count) =>
-                Math.min(MAX_BOXES, Math.max(count, effectiveVisibleBoxCount) + 1),
-              )
-            }
+        <div className="bj-player-boxes-wrap__row">
+          <div
+            className={[
+              'bj-arc',
+              'bj-arc--rtl',
+              'bj-arc--player-boxes',
+              visibleArcClass,
+            ].join(' ')}
+            style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
           >
-            Add box
-          </button>
-        )}
-        <div
-          className={[
-            'bj-arc',
-            'bj-arc--rtl',
-            'bj-arc--player-boxes',
-            visibleArcClass,
-          ].join(' ')}
-          style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
-        >
-          {displaySlots.map((slot) =>
-            slot.playerId
-              ? renderArcBoxSlot(slot.playerId, slot.slotNumber)
-              : renderEmptyBoxSlot(slot.slotNumber),
-          )}
+            {displaySlots.map((slot) =>
+              slot.playerId
+                ? renderArcBoxSlot(slot.playerId, slot.slotNumber)
+                : renderEmptyBoxSlot(slot.slotNumber),
+            )}
+          </div>
+          {canAddVisibleBox && inBetting ? (
+            <button
+              type="button"
+              className="bj-player-boxes-wrap__add"
+              aria-label="Add player box"
+              onClick={() =>
+                setExpandedVisibleBoxCount((count) =>
+                  Math.min(MAX_BOXES, Math.max(count, effectiveVisibleBoxCount) + 1),
+                )
+              }
+            >
+              +
+            </button>
+          ) : null}
         </div>
       </div>
     );

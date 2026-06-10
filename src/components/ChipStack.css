@@ -235,6 +235,80 @@
   touch-action: manipulation;
 }
 
+/* Mobile tray — row 1: available + chips; row 2: table label only. */
+@media (max-width: 720px) {
+  .bj-view-full-mobile .bj-value-chips,
+  .bj-view-card-mobile .bj-value-chips {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    margin-inline: 0;
+    padding: 0.32rem 0.45rem max(0.28rem, env(safe-area-inset-bottom, 0px));
+    gap: 0.22rem;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-mobile .bj-value-chips--with-label,
+  .bj-view-card-mobile .bj-value-chips--with-label {
+    min-height: 0;
+    padding-bottom: max(0.28rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .bj-view-full-mobile .bj-value-chips__row--main,
+  .bj-view-card-mobile .bj-value-chips__row--main {
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 0.35rem 0.45rem;
+    min-width: 0;
+  }
+
+  .bj-view-full-mobile .bj-value-chips__balance,
+  .bj-view-card-mobile .bj-value-chips__balance {
+    font-size: 0.74rem;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .bj-view-full-mobile .bj-value-chips__stash,
+  .bj-view-card-mobile .bj-value-chips__stash {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+
+  .bj-view-full-mobile .bj-value-chips .chip-tray__chips,
+  .bj-view-card-mobile .bj-value-chips .chip-tray__chips {
+    flex-wrap: nowrap;
+    gap: 0.28rem;
+    min-width: 0;
+  }
+
+  .bj-view-full-mobile .bj-value-chips .chip-token--btn,
+  .bj-view-card-mobile .bj-value-chips .chip-token--btn {
+    width: 2rem;
+    height: 2rem;
+    min-width: 2rem;
+    min-height: 2rem;
+    font-size: 0.68rem;
+  }
+
+  .bj-view-full-mobile .bj-value-chips__row--label,
+  .bj-view-card-mobile .bj-value-chips__row--label {
+    flex: 0 0 auto;
+    font-size: 0.64rem;
+    letter-spacing: 0.05em;
+    padding-top: 0.04rem;
+  }
+
+  .bj-view-full-mobile .bj-value-chips__row--label:only-child,
+  .bj-view-card-mobile .bj-value-chips__row--label:only-child {
+    display: none;
+  }
+}
+
 .compact-balance {
   display: inline-flex;
   align-items: center;

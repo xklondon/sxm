@@ -75,15 +75,18 @@ describe('player box visual stability contract', () => {
 });
 
 describe('mobile player box visual stability contract', () => {
-  it('uses mobile box width token and fixed slot width (not flex stretch)', () => {
+  it('uses adaptive mobile box width token and flex-fit arc slots', () => {
     expect(SHARED_CSS).toMatch(
-      /@media \(max-width: 720px\)[\s\S]*--bj-full-table-box-width:\s*var\(--bj-mobile-mini-hand-width\)/,
+      /@media \(max-width: 720px\)[\s\S]*--bj-full-table-box-width:\s*var\(--bj-mobile-box-width\)/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*width:\s*var\(--bj-full-table-box-width\)/,
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*flex:\s*1 1 0/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*width:\s*var\(--bj-full-table-box-width\)/,
+      /\.bj-view-full-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*max-width:\s*var\(--bj-full-table-box-width\)/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-arc--player-boxes \.bj-arc__slot[\s\S]*max-width:\s*var\(--bj-full-table-box-width\)/,
     );
   });
 
