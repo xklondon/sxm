@@ -126,6 +126,14 @@ Aligned env keys (same LAN host, no localhost in links):
 - **Desktop Card View** — ordered box row in betting (no center placeholder), active hero in play.
 - Debug attributes on the table root: `data-view-mode`, `data-device-view`, `data-phase`.
 
+## Documentation (single source of truth)
+
+- **Authoritative spec:** `docs/SXM_MASTER_SPEC.md` — describes current working implementation only.
+- **Change log:** `docs/CHANGE_LOG.md` — record significant product/architecture changes.
+- **Process:** Before marking a significant feature complete, update **both** files.
+- **Archive:** Superseded specs live in `docs/archive/` — do not treat them as current requirements.
+- **Open item:** Admin game activation (e.g. Zilch on/off per deployment) is **not implemented** — see master spec §20.
+
 ## Development discipline
 
 - Minimal diffs; no broad refactors
