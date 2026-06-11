@@ -57,9 +57,10 @@ describe('blackjack proportion tuning — zone tokens and Stitch-aligned surface
     );
   });
 
-  it('centers prominent ValueAndChips with larger chip targets', () => {
-    expect(CHIP_CSS).toMatch(/\.bj-value-chips\s*\{[\s\S]*justify-content:\s*center/);
-    expect(CHIP_CSS).toMatch(/\.bj-value-chips\s*\{[\s\S]*min-height:\s*3\.15rem/);
+  it('aligns bankroll value left of chips with tabular numerals', () => {
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips__balance[\s\S]*font-variant-numeric:\s*tabular-nums/);
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips__row--main[\s\S]*justify-content:\s*flex-start/);
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips[\s\S]*min-height:\s*3\.15rem/);
     expect(CHIP_CSS).toMatch(/\.chip-token--plaque[\s\S]*--chip-plaque-width:\s*5\.5rem/);
   });
 

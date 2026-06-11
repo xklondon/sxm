@@ -13,7 +13,7 @@ const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/Blackjack
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 
 describe('Value & Chips bottom row', () => {
-  it('renders available balance and chip stash in one horizontal row', () => {
+  it('renders bankroll value left of chip stash in one horizontal row', () => {
     const html = renderToStaticMarkup(
       <ValueAndChipsBar
         available={500}
@@ -23,17 +23,20 @@ describe('Value & Chips bottom row', () => {
       />,
     );
     expect(html).toContain('bj-value-chips');
-    expect(html).toContain('Available: 500');
+    expect(html).toContain('>500<');
+    expect(html).not.toContain('Available');
     expect(html).toContain('chip-tray');
-    expect(html).toContain('aria-label="Add 50 to bet"');
-    expect(html.indexOf('Available: 500')).toBeLessThan(html.indexOf('chip-tray'));
+    expect(html).toContain('aria-label="500 chips"');
+    expect(html.indexOf('>500<')).toBeLessThan(html.indexOf('chip-tray'));
+    expect(html.indexOf(TABLE_UX.valueBalance)).toBeLessThan(html.indexOf(TABLE_UX.chipTrayStash));
   });
 
   it('keeps balance visible when chips are hidden', () => {
     const html = renderToStaticMarkup(
       <ValueAndChipsBar available={250} showChips={false} onChipClick={() => {}} />,
     );
-    expect(html).toContain('Available: 250');
+    expect(html).toContain('>250<');
+    expect(html).not.toContain('Available');
     expect(html).toContain('bj-value-chips__stash--reserved');
   });
 
@@ -42,9 +45,12 @@ describe('Value & Chips bottom row', () => {
     expect(CHIP_CSS).toMatch(/\.chip-token--plaque[\s\S]*--chip-plaque-height:\s*2\.25rem/);
   });
 
-  it('centers available balance and chips as one horizontal unit', () => {
-    expect(CHIP_CSS).toMatch(/\.bj-value-chips\s*\{[\s\S]*justify-content:\s*center/);
-    expect(CHIP_CSS).toMatch(/\.bj-value-chips__stash\s*\{[\s\S]*justify-content:\s*center/);
+  it('aligns bankroll value left of chips with shared gap token', () => {
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips__row--main[\s\S]*justify-content:\s*flex-start/);
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips__balance[\s\S]*font-variant-numeric:\s*tabular-nums/);
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips__stash[\s\S]*overflow:\s*hidden/);
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips[\s\S]*--bj-chip-tray-gap:/);
+    expect(CHIP_CSS).toMatch(/\.bj-value-chips \.chip-tray__chips[\s\S]*gap:\s*var\(--bj-chip-tray-gap\)/);
     expect(CHIP_CSS).not.toMatch(/\.bj-value-chips\s*\{[\s\S]*justify-content:\s*space-between/);
   });
 

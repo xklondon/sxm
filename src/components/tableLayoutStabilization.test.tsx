@@ -127,7 +127,7 @@ describe('table layout stabilization contract', () => {
       expect(full).toContain('bj-table-info-bar--dealer-hand');
       expect(full).toContain('Bank Hand:');
       expect(full).toContain('bj-value-chips');
-      expect(full).toContain('Available:');
+      expect(full).not.toMatch(/bj-value-chips__balance[^>]*>Available:/);
       const shellIdx = full.indexOf(TABLE_UX.tableLayoutShell);
       const infoIdx = full.indexOf('bj-table-info-bar--felt-row');
       expect(shellIdx).toBeGreaterThan(-1);

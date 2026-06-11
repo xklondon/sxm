@@ -51,8 +51,12 @@ export const TABLE_UX = {
   cardLayoutCommand: 'bj-card-layout__command',
   /** Reserved tray slot when betting controls are hidden. */
   trayReserved: 'bj-casino__tray--reserved',
-  /** Combined available balance + chip stash row in bottom zone. */
+  /** Combined player balance value + chip stash row in bottom zone. */
   valueAndChips: 'bj-value-chips',
+  /** Player bankroll value — left of chip row; no "Available" prefix. */
+  valueBalance: 'bj-value-chips__balance',
+  /** Chip tray column in ValueAndChipsBar — overflow clipped to avoid value overlap. */
+  chipTrayStash: 'bj-value-chips__stash',
   actionsPlaceholder: 'bj-table-zone__actions-placeholder',
   summaryPlaceholder: 'bj-table-zone__summary-placeholder',
   /** Bank info grouped under dealer cards (not outer header). */

@@ -457,6 +457,15 @@ Options: Hit, Stay, Double one card, Split.  (valid options only)
 
 `BlackjackTableLayoutShell`: dealer → command → cards → actions → player boxes → chip tray.
 
+**Mobile chip tray (`ValueAndChipsBar`):**
+
+- Shared component for Table View and card View — `ChipStack.tsx` / `ChipStack.css`.
+- Row 1: **bankroll value only** (numeric, tabular numerals) on the **left**, horizontal chip plaques on the **right** — no `Available:` prefix.
+- Row 2 (mobile only, when set): italic table label below the chip row.
+- `--bj-chip-tray-gap` — single spacing token between plaque chips; chips stay on one nowrap row; stash uses `overflow: hidden` so chips never overlap the value.
+- Mobile plaques: ~12% smaller visual size with preserved hit target (`--chip-plaque-visual-*` vs `--chip-plaque-hit-*`).
+- Tray zone height fixed via `--bj-mobile-zone-tray-height` — chip count changes must not reflow player boxes or card areas.
+
 **CSS sources:** `bj-table-shared.css` (shell), `bj-card-layout.css` (cards inner), `BlackjackPanel.css` (chrome), `BlackjackCardView.css` (card view), `DealerBlock.css`, `ChipStack.css`, `bj-felt-skins.css`.
 
 ### Game routing (`TableScreen`)

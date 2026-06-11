@@ -203,7 +203,8 @@
 
 .bj-value-chips__row--main {
   flex-wrap: nowrap;
-  gap: 0.75rem 1rem;
+  justify-content: flex-start;
+  gap: 0.65rem;
 }
 
 .bj-value-chips__row--label {
@@ -237,25 +238,28 @@
   border-radius: 0.5rem;
   box-shadow: 0 6px 20px rgb(0 0 0 / 0.38);
   box-sizing: border-box;
+  --bj-chip-tray-gap: 0.3rem;
 }
 
 .bj-value-chips__balance {
   flex: 0 0 auto;
   margin: 0;
   white-space: nowrap;
-  text-align: center;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  text-align: left;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
   color: rgb(251 191 36 / 0.96);
 }
 
 .bj-value-chips__stash {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 0;
+  overflow: hidden;
 }
 
 .bj-value-chips__stash--reserved {
@@ -277,7 +281,16 @@
 }
 
 .bj-value-chips .chip-tray__chips {
-  gap: 0.28rem;
+  flex-wrap: nowrap;
+  gap: var(--bj-chip-tray-gap);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.bj-value-chips .chip-tray--inline {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .bj-value-chips .chip-token--btn.chip-token--plaque {
@@ -285,14 +298,14 @@
   touch-action: manipulation;
 }
 
-/* Mobile tray — row 1: available + chips; row 2: table label only. */
+/* Mobile tray — row 1: value (left) + chips; row 2: table label only. */
 @media (max-width: 720px) {
   .bj-view-full-mobile .bj-value-chips,
   .bj-view-card-mobile .bj-value-chips {
     display: grid;
     grid-template-rows: auto auto;
     grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
+    justify-items: stretch;
     align-items: center;
     width: 100%;
     max-width: 100%;
@@ -302,47 +315,71 @@
     gap: 0.22rem;
     box-sizing: border-box;
     position: static;
+    --bj-chip-tray-gap: 0.28rem;
+    --chip-plaque-visual-width: 3.75rem;
+    --chip-plaque-visual-height: 1.531rem;
+    --chip-plaque-hit-width: 4.375rem;
+    --chip-plaque-hit-height: 1.75rem;
   }
 
   .bj-view-full-mobile .bj-value-chips__row--main,
   .bj-view-card-mobile .bj-value-chips__row--main {
-    display: grid;
-    grid-template-columns: auto auto;
-    justify-content: center;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
     align-items: center;
-    gap: 0.35rem 0.5rem;
+    gap: 0.45rem;
     min-width: 0;
     width: 100%;
   }
 
   .bj-view-full-mobile .bj-value-chips__balance,
   .bj-view-card-mobile .bj-value-chips__balance {
-    font-size: 0.74rem;
     flex: 0 0 auto;
+    font-size: 0.82rem;
     min-width: 0;
-    order: -1;
+    text-align: left;
   }
 
   .bj-view-full-mobile .bj-value-chips__stash,
   .bj-view-card-mobile .bj-value-chips__stash {
-    flex: 0 1 auto;
+    flex: 1 1 auto;
     min-width: 0;
-    justify-content: center;
+    overflow: hidden;
+    justify-content: flex-start;
   }
 
   .bj-view-full-mobile .bj-value-chips .chip-tray__chips,
   .bj-view-card-mobile .bj-value-chips .chip-tray__chips {
     flex-wrap: nowrap;
-    justify-content: center;
-    gap: 0.18rem;
+    justify-content: flex-start;
+    gap: var(--bj-chip-tray-gap);
     min-width: 0;
+    overflow: hidden;
   }
 
   .bj-view-full-mobile .bj-value-chips .chip-token--plaque,
   .bj-view-card-mobile .bj-value-chips .chip-token--plaque {
-    --chip-plaque-width: 4.375rem;
-    --chip-plaque-height: 1.75rem;
-    --chip-plaque-font: 0.8rem;
+    box-sizing: content-box;
+    --chip-plaque-width: clamp(
+      3.25rem,
+      calc(var(--chip-plaque-visual-width) - 0.15rem),
+      var(--chip-plaque-visual-width)
+    );
+    --chip-plaque-height: clamp(
+      1.35rem,
+      calc(var(--chip-plaque-visual-height) - 0.06rem),
+      var(--chip-plaque-visual-height)
+    );
+    --chip-plaque-font: 0.72rem;
+    width: var(--chip-plaque-width);
+    height: var(--chip-plaque-height);
+    min-width: var(--chip-plaque-hit-width);
+    min-height: var(--chip-plaque-hit-height);
+    padding:
+      max(0px, calc((var(--chip-plaque-hit-height) - var(--chip-plaque-height) - 4px) / 2))
+      max(0px, calc((var(--chip-plaque-hit-width) - var(--chip-plaque-width) - 4px) / 2));
   }
 
   .bj-view-full-mobile .bj-value-chips__row--label,

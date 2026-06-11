@@ -246,19 +246,19 @@ export function ValueAndChipsBar({
         <p
           {...sxmSectionProps(
             SXM_LAYOUT.playerBalance,
-            'bj-value-chips__balance',
+            TABLE_UX.valueBalance,
             'bj-casino__player-balance',
             available === null ? 'bj-casino__player-balance--placeholder' : '',
           )}
-          aria-label={available !== null ? `Available ${available} chips` : undefined}
+          aria-label={available !== null ? `${available} chips` : undefined}
           aria-hidden={available === null}
         >
-          {available !== null ? `Available: ${available}` : '\u00a0'}
+          {available !== null ? available : '\u00a0'}
         </p>
         <div
           {...sxmSectionProps(
             SXM_LAYOUT.chipTray,
-            'bj-value-chips__stash',
+            TABLE_UX.chipTrayStash,
             showChips ? '' : TABLE_UX.trayReserved,
             showChips ? '' : 'bj-value-chips__stash--reserved',
             showChips && disabled ? 'bj-value-chips__stash--inactive' : '',

@@ -185,7 +185,10 @@ describe('Mobile tray safe-area layout', () => {
     expect(html).toContain('bj-value-chips__row--main');
     expect(html).toContain('bj-value-chips__row--label');
     expect(html).toContain(DEFAULT_TABLE_TRAY_LABEL);
-    expect(html.indexOf('Available: 500')).toBeLessThan(html.indexOf(DEFAULT_TABLE_TRAY_LABEL));
+    expect(html).toContain('bj-value-chips');
+    expect(html).toContain('>500<');
+    expect(html).not.toContain('Available');
+    expect(html.indexOf('>500<')).toBeLessThan(html.indexOf(DEFAULT_TABLE_TRAY_LABEL));
   });
 
   it('passes mobile tray label from panel renderTrayInner', () => {

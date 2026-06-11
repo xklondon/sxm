@@ -151,7 +151,7 @@ describe('mobile blackjack layout fix', () => {
   });
 
   describe('D — mobile tray two-row layout', () => {
-    it('uses row 1 for available + chips and row 2 for label only', () => {
+    it('uses row 1 for value + chips and row 2 for label only', () => {
       const html = renderToStaticMarkup(
         <ValueAndChipsBar
           available={500}
@@ -162,16 +162,18 @@ describe('mobile blackjack layout fix', () => {
       );
       expect(html).toContain('bj-value-chips__row--main');
       expect(html).toContain('bj-value-chips__row--label');
-      expect(html.indexOf('Available: 500')).toBeLessThan(html.indexOf(DEFAULT_TABLE_TRAY_LABEL));
+      expect(html).not.toContain('Available');
+      expect(html.indexOf('>500<')).toBeLessThan(html.indexOf(DEFAULT_TABLE_TRAY_LABEL));
+      expect(CHIP_CSS).toMatch(/@media \(max-width: 720px\)/);
       expect(CHIP_CSS).toMatch(
-        /@media \(max-width: 720px\)[\s\S]*\.bj-view-full-mobile \.bj-value-chips[\s\S]*display:\s*grid/,
+        /\.bj-view-full-mobile \.bj-value-chips__stash[\s\S]{0,120}overflow:\s*hidden/,
       );
-    expect(CHIP_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-value-chips__stash[\s\S]*justify-content:\s*center/,
-    );
-    expect(CHIP_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-value-chips .chip-tray__chips[\s\S]*justify-content:\s*center/,
-    );
+      expect(CHIP_CSS).toMatch(
+        /\.bj-view-full-mobile \.bj-value-chips .chip-tray__chips[\s\S]{0,120}flex-wrap:\s*nowrap/,
+      );
+      expect(CHIP_CSS).toMatch(
+        /\.bj-view-full-mobile \.bj-value-chips .chip-tray__chips[\s\S]*gap:\s*var\(--bj-chip-tray-gap\)/,
+      );
     });
 
     it('keeps tray full width on mobile without horizontal overflow', () => {
