@@ -124,6 +124,7 @@ describe('table layout stabilization contract', () => {
       const full = renderAt(width, 'full');
       expect(full).toContain('bj-table-info-bar--felt-row');
       expect(full).toContain('Bank Total:');
+      expect(full).toContain('bj-table-info-bar--dealer-hand');
       expect(full).toContain('Bank Hand:');
       expect(full).toContain('bj-value-chips');
       expect(full).toContain('Available:');
@@ -136,8 +137,9 @@ describe('table layout stabilization contract', () => {
       const card = renderAt(width, 'card');
       expect(card).toContain('bj-table-info-bar--felt-row');
       expect(card).toContain('Bank Total:');
+      expect(card).toContain('bj-table-info-bar--dealer-hand');
       expect(card).toContain('Bank Hand:');
-      expect(card).not.toContain(TABLE_UX.dealerBankInfo);
+      expect(card).toContain(TABLE_UX.dealerBankInfo);
       expect(card).not.toContain('bj-casino__header-bank');
     }
   });

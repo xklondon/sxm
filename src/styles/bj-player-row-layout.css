@@ -129,9 +129,21 @@
 .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,
 .bj-table-slot-row.bj-arc--player-boxes .bj-bet-zone .bj-phone-view__mini-stake-slot,
 .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot--reserved {
-  overflow: visible;
-  contain: none;
+  flex: 0 0 var(--bj-full-table-stake-min-height, 1.2rem);
+  min-height: var(--bj-full-table-stake-min-height, 1.2rem);
+  max-height: var(--bj-full-table-stake-min-height, 1.2rem);
+  height: var(--bj-full-table-stake-min-height, 1.2rem);
+  overflow: hidden;
+  contain: layout style;
   transform: none;
+}
+
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-composition,
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-composition--placeholder {
+  flex: 0 0 auto;
+  min-height: 1.05rem;
+  max-height: 1.35rem;
+  overflow: hidden;
 }
 
 .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips--bet {

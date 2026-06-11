@@ -1069,9 +1069,49 @@
   box-shadow: 0 0 12px rgb(110 231 183 / 0.45);
 }
 
+.bj-phone-view__side-action-icon {
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+  opacity: 0.9;
+}
+
 .bj-phone-view__side-action-label {
   display: inline-block;
   line-height: 1.1;
+}
+
+.bj-phone-view__hand-meta--above-cards {
+  order: -1;
+  margin-bottom: 0.2rem;
+}
+
+.bj-phone-view__total--blackjack {
+  animation: bj-hero-blackjack-pulse 1.4s ease-in-out infinite;
+  color: var(--ds-color-gold, #fbbf24);
+  font-weight: var(--ds-weight-extrabold, 800);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@keyframes bj-hero-blackjack-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.88;
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bj-phone-view__total--blackjack {
+    animation: none;
+  }
 }
 
 .bj-phone-view__swipe-guide {
@@ -2025,9 +2065,11 @@
     justify-content: flex-start;
   }
 
-  /* Swipe still works on the stage; duplicate Hit/Stand chrome stays in the actions zone. */
   .bj-view-card-mobile .bj-phone-view__side-action {
-    display: none;
+    display: flex;
+    flex: 0 0 clamp(2rem, 11vw, 2.75rem);
+    min-height: clamp(6.5rem, 42vw, 10rem);
+    max-height: min(52vw, 11rem);
   }
 
   .bj-view-card-mobile .bj-phone-view__play-area,

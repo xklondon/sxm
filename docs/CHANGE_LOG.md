@@ -13,6 +13,17 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-10 — Blackjack UX fixes
+
+- **Player box stability:** Fixed stake/composition reserved height in slot row — chips no longer reflow box dimensions.
+- **Active turn:** Shared `bj-box--turn` highlight in Full Table and Card View (betting pulse separate).
+- **Card View:** Larger hero cards via `clamp()` tokens; score above hero; mobile Stay/Hit me side indicators restored.
+- **Bust delay:** Card View holds busted hero 2s (`CARD_VIEW_BUST_HOLD_MS`) before following next box.
+- **Dealer info:** Bank Total in felt row; Bank Hand under dealer cards only.
+- **Command text:** Strict format — no sentimental copy; Stay wording; natural blackjack label separate from even-money.
+
+---
+
 ## 2026-06-10 — Documentation consolidation
 
 - Created `docs/SXM_MASTER_SPEC.md` as the single source of truth from current implementation.

@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildBlackjackCommandText,
-  formatCallerLegalLine,
-  formatCallerTurnMessage,
+  formatPlayerTurnOptions,
   isTableInstructionMessage,
 } from './tableCommandDisplay';
 import {
@@ -22,7 +21,7 @@ import { claimBoxSlot } from '../engine/session/boxOps';
 import { getBlackjackProtocolPhase } from '../engine/blackjack/protocol';
 
 describe('table command display', () => {
-  it('shows only the legal-action hint when split/double are available (no duplicate turn line)', () => {
+  it('includes double in options line when split/double are available', () => {
     let state = tableWithClaimedBox(1);
     const boxId = boxPlayerId(state, 1)!;
     const handKey = blackjackHandKey(boxId, 0);
@@ -45,11 +44,12 @@ describe('table command display', () => {
       controllerName: 'Alice',
       viewerPersonId: state.tableMeta.ownerPersonId,
     });
-    const hint = formatCallerLegalLine(1, 'Alice', false, true);
-    expect(result.commandMessage).toBe(hint);
-    expect(result.commandLines).toEqual([]);
-    expect(result.commandMessage).not.toBe(formatCallerTurnMessage(1, 'Alice'));
-    expect(isTableInstructionMessage(result.commandMessage)).toBe(true);
+    expect(result.commandMessage).toBe('Box 1, Alice, your turn.');
+    expect(result.commandLines).toContain(
+      formatPlayerTurnOptions(true, true, true, false),
+    );
+    expect(result.commandLines.some((line) => line.startsWith('Options:'))).toBe(true);
+    expect(isTableInstructionMessage(result.commandLines.find((line) => line.startsWith('Options:')) ?? '')).toBe(true);
   });
 });
 

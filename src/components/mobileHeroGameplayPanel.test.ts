@@ -33,11 +33,11 @@ describe('mobile Card View hero gameplay panel', () => {
     );
   });
 
-  it('top-aligns hero cards in play area while Hit/Stand stay in the actions zone', () => {
+  it('top-aligns hero cards in play area with side indicators beside hero and actions in zone', () => {
     expect(CARD_VIEW_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-phone-view__play-area--controls[\s\S]*justify-content:\s*center/,
     );
-    expect(CARD_VIEW_CSS).toMatch(
+    expect(CARD_VIEW_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-phone-view__side-action[\s\S]*display:\s*none/,
     );
     expect(CARD_VIEW_CSS).toMatch(

@@ -56,6 +56,13 @@
   min-height: 1.35rem;
 }
 
+.bj-table-info-bar--dealer-hand {
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.15rem 0.35rem 0.2rem;
+  min-height: 1.1rem;
+}
+
 .bj-table-info-bar--header-row {
   flex-direction: row;
   flex-wrap: nowrap;

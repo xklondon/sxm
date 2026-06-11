@@ -103,6 +103,7 @@ import {
 import { buildRoundResultSummary } from '../engine/blackjack';
 import { buildRoundSummaryOverlayModel } from '../engine/blackjack/roundSummaryOverlay';
 import { buildBlackjackCommandText } from './tableCommandDisplay';
+import { useCardViewBustHold } from './useCardViewBustHold';
 import { RoundSummaryOverlay } from './RoundSummaryOverlay';
 import { ROUND_SUMMARY_OVERLAY_DELAY_MS } from './roundSummaryOverlayTiming';
 import {
@@ -344,6 +345,12 @@ export function BlackjackPanel({
   const canResetTable = canUserResetTable(gameState, controllerName);
   const activeProtocol = getBlackjackProtocolForState(gameState);
   const activeBoxId = getActiveTurnBoxId(gameState, protocolPhase);
+  const cardViewBustHoldBoxId = useCardViewBustHold(
+    gameState,
+    protocolPhase,
+    viewMode === 'card',
+  );
+  const uiActiveBoxId = cardViewBustHoldBoxId ?? activeBoxId;
 
   const magic8ShakeAllowed =
     !gameEnded &&
@@ -962,6 +969,9 @@ export function BlackjackPanel({
     engineStatus,
     initialDealManual: initialDealStaged,
     bankDrawManual: flowSettings.bankDrawMode === 'manual',
+    bankInfo: (
+      <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="dealer" />
+    ),
   };
 
   function renderTableAlert() {
@@ -1394,7 +1404,7 @@ export function BlackjackPanel({
       openStake,
       selectedBettingBoxId: selectedBettingBoxIdForUi,
       selectedBettingSlotNumber,
-      activeBoxId,
+      activeBoxId: uiActiveBoxId,
       isDropHover: dropTargetId === chipDropKey({ slotNumber, boxId }),
       bettingStage: inBetting,
       playerPhase: isPlayerTurnPhase(protocolPhase),
@@ -1690,8 +1700,8 @@ export function BlackjackPanel({
   const localBettingFocusBoxId = selectedBettingBoxIdForUi ?? materializedSlotBoxId;
 
   const focusBoxId =
-    round?.status === 'player-turns' && activeBoxId
-      ? activeBoxId
+    round?.status === 'player-turns' && uiActiveBoxId
+      ? uiActiveBoxId
       : bettingOpen && (selectedBettingBoxIdForUi != null || selectedBettingSlotNumber != null)
         ? localBettingFocusBoxId
         : selectedBettingBoxIdForUi ?? focusFallbackBoxId;
@@ -2053,7 +2063,7 @@ export function BlackjackPanel({
                   viewerAuth={viewerAuth}
                   deviceView={deviceView}
                   focusBoxId={focusBoxId ?? undefined}
-                  activeBoxId={activeBoxId}
+                  activeBoxId={uiActiveBoxId}
                   showHoleHidden={showHoleHidden}
                   protocolPhase={protocolPhase}
                   cardRevealComplete={cardRevealComplete}

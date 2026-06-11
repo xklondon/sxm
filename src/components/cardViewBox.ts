@@ -186,6 +186,9 @@ export function getBoxBorderVisualClasses(resolved: BoxBorderVisualState): strin
   if (resolved.isSelected) {
     parts.push(BOX_BORDER_SELECTED);
   }
+  if (resolved.isTurn) {
+    parts.push(BOX_BORDER_TURN);
+  }
   return parts.join(' ');
 }
 
@@ -218,11 +221,11 @@ export function getBoxCardClassName(isActive: boolean): string {
   return isActive ? `${BOX_CARD_BASE} ${BOX_BORDER_TURN}` : BOX_CARD_BASE;
 }
 
-/** Pulse for local chip target (betting) or active player turn (play). */
+/** Pulse for local chip target during betting. Active turn uses BOX_BORDER_TURN animation. */
 export function getBoxActivePulseClassName(
   resolved: Pick<BoxBorderVisualState, 'isSelected' | 'isTurn'>,
 ): string {
-  return resolved.isSelected || resolved.isTurn ? BET_BOX_PULSE : '';
+  return resolved.isSelected && !resolved.isTurn ? BET_BOX_PULSE : '';
 }
 
 /**

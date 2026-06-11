@@ -118,7 +118,8 @@ describe('box selection + turn pulse', () => {
       playerPhase: true,
     });
     expect(resolved.isTurn).toBe(true);
-    expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
+    expect(getBoxBorderVisualClasses(resolved)).toContain('bj-box--turn');
+    expect(getBoxActivePulseClassName(resolved)).toBe('');
   });
 
   it('Full Table and Panel player boxes use getBoxActivePulseClassName on borderState', () => {

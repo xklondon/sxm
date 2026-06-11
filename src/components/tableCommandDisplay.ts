@@ -9,15 +9,20 @@ import {
 } from '../engine/session';
 import {
   canDoubleBlackjackForState,
+  canHitBlackjack,
   canSplitBlackjackForState,
+  canStandBlackjack,
 } from '../engine/blackjack';
 import { cardsFromIds, getBlackjackHandValue } from '../engine/blackjack/hand';
 import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
+import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
 import {
   getInsuranceActionsForController,
   canCallEvenMoneyForHand,
   formatDecisionOwnerWaitMessage,
 } from './blackjackViewPhase';
+import { formatShortCardLabel } from './cardDisplay';
+import { getCardById } from '../engine/deck';
 
 /** Canonical game command payload — protocol next-step text for the table centre. */
 export interface CommandMessage {
@@ -28,66 +33,123 @@ export interface CommandMessage {
 /** @deprecated Use CommandMessage */
 export type TableCommandDisplay = CommandMessage;
 
-/** UI-only wording for split/double availability (exported for tests). */
-export function formatLegalActionHint(canSplit: boolean, canDouble: boolean): string | null {
-  if (canSplit && canDouble) {
-    return 'You can split or double — double gets one card only.';
-  }
-  if (canSplit) {
-    return 'You can split.';
-  }
-  if (canDouble) {
-    return 'You can double — one card only.';
-  }
-  return null;
-}
-
 export function formatHandValuePhrase(value: number, isSoft: boolean): string {
   return isSoft ? `soft ${value}` : String(value);
 }
 
-export function turnFlavor(options: {
-  value: number;
-  isSoft: boolean;
-  isBlackjack: boolean;
-  actionStatus?: string;
-}): string {
-  if (options.actionStatus === 'busted') {
-    return 'Ouch — bust.';
+/** Build comma-separated option list — only actions valid for the active hand. */
+export function formatPlayerTurnOptions(
+  canHit: boolean,
+  canStand: boolean,
+  canDouble: boolean,
+  canSplit: boolean,
+): string {
+  const options: string[] = [];
+  if (canHit) {
+    options.push('Hit');
   }
-  if (options.isBlackjack || options.actionStatus === 'blackjack') {
-    return 'Blackjack. Lovely.';
+  if (canStand) {
+    options.push('Stay');
   }
-  if (options.value === 21) {
-    return 'Looking tasty.';
+  if (canDouble) {
+    options.push('Double one card');
   }
-  if (options.value >= 17) {
-    return 'Your call.';
+  if (canSplit) {
+    options.push('Split');
   }
-  if (options.value <= 11) {
-    return 'Your move.';
+  if (options.length === 0) {
+    return '';
   }
-  if (options.value >= 12 && options.value <= 16) {
-    return 'Your move, pickle.';
-  }
-  return 'Your turn.';
+  return `Options: ${options.join(', ')}.`;
 }
 
-/** Player-turn command — box, caller name, hand total, light next-step flavor. */
+function formatBankHandPhrase(state: GameState): string {
+  const round = state.blackjack;
+  const deck = state.deck;
+  if (!round || !deck) {
+    return 'Bank has no cards.';
+  }
+
+  let cardIds = getVisibleDealerCardIds(state);
+  const holeHidden =
+    round.dealerHoleHidden &&
+    round.status !== 'resolved' &&
+    round.status !== 'bank-turn' &&
+    round.status !== 'banking';
+  if (holeHidden && cardIds.length > 1) {
+    cardIds = cardIds.slice(0, 1);
+  }
+
+  if (cardIds.length === 0) {
+    return 'Bank has no cards.';
+  }
+
+  if (cardIds.length === 1) {
+    const card = getCardById(deck, cardIds[0]!);
+    const label = card ? formatShortCardLabel(card) : 'a card';
+    return `Bank has ${label}`;
+  }
+
+  const { value } = getBlackjackHandValue(cardsFromIds(deck, cardIds));
+  return `Bank has ${value}`;
+}
+
+/** Canonical player-turn lines — strict format, no sentimental copy. */
 export function formatPlayerTurnCommand(
   slotNum: number | undefined,
   callerName: string,
   handValue: { value: number; isSoft: boolean; isBlackjack: boolean },
-  options?: { handIndex?: number; actionStatus?: string },
-): string {
-  const box = `Box ${slotNum ?? '?'}`;
+  options?: {
+    handIndex?: number;
+    actionStatus?: string;
+    gameState?: GameState;
+    handKey?: string;
+    allowSplit?: boolean;
+    allowDouble?: boolean;
+  },
+): CommandMessage {
+  const boxLabel = `Box ${slotNum ?? '?'}`;
+
+  if (
+    options?.actionStatus === 'blackjack' ||
+    (handValue.isBlackjack && options?.actionStatus !== 'busted')
+  ) {
+    return {
+      commandMessage: `${boxLabel}, Blackjack.`,
+      commandLines: [],
+    };
+  }
+
   const splitNote =
     options?.handIndex != null && options.handIndex > 0
       ? ` (hand ${options.handIndex + 1})`
       : '';
-  const valuePhrase = formatHandValuePhrase(handValue.value, handValue.isSoft);
-  const flavor = turnFlavor({ ...handValue, actionStatus: options?.actionStatus });
-  return `${box}: ${callerName}, you have ${valuePhrase}${splitNote}. ${flavor}`;
+  const playerScore = formatHandValuePhrase(handValue.value, handValue.isSoft);
+
+  const lines: string[] = [];
+  if (options?.gameState) {
+    lines.push(`${formatBankHandPhrase(options.gameState)} against your ${playerScore}${splitNote}.`);
+  }
+
+  if (options?.gameState && options.handKey && options.gameState.blackjack) {
+    const round = options.gameState.blackjack;
+    const allowSplit = options.allowSplit ?? false;
+    const allowDouble = options.allowDouble ?? false;
+    const optionsLine = formatPlayerTurnOptions(
+      canHitBlackjack(round, options.handKey),
+      canStandBlackjack(round, options.handKey),
+      allowDouble && canDoubleBlackjackForState(options.gameState, options.handKey),
+      allowSplit && canSplitBlackjackForState(options.gameState, options.handKey),
+    );
+    if (optionsLine) {
+      lines.push(optionsLine);
+    }
+  }
+
+  return {
+    commandMessage: `${boxLabel}, ${callerName}, your turn.`,
+    commandLines: lines,
+  };
 }
 
 /** @deprecated Prefer formatPlayerTurnCommand with hand value context. */
@@ -98,9 +160,9 @@ export function formatCallerTurnMessage(
   options?: { handIndex?: number; actionStatus?: string },
 ): string {
   if (handValue) {
-    return formatPlayerTurnCommand(slotNum, callerName, handValue, options);
+    return formatPlayerTurnCommand(slotNum, callerName, handValue, options).commandMessage ?? '';
   }
-  return `Box ${slotNum ?? '?'}: ${callerName}, your turn.`;
+  return `Box ${slotNum ?? '?'}, ${callerName}, your turn.`;
 }
 
 /** Gold command-area hints (split/double) vs green generic turn lines. */
@@ -108,20 +170,32 @@ export function isTableInstructionMessage(message: string | null | undefined): b
   if (!message?.trim()) {
     return false;
   }
-  return /\b(?:you can|can) (?:split|double)\b/i.test(message);
+  return /^Options:/i.test(message);
 }
 
+/** @deprecated Options are inlined in formatPlayerTurnCommand. */
+export function formatLegalActionHint(_canSplit: boolean, _canDouble: boolean): string | null {
+  return null;
+}
+
+/** @deprecated Options are inlined in formatPlayerTurnCommand. */
 export function formatCallerLegalLine(
-  slotNum: number | undefined,
-  callerName: string,
-  canSplit: boolean,
-  canDouble: boolean,
+  _slotNum: number | undefined,
+  _callerName: string,
+  _canSplit: boolean,
+  _canDouble: boolean,
 ): string | null {
-  const hint = formatLegalActionHint(canSplit, canDouble);
-  if (!hint) {
-    return null;
-  }
-  return `Box ${slotNum ?? '?'}: ${callerName} — ${hint}`;
+  return null;
+}
+
+/** @deprecated Sentimental flavor removed — use strict command format. */
+export function turnFlavor(_options: {
+  value: number;
+  isSoft: boolean;
+  isBlackjack: boolean;
+  actionStatus?: string;
+}): string {
+  return '';
 }
 
 function resolveHandCommandContext(
@@ -249,7 +323,10 @@ export function buildBlackjackCommandText(params: {
         commandLines: [],
       };
     }
-    return { commandMessage: 'Dealer may have blackjack — take even money (1:1)?', commandLines: [] };
+    return {
+      commandMessage: 'Dealer may have blackjack — take even money (1:1)?',
+      commandLines: [],
+    };
   }
 
   if (protocolPhase === 'insurance' && round?.insuranceOfferPending) {
@@ -289,29 +366,16 @@ export function buildBlackjackCommandText(params: {
       };
     }
 
-    const hintLine = formatCallerLegalLine(
-      activeSlotNum,
-      callerName,
-      gameState.blackjackSettings.allowSplit &&
-        canSplitBlackjackForState(gameState, turnHandKey),
-      gameState.blackjackSettings.allowDoubleDown &&
-        canDoubleBlackjackForState(gameState, turnHandKey),
-    );
-    if (hintLine) {
-      return { commandMessage: hintLine, commandLines: [] };
-    }
-
     const handContext = resolveHandCommandContext(gameState, turnHandKey);
     if (handContext) {
-      return {
-        commandMessage: formatPlayerTurnCommand(
-          activeSlotNum,
-          callerName,
-          handContext,
-          { handIndex: handContext.handIndex, actionStatus: handContext.actionStatus },
-        ),
-        commandLines: [],
-      };
+      return formatPlayerTurnCommand(activeSlotNum, callerName, handContext, {
+        handIndex: handContext.handIndex,
+        actionStatus: handContext.actionStatus,
+        gameState,
+        handKey: turnHandKey,
+        allowSplit: gameState.blackjackSettings.allowSplit,
+        allowDouble: gameState.blackjackSettings.allowDoubleDown,
+      });
     }
 
     return {

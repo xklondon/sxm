@@ -122,9 +122,8 @@ describe('Card View polish guards', () => {
 
   it('uses increased hero card size tokens inside hero row', () => {
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
-    expect(layoutCss).toContain('--bj-card-hero-card-width: min(22vw, 10rem)');
-    expect(layoutCss).toContain('--bj-card-hero-card-max-height: min(32vw, 14rem)');
-    expect(layoutCss).toContain('--bj-card-hero-card-max-height: min(22vh, 9.5rem)');
+    expect(layoutCss).toMatch(/--bj-card-hero-card-width:\s*clamp\(/);
+    expect(layoutCss).toMatch(/--bj-card-hero-card-max-height:\s*clamp\(/);
     expect(layoutCss).toContain('--bj-card-hero-card-aspect-ratio: 5 / 7');
     expect(layoutCss).toMatch(
       /\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards \.playing-card\.bj-phone-card--hero[\s\S]*width:\s*var\(--bj-card-hero-card-width\)/,
@@ -163,7 +162,7 @@ describe('Card View polish guards', () => {
     const slot = arcBoxSlot(html, 1);
     expect(slot).toContain(TABLE_UX.fullArcBox);
     expect(slot).toContain('bj-phone-view__mini-hand-head');
-    expect(slot).toContain('bj-phone-view__bet-chip--pulse');
+    expect(slot).toContain('bj-box--turn');
   });
 
   it('renders stake chips under shared arc player box tile', () => {

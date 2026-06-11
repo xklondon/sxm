@@ -10,8 +10,8 @@
   --bj-card-row-actions: var(--bj-zone-actions-height, 5rem);
   --bj-card-row-boxes: var(--bj-zone-boxes-height, 6.25rem);
   --bj-card-row-tray: var(--bj-zone-tray-height, 2.75rem);
-  --bj-card-hero-card-width: min(22vw, 10rem);
-  --bj-card-hero-card-max-height: min(32vw, 14rem);
+  --bj-card-hero-card-width: clamp(5.75rem, 22vw, 11.5rem);
+  --bj-card-hero-card-max-height: clamp(8rem, 32vw, 16rem);
   --bj-card-hero-card-aspect-ratio: 5 / 7;
   --bj-card-total-font-size: 0.54rem;
   --bj-card-total-min-height: 0.7rem;
@@ -26,8 +26,8 @@
     --bj-card-row-actions: var(--bj-mobile-zone-actions-height, var(--bj-zone-actions-height));
     --bj-card-row-boxes: var(--bj-mobile-zone-boxes-height, var(--bj-zone-boxes-height));
     --bj-card-row-tray: var(--bj-mobile-zone-tray-height, var(--bj-zone-tray-height));
-    --bj-card-hero-card-width: min(22vw, 6.5rem);
-    --bj-card-hero-card-max-height: min(28vw, 8.75rem);
+    --bj-card-hero-card-width: clamp(5.25rem, 38vw, 9.5rem);
+    --bj-card-hero-card-max-height: clamp(7.25rem, 52vw, 13.5rem);
   }
 
   .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,

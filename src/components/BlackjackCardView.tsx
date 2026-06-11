@@ -541,9 +541,12 @@ export function BlackjackCardView({
           .join(" ")}
         disabled={!canStand}
         onClick={handleStayClick}
-        aria-label="Stand — swipe left"
+        aria-label="Stay — swipe left"
       >
-        <span className="bj-phone-view__side-action-label">Stand</span>
+        <span className="bj-phone-view__side-action-icon" aria-hidden="true">
+          ✋
+        </span>
+        <span className="bj-phone-view__side-action-label">Stay</span>
       </button>
     );
   }
@@ -569,7 +572,10 @@ export function BlackjackCardView({
         onClick={handleHitClick}
         aria-label="Hit — swipe right"
       >
-        <span className="bj-phone-view__side-action-label">Hit</span>
+        <span className="bj-phone-view__side-action-icon" aria-hidden="true">
+          ⊕
+        </span>
+        <span className="bj-phone-view__side-action-label">Hit me</span>
       </button>
     );
   }
@@ -605,9 +611,41 @@ export function BlackjackCardView({
     }
 
     const heroBusted = logicalHand?.actionStatus === 'busted';
+    const heroNatural = logicalHand?.actionStatus === 'blackjack';
 
     const heroCenter = (
       <div className="bj-phone-view__hero-center">
+        <div className="bj-phone-view__hand-meta bj-phone-view__hand-meta--above-cards">
+          {heroDisplayValue !== null ? (
+            <div
+              {...sxmSectionProps(
+                SXM_LAYOUT.handTotal,
+                'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
+                TABLE_UX.cardViewTotalCompact,
+                heroNatural ? 'bj-phone-view__total--blackjack' : '',
+              )}
+            >
+              {heroNatural ? 'Blackjack' : `Total ${heroDisplayValue}`}
+            </div>
+          ) : (
+            <div
+              {...sxmSectionProps(
+                SXM_LAYOUT.handTotal,
+                'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
+                TABLE_UX.cardViewTotalCompact,
+                'bj-phone-view__total--placeholder',
+              )}
+              aria-hidden="true"
+            >
+              &nbsp;
+            </div>
+          )}
+          {heroBusted ? (
+            <span className="bj-phone-view__bust-label bj-phone-view__bust-label--meta" aria-label="Busted">
+              BUST
+            </span>
+          ) : null}
+        </div>
         <div className="bj-phone-view__cards-slot">
           {heroCardIds.length > 0 ? (
             <div
@@ -638,39 +676,9 @@ export function BlackjackCardView({
             />
           )}
         </div>
-        <div className="bj-phone-view__hand-meta">
-          {heroDisplayValue !== null ? (
-            <div
-              {...sxmSectionProps(
-                SXM_LAYOUT.handTotal,
-                'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
-                TABLE_UX.cardViewTotalCompact,
-              )}
-            >
-              Total {heroDisplayValue}
-            </div>
-          ) : (
-            <div
-              {...sxmSectionProps(
-                SXM_LAYOUT.handTotal,
-                'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
-                TABLE_UX.cardViewTotalCompact,
-                'bj-phone-view__total--placeholder',
-              )}
-              aria-hidden="true"
-            >
-              &nbsp;
-            </div>
-          )}
-          {heroBusted ? (
-            <span className="bj-phone-view__bust-label bj-phone-view__bust-label--meta" aria-label="Busted">
-              BUST
-            </span>
-          ) : null}
-        </div>
         {deviceView === "mobile" && showSideControls && isActiveTurn && (
           <p className="bj-phone-view__swipe-guide" aria-hidden="true">
-            ← Stand · Hit →
+            ← Stay · Hit →
           </p>
         )}
       </div>

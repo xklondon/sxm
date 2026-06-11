@@ -132,7 +132,7 @@ const FULL_TABLE_PLAYING_SECTIONS = [
   ...FULL_TABLE_SECTIONS,
   'dealer-block__status',
   'bj-table-actions',
-  'bj-phone-view__bet-chip--pulse',
+  'bj-box--turn',
 ] as const;
 
 const FULL_TABLE_BETTING_SECTIONS = [
@@ -269,7 +269,7 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
 
   it('highlights the active/turn box', () => {
     const html = renderPanelAt(390, withView(playingState(), 'full'));
-    expect(html).toContain('bj-phone-view__bet-chip--pulse');
+    expect(html).toContain('bj-box--turn');
   });
 
   it('keeps a busted box visible with a BUST label', () => {
@@ -349,7 +349,7 @@ describe('mobile Card View structure', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).toContain('bj-arc--player-boxes');
     expect(html).toContain('BUST');
-    expect(html).toContain('bj-phone-view__bet-chip--pulse');
+    expect(html).toContain('bj-box--turn');
     expect(html).toContain('Join');
     const order = cardViewMiniBoxOrder(html);
     expect(order.length).toBe(4);

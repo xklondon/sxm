@@ -366,6 +366,38 @@ Scoped under view root classes (`tableViewContract.ts`):
 
 Shake-to-roll optional. Primary action label: **Dice** (roll).
 
+### Blackjack presentation (Full Table + Card View)
+
+**Player box stability:** Slot-row boxes reserve fixed stake (`--bj-full-table-stake-min-height`) and composition height so adding chips/tokens does not reflow box width or row height.
+
+**Active turn highlight:** Shared class `bj-box--turn` on the active player box in both Full Table and Card View (subtle `bj-turn-pulse` animation). Betting selection uses `bj-box--selected` + `bj-phone-view__bet-chip--pulse` only.
+
+**Card View layout:**
+
+- Hero card size uses responsive `clamp()` tokens (`--bj-card-hero-card-width`, `--bj-card-hero-card-max-height`) on mobile and desktop.
+- Hand total appears **above** hero cards (`bj-phone-view__hand-meta--above-cards`) and on each player box tile.
+- Mobile Card View shows vertical **Stay** / **Hit me** side indicators beside the hero (`bj-phone-view__side-action`).
+- Clean natural blackjack shows **Blackjack** label with `bj-hero-blackjack-pulse` — not used for even-money (1:1) offers.
+
+**Card View bust delay:** When a hand busts, hero stays on that box for `CARD_VIEW_BUST_HOLD_MS` (2000ms) via `useCardViewBustHold` before following the next active box. Game state/protocol advance immediately; only presentation is held.
+
+**Dealer info layout (all views):**
+
+- **Bank Total** (chip balance) stays in the felt info row (`TableInfoBar` variant `felt`).
+- **Bank Hand** (visible dealer hand value) renders under dealer cards (`TableInfoBar` variant `dealer`) — never inline beside Bank Total.
+
+**Command text (canonical player turn):**
+
+```
+Box [n], [name], your turn.
+Bank has [up-card or total] against your [score].
+Options: Hit, Stay, Double one card, Split.  (valid options only)
+```
+
+- Use **Stay** in command copy (action buttons may still say Stand where protocol-named).
+- No sentimental/random phrasing.
+- Natural blackjack: `Box [n], Blackjack.` only for `actionStatus === 'blackjack'`.
+
 ---
 
 ## 14. Desktop UX Rules

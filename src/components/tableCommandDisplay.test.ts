@@ -5,9 +5,8 @@ import { createNewBlackjackTable } from '../engine/session';
 import {
   buildBlackjackCommandText,
   buildTableCommandDisplay,
-  formatCallerLegalLine,
-  formatLegalActionHint,
   formatPlayerTurnCommand,
+  formatPlayerTurnOptions,
 } from './tableCommandDisplay';
 import { tableWithClaimedBox, actingRound, boxPlayerId, findCardId } from '../engine/blackjack/sanity/fixtures';
 import { blackjackHandKey } from '../engine/blackjack';
@@ -76,10 +75,9 @@ describe('buildBlackjackCommandText', () => {
       roundSummaryLines: [],
       controllerName: 'Alice',
     });
-    expect(result.commandMessage).toBe(
-      formatPlayerTurnCommand(2, 'Alice', { value: 13, isSoft: false, isBlackjack: false }),
-    );
-    expect(result.commandMessage).toMatch(/Box 2: Alice, you have 13\./);
+    expect(result.commandMessage).toBe('Box 2, Alice, your turn.');
+    expect(result.commandLines.some((line) => /Bank has/.test(line))).toBe(true);
+    expect(result.commandLines.some((line) => /^Options:/.test(line))).toBe(true);
   });
 
   it('shows join notice during betting when tableNotice is set', () => {
@@ -108,22 +106,25 @@ describe('buildBlackjackCommandText', () => {
     expect(result.commandMessage).toBe('Kay joined the table on Box 3.');
   });
 
-  it('uses caller-prefixed legal action hints', () => {
-    expect(formatLegalActionHint(false, true)).toBe('You can double — one card only.');
-    expect(formatLegalActionHint(true, true)).toBe(
-      'You can split or double — double gets one card only.',
-    );
-    expect(formatLegalActionHint(true, false)).toBe('You can split.');
-    expect(formatLegalActionHint(false, false)).toBeNull();
-    expect(formatCallerLegalLine(1, 'Alice', false, true)).toBe(
-      'Box 1: Alice — You can double — one card only.',
-    );
+  it('builds options line with Stay wording', () => {
+    expect(
+      formatPlayerTurnOptions(true, true, true, true),
+    ).toBe('Options: Hit, Stay, Double one card, Split.');
   });
 
-  it('includes soft totals in player-turn copy', () => {
-    expect(
-      formatPlayerTurnCommand(3, 'Kji', { value: 17, isSoft: true, isBlackjack: false }),
-    ).toBe('Box 3: Kji, you have soft 17. Your call.');
+  it('includes soft totals in bank-against line', () => {
+    const result = formatPlayerTurnCommand(3, 'Kji', {
+      value: 17,
+      isSoft: true,
+      isBlackjack: false,
+    }, {
+      gameState: tableWithClaimedBox(3),
+      handKey: `${boxPlayerId(tableWithClaimedBox(3), 3)!}:0`,
+      allowSplit: false,
+      allowDouble: false,
+    });
+    expect(result.commandMessage).toBe('Box 3, Kji, your turn.');
+    expect(result.commandLines.some((line) => /against your soft 17/.test(line))).toBe(true);
   });
 });
 

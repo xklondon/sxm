@@ -126,7 +126,7 @@ describe('multiplayer turn-owner visibility (UI)', () => {
       viewerPersonId: bobId,
     });
     expect(result.commandMessage).toBe(
-      formatPlayerTurnCommand(2, 'Bob', { value: 13, isSoft: false, isBlackjack: false }),
+      formatPlayerTurnCommand(2, 'Bob', { value: 13, isSoft: false, isBlackjack: false }).commandMessage,
     );
   });
 

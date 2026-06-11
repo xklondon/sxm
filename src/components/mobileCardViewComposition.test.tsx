@@ -140,7 +140,7 @@ describe('mobile Card View composition contract', () => {
     expect(card).not.toContain('bj-phone-view__mini-hand--card-compact');
   });
 
-  it('owned box uses one visual shell — slot chrome neutralized, pulse only on mini-hand', () => {
+  it('owned box uses one visual shell — slot chrome neutralized, turn highlight on mini-hand', () => {
     const css = sharedCss();
     expect(css).toMatch(
       /\.bj-arc--player-boxes \.bj-arc__slot--owned[\s\S]*background:\s*none[\s\S]*padding:\s*0/,
@@ -153,13 +153,14 @@ describe('mobile Card View composition contract', () => {
     );
 
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    const ownedSlot = html.match(
-      /bj-arc__slot--owned[\s\S]{0,700}?bj-phone-view__bet-chip--pulse/,
+    const ownedTurnSlot = html.match(
+      /bj-arc__slot--owned[\s\S]{0,1200}?bj-box--turn[\s\S]{0,400}?bj-phone-view__mini-hand--full-arc/,
     );
-    expect(ownedSlot).toBeTruthy();
-    const slotChunk = ownedSlot![0];
+    expect(ownedTurnSlot).toBeTruthy();
+    const slotChunk = ownedTurnSlot![0];
     expect(slotChunk).not.toMatch(/bj-arc__play-zone/);
     expect(slotChunk).toContain(TABLE_UX.fullArcBox);
+    expect(slotChunk).toContain('bj-box--turn');
     expect(slotChunk).not.toContain('bj-box--selected');
   });
 
