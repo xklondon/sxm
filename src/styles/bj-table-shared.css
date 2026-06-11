@@ -2147,6 +2147,25 @@
   overflow: visible;
 }
 
+.bj-table-layout-shell .bj-table-zone--summary .bj-game-end-actions {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: var(--bj-table-center-column-max-width);
+  margin-top: 0.45rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--summary .bj-game-end-actions .ds-btn {
+  flex: 1 1 0;
+  min-height: 2.1rem;
+  min-width: 0;
+  white-space: nowrap;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.72rem;
+}
+
 .bj-table-layout-shell .bj-table-zone--summary .dealer-block__status {
   font-size: 0.68rem;
   line-height: 1.35;
@@ -2966,22 +2985,22 @@
   width: 100%;
 }
 
-/* Desktop adaptive arc sizing by visible box count (layout only). */
+/* Desktop player boxes — compact fixed tokens (no stretch-up by visible count). */
 @media (min-width: 721px) {
-  .bj-arc--visible-4 {
-    --bj-full-table-box-width: calc(var(--bj-player-box-width) * 1.22);
-    --bj-full-table-box-height: calc(var(--bj-player-box-height) * 1.14);
-  }
-
-  .bj-arc--visible-5 {
-    --bj-full-table-box-width: calc(var(--bj-player-box-width) * 1.08);
-    --bj-full-table-box-height: calc(var(--bj-player-box-height) * 1.06);
-  }
-
-  .bj-arc--visible-6,
-  .bj-arc--visible-7 {
+  .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-4,
+  .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-5,
+  .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-6,
+  .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-7 {
     --bj-full-table-box-width: var(--bj-player-box-width);
     --bj-full-table-box-height: var(--bj-player-box-height);
+  }
+
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-4,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-5,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-6,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-7 {
+    --bj-cardview-desktop-mini-hand-width: var(--bj-player-box-width);
+    --bj-cardview-desktop-mini-hand-height: var(--bj-player-box-height);
   }
 }
 

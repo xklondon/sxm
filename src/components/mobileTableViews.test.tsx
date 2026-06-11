@@ -489,6 +489,8 @@ describe('mobile Card View width contract', () => {
     expect(panelCss).toMatch(/\.bj-view-card-mobile \.bj-casino__rail[\s\S]*max-width:\s*100%/);
     const playerRowCss = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
     expect(playerRowCss).toMatch(/\.bj-table-slot-row[\s\S]*overflow:\s*visible/);
-    expect(playerRowCss).toMatch(/\.bj-table-slot-row > \.bj-arc__slot[\s\S]*min-width:\s*0/);
+    expect(playerRowCss).toMatch(
+      /\.bj-view-card-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
+    );
   });
 });

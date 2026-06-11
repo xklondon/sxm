@@ -67,13 +67,13 @@ describe('mobile player box visual stability contract', () => {
   it('uses canonical slot row grid for mobile player boxes', () => {
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row \{[\s\S]*display:\s*grid/);
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row > \.bj-arc__slot[\s\S]*min-width:\s*0[\s\S]*overflow:\s*visible/,
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
     );
   });
 
-  it('locks mobile player box dimensions via aspect-ratio inside slot row', () => {
+  it('locks mobile portrait player box dimensions via aspect-ratio inside slot row', () => {
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*aspect-ratio:\s*1\.05 \/ 1/,
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*aspect-ratio:\s*1\.05 \/ 1/,
     );
     expect(PLAYER_ROW_CSS).toContain('.bj-table-slot-row.bj-arc--player-boxes .bj-player-box-mobile');
   });

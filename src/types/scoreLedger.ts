@@ -14,6 +14,10 @@ export interface ScoreLedgerParticipantResult {
 export interface ScoreLedgerEntry {
   id: string;
   tableId: string;
+  /** Human-readable table name for score-ledger filtering. */
+  tableName?: string;
+  /** Rounds played when the game ended. */
+  roundCount?: number;
   wagerDescription: string;
   winnerPersonId: string | null;
   winnerName: string;
@@ -27,6 +31,8 @@ export interface ScoreLedgerEntry {
   mode?: TableMode;
   bankName?: string;
   participantEmails?: string[];
+  /** Emails of users who explicitly saved this game to their personal ledger. */
+  savedByEmails?: string[];
   participants?: ScoreLedgerParticipantResult[];
   createdAt: string;
   status: ScoreLedgerEntryStatus;

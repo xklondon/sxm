@@ -592,6 +592,7 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
         onClose={() => setScoreLedgerOpen(false)}
         activeTableId={gameState?.session.id ?? activeTableId}
         gameStatus={gameState?.tableMeta.gameStatus}
+        viewerEmail={user?.email ?? loadProfile().email}
       />
       {onlineMode && user && (
         <ActiveTablesPanel

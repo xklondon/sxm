@@ -41,4 +41,13 @@ describe('TableStakePanel staged new table layout', () => {
     expect(html).toContain('Continue');
     expect(html).toContain('table-stake-panel--compact');
   });
+
+  it('uses canonical select-btn tabs for Practice and Challenge on step 2', () => {
+    expect(PANEL_SRC).toMatch(
+      /renderStagedModeStage[\s\S]*table-stake-panel__tabs[\s\S]*Practice/,
+    );
+    expect(PANEL_SRC).not.toMatch(
+      /renderStagedModeStage[\s\S]*table-stake-panel__mode-card/,
+    );
+  });
 });

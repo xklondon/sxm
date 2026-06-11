@@ -121,16 +121,25 @@ describe('bank bankruptcy ends the game', () => {
 });
 
 describe('personal ledger eligibility — human-vs-human only', () => {
-  it('hides personal ledger for Bot Bank games', () => {
+  it('allows personal ledger save for ended practice (bot bank) games', () => {
     const botState = tableAfterStartPlaying(500);
     expect(isBotBankGame(botState)).toBe(true);
 
     const ended: GameState = {
       ...botState,
-      tableMeta: { ...botState.tableMeta, gameStatus: 'ended' },
+      tableMeta: {
+        ...botState.tableMeta,
+        gameStatus: 'ended',
+        winnerId: botState.session.bankPlayerId,
+        tableMode: 'practice',
+      },
+      session: { ...botState.session, currentRound: 3 },
     };
-    expect(canAddGameToPersonalLedger(ended)).toBe(false);
-    expect(addGameToPersonalLedger(ended)).toBeNull();
+    expect(canAddGameToPersonalLedger(ended)).toBe(true);
+    const entry = addGameToPersonalLedger(ended, { savedByEmail: 'alice@example.com' });
+    expect(entry).not.toBeNull();
+    expect(entry?.roundCount).toBe(3);
+    expect(entry?.mode).toBe('practice');
   });
 
   it('shows personal ledger for human-vs-human games', () => {

@@ -46,12 +46,12 @@ describe('mobile layout fixes — portrait bottom safe area', () => {
 });
 
 describe('mobile layout fixes — selected box dimensions', () => {
-  it('locks mobile player box width via slot row without fixed min-width pills', () => {
+  it('locks mobile portrait player box width via equal 1fr slot row', () => {
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*\.bj-box--selected[\s\S]*max-width:\s*none/,
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
     );
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row > \.bj-arc__slot[\s\S]*max-width:\s*none/,
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot[\s\S]*max-width:\s*none/,
     );
   });
 

@@ -610,22 +610,20 @@ export function TableStakePanel({
             Practice is a quick solo game with the dealer as bank. Challenge adds a wager, invited
             players, and a player bank.
           </p>
-          <div className="table-stake-panel__mode-grid">
+          <div className="table-stake-panel__tabs" role="group" aria-label="Table mode">
             <button
               type="button"
-              className="table-stake-panel__mode-card table-stake-panel__select-btn"
+              className={`table-stake-panel__select-btn${tableMode === 'practice' ? '' : ' secondary'}`}
               onClick={() => selectBlackjackMode('practice')}
             >
-              <strong>Practice</strong>
-              <span>Dealer bank · no wager · start immediately</span>
+              Practice
             </button>
             <button
               type="button"
-              className="table-stake-panel__mode-card table-stake-panel__select-btn"
+              className={`table-stake-panel__select-btn${tableMode === 'challenge' ? '' : ' secondary'}`}
               onClick={() => selectBlackjackMode('challenge')}
             >
-              <strong>Challenge</strong>
-              <span>Wager · invite friends · choose bank</span>
+              Challenge
             </button>
           </div>
         </fieldset>

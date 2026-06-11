@@ -114,9 +114,11 @@ describe('mobile blackjack layout fix', () => {
         /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]{0,1800}min-width:\s*0/,
       );
       expect(PLAYER_ROW_CSS).toMatch(
-        /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]{0,1800}aspect-ratio:\s*1\.05 \/ 1/,
+        /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]{0,2200}aspect-ratio:\s*1\.05 \/ 1/,
       );
-      expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*width:\s*100%/);
+      expect(PLAYER_ROW_CSS).toMatch(
+        /\.bj-view-full-mobile \.bj-table-slot-row__add[\s\S]*width:\s*100%/,
+      );
       expect(PLAYER_ROW_CSS).toMatch(
         /\.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot--empty::before/,
       );
@@ -138,7 +140,7 @@ describe('mobile blackjack layout fix', () => {
 
     it('uses flat slot row with add column before box columns', () => {
       expect(PLAYER_ROW_CSS).toMatch(
-        /\.bj-table-slot-row--with-add[\s\S]*repeat\(calc\(var\(--slot-count,\s*4\) \+ 1\)/,
+        /\.bj-view-full-mobile \.bj-table-slot-row--with-add[\s\S]*repeat\(calc\(var\(--slot-count,\s*4\) \+ 1\)/,
       );
     });
 

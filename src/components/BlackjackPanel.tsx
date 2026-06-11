@@ -100,6 +100,7 @@ import {
   canAddGameToPersonalLedger,
   hasPersonalLedgerEntryForTable,
 } from '../engine/scoreLedger/scoreLedger';
+import { buildGameEndIouHandoff, canOfferGameEndIou } from '../engine/scoreLedger/gameEndIou';
 import { buildRoundResultSummary } from '../engine/blackjack';
 import { buildRoundSummaryOverlayModel } from '../engine/blackjack/roundSummaryOverlay';
 import { buildBlackjackCommandText } from './tableCommandDisplay';
@@ -438,8 +439,11 @@ export function BlackjackPanel({
   const visibleArcClass = visibleBoxArcClass(effectiveVisibleBoxCount);
   const canAddVisibleBox = effectiveVisibleBoxCount < MAX_BOXES;
   const bankerReady = isBankerReady(gameState);
-  // Personal (score) ledger is human-vs-human only — never for a Bot Bank game.
-  const showPersonalLedgerOffer = gameEnded && canAddGameToPersonalLedger(gameState);
+  const showGameEndActions = gameEnded;
+  const canSaveToLedger = canAddGameToPersonalLedger(gameState);
+  const viewerEmail = viewerAuth?.email?.trim() || profile.email.trim();
+  const iouHandoff = gameEnded ? buildGameEndIouHandoff(gameState, viewerEmail) : null;
+  const canAddIou = canOfferGameEndIou(gameState, viewerEmail);
   // Consolidated end-of-round summary, shown once (in the dealer block, above
   // the Next Round button). Per-box result chips are intentionally not repeated.
   const roundSummaryLines = useMemo(
@@ -508,11 +512,20 @@ export function BlackjackPanel({
       return;
     }
     try {
-      addGameToPersonalLedger(gameStateRef.current);
+      addGameToPersonalLedger(gameStateRef.current, {
+        savedByEmail: viewerEmail || undefined,
+      });
       setPersonalLedgerAdded(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not add to personal ledger');
     }
+  }
+
+  function handleAddIou() {
+    if (!iouHandoff) {
+      return;
+    }
+    window.open(iouHandoff.url, '_blank', 'noopener,noreferrer');
   }
 
   function run(
@@ -1001,25 +1014,25 @@ export function BlackjackPanel({
         {alert ?? (
           <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />
         )}
-        {showPersonalLedgerOffer ? (
-          <div className="bj-personal-ledger-offer">
+        {showGameEndActions ? (
+          <div className="bj-game-end-actions">
             <button
               type="button"
               className="ds-btn ds-btn--primary"
-              disabled={personalLedgerAdded}
+              disabled={!canSaveToLedger || personalLedgerAdded}
               onClick={handleAddToPersonalLedger}
             >
-              {personalLedgerAdded ? 'Added to ledger' : 'Add game to ledger'}
+              {personalLedgerAdded ? 'Added to Ledger' : 'Add to Ledger'}
             </button>
-            {!personalLedgerAdded && (
-              <button
-                type="button"
-                className="ds-btn ds-btn--secondary"
-                onClick={() => setPersonalLedgerAdded(true)}
-              >
-                Close without ledger
-              </button>
-            )}
+            <button
+              type="button"
+              className="ds-btn ds-btn--secondary"
+              disabled={!canAddIou}
+              onClick={handleAddIou}
+              title={canAddIou ? 'Open IOU Wallet with prefilled wager' : 'Add a counterparty email to use IOU'}
+            >
+              Add IOU
+            </button>
           </div>
         ) : null}
       </>

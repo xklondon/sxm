@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
 import { tableAfterStartPlaying } from '../engine/blackjack/sanity/fixtures';
-import { MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
+import { MOBILE_LAYOUT_MEDIA, MOBILE_LAYOUT_MEDIA_LANDSCAPE } from '../styles/mobileLayoutContract';
 import {
   createMobileLayoutMatchMedia,
   type SimulatedViewport,
@@ -55,16 +55,35 @@ describe('canonical player row layout engine', () => {
     expect(PANEL_SRC).not.toMatch(/renderPlayerBoxesArc\(\)[\s\S]{0,800}bj-arc--rtl/);
   });
 
-  it('defines canonical grid row with slot-count columns and optional add column', () => {
+  it('defines responsive player-box sizing contracts per viewport', () => {
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row \{[\s\S]*display:\s*grid/);
+    expect(PLAYER_ROW_CSS).toMatch(/SIZING CONTRACTS/);
     expect(PLAYER_ROW_CSS).toMatch(
-      /grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*minmax\(0,\s*1fr\)\)/,
+      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*minmax\(0,\s*max-content\)\)/,
+    );
+    expect(PLAYER_ROW_CSS).toContain(
+      '.bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc',
+    );
+    expect(PLAYER_ROW_CSS).toMatch(/CONTRACT D — mobile landscape compact horizontal row/);
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
     );
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row--with-add[\s\S]*grid-template-columns:\s*repeat\(calc\(var\(--slot-count,\s*4\) \+ 1\),\s*minmax\(0,\s*1fr\)\)/,
+      /\.bj-view-full-mobile \.bj-table-slot-row--with-add\.bj-arc--player-boxes[\s\S]*repeat\(calc\(var\(--slot-count,\s*4\) \+ 1\),\s*minmax\(0,\s*1fr\)\)/,
     );
     expect(PLAYER_ROW_CSS).toMatch(/gap:\s*var\(--bj-table-slot-row-gap\)/);
     expect(PLAYER_ROW_CSS).toContain('clamp(4px, 1.2vw, 8px)');
+    expect(PLAYER_ROW_CSS).toContain(MOBILE_LAYOUT_MEDIA_LANDSCAPE.split(',')[0]!.trim());
+  });
+
+  it('desktop compact row uses max-content columns and fixed add width', () => {
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-table-slot-row--with-add\.bj-arc--player-boxes[\s\S]*grid-template-columns:\s*var\(--bj-table-slot-add-size\) repeat/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*width:\s*var\(--bj-table-slot-add-size\)/);
+    expect(PLAYER_ROW_CSS).not.toMatch(
+      /\.bj-table-slot-row__add[\s\S]*min-height:\s*calc\(var\(--bj-full-table-box-height\)/,
+    );
   });
 
   it('renders + as first DOM child before player box slots', () => {
@@ -91,12 +110,14 @@ describe('canonical player row layout engine', () => {
       /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot--owned[\s\S]*justify-content:\s*flex-start/,
     );
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--native-assigned[\s\S]*aspect-ratio:\s*1\.05 \/ 1/,
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--native-assigned[\s\S]*aspect-ratio:\s*1\.05 \/ 1/,
     );
   });
 
   it('sizes add + as plus-only in the same grid cell as player boxes', () => {
-    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*width:\s*100%/);
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row__add[\s\S]*width:\s*100%/,
+    );
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*background:\s*transparent/);
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*border:\s*none/);
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add::after[\s\S]*content:\s*'\+'/);
@@ -107,9 +128,9 @@ describe('canonical player row layout engine', () => {
     );
   });
 
-  it('neutralizes pill/dot compression on player box tiles inside slot row', () => {
+  it('neutralizes pill/dot compression on mobile portrait player box tiles', () => {
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%[\s\S]*min-width:\s*0[\s\S]*aspect-ratio:\s*1\.05 \/ 1[\s\S]*transform:\s*none[\s\S]*overflow:\s*visible/,
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%[\s\S]*min-width:\s*0[\s\S]*aspect-ratio:\s*1\.05 \/ 1[\s\S]*transform:\s*none[\s\S]*overflow:\s*visible/,
     );
     expect(SHARED_CSS).not.toMatch(/@media \(max-width: 480px\)[\s\S]*\.bj-arc--player-boxes \.bj-arc__slot[\s\S]*width:\s*var\(--bj-full-table-box-width\)/);
   });

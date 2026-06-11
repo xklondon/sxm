@@ -44,3 +44,94 @@ export function appendScoreLedgerEntry(entry: ScoreLedgerEntry): ScoreLedgerEntr
   log.info('scoreLedgerEntrySaved', { id: entry.id, owedDescription: entry.owedDescription });
   return next;
 }
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+/** Games the logged-in user played and chose to save (or participated in). */
+export function filterPersonalLedgerEntries(
+  entries: ScoreLedgerEntry[],
+  viewerEmail: string,
+): ScoreLedgerEntry[] {
+  const email = normalizeEmail(viewerEmail);
+  if (!email) {
+    return [];
+  }
+  return entries.filter((entry) => {
+    const saved = entry.savedByEmails?.some((e) => normalizeEmail(e) === email);
+    const participant = entry.participantEmails?.some((e) => normalizeEmail(e) === email);
+    return Boolean(saved || participant);
+  });
+}
+
+export type ScoreLedgerPersonFilter = string;
+export type ScoreLedgerTableFilter = string;
+
+export function filterScoreLedgerByPerson(
+  entries: ScoreLedgerEntry[],
+  personQuery: ScoreLedgerPersonFilter,
+): ScoreLedgerEntry[] {
+  const needle = personQuery.trim().toLowerCase();
+  if (!needle) {
+    return entries;
+  }
+  return entries.filter((entry) => {
+    if (entry.winnerName.toLowerCase().includes(needle)) {
+      return true;
+    }
+    if (entry.loserName.toLowerCase().includes(needle)) {
+      return true;
+    }
+    if (entry.playersInvolved?.some((name) => name.toLowerCase().includes(needle))) {
+      return true;
+    }
+    if (entry.participantEmails?.some((e) => e.toLowerCase().includes(needle))) {
+      return true;
+    }
+    return false;
+  });
+}
+
+export function filterScoreLedgerByTable(
+  entries: ScoreLedgerEntry[],
+  tableQuery: ScoreLedgerTableFilter,
+): ScoreLedgerEntry[] {
+  const needle = tableQuery.trim().toLowerCase();
+  if (!needle) {
+    return entries;
+  }
+  return entries.filter(
+    (entry) =>
+      entry.tableId.toLowerCase() === needle ||
+      (entry.tableName?.toLowerCase().includes(needle) ?? false),
+  );
+}
+
+export function listScoreLedgerTableOptions(entries: ScoreLedgerEntry[]): string[] {
+  const names = new Set<string>();
+  for (const entry of entries) {
+    if (entry.tableName?.trim()) {
+      names.add(entry.tableName.trim());
+    }
+  }
+  return [...names].sort((a, b) => a.localeCompare(b));
+}
+
+export function listScoreLedgerPersonOptions(entries: ScoreLedgerEntry[]): string[] {
+  const names = new Set<string>();
+  for (const entry of entries) {
+    if (entry.winnerName.trim()) {
+      names.add(entry.winnerName.trim());
+    }
+    if (entry.loserName.trim() && entry.loserName !== '—') {
+      names.add(entry.loserName.trim());
+    }
+    for (const name of entry.playersInvolved ?? []) {
+      if (name.trim()) {
+        names.add(name.trim());
+      }
+    }
+  }
+  return [...names].sort((a, b) => a.localeCompare(b));
+}

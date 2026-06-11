@@ -52,7 +52,9 @@ describe('blackjack UX protocol fixes — card column values', () => {
 
 describe('blackjack UX protocol fixes — box stability', () => {
   it('matches + add-box outer sizing to player boxes', () => {
-    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*width:\s*100%/);
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row__add[\s\S]*width:\s*100%/,
+    );
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*background:\s*transparent/);
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add::after[\s\S]*aspect-ratio:\s*1\.05 \/ 1/);
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*align-self:\s*stretch/);

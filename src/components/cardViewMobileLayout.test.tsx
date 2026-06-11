@@ -106,7 +106,9 @@ describe('mobile Card View layout contract', () => {
     expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*overflow-x:\s*hidden/);
     const playerRowCss = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
     expect(playerRowCss).toMatch(/\.bj-table-slot-row[\s\S]*display:\s*grid/);
-    expect(playerRowCss).toMatch(/\.bj-table-slot-row > \.bj-arc__slot[\s\S]*min-width:\s*0/);
+    expect(playerRowCss).toMatch(
+      /\.bj-view-card-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
+    );
   });
 
   it('betting and playing share stage, action, and box strip slots', () => {

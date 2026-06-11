@@ -109,7 +109,7 @@ describe('mobile layout cleanup', () => {
     const playerRowCss = readCss('src/styles/bj-player-row-layout.css');
     expect(playerRowCss).toMatch(/\.bj-table-slot-row \{[\s\S]*display:\s*grid/);
     expect(playerRowCss).toMatch(
-      /\.bj-table-slot-row > \.bj-arc__slot[\s\S]*min-width:\s*0/,
+      /\.bj-view-card-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
     );
     const mobile = renderAt({ width: 390, height: 844 }, 'card');
     expect(mobile).toContain('bj-arc--player-boxes');

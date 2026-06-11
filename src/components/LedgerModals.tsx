@@ -1,7 +1,14 @@
-import type { ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import type { GameState } from '../types';
 import type { ScoreLedgerEntry } from '../types/scoreLedger';
-import { loadScoreLedgerDisplayEntries } from '../storage/scoreLedgerStorage';
+import {
+  filterPersonalLedgerEntries,
+  filterScoreLedgerByPerson,
+  filterScoreLedgerByTable,
+  listScoreLedgerPersonOptions,
+  listScoreLedgerTableOptions,
+  loadScoreLedgerDisplayEntries,
+} from '../storage/scoreLedgerStorage';
 import { LedgerPanel } from './LedgerPanel';
 import { SXM_LAYOUT, sxmSectionProps, type SxmLayoutSection } from './sxmLayoutContract';
 import './InviteModal.css';
@@ -185,7 +192,11 @@ interface ScoreLedgerModalProps {
   onClose: () => void;
   activeTableId?: string | null;
   gameStatus?: GameState['tableMeta']['gameStatus'];
+  viewerEmail?: string | null;
 }
+
+type LedgerViewTab = 'personal' | 'score';
+type ScoreFilterMode = 'all' | 'person' | 'table';
 
 function statusLabel(status: ScoreLedgerEntry['status']): string {
   switch (status) {
@@ -200,14 +211,71 @@ function statusLabel(status: ScoreLedgerEntry['status']): string {
   }
 }
 
-export function ScoreLedgerModal({ open, onClose, activeTableId, gameStatus }: ScoreLedgerModalProps) {
-  const entries = open
-    ? loadScoreLedgerDisplayEntries({ activeTableId, gameStatus })
-    : [];
+function ScoreLedgerEntryList({ entries }: { entries: ScoreLedgerEntry[] }) {
+  if (entries.length === 0) {
+    return <p className="invite-modal__placeholder">No matching entries.</p>;
+  }
+
+  return (
+    <ul className="score-ledger-list">
+      {entries.map((entry) => (
+        <li key={entry.id} className="score-ledger-list__item">
+          <p className="score-ledger-list__owed">{entry.owedDescription}</p>
+          <p className="score-ledger-list__meta">
+            {entry.winnerName} won · {statusLabel(entry.status)} ·{' '}
+            {new Date(entry.createdAt).toLocaleString()}
+            {entry.tableName ? ` · ${entry.tableName}` : ''}
+            {entry.roundCount ? ` · ${entry.roundCount} rounds` : ''}
+          </p>
+          <p className="score-ledger-list__wager">Played for: {entry.wagerDescription}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function ScoreLedgerModal({
+  open,
+  onClose,
+  activeTableId,
+  gameStatus,
+  viewerEmail = null,
+}: ScoreLedgerModalProps) {
+  const [viewTab, setViewTab] = useState<LedgerViewTab>('personal');
+  const [scoreFilterMode, setScoreFilterMode] = useState<ScoreFilterMode>('all');
+  const [personFilter, setPersonFilter] = useState('');
+  const [tableFilter, setTableFilter] = useState('');
+
+  const allEntries = useMemo(
+    () =>
+      open ? loadScoreLedgerDisplayEntries({ activeTableId, gameStatus }) : [],
+    [open, activeTableId, gameStatus],
+  );
+
+  const personOptions = useMemo(() => listScoreLedgerPersonOptions(allEntries), [allEntries]);
+  const tableOptions = useMemo(() => listScoreLedgerTableOptions(allEntries), [allEntries]);
+
+  const personalEntries = useMemo(
+    () => filterPersonalLedgerEntries(allEntries, viewerEmail ?? ''),
+    [allEntries, viewerEmail],
+  );
+
+  const scoreEntries = useMemo(() => {
+    let rows = allEntries;
+    if (scoreFilterMode === 'person' && personFilter.trim()) {
+      rows = filterScoreLedgerByPerson(rows, personFilter);
+    }
+    if (scoreFilterMode === 'table' && tableFilter.trim()) {
+      rows = filterScoreLedgerByTable(rows, tableFilter);
+    }
+    return rows;
+  }, [allEntries, scoreFilterMode, personFilter, tableFilter]);
 
   if (!open) {
     return null;
   }
+
+  const displayedEntries = viewTab === 'personal' ? personalEntries : scoreEntries;
 
   return (
     <div className="invite-modal-overlay" role="presentation" onClick={onClose}>
@@ -218,30 +286,110 @@ export function ScoreLedgerModal({ open, onClose, activeTableId, gameStatus }: S
         onClick={(e) => e.stopPropagation()}
       >
         <div className="invite-modal__header">
-          <h2 id="score-ledger-title" className="invite-modal__title">Score Ledger</h2>
+          <h2 id="score-ledger-title" className="invite-modal__title">
+            Ledgers
+          </h2>
           <button type="button" className="invite-modal__close secondary" onClick={onClose} aria-label="Close">
             ×
           </button>
         </div>
-        <p className="invite-modal__sub">
-          Wager-level outcomes — who owes whom between friends. Not every hand or chip action.
-        </p>
-        {entries.length === 0 ? (
-          <p className="invite-modal__placeholder">No score entries yet — recorded when a table game ends.</p>
+
+        <div className="score-ledger-tabs" role="tablist" aria-label="Ledger view">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewTab === 'personal'}
+            className={`score-ledger-tabs__btn${viewTab === 'personal' ? '' : ' secondary'}`}
+            onClick={() => setViewTab('personal')}
+          >
+            Personal ledger
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={viewTab === 'score'}
+            className={`score-ledger-tabs__btn${viewTab === 'score' ? '' : ' secondary'}`}
+            onClick={() => setViewTab('score')}
+          >
+            Score ledger
+          </button>
+        </div>
+
+        {viewTab === 'personal' ? (
+          <p className="invite-modal__sub">
+            Games you played — including practice tables you chose to save.
+          </p>
         ) : (
-          <ul className="score-ledger-list">
-            {entries.map((entry) => (
-              <li key={entry.id} className="score-ledger-list__item">
-                <p className="score-ledger-list__owed">{entry.owedDescription}</p>
-                <p className="score-ledger-list__meta">
-                  {entry.winnerName} won · {statusLabel(entry.status)} · {new Date(entry.createdAt).toLocaleString()}
-                </p>
-                <p className="score-ledger-list__wager">Played for: {entry.wagerDescription}</p>
-              </li>
-            ))}
-          </ul>
+          <>
+            <p className="invite-modal__sub">
+              Wager-level outcomes — who owes whom between friends. Not every hand or chip action.
+            </p>
+            <div className="score-ledger-filters">
+              <label className="score-ledger-filters__field">
+                <span>Filter</span>
+                <select
+                  className="score-ledger-filters__select"
+                  value={scoreFilterMode}
+                  onChange={(e) => setScoreFilterMode(e.target.value as ScoreFilterMode)}
+                >
+                  <option value="all">All games</option>
+                  <option value="person">By person / opponent</option>
+                  <option value="table">By table</option>
+                </select>
+              </label>
+              {scoreFilterMode === 'person' && (
+                <label className="score-ledger-filters__field">
+                  <span>Person</span>
+                  <input
+                    type="text"
+                    className="score-ledger-filters__input"
+                    list="score-ledger-person-options"
+                    value={personFilter}
+                    onChange={(e) => setPersonFilter(e.target.value)}
+                    placeholder="Name or email"
+                  />
+                  <datalist id="score-ledger-person-options">
+                    {personOptions.map((name) => (
+                      <option key={name} value={name} />
+                    ))}
+                  </datalist>
+                </label>
+              )}
+              {scoreFilterMode === 'table' && (
+                <label className="score-ledger-filters__field">
+                  <span>Table</span>
+                  <input
+                    type="text"
+                    className="score-ledger-filters__input"
+                    list="score-ledger-table-options"
+                    value={tableFilter}
+                    onChange={(e) => setTableFilter(e.target.value)}
+                    placeholder="Table name"
+                  />
+                  <datalist id="score-ledger-table-options">
+                    {tableOptions.map((name) => (
+                      <option key={name} value={name} />
+                    ))}
+                  </datalist>
+                </label>
+              )}
+            </div>
+          </>
         )}
-        <button type="button" className="secondary" onClick={onClose}>Close</button>
+
+        {displayedEntries.length === 0 ? (
+          <p className="invite-modal__placeholder">
+            {viewTab === 'personal'
+              ? 'No saved games yet — use Add to Ledger when a table ends.'
+              : 'No score entries yet — recorded when a table game ends.'}
+          </p>
+        ) : (
+          <ScoreLedgerEntryList entries={displayedEntries} />
+        )}
+
+        <button type="button" className="secondary" onClick={onClose}>
+          Close
+        </button>
       </div>
     </div>
   );

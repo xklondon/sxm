@@ -1,12 +1,18 @@
 import type { GameState } from '../../types';
 import type { ScoreLedgerEntry, ScoreLedgerParticipantResult } from '../../types/scoreLedger';
+import { resolveTableClothName } from '../../types/tableFeltSkin';
 import { generateId } from '../utils/id';
-import { appendScoreLedgerEntry, loadScoreLedgerEntries } from '../../storage/scoreLedgerStorage';
+import {
+  appendScoreLedgerEntry,
+  loadScoreLedgerEntries,
+  saveScoreLedgerEntries,
+} from '../../storage/scoreLedgerStorage';
 import {
   getLedgerBalanceForBankrollOwner,
   listPersonBankrollOwnerIds,
 } from '../session/bankroll';
 import { log } from '../../utils/logger';
+import { resolveEmailForPlayerId, resolveWinnerDisplayName } from './gameEndIou';
 
 /** True when the bank seat is a bot (virtual) — i.e. not a human-vs-human game. */
 export function isBotBankGame(state: GameState): boolean {
@@ -22,9 +28,9 @@ export function resolveTableModeFromState(state: GameState): 'practice' | 'chall
   return isBotBankGame(state) ? 'practice' : 'challenge';
 }
 
-/** Personal (score) ledger applies to challenge games when the table has ended. */
+/** Personal ledger offer when the table game has fully ended (practice or challenge). */
 export function canAddGameToPersonalLedger(state: GameState): boolean {
-  return state.tableMeta.gameStatus === 'ended' && resolveTableModeFromState(state) === 'challenge';
+  return state.tableMeta.gameStatus === 'ended';
 }
 
 function bankShortName(state: GameState, bankId: string): string {
@@ -95,9 +101,9 @@ export function buildGameOverSummary(state: GameState): {
   }
 
   const winnerIsBank = Boolean(bankId && winnerId === bankId);
-  const winnerName = winnerIsBank
-    ? bankShortName(state, bankId!)
-    : personShortName(state, winnerId);
+  const winnerName = resolveWinnerDisplayName(state, winnerId);
+  const roundCount = Math.max(1, state.session.currentRound || 1);
+  const gameOverCommandMessage = `Game Over, congrats ${winnerName}, you won in ${roundCount} rounds.`;
 
   let loserId: string | null = null;
   let loserName = '—';
@@ -118,9 +124,7 @@ export function buildGameOverSummary(state: GameState): {
   }
 
   const owedDescription = `${loserName} owes ${winnerName}: ${wager}`;
-  const message = bankIsBust
-    ? 'GAME OVER\nBank is bust.'
-    : `${winnerName} won!!\n${loserName} owes you: ${wager}`;
+  const message = bankIsBust ? 'GAME OVER\nBank is bust.' : gameOverCommandMessage;
 
   const playersInvolved = [
     ...new Set([
@@ -131,10 +135,13 @@ export function buildGameOverSummary(state: GameState): {
     ].filter(Boolean) as string[]),
   ];
 
-  const participants = buildParticipantResults(state, winnerId);
+  const participants = buildParticipantResults(state, winnerId).map((p) => ({
+    ...p,
+    email: p.personId ? resolveEmailForPlayerId(state, p.personId) ?? p.email : p.email,
+  }));
   const participantEmails = [
     ...new Set([
-      ...(state.tableMeta.setupInvitedEmails ?? []),
+      ...(state.tableMeta.setupInvitedEmails ?? []).map((e) => e.trim().toLowerCase()),
       state.tableMeta.owner?.ownerEmail?.trim().toLowerCase() ?? '',
       ...participants.map((p) => p.email).filter(Boolean),
     ].filter(Boolean)),
@@ -143,6 +150,8 @@ export function buildGameOverSummary(state: GameState): {
   const entry: ScoreLedgerEntry = {
     id: generateId(),
     tableId: state.session.id,
+    tableName: resolveTableClothName(state.tableMeta),
+    roundCount,
     wagerDescription: wager,
     winnerPersonId: winnerIsBank ? null : winnerId,
     winnerName,
@@ -167,8 +176,15 @@ export function recordScoreLedgerForGameEnd(state: GameState): ScoreLedgerEntry 
   return addGameToPersonalLedger(state);
 }
 
+export interface AddGameToPersonalLedgerOptions {
+  savedByEmail?: string;
+}
+
 /** Add a fully completed game to the personal (score) ledger — idempotent per table session. */
-export function addGameToPersonalLedger(state: GameState): ScoreLedgerEntry | null {
+export function addGameToPersonalLedger(
+  state: GameState,
+  options?: AddGameToPersonalLedgerOptions,
+): ScoreLedgerEntry | null {
   if (state.tableMeta.gameStatus !== 'ended') {
     throw new Error('Game must be fully completed before adding to personal ledger');
   }
@@ -179,15 +195,29 @@ export function addGameToPersonalLedger(state: GameState): ScoreLedgerEntry | nu
   if (!entry) {
     return null;
   }
+  const saverEmail = options?.savedByEmail?.trim().toLowerCase() ?? '';
   const existing = loadScoreLedgerEntries().find(
     (e) => e.tableId === entry.tableId && e.status !== 'cancelled',
   );
   if (existing) {
+    if (saverEmail && !existing.savedByEmails?.includes(saverEmail)) {
+      const next = {
+        ...existing,
+        savedByEmails: [...(existing.savedByEmails ?? []), saverEmail],
+      };
+      saveScoreLedgerEntries(
+        loadScoreLedgerEntries().map((e) => (e.id === next.id ? next : e)),
+      );
+      return next;
+    }
     return existing;
   }
-  appendScoreLedgerEntry(entry);
-  log.info('scoreLedgerGameEndRecorded', { entryId: entry.id });
-  return entry;
+  const toSave: ScoreLedgerEntry = saverEmail
+    ? { ...entry, savedByEmails: [saverEmail] }
+    : entry;
+  appendScoreLedgerEntry(toSave);
+  log.info('scoreLedgerGameEndRecorded', { entryId: toSave.id });
+  return toSave;
 }
 
 export function hasPersonalLedgerEntryForTable(tableId: string): boolean {

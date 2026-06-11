@@ -78,16 +78,12 @@ describe('blackjack layout UX improvements', () => {
       expect(SHARED_CSS).toContain('.bj-arc--visible-7');
     });
 
-    it('uses larger box tokens at 4 boxes than at 7 on desktop', () => {
-      const four = SHARED_CSS.match(
-        /@media \(min-width: 721px\)[\s\S]*\.bj-arc--visible-4\s*\{[\s\S]*?\}/,
+    it('uses uniform compact desktop box tokens for all visible counts', () => {
+      const desktop = SHARED_CSS.match(
+        /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop \.bj-arc--player-boxes\.bj-arc--visible-4[\s\S]*?\}/,
       )?.[0] ?? '';
-      const seven = SHARED_CSS.match(
-        /@media \(min-width: 721px\)[\s\S]*\.bj-arc--visible-7\s*\{[\s\S]*?\}/,
-      )?.[0] ?? '';
-      expect(four).toContain('--bj-full-table-box-width');
-      expect(four).toMatch(/\*\s*1\.22/);
-      expect(seven).toContain('var(--bj-player-box-width)');
+      expect(desktop).toContain('--bj-full-table-box-width: var(--bj-player-box-width)');
+      expect(desktop).not.toMatch(/\*\s*1\.22/);
     });
 
     it('uses larger mobile box tokens at 4 boxes than at 7', () => {

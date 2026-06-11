@@ -200,7 +200,7 @@ export function runProtocolCorrectnessSanityChecks() {
         },
     };
     const summary = buildGameOverSummary(endState);
-    results.push(check('game over summary uses $5 wager', summary.message.includes('$5')));
+    results.push(check('game over summary uses $5 wager', summary.entry?.wagerDescription.includes('$5') ?? false));
     addGameToPersonalLedger(endState);
     results.push(check('completed game addable to personal ledger', loadScoreLedgerEntries().some((e) => e.tableId === endState.session.id && e.status === 'open')));
     // Pure resolver — never mutate import.meta.env (a read-only constant in prod;

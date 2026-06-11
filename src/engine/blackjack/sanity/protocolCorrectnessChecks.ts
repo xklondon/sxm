@@ -323,7 +323,12 @@ export function runProtocolCorrectnessSanityChecks(): SanitySuiteResult {
     },
   };
   const summary = buildGameOverSummary(endState);
-  results.push(check('game over summary uses $5 wager', summary.message.includes('$5')));
+  results.push(
+    check(
+      'game over summary uses $5 wager',
+      summary.entry?.wagerDescription.includes('$5') ?? false,
+    ),
+  );
   addGameToPersonalLedger(endState);
   results.push(
     check(
