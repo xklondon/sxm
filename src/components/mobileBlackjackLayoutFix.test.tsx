@@ -202,7 +202,7 @@ describe('mobile blackjack layout fix', () => {
 
     it('keeps stake chips visible inside mobile player boxes', () => {
       expect(SHARED_CSS).toMatch(
-        /--bj-full-table-stake-min-height:\s*1\.15rem/,
+        /--bj-full-table-stake-min-height:\s*1\.5rem/,
       );
       expect(SHARED_CSS).toMatch(
         /\.bj-view-full-mobile \.bj-arc--player-boxes[\s\S]*overflow-y:\s*visible/,

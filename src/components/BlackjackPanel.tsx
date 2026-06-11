@@ -606,7 +606,6 @@ export function BlackjackPanel({
     }
     if (options.createIou) {
       await submitIouHandoff();
-      return;
     }
     setGameOverOverlayConfirmed(true);
   }

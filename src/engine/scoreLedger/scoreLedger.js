@@ -3,7 +3,8 @@ import { generateId } from '../utils/id';
 import { appendScoreLedgerEntry, loadScoreLedgerEntries, saveScoreLedgerEntries, } from '../../storage/scoreLedgerStorage';
 import { getLedgerBalanceForBankrollOwner, listPersonBankrollOwnerIds, } from '../session/bankroll';
 import { log } from '../../utils/logger';
-import { resolveEmailForPlayerId, resolveWinnerDisplayName } from './gameEndIou';
+import { resolveEmailForPlayerId } from './gameEndIou';
+import { bankShortName, isChallengeTable, personShortName, resolveLedgerWinnerPersonId, resolveWinnerDisplayName, } from './challengeBankDisplay';
 /** True when the bank seat is a bot (virtual) — i.e. not a human-vs-human game. */
 export function isBotBankGame(state) {
     const bankId = state.session.bankPlayerId;
@@ -20,20 +21,6 @@ export function resolveTableModeFromState(state) {
 export function canAddGameToPersonalLedger(state) {
     return state.tableMeta.gameStatus === 'ended';
 }
-function bankShortName(state, bankId) {
-    const bank = state.players[bankId];
-    if (!bank) {
-        return 'Bank';
-    }
-    if (bank.playerType === 'virtual') {
-        return bank.displayName.replace(/^Bank\s+/i, '').trim() || 'Dealer';
-    }
-    return bank.controllerName?.trim() || bank.displayName;
-}
-function personShortName(state, personId) {
-    const person = state.players[personId];
-    return person?.controllerName?.trim() || person?.displayName || 'Player';
-}
 function buildParticipantResults(state, winnerId) {
     const seatStart = state.tableMeta.startingChipsEachSeat;
     const bankStart = state.tableMeta.startingChipsBank;
@@ -42,7 +29,7 @@ function buildParticipantResults(state, winnerId) {
     for (const personId of listPersonBankrollOwnerIds(state)) {
         const ending = getLedgerBalanceForBankrollOwner(state, personId);
         results.push({
-            email: '',
+            email: resolveEmailForPlayerId(state, personId) ?? '',
             name: personShortName(state, personId),
             personId,
             startingChips: seatStart,
@@ -53,8 +40,12 @@ function buildParticipantResults(state, winnerId) {
     if (bankId) {
         const ending = getLedgerBalanceForBankrollOwner(state, bankId);
         results.push({
-            email: '',
-            name: bankShortName(state, bankId),
+            email: bankId && state.players[bankId]?.playerType === 'real'
+                ? resolveEmailForPlayerId(state, bankId) ?? ''
+                : '',
+            name: isChallengeTable(state)
+                ? `${bankShortName(state, bankId)} (Bank)`
+                : bankShortName(state, bankId),
             personId: state.players[bankId]?.playerType === 'real' ? bankId : null,
             startingChips: bankStart,
             endingChips: ending,
@@ -95,7 +86,9 @@ export function buildGameOverSummary(state) {
     }
     else if (bankId) {
         loserId = bankId;
-        loserName = bankShortName(state, bankId);
+        loserName = isChallengeTable(state)
+            ? `${personShortName(state, bankId)} (Bank)`
+            : bankShortName(state, bankId);
     }
     const owedDescription = `${loserName} owes ${winnerName}: ${wager}`;
     const message = bankIsBust ? 'GAME OVER\nBank is bust.' : gameOverCommandMessage;
@@ -124,7 +117,7 @@ export function buildGameOverSummary(state) {
         tableName: resolveTableClothName(state.tableMeta),
         roundCount,
         wagerDescription: wager,
-        winnerPersonId: winnerIsBank ? null : winnerId,
+        winnerPersonId: resolveLedgerWinnerPersonId(state, winnerId),
         winnerName,
         loserPersonId: winnerIsBank ? loserId : bankId && !winnerIsBank ? bankId : null,
         loserName,

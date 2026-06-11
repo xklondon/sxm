@@ -168,7 +168,31 @@ No numbered step headings (`1. Game`, etc.). Stage fieldsets use clean titles on
 
 ### Reset / New Game
 
-`TableStakePanel` mode `reset` with variants `newGame` | `resetTable` — two-column desktop grid, full stake/bank/protocol controls. Opened from `BlackjackPanel` ended-game flow or Table Details reset.
+`TableStakePanel` mode `reset` with variants `newGame` | `resetTable` — rematch setup for an **existing** table (same session id, people, seats, invites). Opened from dealer **New Game** after game end or Table Details reset. Does not create a new table record.
+
+- **New Game:** `resetSetupVariant="newGame"` — wager, protocol, challenge bank, chip allocation; preserves table identity.
+- **Reset table:** same panel with reset title variant.
+
+### Table modes
+
+| Mode | Bank | Wager | Winner / ledger |
+|------|------|-------|-----------------|
+| **Practice** | Dealer bot (house) | None ("Practice") | Generic bank/dealer labels OK; bot bank has no person id |
+| **Challenge** | Assigned **player** (self, invitee, or dealer role) | Required stake + invites (online) | Bank wins → `"[Name] wins as Bank"`; ledger/IOU credit **player id/email**, never anonymous "Bank" |
+
+Challenge bank plays against boxes; `session.bankPlayerId` is always a seated person in challenge mode.
+
+### Personal score ledger (challenge games)
+
+- Tracks wager outcomes across ended challenge tables
+- Stored in **localStorage** (`scoreLedgerStorage.ts`)
+- Added via `addGameToPersonalLedger` when `gameStatus === 'ended'`
+- UI: `ScoreLedgerModal` in app menu
+
+### Player box stake chips
+
+- Remove control (`×`) sits **below** the chip pile in the stake slot (Table + Card views share `StakeChips`).
+- Stake slot height is fixed; pile scales visually; remove control stays tappable (`overflow: visible` on stake slot).
 
 ---
 
@@ -296,15 +320,9 @@ Host for start/randomise/confirm starter; current turn player for gameplay actio
 
 - Tracks wager outcomes across ended challenge tables
 - Stored in **localStorage** (`scoreLedgerStorage.ts`)
-- Added via `addGameToPersonalLedger` action when `gameStatus === 'ended'` and challenge mode
+- Added via `addGameToPersonalLedger` when `gameStatus === 'ended'` (practice or challenge)
+- Winner attribution: challenge bank wins credit **player id/email** via `challengeBankDisplay.ts` — see §5 Table modes
 - UI: `ScoreLedgerModal` in app menu
-
-### Table modes
-
-| Mode | Bank | Wager |
-|------|------|-------|
-| **Practice** | Dealer bot | None (stake description: "Practice") |
-| **Challenge** | Self, invited player, or dealer | Required stake description + invites (online) |
 
 ---
 

@@ -6,6 +6,11 @@ import {
   listPersonBankrollOwnerIds,
 } from './bankroll';
 import { buildGameOverSummary } from '../scoreLedger/scoreLedger';
+import {
+  formatBankHolderLabel,
+  isChallengeTable,
+  resolveWinnerDisplayName,
+} from '../scoreLedger/challengeBankDisplay';
 import { log } from '../../utils/logger';
 
 export interface TableGameEndEvaluation {
@@ -49,7 +54,7 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
   if (bankId && state.players[bankId]) {
     holders.push({
       id: bankId,
-      label: `Bank (${bankDisplayName(state, bankId)})`,
+      label: formatBankHolderLabel(state, bankId),
       ledger: getLedgerBalanceForBankrollOwner(state, bankId),
       available: getAvailableChipsForBankrollOwner(state, bankId),
       betting: 0,
@@ -94,7 +99,7 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
     return {
       ended: true,
       winnerId: winner.id,
-      winnerLabel: winner.label,
+      winnerLabel: resolveWinnerDisplayName(state, winner.id),
       reason: 'single-holder',
     };
   }
@@ -105,7 +110,7 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
       return {
         ended: true,
         winnerId: bankId,
-        winnerLabel: bank.label,
+        winnerLabel: resolveWinnerDisplayName(state, bankId),
         reason: 'bank-has-all-chips',
       };
     }
@@ -132,7 +137,11 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
     return {
       ended: true,
       winnerId: bankId,
-      winnerLabel: bankId ? bankDisplayName(state, bankId) : 'Bank',
+      winnerLabel: bankId
+        ? isChallengeTable(state)
+          ? resolveWinnerDisplayName(state, bankId)
+          : bankDisplayName(state, bankId)
+        : 'Bank',
       reason: 'all-players-eliminated',
     };
   }

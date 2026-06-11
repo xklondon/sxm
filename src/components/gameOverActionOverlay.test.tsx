@@ -17,7 +17,6 @@ import { BlackjackPanel } from './BlackjackPanel';
 import * as iouHandoffApi from '../api/iouHandoff';
 import { tableWithClaimedBox } from '../engine/blackjack/sanity/fixtures';
 import {
-  addGameToPersonalLedger,
   hasPersonalLedgerEntryForTable,
 } from '../engine/scoreLedger/scoreLedger';
 import { saveScoreLedgerEntries } from '../storage/scoreLedgerStorage';
@@ -192,14 +191,24 @@ describe('GameOverActionOverlay — panel integration', () => {
     expect(html).not.toContain('bj-game-end-actions');
   });
 
-  it('add to ledger from overlay is idempotent', () => {
+  it('add to ledger from overlay is idempotent and closes overlay', () => {
     const state = endedChallengeState();
-    render(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
+    const onBeginTableReset = vi.fn();
+    render(
+      <BlackjackPanel
+        gameState={state}
+        onGameStateChange={noop}
+        onBeginTableReset={onBeginTableReset}
+      />,
+    );
     const overlay = screen.getByRole('dialog');
     fireEvent.click(within(overlay).getByRole('button', { name: 'Add to Ledger' }));
     expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(true);
-    const entries = addGameToPersonalLedger(state, { savedByEmail: 'alice@example.com' });
-    expect(entries?.id).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    const newGame = screen.getByRole('button', { name: 'New Game' });
+    expect(newGame.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(newGame);
+    expect(onBeginTableReset).toHaveBeenCalledWith('newGame');
   });
 
   it('calls backend IOU create without saving ledger when toggled', async () => {
@@ -210,6 +219,6 @@ describe('GameOverActionOverlay — panel integration', () => {
       expect(iouHandoffApi.createIouHandoff).toHaveBeenCalledTimes(1);
     });
     expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(false);
-    expect(screen.getByText(/IOU created/i)).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

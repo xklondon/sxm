@@ -61,32 +61,35 @@ export function StakeChips({
       className={[
         'stake-chips',
         variant === 'bet' ? 'stake-chips--bet' : '',
+        removable ? 'stake-chips--removable' : '',
         className,
       ].filter(Boolean).join(' ')}
       aria-hidden={variant === 'bet'}
     >
-      {chips.map((value, index) => (
-        <span
-          key={`${value}-${index}`}
-          className={`chip-token chip-token--${value} chip-token--mini stake-chips__chip${index === topIndex ? ' stake-chips__chip--top' : ''}`}
-          style={{ '--chip-layer': index } as CSSProperties}
+      <div className="stake-chips__pile">
+        {chips.map((value, index) => (
+          <span
+            key={`${value}-${index}`}
+            className={`chip-token chip-token--${value} chip-token--mini stake-chips__chip${index === topIndex ? ' stake-chips__chip--top' : ''}`}
+            style={{ '--chip-layer': index } as CSSProperties}
+          >
+            {variant === 'bet' ? value : ''}
+          </span>
+        ))}
+      </div>
+      {removable && onRemoveTopChip && (
+        <button
+          type="button"
+          className="stake-chips__remove"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemoveTopChip();
+          }}
+          aria-label={`Remove ${chips[topIndex]} chip`}
         >
-          {variant === 'bet' ? value : ''}
-          {removable && index === topIndex && onRemoveTopChip && (
-            <button
-              type="button"
-              className="stake-chips__remove"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemoveTopChip();
-              }}
-              aria-label={`Remove ${value} chip`}
-            >
-              ×
-            </button>
-          )}
-        </span>
-      ))}
+          ×
+        </button>
+      )}
     </div>
   );
 }

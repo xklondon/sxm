@@ -13,6 +13,17 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-07 — Challenge flow fixes (bank identity, rematch, chip remove)
+
+- **Chip remove:** `×` control moved below stake pile; pile-only scale; stake slot `overflow: visible`; stable `--bj-full-table-stake-min-height`.
+- **Challenge bank:** Bank seat is a real player; wins show `"[Name] wins as Bank"`; ledger/IOU use player ids/emails (`challengeBankDisplay.ts`).
+- **Practice:** Bot bank remains house/dealer; anonymous bank winner id allowed in ledger.
+- **New Game:** Game-over overlay always dismisses after ledger/IOU confirm; **New Game** opens `TableStakePanel` rematch on same table id/people.
+- **Tests:** `challengeBankDisplay.test.ts`, `stakeChipRemove.test.tsx`, game-over overlay integration updates.
+- **Docs:** `SXM_MASTER_SPEC.md` §5 table modes, rematch, stake chips.
+
+---
+
 ## 2026-06-07 — Mobile chip tray polish
 
 - **Value label:** Removed `Available:` prefix; bankroll shows numeric value only (tabular numerals), left of chip row.

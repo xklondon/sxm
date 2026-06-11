@@ -7,22 +7,9 @@ import {
   type GameEndIouHandoff,
 } from '../../utils/iouWalletHandoff';
 import { listPersonBankrollOwnerIds } from '../session/bankroll';
-
-function bankShortName(state: GameState, bankId: string): string {
-  const bank = state.players[bankId];
-  if (!bank) {
-    return 'Bank';
-  }
-  if (bank.playerType === 'virtual') {
-    return bank.displayName.replace(/^Bank\s+/i, '').trim() || 'Dealer';
-  }
-  return bank.controllerName?.trim() || bank.displayName;
-}
-
-function personShortName(state: GameState, personId: string): string {
-  const person = state.players[personId];
-  return person?.controllerName?.trim() || person?.displayName || 'Player';
-}
+import {
+  resolveWinnerDisplayName as resolveWinnerDisplayNameCore,
+} from './challengeBankDisplay';
 
 function isHumanPlayer(state: GameState, playerId: string): boolean {
   const player = state.players[playerId];
@@ -200,11 +187,7 @@ export function canOfferGameEndIou(state: GameState, viewerEmail: string): boole
 }
 
 export function resolveWinnerDisplayName(state: GameState, winnerId: string): string {
-  const bankId = state.session.bankPlayerId;
-  const winnerIsBank = Boolean(bankId && winnerId === bankId);
-  const name = winnerIsBank
-    ? bankShortName(state, bankId!)
-    : personShortName(state, winnerId);
+  const name = resolveWinnerDisplayNameCore(state, winnerId);
   if (name && name !== 'Player' && name !== 'Dealer') {
     return name;
   }
