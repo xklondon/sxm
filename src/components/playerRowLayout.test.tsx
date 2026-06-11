@@ -95,11 +95,15 @@ describe('canonical player row layout engine', () => {
     );
   });
 
-  it('sizes add + slot to normal box column width with compact glyph', () => {
-    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*font-size:\s*0\.85rem/);
-    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*align-self:\s*stretch/);
+  it('sizes add + as plus-only in the same grid cell as player boxes', () => {
+    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*width:\s*100%/);
+    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*background:\s*transparent/);
+    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*border:\s*none/);
+    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add::after[\s\S]*content:\s*'\+'/);
+    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add::after[\s\S]*aspect-ratio:\s*1\.05 \/ 1/);
+    expect(PLAYER_ROW_CSS).not.toMatch(/\.bj-table-slot-row__add[\s\S]*align-self:\s*end/);
     expect(PLAYER_ROW_CSS).not.toMatch(
-      /\.bj-table-slot-row__add[\s\S]*align-self:\s*end/,
+      /\.bj-table-slot-row__add[\s\S]*min-height:\s*calc\(var\(--bj-full-table-box-height\)/,
     );
   });
 

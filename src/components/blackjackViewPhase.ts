@@ -270,9 +270,13 @@ export function getCardViewHeroHandKey(
   phase: BlackjackProtocolPhase,
   round: BlackjackRound | null | undefined,
   heroBoxId: string | null,
+  heroHandKeyOverride?: string | null,
 ): string | null {
   if (!heroBoxId) {
     return null;
+  }
+  if (heroHandKeyOverride && isPlayerTurnPhase(phase)) {
+    return heroHandKeyOverride;
   }
   if (isPlayerTurnPhase(phase) && round?.activeHandKey) {
     return round.activeHandKey;

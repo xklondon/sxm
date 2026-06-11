@@ -344,12 +344,12 @@ export function BlackjackPanel({
   const canResetTable = canUserResetTable(gameState, controllerName);
   const activeProtocol = getBlackjackProtocolForState(gameState);
   const activeBoxId = getActiveTurnBoxId(gameState, protocolPhase);
-  const cardViewBustHoldBoxId = useCardViewBustHold(
+  const cardViewHandHold = useCardViewBustHold(
     gameState,
     protocolPhase,
     viewMode === 'card',
   );
-  const uiActiveBoxId = cardViewBustHoldBoxId ?? activeBoxId;
+  const uiActiveBoxId = cardViewHandHold.holdBoxId ?? activeBoxId;
 
   const magic8ShakeAllowed =
     !gameEnded &&
@@ -401,6 +401,9 @@ export function BlackjackPanel({
   ]);
 
   useEffect(() => {
+    if (cardViewHandHold.holdHandKey) {
+      return;
+    }
     if (round?.status !== 'player-turns' || !round.activeHandKey) {
       return;
     }
@@ -409,7 +412,7 @@ export function BlackjackPanel({
     if (current.selectedSeatId !== playerId) {
       onGameStateChange({ ...current, selectedSeatId: playerId });
     }
-  }, [round?.status, round?.activeHandKey, onGameStateChange]);
+  }, [round?.status, round?.activeHandKey, cardViewHandHold.holdHandKey, onGameStateChange]);
 
   useEffect(() => {
     return () => {
@@ -2058,6 +2061,8 @@ export function BlackjackPanel({
                   deviceView={deviceView}
                   focusBoxId={focusBoxId ?? undefined}
                   activeBoxId={uiActiveBoxId}
+                  heroHandKeyOverride={cardViewHandHold.holdHandKey}
+                  handHoldActive={Boolean(cardViewHandHold.holdHandKey)}
                   showHoleHidden={showHoleHidden}
                   protocolPhase={protocolPhase}
                   cardRevealComplete={cardRevealComplete}

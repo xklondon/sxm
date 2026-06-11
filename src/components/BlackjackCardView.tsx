@@ -54,6 +54,9 @@ interface BlackjackCardViewProps {
   deviceView?: DeviceView;
   focusBoxId?: string;
   activeBoxId: string | null;
+  /** Card View hand-hold — keep hero on completed bust/18+ hand before turn advance. */
+  heroHandKeyOverride?: string | null;
+  handHoldActive?: boolean;
   showHoleHidden: boolean;
   protocolPhase: BlackjackProtocolPhase;
   cardRevealComplete?: boolean;
@@ -78,6 +81,8 @@ export function BlackjackCardView({
   deviceView = "mobile",
   focusBoxId,
   activeBoxId,
+  heroHandKeyOverride = null,
+  handHoldActive = false,
   showHoleHidden: _showHoleHidden,
   protocolPhase,
   cardRevealComplete = true,
@@ -120,7 +125,12 @@ export function BlackjackCardView({
     null,
     focusBoxId ?? null,
   );
-  const heroHandKey = getCardViewHeroHandKey(protocolPhase, logicalRound, heroBoxId);
+  const heroHandKey = getCardViewHeroHandKey(
+    protocolPhase,
+    logicalRound,
+    heroBoxId,
+    heroHandKeyOverride,
+  );
   /** Hero box follows active turn in play, selected seat in betting. */
 
   const viewerPersonId =
@@ -148,14 +158,19 @@ export function BlackjackCardView({
       : undefined;
 
   const canHit = Boolean(
-    isActiveTurn && actionableHandKey && round && canHitBlackjack(round, actionableHandKey),
+    !handHoldActive &&
+      isActiveTurn &&
+      actionableHandKey &&
+      round &&
+      canHitBlackjack(round, actionableHandKey),
   );
 
   const canStand = Boolean(
-    isActiveTurn &&
-    actionableHandKey &&
-    round &&
-    canStandBlackjack(round, actionableHandKey),
+    !handHoldActive &&
+      isActiveTurn &&
+      actionableHandKey &&
+      round &&
+      canStandBlackjack(round, actionableHandKey),
   );
 
   const logicalCardIds = (logicalHand?.cardIds ?? []).filter((id) => id.length > 0);
