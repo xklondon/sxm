@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import type { GameState, TableMode } from '../types';
+import type { BankBustSettlementMode } from '../types/table';
 
 import {
   applyTableResetSetup,
@@ -106,6 +107,9 @@ export function TableStakePanel({
   const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
   const [inviteEmailInput, setInviteEmailInput] = useState('');
   const [challengeBank, setChallengeBank] = useState<'self' | string>('self');
+  const [bankBustSettlementMode, setBankBustSettlementMode] = useState<BankBustSettlementMode>(
+    () => gameState.tableMeta.bankBustSettlementMode ?? 'fractional',
+  );
 
   const [stake, setStake] = useState(() => agreement?.stakeDescription ?? '');
   const [tableName, setTableName] = useState(
@@ -217,6 +221,7 @@ export function TableStakePanel({
         bankDrawAuto,
         tableMode: 'challenge',
         invitedEmails,
+        bankBustSettlementMode,
       };
     }
 
@@ -867,6 +872,28 @@ export function TableStakePanel({
               {emailLabel(email)} ({email})
             </label>
           ))}
+        </fieldset>
+
+        <fieldset className="table-stake-panel__banker">
+          <legend>Bank bust settlement</legend>
+          <label className="table-stake-panel__option">
+            <input
+              type="radio"
+              name="bank-bust-settlement"
+              checked={bankBustSettlementMode === 'fractional'}
+              onChange={() => setBankBustSettlementMode('fractional')}
+            />
+            Fractional / Ranked
+          </label>
+          <label className="table-stake-panel__option">
+            <input
+              type="radio"
+              name="bank-bust-settlement"
+              checked={bankBustSettlementMode === 'winner-takes-all'}
+              onChange={() => setBankBustSettlementMode('winner-takes-all')}
+            />
+            Winner Takes All
+          </label>
         </fieldset>
 
         {renderAdvancedSettings()}

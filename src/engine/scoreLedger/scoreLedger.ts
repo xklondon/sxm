@@ -22,10 +22,11 @@ import {
   resolveWinnerDisplayName,
 } from './challengeBankDisplay';
 import {
+  buildChallengeBankBustEndMessage,
   buildChallengeEndRankings,
-  buildFractionalEndMessage,
   hasSingleClearWinner,
   isFractionalChallengeEnd,
+  resolveEffectiveSettlementMode,
 } from './challengeEndAccounting';
 
 /** True when the bank seat is a bot (virtual) — i.e. not a human-vs-human game. */
@@ -124,7 +125,7 @@ export function buildGameOverSummary(state: GameState): {
 
   if (!winnerId && bankIsBust) {
     const message = isChallengeTable(state)
-      ? buildFractionalEndMessage(state)
+      ? buildChallengeBankBustEndMessage(state)
       : 'GAME OVER\nBank is bust.';
     const participants = buildParticipantResults(state, null);
     return {
@@ -183,7 +184,9 @@ export function buildGameOverSummary(state: GameState): {
     : `${loserName} owes ${winnerName}: ${wager}`;
   let message = gameOverCommandMessage;
   if (bankIsBust) {
-    message = isChallengeTable(state) ? buildFractionalEndMessage(state) : 'GAME OVER\nBank is bust.';
+    message = isChallengeTable(state)
+      ? buildChallengeBankBustEndMessage(state)
+      : 'GAME OVER\nBank is bust.';
   }
 
   const participants = buildParticipantResults(state, winnerId).map((p) => ({
@@ -251,6 +254,7 @@ function buildLedgerEntryFromParts(
     gameType: state.tableGame ?? 'blackjack',
     protocolId: state.blackjackProtocolId,
     mode: resolveTableModeFromState(state),
+    settlementMode: resolveEffectiveSettlementMode(state),
     bankName: bankId
       ? isChallengeTable(state)
         ? formatBankHolderLabel(state, bankId)

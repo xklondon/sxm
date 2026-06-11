@@ -5,7 +5,7 @@ import { getLedgerBalanceForBankrollOwner, listPersonBankrollOwnerIds, } from '.
 import { log } from '../../utils/logger';
 import { resolveEmailForPlayerId } from './gameEndIou';
 import { bankShortName, formatBankHolderLabel, isChallengeTable, personShortName, resolveLedgerWinnerPersonId, resolveWinnerDisplayName, } from './challengeBankDisplay';
-import { buildChallengeEndRankings, buildFractionalEndMessage, hasSingleClearWinner, isFractionalChallengeEnd, } from './challengeEndAccounting';
+import { buildChallengeBankBustEndMessage, buildChallengeEndRankings, buildFractionalEndMessage, hasSingleClearWinner, isFractionalChallengeEnd, resolveEffectiveSettlementMode, } from './challengeEndAccounting';
 /** True when the bank seat is a bot (virtual) — i.e. not a human-vs-human game. */
 export function isBotBankGame(state) {
     const bankId = state.session.bankPlayerId;
@@ -112,6 +112,7 @@ function buildLedgerEntryFromParts(state, parts) {
         gameType: state.tableGame ?? 'blackjack',
         protocolId: state.blackjackProtocolId,
         mode: resolveTableModeFromState(state),
+        settlementMode: resolveEffectiveSettlementMode(state),
         bankName: bankId
             ? isChallengeTable(state)
                 ? formatBankHolderLabel(state, bankId)
@@ -136,7 +137,7 @@ export function buildGameOverSummary(state) {
     const roundCount = Math.max(1, state.session.currentRound || 1);
     if (!winnerId && bankIsBust) {
         const message = isChallengeTable(state)
-            ? buildFractionalEndMessage(state)
+            ? buildChallengeBankBustEndMessage(state)
             : 'GAME OVER\nBank is bust.';
         const participants = buildParticipantResults(state, null);
         return {
@@ -192,7 +193,9 @@ export function buildGameOverSummary(state) {
         : `${loserName} owes ${winnerName}: ${wager}`;
     let message = gameOverCommandMessage;
     if (bankIsBust) {
-        message = isChallengeTable(state) ? buildFractionalEndMessage(state) : 'GAME OVER\nBank is bust.';
+        message = isChallengeTable(state)
+            ? buildChallengeBankBustEndMessage(state)
+            : 'GAME OVER\nBank is bust.';
     }
     const participants = buildParticipantResults(state, winnerId).map((p) => ({
         ...p,

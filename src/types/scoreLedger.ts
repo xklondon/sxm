@@ -1,4 +1,4 @@
-import type { TableMode } from './table';
+import type { TableMode, BankBustSettlementMode } from './table';
 
 export type ScoreLedgerEntryStatus = 'open' | 'settled' | 'cancelled';
 
@@ -31,6 +31,8 @@ export interface ScoreLedgerEntry {
   gameType?: string;
   protocolId?: string;
   mode?: TableMode;
+  /** Effective bank-bust settlement recorded for this game. */
+  settlementMode?: BankBustSettlementMode;
   bankName?: string;
   participantEmails?: string[];
   /** Emails of users who explicitly saved this game to their personal ledger. */

@@ -1,4 +1,4 @@
-import type { GameState, TableMode } from '../../types';
+import type { GameState, TableMode, BankBustSettlementMode } from '../../types';
 import type { CardTimerPreset, DealSpeedPreset } from '../blackjack/flowSettings';
 import { DEFAULT_PRACTICE_TABLE_NAME } from '../../types/tableFeltSkin';
 import { updateBlackjackFlowSettings } from '../blackjack';
@@ -37,6 +37,17 @@ export interface TableStakeSetupInput {
   bankDrawAuto: boolean;
   tableMode?: TableMode;
   invitedEmails?: string[];
+  bankBustSettlementMode?: BankBustSettlementMode;
+}
+
+function parseBankBustSettlementMode(raw: unknown): BankBustSettlementMode | undefined {
+  if (raw === 'winner-takes-all' || raw === 'winner_takes_all') {
+    return 'winner-takes-all';
+  }
+  if (raw === 'fractional') {
+    return 'fractional';
+  }
+  return undefined;
 }
 
 export function parseTableStakeSetupPayload(
@@ -67,6 +78,7 @@ export function parseTableStakeSetupPayload(
     invitedEmails: Array.isArray(payload.invitedEmails)
       ? payload.invitedEmails.map((e) => String(e).trim().toLowerCase()).filter(Boolean)
       : undefined,
+    bankBustSettlementMode: parseBankBustSettlementMode(payload.bankBustSettlementMode),
   };
 }
 
@@ -105,6 +117,8 @@ export function applyTableStakeSetup(state: GameState, input: TableStakeSetupInp
       showStakeSetup: false,
       tableMode,
       setupInvitedEmails: invitedEmails.length > 0 ? invitedEmails : undefined,
+      bankBustSettlementMode:
+        tableMode === 'challenge' ? input.bankBustSettlementMode ?? 'fractional' : undefined,
       tableClothName,
       tableClothWager: isPractice ? 'Practice' : stakeDescription,
     },

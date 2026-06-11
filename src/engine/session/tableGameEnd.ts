@@ -11,6 +11,10 @@ import {
   isChallengeTable,
   resolveWinnerDisplayName,
 } from '../scoreLedger/challengeBankDisplay';
+import {
+  resolveBankBustWinnerId,
+  resolveEffectiveSettlementMode,
+} from '../scoreLedger/challengeEndAccounting';
 import { log } from '../../utils/logger';
 
 export interface TableGameEndEvaluation {
@@ -81,13 +85,22 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
   if (bankId) {
     const bank = holders.find((h) => h.id === bankId);
     if (bank && bank.ledger <= 0) {
-      const topPerson = [...holders]
-        .filter((h) => h.id !== bankId)
-        .sort((a, b) => b.ledger - a.ledger)[0];
+      const winnerId = isChallengeTable(state)
+        ? resolveBankBustWinnerId(state)
+        : (() => {
+            const topPerson = [...holders]
+              .filter((h) => h.id !== bankId)
+              .sort((a, b) => b.ledger - a.ledger)[0];
+            return topPerson && topPerson.ledger > 0 ? topPerson.id : null;
+          })();
+      const winnerLabel =
+        winnerId && isChallengeTable(state)
+          ? resolveWinnerDisplayName(state, winnerId)
+          : 'Bank is bust';
       return {
         ended: true,
-        winnerId: topPerson && topPerson.ledger > 0 ? topPerson.id : null,
-        winnerLabel: 'Bank is bust',
+        winnerId,
+        winnerLabel,
         reason: 'bank-bust',
       };
     }
@@ -115,14 +128,26 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
       };
     }
     if (bank && bank.available <= 0 && bank.ledger <= 0) {
-      const topPerson = [...holders]
-        .filter((h) => h.id !== bankId)
-        .sort((a, b) => b.ledger - a.ledger)[0];
-      if (topPerson && topPerson.ledger > 0) {
+      const winnerId = isChallengeTable(state)
+        ? resolveBankBustWinnerId(state)
+        : (() => {
+            const topPerson = [...holders]
+              .filter((h) => h.id !== bankId)
+              .sort((a, b) => b.ledger - a.ledger)[0];
+            return topPerson && topPerson.ledger > 0 ? topPerson.id : null;
+          })();
+      if (isChallengeTable(state) ? listPersonBankrollOwnerIds(state).some(
+          (id) => getLedgerBalanceForBankrollOwner(state, id) > 0,
+        ) : winnerId) {
         return {
           ended: true,
-          winnerId: topPerson.id,
-          winnerLabel: topPerson.label,
+          winnerId,
+          winnerLabel:
+            winnerId && isChallengeTable(state)
+              ? resolveWinnerDisplayName(state, winnerId)
+              : winnerId
+                ? personDisplayName(state, winnerId)
+                : 'Bank is bust',
           reason: 'bank-empty',
         };
       }
@@ -176,10 +201,6 @@ export function applyTableGameEndIfNeeded(state: GameState): GameState {
       gameStatus: 'ended',
       winnerId: evaluation.winnerId,
       gameEndReason: evaluation.reason as GameState['tableMeta']['gameEndReason'],
-      settlementMode:
-        evaluation.reason === 'bank-bust' || evaluation.reason === 'bank-empty'
-          ? 'fractional'
-          : state.tableMeta.settlementMode,
       endedAt: new Date().toISOString(),
       wagerVoucherStatus: 'pending',
       bettingLocked: true,
@@ -187,7 +208,13 @@ export function applyTableGameEndIfNeeded(state: GameState): GameState {
     },
   };
 
-  return endedState;
+  return {
+    ...endedState,
+    tableMeta: {
+      ...endedState.tableMeta,
+      settlementMode: resolveEffectiveSettlementMode(endedState),
+    },
+  };
 }
 
 /** Placeholder — future wager voucher flow; logs only for now. */

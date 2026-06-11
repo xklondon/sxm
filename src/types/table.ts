@@ -21,6 +21,9 @@ export type TableGameStatus = 'active' | 'ended';
 /** Practice = dealer bank, no wager; Challenge = friends, wager, player bank. */
 export type TableMode = 'practice' | 'challenge';
 
+/** Pre-game Challenge choice when the bank player goes bust. */
+export type BankBustSettlementMode = 'fractional' | 'winner-takes-all';
+
 export type WagerVoucherStatus = 'pending' | 'not-created';
 
 export type BankerMode = 'unset' | 'bot' | 'person';
@@ -122,6 +125,8 @@ export interface TableMeta {
   tableMode?: TableMode;
   /** Emails invited during challenge setup (before/at table start). */
   setupInvitedEmails?: string[];
+  /** Challenge pre-game: how bank bankruptcy is settled (default fractional). */
+  bankBustSettlementMode?: BankBustSettlementMode;
   /** Active play vs table ended (one side holds all chips). */
   gameStatus: TableGameStatus;
   /** Bank or person bankroll id when gameStatus is ended. */
@@ -133,8 +138,8 @@ export interface TableMeta {
     | 'bank-has-all-chips'
     | 'bank-empty'
     | 'all-players-eliminated';
-  /** Challenge settlement style — fractional default; winner-takes-all is future. */
-  settlementMode?: 'fractional' | 'winner-takes-all';
+  /** Effective settlement applied at game end (may fall back to fractional on tie). */
+  settlementMode?: BankBustSettlementMode;
   endedAt: string | null;
   /** Placeholder for future wager voucher flow. */
   wagerVoucherStatus: WagerVoucherStatus;

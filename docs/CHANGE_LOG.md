@@ -13,6 +13,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-09 — Challenge bank-bust settlement setup option
+
+- **New Table → Challenge:** required **Bank bust settlement** choice — **Fractional / Ranked** (default) or **Winner Takes All**; stored as `tableMeta.bankBustSettlementMode`.
+- **Winner takes all:** bank bust awards the sole highest remaining chip total; tied top totals fall back to ranked/fractional without a fake winner.
+- **Practice:** selector hidden; behavior unchanged.
+- **Ledger:** `settlementMode` on ended table + score ledger entry reflects effective settlement.
+- **Tests:** `bankBustSettlement.test.ts`.
+
+---
+
 ## 2026-06-09 — Challenge accounting and game-end presentation
 
 - **Challenge bank:** Always a real seated player (no dealer/house option in Challenge setup); bank identity shown as **Bank: [Name]** in dealer/felt info.

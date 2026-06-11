@@ -1,5 +1,7 @@
 import { getAvailableChipsForBankrollOwner, getLedgerBalanceForBankrollOwner, getTotalBettingExposureForBankrollOwner, listPersonBankrollOwnerIds, } from './bankroll';
 import { buildGameOverSummary } from '../scoreLedger/scoreLedger';
+import { formatBankHolderLabel, isChallengeTable, resolveWinnerDisplayName, } from '../scoreLedger/challengeBankDisplay';
+import { resolveBankBustWinnerId, resolveEffectiveSettlementMode, } from '../scoreLedger/challengeEndAccounting';
 import { log } from '../../utils/logger';
 function bankDisplayName(state, bankId) {
     const bank = state.players[bankId];
@@ -29,7 +31,7 @@ export function evaluateTableGameEnd(state) {
     if (bankId && state.players[bankId]) {
         holders.push({
             id: bankId,
-            label: `Bank (${bankDisplayName(state, bankId)})`,
+            label: formatBankHolderLabel(state, bankId),
             ledger: getLedgerBalanceForBankrollOwner(state, bankId),
             available: getAvailableChipsForBankrollOwner(state, bankId),
             betting: 0,
@@ -48,18 +50,24 @@ export function evaluateTableGameEnd(state) {
     if (totalChips <= 0 || holders.length === 0) {
         return none;
     }
-    // Bank bankruptcy ends the game outright (bot bank or human banker). Checked
-    // before single-holder so the message reads "Bank is bust", not a player win.
     if (bankId) {
         const bank = holders.find((h) => h.id === bankId);
         if (bank && bank.ledger <= 0) {
-            const topPerson = [...holders]
-                .filter((h) => h.id !== bankId)
-                .sort((a, b) => b.ledger - a.ledger)[0];
+            const winnerId = isChallengeTable(state)
+                ? resolveBankBustWinnerId(state)
+                : (() => {
+                    const topPerson = [...holders]
+                        .filter((h) => h.id !== bankId)
+                        .sort((a, b) => b.ledger - a.ledger)[0];
+                    return topPerson && topPerson.ledger > 0 ? topPerson.id : null;
+                })();
+            const winnerLabel = winnerId && isChallengeTable(state)
+                ? resolveWinnerDisplayName(state, winnerId)
+                : 'Bank is bust';
             return {
                 ended: true,
-                winnerId: topPerson && topPerson.ledger > 0 ? topPerson.id : null,
-                winnerLabel: 'Bank is bust',
+                winnerId,
+                winnerLabel,
                 reason: 'bank-bust',
             };
         }
@@ -70,7 +78,7 @@ export function evaluateTableGameEnd(state) {
         return {
             ended: true,
             winnerId: winner.id,
-            winnerLabel: winner.label,
+            winnerLabel: resolveWinnerDisplayName(state, winner.id),
             reason: 'single-holder',
         };
     }
@@ -80,19 +88,30 @@ export function evaluateTableGameEnd(state) {
             return {
                 ended: true,
                 winnerId: bankId,
-                winnerLabel: bank.label,
+                winnerLabel: resolveWinnerDisplayName(state, bankId),
                 reason: 'bank-has-all-chips',
             };
         }
         if (bank && bank.available <= 0 && bank.ledger <= 0) {
-            const topPerson = [...holders]
-                .filter((h) => h.id !== bankId)
-                .sort((a, b) => b.ledger - a.ledger)[0];
-            if (topPerson && topPerson.ledger > 0) {
+            const winnerId = isChallengeTable(state)
+                ? resolveBankBustWinnerId(state)
+                : (() => {
+                    const topPerson = [...holders]
+                        .filter((h) => h.id !== bankId)
+                        .sort((a, b) => b.ledger - a.ledger)[0];
+                    return topPerson && topPerson.ledger > 0 ? topPerson.id : null;
+                })();
+            if (isChallengeTable(state)
+                ? listPersonBankrollOwnerIds(state).some((id) => getLedgerBalanceForBankrollOwner(state, id) > 0)
+                : winnerId) {
                 return {
                     ended: true,
-                    winnerId: topPerson.id,
-                    winnerLabel: topPerson.label,
+                    winnerId,
+                    winnerLabel: winnerId && isChallengeTable(state)
+                        ? resolveWinnerDisplayName(state, winnerId)
+                        : winnerId
+                            ? personDisplayName(state, winnerId)
+                            : 'Bank is bust',
                     reason: 'bank-empty',
                 };
             }
@@ -104,7 +123,11 @@ export function evaluateTableGameEnd(state) {
         return {
             ended: true,
             winnerId: bankId,
-            winnerLabel: bankId ? bankDisplayName(state, bankId) : 'Bank',
+            winnerLabel: bankId
+                ? isChallengeTable(state)
+                    ? resolveWinnerDisplayName(state, bankId)
+                    : bankDisplayName(state, bankId)
+                : 'Bank',
             reason: 'all-players-eliminated',
         };
     }
@@ -132,15 +155,21 @@ export function applyTableGameEndIfNeeded(state) {
             ...state.tableMeta,
             gameStatus: 'ended',
             winnerId: evaluation.winnerId,
+            gameEndReason: evaluation.reason,
             endedAt: new Date().toISOString(),
             wagerVoucherStatus: 'pending',
             bettingLocked: true,
             awaitingNextRound: false,
         },
     };
-    return endedState;
+    return {
+        ...endedState,
+        tableMeta: {
+            ...endedState.tableMeta,
+            settlementMode: resolveEffectiveSettlementMode(endedState),
+        },
+    };
 }
-/** Placeholder — future wager voucher flow; logs only for now. */
 export function recordWagerResultPlaceholder(state) {
     if (state.tableMeta.gameStatus !== 'ended') {
         throw new Error('Table game has not ended yet');

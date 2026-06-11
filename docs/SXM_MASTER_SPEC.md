@@ -186,7 +186,8 @@ Challenge bank plays against boxes; `session.bankPlayerId` is always a seated **
 
 - Winner = whoever holds all table chips at end, or ranked survivors when the bank busts.
 - **Fractional (default):** when bank bankruptcy leaves chips with multiple non-bank players, score ledger records each participant’s final total/rank — not a collapsed “Bank won” line. IOU handoff is offered only when a single clear human counterparty pair exists.
-- **Future:** table may offer winner-takes-all vs fractional (`settlementMode` on `tableMeta`); default today is fractional on bank bust.
+- **Winner takes all:** pre-game Challenge option (`bankBustSettlementMode`). When the bank player busts, the sole highest remaining chip total wins; ledger records one winner. If two or more players tie for the top total, settlement falls back to ranked/fractional with no invented winner.
+- **Setup:** New Table → Challenge → **Bank bust settlement** — **Fractional / Ranked** (default) or **Winner Takes All**. Hidden in Practice.
 
 **Game end presentation:**
 

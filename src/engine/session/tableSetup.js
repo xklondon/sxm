@@ -30,6 +30,12 @@ export function parseTableStakeSetupPayload(payload, fallbackController) {
         invitedEmails: Array.isArray(payload.invitedEmails)
             ? payload.invitedEmails.map((e) => String(e).trim().toLowerCase()).filter(Boolean)
             : undefined,
+        bankBustSettlementMode: payload.bankBustSettlementMode === 'winner-takes-all' ||
+            payload.bankBustSettlementMode === 'winner_takes_all'
+            ? 'winner-takes-all'
+            : payload.bankBustSettlementMode === 'fractional'
+                ? 'fractional'
+                : undefined,
     };
 }
 export function resolveTableMode(input) {
@@ -62,6 +68,7 @@ export function applyTableStakeSetup(state, input) {
             showStakeSetup: false,
             tableMode,
             setupInvitedEmails: invitedEmails.length > 0 ? invitedEmails : undefined,
+            bankBustSettlementMode: tableMode === 'challenge' ? input.bankBustSettlementMode ?? 'fractional' : undefined,
             tableClothName,
             tableClothWager: isPractice ? 'Practice' : stakeDescription,
         },

@@ -1,5 +1,12 @@
 import { getLedgerBalanceForBankrollOwner, listPersonBankrollOwnerIds, } from '../session/bankroll';
-import { bankShortName, formatBankHolderLabel, isChallengeTable, personShortName, } from './challengeBankDisplay';
+import { bankShortName, formatBankHolderLabel, isChallengeTable, personShortName, resolveWinnerDisplayName, } from './challengeBankDisplay';
+/** Pre-game Challenge bank-bust settlement choice (default fractional). */
+export function getConfiguredBankBustSettlementMode(state) {
+    if (!isChallengeTable(state)) {
+        return 'fractional';
+    }
+    return state.tableMeta.bankBustSettlementMode ?? 'fractional';
+}
 /** Rank all seated participants by ledger balance (highest first). */
 export function buildChallengeEndRankings(state) {
     const bankId = state.session.bankPlayerId;
@@ -25,7 +32,18 @@ export function buildChallengeEndRankings(state) {
     rows.sort((a, b) => b.endingChips - a.endingChips);
     return rows.map((row, index) => ({ ...row, rank: index + 1 }));
 }
-/** True when bank bust left chips with more than one non-bank player. */
+export function listNonBankWithChips(state) {
+    return buildChallengeEndRankings(state).filter((r) => !r.isBank && r.endingChips > 0);
+}
+export function resolveClearTopNonBankWinner(state) {
+    const nonBankWithChips = listNonBankWithChips(state);
+    if (nonBankWithChips.length === 0) {
+        return null;
+    }
+    const topChips = nonBankWithChips[0].endingChips;
+    const atTop = nonBankWithChips.filter((r) => r.endingChips === topChips);
+    return atTop.length === 1 ? atTop[0].playerId : null;
+}
 export function isFractionalChallengeEnd(state, reason) {
     if (!isChallengeTable(state)) {
         return false;
@@ -33,8 +51,25 @@ export function isFractionalChallengeEnd(state, reason) {
     if (reason !== 'bank-bust' && reason !== 'bank-empty') {
         return false;
     }
-    const nonBankWithChips = buildChallengeEndRankings(state).filter((r) => !r.isBank && r.endingChips > 0);
-    return nonBankWithChips.length > 1;
+    const nonBankWithChips = listNonBankWithChips(state);
+    if (nonBankWithChips.length === 0) {
+        return false;
+    }
+    const configured = getConfiguredBankBustSettlementMode(state);
+    if (configured === 'fractional') {
+        return nonBankWithChips.length > 1;
+    }
+    return resolveClearTopNonBankWinner(state) === null;
+}
+export function resolveEffectiveSettlementMode(state) {
+    const reason = state.tableMeta.gameEndReason;
+    if (!isChallengeTable(state)) {
+        return undefined;
+    }
+    if (reason !== 'bank-bust' && reason !== 'bank-empty') {
+        return state.tableMeta.bankBustSettlementMode;
+    }
+    return isFractionalChallengeEnd(state, reason) ? 'fractional' : 'winner-takes-all';
 }
 export function buildFractionalEndMessage(state) {
     const rankings = buildChallengeEndRankings(state);
@@ -52,7 +87,20 @@ export function buildFractionalEndMessage(state) {
     }
     return lines.join('\n');
 }
-/** Single clear winner when one holder owns all table chips. */
+export function buildChallengeBankBustEndMessage(state) {
+    const reason = state.tableMeta.gameEndReason;
+    const fractional = isFractionalChallengeEnd(state, reason);
+    const configured = getConfiguredBankBustSettlementMode(state);
+    const winnerId = state.tableMeta.winnerId;
+    if (!fractional && configured === 'winner-takes-all' && winnerId) {
+        return `Bank is bust.\n${resolveWinnerDisplayName(state, winnerId)} wins (winner takes all).`;
+    }
+    const ranked = buildFractionalEndMessage(state);
+    if (fractional && configured === 'winner-takes-all') {
+        return `${ranked}\n(Tie for top total — ranked settlement.)`;
+    }
+    return ranked;
+}
 export function hasSingleClearWinner(state) {
     const rankings = buildChallengeEndRankings(state);
     const withChips = rankings.filter((r) => r.endingChips > 0);
@@ -61,4 +109,15 @@ export function hasSingleClearWinner(state) {
     }
     const total = rankings.reduce((sum, r) => sum + r.endingChips, 0);
     return withChips[0].endingChips >= total && total > 0;
+}
+export function resolveBankBustWinnerId(state) {
+    const nonBankWithChips = listNonBankWithChips(state);
+    if (nonBankWithChips.length === 0) {
+        return null;
+    }
+    if (isChallengeTable(state) && getConfiguredBankBustSettlementMode(state) === 'winner-takes-all') {
+        return resolveClearTopNonBankWinner(state);
+    }
+    const top = nonBankWithChips[0];
+    return top && top.endingChips > 0 ? top.playerId : null;
 }
