@@ -52,11 +52,12 @@ describe('blackjack UX protocol fixes — card column values', () => {
 
 describe('blackjack UX protocol fixes — box stability', () => {
   it('matches + add-box outer sizing to player boxes', () => {
+    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*width:\s*100%/);
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row__add[\s\S]*width:\s*var\(--bj-full-table-box-width\)/,
+      /\.bj-table-slot-row__add[\s\S]*grid-template-rows:\s*var\(--bj-box-value-band-height\)/,
     );
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row__add[\s\S]*min-height:\s*calc\(var\(--bj-full-table-box-height\) \+ var\(--bj-box-value-band-height\)\)/,
+      /\.bj-table-slot-row__add[\s\S]*align-self:\s*stretch/,
     );
   });
 

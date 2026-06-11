@@ -61,7 +61,7 @@ describe('canonical player row layout engine', () => {
       /grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*minmax\(0,\s*1fr\)\)/,
     );
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row--with-add[\s\S]*grid-template-columns:\s*auto repeat\(var\(--slot-count,\s*4\),\s*minmax\(0,\s*1fr\)\)/,
+      /\.bj-table-slot-row--with-add[\s\S]*grid-template-columns:\s*repeat\(calc\(var\(--slot-count,\s*4\) \+ 1\),\s*minmax\(0,\s*1fr\)\)/,
     );
     expect(PLAYER_ROW_CSS).toMatch(/gap:\s*var\(--bj-table-slot-row-gap\)/);
     expect(PLAYER_ROW_CSS).toContain('clamp(4px, 1.2vw, 8px)');
@@ -78,6 +78,29 @@ describe('canonical player row layout engine', () => {
     const slotIdx = rowSlice.indexOf('bj-arc__slot');
     expect(addIdx).toBeGreaterThan(-1);
     expect(slotIdx).toBeGreaterThan(addIdx);
+  });
+
+  it('aligns owned Box 1 with empty boxes via shared value band and flex-start', () => {
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot--owned[\s\S]*justify-content:\s*flex-start/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot--empty::before[\s\S]*--bj-box-value-band-height/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot--owned[\s\S]*justify-content:\s*flex-start/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--native-assigned[\s\S]*aspect-ratio:\s*1\.05 \/ 1/,
+    );
+  });
+
+  it('sizes add + slot to normal box column width with compact glyph', () => {
+    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*font-size:\s*0\.85rem/);
+    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*align-self:\s*stretch/);
+    expect(PLAYER_ROW_CSS).not.toMatch(
+      /\.bj-table-slot-row__add[\s\S]*align-self:\s*end/,
+    );
   });
 
   it('neutralizes pill/dot compression on player box tiles inside slot row', () => {

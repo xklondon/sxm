@@ -88,6 +88,7 @@ export function EntryLobbyScreen({
         )}
       </div>
 
+      {/* Canonical New Table flow — do not fork: lobby uses NewTableOverlay + embedded TableStakePanel. */}
       <NewTableOverlay
         open={slideOut === 'new'}
         title="Open New Table"

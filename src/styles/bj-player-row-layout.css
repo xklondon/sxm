@@ -48,7 +48,8 @@
 }
 
 .bj-table-slot-row--with-add {
-  grid-template-columns: auto repeat(var(--slot-count, 4), minmax(0, 1fr));
+  /* + column same width as player boxes — not auto-sized */
+  grid-template-columns: repeat(calc(var(--slot-count, 4) + 1), minmax(0, 1fr));
 }
 
 .bj-table-slot-row > .bj-arc__slot {
@@ -63,19 +64,19 @@
 .bj-table-slot-row__add,
 .bj-player-boxes-wrap__add {
   grid-column: 1;
-  flex: 0 0 auto;
-  display: inline-flex;
+  display: grid;
+  grid-template-rows: var(--bj-box-value-band-height) minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
-  width: var(--bj-full-table-box-width);
-  min-width: var(--bj-full-table-box-width);
-  max-width: var(--bj-full-table-box-width);
-  min-height: calc(var(--bj-full-table-box-height) + var(--bj-box-value-band-height));
-  height: calc(var(--bj-full-table-box-height) + var(--bj-box-value-band-height));
+  justify-items: center;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 0;
+  height: auto;
   aspect-ratio: auto;
   margin: 0;
   padding: 0;
-  font-size: 1.05rem;
+  font-size: 0.85rem;
   font-weight: 700;
   line-height: 1;
   border-radius: 0.35rem;
@@ -86,10 +87,39 @@
   touch-action: manipulation;
   transform: none;
   overflow: hidden;
-  align-self: end;
+  align-self: stretch;
   box-sizing: border-box;
   box-shadow: none;
   outline: none;
+}
+
+/* Reserve value band row so + tile aligns with owned Box 1 column */
+.bj-table-slot-row__add::before,
+.bj-player-boxes-wrap__add::before {
+  content: '';
+  display: block;
+  grid-row: 1;
+  width: 100%;
+  min-height: var(--bj-box-value-band-height);
+}
+
+.bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,
+.bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  align-self: stretch;
+  min-height: 0;
+}
+
+/* Empty slots reserve the same value band as owned Box 1 — row height stays uniform */
+.bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty::before {
+  content: '';
+  display: block;
+  flex: 0 0 var(--bj-box-value-band-height);
+  min-height: var(--bj-box-value-band-height);
+  width: 100%;
 }
 
 .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
@@ -108,6 +138,7 @@
   height: auto;
   min-height: 0;
   max-height: none;
+  flex: 1 1 auto;
   aspect-ratio: 1.05 / 1;
   transform: none;
   rotate: none;
@@ -203,6 +234,12 @@
   min-width: 0;
   max-width: 100%;
   overflow: visible;
+}
+
+/* Slot row — override global owned-slot flex-end (bj-table-shared.css) so Box 1 aligns with empty boxes. */
+.bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,
+.bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned {
+  justify-content: flex-start;
 }
 
 /* Mobile shell — boxes and tray are separate non-overlapping flow zones. */

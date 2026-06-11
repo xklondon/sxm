@@ -408,6 +408,7 @@ export function TableScreen({
         )}
       </div>
 
+      {/* Canonical New Table flow — do not fork: in-table uses same NewTableOverlay + embedded TableStakePanel. */}
       {stakeSetupOpen && (
         <NewTableOverlay
           open

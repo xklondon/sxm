@@ -64,7 +64,7 @@ describe('New Table entry points share overlay path', () => {
       /<section className="table-felt[\s\S]*?<\/section>/,
     )?.[0] ?? '';
     expect(feltBlock).not.toContain('TableStakePanel');
-    expect(TABLE_SRC).toMatch(/<\/div>\s*\{stakeSetupOpen[\s\S]*TableStakePanel/);
+    expect(TABLE_SRC).toMatch(/\{stakeSetupOpen[\s\S]*NewTableOverlay[\s\S]*TableStakePanel/);
   });
 });
 
