@@ -47,7 +47,8 @@ export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: 
       aria-label="Bank hand"
     >
       <span className="bj-table-info-bar__item bj-table-info-bar__bank-value">
-        Bank Hand: {bankValue !== null ? bankValue : '—'}
+        Bank Hand:{' '}
+        {bankValue !== null ? <span className="bj-bank-hand__value">{bankValue}</span> : '—'}
       </span>
     </div>
   );

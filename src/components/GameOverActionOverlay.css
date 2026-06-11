@@ -1,0 +1,66 @@
+.bj-game-over-overlay {
+  z-index: 120;
+}
+
+.bj-game-over {
+  width: min(92vw, 22rem);
+  max-height: min(80vh, 24rem);
+  padding: 0.85rem 1rem 1rem;
+}
+
+.bj-game-over__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.bj-game-over__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: var(--ds-weight-extrabold, 800);
+  letter-spacing: 0.04em;
+}
+
+.bj-game-over__close {
+  flex-shrink: 0;
+}
+
+.bj-game-over__summary {
+  margin: 0 0 0.75rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.bj-game-over__iou-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.68rem;
+  cursor: pointer;
+}
+
+.bj-game-over__iou-toggle--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bj-game-over__iou-hint {
+  margin: 0 0 0.65rem;
+  font-size: 0.58rem;
+  opacity: 0.75;
+  line-height: 1.35;
+}
+
+.bj-game-over__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.bj-game-over__actions .ds-btn {
+  width: 100%;
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { GameState, TableMode } from '../types';
 
@@ -30,6 +30,12 @@ import { createTableInvite } from '../engine/table/invites';
 
 import { DEFAULT_PRACTICE_TABLE_NAME } from '../types/tableFeltSkin';
 
+import {
+  collectTableStakeSetupSnapshot,
+  createInitialTableStakeSetupSnapshot,
+  isTableStakeSetupDirty,
+  type TableStakeSetupSnapshot,
+} from './tableStakeSetupDirty';
 import './TableStakePanel.css';
 
 const STAKE_EXAMPLES = ['Dinner', '€20', 'Loser buys drinks', 'Just pride', 'car wash', 'favour'];
@@ -56,6 +62,8 @@ interface TableStakePanelProps {
   onlineTableId?: string | null;
   /** When true, panel title is rendered by NewTableOverlay shell. */
   embeddedInOverlay?: boolean;
+  /** Staged New Table only — reports whether the user has changed setup from baseline. */
+  onSetupDirtyChange?: (dirty: boolean) => void;
 }
 
 function initialBankerMode(state: GameState): TableBankerSetupMode {
@@ -85,6 +93,7 @@ export function TableStakePanel({
   onlineDispatch,
   onlineTableId = null,
   embeddedInOverlay = false,
+  onSetupDirtyChange,
 }: TableStakePanelProps) {
   const profile = loadProfile();
   const flow = gameState.blackjackFlowSettings;
@@ -148,13 +157,17 @@ export function TableStakePanel({
   const [bankDrawAuto, setBankDrawAuto] = useState(flow.bankDrawMode === 'auto');
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
+  const isStagedNew = !isReset;
+  const initialSetupSnapshotRef = useRef<TableStakeSetupSnapshot | null>(null);
+  if (isStagedNew && !initialSetupSnapshotRef.current) {
+    initialSetupSnapshotRef.current = createInitialTableStakeSetupSnapshot(gameState);
+  }
 
   const selectedProtocol = getBlackjackProtocolOrDefault(protocolId);
   const protocolRules = getProtocolDisplayRules(selectedProtocol);
   const showPlayingFor = isReset && bankerMode === 'bot';
   const onlineMode = isOnlineModeEnabled();
   const controller = profile.name.trim() || gameState.tableMeta.controllerName;
-  const isStagedNew = !isReset;
 
   function resolveChallengeBanker(): { bankerMode: TableBankerSetupMode; bankerName: string } {
     if (challengeBank === 'self') {
@@ -378,6 +391,74 @@ export function TableStakePanel({
       },
     });
   }
+
+  useEffect(() => {
+    if (!isStagedNew || !onSetupDirtyChange || !initialSetupSnapshotRef.current) {
+      return;
+    }
+    const current = collectTableStakeSetupSnapshot({
+      gameState,
+      setupStage,
+      setupTab,
+      tableMode,
+      stake,
+      tableName,
+      invitedEmails,
+      inviteEmailInput,
+      challengeBank,
+      seatChips,
+      bankChips,
+      bankChipsCustom,
+      bankerMode,
+      bankerName,
+      protocolId,
+      zilchMode,
+      targetPoints,
+      roundLimit,
+      diceAnimMode,
+      diceAnimMs,
+      diceAnimMin,
+      diceAnimMax,
+      advancedOpen,
+      naturalDealing,
+      dealSpeedPreset,
+      cardTimerPreset,
+      bankDrawAuto,
+      inviteNote,
+    });
+    onSetupDirtyChange(isTableStakeSetupDirty(initialSetupSnapshotRef.current, current));
+  }, [
+    isStagedNew,
+    onSetupDirtyChange,
+    gameState,
+    setupStage,
+    setupTab,
+    tableMode,
+    stake,
+    tableName,
+    invitedEmails,
+    inviteEmailInput,
+    challengeBank,
+    seatChips,
+    bankChips,
+    bankChipsCustom,
+    bankerMode,
+    bankerName,
+    protocolId,
+    zilchMode,
+    targetPoints,
+    roundLimit,
+    diceAnimMode,
+    diceAnimMs,
+    diceAnimMin,
+    diceAnimMax,
+    advancedOpen,
+    naturalDealing,
+    dealSpeedPreset,
+    cardTimerPreset,
+    bankDrawAuto,
+    inviteNote,
+  ]);
 
   function handleGameStageNext() {
     if (setupTab === 'dice') {

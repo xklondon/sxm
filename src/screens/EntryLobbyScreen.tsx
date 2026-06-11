@@ -30,10 +30,12 @@ export function EntryLobbyScreen({
   onOpenPeople,
 }: EntryLobbyScreenProps) {
   const [slideOut, setSlideOut] = useState<EntryLobbySlideOutKind | null>(null);
+  const [newTableSetupDirty, setNewTableSetupDirty] = useState(false);
   const newTableSeed = useMemo(() => createNewBlackjackTable(), [slideOut === 'new']);
 
   function closeSlideOut() {
     setSlideOut(null);
+    setNewTableSetupDirty(false);
   }
 
   async function handleConfirmNewTable(input: TableStakeSetupInput) {
@@ -93,6 +95,7 @@ export function EntryLobbyScreen({
         open={slideOut === 'new'}
         title="Open New Table"
         ariaLabel="Open New Table setup"
+        confirmDiscardWhenDirty={newTableSetupDirty}
         onClose={closeSlideOut}
       >
         <TableStakePanel
@@ -101,6 +104,7 @@ export function EntryLobbyScreen({
           embeddedInOverlay
           onConfirm={() => {}}
           onConfirmNewTable={handleConfirmNewTable}
+          onSetupDirtyChange={setNewTableSetupDirty}
         />
       </NewTableOverlay>
 

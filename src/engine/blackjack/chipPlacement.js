@@ -30,14 +30,27 @@ export function getChipPlacementTargetFromBoxId(state, boxId, online) {
     if (online) {
         const slotNum = state.session.boxSlotNumbers?.[boxId];
         if (slotNum != null) {
-            const emptySlot = slotByNumber(state, slotNum);
-            if (!emptySlot?.playerId) {
+            const row = slotByNumber(state, slotNum);
+            if (row?.playerId) {
+                return { kind: 'box', boxId: row.playerId };
+            }
+            if (row) {
                 return { kind: 'slot', slotNumber: slotNum };
             }
         }
         throw new Error(`Box not found (boxId=${boxId})`);
     }
     return { kind: 'box', boxId };
+}
+/** Online/mobile: never emit a stale client boxId when the slot occupant has rotated. */
+export function coercePlaceBetTarget(state, target, online) {
+    if (!online) {
+        return target;
+    }
+    if (target.kind === 'slot') {
+        return getChipPlacementTarget(state, { slotNumber: target.slotNumber });
+    }
+    return getChipPlacementTargetFromBoxId(state, target.boxId, true);
 }
 export function placeBetPayloadFromTarget(target, amount) {
     if (target.kind === 'box') {

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createNewBlackjackTable } from '../session';
 import { claimBoxSlot } from '../session/boxOps';
 import {
+  coercePlaceBetTarget,
   getChipPlacementTarget,
   getChipPlacementTargetFromBoxId,
   placeBetPayloadFromTarget,
@@ -52,6 +53,42 @@ describe('getChipPlacementTargetFromBoxId (online)', () => {
     expect(() => getChipPlacementTargetFromBoxId(state, 'client-only-box-id', true)).toThrow(
       /Box not found/,
     );
+  });
+
+  it('rebinds to current slot occupant when optimistic boxId is stale online', () => {
+    let state = createNewBlackjackTable();
+    state = claimBoxSlot(state, 2);
+    const serverBoxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 2)!.playerId!;
+    const staleBoxId = 'client-optimistic-box-2';
+    const rotated = {
+      ...state,
+      players: {
+        ...state.players,
+        [serverBoxId]: state.players[serverBoxId]!,
+      },
+      session: {
+        ...state.session,
+        boxSlotNumbers: { ...state.session.boxSlotNumbers, [staleBoxId]: 2 },
+      },
+      tableMeta: {
+        ...state.tableMeta,
+        boxSlots: state.tableMeta.boxSlots.map((slot) =>
+          slot.slotNumber === 2 ? { ...slot, playerId: serverBoxId } : slot,
+        ),
+      },
+    };
+    expect(getChipPlacementTargetFromBoxId(rotated, staleBoxId, true)).toEqual({
+      kind: 'box',
+      boxId: serverBoxId,
+    });
+    expect(coercePlaceBetTarget(rotated, { kind: 'box', boxId: staleBoxId }, true)).toEqual({
+      kind: 'box',
+      boxId: serverBoxId,
+    });
+    expect(placeBetPayloadFromTarget(
+      coercePlaceBetTarget(rotated, { kind: 'box', boxId: staleBoxId }, true),
+      5,
+    )).toEqual({ boxId: serverBoxId, amount: 5 });
   });
 
   it('falls back to slotNumber when boxId maps to an empty slot (stale local materialization)', () => {

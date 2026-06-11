@@ -82,7 +82,9 @@ describe('Card View hero hand', () => {
     const state = playerTurnState();
     const html = renderCardView(state, { protocolPhase: 'player', activeBoxId: boxPlayerId(state, 1) });
     expect(html).toContain('bj-phone-view__cards--stitched');
-    expect(html).toContain('Total 9');
+    expect(html).toContain('bj-card-view__hero-value');
+    expect(html).toContain('>9<');
+    expect(html).not.toContain('Total 9');
     expect(html).not.toContain('bj-phone-view__cards--bank');
   });
 
@@ -110,7 +112,9 @@ describe('Card View hero hand', () => {
     expect(showHeroPlayerCards('bank', false, 2)).toBe(true);
     const html = renderCardView(state, { protocolPhase: 'bank', activeBoxId: boxPlayerId(state, 1) });
     expect(html).toContain('bj-phone-view__cards--stitched');
-    expect(html).toContain('Total 9');
+    expect(html).toContain('bj-card-view__hero-value');
+    expect(html).toContain('>9<');
+    expect(html).not.toContain('Total 9');
   });
 
   it('betting placeholder is invisible in markup', () => {

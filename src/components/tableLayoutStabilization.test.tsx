@@ -181,8 +181,8 @@ describe('table layout stabilization contract', () => {
 
   it('bank visible value excludes hidden hole card in markup', () => {
     const html = renderAt(1280, 'full');
-    expect(html).toContain('Bank Hand: 7');
-    expect(html).not.toContain('Bank Hand: 17');
+    expect(html).toContain('bj-bank-hand__value">7</span>');
+    expect(html).not.toContain('bj-bank-hand__value">17</span>');
   });
 
   it('player boxes use shared framed mini-hand shell', () => {

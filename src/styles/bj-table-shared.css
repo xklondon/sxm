@@ -1148,6 +1148,23 @@
   color: var(--ds-color-danger);
 }
 
+.bj-player-hand-value--emphasis {
+  font-size: calc(var(--bj-seat-total-size) * 1.35);
+}
+
+.bj-phone-view__box-value--bust.bj-player-hand-value--emphasis {
+  font-size: calc(var(--bj-seat-total-size) * 1.35 * 0.85);
+}
+
+.bj-phone-view__box-value--win {
+  color: rgb(74 222 128);
+}
+
+.bj-phone-view__box-value--even {
+  color: var(--ds-color-gold);
+  opacity: 0.92;
+}
+
 /* Shared mini-hand box layout — Card View row + Full Table arc seats. */
 .bj-phone-view__mini-hand {
   position: relative;

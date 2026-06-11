@@ -140,7 +140,8 @@ export function reconcileLocalChipTarget(
     if (!slot) {
       return local.hasUserSelected ? local : { ...local, target: null };
     }
-    if (slot.playerId) {
+    // Online: keep slot anchor for repeat tray taps; coerce at bet time resolves occupant.
+    if (slot.playerId && !online) {
       return { ...local, target: { kind: 'box', boxId: slot.playerId } };
     }
     return local;
@@ -154,6 +155,15 @@ export function reconcileLocalChipTarget(
       }
       if (rebound.kind === 'slot') {
         return { ...local, target: rebound };
+      }
+    }
+    if (online) {
+      const degraded = degradeChipTargetToSlot(state, currentTarget);
+      if (degraded?.kind === 'slot') {
+        return { ...local, target: degraded };
+      }
+      if (degraded?.kind === 'box') {
+        return { ...local, target: degraded };
       }
     }
     if (isUserChipTargetRemoved(state, currentTarget, online)) {
@@ -189,6 +199,25 @@ export interface ResolveCurrentChipTargetInput {
   visibleBoxCount?: number;
 }
 
+/** When a box id is stale, fall back to its slot row (or current occupant). */
+export function degradeChipTargetToSlot(
+  state: GameState,
+  target: PlaceBetTarget,
+): PlaceBetTarget | null {
+  const slotNumber = localChipTargetSlotNumber(state, target);
+  if (slotNumber == null) {
+    return null;
+  }
+  const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
+  if (row?.playerId) {
+    return { kind: 'box', boxId: row.playerId };
+  }
+  if (row) {
+    return { kind: 'slot', slotNumber };
+  }
+  return null;
+}
+
 export function localChipTargetSlotNumber(
   state: GameState,
   target: PlaceBetTarget,
@@ -200,8 +229,7 @@ export function localChipTargetSlotNumber(
   if (slot) {
     return slot.slotNumber;
   }
-  const slotNum = state.session.boxSlotNumbers?.[target.boxId];
-  return slotNum ?? null;
+  return state.session.boxSlotNumbers?.[target.boxId] ?? null;
 }
 
 function isTargetOnVisibleBox(
@@ -363,8 +391,14 @@ export function affirmChipTargetAfterPlacement(
 ): LocalSelectedChipTarget {
   const picked = selectLocalChipTarget(local, placedTarget);
   const reconciled = reconcileLocalChipTarget(picked, state, online);
+  if (online && placedTarget.kind === 'slot') {
+    return selectLocalChipTarget(reconciled, placedTarget);
+  }
   const seed = reconciled.target ?? placedTarget;
-  const resolved = resolveTargetOnTable(state, seed, online) ?? seed;
+  const resolved =
+    resolveTargetOnTable(state, seed, online) ??
+    (online ? degradeChipTargetToSlot(state, seed) : null) ??
+    seed;
   return selectLocalChipTarget(reconciled, resolved);
 }
 
@@ -391,7 +425,16 @@ export function resolveTrayTargetFromLocalSelection(
         return resolved;
       }
       const fallback = resolveTargetOnTable(state, local.target, online);
-      return fallback ?? local.target;
+      if (fallback) {
+        return fallback;
+      }
+      if (online) {
+        const degraded = degradeChipTargetToSlot(state, local.target);
+        if (degraded) {
+          return degraded;
+        }
+      }
+      return null;
     }
 
     const resolved = resolveTargetOnTable(state, local.target, online);

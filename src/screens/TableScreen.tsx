@@ -109,6 +109,7 @@ export function TableScreen({
   const [resetSetupVariant, setResetSetupVariant] =
     useState<TableResetSetupVariant>('resetTable');
   const [navNewTableSetup, setNavNewTableSetup] = useState(false);
+  const [newTableSetupDirty, setNewTableSetupDirty] = useState(false);
 
   const balances = deriveAllBalancesFromLedger(session, ledger);
   const remaining = deck ? getRemainingCardCount(deck) : 0;
@@ -193,6 +194,7 @@ export function TableScreen({
     setResetSetupOpen(false);
     setResetSetupVariant('resetTable');
     setStakePanelMode('new');
+    setNewTableSetupDirty(false);
     if (tableMeta.showStakeSetup) {
       onGameStateChange({
         ...gameState,
@@ -202,6 +204,7 @@ export function TableScreen({
   }
 
   const stakeSetupOpen = (isBlackjack || isZilch) && (tableMeta.showStakeSetup || resetSetupOpen);
+  const stagedNewTableOpen = stakeSetupOpen && !resetSetupOpen;
   const stakeSetupTitle = resetSetupOpen
     ? resetSetupVariant === 'newGame'
       ? 'New Game'
@@ -414,6 +417,7 @@ export function TableScreen({
           open
           title={stakeSetupTitle}
           ariaLabel={stakeSetupAriaLabel}
+          confirmDiscardWhenDirty={stagedNewTableOpen && newTableSetupDirty}
           onClose={closeStakeSetup}
         >
           <TableStakePanel
@@ -421,6 +425,7 @@ export function TableScreen({
             mode={resetSetupOpen ? 'reset' : stakePanelMode}
             resetSetupVariant={resetSetupVariant}
             embeddedInOverlay
+            onSetupDirtyChange={stagedNewTableOpen ? setNewTableSetupDirty : undefined}
             onConfirmNewTable={
               navNewTableSetup && onConfirmNavNewTable ? onConfirmNavNewTable : undefined
             }

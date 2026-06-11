@@ -7,6 +7,7 @@ import type { GameState } from '../types';
 import {
   affirmChipTargetAfterPlacement,
   createEmptyLocalChipTarget,
+  degradeChipTargetToSlot,
   getCurrentChipTargetForBetting,
   localChipTargetsEqual,
   reconcileLocalChipTarget,
@@ -29,6 +30,10 @@ function simulatePanelReconcile(
     next = affirmChipTargetAfterPlacement(next, gameState, next.target, online);
   }
   if (next.hasUserSelected && !next.target && local.target) {
+    const degraded = online && local.target ? degradeChipTargetToSlot(gameState, local.target) : local.target;
+    if (degraded) {
+      return { ...next, target: degraded };
+    }
     return { ...next, target: local.target };
   }
   if (!localChipTargetsEqual(local, next)) {
@@ -114,5 +119,8 @@ describe('repeat chip stacking — online server lag', () => {
       visibleBoxCount: 4,
     });
     expect(second.ok, JSON.stringify(second)).toBe(true);
+    if (second.ok) {
+      expect(second.target).toEqual({ kind: 'slot', slotNumber: 2 });
+    }
   });
 });

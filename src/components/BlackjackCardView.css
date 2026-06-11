@@ -2041,7 +2041,7 @@
   }
 
   .bj-view-card-mobile .bj-phone-view__play-area--controls {
-    align-items: stretch;
+    align-items: center;
     justify-content: center;
     gap: 0.2rem;
   }
@@ -2057,9 +2057,16 @@
 
   .bj-view-card-mobile .bj-phone-view__side-action {
     display: flex;
+    align-self: center;
     flex: 0 0 clamp(2rem, 11vw, 2.75rem);
     min-height: clamp(6.5rem, 42vw, 10rem);
     max-height: min(52vw, 11rem);
+  }
+
+  .bj-view-card-mobile .bj-card-view__hero-value.bj-phone-view__total--hero:not(.bj-phone-view__total--blackjack) {
+    font-size: calc(0.68rem * 3);
+    padding: 5px;
+    min-height: auto;
   }
 
   .bj-view-card-mobile .bj-phone-view__play-area,

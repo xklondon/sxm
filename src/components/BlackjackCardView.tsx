@@ -637,10 +637,15 @@ export function BlackjackCardView({
                 SXM_LAYOUT.handTotal,
                 'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
                 TABLE_UX.cardViewTotalCompact,
+                deviceView === 'mobile' ? 'bj-card-view__hero-value' : '',
                 heroNatural ? 'bj-phone-view__total--blackjack' : '',
               )}
             >
-              {heroNatural ? 'Blackjack' : `Total ${heroDisplayValue}`}
+              {heroNatural
+                ? 'Blackjack'
+                : deviceView === 'mobile'
+                  ? String(heroDisplayValue)
+                  : `Total ${heroDisplayValue}`}
             </div>
           ) : (
             <div

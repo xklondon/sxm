@@ -2,11 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   applyDefaultAssignedChipTarget,
   createEmptyLocalChipTarget,
+  degradeChipTargetToSlot,
   reconcileLocalChipTarget,
   resolveTrayTargetFromLocalSelection,
   selectLocalChipTarget,
   uiFromLocalChipTarget,
 } from './localChipTargetSelection';
+import { coercePlaceBetTarget, placeBetPayloadFromTarget } from '../engine/blackjack/chipPlacement';
 import { addChipToBoxStake, getStakeForBox } from '../engine/blackjack/stakes';
 import { createNewBlackjackTable } from '../engine/session';
 import { claimBoxSlot } from '../engine/session/boxOps';
@@ -220,6 +222,75 @@ describe('localChipTargetSelection', () => {
       kind: 'box',
       boxId: freeBox,
     });
+  });
+
+  it('online repeat tray taps on boxes 2–4 survive optimistic id rotation', () => {
+    for (const slotNumber of [2, 3, 4] as const) {
+      let state = tableAfterStartPlaying(500);
+      const staleBoxId = `client-box-slot-${slotNumber}`;
+      const ownerId = state.tableMeta.ownerPersonId!;
+      state = {
+        ...state,
+        players: {
+          ...state.players,
+          [staleBoxId]: {
+            id: staleBoxId,
+            displayName: `Box ${slotNumber}`,
+            controllerName: 'Alice',
+            role: 'box' as const,
+            bankrollOwnerId: ownerId,
+            playerType: 'real' as const,
+            startingBalance: 0,
+            currentBet: 0,
+            cardIds: [],
+            status: 'active' as const,
+          },
+        },
+        session: {
+          ...state.session,
+          boxSlotNumbers: { ...state.session.boxSlotNumbers, [staleBoxId]: slotNumber },
+        },
+      };
+
+      let local = selectLocalChipTarget(createEmptyLocalChipTarget(), {
+        kind: 'slot',
+        slotNumber,
+      });
+      state = claimBoxSlot(state, slotNumber);
+      const serverBoxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber)!
+        .playerId!;
+      state = {
+        ...state,
+        session: {
+          ...state.session,
+          boxSlotNumbers: { ...state.session.boxSlotNumbers, [staleBoxId]: slotNumber },
+        },
+      };
+      local = reconcileLocalChipTarget(local, state, true);
+
+      const first = resolveTrayTargetFromLocalSelection(local, state, true, ownerId);
+      expect(first).not.toBeNull();
+      const coercedFirst = coercePlaceBetTarget(state, first!, true);
+      expect(() => placeBetPayloadFromTarget(coercedFirst, 5)).not.toThrow();
+
+      state = addChipToBoxStake(state, serverBoxId, 5, ownerId);
+      local = reconcileLocalChipTarget(
+        selectLocalChipTarget(local, coercedFirst),
+        state,
+        true,
+      );
+      const second = resolveTrayTargetFromLocalSelection(local, state, true, ownerId);
+      expect(second).not.toBeNull();
+      const coercedSecond = coercePlaceBetTarget(state, second!, true);
+      expect(placeBetPayloadFromTarget(coercedSecond, 5)).toEqual({
+        boxId: serverBoxId,
+        amount: 5,
+      });
+      expect(degradeChipTargetToSlot(state, { kind: 'box', boxId: staleBoxId })).toEqual({
+        kind: 'box',
+        boxId: serverBoxId,
+      });
+    }
   });
 
   it('does not fall back to assigned box after user selected another target', () => {

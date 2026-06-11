@@ -1,6 +1,7 @@
 import type { Deck } from '../types/deck';
 import type { BlackjackRound } from '../types/blackjack';
 import { getDisplayedHandValue } from '../engine/blackjack/dealing/cardRevealDisplay';
+import type { BoxHandResultStatus } from './boxHandStatusDisplay';
 import {
   BOX_CARD_VALUE,
   BOX_CARD_VALUE_ABOVE,
@@ -27,11 +28,23 @@ export function resolvePrimaryHandValueLabel(
   return String(displayValue);
 }
 
-export function boxValueSpanClassName(hasLabel: boolean, isBusted: boolean): string {
+export function boxValueSpanClassName(
+  hasLabel: boolean,
+  isBusted: boolean,
+  resultStatus?: BoxHandResultStatus | null,
+): string {
   if (!hasLabel) {
     return `${BOX_CARD_VALUE} ${BOX_CARD_VALUE_ABOVE} ${BOX_CARD_VALUE}--placeholder`;
   }
-  return [BOX_CARD_VALUE, BOX_CARD_VALUE_ABOVE, isBusted ? BOX_CARD_VALUE_BUST : '']
+  const showBustStyle = isBusted || resultStatus === 'bust';
+  return [
+    BOX_CARD_VALUE,
+    BOX_CARD_VALUE_ABOVE,
+    'bj-player-hand-value--emphasis',
+    showBustStyle ? BOX_CARD_VALUE_BUST : '',
+    resultStatus === 'win' ? 'bj-phone-view__box-value--win' : '',
+    resultStatus === 'push' ? 'bj-phone-view__box-value--even' : '',
+  ]
     .filter(Boolean)
     .join(' ');
 }

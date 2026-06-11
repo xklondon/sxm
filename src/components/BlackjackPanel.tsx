@@ -68,6 +68,7 @@ import { PlayLedgerModal, PlayLedgerPanel } from './LedgerModals';
 import { TableSideRailShell } from './TableSideRailShell';
 import {
   affirmChipTargetAfterPlacement,
+  degradeChipTargetToSlot,
   applyDefaultAssignedChipTarget,
   createEmptyLocalChipTarget,
   getCurrentChipTargetForBetting,
@@ -111,6 +112,7 @@ import {
   formatPlaceBetError,
   getChipPlacementTarget,
   getChipPlacementTargetFromBoxId,
+  coercePlaceBetTarget,
   placeBetPayloadFromTarget,
   type PlaceBetTarget,
 } from '../engine/blackjack/chipPlacement';
@@ -142,6 +144,12 @@ import {
   resolveBoxBorderVisualState,
 } from './cardViewBox';
 import { boxValueSpanClassName, resolvePrimaryHandValueLabel } from './boxHandValueDisplay';
+import {
+  handResultStatusText,
+  resolveBoxHandResultStatus,
+  shouldShowBoxHandResultMarkers,
+} from './boxHandStatusDisplay';
+import { GameOverActionOverlay } from './GameOverActionOverlay';
 import { AceDecisionButtonRow } from './blackjackAceDecisionActions';
 import {
   buildViewerIdentityHints,
@@ -238,6 +246,8 @@ export function BlackjackPanel({
   const profileOpen = profileOpenProp ?? profileOpenInternal;
   const setProfileOpen = onProfileOpenChange ?? setProfileOpenInternal;
   const [personalLedgerAdded, setPersonalLedgerAdded] = useState(false);
+  const [gameOverOverlayDismissed, setGameOverOverlayDismissed] = useState(false);
+  const [gameOverOverlayConfirmed, setGameOverOverlayConfirmed] = useState(false);
   const [assignChipsOpen, setAssignChipsOpen] = useState(false);
   const [minBetOpen, setMinBetOpen] = useState(false);
   const [tableAidTip, setTableAidTip] = useState<string | null>(null);
@@ -393,7 +403,11 @@ export function BlackjackPanel({
       next = affirmChipTargetAfterPlacement(next, gameState, next.target, online);
     }
     if (next.hasUserSelected && !next.target && local.target) {
-      commitLocalChipTarget({ ...next, target: local.target });
+      const degraded =
+        online && local.target ? degradeChipTargetToSlot(gameState, local.target) : local.target;
+      if (degraded) {
+        commitLocalChipTarget({ ...next, target: degraded });
+      }
       return;
     }
     if (!localChipTargetsEqual(localSelectedChipTargetRef.current, next)) {
@@ -439,7 +453,6 @@ export function BlackjackPanel({
   const visibleArcClass = visibleBoxArcClass(effectiveVisibleBoxCount);
   const canAddVisibleBox = effectiveVisibleBoxCount < MAX_BOXES;
   const bankerReady = isBankerReady(gameState);
-  const showGameEndActions = gameEnded;
   const canSaveToLedger = canAddGameToPersonalLedger(gameState);
   const viewerEmail = viewerAuth?.email?.trim() || profile.email.trim();
   const iouHandoff = gameEnded ? buildGameEndIouHandoff(gameState, viewerEmail) : null;
@@ -486,6 +499,17 @@ export function BlackjackPanel({
     ],
   );
 
+  const showGameOverOverlay =
+    gameEnded && !gameOverOverlayDismissed && !gameOverOverlayConfirmed;
+
+  useEffect(() => {
+    if (!gameEnded) {
+      setGameOverOverlayDismissed(false);
+      setGameOverOverlayConfirmed(false);
+      setPersonalLedgerAdded(false);
+    }
+  }, [gameEnded, gameState.session.id]);
+
   useEffect(() => {
     if (!awaitingNextRound) {
       setRoundSummaryDismissed(false);
@@ -521,11 +545,25 @@ export function BlackjackPanel({
     }
   }
 
-  function handleAddIou() {
+  function openIouHandoff() {
     if (!iouHandoff) {
       return;
     }
     window.open(iouHandoff.url, '_blank', 'noopener,noreferrer');
+  }
+
+  function handleGameOverConfirm(options: { saveLedger: boolean; createIou: boolean }) {
+    if (options.saveLedger) {
+      handleAddToPersonalLedger();
+    }
+    if (options.createIou) {
+      openIouHandoff();
+    }
+    setGameOverOverlayConfirmed(true);
+  }
+
+  function handleGameOverDismiss() {
+    setGameOverOverlayDismissed(true);
   }
 
   function run(
@@ -584,10 +622,14 @@ export function BlackjackPanel({
         )
       : reconcileLocalChipTarget(localSelectedChipTargetRef.current, state, online);
     if (next.hasUserSelected && !next.target && localSelectedChipTargetRef.current.target) {
-      commitLocalChipTarget({
-        ...next,
-        target: localSelectedChipTargetRef.current.target,
-      });
+      const stale = localSelectedChipTargetRef.current.target;
+      const degraded = online && stale ? degradeChipTargetToSlot(state, stale) : stale;
+      if (degraded) {
+        commitLocalChipTarget({
+          ...next,
+          target: degraded,
+        });
+      }
       return;
     }
     commitLocalChipTarget(next);
@@ -625,22 +667,30 @@ export function BlackjackPanel({
   }
 
   function placeBetAtTarget(target: PlaceBetTarget, amount: ChipValue) {
-    const payload = placeBetPayloadFromTarget(target, amount);
+    const online = Boolean(onlineDispatch);
+    let betTarget: PlaceBetTarget;
+    try {
+      betTarget = coercePlaceBetTarget(gameStateRef.current, target, online);
+    } catch (err) {
+      setError(formatPlaceBetError(err));
+      return;
+    }
+    const payload = placeBetPayloadFromTarget(betTarget, amount);
 
     if (onlineDispatch) {
       setError(null);
       const snapshot = gameStateRef.current;
       try {
-        const optimistic = applyOptimisticChipPlacement(target, amount);
+        const optimistic = applyOptimisticChipPlacement(betTarget, amount);
         onGameStateChange(optimistic);
-        preserveLocalChipTargetAfterStateSync(optimistic, target);
+        preserveLocalChipTargetAfterStateSync(optimistic, betTarget);
       } catch (err) {
         setError(formatPlaceBetError(err));
         return;
       }
       void onlineDispatch('placeBet', payload).catch((err) => {
         onGameStateChange(snapshot);
-        preserveLocalChipTargetAfterStateSync(snapshot, target);
+        preserveLocalChipTargetAfterStateSync(snapshot, betTarget);
         setError(formatPlaceBetError(err));
       });
       return;
@@ -813,6 +863,11 @@ export function BlackjackPanel({
   }
 
   const inBetting = bettingOpen;
+  const showBoxHandResultMarkers = shouldShowBoxHandResultMarkers({
+    awaitingNextRound,
+    protocolPhase,
+    round: gameState.blackjack,
+  });
   const chipPointerDrag = useMemo(
     () =>
       createChipPointerDragHandlers({
@@ -1010,32 +1065,7 @@ export function BlackjackPanel({
   function renderSummaryContent() {
     const alert = renderTableAlert();
     return (
-      <>
-        {alert ?? (
-          <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />
-        )}
-        {showGameEndActions ? (
-          <div className="bj-game-end-actions">
-            <button
-              type="button"
-              className="ds-btn ds-btn--primary"
-              disabled={!canSaveToLedger || personalLedgerAdded}
-              onClick={handleAddToPersonalLedger}
-            >
-              {personalLedgerAdded ? 'Added to Ledger' : 'Add to Ledger'}
-            </button>
-            <button
-              type="button"
-              className="ds-btn ds-btn--secondary"
-              disabled={!canAddIou}
-              onClick={handleAddIou}
-              title={canAddIou ? 'Open IOU Wallet with prefilled wager' : 'Add a counterparty email to use IOU'}
-            >
-              Add IOU
-            </button>
-          </div>
-        ) : null}
-      </>
+      alert ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />
     );
   }
 
@@ -1456,12 +1486,20 @@ export function BlackjackPanel({
       ? getVisibleHandCardIds(visualRound, primaryHandKey)
       : [];
     const isBusted = primaryHand?.actionStatus === 'busted';
-    const valueLabel = resolvePrimaryHandValueLabel(
+    const handResultStatus = resolveBoxHandResultStatus(
+      gameState.blackjack,
+      primaryHandKey,
+      showBoxHandResultMarkers,
+    );
+    const playValueLabel = resolvePrimaryHandValueLabel(
       visualDeck,
       visualRound,
       primaryHandKey,
       primaryHand,
     );
+    const boxValueLabel = handResultStatus
+      ? handResultStatusText(handResultStatus)
+      : playValueLabel;
     const stakeChips = getStakeChipsForBox(gameState, boxId);
     const wager = inBetting ? openStake : (primaryHand?.currentBet ?? openStake);
     const showBettingChips = inBetting && openStake > 0 && stakeChips.length > 0;
@@ -1516,10 +1554,14 @@ export function BlackjackPanel({
           onDrop={inBetting ? (e) => handleBetZoneDrop(boxId, slotNumber, e) : undefined}
         />
         <span
-          className={boxValueSpanClassName(Boolean(valueLabel), isBusted)}
-          aria-hidden={valueLabel ? undefined : 'true'}
+          className={boxValueSpanClassName(
+            Boolean(boxValueLabel),
+            isBusted,
+            handResultStatus,
+          )}
+          aria-hidden={boxValueLabel ? undefined : 'true'}
         >
-          {valueLabel || '\u00a0'}
+          {boxValueLabel || '\u00a0'}
         </span>
         <div
           {...sxmSectionProps(
@@ -1933,6 +1975,21 @@ export function BlackjackPanel({
           open
           onClose={() => setActiveTablePanel(null)}
           tableDetails={tableDetailsProps}
+        />
+      )}
+
+      {showGameOverOverlay && (
+        <GameOverActionOverlay
+          open
+          summaryMessage={gameOverMessage}
+          canSaveToLedger={canSaveToLedger}
+          ledgerAlreadyAdded={personalLedgerAdded}
+          canCreateIou={canAddIou}
+          iouDisabledReason={
+            canAddIou ? undefined : 'Add a counterparty email to create an IOU handoff.'
+          }
+          onConfirm={handleGameOverConfirm}
+          onDismiss={handleGameOverDismiss}
         />
       )}
 
