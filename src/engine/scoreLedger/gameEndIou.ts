@@ -1,4 +1,5 @@
 import type { GameState } from '../../types';
+import type { IouHandoffCreateRequestBody } from '../../lib/iouHandoffPayload';
 import {
   buildIouWalletNewUrl,
   detectIouTypeFromWager,
@@ -109,9 +110,39 @@ export function resolveGameEndParties(state: GameState): GameEndParties | null {
   };
 }
 
+export function buildIouHandoffCreateRequest(state: GameState): IouHandoffCreateRequestBody | null {
+  const parties = resolveGameEndParties(state);
+  if (!parties?.winnerEmail || !parties.loserEmail) {
+    return null;
+  }
+
+  const wager =
+    state.tableMeta.agreement?.stakeDescription?.trim() || 'Blackjack wager';
+
+  return {
+    tableId: state.session.id,
+    sessionId: state.session.id,
+    wagerDescription: wager,
+    debtorEmail: parties.loserEmail,
+    creditorEmail: parties.winnerEmail,
+    creditorName: resolveWinnerDisplayName(state, parties.winnerId),
+    gameType: state.tableGame ?? 'blackjack',
+    title: wager,
+  };
+}
+
+/** True when both human parties have emails and the viewer is debtor or creditor. */
+export function canCreateGameEndIou(state: GameState, viewerEmail: string): boolean {
+  const request = buildIouHandoffCreateRequest(state);
+  if (!request) {
+    return false;
+  }
+  const viewer = viewerEmail.trim().toLowerCase();
+  return viewer === request.debtorEmail || viewer === request.creditorEmail;
+}
+
 /**
- * Build IOU handoff from loser (debtor) to winner (creditor).
- * counterpartyEmail is the other human party relative to the viewer.
+ * @deprecated URL handoff — prefer server-side create via /api/iou-handoff/create.
  */
 export function buildGameEndIouHandoff(
   state: GameState,
@@ -165,7 +196,7 @@ export function buildGameEndIouHandoff(
 }
 
 export function canOfferGameEndIou(state: GameState, viewerEmail: string): boolean {
-  return buildGameEndIouHandoff(state, viewerEmail) !== null;
+  return canCreateGameEndIou(state, viewerEmail);
 }
 
 export function resolveWinnerDisplayName(state: GameState, winnerId: string): string {

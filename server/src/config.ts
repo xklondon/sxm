@@ -91,6 +91,15 @@ export const config = {
   rootUserEmail: normalizeEmailEnv(env('ROOT_USER_EMAIL')),
   inviteOnlyMode: envBool('INVITE_ONLY_MODE', true),
   inviteTtlMs: envInt('INVITE_TTL_MS', 7 * 24 * 60 * 60 * 1000),
+  iouHandoff: {
+    source: env('IOU_HANDOFF_SOURCE', 'sxm'),
+    secret: env('IOU_HANDOFF_SECRET'),
+    createUrl: env(
+      'IOU_HANDOFF_CREATE_URL',
+      'http://localhost:6969/api/integrations/handoff/create',
+    ),
+    enabled: Boolean(env('IOU_HANDOFF_SECRET') && env('IOU_HANDOFF_CREATE_URL')),
+  },
 };
 
 function normalizeEmailEnv(value: string): string {

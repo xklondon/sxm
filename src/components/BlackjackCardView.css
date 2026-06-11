@@ -1627,11 +1627,13 @@
 
 
 
-.bj-phone-view__tray .chip-token {
+.bj-phone-view__tray .chip-token--plaque {
 
-  width: 1.15rem;
+  --chip-plaque-width: 4.375rem;
 
-  height: 1.15rem;
+  --chip-plaque-height: 1.75rem;
+
+  --chip-plaque-font: 0.8rem;
 
 }
 

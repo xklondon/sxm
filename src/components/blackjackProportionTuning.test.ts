@@ -60,7 +60,7 @@ describe('blackjack proportion tuning — zone tokens and Stitch-aligned surface
   it('centers prominent ValueAndChips with larger chip targets', () => {
     expect(CHIP_CSS).toMatch(/\.bj-value-chips\s*\{[\s\S]*justify-content:\s*center/);
     expect(CHIP_CSS).toMatch(/\.bj-value-chips\s*\{[\s\S]*min-height:\s*3\.15rem/);
-    expect(CHIP_CSS).toMatch(/\.bj-value-chips \.chip-token--btn[\s\S]*min-width:\s*2\.35rem/);
+    expect(CHIP_CSS).toMatch(/\.chip-token--plaque[\s\S]*--chip-plaque-width:\s*5\.5rem/);
   });
 
   it('does not change shell zone order or API', () => {

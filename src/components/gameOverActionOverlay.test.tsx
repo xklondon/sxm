@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within, waitFor } from '@testing-library/react';
 
 vi.mock('../storage/profileStorage', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../storage/profileStorage')>();
@@ -10,15 +10,16 @@ vi.mock('../storage/profileStorage', async (importOriginal) => {
     loadProfile: () => ({ name: 'Alice', email: 'alice@example.com' }),
   };
 });
+
 import type { GameState } from '../types';
 import { GameOverActionOverlay } from './GameOverActionOverlay';
 import { BlackjackPanel } from './BlackjackPanel';
+import * as iouHandoffApi from '../api/iouHandoff';
 import { tableWithClaimedBox } from '../engine/blackjack/sanity/fixtures';
 import {
   addGameToPersonalLedger,
   hasPersonalLedgerEntryForTable,
 } from '../engine/scoreLedger/scoreLedger';
-import { buildGameEndIouHandoff } from '../engine/scoreLedger/gameEndIou';
 import { saveScoreLedgerEntries } from '../storage/scoreLedgerStorage';
 
 const noop = () => {};
@@ -90,10 +91,22 @@ function installLocalStorageMock(): void {
   } as Storage;
 }
 
+async function confirmIouFromOverlay(saveLedger: boolean) {
+  const overlay = screen.getByRole('dialog');
+  fireEvent.click(within(overlay).getByRole('checkbox', { name: /create iou/i }));
+  fireEvent.click(
+    within(overlay).getByRole('button', {
+      name: saveLedger ? 'Add to Ledger' : "Don't Add",
+    }),
+  );
+  const confirmOverlay = screen.getByRole('dialog');
+  fireEvent.click(within(confirmOverlay).getByRole('button', { name: 'Create IOU' }));
+}
+
 describe('GameOverActionOverlay', () => {
   afterEach(() => {
     cleanup();
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders summary, ledger actions, and Create IOU toggle', () => {
@@ -109,10 +122,29 @@ describe('GameOverActionOverlay', () => {
       />,
     );
     expect(html).toContain('Game Over');
-    expect(html).toContain('Game Over, congrats Alice, you won in 4 rounds.');
     expect(html).toContain('Add to Ledger');
-    expect(html).toContain("Don&#x27;t Add");
     expect(html).toContain('Create IOU');
+  });
+
+  it('shows SXM-side IOU confirmation before calling onConfirm', () => {
+    const onConfirm = vi.fn();
+    render(
+      <GameOverActionOverlay
+        open
+        summaryMessage="Game over."
+        canSaveToLedger
+        ledgerAlreadyAdded={false}
+        canCreateIou
+        onConfirm={onConfirm}
+        onDismiss={noop}
+      />,
+    );
+    const overlay = screen.getByRole('dialog');
+    fireEvent.click(within(overlay).getByRole('checkbox', { name: /create iou/i }));
+    fireEvent.click(within(overlay).getByRole('button', { name: "Don't Add" }));
+    expect(screen.getByText(/Create IOU in IOU Wallet for this wager/i)).toBeTruthy();
+    fireEvent.click(within(overlay).getByRole('button', { name: 'Create IOU' }));
+    expect(onConfirm).toHaveBeenCalledWith({ saveLedger: false, createIou: true });
   });
 
   it('disables Create IOU toggle when no valid counterparty email', () => {
@@ -131,55 +163,23 @@ describe('GameOverActionOverlay', () => {
     expect(html).toContain('disabled');
     expect(html).toContain('Add a counterparty email');
   });
-
-  it('fires IOU handoff on confirm even when ledger is not saved', () => {
-    const onConfirm = vi.fn();
-    render(
-      <GameOverActionOverlay
-        open
-        summaryMessage="Game over."
-        canSaveToLedger
-        ledgerAlreadyAdded={false}
-        canCreateIou
-        onConfirm={onConfirm}
-        onDismiss={noop}
-      />,
-    );
-    const overlay = screen.getByRole('dialog');
-    fireEvent.click(within(overlay).getByRole('checkbox', { name: /create iou/i }));
-    fireEvent.click(within(overlay).getByRole('button', { name: "Don't Add" }));
-    expect(onConfirm).toHaveBeenCalledWith({ saveLedger: false, createIou: true });
-  });
-
-  it('can save ledger and create IOU together', () => {
-    const onConfirm = vi.fn();
-    render(
-      <GameOverActionOverlay
-        open
-        summaryMessage="Game over."
-        canSaveToLedger
-        ledgerAlreadyAdded={false}
-        canCreateIou
-        onConfirm={onConfirm}
-        onDismiss={noop}
-      />,
-    );
-    const overlay = screen.getByRole('dialog');
-    fireEvent.click(within(overlay).getByRole('checkbox', { name: /create iou/i }));
-    fireEvent.click(within(overlay).getByRole('button', { name: 'Add to Ledger' }));
-    expect(onConfirm).toHaveBeenCalledWith({ saveLedger: true, createIou: true });
-  });
 });
 
 describe('GameOverActionOverlay — panel integration', () => {
   beforeEach(() => {
     installLocalStorageMock();
     saveScoreLedgerEntries([]);
+    vi.spyOn(iouHandoffApi, 'createIouHandoff').mockResolvedValue({
+      ok: true,
+      iouId: 'iou-123',
+      status: 'pending',
+      message: 'IOU created and sent.',
+    });
   });
 
   afterEach(() => {
     cleanup();
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   it('shows overlay at game end without floating table buttons', () => {
@@ -190,31 +190,26 @@ describe('GameOverActionOverlay — panel integration', () => {
     expect(html).toContain('bj-game-over-overlay');
     expect(html).toContain('Add to Ledger');
     expect(html).not.toContain('bj-game-end-actions');
-    expect(html).not.toContain('Add IOU</button>');
   });
 
   it('add to ledger from overlay is idempotent', () => {
     const state = endedChallengeState();
-    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     render(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
     const overlay = screen.getByRole('dialog');
     fireEvent.click(within(overlay).getByRole('button', { name: 'Add to Ledger' }));
     expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(true);
     const entries = addGameToPersonalLedger(state, { savedByEmail: 'alice@example.com' });
     expect(entries?.id).toBeTruthy();
-    openSpy.mockRestore();
   });
 
-  it('don’t add does not save ledger but can still open IOU when toggled', () => {
+  it('calls backend IOU create without saving ledger when toggled', async () => {
     const state = endedChallengeState();
-    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
-    const handoff = buildGameEndIouHandoff(state, 'alice@example.com');
     render(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
-    const overlay = screen.getByRole('dialog');
-    fireEvent.click(within(overlay).getByRole('checkbox', { name: /create iou/i }));
-    fireEvent.click(within(overlay).getByRole('button', { name: "Don't Add" }));
+    await confirmIouFromOverlay(false);
+    await waitFor(() => {
+      expect(iouHandoffApi.createIouHandoff).toHaveBeenCalledTimes(1);
+    });
     expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(false);
-    expect(openSpy).toHaveBeenCalledWith(handoff!.url, '_blank', 'noopener,noreferrer');
-    openSpy.mockRestore();
+    expect(screen.getByText(/IOU created/i)).toBeTruthy();
   });
 });

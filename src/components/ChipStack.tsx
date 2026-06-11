@@ -156,7 +156,7 @@ export function ChipButton({ value, onClick, disabled, draggable = false, onPoin
   return (
     <button
       type="button"
-      className={`chip-token chip-token--${value} chip-token--btn`}
+      className={`chip-token chip-token--${value} chip-token--btn chip-token--plaque`}
       onClick={onClick}
       disabled={disabled}
       draggable={draggable && !disabled}

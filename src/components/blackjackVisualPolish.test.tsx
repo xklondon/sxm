@@ -37,9 +37,9 @@ describe('Value & Chips bottom row', () => {
     expect(html).toContain('bj-value-chips__stash--reserved');
   });
 
-  it('uses larger chip button hit targets in the combined row', () => {
-    expect(CHIP_CSS).toMatch(/\.bj-value-chips \.chip-token--btn[\s\S]*min-width:\s*2\.35rem/);
-    expect(CHIP_CSS).toMatch(/\.bj-value-chips \.chip-token--btn[\s\S]*min-height:\s*2\.35rem/);
+  it('uses horizontal plaque chip targets in the combined row', () => {
+    expect(CHIP_CSS).toMatch(/\.chip-token--plaque[\s\S]*--chip-plaque-width:\s*5\.5rem/);
+    expect(CHIP_CSS).toMatch(/\.chip-token--plaque[\s\S]*--chip-plaque-height:\s*2\.25rem/);
   });
 
   it('centers available balance and chips as one horizontal unit', () => {

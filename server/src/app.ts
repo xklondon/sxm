@@ -29,6 +29,8 @@ import { createRuntimeDebugRouter } from './debug/runtimeRoutes.js';
 import { createApiErrorHandler } from './middleware/apiErrorHandler.js';
 import { verifySessionToken } from './auth/tokens.js';
 import { readSessionToken } from './auth/middleware.js';
+import { IouHandoffService } from './iouHandoff/service.js';
+import { createIouHandoffRouter } from './iouHandoff/routes.js';
 
 export interface CreateAppOptions {
   store?: Store;
@@ -43,6 +45,12 @@ export function createApp(options: CreateAppOptions = {}) {
   const people = new PeopleService(store);
   const auth = new AuthService(store, people);
   const tables = new TableService(store, people);
+  const iouHandoff = new IouHandoffService({
+    enabled: config.iouHandoff.enabled,
+    source: config.iouHandoff.source,
+    secret: config.iouHandoff.secret,
+    createUrl: config.iouHandoff.createUrl,
+  });
 
   const app = express();
   if (config.isProduction) {
@@ -106,6 +114,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use('/api/auth', createAuthRouter(auth, people));
   app.use('/api/people', createPeopleRouter(people, auth));
   app.use('/api/tables', createTableRouter(tables, io));
+  app.use('/api/iou-handoff', createIouHandoffRouter(iouHandoff, tables));
 
   if (!config.isProduction) {
     app.use('/api/dev', createDevRouter());

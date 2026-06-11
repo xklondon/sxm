@@ -10,7 +10,8 @@ describe('game end UI wiring', () => {
   it('routes game-end actions through GameOverActionOverlay instead of table buttons', () => {
     expect(PANEL_SRC).toContain('GameOverActionOverlay');
     expect(PANEL_SRC).not.toContain('bj-game-end-actions');
-    expect(PANEL_SRC).toContain('buildGameEndIouHandoff');
+    expect(PANEL_SRC).toContain('createIouHandoff');
+    expect(PANEL_SRC).toContain('buildIouHandoffCreateRequest');
     expect(OVERLAY_SRC).toContain('bj-game-over-overlay');
     expect(OVERLAY_SRC).toContain('Add to Ledger');
     expect(OVERLAY_SRC).toContain("Don&apos;t Add");

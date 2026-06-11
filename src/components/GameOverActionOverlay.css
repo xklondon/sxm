@@ -64,3 +64,29 @@
 .bj-game-over__actions .ds-btn {
   width: 100%;
 }
+
+.bj-game-over__feedback {
+  margin: 0 0 0.65rem;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.bj-game-over__feedback--success {
+  color: rgb(74 222 128);
+}
+
+.bj-game-over__feedback--info {
+  color: var(--ds-color-gold);
+}
+
+.bj-game-over__feedback--error {
+  color: var(--ds-color-danger, #f87171);
+}
+
+.bj-game-over__open-link {
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 0.55rem;
+  text-decoration: none;
+}

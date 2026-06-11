@@ -201,7 +201,7 @@ export function Magic8Ball({
           <p className="magic8__answer-in-window">{answer}</p>
         ) : (
           <span className="magic8__idle" aria-hidden={isShaking}>
-            {variant === 'table' ? '8' : '🎱'}
+            8
           </span>
         )}
       </span>

@@ -101,7 +101,13 @@ import {
   canAddGameToPersonalLedger,
   hasPersonalLedgerEntryForTable,
 } from '../engine/scoreLedger/scoreLedger';
-import { buildGameEndIouHandoff, canOfferGameEndIou } from '../engine/scoreLedger/gameEndIou';
+import {
+  buildIouHandoffCreateRequest,
+  canOfferGameEndIou,
+} from '../engine/scoreLedger/gameEndIou';
+import { createIouHandoff } from '../api/iouHandoff';
+import { iouHandoffStorageKey } from '../lib/iouHandoffPayload';
+import type { GameOverIouFeedback } from './GameOverActionOverlay';
 import { buildRoundResultSummary } from '../engine/blackjack';
 import { buildRoundSummaryOverlayModel } from '../engine/blackjack/roundSummaryOverlay';
 import { buildBlackjackCommandText } from './tableCommandDisplay';
@@ -248,6 +254,8 @@ export function BlackjackPanel({
   const [personalLedgerAdded, setPersonalLedgerAdded] = useState(false);
   const [gameOverOverlayDismissed, setGameOverOverlayDismissed] = useState(false);
   const [gameOverOverlayConfirmed, setGameOverOverlayConfirmed] = useState(false);
+  const [iouPending, setIouPending] = useState(false);
+  const [iouFeedback, setIouFeedback] = useState<GameOverIouFeedback | null>(null);
   const [assignChipsOpen, setAssignChipsOpen] = useState(false);
   const [minBetOpen, setMinBetOpen] = useState(false);
   const [tableAidTip, setTableAidTip] = useState<string | null>(null);
@@ -455,7 +463,6 @@ export function BlackjackPanel({
   const bankerReady = isBankerReady(gameState);
   const canSaveToLedger = canAddGameToPersonalLedger(gameState);
   const viewerEmail = viewerAuth?.email?.trim() || profile.email.trim();
-  const iouHandoff = gameEnded ? buildGameEndIouHandoff(gameState, viewerEmail) : null;
   const canAddIou = canOfferGameEndIou(gameState, viewerEmail);
   // Consolidated end-of-round summary, shown once (in the dealer block, above
   // the Next Round button). Per-box result chips are intentionally not repeated.
@@ -507,6 +514,8 @@ export function BlackjackPanel({
       setGameOverOverlayDismissed(false);
       setGameOverOverlayConfirmed(false);
       setPersonalLedgerAdded(false);
+      setIouFeedback(null);
+      setIouPending(false);
     }
   }, [gameEnded, gameState.session.id]);
 
@@ -545,25 +554,66 @@ export function BlackjackPanel({
     }
   }
 
-  function openIouHandoff() {
-    if (!iouHandoff) {
-      return;
+  async function submitIouHandoff() {
+    setError(null);
+    setIouPending(true);
+    setIouFeedback(null);
+    try {
+      const request = buildIouHandoffCreateRequest(gameStateRef.current);
+      if (!request) {
+        throw new Error('Missing debtor or creditor email for this wager.');
+      }
+
+      const storageKey = iouHandoffStorageKey(request.tableId, request.sessionId);
+      const prior = typeof localStorage !== 'undefined' ? localStorage.getItem(storageKey) : null;
+      if (prior) {
+        setIouFeedback({
+          tone: 'info',
+          message: 'This IOU handoff was already submitted.',
+        });
+        return;
+      }
+
+      const result = await createIouHandoff(request);
+      if (!result.ok) {
+        throw new Error(result.error);
+      }
+
+      if (typeof localStorage !== 'undefined' && result.iouId) {
+        localStorage.setItem(storageKey, result.iouId);
+      }
+
+      setIouFeedback({
+        tone: result.alreadySubmitted ? 'info' : 'success',
+        message: result.alreadySubmitted
+          ? 'This IOU handoff was already submitted.'
+          : 'IOU created. The counterparty can accept or decline it in IOU Wallet.',
+        openUrl: result.openUrl,
+      });
+    } catch (err) {
+      setIouFeedback({
+        tone: 'error',
+        message: err instanceof Error ? err.message : 'Could not create IOU.',
+      });
+    } finally {
+      setIouPending(false);
     }
-    window.open(iouHandoff.url, '_blank', 'noopener,noreferrer');
   }
 
-  function handleGameOverConfirm(options: { saveLedger: boolean; createIou: boolean }) {
+  async function handleGameOverConfirm(options: { saveLedger: boolean; createIou: boolean }) {
     if (options.saveLedger) {
       handleAddToPersonalLedger();
     }
     if (options.createIou) {
-      openIouHandoff();
+      await submitIouHandoff();
+      return;
     }
     setGameOverOverlayConfirmed(true);
   }
 
   function handleGameOverDismiss() {
     setGameOverOverlayDismissed(true);
+    setIouFeedback(null);
   }
 
   function run(
@@ -1985,6 +2035,8 @@ export function BlackjackPanel({
           canSaveToLedger={canSaveToLedger}
           ledgerAlreadyAdded={personalLedgerAdded}
           canCreateIou={canAddIou}
+          iouPending={iouPending}
+          iouFeedback={iouFeedback}
           iouDisabledReason={
             canAddIou ? undefined : 'Add a counterparty email to create an IOU handoff.'
           }

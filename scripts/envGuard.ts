@@ -10,6 +10,7 @@ export const PROTECTED_ENV_KEYS = [
   'SESSION_SECRET',
   'SMTP_USER',
   'RESEND_API_KEY',
+  'IOU_HANDOFF_SECRET',
 ] as const;
 
 export const RECOMMENDED_ENV_KEYS = [
