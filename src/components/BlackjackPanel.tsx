@@ -380,6 +380,13 @@ export function BlackjackPanel({
     if (bettingOpen && local.hasUserSelected && local.target) {
       if (!next.target) {
         next = { ...local, hasUserSelected: true };
+      } else {
+        next = affirmChipTargetAfterPlacement(
+          { ...local, hasUserSelected: true },
+          gameState,
+          local.target,
+          online,
+        );
       }
     } else if (next.hasUserSelected && next.target) {
       next = affirmChipTargetAfterPlacement(next, gameState, next.target, online);

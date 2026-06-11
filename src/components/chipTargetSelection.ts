@@ -24,12 +24,15 @@ export function isBoxChipTargetOnTable(
   online: boolean,
 ): boolean {
   if (online) {
-    if (state.tableMeta.boxSlots.some((s) => s.playerId === boxId)) {
+    const occupiedSlot = state.tableMeta.boxSlots.find((s) => s.playerId === boxId);
+    if (occupiedSlot) {
       return true;
     }
     const slotNum = state.session.boxSlotNumbers?.[boxId];
     if (slotNum != null) {
-      return state.tableMeta.boxSlots.some((s) => s.slotNumber === slotNum);
+      const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNum);
+      // Slot row mapping alone is not enough — occupant must match (avoids stale optimistic ids).
+      return row?.playerId === boxId;
     }
     return false;
   }
@@ -74,6 +77,9 @@ export function resolveLocalChipTrayTarget(
       const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNum);
       if (row?.playerId) {
         return { kind: 'box', boxId: row.playerId };
+      }
+      if (row) {
+        return { kind: 'slot', slotNumber: slotNum };
       }
     }
   }

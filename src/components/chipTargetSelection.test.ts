@@ -112,6 +112,43 @@ describe('chipTargetSelection', () => {
     expect(resolveViewerAssignedBoxPlayerId(state, 'unknown')).toBeNull();
   });
 
+  it('online stale boxId on empty slot falls back to slotNumber target', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+    const staleBoxId = '00000000-0000-4000-8000-000000000003';
+    state = {
+      ...state,
+      players: {
+        ...state.players,
+        [staleBoxId]: {
+          id: staleBoxId,
+          displayName: 'Box 3',
+          controllerName: 'Alice',
+          role: 'box' as const,
+          bankrollOwnerId: personId,
+          playerType: 'real' as const,
+          startingBalance: 0,
+          currentBet: 0,
+          cardIds: [],
+          status: 'active' as const,
+        },
+      },
+      session: {
+        ...state.session,
+        boxSlotNumbers: { ...state.session.boxSlotNumbers, [staleBoxId]: 3 },
+      },
+    };
+    expect(isBoxChipTargetOnTable(state, staleBoxId, true)).toBe(false);
+    expect(
+      resolveLocalChipTrayTarget(state, {
+        userPicked: true,
+        explicit: { kind: 'box', boxId: staleBoxId },
+        online: true,
+      }),
+    ).toEqual({ kind: 'slot', slotNumber: 3 });
+  });
+
   it('online box target survives slot mapping refresh', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 5);

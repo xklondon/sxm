@@ -17,7 +17,7 @@ import {
 
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 
-function simulateTwoTrayBets(slotNumber: 1 | 2 | 3, amounts: [StakeChipValue, StakeChipValue]) {
+function simulateTwoTrayBets(slotNumber: 1 | 2 | 3 | 4, amounts: [StakeChipValue, StakeChipValue]) {
   let state = tableAfterStartPlaying(500);
   state = claimBoxSlot(state, 1);
   state = claimBoxSlot(state, slotNumber);
@@ -53,6 +53,41 @@ function simulateTwoTrayBets(slotNumber: 1 | 2 | 3, amounts: [StakeChipValue, St
 }
 
 describe('repeat chip stacking — canonical target resolution', () => {
+  it('select box 4, tap 5 twice → both bets on box 4, no null target', () => {
+    const { state, targetBox } = simulateTwoTrayBets(4, [5, 5]);
+    expect(getStakeForBox(state, targetBox)).toBe(10);
+  });
+
+  it('switching selected box changes tray target', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    state = claimBoxSlot(state, 2);
+    state = claimBoxSlot(state, 3);
+    const box2 = boxPlayerId(state, 2)!;
+    const box3 = boxPlayerId(state, 3)!;
+    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+    const visibleBoxCount = 4;
+
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box2 });
+    state = addChipToBoxStake(state, box2, 5, personId);
+    local = affirmChipTargetAfterPlacement(local, state, { kind: 'box', boxId: box2 }, false);
+
+    local = selectLocalChipTarget(local, { kind: 'box', boxId: box3 });
+    expect(
+      resolveCurrentChipTarget({
+        local,
+        state,
+        online: false,
+        viewerPersonId: personId,
+        visibleBoxCount,
+      }),
+    ).toEqual({ kind: 'box', boxId: box3 });
+
+    state = addChipToBoxStake(state, box3, 5, personId);
+    expect(getStakeForBox(state, box2)).toBe(5);
+    expect(getStakeForBox(state, box3)).toBe(5);
+  });
+
   it('select box 2, tap 5 twice → both bets on box 2, no null target', () => {
     const { state, targetBox } = simulateTwoTrayBets(2, [5, 5]);
     expect(getStakeForBox(state, targetBox)).toBe(10);
