@@ -133,16 +133,15 @@ import {
   getActiveTurnBoxId,
   isPlayerTurnPhase,
 } from './blackjackViewPhase';
-import { getDisplayedHandValue, getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
+import { getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
 import {
   BET_BOX_PULSE,
-  BOX_CARD_VALUE,
-  BOX_CARD_VALUE_ABOVE,
-  BOX_CARD_VALUE_BUST,
   getBoxActivePulseClassName,
   getBoxCardVisualClasses,
   resolveBoxBorderVisualState,
 } from './cardViewBox';
+import { boxValueSpanClassName, resolvePrimaryHandValueLabel } from './boxHandValueDisplay';
+import { AceDecisionButtonRow } from './blackjackAceDecisionActions';
 import {
   buildViewerIdentityHints,
   resolveViewerPersonIdForTable,
@@ -1165,24 +1164,24 @@ export function BlackjackPanel({
     }
 
     return (
-      <div className={`${TABLE_UX.playerActions} bj-table-actions bj-table-actions--even-money`} aria-live="polite">
-        <div className="bj-table-actions__row">
-          <button
-            type="button"
-            className="ds-btn ds-btn--secondary bj-table-actions__btn"
-            onClick={() => run((s) => takeEvenMoneyOnState(s, offerKey), { type: 'takeEvenMoney', payload: { handKey: offerKey } })}
-          >
-            Take 1:1
-          </button>
-          <button
-            type="button"
-            className="ds-btn ds-btn--ghost bj-table-actions__btn"
-            onClick={() => run((s) => waitForBlackjackPayoutOnState(s, offerKey), { type: 'waitFor3to2', payload: { handKey: offerKey } })}
-          >
-            Wait for 3:2
-          </button>
-        </div>
-      </div>
+      <AceDecisionButtonRow
+        panelClassName="bj-table-actions--even-money"
+        ariaLabel="Even-money decision"
+        primaryLabel="Take 1:1"
+        secondaryLabel="Play vs Ace"
+        onPrimary={() =>
+          run((s) => takeEvenMoneyOnState(s, offerKey), {
+            type: 'takeEvenMoney',
+            payload: { handKey: offerKey },
+          })
+        }
+        onSecondary={() =>
+          run((s) => waitForBlackjackPayoutOnState(s, offerKey), {
+            type: 'waitFor3to2',
+            payload: { handKey: offerKey },
+          })
+        }
+      />
     );
   }
 
@@ -1271,40 +1270,31 @@ export function BlackjackPanel({
       return null;
     }
 
+    const primary = actions[0];
+    if (!primary) {
+      return null;
+    }
+    const { playerId, maxBet, canAfford, slotNumber } = primary;
     return (
-      <div className={`${TABLE_UX.playerActions} bj-table-actions bj-table-actions--insurance`} aria-live="polite">
-        {actions.map(({ playerId, maxBet, canAfford, slotNumber }) => (
-          <div key={playerId} className="bj-table-actions__ins-row">
-            <span className="bj-table-actions__ins-label">
-              Box {slotNumber ?? '?'} — up to {maxBet}c
-              {!canAfford && ' (not enough chips)'}
-            </span>
-            <button
-              type="button"
-              className={[
-                'ds-btn',
-                'ds-btn--secondary',
-                'bj-table-actions__btn',
-                'bj-table-actions__btn--sm',
-                canAfford ? 'bj-table-actions__btn--legal' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              disabled={!canAfford}
-              onClick={() => run((s) => takeInsuranceOnState(s, playerId), { type: 'takeInsurance', payload: { playerId } })}
-            >
-              Insure {maxBet}
-            </button>
-            <button
-              type="button"
-              className="ds-btn ds-btn--ghost bj-table-actions__btn bj-table-actions__btn--sm"
-              onClick={() => run((s) => declineInsuranceOnState(s, playerId), { type: 'declineInsurance', payload: { playerId } })}
-            >
-              No thanks
-            </button>
-          </div>
-        ))}
-      </div>
+      <AceDecisionButtonRow
+        panelClassName="bj-table-actions--insurance"
+        ariaLabel={`Box ${slotNumber ?? '?'} insurance decision`}
+        primaryLabel={`Insure ${maxBet}`}
+        secondaryLabel="Play vs Ace"
+        primaryDisabled={!canAfford}
+        onPrimary={() =>
+          run((s) => takeInsuranceOnState(s, playerId), {
+            type: 'takeInsurance',
+            payload: { playerId },
+          })
+        }
+        onSecondary={() =>
+          run((s) => declineInsuranceOnState(s, playerId), {
+            type: 'declineInsurance',
+            payload: { playerId },
+          })
+        }
+      />
     );
   }
 
@@ -1341,6 +1331,15 @@ export function BlackjackPanel({
         handKeys = [primaryKey];
       }
     }
+    const primaryHandKey = handKeys[0];
+    const primaryHand = primaryHandKey ? visualRound?.playerHands[primaryHandKey] : null;
+    const isBusted = primaryHand?.actionStatus === 'busted';
+    const valueLabel = resolvePrimaryHandValueLabel(
+      visualDeck,
+      visualRound,
+      primaryHandKey,
+      primaryHand,
+    );
     const rotation =
       deviceView === 'mobile'
         ? 0
@@ -1359,6 +1358,15 @@ export function BlackjackPanel({
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
         data-box-slot={slotNumber}
       >
+        <span
+          className={[
+            boxValueSpanClassName(Boolean(valueLabel), isBusted),
+            TABLE_UX.cardColumnValueAbove,
+          ].join(' ')}
+          aria-hidden={valueLabel ? undefined : 'true'}
+        >
+          {valueLabel || '\u00a0'}
+        </span>
         {isSplit ? (
           <div className="bj-arc__split-hands">
             {handKeys.map((handKey) => {
@@ -1420,19 +1428,17 @@ export function BlackjackPanel({
       }
     }
     const primaryHandKey = handKeys[0];
-    const displayValue = primaryHandKey
-      ? getDisplayedHandValue(visualDeck, visualRound, primaryHandKey)
-      : null;
     const primaryHand = primaryHandKey ? visualRound?.playerHands[primaryHandKey] : null;
     const visibleCardIds = primaryHandKey
       ? getVisibleHandCardIds(visualRound, primaryHandKey)
       : [];
     const isBusted = primaryHand?.actionStatus === 'busted';
-    const valueLabel = isBusted
-      ? 'BUST'
-      : displayValue !== null && displayValue > 0
-        ? String(displayValue)
-        : '';
+    const valueLabel = resolvePrimaryHandValueLabel(
+      visualDeck,
+      visualRound,
+      primaryHandKey,
+      primaryHand,
+    );
     const stakeChips = getStakeChipsForBox(gameState, boxId);
     const wager = inBetting ? openStake : (primaryHand?.currentBet ?? openStake);
     const showBettingChips = inBetting && openStake > 0 && stakeChips.length > 0;
@@ -1486,24 +1492,12 @@ export function BlackjackPanel({
           }
           onDrop={inBetting ? (e) => handleBetZoneDrop(boxId, slotNumber, e) : undefined}
         />
-        {valueLabel ? (
-          <span
-            className={[
-              BOX_CARD_VALUE,
-              BOX_CARD_VALUE_ABOVE,
-              isBusted ? BOX_CARD_VALUE_BUST : '',
-            ].filter(Boolean).join(' ')}
-          >
-            {valueLabel}
-          </span>
-        ) : (
-          <span
-            className={`${BOX_CARD_VALUE} ${BOX_CARD_VALUE_ABOVE} ${BOX_CARD_VALUE}--placeholder`}
-            aria-hidden="true"
-          >
-            &nbsp;
-          </span>
-        )}
+        <span
+          className={boxValueSpanClassName(Boolean(valueLabel), isBusted)}
+          aria-hidden={valueLabel ? undefined : 'true'}
+        >
+          {valueLabel || '\u00a0'}
+        </span>
         <div
           {...sxmSectionProps(
             SXM_LAYOUT.playerBox,

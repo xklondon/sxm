@@ -68,8 +68,23 @@
 
 .bj-round-summary__bank-flavor {
   margin: 0.06rem 0 0;
-  opacity: 0.82;
-  font-size: 0.78rem;
+  opacity: 0.92;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.bj-round-summary__bank-detail {
+  margin: 0.04rem 0 0;
+  opacity: 0.72;
+  font-size: 0.74rem;
+}
+
+.bj-round-summary__chips--win {
+  color: rgb(110 231 183);
+}
+
+.bj-round-summary__chips--lose {
+  color: rgb(248 113 113);
 }
 
 .bj-round-summary__list {

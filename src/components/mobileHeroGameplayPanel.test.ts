@@ -15,7 +15,7 @@ describe('mobile Card View hero gameplay panel', () => {
 
   it('renders gameplay backdrop only on mobile Card View', () => {
     expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell::after[\s\S]*background:\s*linear-gradient/,
+      /\.bj-view-card-mobile \.bj-table-layout-shell::after[\s\S]*background:\s*var\(--bj-table-felt-bg\)/,
     );
     expect(CARD_VIEW_CSS).not.toMatch(/\.bj-view-full-mobile \.bj-table-layout-shell::after/);
     expect(CARD_VIEW_CSS).not.toMatch(/\.bj-view-card-desktop \.bj-table-layout-shell::after/);
@@ -56,7 +56,7 @@ describe('mobile Card View hero gameplay panel', () => {
   it('uses translucent classic-casino panel styling so cloth shows through hero zone', () => {
     expect(CARD_VIEW_CSS).toMatch(/\.bj-view-card-mobile \.bj-table-layout-shell::after[\s\S]*border:/);
     expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-casino__felt\.bj-felt-skin--classic-casino \.bj-table-layout-shell::after[\s\S]*rgb\(8 28 22 \/ 0\.42\)/,
+      /\.bj-view-card-mobile \.bj-casino__felt\.bj-felt-skin--classic-casino \.bj-table-layout-shell::after[\s\S]*var\(--bj-table-felt-bg\)/,
     );
     expect(CARD_VIEW_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*background:\s*transparent/,

@@ -49,10 +49,10 @@ function settledRoundState() {
 }
 
 describe('round summary overlay', () => {
-  it('defaults round summary overlay setting to on', () => {
+  it('defaults round summary overlay setting to off', () => {
     const state = createNewBlackjackTable();
-    expect(resolveShowRoundSummaryOverlay(state.tableMeta)).toBe(true);
-    expect(state.tableMeta.showRoundSummaryOverlay).toBe(true);
+    expect(resolveShowRoundSummaryOverlay(state.tableMeta)).toBe(false);
+    expect(state.tableMeta.showRoundSummaryOverlay).toBe(false);
   });
 
   it('builds per-box overlay entries after settlement', () => {
@@ -120,7 +120,7 @@ describe('round summary overlay', () => {
     );
     expect(html).toContain(String(entry.handValue));
     expect(html).toContain(entry.outcomeLabel);
-    expect(html).toContain(`${entry.netChips > 0 ? '+' : ''}${entry.netChips}c`);
+    expect(html).toContain(entry.netChips > 0 ? `Won ${entry.netChips}c` : `Lost ${Math.abs(entry.netChips)}c`);
   });
 
   it('supports disabling future overlays from the overlay checkbox', () => {

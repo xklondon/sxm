@@ -15,11 +15,26 @@ interface RoundSummaryOverlayProps {
   pending?: boolean;
 }
 
-function formatNetChips(net: number): string {
+function formatOutcomeChips(net: number): string {
+  const amount = Math.abs(net);
   if (net > 0) {
-    return `+${net}`;
+    return `Won ${amount}c`;
   }
-  return String(net);
+  if (net < 0) {
+    return `Lost ${amount}c`;
+  }
+  return 'Push 0c';
+}
+
+function formatBankNetSummary(entries: RoundSummaryOverlayModel['entries']): string {
+  const tableNet = entries.reduce((sum, entry) => sum + entry.netChips, 0);
+  if (tableNet > 0) {
+    return `Players net +${tableNet}c this round`;
+  }
+  if (tableNet < 0) {
+    return `Bank net +${Math.abs(tableNet)}c this round`;
+  }
+  return 'Table net even';
 }
 
 function outcomeTone(net: number): 'win' | 'lose' | 'push' {
@@ -112,7 +127,8 @@ export function RoundSummaryOverlay({
               Bank {model.dealerTotal}
               <SummaryCardStrip deck={deck} cardIds={model.dealerCardIds} />
             </p>
-            <p className="bj-round-summary__bank-flavor">{model.bankFlavorLine}</p>
+            <p className="bj-round-summary__bank-flavor">{formatBankNetSummary(model.entries)}</p>
+            <p className="bj-round-summary__bank-detail">{model.bankFlavorLine}</p>
           </div>
         </div>
 
@@ -147,7 +163,17 @@ export function RoundSummaryOverlay({
                     <span className="bj-round-summary__hand-value">{entry.handValue}</span>
                     <SummaryCardStrip deck={deck} cardIds={entry.cardIds} />
                   </span>
-                  <span className="bj-round-summary__chips">{formatNetChips(entry.netChips)}c</span>
+                  <span
+                    className={[
+                      'bj-round-summary__chips',
+                      entry.netChips > 0 ? 'bj-round-summary__chips--win' : '',
+                      entry.netChips < 0 ? 'bj-round-summary__chips--lose' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
+                    {formatOutcomeChips(entry.netChips)}
+                  </span>
                 </div>
                 <p className="bj-round-summary__flavor">
                   <span aria-hidden="true">{entry.flavorEmoji}</span> {entry.flavorLine}

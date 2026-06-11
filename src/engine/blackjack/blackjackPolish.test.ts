@@ -55,11 +55,13 @@ describe('blackjack polish — visible card/value sync', () => {
     expect(getDisplayedHandValue(revealed.deck, revealed.blackjack, handKey)).toBe(13);
   });
 
-  it('Card View and Panel use getDisplayedHandValue', () => {
+  it('Card View and Panel use shared displayed hand value helpers', () => {
     const cardView = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
     const panel = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    const boxValue = readFileSync(join(process.cwd(), 'src/components/boxHandValueDisplay.ts'), 'utf8');
     expect(cardView).toContain('getDisplayedHandValue');
-    expect(panel).toContain('getDisplayedHandValue');
+    expect(boxValue).toContain('getDisplayedHandValue');
+    expect(panel).toContain('resolvePrimaryHandValueLabel');
   });
 });
 

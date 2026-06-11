@@ -137,9 +137,6 @@ export function isInsuranceBoxDecisionResolved(
   if (!getCallerPersonIdForBox(state, boxId)) {
     return true;
   }
-  if (!canAffordInsuranceForBox(state, round, boxId)) {
-    return true;
-  }
   return false;
 }
 

@@ -1777,7 +1777,7 @@
 
   50% {
     box-shadow:
-      inset 0 0 0 2px var(--bj-seat-active-border),
+      inset 0 0 0 1px var(--bj-seat-active-border),
       0 0 14px var(--ds-color-gold-glow);
   }
 }
@@ -1786,8 +1786,6 @@
 .bj-arc__slot--turn .bj-arc__play-zone,
 .bj-phone-view__mini-hand--active,
 .bj-phone-view__mini-hand.bj-box--turn {
-  border-color: var(--bj-seat-active-border);
-  background: var(--bj-seat-active-bg);
   animation: bj-turn-pulse 1.6s ease-in-out infinite;
   transform: none;
   filter: none;
@@ -1808,6 +1806,33 @@
 }
 
 /* Player action panels — Full Table + Card View share button tokens; panel chrome varies by view. */
+.bj-table-actions__row--ace {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.bj-table-actions__btn--ace {
+  border: 1px solid rgb(251 191 36 / 0.72) !important;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 auto;
+  max-width: 9.5rem;
+  padding-inline: 0.45rem;
+  line-height: 1.15;
+}
+
+.bj-arc--cards .bj-arc__slot--card-column .bj-phone-view__box-value--card-column {
+  display: block;
+  width: 100%;
+  min-height: var(--bj-box-value-band-height);
+  text-align: center;
+  margin: 0 0 0.04rem;
+}
+
 .bj-table-actions,
 .bj-phone-view__phase-actions--insurance,
 .bj-phone-view__phase-actions--even-money {

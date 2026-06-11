@@ -26,8 +26,8 @@
     --bj-card-row-actions: var(--bj-mobile-zone-actions-height, var(--bj-zone-actions-height));
     --bj-card-row-boxes: var(--bj-mobile-zone-boxes-height, var(--bj-zone-boxes-height));
     --bj-card-row-tray: var(--bj-mobile-zone-tray-height, var(--bj-zone-tray-height));
-    --bj-card-hero-card-width: clamp(5.25rem, 38vw, 9.5rem);
-    --bj-card-hero-card-max-height: clamp(7.25rem, 52vw, 13.5rem);
+    --bj-card-hero-card-width: clamp(4.5rem, 30vw, 7.5rem);
+    --bj-card-hero-card-max-height: clamp(6.25rem, 42vw, 10.5rem);
   }
 
   .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,
@@ -52,11 +52,26 @@
   }
 
   .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards {
-    overflow: visible;
+    overflow: hidden;
     align-items: center;
     justify-content: center;
     flex: 0 1 auto;
     max-height: 100%;
+    max-width: 100%;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot {
+    overflow: hidden;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.bj-phone-card--hero:not(:first-child),
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.ds-card--hero:not(:first-child) {
+    margin-left: -28%;
   }
 
   .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.bj-phone-card--hero,

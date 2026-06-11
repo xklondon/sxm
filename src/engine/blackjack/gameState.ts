@@ -55,6 +55,7 @@ import { clearTableUiEphemeral } from '../session/inviteJoin';
 import { settleBustHandOnState } from './bustSettlement';
 import { shuffleGameDeck } from '../deck';
 import { resolveNaturalsAfterInitialDeal, resolvePendingNaturalsAfterDealerPeek } from './naturalBlackjack';
+import { applyShortStackMinBetTopUpOnState } from './shortStackTopUp';
 import { getCallerPersonIdForBox } from '../session/playerAssignment';
 import { autoStandThreshold, getPlayFlowForPerson } from './playFlow';
 import { cardsFromIds } from './hand';
@@ -640,19 +641,20 @@ export function startNextRoundOnState(state: GameState): GameState {
     wasSettled: settled.blackjack?.isSettled ?? false,
   });
   const cleared = clearTableUiEphemeral(settled);
-  const reset = resetBlackjackRound(cleared.session, cleared.players, cleared.deck);
+  const topped = applyShortStackMinBetTopUpOnState(cleared);
+  const reset = resetBlackjackRound(topped.session, topped.players, topped.deck);
   return {
-    ...cleared,
+    ...topped,
     session: reset.session,
     players: reset.players,
     deck: reset.deck,
     blackjack: reset.round,
     tableMeta: {
-      ...cleared.tableMeta,
+      ...topped.tableMeta,
       boxStakes: {},
       bettingLocked: false,
       awaitingNextRound: false,
-      boxSlots: cleared.tableMeta.boxSlots.map((slot) =>
+      boxSlots: topped.tableMeta.boxSlots.map((slot) =>
         slot.nativeAssignedPersonId ? slot : { ...slot, callerPersonId: null },
       ),
     },

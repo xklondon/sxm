@@ -80,7 +80,7 @@ describe('mobile layout fixes — Card View classic cloth', () => {
 
   it('uses translucent hero panel when classic casino cloth is active', () => {
     expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-casino__felt\.bj-felt-skin--classic-casino \.bj-table-layout-shell::after[\s\S]*rgb\(8 28 22 \/ 0\.42\)/,
+      /\.bj-view-card-mobile \.bj-casino__felt\.bj-felt-skin--classic-casino \.bj-table-layout-shell::after[\s\S]*var\(--bj-table-felt-bg\)/,
     );
   });
 });

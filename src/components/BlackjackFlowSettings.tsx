@@ -325,7 +325,7 @@ export function BlackjackFlowSettingsMenu({
               <span className="bj-flow-settings__label">Round summary overlay</span>
               <input
                 type="checkbox"
-                checked={gameState.tableMeta.showRoundSummaryOverlay !== false}
+                checked={gameState.tableMeta.showRoundSummaryOverlay === true}
                 onChange={(e) =>
                   onGameStateChange({
                     ...gameState,

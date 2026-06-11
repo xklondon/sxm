@@ -67,11 +67,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--bj-table-slot-add-size);
-  min-width: var(--bj-table-slot-add-size);
-  max-width: var(--bj-table-slot-add-size);
-  height: auto;
-  aspect-ratio: 1.05 / 1;
+  width: var(--bj-full-table-box-width);
+  min-width: var(--bj-full-table-box-width);
+  max-width: var(--bj-full-table-box-width);
+  min-height: calc(var(--bj-full-table-box-height) + var(--bj-box-value-band-height));
+  height: calc(var(--bj-full-table-box-height) + var(--bj-box-value-band-height));
+  aspect-ratio: auto;
   margin: 0;
   padding: 0;
   font-size: 1.05rem;
@@ -79,14 +80,16 @@
   line-height: 1;
   border-radius: 0.35rem;
   border: 1px solid rgb(251 191 36 / 0.55);
-  background: rgb(0 0 0 / 0.32);
+  background: var(--bj-seat-bg);
   color: rgb(251 191 36 / 0.98);
   cursor: pointer;
   touch-action: manipulation;
   transform: none;
-  overflow: visible;
-  align-self: stretch;
+  overflow: hidden;
+  align-self: end;
   box-sizing: border-box;
+  box-shadow: none;
+  outline: none;
 }
 
 .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,

@@ -108,6 +108,7 @@ function finalizeAfterInitialDeal(
   const playerHandKeys = handKeysWithConfirmedBets(session, round);
   let nextRound: BlackjackRound = { ...round };
   delete nextRound.initialDealStepIndex;
+  nextRound = { ...nextRound, status: 'player-turns' };
 
   for (const handKey of playerHandKeys) {
     const hand = nextRound.playerHands[handKey];

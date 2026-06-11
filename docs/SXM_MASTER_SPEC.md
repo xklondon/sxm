@@ -398,6 +398,23 @@ Options: Hit, Stay, Double one card, Split.  (valid options only)
 - No sentimental/random phrasing.
 - Natural blackjack: `Box [n], Blackjack.` only for `actionStatus === 'blackjack'`.
 
+**Table View card-column values:** Each occupied box shows the same hand total above its card column (`bj-phone-view__box-value--card-column`) using shared `resolvePrimaryHandValueLabel` — no duplicate scoring logic.
+
+**No-jump box stability:** `+` add-box and every player box share identical outer dimensions (`--bj-full-table-box-width`, fixed value band + box height). Reserved internal zones: score/value, chip stack (`--bj-full-table-stake-min-height`), logo/label (composition). Active turn uses inset `box-shadow` pulse only — no border-width or layout-affecting highlight changes.
+
+**Insurance / even-money (dealer Ace):**
+
+- Insurance offered when dealer up-card is Ace, after full initial deal, before player decisions (`insuranceOfferPending`, phase `insurance`).
+- **Take 1:1** — even-money only for clean natural blackjack vs Ace.
+- **Play vs Ace** — decline even-money or insurance (replaces “Wait for 3:2” / “No thanks”).
+- Ace-decision buttons: thin yellow border (`bj-table-actions__btn--ace`), single-line labels, compact width — same in Full Table and Card View.
+
+**Summary screen:** Off by default (`showRoundSummaryOverlay: false`); opens only when enabled in settings. When shown: visual cards per box, outcome, **Won [n]c** / **Lost [n]c**, bank net summary.
+
+**Short-stack min-bet top-up:** At next betting round start, non-bankrupt players with `0 < chips < minBet` are topped up to min bet via ledger (`applyShortStackMinBetTopUpOnState`).
+
+**Shared felt/cloth:** Card View card area uses `--bj-table-felt-bg` (Table View source of truth) — no duplicate hardcoded Card View cloth gradients.
+
 ---
 
 ## 14. Desktop UX Rules

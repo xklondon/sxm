@@ -50,6 +50,8 @@ export {
   advanceBlackjackProtocol,
 } from './gameState';
 
+export { applyShortStackMinBetTopUpOnState } from './shortStackTopUp';
+
 export {
   canPlaceBlackjackBet,
   canDealInitialBlackjack,

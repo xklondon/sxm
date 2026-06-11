@@ -74,7 +74,7 @@ export function deserializeGameState(raw: string): GameState {
         parsed.blackjackSettings?.minBet ??
         5,
       awaitingNextRound: parsed.tableMeta.awaitingNextRound ?? false,
-      showRoundSummaryOverlay: parsed.tableMeta.showRoundSummaryOverlay ?? true,
+      showRoundSummaryOverlay: parsed.tableMeta.showRoundSummaryOverlay ?? false,
       tableFeltSkin: isTableFeltSkin(parsed.tableMeta?.tableFeltSkin)
         ? parsed.tableMeta.tableFeltSkin
         : DEFAULT_TABLE_FELT_SKIN,

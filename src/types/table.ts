@@ -163,7 +163,7 @@ export function createEmptyBoxSlots(): BoxSlotState[] {
 }
 
 export function resolveShowRoundSummaryOverlay(meta: Pick<TableMeta, 'showRoundSummaryOverlay'>): boolean {
-  return meta.showRoundSummaryOverlay !== false;
+  return meta.showRoundSummaryOverlay === true;
 }
 
 export function createDefaultTableMeta(): TableMeta {
@@ -194,7 +194,7 @@ export function createDefaultTableMeta(): TableMeta {
     startingChipsBank: 500,
     minimumBet: 5,
     awaitingNextRound: false,
-    showRoundSummaryOverlay: true,
+    showRoundSummaryOverlay: false,
     gameStatus: 'active',
     winnerId: null,
     endedAt: null,

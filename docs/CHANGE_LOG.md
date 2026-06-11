@@ -13,6 +13,19 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-10 — Blackjack UX/protocol fixes
+
+- **Card-column values:** Hand total above each Table View card column (shared `boxHandValueDisplay`).
+- **Box stability:** `+` add-box matches player box outer size; turn pulse box-shadow only; reserved stake/composition zones.
+- **Insurance:** Fix unfunded auto-skip; offer persists until explicit Play vs Ace; status set before insurance activation.
+- **Ace decisions:** Take 1:1 + Play vs Ace buttons with thin yellow border (`blackjackAceDecisionActions`).
+- **Card View mobile:** Smaller hero clamps; overlapping cards inside hero — no horizontal canvas stretch.
+- **Summary:** Default off; Won/Lost chip labels + visual cards when opened.
+- **Short-stack top-up:** Auto top-up to min bet at next round (`shortStackTopUp.ts`).
+- **Felt parity:** Card View uses `--bj-table-felt-bg`.
+
+---
+
 ## 2026-06-10 — Blackjack UX fixes
 
 - **Player box stability:** Fixed stake/composition reserved height in slot row — chips no longer reflow box dimensions.
