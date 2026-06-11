@@ -173,7 +173,8 @@ describe('entry lobby slide-outs', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
     expect(screen.getByRole('dialog', { name: 'Open New Table' })).toBeTruthy();
-    expect(screen.getByText('Game / protocol')).toBeTruthy();
+    expect(document.querySelector('.new-table-overlay')).toBeTruthy();
+    expect(screen.getByText('Game')).toBeTruthy();
     expect(createOnlineTableMock).not.toHaveBeenCalled();
   });
 
@@ -334,5 +335,6 @@ describe('entry lobby slide-outs', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
     expect(createOnlineTableMock).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: 'Open New Table' })).toBeTruthy();
+    expect(document.querySelector('.new-table-overlay')).toBeTruthy();
   });
 });

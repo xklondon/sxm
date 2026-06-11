@@ -54,7 +54,7 @@ describe('New Game flow', () => {
     expect(html).toContain('New Game');
     expect(html).not.toContain('Reset table');
     expect(html).toContain('Start new game');
-    expect(html).toContain('aria-label="New game setup"');
+    expect(html).toContain('table-stake-panel__title');
   });
 
   it('resetTable variant keeps Reset table title', () => {

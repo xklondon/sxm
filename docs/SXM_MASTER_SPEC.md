@@ -124,18 +124,24 @@ Active table `GameState` lives **in-memory per server process** even when Postgr
 
 ## 5. New Table Flow
 
-**Primary UX (online):** `EntryLobbyScreen` → slide-out → `TableStakePanel` mode `new`.
+**Primary UX (online):** `EntryLobbyScreen` → `NewTableOverlay` → `TableStakePanel` mode `new`.
 
-**Alternate paths:**
+**Overlay shell:** All “Start New Table” / “Open New Table” entry points use one shared component — `NewTableOverlay` (`position: fixed; inset: 0`). The overlay sits over the existing page/table and **never pushes or reflows** underlying content. Same JSX/render path for every entry point; desktop vs mobile is CSS-only (centered modal vs bottom sheet).
 
 | Path | Trigger | Shell |
 |------|---------|-------|
-| Lobby | “Open New Table” | `EntryLobbySlideOut` + `TableStakePanel` |
-| Offline start | `StartScreen` “New Game” | Felt overlay (`showStakeSetup: true`) |
-| In-table nav | Menu “Start New Table” | Felt overlay |
-| Online nav (not on table) | Menu “Start New Table” | `handleNewOnlineGame()` → bare table + setup overlay |
+| Lobby | “Open New Table” | `NewTableOverlay` + `TableStakePanel` (`embeddedInOverlay`) |
+| Offline start | `StartScreen` “New Game” | `NewTableOverlay` over table (`showStakeSetup: true`) |
+| In-table nav | Menu “Start New Table” | `NewTableOverlay` over table |
+| Online nav (not on table) | Menu “Start New Table” | `handleNewOnlineGame()` → bare table + `NewTableOverlay` |
+
+Join/Load lobby actions still use `EntryLobbySlideOut` (right drawer desktop, bottom sheet mobile).
 
 ### Staged flow (`TableStakePanel`, mode `new`)
+
+No numbered step headings (`1. Game`, etc.). Stage fieldsets use clean titles only: **Game**, **Mode**, **Setup** (or no title where obvious).
+
+**Compact selection buttons:** Yellow option controls (`table-stake-panel__select-btn`) — Cards, Dice, Continue, mode cards, Start Table — use compact height (~40px desktop, ~44px mobile), clear padding, no oversized pill/card feel, `white-space: nowrap`. Primary Continue/Start actions sit in a separated nav row (top border).
 
 **Cards — Blackjack (3 stages)**
 
@@ -421,8 +427,8 @@ Options: Hit, Stay, Double one card, Split.  (valid options only)
 
 - Desktop Full Table is the layout reference — Card View CSS must not affect it
 - Desktop Card View: ordered box row in betting; active hero in play
-- Entry lobby: `EntryLobbySlideOut` renders as right drawer (≥721px)
-- Table stake overlay: centered modal on felt (when not inside lobby drawer)
+- Entry lobby: Join/Load use `EntryLobbySlideOut` (right drawer ≥721px); **New Table uses `NewTableOverlay`** (fixed over page — does not push lobby content)
+- New Table overlay: `NewTableOverlay` centered modal desktop; bottom sheet mobile (`NewTableOverlay.css` + `mobile-modals.css`)
 - Debug attributes on table root: `data-view-mode`, `data-device-view`, `data-phase`
 
 ---
@@ -458,7 +464,7 @@ Options: Hit, Stay, Double one card, Split.  (valid options only)
 - `isBlackjackTable` → `BlackjackPanel`
 - `isZilchTable` → `ZilchPanel`
 - `isHoldemTable` → `HoldemPanel`
-- `TableStakePanel` overlay when `showStakeSetup || resetSetupOpen`
+- `TableStakePanel` in `NewTableOverlay` when `showStakeSetup || resetSetupOpen` (sibling of layout — not inside `.table-felt`)
 
 ---
 

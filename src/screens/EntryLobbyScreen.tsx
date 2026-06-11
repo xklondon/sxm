@@ -3,6 +3,7 @@ import './EntryLobbyScreen.css';
 import { ActiveTablesList } from '../components/ActiveTablesList';
 import { EntryLobbySlideOut } from '../components/EntryLobbySlideOut';
 import { LoadTableList, type LoadTableEntry } from '../components/LoadTableList';
+import { NewTableOverlay } from '../components/NewTableOverlay';
 import { TableStakePanel } from '../components/TableStakePanel';
 import { createNewBlackjackTable } from '../engine/session';
 import type { TableStakeSetupInput } from '../engine/session/tableSetup';
@@ -87,18 +88,20 @@ export function EntryLobbyScreen({
         )}
       </div>
 
-      <EntryLobbySlideOut
+      <NewTableOverlay
         open={slideOut === 'new'}
         title="Open New Table"
+        ariaLabel="Open New Table setup"
         onClose={closeSlideOut}
       >
         <TableStakePanel
           gameState={newTableSeed}
           mode="new"
+          embeddedInOverlay
           onConfirm={() => {}}
           onConfirmNewTable={handleConfirmNewTable}
         />
-      </EntryLobbySlideOut>
+      </NewTableOverlay>
 
       <EntryLobbySlideOut
         open={slideOut === 'join'}

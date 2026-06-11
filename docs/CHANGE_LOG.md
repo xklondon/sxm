@@ -13,6 +13,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-07 — New Table overlay cleanup
+
+- **Shared overlay:** `NewTableOverlay` — fixed layer over page/table for lobby “Open New Table” and menu “Start New Table”; never reflows underlying content.
+- **Same render path:** Lobby and in-table entry points embed `TableStakePanel` with `embeddedInOverlay`; desktop centered modal, mobile bottom sheet (CSS only).
+- **Staged UI:** Removed numbered step headings (`1. Game`, etc.); clean fieldset titles (Game, Mode).
+- **Compact selection buttons:** `table-stake-panel__select-btn` — smaller yellow Cards/Dice/Continue/mode/Start controls (~40–44px touch height); nav row separated from options.
+- **Docs:** `SXM_MASTER_SPEC.md` §5 and §14 updated.
+
+---
+
 ## 2026-06-10 — Blackjack UX/protocol fixes
 
 - **Card-column values:** Hand total above each Table View card column (shared `boxHandValueDisplay`).

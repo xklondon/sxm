@@ -61,7 +61,7 @@ describe('mobile modal CSS contract', () => {
     expect(mobileCss).toContain('.local-profile');
     expect(mobileCss).toContain('.invite-modal');
     expect(mobileCss).toContain('.banker-setup-overlay');
-    expect(mobileCss).toContain('.table-stake-overlay');
+    expect(mobileCss).toContain('.new-table-overlay');
   });
 
   it('desktop ds-modal-panel rule is unchanged (no mobile calc in design-system)', () => {

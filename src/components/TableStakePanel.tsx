@@ -30,6 +30,8 @@ import { createTableInvite } from '../engine/table/invites';
 
 import { DEFAULT_PRACTICE_TABLE_NAME } from '../types/tableFeltSkin';
 
+import './TableStakePanel.css';
+
 const STAKE_EXAMPLES = ['Dinner', '€20', 'Loser buys drinks', 'Just pride', 'car wash', 'favour'];
 
 type SetupCategoryTab = 'cards' | 'dice';
@@ -52,6 +54,8 @@ interface TableStakePanelProps {
   onFinished?: () => void;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
   onlineTableId?: string | null;
+  /** When true, panel title is rendered by NewTableOverlay shell. */
+  embeddedInOverlay?: boolean;
 }
 
 function initialBankerMode(state: GameState): TableBankerSetupMode {
@@ -80,6 +84,7 @@ export function TableStakePanel({
   onFinished,
   onlineDispatch,
   onlineTableId = null,
+  embeddedInOverlay = false,
 }: TableStakePanelProps) {
   const profile = loadProfile();
   const flow = gameState.blackjackFlowSettings;
@@ -387,30 +392,6 @@ export function TableStakePanel({
     setSetupStage('configure');
   }
 
-  function renderStageIndicator() {
-    if (!isStagedNew) {
-      return null;
-    }
-    const steps =
-      setupTab === 'dice'
-        ? ['Game', 'Setup']
-        : ['Game', 'Mode', 'Setup'];
-    const activeIndex =
-      setupStage === 'game' ? 0 : setupStage === 'blackjack-mode' ? 1 : setupTab === 'dice' ? 1 : 2;
-    return (
-      <ol className="table-stake-panel__steps" aria-label="Setup progress">
-        {steps.map((label, index) => (
-          <li
-            key={label}
-            className={index <= activeIndex ? 'table-stake-panel__step--active' : undefined}
-          >
-            {label}
-          </li>
-        ))}
-      </ol>
-    );
-  }
-
   function renderAdvancedSettings() {
     return (
       <div className="table-stake-panel__advanced">
@@ -566,25 +547,25 @@ export function TableStakePanel({
     return (
       <>
         <fieldset className="table-stake-panel__banker">
-          <legend>Game / protocol</legend>
+          <legend>Game</legend>
           <div className="table-stake-panel__tabs" role="tablist">
             <button
               type="button"
               role="tab"
               aria-selected={setupTab === 'cards'}
-              className={setupTab === 'cards' ? '' : 'secondary'}
+              className={`table-stake-panel__select-btn${setupTab === 'cards' ? '' : ' secondary'}`}
               onClick={() => setSetupTab('cards')}
             >
-              Cards — Blackjack
+              Cards
             </button>
             <button
               type="button"
               role="tab"
               aria-selected={setupTab === 'dice'}
-              className={setupTab === 'dice' ? '' : 'secondary'}
+              className={`table-stake-panel__select-btn${setupTab === 'dice' ? '' : ' secondary'}`}
               onClick={() => setSetupTab('dice')}
             >
-              Dice — Zilch
+              Dice
             </button>
           </div>
           {setupTab === 'cards' && (
@@ -608,7 +589,11 @@ export function TableStakePanel({
           )}
         </fieldset>
         <div className="table-stake-panel__nav">
-          <button type="button" className="table-stake-panel__confirm" onClick={handleGameStageNext}>
+          <button
+            type="button"
+            className="table-stake-panel__confirm table-stake-panel__select-btn"
+            onClick={handleGameStageNext}
+          >
             Continue
           </button>
         </div>
@@ -620,17 +605,25 @@ export function TableStakePanel({
     return (
       <>
         <fieldset className="table-stake-panel__banker">
-          <legend>Blackjack mode</legend>
+          <legend>Mode</legend>
           <p className="table-stake-panel__hint table-stake-panel__hint--mode">
             Practice is a quick solo game with the dealer as bank. Challenge adds a wager, invited
             players, and a player bank.
           </p>
           <div className="table-stake-panel__mode-grid">
-            <button type="button" className="table-stake-panel__mode-card" onClick={() => selectBlackjackMode('practice')}>
+            <button
+              type="button"
+              className="table-stake-panel__mode-card table-stake-panel__select-btn"
+              onClick={() => selectBlackjackMode('practice')}
+            >
               <strong>Practice</strong>
               <span>Dealer bank · no wager · start immediately</span>
             </button>
-            <button type="button" className="table-stake-panel__mode-card" onClick={() => selectBlackjackMode('challenge')}>
+            <button
+              type="button"
+              className="table-stake-panel__mode-card table-stake-panel__select-btn"
+              onClick={() => selectBlackjackMode('challenge')}
+            >
               <strong>Challenge</strong>
               <span>Wager · invite friends · choose bank</span>
             </button>
@@ -679,7 +672,7 @@ export function TableStakePanel({
           </button>
           <button
             type="button"
-            className="table-stake-panel__confirm"
+            className="table-stake-panel__confirm table-stake-panel__select-btn"
             onClick={() => void handleConfirm()}
             disabled={submitting}
           >
@@ -817,7 +810,7 @@ export function TableStakePanel({
           </button>
           <button
             type="button"
-            className="table-stake-panel__confirm"
+            className="table-stake-panel__confirm table-stake-panel__select-btn"
             onClick={() => void handleConfirm()}
             disabled={submitting}
           >
@@ -839,7 +832,7 @@ export function TableStakePanel({
             </button>
             <button
               type="button"
-              className="table-stake-panel__confirm"
+              className="table-stake-panel__confirm table-stake-panel__select-btn"
               onClick={() => void handleConfirm()}
               disabled={submitting}
             >
@@ -1020,13 +1013,11 @@ export function TableStakePanel({
 
   return (
     <div
-      className="table-stake-overlay"
-      role="dialog"
-      aria-label={
-        isNewGameSetup ? 'New game setup' : isReset ? 'Reset table setup' : 'New table setup'
-      }
+      className={`table-stake-panel${isStagedNew ? ' table-stake-panel--compact' : ''}${
+        embeddedInOverlay ? ' table-stake-panel--embedded' : ''
+      }`}
     >
-      <div className={`table-stake-panel${isStagedNew ? ' table-stake-panel--compact' : ''}`}>
+      {!embeddedInOverlay && (
         <header className="table-stake-panel__header">
           <h2 className="table-stake-panel__title">
             {isNewGameSetup ? 'New Game' : isReset ? 'Reset table' : 'New Table'}
@@ -1038,35 +1029,34 @@ export function TableStakePanel({
                 ? null
                 : 'Set up who plays, who banks, and how the table runs.'}
           </p>
-          {renderStageIndicator()}
         </header>
+      )}
 
-        {setupError && (
-          <p className="table-stake-panel__error" role="alert">
-            {setupError}
-          </p>
-        )}
+      {setupError && (
+        <p className="table-stake-panel__error" role="alert">
+          {setupError}
+        </p>
+      )}
 
-        {isReset ? (
-          <>
-            {renderResetPanel()}
-            <button
-              type="button"
-              className="table-stake-panel__confirm"
-              onClick={() => void handleConfirm()}
-              disabled={submitting}
-            >
-              {isReset ? 'Start new game' : 'Start playing'}
-            </button>
-          </>
-        ) : (
-          <>
-            {setupStage === 'game' && renderStagedGameStage()}
-            {setupStage === 'blackjack-mode' && renderStagedModeStage()}
-            {setupStage === 'configure' && renderStagedConfigureStage()}
-          </>
-        )}
-      </div>
+      {isReset ? (
+        <>
+          {renderResetPanel()}
+          <button
+            type="button"
+            className="table-stake-panel__confirm"
+            onClick={() => void handleConfirm()}
+            disabled={submitting}
+          >
+            {isReset ? 'Start new game' : 'Start playing'}
+          </button>
+        </>
+      ) : (
+        <>
+          {setupStage === 'game' && renderStagedGameStage()}
+          {setupStage === 'blackjack-mode' && renderStagedModeStage()}
+          {setupStage === 'configure' && renderStagedConfigureStage()}
+        </>
+      )}
     </div>
   );
 }

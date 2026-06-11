@@ -162,19 +162,3 @@
   padding-top: 0.55rem;
   border-top: 1px solid rgb(255 255 255 / 0.08);
 }
-
-.entry-lobby-slide-drawer__body .table-stake-overlay {
-  position: static;
-  inset: auto;
-  background: transparent;
-  padding: 0;
-}
-
-.entry-lobby-slide-drawer__body .table-stake-panel {
-  max-width: none;
-  max-height: none;
-  box-shadow: none;
-  border: none;
-  padding: 0;
-  background: transparent;
-}

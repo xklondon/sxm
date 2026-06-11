@@ -7,7 +7,7 @@
   .local-profile,
   .bj-flow-settings,
   .banker-setup-overlay,
-  .table-stake-overlay,
+  .new-table-overlay,
   .ds-modal-backdrop,
   .admin-panel-overlay,
   .custom-protocol-overlay,
@@ -24,7 +24,7 @@
   .local-profile__panel,
   .bj-flow-settings__panel,
   .banker-setup-panel,
-  .table-stake-panel,
+  .new-table-overlay__panel,
   .ds-modal-panel,
   .custom-protocol-modal {
     width: min(calc(100vw - 1rem), 22rem);

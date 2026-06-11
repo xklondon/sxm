@@ -20,13 +20,13 @@ describe('TableStakePanel staged new table layout', () => {
       />,
     );
     expect(html.match(/Pick a game/gi)?.length ?? 0).toBe(0);
-    expect(html).toContain('Game / protocol');
+    expect(html).toContain('<legend>Game</legend>');
   });
 
   it('applies compact panel styling on staged new flow', () => {
     expect(PANEL_CSS).toContain('.table-stake-panel--compact');
-    expect(PANEL_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__confirm[\s\S]*padding:/);
-    expect(PANEL_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__tabs button[\s\S]*border:/);
+    expect(PANEL_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__select-btn[\s\S]*padding:/);
+    expect(PANEL_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__tabs button[\s\S]*flex:/);
   });
 
   it('keeps required staged fields and continue action', () => {

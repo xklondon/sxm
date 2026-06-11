@@ -109,8 +109,8 @@ describe('blackjack layout UX improvements', () => {
       expect(STAKE_TSX).toContain('table-stake-panel--compact');
       expect(STAKE_CSS).toContain('.table-stake-panel--compact');
       expect(STAKE_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__sub[\s\S]*display:\s*none/);
-      expect(STAKE_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__confirm[\s\S]*font-size:\s*0\.82rem/);
-      expect(STAKE_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__confirm[\s\S]*background:\s*rgb\(8 22 16/);
+      expect(STAKE_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__select-btn[\s\S]*font-size:\s*0\.78rem/);
+      expect(STAKE_CSS).toMatch(/\.table-stake-panel--compact \.table-stake-panel__select-btn[\s\S]*background:\s*rgb\(8 22 16/);
     });
 
     it('keeps table name field and practice/challenge mode stage', () => {

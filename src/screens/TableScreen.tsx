@@ -35,6 +35,7 @@ import {
   type TableResetSetupVariant,
   type TableStakePanelMode,
 } from '../components/TableStakePanel';
+import { NewTableOverlay } from '../components/NewTableOverlay';
 import { InviteModal } from '../components/InviteModal';
 import { AdminPanel } from '../components/AdminPanel';
 import './TableScreen.css';
@@ -187,6 +188,31 @@ export function TableScreen({
     onGameStateChange(resetGameDeck(gameState));
   }
 
+  function closeStakeSetup() {
+    setNavNewTableSetup(false);
+    setResetSetupOpen(false);
+    setResetSetupVariant('resetTable');
+    setStakePanelMode('new');
+    if (tableMeta.showStakeSetup) {
+      onGameStateChange({
+        ...gameState,
+        tableMeta: { ...gameState.tableMeta, showStakeSetup: false },
+      });
+    }
+  }
+
+  const stakeSetupOpen = (isBlackjack || isZilch) && (tableMeta.showStakeSetup || resetSetupOpen);
+  const stakeSetupTitle = resetSetupOpen
+    ? resetSetupVariant === 'newGame'
+      ? 'New Game'
+      : 'Reset table'
+    : 'New Table';
+  const stakeSetupAriaLabel = resetSetupOpen
+    ? resetSetupVariant === 'newGame'
+      ? 'New game setup'
+      : 'Reset table setup'
+    : 'New table setup';
+
   const registerNavHandlers = useCallback((): TableNavHandlers => ({
     saveTable: () => {
       try {
@@ -302,31 +328,6 @@ export function TableScreen({
         }`}
       >
         <section className="table-felt table-felt--casino" aria-label="Table">
-          {(isBlackjack || isZilch) && (tableMeta.showStakeSetup || resetSetupOpen) && (
-            <TableStakePanel
-              gameState={gameState}
-              mode={resetSetupOpen ? 'reset' : stakePanelMode}
-              resetSetupVariant={resetSetupVariant}
-              onConfirmNewTable={
-                navNewTableSetup && onConfirmNavNewTable ? onConfirmNavNewTable : undefined
-              }
-              onConfirm={(next) => {
-                onGameStateChange(next);
-                setNavNewTableSetup(false);
-                setResetSetupOpen(false);
-                setResetSetupVariant('resetTable');
-                setStakePanelMode('new');
-              }}
-              onFinished={() => {
-                setResetSetupOpen(false);
-                setResetSetupVariant('resetTable');
-                setStakePanelMode('new');
-              }}
-              onlineDispatch={onlineDispatch}
-              onlineTableId={onlineTableId}
-            />
-          )}
-
           {isZilch && (
             <ZilchPanel
               gameState={gameState}
@@ -406,6 +407,39 @@ export function TableScreen({
           </aside>
         )}
       </div>
+
+      {stakeSetupOpen && (
+        <NewTableOverlay
+          open
+          title={stakeSetupTitle}
+          ariaLabel={stakeSetupAriaLabel}
+          onClose={closeStakeSetup}
+        >
+          <TableStakePanel
+            gameState={gameState}
+            mode={resetSetupOpen ? 'reset' : stakePanelMode}
+            resetSetupVariant={resetSetupVariant}
+            embeddedInOverlay
+            onConfirmNewTable={
+              navNewTableSetup && onConfirmNavNewTable ? onConfirmNavNewTable : undefined
+            }
+            onConfirm={(next) => {
+              onGameStateChange(next);
+              setNavNewTableSetup(false);
+              setResetSetupOpen(false);
+              setResetSetupVariant('resetTable');
+              setStakePanelMode('new');
+            }}
+            onFinished={() => {
+              setResetSetupOpen(false);
+              setResetSetupVariant('resetTable');
+              setStakePanelMode('new');
+            }}
+            onlineDispatch={onlineDispatch}
+            onlineTableId={onlineTableId}
+          />
+        </NewTableOverlay>
+      )}
     </main>
   );
 }
