@@ -111,7 +111,11 @@ export function applyTableStakeSetup(state: GameState, input: TableStakeSetupInp
   };
 
   if (isPractice || input.bankerMode === 'bot') {
-    next = assignBankBot(next, bankAmount);
+    if (tableMode === 'challenge') {
+      next = assignBankPerson(next, input.controllerName, bankAmount);
+    } else {
+      next = assignBankBot(next, bankAmount);
+    }
   } else if (input.bankerMode === 'self') {
     next = assignBankPerson(next, input.controllerName, bankAmount);
   } else {

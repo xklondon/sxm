@@ -12,6 +12,9 @@ describe('game end UI wiring', () => {
     expect(PANEL_SRC).not.toContain('bj-game-end-actions');
     expect(PANEL_SRC).toContain('createIouHandoff');
     expect(PANEL_SRC).toContain('buildIouHandoffCreateRequest');
+    expect(PANEL_SRC).toContain("deviceView === 'mobile'");
+    expect(PANEL_SRC).toContain('showGameOverDesktopPanel');
+    expect(PANEL_SRC).toContain('layout="inline"');
     expect(OVERLAY_SRC).toContain('bj-game-over-overlay');
     expect(OVERLAY_SRC).toContain('Add to Ledger');
     expect(OVERLAY_SRC).toContain("Don&apos;t Add");

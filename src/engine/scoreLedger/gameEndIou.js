@@ -1,6 +1,7 @@
 import { buildIouWalletNewUrl, detectIouTypeFromWager, IOU_GAME_MESSAGE, } from '../../utils/iouWalletHandoff';
 import { listPersonBankrollOwnerIds } from '../session/bankroll';
 import { resolveWinnerDisplayName as resolveWinnerDisplayNameCore, } from './challengeBankDisplay';
+import { buildChallengeEndRankings, isFractionalChallengeEnd, } from './challengeEndAccounting';
 function isHumanPlayer(state, playerId) {
     const player = state.players[playerId];
     return Boolean(player && player.playerType !== 'virtual');
@@ -45,6 +46,23 @@ export function resolveGameEndParties(state) {
         return null;
     }
     const bankId = state.session.bankPlayerId;
+    const fractional = isFractionalChallengeEnd(state, state.tableMeta.gameEndReason);
+    if (fractional) {
+        const nonBankWithChips = buildChallengeEndRankings(state).filter((r) => !r.isBank && r.endingChips > 0);
+        if (nonBankWithChips.length !== 1 || !bankId) {
+            return null;
+        }
+        const soleWinner = nonBankWithChips[0];
+        if (!isHumanPlayer(state, soleWinner.playerId) || !isHumanPlayer(state, bankId)) {
+            return null;
+        }
+        return {
+            winnerId: soleWinner.playerId,
+            loserId: bankId,
+            winnerEmail: resolveEmailForPlayerId(state, soleWinner.playerId),
+            loserEmail: resolveEmailForPlayerId(state, bankId),
+        };
+    }
     const winnerIsBank = Boolean(bankId && winnerId === bankId);
     let loserId = null;
     if (winnerIsBank) {

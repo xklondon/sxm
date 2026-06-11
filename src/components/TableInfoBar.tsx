@@ -13,10 +13,11 @@ interface TableInfoBarProps {
 
 /** Bank value + bank chip balance — dealer variant under cards; felt row shows total only. */
 export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: TableInfoBarProps) {
-  const { bankValue, bankChips } = buildTableInfoDisplay(gameState, viewerPersonId);
+  const { bankValue, bankChips, bankHolderLabel } = buildTableInfoDisplay(gameState, viewerPersonId);
   const isDealer = variant === 'dealer';
   const isHeader = variant === 'header';
   const isFelt = variant === 'felt';
+  const showBankIdentity = Boolean(bankHolderLabel);
 
   if (isHeader || isFelt) {
     return (
@@ -29,6 +30,11 @@ export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: 
         )}
         aria-label="Bank information"
       >
+        {showBankIdentity ? (
+          <span className="bj-table-info-bar__item bj-table-info-bar__bank-holder">
+            Bank: {bankHolderLabel}
+          </span>
+        ) : null}
         <span className="bj-table-info-bar__item bj-table-info-bar__bank-chips">
           Bank Total: {bankChips !== null ? bankChips : '—'}
         </span>
@@ -46,8 +52,13 @@ export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: 
       )}
       aria-label="Bank hand"
     >
+      {showBankIdentity ? (
+        <span className="bj-table-info-bar__item bj-table-info-bar__bank-holder">
+          Bank: {bankHolderLabel}
+        </span>
+      ) : null}
       <span className="bj-table-info-bar__item bj-table-info-bar__bank-value">
-        Bank Hand:{' '}
+        {showBankIdentity ? 'Bank has ' : 'Bank Hand: '}
         {bankValue !== null ? <span className="bj-bank-hand__value">{bankValue}</span> : '—'}
       </span>
     </div>

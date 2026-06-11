@@ -506,8 +506,10 @@ export function BlackjackPanel({
     ],
   );
 
-  const showGameOverOverlay =
+  const showGameOverActions =
     gameEnded && !gameOverOverlayDismissed && !gameOverOverlayConfirmed;
+  const showGameOverOverlay = showGameOverActions && deviceView === 'mobile';
+  const showGameOverDesktopPanel = showGameOverActions && deviceView === 'desktop';
 
   useEffect(() => {
     if (!gameEnded) {
@@ -518,6 +520,12 @@ export function BlackjackPanel({
       setIouPending(false);
     }
   }, [gameEnded, gameState.session.id]);
+
+  useEffect(() => {
+    if (showGameOverDesktopPanel) {
+      setSideRailPanel('thisTable');
+    }
+  }, [showGameOverDesktopPanel]);
 
   useEffect(() => {
     if (!awaitingNextRound) {
@@ -1906,19 +1914,43 @@ export function BlackjackPanel({
     }
   }
 
+  function renderGameOverSummaryContent() {
+    return (
+      <GameOverActionOverlay
+        layout="inline"
+        open
+        summaryMessage={gameOverMessage}
+        canSaveToLedger={canSaveToLedger}
+        ledgerAlreadyAdded={personalLedgerAdded}
+        canCreateIou={canAddIou}
+        iouPending={iouPending}
+        iouFeedback={iouFeedback}
+        iouDisabledReason={
+          canAddIou ? undefined : 'Add a counterparty email to create an IOU handoff.'
+        }
+        onConfirm={handleGameOverConfirm}
+        onDismiss={() => setSideRailPanel(null)}
+      />
+    );
+  }
+
   function renderSideRailPanel(variant: 'dock' | 'overlay') {
     if (!sideRailPanel) {
       return null;
     }
     const isOverlay = variant === 'overlay';
     const title =
-      mobileSidePanelTab === 'playLedger'
-        ? 'Play Ledger'
-        : mobileSidePanelTab === 'settings'
-          ? 'Settings'
-          : 'This Table';
+      showGameOverDesktopPanel && !isOverlay
+        ? 'Game Summary'
+        : mobileSidePanelTab === 'playLedger'
+          ? 'Play Ledger'
+          : mobileSidePanelTab === 'settings'
+            ? 'Settings'
+            : 'This Table';
     const panelContent = isOverlay ? (
       renderMobileSidePanelBody()
+    ) : showGameOverDesktopPanel ? (
+      renderGameOverSummaryContent()
     ) : (
       <TableAccountsPanel
         gameState={gameState}

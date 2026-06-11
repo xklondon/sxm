@@ -105,7 +105,7 @@ export function TableStakePanel({
   const [tableMode, setTableMode] = useState<TableMode>('practice');
   const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
   const [inviteEmailInput, setInviteEmailInput] = useState('');
-  const [challengeBank, setChallengeBank] = useState<'self' | 'dealer' | string>('self');
+  const [challengeBank, setChallengeBank] = useState<'self' | string>('self');
 
   const [stake, setStake] = useState(() => agreement?.stakeDescription ?? '');
   const [tableName, setTableName] = useState(
@@ -172,9 +172,6 @@ export function TableStakePanel({
   function resolveChallengeBanker(): { bankerMode: TableBankerSetupMode; bankerName: string } {
     if (challengeBank === 'self') {
       return { bankerMode: 'self', bankerName: controller };
-    }
-    if (challengeBank === 'dealer') {
-      return { bankerMode: 'bot', bankerName: '' };
     }
     return { bankerMode: 'other', bankerName: emailLabel(challengeBank) };
   }
@@ -870,15 +867,6 @@ export function TableStakePanel({
               {emailLabel(email)} ({email})
             </label>
           ))}
-          <label className="table-stake-panel__option">
-            <input
-              type="radio"
-              name="challenge-bank"
-              checked={challengeBank === 'dealer'}
-              onChange={() => setChallengeBank('dealer')}
-            />
-            Dealer / house
-          </label>
         </fieldset>
 
         {renderAdvancedSettings()}

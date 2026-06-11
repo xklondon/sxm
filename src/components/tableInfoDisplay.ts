@@ -3,11 +3,14 @@ import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
 import { cardsFromIds, getBlackjackHandValue } from '../engine/blackjack/hand';
 import { buildTableBankRow } from '../engine/session/tablePeople';
 import { getAvailableChipsForBankrollOwner } from '../engine/session/bankroll';
+import { formatBankHolderLabel, isChallengeTable } from '../engine/scoreLedger/challengeBankDisplay';
 
 export interface TableInfoDisplay {
   bankValue: number | null;
   bankChips: number | null;
   playerAvailable: number | null;
+  /** Challenge mode: seated player acting as bank. */
+  bankHolderLabel: string | null;
 }
 
 function getBankDisplayValue(state: GameState): number | null {
@@ -40,6 +43,9 @@ export function buildTableInfoDisplay(
   viewerPersonId: string | null,
 ): TableInfoDisplay {
   const bankRow = buildTableBankRow(state);
+  const bankId = state.session.bankPlayerId;
+  const bankHolderLabel =
+    bankId && isChallengeTable(state) ? formatBankHolderLabel(state, bankId) : null;
   const playerAvailable =
     viewerPersonId !== null
       ? getAvailableChipsForBankrollOwner(state, viewerPersonId)
@@ -49,5 +55,6 @@ export function buildTableInfoDisplay(
     bankValue: getBankDisplayValue(state),
     bankChips: bankRow !== null ? bankRow.available : null,
     playerAvailable,
+    bankHolderLabel,
   };
 }

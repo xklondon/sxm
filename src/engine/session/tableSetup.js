@@ -67,7 +67,12 @@ export function applyTableStakeSetup(state, input) {
         },
     };
     if (isPractice || input.bankerMode === 'bot') {
-        next = assignBankBot(next, bankAmount);
+        if (tableMode === 'challenge') {
+            next = assignBankPerson(next, input.controllerName, bankAmount);
+        }
+        else {
+            next = assignBankBot(next, bankAmount);
+        }
     }
     else if (input.bankerMode === 'self') {
         next = assignBankPerson(next, input.controllerName, bankAmount);

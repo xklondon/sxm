@@ -9,6 +9,8 @@ export type GameOverIouFeedback = {
 
 export interface GameOverActionOverlayProps {
   open: boolean;
+  /** Mobile: centered overlay. Desktop: inline in This Table side panel. */
+  layout?: 'overlay' | 'inline';
   summaryMessage: string;
   canSaveToLedger: boolean;
   ledgerAlreadyAdded: boolean;
@@ -24,6 +26,7 @@ export interface GameOverActionOverlayProps {
 /** Small game-end sheet — ledger + optional IOU handoff; table shows summary text only. */
 export function GameOverActionOverlay({
   open,
+  layout = 'overlay',
   summaryMessage,
   canSaveToLedger,
   ledgerAlreadyAdded,
@@ -71,22 +74,25 @@ export function GameOverActionOverlay({
     resetIouStep();
   }
 
-  return (
-    <div
-      className="invite-modal-overlay bj-table-panel-overlay bj-game-over-overlay"
-      role="presentation"
-      onClick={busy ? undefined : onDismiss}
-    >
+  const isInline = layout === 'inline';
+  const title = isInline ? 'Game Summary' : 'Game Over';
+
+  const panel = (
       <div
-        className="invite-modal invite-modal--ledger invite-modal--table-panel bj-game-over"
+        className={[
+          'invite-modal invite-modal--ledger invite-modal--table-panel bj-game-over',
+          isInline ? 'bj-game-over--inline' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
         role="dialog"
         aria-labelledby="bj-game-over-title"
-        aria-modal="true"
-        onClick={(e) => e.stopPropagation()}
+        aria-modal={isInline ? undefined : 'true'}
+        onClick={isInline ? undefined : (e) => e.stopPropagation()}
       >
         <header className="bj-game-over__header">
           <h2 id="bj-game-over-title" className="bj-game-over__title">
-            Game Over
+            {title}
           </h2>
           <button
             type="button"
@@ -150,6 +156,24 @@ export function GameOverActionOverlay({
                 Open in IOU Wallet
               </a>
             ) : null}
+            <div className="bj-game-over__actions">
+              <button
+                type="button"
+                className="ds-btn ds-btn--primary"
+                disabled={ledgerSaveDisabled}
+                onClick={() => handlePrimaryAction(true)}
+              >
+                {ledgerAlreadyAdded ? 'Added to Ledger' : 'Add to Ledger'}
+              </button>
+              <button
+                type="button"
+                className="ds-btn ds-btn--secondary"
+                disabled={busy}
+                onClick={() => handlePrimaryAction(false)}
+              >
+                Don&apos;t Add
+              </button>
+            </div>
             <label
               className={[
                 'bj-game-over__iou-toggle',
@@ -170,27 +194,22 @@ export function GameOverActionOverlay({
             {iouToggleDisabled && iouDisabledReason ? (
               <p className="bj-game-over__iou-hint">{iouDisabledReason}</p>
             ) : null}
-            <div className="bj-game-over__actions">
-              <button
-                type="button"
-                className="ds-btn ds-btn--primary"
-                disabled={ledgerSaveDisabled}
-                onClick={() => handlePrimaryAction(true)}
-              >
-                {ledgerAlreadyAdded ? 'Added to Ledger' : 'Add to Ledger'}
-              </button>
-              <button
-                type="button"
-                className="ds-btn ds-btn--secondary"
-                disabled={busy}
-                onClick={() => handlePrimaryAction(false)}
-              >
-                Don&apos;t Add
-              </button>
-            </div>
           </>
         )}
       </div>
+  );
+
+  if (isInline) {
+    return panel;
+  }
+
+  return (
+    <div
+      className="invite-modal-overlay bj-table-panel-overlay bj-game-over-overlay"
+      role="presentation"
+      onClick={busy ? undefined : onDismiss}
+    >
+      {panel}
     </div>
   );
 }

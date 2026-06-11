@@ -13,6 +13,18 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-09 — Challenge accounting and game-end presentation
+
+- **Challenge bank:** Always a real seated player (no dealer/house option in Challenge setup); bank identity shown as **Bank: [Name]** in dealer/felt info.
+- **Fractional settlement:** Default when bank bust leaves multiple non-bank chip holders — ranked final totals in message + score ledger participants (`challengeEndAccounting.ts`); IOU only when one clear debtor/creditor pair.
+- **Desktop game end:** **Game Summary** in right-hand This Table panel — table/cards stay visible; no blocking overlay.
+- **Mobile game end:** Existing centered overlay retained unchanged.
+- **IOU toggle:** Moved below Add to Ledger / Don't Add buttons.
+- **Tests:** `challengeEndAccounting.test.ts`, `challengeGameEndPresentation.test.tsx`, game-end UI wiring updates.
+- **Docs:** `SXM_MASTER_SPEC.md` §5 table modes + game end presentation.
+
+---
+
 ## 2026-06-07 — Challenge flow fixes (bank identity, rematch, chip remove)
 
 - **Chip remove:** `×` control moved below stake pile; pile-only scale; stake slot `overflow: visible`; stable `--bj-full-table-stake-min-height`.

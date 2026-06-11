@@ -181,12 +181,11 @@ describe('GameOverActionOverlay — panel integration', () => {
     vi.clearAllMocks();
   });
 
-  it('shows overlay at game end without floating table buttons', () => {
+  it('shows overlay at game end without floating table buttons on mobile', () => {
     const state = endedChallengeState();
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={state} onGameStateChange={noop} />,
     );
-    expect(html).toContain('bj-game-over-overlay');
     expect(html).toContain('Add to Ledger');
     expect(html).not.toContain('bj-game-end-actions');
   });

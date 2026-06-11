@@ -9,6 +9,8 @@ export interface ScoreLedgerParticipantResult {
   startingChips: number;
   endingChips: number;
   outcome: 'winner' | 'loser' | 'participant';
+  /** Final chip rank when challenge ends with fractional settlement. */
+  rank?: number;
 }
 
 export interface ScoreLedgerEntry {

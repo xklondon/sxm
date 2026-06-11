@@ -15,11 +15,18 @@ import { log } from '../../utils/logger';
 import { resolveEmailForPlayerId } from './gameEndIou';
 import {
   bankShortName,
+  formatBankHolderLabel,
   isChallengeTable,
   personShortName,
   resolveLedgerWinnerPersonId,
   resolveWinnerDisplayName,
 } from './challengeBankDisplay';
+import {
+  buildChallengeEndRankings,
+  buildFractionalEndMessage,
+  hasSingleClearWinner,
+  isFractionalChallengeEnd,
+} from './challengeEndAccounting';
 
 /** True when the bank seat is a bot (virtual) — i.e. not a human-vs-human game. */
 export function isBotBankGame(state: GameState): boolean {
@@ -43,38 +50,60 @@ export function canAddGameToPersonalLedger(state: GameState): boolean {
 function buildParticipantResults(state: GameState, winnerId: string | null): ScoreLedgerParticipantResult[] {
   const seatStart = state.tableMeta.startingChipsEachSeat;
   const bankStart = state.tableMeta.startingChipsBank;
-  const bankId = state.session.bankPlayerId;
+  const fractional = isFractionalChallengeEnd(state, state.tableMeta.gameEndReason);
+  const rankings = buildChallengeEndRankings(state);
+  const topNonBank = rankings.find((r) => !r.isBank && r.endingChips > 0);
   const results: ScoreLedgerParticipantResult[] = [];
 
   for (const personId of listPersonBankrollOwnerIds(state)) {
     const ending = getLedgerBalanceForBankrollOwner(state, personId);
+    const rankRow = rankings.find((r) => r.playerId === personId);
+    let outcome: ScoreLedgerParticipantResult['outcome'] = 'participant';
+    if (winnerId === personId && !fractional) {
+      outcome = 'winner';
+    } else if (ending <= 0) {
+      outcome = 'loser';
+    } else if (fractional && topNonBank?.playerId === personId) {
+      outcome = 'winner';
+    }
     results.push({
       email: resolveEmailForPlayerId(state, personId) ?? '',
       name: personShortName(state, personId),
       personId,
       startingChips: seatStart,
       endingChips: ending,
-      outcome: winnerId === personId ? 'winner' : ending <= 0 ? 'loser' : 'participant',
+      outcome,
+      rank: rankRow?.rank,
     });
   }
 
+  const bankId = state.session.bankPlayerId;
   if (bankId) {
     const ending = getLedgerBalanceForBankrollOwner(state, bankId);
+    const rankRow = rankings.find((r) => r.playerId === bankId);
+    let outcome: ScoreLedgerParticipantResult['outcome'] = 'participant';
+    if (winnerId === bankId && !fractional) {
+      outcome = 'winner';
+    } else if (ending <= 0) {
+      outcome = 'loser';
+    }
     results.push({
-      email: bankId && state.players[bankId]?.playerType === 'real'
-        ? resolveEmailForPlayerId(state, bankId) ?? ''
-        : '',
+      email:
+        state.players[bankId]?.playerType === 'real'
+          ? resolveEmailForPlayerId(state, bankId) ?? ''
+          : '',
       name: isChallengeTable(state)
-        ? `${bankShortName(state, bankId)} (Bank)`
+        ? `${formatBankHolderLabel(state, bankId)} (Bank)`
         : bankShortName(state, bankId),
       personId: state.players[bankId]?.playerType === 'real' ? bankId : null,
       startingChips: bankStart,
       endingChips: ending,
-      outcome: winnerId === bankId ? 'winner' : ending <= 0 ? 'loser' : 'participant',
+      outcome,
+      rank: rankRow?.rank,
     });
   }
 
-  return results;
+  return results.sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99));
 }
 
 /** Build wager-level game-over message and optional score ledger entry. */
@@ -90,15 +119,44 @@ export function buildGameOverSummary(state: GameState): {
   const bankId = state.session.bankPlayerId;
   const wager = state.tableMeta.agreement?.stakeDescription?.trim() || 'the agreed wager';
   const bankIsBust = Boolean(bankId && getLedgerBalanceForBankrollOwner(state, bankId) <= 0);
+  const fractional = isFractionalChallengeEnd(state, state.tableMeta.gameEndReason);
+  const roundCount = Math.max(1, state.session.currentRound || 1);
+
+  if (!winnerId && bankIsBust) {
+    const message = isChallengeTable(state)
+      ? buildFractionalEndMessage(state)
+      : 'GAME OVER\nBank is bust.';
+    const participants = buildParticipantResults(state, null);
+    return {
+      message,
+      entry: participants.length
+        ? buildLedgerEntryFromParts(state, {
+            winnerId: null,
+            winnerName: 'Bank is bust',
+            loserId: bankId,
+            loserName: bankId && isChallengeTable(state)
+              ? `${formatBankHolderLabel(state, bankId)} (Bank)`
+              : 'Bank',
+            owedDescription: `Fractional settlement — ${wager}`,
+            participants,
+            roundCount,
+            wager,
+          })
+        : null,
+    };
+  }
 
   if (!winnerId) {
-    return { message: bankIsBust ? 'GAME OVER\nBank is bust.' : 'Game over.', entry: null };
+    return { message: 'Game over.', entry: null };
   }
 
   const winnerIsBank = Boolean(bankId && winnerId === bankId);
-  const winnerName = resolveWinnerDisplayName(state, winnerId);
-  const roundCount = Math.max(1, state.session.currentRound || 1);
-  const gameOverCommandMessage = `Game Over, congrats ${winnerName}, you won in ${roundCount} rounds.`;
+  const winnerName = fractional
+    ? hasSingleClearWinner(state)
+      ? resolveWinnerDisplayName(state, winnerId)
+      : 'Fractional result'
+    : resolveWinnerDisplayName(state, winnerId);
+  const gameOverCommandMessage = `Game Over, congrats ${resolveWinnerDisplayName(state, winnerId)}, you won in ${roundCount} rounds.`;
 
   let loserId: string | null = null;
   let loserName = '—';
@@ -116,59 +174,94 @@ export function buildGameOverSummary(state: GameState): {
   } else if (bankId) {
     loserId = bankId;
     loserName = isChallengeTable(state)
-      ? `${personShortName(state, bankId)} (Bank)`
+      ? `${formatBankHolderLabel(state, bankId)} (Bank)`
       : bankShortName(state, bankId);
   }
 
-  const owedDescription = `${loserName} owes ${winnerName}: ${wager}`;
-  const message = bankIsBust ? 'GAME OVER\nBank is bust.' : gameOverCommandMessage;
-
-  const playersInvolved = [
-    ...new Set([
-      winnerName,
-      loserName,
-      ...listPersonBankrollOwnerIds(state).map((id) => personShortName(state, id)),
-      bankId ? bankShortName(state, bankId) : null,
-    ].filter(Boolean) as string[]),
-  ];
+  const owedDescription = fractional
+    ? `Fractional settlement — ${wager}`
+    : `${loserName} owes ${winnerName}: ${wager}`;
+  let message = gameOverCommandMessage;
+  if (bankIsBust) {
+    message = isChallengeTable(state) ? buildFractionalEndMessage(state) : 'GAME OVER\nBank is bust.';
+  }
 
   const participants = buildParticipantResults(state, winnerId).map((p) => ({
     ...p,
     email: p.personId ? resolveEmailForPlayerId(state, p.personId) ?? p.email : p.email,
   }));
-  const participantEmails = [
-    ...new Set([
-      ...(state.tableMeta.setupInvitedEmails ?? []).map((e) => e.trim().toLowerCase()),
-      state.tableMeta.owner?.ownerEmail?.trim().toLowerCase() ?? '',
-      ...participants.map((p) => p.email).filter(Boolean),
-    ].filter(Boolean)),
-  ];
 
-  const entry: ScoreLedgerEntry = {
-    id: generateId(),
-    tableId: state.session.id,
-    tableName: resolveTableClothName(state.tableMeta),
-    roundCount,
-    wagerDescription: wager,
-    winnerPersonId: resolveLedgerWinnerPersonId(state, winnerId),
+  const entry = buildLedgerEntryFromParts(state, {
+    winnerId: fractional && !hasSingleClearWinner(state) ? null : winnerId,
     winnerName,
-    loserPersonId: winnerIsBank ? loserId : bankId && !winnerIsBank ? bankId : null,
+    loserId,
     loserName,
     owedDescription,
-    playersInvolved,
-    gameType: state.tableGame ?? 'blackjack',
-    protocolId: state.blackjackProtocolId,
-    mode: resolveTableModeFromState(state),
-    bankName: bankId ? bankShortName(state, bankId) : undefined,
-    participantEmails,
     participants,
-    createdAt: state.tableMeta.endedAt ?? new Date().toISOString(),
-    status: 'open',
-  };
+    roundCount,
+    wager,
+  });
 
   return { message, entry };
 }
 
+function buildLedgerEntryFromParts(
+  state: GameState,
+  parts: {
+    winnerId: string | null;
+    winnerName: string;
+    loserId: string | null;
+    loserName: string;
+    owedDescription: string;
+    participants: ScoreLedgerParticipantResult[];
+    roundCount: number;
+    wager: string;
+  },
+): ScoreLedgerEntry {
+  const bankId = state.session.bankPlayerId;
+  const winnerIsBank = Boolean(bankId && parts.winnerId === bankId);
+  const playersInvolved = [
+    ...new Set([
+      parts.winnerName,
+      parts.loserName,
+      ...listPersonBankrollOwnerIds(state).map((id) => personShortName(state, id)),
+      bankId ? bankShortName(state, bankId) : null,
+    ].filter(Boolean) as string[]),
+  ];
+  const participantEmails = [
+    ...new Set([
+      ...(state.tableMeta.setupInvitedEmails ?? []).map((e) => e.trim().toLowerCase()),
+      state.tableMeta.owner?.ownerEmail?.trim().toLowerCase() ?? '',
+      ...parts.participants.map((p) => p.email).filter(Boolean),
+    ].filter(Boolean)),
+  ];
+
+  return {
+    id: generateId(),
+    tableId: state.session.id,
+    tableName: resolveTableClothName(state.tableMeta),
+    roundCount: parts.roundCount,
+    wagerDescription: parts.wager,
+    winnerPersonId: parts.winnerId ? resolveLedgerWinnerPersonId(state, parts.winnerId) : null,
+    winnerName: parts.winnerName,
+    loserPersonId: winnerIsBank ? parts.loserId : bankId && !winnerIsBank ? parts.loserId : null,
+    loserName: parts.loserName,
+    owedDescription: parts.owedDescription,
+    playersInvolved,
+    gameType: state.tableGame ?? 'blackjack',
+    protocolId: state.blackjackProtocolId,
+    mode: resolveTableModeFromState(state),
+    bankName: bankId
+      ? isChallengeTable(state)
+        ? formatBankHolderLabel(state, bankId)
+        : bankShortName(state, bankId)
+      : undefined,
+    participantEmails,
+    participants: parts.participants,
+    createdAt: state.tableMeta.endedAt ?? new Date().toISOString(),
+    status: 'open',
+  };
+}
 export function recordScoreLedgerForGameEnd(state: GameState): ScoreLedgerEntry | null {
   return addGameToPersonalLedger(state);
 }

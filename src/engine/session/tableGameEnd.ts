@@ -175,6 +175,11 @@ export function applyTableGameEndIfNeeded(state: GameState): GameState {
       ...state.tableMeta,
       gameStatus: 'ended',
       winnerId: evaluation.winnerId,
+      gameEndReason: evaluation.reason as GameState['tableMeta']['gameEndReason'],
+      settlementMode:
+        evaluation.reason === 'bank-bust' || evaluation.reason === 'bank-empty'
+          ? 'fractional'
+          : state.tableMeta.settlementMode,
       endedAt: new Date().toISOString(),
       wagerVoucherStatus: 'pending',
       bettingLocked: true,

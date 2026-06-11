@@ -178,9 +178,21 @@ No numbered step headings (`1. Game`, etc.). Stage fieldsets use clean titles on
 | Mode | Bank | Wager | Winner / ledger |
 |------|------|-------|-----------------|
 | **Practice** | Dealer bot (house) | None ("Practice") | Generic bank/dealer labels OK; bot bank has no person id |
-| **Challenge** | Assigned **player** (self, invitee, or dealer role) | Required stake + invites (online) | Bank wins → `"[Name] wins as Bank"`; ledger/IOU credit **player id/email**, never anonymous "Bank" |
+| **Challenge** | Assigned **player** (self or invitee — never dealer/house) | Required stake + invites (online) | Bank wins → `"[Name] wins as Bank"`; bank bankruptcy → **fractional** ranked totals (default); ledger/IOU use **real player ids/emails** |
 
-Challenge bank plays against boxes; `session.bankPlayerId` is always a seated person in challenge mode.
+Challenge bank plays against boxes; `session.bankPlayerId` is always a seated **real** person in challenge mode. The dealer/bank area shows **Bank: [Name]** and **Bank has [value]** (felt row: **Bank: [Name]** + bank chip total).
+
+**Challenge end / settlement:**
+
+- Winner = whoever holds all table chips at end, or ranked survivors when the bank busts.
+- **Fractional (default):** when bank bankruptcy leaves chips with multiple non-bank players, score ledger records each participant’s final total/rank — not a collapsed “Bank won” line. IOU handoff is offered only when a single clear human counterparty pair exists.
+- **Future:** table may offer winner-takes-all vs fractional (`settlementMode` on `tableMeta`); default today is fractional on bank bust.
+
+**Game end presentation:**
+
+- **Final cards stay visible** — summary/ledger UI must not obscure the felt.
+- **Desktop:** **Game Summary** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — Add to Ledger, IOU toggle **below** action buttons, close/back; table remains on the left.
+- **Mobile:** existing centered **Game Over** overlay unchanged (`bj-game-over-overlay`).
 
 ### Personal score ledger (challenge games)
 

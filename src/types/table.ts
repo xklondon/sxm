@@ -126,6 +126,15 @@ export interface TableMeta {
   gameStatus: TableGameStatus;
   /** Bank or person bankroll id when gameStatus is ended. */
   winnerId: string | null;
+  /** Why the table session ended (single-holder, bank-bust, etc.). */
+  gameEndReason?:
+    | 'bank-bust'
+    | 'single-holder'
+    | 'bank-has-all-chips'
+    | 'bank-empty'
+    | 'all-players-eliminated';
+  /** Challenge settlement style — fractional default; winner-takes-all is future. */
+  settlementMode?: 'fractional' | 'winner-takes-all';
   endedAt: string | null;
   /** Placeholder for future wager voucher flow. */
   wagerVoucherStatus: WagerVoucherStatus;
