@@ -70,6 +70,10 @@ export function coercePlaceBetTarget(
     return target;
   }
   if (target.kind === 'slot') {
+    const row = slotByNumber(state, target.slotNumber);
+    if (!row?.playerId) {
+      return target;
+    }
     return getChipPlacementTarget(state, { slotNumber: target.slotNumber });
   }
   return getChipPlacementTargetFromBoxId(state, target.boxId, true);

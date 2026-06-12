@@ -218,6 +218,93 @@ export function degradeChipTargetToSlot(
   return null;
 }
 
+export type ChipBetDiagnosticStage =
+  | 'tap-target'
+  | 'coerce'
+  | 'payload'
+  | 'optimistic'
+  | 'reconcile'
+  | 'error';
+
+export interface ChipBetDiagnostic {
+  stage: ChipBetDiagnosticStage;
+  selectedTarget: PlaceBetTarget | null;
+  payload?: Record<string, unknown>;
+  optimisticBoxId?: string | null;
+  slotNumber?: number | null;
+  message?: string;
+}
+
+/** Dev/test diagnostic for rapid chip tap investigations. */
+export function logChipBetDiagnostic(detail: ChipBetDiagnostic): void {
+  const enabled =
+    typeof import.meta !== 'undefined' &&
+    (import.meta.env?.DEV === true || import.meta.env?.MODE === 'test');
+  if (!enabled) {
+    return;
+  }
+  console.debug('[SXMCards][chip-bet]', detail);
+}
+
+/**
+ * Online rapid taps: preserve slotNumber anchor instead of locking optimistic boxIds.
+ * Box 1 (native assigned box target) keeps box id — reference behavior unchanged.
+ */
+export function anchorOnlineChipTarget(
+  state: GameState,
+  target: PlaceBetTarget,
+  online: boolean,
+): PlaceBetTarget {
+  if (!online) {
+    return target;
+  }
+  if (target.kind === 'slot') {
+    return target;
+  }
+  const slotNumber = localChipTargetSlotNumber(state, target);
+  if (slotNumber == null || slotNumber === 1) {
+    return target;
+  }
+  const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
+  if (!row) {
+    return target;
+  }
+  if (row.playerId === target.boxId) {
+    return target;
+  }
+  return { kind: 'slot', slotNumber };
+}
+
+/**
+ * Online placeBet payload — send slotNumber when the box id is stale or a bet is in-flight.
+ * Box 1 keeps boxId (reference behavior).
+ */
+export function resolveOnlinePlaceBetPayloadTarget(
+  state: GameState,
+  target: PlaceBetTarget,
+  online: boolean,
+  inFlightForSlot = false,
+): PlaceBetTarget {
+  if (!online) {
+    return target;
+  }
+  if (target.kind === 'slot') {
+    return target;
+  }
+  const slotNumber = localChipTargetSlotNumber(state, target);
+  if (slotNumber == null || slotNumber === 1) {
+    return target;
+  }
+  if (inFlightForSlot) {
+    return { kind: 'slot', slotNumber };
+  }
+  const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
+  if (!row?.playerId || row.playerId !== target.boxId) {
+    return { kind: 'slot', slotNumber };
+  }
+  return target;
+}
+
 export function localChipTargetSlotNumber(
   state: GameState,
   target: PlaceBetTarget,
@@ -391,10 +478,11 @@ export function affirmChipTargetAfterPlacement(
 ): LocalSelectedChipTarget {
   const picked = selectLocalChipTarget(local, placedTarget);
   const reconciled = reconcileLocalChipTarget(picked, state, online);
-  if (online && placedTarget.kind === 'slot') {
-    return selectLocalChipTarget(reconciled, placedTarget);
+  const anchor = anchorOnlineChipTarget(state, placedTarget, online);
+  if (online && anchor.kind === 'slot') {
+    return selectLocalChipTarget(reconciled, anchor);
   }
-  const seed = reconciled.target ?? placedTarget;
+  const seed = reconciled.target ?? anchor;
   const resolved =
     resolveTargetOnTable(state, seed, online) ??
     (online ? degradeChipTargetToSlot(state, seed) : null) ??

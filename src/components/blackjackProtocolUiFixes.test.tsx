@@ -108,7 +108,8 @@ describe('blackjack protocol UI fixes — insurance', () => {
     expect(readSrc('src/components/tableCommandDisplay.ts')).toContain(
       'Insurance pays 2:1 when the dealer has blackjack.',
     );
-    expect(readSrc('src/components/BlackjackPanel.tsx')).toContain('hintText="Insurance pays 2:1"');
+    expect(readSrc('src/components/InsuranceDecisionOverlay.tsx')).toContain('Insurance pays 2:1');
+    expect(readSrc('src/components/BlackjackPanel.tsx')).toContain('InsuranceDecisionOverlay');
     expect(readSrc('src/components/BlackjackFeltClothLayer.tsx')).toContain('Insurance pays 2:1');
   });
 

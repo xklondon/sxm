@@ -240,8 +240,9 @@ describe('box selection — single chip target', () => {
 
   it('does not overwrite local selection during chip placement', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-    expect(src).toMatch(/function placeBetAtTarget\(target: PlaceBetTarget[\s\S]*?const payload = placeBetPayloadFromTarget/);
-    expect(src).toContain('preserveLocalChipTargetAfterStateSync(nextState, target)');
+    expect(src).toMatch(/function placeBetAtTarget\(target: PlaceBetTarget[\s\S]*?placeBetAtTargetCore/);
+    expect(src).toMatch(/const payload = placeBetPayloadFromTarget/);
+    expect(src).toContain('preserveLocalChipTargetAfterStateSync(nextState, anchor)');
     expect(src).toContain('selectLocalTarget(placementTarget)');
     expect(src).toContain('selectLocalTarget(target)');
   });

@@ -61,7 +61,7 @@ export function resolveLocalChipTrayTarget(
     if (!slot) {
       return null;
     }
-    if (slot.playerId) {
+    if (slot.playerId && (!online || explicit.slotNumber === 1)) {
       return { kind: 'box', boxId: slot.playerId };
     }
     return explicit;

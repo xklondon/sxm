@@ -19,6 +19,15 @@ describe('mobile chip tray layout (Table + card views)', () => {
     expect(html).toContain('>500<');
   });
 
+  it('centers tray row contents on mobile', () => {
+    expect(CHIP_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-value-chips__row--main[\s\S]*?justify-content:\s*center/,
+    );
+    expect(CHIP_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-value-chips \.chip-tray__chips[\s\S]*?justify-content:\s*center/,
+    );
+  });
+
   it('renders bankroll value left of chips in markup order', () => {
     const html = renderToStaticMarkup(
       <ValueAndChipsBar available={490} showChips onChipClick={() => {}} minimumBet={5} />,

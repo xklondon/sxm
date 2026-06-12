@@ -68,17 +68,22 @@ import { PlayLedgerModal, PlayLedgerPanel } from './LedgerModals';
 import { TableSideRailShell } from './TableSideRailShell';
 import {
   affirmChipTargetAfterPlacement,
+  anchorOnlineChipTarget,
   degradeChipTargetToSlot,
   applyDefaultAssignedChipTarget,
   createEmptyLocalChipTarget,
   getCurrentChipTargetForBetting,
+  localChipTargetSlotNumber,
   localChipTargetsEqual,
+  logChipBetDiagnostic,
   logChipTargetResolution,
   reconcileLocalChipTarget,
+  resolveOnlinePlaceBetPayloadTarget,
   selectLocalChipTarget,
   uiFromLocalChipTarget,
   type LocalSelectedChipTarget,
 } from './localChipTargetSelection';
+import { InsuranceDecisionOverlay } from './InsuranceDecisionOverlay';
 import { bindTapSelect, createTapSelectHandler } from './tapSelect';
 import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
 import { TABLE_UX } from './tableUxContract';
@@ -138,7 +143,7 @@ import {
 import {
   canShowPlayerDecisionControls,
   resolveViewerActionPermission,
-  getInsuranceActionsForController,
+  getPrimaryInsuranceActionForController,
   getActiveTurnBoxId,
   isPlayerTurnPhase,
 } from './blackjackViewPhase';
@@ -279,6 +284,8 @@ export function BlackjackPanel({
     createEmptyLocalChipTarget(),
   );
   const localSelectedChipTargetRef = useRef<LocalSelectedChipTarget>(createEmptyLocalChipTarget());
+  const betInFlightSlotsRef = useRef<Set<number>>(new Set());
+  const betChainBySlotRef = useRef<Map<number, Promise<void>>>(new Map());
   const tapSelectRef = useRef(createTapSelectHandler());
   const SHUFFLE_ANIM_DURATION_MS = 3000;
   const [shuffleAnimating, setShuffleAnimating] = useState(false);
@@ -734,45 +741,120 @@ export function BlackjackPanel({
     return addChipToBoxStake(state, target.boxId, amount, personId ?? undefined);
   }
 
-  function placeBetAtTarget(target: PlaceBetTarget, amount: ChipValue) {
+  async function placeBetAtTargetCore(target: PlaceBetTarget, amount: ChipValue): Promise<void> {
     const online = Boolean(onlineDispatch);
+    const anchor = anchorOnlineChipTarget(gameStateRef.current, target, online);
+    const slotNumber = localChipTargetSlotNumber(gameStateRef.current, anchor);
+
+    logChipBetDiagnostic({
+      stage: 'tap-target',
+      selectedTarget: localSelectedChipTargetRef.current.target,
+      slotNumber,
+      optimisticBoxId: anchor.kind === 'box' ? anchor.boxId : null,
+    });
+
     let betTarget: PlaceBetTarget;
     try {
-      betTarget = coercePlaceBetTarget(gameStateRef.current, target, online);
+      betTarget = coercePlaceBetTarget(gameStateRef.current, anchor, online);
     } catch (err) {
-      setError(formatPlaceBetError(err));
-      return;
+      const degraded = degradeChipTargetToSlot(gameStateRef.current, anchor);
+      if (degraded) {
+        try {
+          betTarget = coercePlaceBetTarget(gameStateRef.current, degraded, online);
+        } catch (inner) {
+          logChipBetDiagnostic({
+            stage: 'error',
+            selectedTarget: anchor,
+            slotNumber,
+            message: formatPlaceBetError(inner),
+          });
+          setError(formatPlaceBetError(inner));
+          preserveLocalChipTargetAfterStateSync(gameStateRef.current, anchor);
+          return;
+        }
+      } else {
+        setError(formatPlaceBetError(err));
+        return;
+      }
     }
-    const payload = placeBetPayloadFromTarget(betTarget, amount);
+
+    const inFlight = slotNumber != null && betInFlightSlotsRef.current.has(slotNumber);
+    const payloadTarget = resolveOnlinePlaceBetPayloadTarget(
+      gameStateRef.current,
+      betTarget,
+      online,
+      inFlight,
+    );
+    const payload = placeBetPayloadFromTarget(payloadTarget, amount);
+
+    logChipBetDiagnostic({
+      stage: 'payload',
+      selectedTarget: anchor,
+      payload,
+      slotNumber,
+    });
 
     if (onlineDispatch) {
       setError(null);
       const snapshot = gameStateRef.current;
+      const optimisticSource = anchor.kind === 'slot' ? anchor : betTarget;
       try {
-        const optimistic = applyOptimisticChipPlacement(betTarget, amount);
+        const optimistic = applyOptimisticChipPlacement(optimisticSource, amount);
         onGameStateChange(optimistic);
-        preserveLocalChipTargetAfterStateSync(optimistic, betTarget);
+        const optBoxId =
+          optimisticSource.kind === 'slot'
+            ? optimistic.tableMeta.boxSlots.find((s) => s.slotNumber === optimisticSource.slotNumber)
+                ?.playerId
+            : optimisticSource.boxId;
+        logChipBetDiagnostic({
+          stage: 'optimistic',
+          selectedTarget: anchor,
+          optimisticBoxId: optBoxId ?? null,
+          slotNumber,
+        });
+        preserveLocalChipTargetAfterStateSync(optimistic, anchor);
+        if (slotNumber != null) {
+          betInFlightSlotsRef.current.add(slotNumber);
+        }
       } catch (err) {
         setError(formatPlaceBetError(err));
         return;
       }
-      void onlineDispatch('placeBet', payload).catch((err) => {
+      try {
+        await onlineDispatch('placeBet', payload);
+        logChipBetDiagnostic({
+          stage: 'reconcile',
+          selectedTarget: localSelectedChipTargetRef.current.target,
+          slotNumber,
+        });
+        preserveLocalChipTargetAfterStateSync(gameStateRef.current, anchor);
+      } catch (err) {
         onGameStateChange(snapshot);
-        preserveLocalChipTargetAfterStateSync(snapshot, betTarget);
+        logChipBetDiagnostic({
+          stage: 'error',
+          selectedTarget: anchor,
+          slotNumber,
+          message: formatPlaceBetError(err),
+        });
+        preserveLocalChipTargetAfterStateSync(snapshot, anchor);
         setError(formatPlaceBetError(err));
-      });
+      } finally {
+        if (slotNumber != null) {
+          betInFlightSlotsRef.current.delete(slotNumber);
+        }
+      }
       return;
     }
 
     setError(null);
     try {
       let state = gameStateRef.current;
-      if (target.kind === 'slot') {
-        const slot = state.tableMeta.boxSlots.find((s) => s.slotNumber === target.slotNumber);
+      if (anchor.kind === 'slot') {
+        const slot = state.tableMeta.boxSlots.find((s) => s.slotNumber === anchor.slotNumber);
         if (!slot?.playerId) {
-          state = claimBoxSlot(state, target.slotNumber);
+          state = claimBoxSlot(state, anchor.slotNumber);
         }
-        const boxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === target.slotNumber)
+        const boxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === anchor.slotNumber)
           ?.playerId;
         if (!boxId) {
           throw new Error('Could not claim box');
@@ -780,16 +862,34 @@ export function BlackjackPanel({
         const personId = resolveControllerPersonId(state, controllerName);
         const nextState = addChipToBoxStake(state, boxId, amount, personId ?? undefined);
         onGameStateChange(nextState);
-        preserveLocalChipTargetAfterStateSync(nextState, target);
+        preserveLocalChipTargetAfterStateSync(nextState, anchor);
         return;
       }
       const personId = resolveControllerPersonId(state, controllerName);
-      const nextState = addChipToBoxStake(state, target.boxId, amount, personId ?? undefined);
+      const nextState = addChipToBoxStake(state, anchor.boxId, amount, personId ?? undefined);
       onGameStateChange(nextState);
-      preserveLocalChipTargetAfterStateSync(nextState, target);
+      preserveLocalChipTargetAfterStateSync(nextState, anchor);
     } catch (err) {
       setError(formatPlaceBetError(err));
     }
+  }
+
+  function placeBetAtTarget(target: PlaceBetTarget, amount: ChipValue) {
+    const online = Boolean(onlineDispatch);
+    const anchor = anchorOnlineChipTarget(gameStateRef.current, target, online);
+    const slotNumber = localChipTargetSlotNumber(gameStateRef.current, anchor);
+
+    if (online && slotNumber != null && slotNumber >= 2) {
+      const prev = betChainBySlotRef.current.get(slotNumber) ?? Promise.resolve();
+      const chained = prev
+        .catch(() => {})
+        .then(() => placeBetAtTargetCore(anchor, amount));
+      betChainBySlotRef.current.set(slotNumber, chained);
+      void chained;
+      return;
+    }
+
+    void placeBetAtTargetCore(anchor, amount);
   }
 
   function selectBox(boxId: string) {
@@ -1131,17 +1231,50 @@ export function BlackjackPanel({
     );
   }
 
-  function renderSummaryContent() {
-    const alert = renderTableAlert();
+  function renderInsuranceDecisionOverlay() {
+    if (protocolPhase !== 'insurance' || !round?.insuranceOfferPending) {
+      return null;
+    }
+
+    const primary = getPrimaryInsuranceActionForController(gameState, round, viewerPersonId);
+    if (!primary) {
+      return null;
+    }
+
+    const { playerId, maxBet, canAfford, slotNumber } = primary;
     return (
-      alert ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />
+      <InsuranceDecisionOverlay
+        boxLabel={`Box ${slotNumber ?? '?'}`}
+        maxBet={maxBet}
+        canAfford={canAfford}
+        onInsurance={() =>
+          run((s) => takeInsuranceOnState(s, playerId), {
+            type: 'takeInsurance',
+            payload: { playerId },
+          })
+        }
+        onDecline={() =>
+          run((s) => declineInsuranceOnState(s, playerId), {
+            type: 'declineInsurance',
+            payload: { playerId },
+          })
+        }
+      />
     );
   }
 
+  function renderSummaryContent() {
+    const insurance = renderInsuranceDecisionOverlay();
+    if (insurance) {
+      return insurance;
+    }
+    const alert = renderTableAlert();
+    return alert ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />;
+  }
+
   function renderActionsContent() {
-    const insurance = renderInsuranceActions();
     const playerActions = renderTablePlayerActions();
-    const content = insurance ?? playerActions;
+    const content = playerActions;
     const hasPrimarySecondary = Boolean(playerActions);
     if (content) {
       return content;
@@ -1380,47 +1513,6 @@ export function BlackjackPanel({
       />
     );
   }
-
-  function renderInsuranceActions() {
-    if (protocolPhase !== 'insurance' || !round?.insuranceOfferPending) {
-      return null;
-    }
-
-    const actions = getInsuranceActionsForController(gameState, round, viewerPersonId);
-
-    if (actions.length === 0) {
-      return null;
-    }
-
-    const primary = actions[0];
-    if (!primary) {
-      return null;
-    }
-    const { playerId, maxBet, canAfford, slotNumber } = primary;
-    return (
-      <AceDecisionButtonRow
-        panelClassName="bj-table-actions--insurance"
-        ariaLabel={`Box ${slotNumber ?? '?'} insurance decision`}
-        hintText="Insurance pays 2:1"
-        primaryLabel={`Insure ${maxBet}`}
-        secondaryLabel="Play vs Ace"
-        primaryDisabled={!canAfford}
-        onPrimary={() =>
-          run((s) => takeInsuranceOnState(s, playerId), {
-            type: 'takeInsurance',
-            payload: { playerId },
-          })
-        }
-        onSecondary={() =>
-          run((s) => declineInsuranceOnState(s, playerId), {
-            type: 'declineInsurance',
-            payload: { playerId },
-          })
-        }
-      />
-    );
-  }
-
 
   function renderArcCardStack(cardIds: string[]) {
     if (cardIds.length === 0 || !visualDeck) {

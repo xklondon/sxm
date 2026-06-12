@@ -338,7 +338,7 @@ describe('repeat chip stacking — canonical target resolution', () => {
     expect(PANEL_SRC).toMatch(
       /function handleChipTrayClick\(value: ChipValue\) \{[\s\S]*resolveActiveChipTrayTarget\(\)/,
     );
-    expect(PANEL_SRC).toContain('preserveLocalChipTargetAfterStateSync(nextState, target)');
+    expect(PANEL_SRC).toContain('preserveLocalChipTargetAfterStateSync(nextState, anchor)');
     expect(PANEL_SRC).toContain('selectLocalTarget(placementTarget)');
     expect(PANEL_SRC).not.toContain('resolveChipTrayBetTarget');
     expect(PANEL_SRC).not.toMatch(/localSelectedChipTargetRef\.current = localChipSelection/);

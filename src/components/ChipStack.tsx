@@ -3,6 +3,7 @@ import { CHIP_VALUES, chipValuesForMinimumBet, type ChipValue } from './chipUtil
 import { setChipDragData } from './chipDrag';
 import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
 import { TABLE_UX } from './tableUxContract';
+import { clampAvailableForDisplay } from './displayBalance';
 import './ChipStack.css';
 
 interface ChipStackProps {
@@ -235,6 +236,7 @@ export function ValueAndChipsBar({
   minimumBet?: number;
   trayLabel?: string;
 }) {
+  const displayedAvailable = clampAvailableForDisplay(available);
   return (
     <div
       className={[
@@ -251,12 +253,12 @@ export function ValueAndChipsBar({
             SXM_LAYOUT.playerBalance,
             TABLE_UX.valueBalance,
             'bj-casino__player-balance',
-            available === null ? 'bj-casino__player-balance--placeholder' : '',
+            displayedAvailable === null ? 'bj-casino__player-balance--placeholder' : '',
           )}
-          aria-label={available !== null ? `${available} chips` : undefined}
-          aria-hidden={available === null}
+          aria-label={displayedAvailable !== null ? `${displayedAvailable} chips` : undefined}
+          aria-hidden={displayedAvailable === null}
         >
-          {available !== null ? available : '\u00a0'}
+          {displayedAvailable !== null ? displayedAvailable : '\u00a0'}
         </p>
         <div
           {...sxmSectionProps(
