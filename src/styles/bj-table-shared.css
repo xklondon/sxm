@@ -1869,6 +1869,58 @@
   margin: 0 0 0.04rem;
 }
 
+.bj-card-outcome-marker {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.06rem;
+  font-family: var(--ds-font-mono);
+  font-size: 0.52rem;
+  font-weight: var(--ds-weight-extrabold, 800);
+  letter-spacing: 0.05em;
+  text-align: center;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.bj-card-outcome-marker--win {
+  color: #86efac;
+}
+
+.bj-card-outcome-marker--bust {
+  color: #fca5a5;
+}
+
+.bj-card-outcome-marker--even {
+  color: rgb(255 255 255 / 0.55);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.bj-card-outcome-marker--blackjack {
+  color: var(--ds-color-gold);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+}
+
+.bj-arc__split-hand .bj-card-outcome-marker {
+  margin-bottom: 0.04rem;
+}
+
+.bj-table-actions__hint {
+  margin: 0;
+  padding: 0 0.25rem;
+  font-family: var(--ds-font-mono);
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.03em;
+  color: var(--ds-color-gold);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.bj-table-info-bar__bank-summary {
+  white-space: nowrap;
+}
+
 .bj-table-actions,
 .bj-phone-view__phase-actions--insurance,
 .bj-phone-view__phase-actions--even-money {

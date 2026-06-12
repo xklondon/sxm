@@ -137,8 +137,8 @@ describe('blackjack UX fixes — Card View hero layout', () => {
 });
 
 describe('blackjack UX fixes — dealer info layout', () => {
-  it('shows Bank Total in felt row only and Bank Hand under dealer cards', () => {
-    expect(TABLE_INFO_SRC).toContain('Bank Total:');
+  it('shows bank chips in felt row and hand value under dealer cards', () => {
+    expect(TABLE_INFO_SRC).toContain('bj-table-info-bar__bank-summary');
     expect(TABLE_INFO_SRC).toContain('bj-table-info-bar--dealer-hand');
     expect(TABLE_INFO_SRC).not.toMatch(
       /bj-table-info-bar--felt-row[\s\S]{0,400}Bank Hand:/,
@@ -148,14 +148,15 @@ describe('blackjack UX fixes — dealer info layout', () => {
     const feltHtml = renderToStaticMarkup(
       <TableInfoBar gameState={tableAfterStartPlaying(500)} viewerPersonId={null} variant="felt" />,
     );
-    expect(feltHtml).toContain('Bank Total:');
+    expect(feltHtml).toMatch(/bj-table-info-bar__bank-(summary|chips)/);
     expect(feltHtml).not.toContain('Bank Hand:');
 
     const dealerHtml = renderToStaticMarkup(
       <TableInfoBar gameState={tableAfterStartPlaying(500)} viewerPersonId={null} variant="dealer" />,
     );
-    expect(dealerHtml).toContain('Bank Hand:');
+    expect(dealerHtml).toContain('bj-phone-view__box-value--card-column');
     expect(dealerHtml).not.toContain('Bank Total:');
+    expect(dealerHtml).not.toContain('Bank:');
   });
 });
 

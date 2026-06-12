@@ -13,6 +13,7 @@ import { getTableMinimumBet, } from './dealEligibility';
 import { hasAnyStakes, } from './stakes';
 import { bankrollContextFromState } from '../session/bankroll';
 import { applyTableGameEndIfNeeded } from '../session/tableGameEnd';
+import { incrementBlackjackCountsOnSettlement } from '../session/tableBlackjackStats';
 import { syncCallersForDeal } from '../session/playerAssignment';
 import { clearTableUiEphemeral } from '../session/inviteJoin';
 import { settleBustHandOnState } from './bustSettlement';
@@ -419,7 +420,7 @@ export function completeBankingOnState(state) {
         ledger: resolved.ledger,
         blackjack: resolved.round,
         tableMeta: {
-            ...s.tableMeta,
+            ...incrementBlackjackCountsOnSettlement({ ...s, session: resolved.session }, resolved.round),
             awaitingNextRound: true,
             bettingLocked: true,
         },

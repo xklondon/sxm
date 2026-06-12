@@ -2,6 +2,8 @@ import type { GameState } from '../types';
 import { buildTableInfoDisplay } from './tableInfoDisplay';
 import { TABLE_UX } from './tableUxContract';
 import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
+import { boxValueSpanClassName } from './boxHandValueDisplay';
+import { BOX_CARD_VALUE, BOX_CARD_VALUE_ABOVE } from './cardViewBox';
 import './TableInfoBar.css';
 
 interface TableInfoBarProps {
@@ -18,6 +20,7 @@ export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: 
   const isHeader = variant === 'header';
   const isFelt = variant === 'felt';
   const showBankIdentity = Boolean(bankHolderLabel);
+  const bankChipText = bankChips !== null ? bankChips : '—';
 
   if (isHeader || isFelt) {
     return (
@@ -31,16 +34,19 @@ export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: 
         aria-label="Bank information"
       >
         {showBankIdentity ? (
-          <span className="bj-table-info-bar__item bj-table-info-bar__bank-holder">
-            Bank: {bankHolderLabel}
+          <span className="bj-table-info-bar__item bj-table-info-bar__bank-summary">
+            Bank: {bankHolderLabel} {bankChipText}
           </span>
-        ) : null}
-        <span className="bj-table-info-bar__item bj-table-info-bar__bank-chips">
-          Bank Total: {bankChips !== null ? bankChips : '—'}
-        </span>
+        ) : (
+          <span className="bj-table-info-bar__item bj-table-info-bar__bank-chips">
+            {bankChipText}
+          </span>
+        )}
       </div>
     );
   }
+
+  const bankHandLabel = bankValue !== null ? String(bankValue) : '—';
 
   return (
     <div
@@ -52,14 +58,16 @@ export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: 
       )}
       aria-label="Bank hand"
     >
-      {showBankIdentity ? (
-        <span className="bj-table-info-bar__item bj-table-info-bar__bank-holder">
-          Bank: {bankHolderLabel}
-        </span>
-      ) : null}
-      <span className="bj-table-info-bar__item bj-table-info-bar__bank-value">
-        {showBankIdentity ? 'Bank has ' : 'Bank Hand: '}
-        {bankValue !== null ? <span className="bj-bank-hand__value">{bankValue}</span> : '—'}
+      <span
+        className={[
+          boxValueSpanClassName(Boolean(bankValue), false),
+          TABLE_UX.cardColumnValueAbove,
+          BOX_CARD_VALUE,
+          BOX_CARD_VALUE_ABOVE,
+        ].join(' ')}
+        aria-hidden={bankValue !== null ? undefined : 'true'}
+      >
+        {bankHandLabel}
       </span>
     </div>
   );

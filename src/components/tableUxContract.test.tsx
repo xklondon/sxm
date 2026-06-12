@@ -233,8 +233,8 @@ describe('TABLE_UX markup across views', () => {
       const bankIdx = html.indexOf('bj-table-info-bar--felt-row');
       expect(shellIdx).toBeGreaterThan(-1);
       expect(bankIdx).toBeGreaterThan(shellIdx);
-      expect(html).toContain('Bank Total:');
-      expect(html).toContain('Bank Hand:');
+      expect(html).toMatch(/bj-table-info-bar__bank-(summary|chips)/);
+      expect(html).toContain('bj-phone-view__box-value--card-column');
       expect(html).not.toContain('bj-casino__header-bank');
       expect(html).not.toContain('dealer-block__brand');
     }

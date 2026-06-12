@@ -316,8 +316,7 @@ describe('Card View layout guard', () => {
   it('Card View shows bank total and bank hand inside table shell above dealer', () => {
     const html = renderCardPanel(playingState());
     expect(html).toContain('bj-table-info-bar--felt-row');
-    expect(html).toContain('Bank Total:');
-    expect(html).toContain('Bank Hand:');
+    expect(html).toMatch(/bj-table-info-bar__bank-(summary|chips)/);
     expect(html).toContain('data-sxm-section="sxm-balance-display"');
     const shellIdx = html.indexOf(TABLE_UX.tableLayoutShell);
     const infoIdx = html.indexOf('bj-table-info-bar--felt-row');

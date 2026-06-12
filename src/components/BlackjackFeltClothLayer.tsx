@@ -47,7 +47,7 @@ export function BlackjackFeltClothLayer({
 
         <text className={`${TABLE_UX.feltClothLayer}__insurance`}>
           <textPath href={`#${insuranceArcId}`} startOffset="50%" textAnchor="middle">
-            {trimmedWager ? `Playing for ${trimmedWager}` : 'Insurance Pays 2 to 1'}
+            {trimmedWager ? `Playing for ${trimmedWager}` : 'Insurance pays 2:1'}
           </textPath>
         </text>
 

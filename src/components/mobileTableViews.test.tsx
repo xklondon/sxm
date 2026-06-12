@@ -272,10 +272,12 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     expect(html).toContain('bj-box--turn');
   });
 
-  it('keeps a busted box visible with a BUST label', () => {
+  it('keeps a busted box visible with BUST in cards area and bet on box', () => {
     const html = renderPanelAt(390, withView(playingState(), 'full'));
-    expect(html).toContain('bj-phone-view__box-value--bust');
-    expect(html).toContain('BUST');
+    const cardsArea = html.split('bj-arc--cards')[1]?.split('bj-arc--player-boxes')[0] ?? '';
+    expect(cardsArea).toContain('bj-phone-view__box-value--bust');
+    expect(cardsArea).toContain('BUST');
+    expect(html).toContain('>10<');
   });
 
   it('uses the same box order as desktop Full Table', () => {
@@ -345,10 +347,10 @@ describe('mobile Card View structure', () => {
     expect(panelSrc).toContain('TableAccountsPanel');
   });
 
-  it('arc player boxes row includes all slots in order with BUST, active highlight, and join boxes', () => {
+  it('arc player boxes row includes all slots in order with active highlight and join boxes', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).toContain('bj-arc--player-boxes');
-    expect(html).toContain('BUST');
+    expect(html).toContain('>10<');
     expect(html).toContain('bj-box--turn');
     expect(html).toContain('Join');
     const order = cardViewMiniBoxOrder(html);

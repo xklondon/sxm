@@ -119,13 +119,13 @@ describe('table layout stabilization contract', () => {
     expect(full).not.toContain(TABLE_UX.cardsFan);
   });
 
-  it('shows bank total and bank hand inside table shell above dealer', () => {
+  it('shows bank summary and bank hand inside table shell above dealer', () => {
     for (const width of [1280, 390]) {
       const full = renderAt(width, 'full');
       expect(full).toContain('bj-table-info-bar--felt-row');
-      expect(full).toContain('Bank Total:');
+      expect(full).toMatch(/bj-table-info-bar__bank-(summary|chips)/);
       expect(full).toContain('bj-table-info-bar--dealer-hand');
-      expect(full).toContain('Bank Hand:');
+      expect(full).toContain('bj-phone-view__box-value--card-column');
       expect(full).toContain('bj-value-chips');
       expect(full).not.toMatch(/bj-value-chips__balance[^>]*>Available:/);
       const shellIdx = full.indexOf(TABLE_UX.tableLayoutShell);
@@ -136,9 +136,9 @@ describe('table layout stabilization contract', () => {
 
       const card = renderAt(width, 'card');
       expect(card).toContain('bj-table-info-bar--felt-row');
-      expect(card).toContain('Bank Total:');
+      expect(card).toMatch(/bj-table-info-bar__bank-(summary|chips)/);
       expect(card).toContain('bj-table-info-bar--dealer-hand');
-      expect(card).toContain('Bank Hand:');
+      expect(card).toContain('bj-phone-view__box-value--card-column');
       expect(card).toContain(TABLE_UX.dealerBankInfo);
       expect(card).not.toContain('bj-casino__header-bank');
     }
@@ -181,8 +181,9 @@ describe('table layout stabilization contract', () => {
 
   it('bank visible value excludes hidden hole card in markup', () => {
     const html = renderAt(1280, 'full');
-    expect(html).toContain('bj-bank-hand__value">7</span>');
-    expect(html).not.toContain('bj-bank-hand__value">17</span>');
+    expect(html).toContain('bj-phone-view__box-value--card-column');
+    expect(html).toContain('>7<');
+    expect(html).not.toContain('>17<');
   });
 
   it('player boxes use shared framed mini-hand shell', () => {
@@ -269,8 +270,8 @@ describe('table layout polish contract', () => {
     expect(shellSrc).toMatch(/tableBankInfo[\s\S]*\{dealer\}/);
     for (const mode of ['full', 'card'] as const) {
       const html = renderAt(1280, mode);
-      expect(html).toContain('Bank Total:');
-      expect(html).toContain('Bank Hand:');
+      expect(html).toMatch(/bj-table-info-bar__bank-(summary|chips)/);
+      expect(html).toContain('bj-phone-view__box-value--card-column');
       expect(html).toContain('bj-table-info-bar--felt-row');
       expect(html).not.toContain('bj-casino__header-bank');
     }

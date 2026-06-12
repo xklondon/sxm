@@ -12,6 +12,7 @@ interface AceDecisionButtonRowProps {
   secondaryDisabled?: boolean;
   panelClassName?: string;
   ariaLabel?: string;
+  hintText?: string;
 }
 
 /** Thin yellow-bordered single-line Take 1:1 / Play vs Ace (and insurance) buttons — all views. */
@@ -24,6 +25,7 @@ export function AceDecisionButtonRow({
   secondaryDisabled = false,
   panelClassName = '',
   ariaLabel = 'Ace decision',
+  hintText,
 }: AceDecisionButtonRowProps) {
   return (
     <div
@@ -38,6 +40,11 @@ export function AceDecisionButtonRow({
       aria-live="polite"
       aria-label={ariaLabel}
     >
+      {hintText ? (
+        <p className="bj-table-actions__hint" role="note">
+          {hintText}
+        </p>
+      ) : null}
       <div className="bj-table-actions__row bj-table-actions__row--ace">
         <button
           type="button"

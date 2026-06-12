@@ -149,12 +149,12 @@ describe('Card View polish guards', () => {
     expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__hand[\s\S]*min-height:\s*0/);
   });
 
-  it('renders hand value above shared arc player box tile', () => {
+  it('renders bet amount above shared arc player box tile', () => {
     const html = renderCardPanel(playingState());
     const slot = arcBoxSlot(html, 1);
     expect(slot).toContain('bj-phone-view__box-value--above');
     expect(slot.indexOf('bj-phone-view__box-value--above')).toBeLessThan(slot.indexOf('bj-phone-view__mini-hand--full-arc'));
-    expect(slot).toContain('13');
+    expect(slot).toContain('>50<');
   });
 
   it('shared arc player boxes use the same mini-hand shell as Full Table', () => {

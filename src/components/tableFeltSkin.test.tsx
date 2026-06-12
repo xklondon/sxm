@@ -153,7 +153,7 @@ describe('table felt cloth layer', () => {
       <BlackjackFeltClothLayer tableName={DEFAULT_TABLE_CLOTH_NAME} wagerText="" />,
     );
     expect(html).not.toContain('Playing for');
-    expect(html).toContain('Insurance Pays 2 to 1');
+    expect(html).toContain('Insurance pays 2:1');
   });
 
   it('keeps cloth layer non-interactive and behind gameplay zones', () => {
@@ -205,8 +205,8 @@ describe('table felt cloth layer', () => {
     const infoSrc = readSrc('src/components/TableInfoBar.tsx');
     expect(panelSrc).toContain('tableBankInfo');
     expect(panelSrc).toMatch(/variant="felt"/);
-    expect(infoSrc).toContain('Bank Total:');
-    expect(infoSrc).toContain('Bank Hand:');
+    expect(infoSrc).toContain('bj-table-info-bar__bank-summary');
+    expect(infoSrc).toContain('TABLE_UX.cardColumnValueAbove');
     expect(infoSrc).toContain('bj-table-info-bar--felt-row');
     expect(panelSrc).not.toContain('bj-casino__header-bank');
   });

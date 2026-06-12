@@ -151,10 +151,19 @@ import {
 } from './cardViewBox';
 import { boxValueSpanClassName, resolvePrimaryHandValueLabel } from './boxHandValueDisplay';
 import {
-  handResultStatusText,
-  resolveBoxHandResultStatus,
-  shouldShowBoxHandResultMarkers,
-} from './boxHandStatusDisplay';
+  formatBoxNetResultLabel,
+  resolveBoxBetAmountDuringPlay,
+  resolveBoxNetChipsForHands,
+  boxNetResultTone,
+} from './boxBetResultDisplay';
+import {
+  cardAreaOutcomeMarkerClass,
+  cardAreaOutcomeMarkerText,
+  cardAreaOutcomeToneFromMarker,
+  resolveCardAreaOutcomeMarker,
+} from './cardAreaOutcomeDisplay';
+import { shouldShowBoxHandResultMarkers } from './boxHandStatusDisplay';
+import { buildBlackjackCountByBoxDisplay } from './blackjackCountByBoxDisplay';
 import { GameOverActionOverlay } from './GameOverActionOverlay';
 import { AceDecisionButtonRow } from './blackjackAceDecisionActions';
 import {
@@ -1041,6 +1050,7 @@ export function BlackjackPanel({
     canChangeProtocol,
     onChangeProtocol: handleCycleProtocol,
     gameEnded,
+    blackjackCountByBox: buildBlackjackCountByBoxDisplay(gameState),
     canResetTable: canResetTable && Boolean(onBeginTableReset),
     onResetTable: onBeginTableReset
       ? () => {
@@ -1389,6 +1399,7 @@ export function BlackjackPanel({
       <AceDecisionButtonRow
         panelClassName="bj-table-actions--insurance"
         ariaLabel={`Box ${slotNumber ?? '?'} insurance decision`}
+        hintText="Insurance pays 2:1"
         primaryLabel={`Insure ${maxBet}`}
         secondaryLabel="Play vs Ace"
         primaryDisabled={!canAfford}
@@ -1450,6 +1461,14 @@ export function BlackjackPanel({
       primaryHandKey,
       primaryHand,
     );
+    const primaryOutcome = primaryHandKey
+      ? visualRound?.outcomes?.[primaryHandKey]
+      : undefined;
+    const outcomeMarker = resolveCardAreaOutcomeMarker(
+      showBoxHandResultMarkers,
+      primaryOutcome,
+      primaryHand?.actionStatus,
+    );
     const rotation =
       deviceView === 'mobile'
         ? 0
@@ -1468,9 +1487,18 @@ export function BlackjackPanel({
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
         data-box-slot={slotNumber}
       >
+        {outcomeMarker && !isSplit ? (
+          <span className={cardAreaOutcomeMarkerClass(outcomeMarker)} aria-hidden="true">
+            {cardAreaOutcomeMarkerText(outcomeMarker)}
+          </span>
+        ) : null}
         <span
           className={[
-            boxValueSpanClassName(Boolean(valueLabel), isBusted),
+            boxValueSpanClassName(
+              Boolean(valueLabel),
+              isBusted,
+              cardAreaOutcomeToneFromMarker(outcomeMarker),
+            ),
             TABLE_UX.cardColumnValueAbove,
           ].join(' ')}
           aria-hidden={valueLabel ? undefined : 'true'}
@@ -1481,8 +1509,20 @@ export function BlackjackPanel({
           <div className="bj-arc__split-hands">
             {handKeys.map((handKey) => {
               const cardIds = getVisibleHandCardIds(visualRound, handKey);
+              const splitHand = visualRound?.playerHands[handKey];
+              const splitOutcome = visualRound?.outcomes?.[handKey];
+              const splitMarker = resolveCardAreaOutcomeMarker(
+                showBoxHandResultMarkers,
+                splitOutcome,
+                splitHand?.actionStatus,
+              );
               return (
                 <div key={handKey} className="bj-arc__split-hand">
+                  {splitMarker ? (
+                    <span className={cardAreaOutcomeMarkerClass(splitMarker)} aria-hidden="true">
+                      {cardAreaOutcomeMarkerText(splitMarker)}
+                    </span>
+                  ) : null}
                   {renderArcCardStack(cardIds)}
                 </div>
               );
@@ -1543,22 +1583,26 @@ export function BlackjackPanel({
       ? getVisibleHandCardIds(visualRound, primaryHandKey)
       : [];
     const isBusted = primaryHand?.actionStatus === 'busted';
-    const handResultStatus = resolveBoxHandResultStatus(
-      gameState.blackjack,
-      primaryHandKey,
-      showBoxHandResultMarkers,
-    );
-    const playValueLabel = resolvePrimaryHandValueLabel(
-      visualDeck,
-      visualRound,
-      primaryHandKey,
-      primaryHand,
-    );
-    const boxValueLabel = handResultStatus
-      ? handResultStatusText(handResultStatus)
-      : playValueLabel;
-    const stakeChips = getStakeChipsForBox(gameState, boxId);
     const wager = inBetting ? openStake : (primaryHand?.currentBet ?? openStake);
+    const betAmount = resolveBoxBetAmountDuringPlay(inBetting, openStake, primaryHand?.currentBet);
+    const boxNetChips =
+      showBoxHandResultMarkers && visualRound
+        ? resolveBoxNetChipsForHands(
+            visualRound,
+            handKeys,
+            gameState.blackjackSettings.blackjackPayout,
+          )
+        : null;
+    const boxValueLabel = showBoxHandResultMarkers
+      ? boxNetChips !== null
+        ? formatBoxNetResultLabel(boxNetChips)
+        : ''
+      : betAmount > 0
+        ? String(betAmount)
+        : '';
+    const boxNetTone =
+      showBoxHandResultMarkers && boxNetChips !== null ? boxNetResultTone(boxNetChips) : null;
+    const stakeChips = getStakeChipsForBox(gameState, boxId);
     const showBettingChips = inBetting && openStake > 0 && stakeChips.length > 0;
     const showPlayChips = !inBetting && wager > 0;
     const displayChips = showBettingChips
@@ -1614,7 +1658,7 @@ export function BlackjackPanel({
           className={boxValueSpanClassName(
             Boolean(boxValueLabel),
             isBusted,
-            handResultStatus,
+            boxNetTone,
           )}
           aria-hidden={boxValueLabel ? undefined : 'true'}
         >

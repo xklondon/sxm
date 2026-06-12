@@ -96,8 +96,8 @@ describe('Bank info inside table felt', () => {
     const card = renderToStaticMarkup(
       <BlackjackPanel gameState={{ ...state, tableViewMode: 'card' }} onGameStateChange={noop} />,
     );
-    expect(full).toContain('Bank Total:');
-    expect(card).toContain('Bank Total:');
+    expect(full).toMatch(/bj-table-info-bar__bank-(summary|chips)/);
+    expect(card).toMatch(/bj-table-info-bar__bank-(summary|chips)/);
     expect(full).toContain('bj-table-info-bar--felt-row');
     expect(full).not.toContain('bj-casino__header-bank');
   });
@@ -107,7 +107,7 @@ describe('Bank info inside table felt', () => {
       <TableInfoBar gameState={bettingTable()} viewerPersonId={null} variant="felt" />,
     );
     expect(html).toContain('sxm-balance-display');
-    expect(html).toContain('Bank Total:');
+    expect(html).toMatch(/bj-table-info-bar__bank-(summary|chips)/);
   });
 });
 

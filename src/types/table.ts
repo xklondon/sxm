@@ -161,6 +161,8 @@ export interface TableMeta {
     personId: string;
     slotNumber: number;
   } | null;
+  /** Session blackjack wins per box slot (1 = rightmost). */
+  blackjackCountBySlot?: Record<number, number>;
 }
 
 export const MAX_TABLE_BOXES = 7;

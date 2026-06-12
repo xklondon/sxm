@@ -18,6 +18,8 @@ export interface TableDetailsPanelProps {
   gameEnded: boolean;
   canResetTable?: boolean;
   onResetTable?: () => void;
+  /** Session blackjack wins per occupied box, e.g. "Box 1: 2, Box 2: 0". */
+  blackjackCountByBox?: string;
 }
 
 /** Table wager/shoe/protocol settings — shown in the Table details slide-out only. */
@@ -39,6 +41,7 @@ export function TableDetailsPanelContent({
   gameEnded,
   canResetTable = false,
   onResetTable,
+  blackjackCountByBox,
 }: TableDetailsPanelProps) {
   return (
     <div className="table-details-panel" aria-label="Table details">
@@ -122,6 +125,10 @@ export function TableDetailsPanelContent({
             </>
           )}
         </span>
+      </div>
+      <div className="table-details-panel__chip">
+        <span className="table-details-panel__k">Black Jacks per Box</span>
+        <span className="table-details-panel__v">{blackjackCountByBox ?? '—'}</span>
       </div>
       {canResetTable && onResetTable && (
         <div className="table-details-panel__reset">

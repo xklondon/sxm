@@ -111,7 +111,7 @@ describe('desktop canonical vertical grid polish', () => {
     expect(feltCss).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*var\(--bj-cloth-svg-width\)/);
     expect(feltCss).toContain('--bj-cloth-insurance-font-size: 35px');
     expect(feltCss).toContain('--bj-cloth-dealer-rule-font-size: 33px');
-    expect(clothSrc).toMatch(/trimmedWager \? `Playing for \$\{trimmedWager\}` : 'Insurance Pays 2 to 1'/);
+    expect(clothSrc).toMatch(/trimmedWager \? `Playing for \$\{trimmedWager\}` : 'Insurance pays 2:1'/);
   });
 });
 

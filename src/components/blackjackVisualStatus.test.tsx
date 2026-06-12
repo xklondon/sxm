@@ -9,11 +9,14 @@ import { BlackjackPanel } from './BlackjackPanel';
 import { TableInfoBar } from './TableInfoBar';
 import { boxValueSpanClassName } from './boxHandValueDisplay';
 import {
-  handResultStatusText,
   mapOutcomeToHandResultStatus,
   resolveBoxHandResultStatus,
   shouldShowBoxHandResultMarkers,
 } from './boxHandStatusDisplay';
+import {
+  formatBoxNetResultLabel,
+  boxNetResultTone,
+} from './boxBetResultDisplay';
 import {
   tableAfterStartPlaying,
   boxPlayerId,
@@ -69,13 +72,13 @@ function settledBoxState(outcome: 'win' | 'loss' | 'push'): GameState {
 }
 
 describe('blackjack visual status — outcome mapping', () => {
-  it('maps settled outcomes to WIN, BUST, and EVEN box text', () => {
+  it('maps settled outcomes to WIN, BUST, and EVEN card-area markers', () => {
     expect(mapOutcomeToHandResultStatus('win')).toBe('win');
     expect(mapOutcomeToHandResultStatus('loss')).toBe('bust');
     expect(mapOutcomeToHandResultStatus('push')).toBe('push');
-    expect(handResultStatusText('win')).toBe('WIN');
-    expect(handResultStatusText('bust')).toBe('BUST');
-    expect(handResultStatusText('push')).toBe('EVEN');
+    expect(formatBoxNetResultLabel(10)).toBe('+10');
+    expect(formatBoxNetResultLabel(-10)).toBe('-10');
+    expect(formatBoxNetResultLabel(0)).toBe('EVEN');
   });
 
   it('shows markers only after round resolution', () => {
@@ -97,31 +100,33 @@ describe('blackjack visual status — hand values', () => {
   it('applies player hand value emphasis class', () => {
     expect(boxValueSpanClassName(true, false)).toContain('bj-player-hand-value--emphasis');
     expect(boxValueSpanClassName(true, false, 'win')).toContain('bj-phone-view__box-value--win');
-    expect(boxValueSpanClassName(true, false, 'push')).toContain('bj-phone-view__box-value--even');
+    expect(boxValueSpanClassName(true, false, 'even')).toContain('bj-phone-view__box-value--even');
+    expect(boxNetResultTone(5)).toBe('win');
+    expect(boxNetResultTone(-5)).toBe('loss');
   });
 
-  it('wraps bank hand number in bj-bank-hand__value', () => {
+  it('dealer bank hand uses card-column value classes', () => {
     const dealerHtml = renderToStaticMarkup(
       <TableInfoBar gameState={dealerHandInfoState()} viewerPersonId={null} variant="dealer" />,
     );
-    expect(dealerHtml).toContain('bj-bank-hand__value');
-    expect(readSrc('src/components/TableInfoBar.css')).toContain('.bj-bank-hand__value');
+    expect(dealerHtml).toContain('bj-phone-view__box-value--card-column');
+    expect(dealerHtml).not.toContain('bj-bank-hand__value');
   });
 });
 
 describe('blackjack visual status — end-of-round box labels', () => {
-  it('renders WIN, BUST, and EVEN text on player boxes only', () => {
+  it('renders net chip results on player boxes', () => {
     const winHtml = renderToStaticMarkup(
       <BlackjackPanel gameState={settledBoxState('win')} onGameStateChange={noop} />,
     );
-    expect(winHtml).toContain('>WIN<');
+    expect(winHtml).toContain('>+10<');
     expect(winHtml).toContain('bj-phone-view__box-value--win');
     expect(winHtml).not.toContain('bj-hand-status');
 
     const bustHtml = renderToStaticMarkup(
       <BlackjackPanel gameState={settledBoxState('loss')} onGameStateChange={noop} />,
     );
-    expect(bustHtml).toContain('>BUST<');
+    expect(bustHtml).toContain('>-10<');
     expect(bustHtml).not.toContain('bj-hand-status--bust');
 
     const pushHtml = renderToStaticMarkup(
@@ -131,14 +136,14 @@ describe('blackjack visual status — end-of-round box labels', () => {
     expect(pushHtml).toContain('bj-phone-view__box-value--even');
   });
 
-  it('does not render result badges in the large cards area', () => {
+  it('renders outcome markers in the large cards area', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={settledBoxState('loss')} onGameStateChange={noop} />,
     );
     const cardsArea = html.split('bj-arc--cards')[1]?.split('bj-arc--player-boxes')[0] ?? '';
+    expect(cardsArea).toContain('bj-card-outcome-marker');
+    expect(cardsArea).toContain('BUST');
     expect(cardsArea).not.toContain('bj-hand-status');
-    expect(cardsArea).not.toContain('>WIN<');
-    expect(cardsArea).not.toContain('>EVEN<');
   });
 });
 
