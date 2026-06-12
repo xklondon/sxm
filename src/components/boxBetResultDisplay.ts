@@ -13,6 +13,25 @@ export function resolveBoxBetAmountDuringPlay(
   return currentBet ?? 0;
 }
 
+/** True when the box had an active wager and cards (or a settled outcome) this round. */
+export function boxHadActiveHandInRound(
+  round: BlackjackRound,
+  handKeys: string[],
+): boolean {
+  for (const handKey of handKeys) {
+    const hand = round.playerHands[handKey];
+    if (!hand || hand.currentBet <= 0) {
+      continue;
+    }
+    const hasCards = hand.cardIds.some(Boolean);
+    const hasOutcome = Boolean(round.outcomes?.[handKey]);
+    if (hasCards || hasOutcome) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /** Sum net chip delta for all hands on one box after settlement. */
 export function resolveBoxNetChipsForHands(
   round: BlackjackRound,

@@ -29,10 +29,10 @@ describe('mobile chip tray layout (Table + card views)', () => {
 
   it('uses one shared gap variable for chip spacing on mobile', () => {
     expect(CHIP_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-value-chips[\s\S]*--bj-chip-tray-gap:\s*0\.28rem/,
+      /\.bj-view-full-mobile \.bj-value-chips[\s\S]*--bj-chip-tray-gap:\s*0\.16rem/,
     );
     expect(CHIP_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-value-chips[\s\S]*--bj-chip-tray-gap:\s*0\.28rem/,
+      /\.bj-view-card-mobile \.bj-value-chips[\s\S]*--bj-chip-tray-gap:\s*0\.16rem/,
     );
     expect(CHIP_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-value-chips .chip-tray__chips[\s\S]*gap:\s*var\(--bj-chip-tray-gap\)/,
@@ -65,7 +65,7 @@ describe('mobile chip tray layout (Table + card views)', () => {
 
   it('shrinks chip visuals while preserving hit target on mobile', () => {
     expect(CHIP_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-value-chips[\s\S]*--chip-plaque-visual-width:\s*3\.75rem/,
+      /\.bj-view-full-mobile \.bj-value-chips[\s\S]*--chip-plaque-visual-width:\s*2\.85rem/,
     );
     expect(CHIP_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-value-chips \.chip-token--plaque[\s\S]*min-width:\s*var\(--chip-plaque-hit-width\)/,

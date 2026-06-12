@@ -1157,6 +1157,29 @@
   font-size: calc(var(--bj-seat-total-size) * 1.35);
 }
 
+/* Desktop net results above player boxes — compact to avoid clipping in value band. */
+.bj-view-full-desktop .bj-arc--player-boxes .bj-phone-view__box-value--net-result {
+  font-size: 0.58rem;
+  font-weight: var(--ds-weight-extrabold, 800);
+  letter-spacing: -0.03em;
+  line-height: var(--bj-box-value-band-height);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bj-view-full-desktop .bj-arc--player-boxes .bj-phone-view__box-value--net-result.bj-player-hand-value--emphasis {
+  font-size: 0.58rem;
+}
+
+.bj-view-full-desktop .bj-arc--cards .bj-phone-view__box-value--card-column.bj-player-hand-value--emphasis {
+  font-size: calc(var(--bj-seat-total-size) * 1.05);
+  line-height: var(--bj-box-value-band-height);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .bj-phone-view__box-value--bust.bj-player-hand-value--emphasis {
   font-size: calc(var(--bj-seat-total-size) * 1.35 * 0.85);
 }

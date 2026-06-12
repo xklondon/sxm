@@ -145,6 +145,7 @@ import {
 import { getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
 import {
   BET_BOX_PULSE,
+  BOX_NET_RESULT,
   getBoxActivePulseClassName,
   getBoxCardVisualClasses,
   resolveBoxBorderVisualState,
@@ -154,6 +155,7 @@ import {
   formatBoxNetResultLabel,
   resolveBoxBetAmountDuringPlay,
   resolveBoxNetChipsForHands,
+  boxHadActiveHandInRound,
   boxNetResultTone,
 } from './boxBetResultDisplay';
 import {
@@ -1461,14 +1463,26 @@ export function BlackjackPanel({
       primaryHandKey,
       primaryHand,
     );
+    const boxParticipated =
+      Boolean(primaryHand) &&
+      primaryHand!.currentBet > 0 &&
+      (primaryHand!.cardIds.some(Boolean) ||
+        Boolean(primaryHandKey && visualRound?.outcomes?.[primaryHandKey]));
     const primaryOutcome = primaryHandKey
       ? visualRound?.outcomes?.[primaryHandKey]
       : undefined;
-    const outcomeMarker = resolveCardAreaOutcomeMarker(
-      showBoxHandResultMarkers,
-      primaryOutcome,
-      primaryHand?.actionStatus,
-    );
+    const outcomeMarker = boxParticipated
+      ? resolveCardAreaOutcomeMarker(
+          showBoxHandResultMarkers,
+          primaryOutcome,
+          primaryHand?.actionStatus,
+        )
+      : null;
+    const hideCardValueOnMobile =
+      deviceView === 'mobile' &&
+      outcomeMarker !== null &&
+      (outcomeMarker === 'blackjack' || showBoxHandResultMarkers);
+    const cardColumnValueLabel = hideCardValueOnMobile ? '' : valueLabel;
     const rotation =
       deviceView === 'mobile'
         ? 0
@@ -1495,15 +1509,15 @@ export function BlackjackPanel({
         <span
           className={[
             boxValueSpanClassName(
-              Boolean(valueLabel),
+              Boolean(cardColumnValueLabel),
               isBusted,
               cardAreaOutcomeToneFromMarker(outcomeMarker),
             ),
             TABLE_UX.cardColumnValueAbove,
           ].join(' ')}
-          aria-hidden={valueLabel ? undefined : 'true'}
+          aria-hidden={cardColumnValueLabel ? undefined : 'true'}
         >
-          {valueLabel || '\u00a0'}
+          {cardColumnValueLabel || '\u00a0'}
         </span>
         {isSplit ? (
           <div className="bj-arc__split-hands">
@@ -1511,11 +1525,17 @@ export function BlackjackPanel({
               const cardIds = getVisibleHandCardIds(visualRound, handKey);
               const splitHand = visualRound?.playerHands[handKey];
               const splitOutcome = visualRound?.outcomes?.[handKey];
-              const splitMarker = resolveCardAreaOutcomeMarker(
-                showBoxHandResultMarkers,
-                splitOutcome,
-                splitHand?.actionStatus,
-              );
+              const splitParticipated =
+                Boolean(splitHand) &&
+                splitHand!.currentBet > 0 &&
+                (splitHand!.cardIds.some(Boolean) || Boolean(splitOutcome));
+              const splitMarker = splitParticipated
+                ? resolveCardAreaOutcomeMarker(
+                    showBoxHandResultMarkers,
+                    splitOutcome,
+                    splitHand?.actionStatus,
+                  )
+                : null;
               return (
                 <div key={handKey} className="bj-arc__split-hand">
                   {splitMarker ? (
@@ -1585,15 +1605,17 @@ export function BlackjackPanel({
     const isBusted = primaryHand?.actionStatus === 'busted';
     const wager = inBetting ? openStake : (primaryHand?.currentBet ?? openStake);
     const betAmount = resolveBoxBetAmountDuringPlay(inBetting, openStake, primaryHand?.currentBet);
+    const boxParticipated =
+      Boolean(visualRound) && boxHadActiveHandInRound(visualRound!, handKeys);
     const boxNetChips =
-      showBoxHandResultMarkers && visualRound
+      showBoxHandResultMarkers && visualRound && boxParticipated
         ? resolveBoxNetChipsForHands(
             visualRound,
             handKeys,
             gameState.blackjackSettings.blackjackPayout,
           )
         : null;
-    const boxValueLabel = showBoxHandResultMarkers
+    const boxValueLabel = showBoxHandResultMarkers && boxParticipated
       ? boxNetChips !== null
         ? formatBoxNetResultLabel(boxNetChips)
         : ''
@@ -1601,7 +1623,10 @@ export function BlackjackPanel({
         ? String(betAmount)
         : '';
     const boxNetTone =
-      showBoxHandResultMarkers && boxNetChips !== null ? boxNetResultTone(boxNetChips) : null;
+      showBoxHandResultMarkers && boxParticipated && boxNetChips !== null
+        ? boxNetResultTone(boxNetChips)
+        : null;
+    const showBoxNetResult = showBoxHandResultMarkers && boxParticipated;
     const stakeChips = getStakeChipsForBox(gameState, boxId);
     const showBettingChips = inBetting && openStake > 0 && stakeChips.length > 0;
     const showPlayChips = !inBetting && wager > 0;
@@ -1655,11 +1680,12 @@ export function BlackjackPanel({
           onDrop={inBetting ? (e) => handleBetZoneDrop(boxId, slotNumber, e) : undefined}
         />
         <span
-          className={boxValueSpanClassName(
-            Boolean(boxValueLabel),
-            isBusted,
-            boxNetTone,
-          )}
+          className={[
+            boxValueSpanClassName(Boolean(boxValueLabel), isBusted, boxNetTone),
+            showBoxNetResult ? BOX_NET_RESULT : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           aria-hidden={boxValueLabel ? undefined : 'true'}
         >
           {boxValueLabel || '\u00a0'}

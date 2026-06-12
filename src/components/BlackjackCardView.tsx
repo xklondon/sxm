@@ -35,6 +35,12 @@ import {
   canShowPlayerDecisionControls,
   resolveViewerActionPermission,
 } from "./blackjackViewPhase";
+import { shouldShowBoxHandResultMarkers } from "./boxHandStatusDisplay";
+import {
+  cardAreaOutcomeMarkerClass,
+  cardAreaOutcomeMarkerText,
+  resolveCardAreaOutcomeMarker,
+} from "./cardAreaOutcomeDisplay";
 import { getDisplayedHandValue } from "../engine/blackjack/dealing/cardRevealDisplay";
 
 import { type DeviceView } from "./tableViewContract";
@@ -180,6 +186,26 @@ export function BlackjackCardView({
 
   const heroDisplayValue =
     heroHandKey !== null ? getDisplayedHandValue(deck, round, heroHandKey) : null;
+
+  const showCardAreaResults = shouldShowBoxHandResultMarkers({
+    awaitingNextRound: logicalGameState.tableMeta.awaitingNextRound,
+    protocolPhase,
+    round: logicalRound,
+  });
+  const heroOutcome =
+    heroHandKey !== null ? logicalRound?.outcomes?.[heroHandKey] : undefined;
+  const heroOutcomeMarker =
+    heroHandKey && logicalHand
+      ? resolveCardAreaOutcomeMarker(
+          showCardAreaResults,
+          heroOutcome,
+          logicalHand.actionStatus,
+        )
+      : null;
+  const hideHeroValueOnMobile =
+    deviceView === "mobile" &&
+    heroOutcomeMarker !== null &&
+    (heroOutcomeMarker === "blackjack" || showCardAreaResults);
 
   const heroCardsVisible = showHeroPlayerCards(
     protocolPhase,
@@ -631,7 +657,17 @@ export function BlackjackCardView({
     const heroCenter = (
       <div className="bj-phone-view__hero-center">
         <div className="bj-phone-view__hand-meta bj-phone-view__hand-meta--above-cards">
-          {heroDisplayValue !== null ? (
+          {hideHeroValueOnMobile && heroOutcomeMarker ? (
+            <span
+              className={[
+                cardAreaOutcomeMarkerClass(heroOutcomeMarker),
+                'bj-card-view__hero-outcome',
+              ].join(' ')}
+              aria-hidden="true"
+            >
+              {cardAreaOutcomeMarkerText(heroOutcomeMarker)}
+            </span>
+          ) : heroDisplayValue !== null ? (
             <div
               {...sxmSectionProps(
                 SXM_LAYOUT.handTotal,
@@ -660,7 +696,7 @@ export function BlackjackCardView({
               &nbsp;
             </div>
           )}
-          {heroBusted ? (
+          {heroBusted && !hideHeroValueOnMobile ? (
             <span className="bj-phone-view__bust-label bj-phone-view__bust-label--meta" aria-label="Busted">
               BUST
             </span>

@@ -9,11 +9,11 @@ export function resolveCardAreaOutcomeMarker(
   outcome: BlackjackOutcome | undefined,
   actionStatus: string | undefined,
 ): CardAreaOutcomeMarker | null {
+  if (actionStatus === 'blackjack' || outcome === 'blackjack-win') {
+    return 'blackjack';
+  }
   if (!showResults) {
     return null;
-  }
-  if (outcome === 'blackjack-win') {
-    return 'blackjack';
   }
   if (outcome === 'blackjack-push' || outcome === 'push') {
     return 'even';

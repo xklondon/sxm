@@ -2065,6 +2065,19 @@
     max-height: min(52vw, 11rem);
   }
 
+  .bj-view-card-mobile .bj-card-view__hero-outcome {
+    display: block;
+    width: 100%;
+    margin: 0 0 0.12rem;
+    text-align: center;
+    font-size: 0.72rem;
+    line-height: 1.15;
+  }
+
+  .bj-view-card-mobile .bj-card-view__hero-outcome.bj-card-outcome-marker--blackjack {
+    font-size: 0.78rem;
+  }
+
   .bj-view-card-mobile .bj-card-view__hero-value.bj-phone-view__total--hero:not(.bj-phone-view__total--blackjack) {
     font-size: calc(0.68rem * 3);
     padding: 5px;

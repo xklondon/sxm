@@ -315,11 +315,11 @@
     gap: 0.22rem;
     box-sizing: border-box;
     position: static;
-    --bj-chip-tray-gap: 0.28rem;
-    --chip-plaque-visual-width: 3.75rem;
-    --chip-plaque-visual-height: 1.531rem;
-    --chip-plaque-hit-width: 4.375rem;
-    --chip-plaque-hit-height: 1.75rem;
+    --bj-chip-tray-gap: 0.16rem;
+    --chip-plaque-visual-width: 2.85rem;
+    --chip-plaque-visual-height: 1.28rem;
+    --chip-plaque-hit-width: 3.15rem;
+    --chip-plaque-hit-height: 1.5rem;
   }
 
   .bj-view-full-mobile .bj-value-chips__row--main,
@@ -372,7 +372,7 @@
       calc(var(--chip-plaque-visual-height) - 0.06rem),
       var(--chip-plaque-visual-height)
     );
-    --chip-plaque-font: 0.72rem;
+    --chip-plaque-font: 0.64rem;
     width: var(--chip-plaque-width);
     height: var(--chip-plaque-height);
     min-width: var(--chip-plaque-hit-width);

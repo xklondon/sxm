@@ -15,6 +15,7 @@ export const BOX_CARD_ASSIGNED = 'bj-phone-view__mini-hand--assigned';
 export const BOX_CARD_VALUE = 'bj-phone-view__box-value';
 export const BOX_CARD_VALUE_ABOVE = 'bj-phone-view__box-value--above';
 export const BOX_CARD_VALUE_BUST = 'bj-phone-view__box-value--bust';
+export const BOX_NET_RESULT = 'bj-phone-view__box-value--net-result';
 export const BOX_CARD_COLUMN = 'bj-phone-view__mini-hand-column';
 export const BOX_CARD_STAKE_LABEL = 'bj-phone-view__box-stake-label';
 export const BOX_CARD_STAKE_LABEL_RESERVED = 'bj-phone-view__box-stake-label--reserved';
