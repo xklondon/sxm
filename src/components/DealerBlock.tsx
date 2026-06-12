@@ -142,7 +142,7 @@ export function DealerBlock({
       const pending = nextRoundPending || dealActionPending;
       return {
         label: pending ? 'Starting…' : 'New Cards',
-        disabled: pending,
+        disabled: pending || !canDeal,
         onClick: onNextRound,
       };
     }
@@ -151,14 +151,14 @@ export function DealerBlock({
       if (status === 'initial-deal' && initialDealManual) {
         return {
           label: 'Card',
-          disabled: false,
+          disabled: !canDeal,
           onClick: onDealNextCard,
         };
       }
       if (status === 'bank-turn' && bankDrawManual) {
         return {
           label: 'Draw',
-          disabled: false,
+          disabled: !canDeal,
           onClick: onDrawBank,
         };
       }
@@ -174,7 +174,7 @@ export function DealerBlock({
       const pending = dealActionPending || shuffleAnimating;
       return {
         label: pending ? 'Dealing…' : 'Deal Cards',
-        disabled: !bankerReady || !hasStakes || pending,
+        disabled: !canDeal || !bankerReady || !hasStakes || pending,
         onClick: onDealCards,
         cardsVariant: true,
       };

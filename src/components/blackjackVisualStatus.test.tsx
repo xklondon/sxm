@@ -52,6 +52,10 @@ function settledBoxState(outcome: 'win' | 'loss' | 'push'): GameState {
   const k1 = blackjackHandKey(box1, 0);
   return {
     ...state,
+    blackjackFlowSettings: {
+      ...state.blackjackFlowSettings,
+      initialDealMode: 'instant',
+    },
     tableMeta: { ...state.tableMeta, awaitingNextRound: true },
     tableViewMode: 'full',
     blackjack: {
@@ -72,9 +76,9 @@ function settledBoxState(outcome: 'win' | 'loss' | 'push'): GameState {
 }
 
 describe('blackjack visual status — outcome mapping', () => {
-  it('maps settled outcomes to WIN, BUST, and EVEN card-area markers', () => {
+  it('maps settled outcomes to WIN and EVEN without treating loss as bust', () => {
     expect(mapOutcomeToHandResultStatus('win')).toBe('win');
-    expect(mapOutcomeToHandResultStatus('loss')).toBe('bust');
+    expect(mapOutcomeToHandResultStatus('loss')).toBeNull();
     expect(mapOutcomeToHandResultStatus('push')).toBe('push');
     expect(formatBoxNetResultLabel(10)).toBe('+10');
     expect(formatBoxNetResultLabel(-10)).toBe('-10');
@@ -136,14 +140,13 @@ describe('blackjack visual status — end-of-round box labels', () => {
     expect(pushHtml).toContain('bj-phone-view__box-value--even');
   });
 
-  it('renders outcome markers in the large cards area', () => {
+  it('does not render BUST marker for a normal loss in the cards area', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={settledBoxState('loss')} onGameStateChange={noop} />,
     );
     const cardsArea = html.split('bj-arc--cards')[1]?.split('bj-arc--player-boxes')[0] ?? '';
-    expect(cardsArea).toContain('bj-card-outcome-marker');
-    expect(cardsArea).toContain('BUST');
-    expect(cardsArea).not.toContain('bj-hand-status');
+    expect(cardsArea).not.toContain('💀 BUST');
+    expect(cardsArea).not.toContain('>BUST<');
   });
 });
 

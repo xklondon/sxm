@@ -172,6 +172,12 @@ export function useSequentialCardReveal(
       return;
     }
 
+    if (gameState.tableMeta.gameStatus === 'ended') {
+      hydrateInstant(gameState);
+      scopeKeyRef.current = scopeKey;
+      return;
+    }
+
     const transition = resolveRevealScopeTransition(scopeKeyRef.current, scopeKey);
     if (transition === 'hydrate') {
       hydrateInstant(gameState);

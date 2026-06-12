@@ -34,6 +34,10 @@ function settledMultiBoxState(): GameState {
   const k2 = blackjackHandKey(box2, 0);
   return {
     ...state,
+    blackjackFlowSettings: {
+      ...state.blackjackFlowSettings,
+      initialDealMode: 'instant',
+    },
     tableMeta: { ...state.tableMeta, awaitingNextRound: true },
     tableViewMode: 'full',
     blackjack: {

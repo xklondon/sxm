@@ -5,10 +5,12 @@ export function BlackjackPlayerBoxHead({
   boxLabel,
   callerDisplayName,
 }: Pick<BlackjackPlayerBoxInfo, 'boxLabel' | 'callerDisplayName'>) {
+  const displayName = callerDisplayName.trim() || boxLabel;
   return (
     <span className="bj-phone-view__mini-hand-head">
-      <span className="bj-phone-view__mini-hand-box">{boxLabel}</span>
-      <span className="bj-phone-view__mini-hand-name">{callerDisplayName}</span>
+      <span className="bj-phone-view__mini-hand-name" title={boxLabel}>
+        {displayName}
+      </span>
     </span>
   );
 }

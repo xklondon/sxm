@@ -84,6 +84,10 @@ function settledBoxState(outcome: 'win' | 'loss' | 'push' | 'blackjack-win'): Ga
   const k1 = blackjackHandKey(box1, 0);
   return {
     ...state,
+    blackjackFlowSettings: {
+      ...state.blackjackFlowSettings,
+      initialDealMode: 'instant',
+    },
     tableMeta: { ...state.tableMeta, awaitingNextRound: true },
     tableViewMode: 'full',
     blackjack: {
@@ -175,7 +179,7 @@ describe('blackjack protocol UI fixes — player box bet and net', () => {
 describe('blackjack protocol UI fixes — card area outcome markers', () => {
   it('maps outcomes to fun card-area markers', () => {
     expect(resolveCardAreaOutcomeMarker(true, 'blackjack-win', 'done')).toBe('blackjack');
-    expect(cardAreaOutcomeMarkerText('blackjack')).toBe('BLACKJACK');
+    expect(cardAreaOutcomeMarkerText('blackjack')).toBe('★ BJ');
     expect(cardAreaOutcomeMarkerText('win')).toContain('WIN');
     expect(cardAreaOutcomeMarkerText('bust')).toContain('BUST');
     expect(cardAreaOutcomeMarkerText('even')).toContain('EVEN');
@@ -187,7 +191,7 @@ describe('blackjack protocol UI fixes — card area outcome markers', () => {
     );
     const cardsArea = html.split('bj-arc--cards')[1]?.split('bj-arc--player-boxes')[0] ?? '';
     expect(cardsArea).toContain('bj-card-outcome-marker');
-    expect(cardsArea).toContain('WIN');
+    expect(cardsArea).toContain('😎 WIN');
     expect(cardsArea).not.toContain('bj-hand-status');
 
     const boxArea = html.split('bj-arc--player-boxes')[1] ?? '';

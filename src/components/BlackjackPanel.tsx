@@ -47,7 +47,7 @@ import {
 } from './chipPointerDrag';
 import { StakeChips, ValueAndChipsBar, type ChipValue } from './ChipStack';
 import { PlayingCard } from './PlayingCard';
-import { formatShortCardLabel, isRedSuit } from './cardDisplay';
+import { formatBoxCardRanksLabel } from './cardDisplay';
 import { useBlackjackTableFlow } from './useBlackjackTableFlow';
 import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
 import { BlackjackCardView } from './BlackjackCardView';
@@ -153,7 +153,7 @@ import {
   isPlayerTurnPhase,
 } from './blackjackViewPhase';
 import { getDisplayBlackjackProtocolPhase } from '../engine/blackjack/protocol';
-import { getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
+import { getDisplayedHandValue, getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
 import {
   BET_BOX_PULSE,
   BOX_NET_RESULT,
@@ -543,7 +543,8 @@ export function BlackjackPanel({
     deviceView === 'mobile' &&
     cardRevealComplete &&
     gameOverDelayReady;
-  const showGameOverDesktopPanel = showGameOverActions && deviceView === 'desktop';
+  const showGameOverDesktopPanel =
+    showGameOverActions && deviceView === 'desktop' && cardRevealComplete;
   const canDealCards = tableOwner && canDeal;
 
   useEffect(() => {
@@ -1670,6 +1671,9 @@ export function BlackjackPanel({
           showBoxHandResultMarkers,
           primaryOutcome,
           primaryHand?.actionStatus,
+          primaryHandKey
+            ? getDisplayedHandValue(visualDeck, visualRound, primaryHandKey)
+            : null,
         )
       : null;
     const hideCardValueOnMobile =
@@ -1677,6 +1681,11 @@ export function BlackjackPanel({
       outcomeMarker !== null &&
       (outcomeMarker === 'blackjack' || showBoxHandResultMarkers);
     const cardColumnValueLabel = hideCardValueOnMobile ? '' : valueLabel;
+    const isActiveHand =
+      isPlayerTurnPhase(protocolPhase) &&
+      uiActiveBoxId === boxId &&
+      !showBoxHandResultMarkers &&
+      primaryHand?.actionStatus === 'acting';
     const rotation =
       deviceView === 'mobile'
         ? 0
@@ -1715,6 +1724,7 @@ export function BlackjackPanel({
                     showBoxHandResultMarkers,
                     splitOutcome,
                     splitHand?.actionStatus,
+                    getDisplayedHandValue(visualDeck, visualRound, handKey),
                   )
                 : null;
               return (
@@ -1742,6 +1752,7 @@ export function BlackjackPanel({
               cardAreaOutcomeToneFromMarker(outcomeMarker),
             ),
             TABLE_UX.cardColumnValueBelow,
+            isActiveHand ? 'bj-phone-view__box-value--active-turn' : '',
           ].join(' ')}
           aria-hidden={cardColumnValueLabel ? undefined : 'true'}
         >
@@ -1907,31 +1918,16 @@ export function BlackjackPanel({
               aria-label={`Cards: ${visibleCardIds
                 .map((id) => {
                   const card = getCardById(visualDeck, id);
-                  return card ? formatShortCardLabel(card) : '';
+                  return card?.rank ?? '';
                 })
                 .filter(Boolean)
-                .join(' ')}`}
+                .join(', ')}`}
             >
-              {visibleCardIds.map((id, index) => {
-                const card = getCardById(visualDeck, id);
-                if (!card) {
-                  return null;
-                }
-                return (
-                  <span
-                    key={`${boxId}-composition-${id}-${index}`}
-                    className={[
-                      'bj-phone-view__mini-hand-composition-card',
-                      isRedSuit(card.suit) ? 'bj-phone-view__mini-hand-composition-card--red' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  >
-                    {formatShortCardLabel(card)}
-                    {index < visibleCardIds.length - 1 ? ' ' : ''}
-                  </span>
-                );
-              })}
+              {formatBoxCardRanksLabel(
+                visibleCardIds
+                  .map((id) => getCardById(visualDeck, id))
+                  .filter((card): card is NonNullable<typeof card> => Boolean(card)),
+              )}
             </span>
           ) : (
             <span

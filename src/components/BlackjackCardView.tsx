@@ -200,6 +200,7 @@ export function BlackjackCardView({
           showCardAreaResults,
           heroOutcome,
           logicalHand.actionStatus,
+          heroDisplayValue,
         )
       : null;
   const hideHeroValueOnMobile =
@@ -705,6 +706,9 @@ export function BlackjackCardView({
                 TABLE_UX.cardViewTotalCompact,
                 deviceView === 'mobile' ? 'bj-card-view__hero-value' : '',
                 heroNatural ? 'bj-phone-view__total--blackjack' : '',
+                isActiveTurn && isPlayerPhase && !showCardAreaResults
+                  ? 'bj-phone-view__box-value--active-turn'
+                  : '',
               )}
             >
               {heroNatural

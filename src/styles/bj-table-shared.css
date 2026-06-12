@@ -1892,6 +1892,35 @@
   line-height: 1.15;
 }
 
+.bj-arc--player-boxes .bj-phone-view__mini-hand-name {
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-bold, 700);
+  line-height: 1.15;
+  color: rgb(235 245 240 / 0.96);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand-composition {
+  font-size: 0.58rem;
+  font-weight: var(--ds-weight-bold, 700);
+  line-height: 1.2;
+  margin-top: 0.06rem;
+  color: rgb(235 245 240 / 0.92);
+}
+
+.bj-arc--cards .bj-phone-view__box-value--active-turn,
+.bj-phone-view__total--hero.bj-phone-view__box-value--active-turn {
+  box-shadow: 0 0 0 2px rgb(251 191 36 / 0.85);
+  border-radius: 0.35rem;
+  animation: bj-turn-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bj-arc--cards .bj-phone-view__box-value--active-turn,
+  .bj-phone-view__total--hero.bj-phone-view__box-value--active-turn {
+    animation: none;
+  }
+}
+
 .bj-arc--cards .bj-arc__slot--card-column .bj-phone-view__box-value--card-column {
   display: block;
   width: 100%;

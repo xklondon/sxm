@@ -99,10 +99,17 @@ describe('challenge game end presentation', () => {
     expect(toggleIdx).toBeGreaterThan(actionsIdx);
   });
 
-  it('renders desktop Game Summary inline in side panel without blocking overlay', () => {
-    simulatedWidth = 1280;
+  it('renders desktop game summary after ended state with instant dealing', () => {
+    let state = endedChallengeState();
+    state = {
+      ...state,
+      blackjackFlowSettings: {
+        ...state.blackjackFlowSettings,
+        initialDealMode: 'instant',
+      },
+    };
     const html = renderToStaticMarkup(
-      <BlackjackPanel gameState={endedChallengeState()} onGameStateChange={noop} />,
+      <BlackjackPanel gameState={state} onGameStateChange={noop} />,
     );
     expect(html).toContain('Game Summary');
     expect(html).toContain('bj-game-over--inline');

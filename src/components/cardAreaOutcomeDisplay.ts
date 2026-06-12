@@ -1,49 +1,51 @@
 import type { BlackjackOutcome } from '../types/blackjack';
 import type { BoxNetResultTone } from './boxBetResultDisplay';
-import { mapOutcomeToHandResultStatus } from './boxHandStatusDisplay';
 
 export type CardAreaOutcomeMarker = 'blackjack' | 'win' | 'bust' | 'even';
+
+/** Visible hand total — used to distinguish bust from a normal loss. */
+export function isHandTotalBust(handTotal: number | null | undefined): boolean {
+  return handTotal !== null && handTotal !== undefined && handTotal > 21;
+}
 
 export function resolveCardAreaOutcomeMarker(
   showResults: boolean,
   outcome: BlackjackOutcome | undefined,
   actionStatus: string | undefined,
+  handTotal?: number | null,
 ): CardAreaOutcomeMarker | null {
   if (actionStatus === 'blackjack' || outcome === 'blackjack-win') {
     return 'blackjack';
   }
+
+  if (actionStatus === 'busted' || isHandTotalBust(handTotal)) {
+    return 'bust';
+  }
+
   if (!showResults) {
     return null;
   }
+
   if (outcome === 'blackjack-push' || outcome === 'push') {
     return 'even';
   }
-  const mapped = mapOutcomeToHandResultStatus(outcome);
-  if (mapped === 'win') {
+  if (outcome === 'win') {
     return 'win';
   }
-  if (mapped === 'bust') {
-    return 'bust';
-  }
-  if (mapped === 'push') {
-    return 'even';
-  }
-  if (actionStatus === 'busted') {
-    return 'bust';
-  }
+
   return null;
 }
 
 export function cardAreaOutcomeMarkerText(marker: CardAreaOutcomeMarker): string {
   switch (marker) {
     case 'blackjack':
-      return 'BLACKJACK';
+      return '★ BJ';
     case 'win':
       return '😎 WIN';
     case 'bust':
       return '💀 BUST';
     case 'even':
-      return 'EVEN 🤷';
+      return 'EVEN';
   }
 }
 

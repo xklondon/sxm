@@ -2,7 +2,7 @@ import type { BlackjackOutcome, BlackjackRound } from '../types/blackjack';
 import { isRoundCompletePhase } from './blackjackViewPhase';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 
-export type BoxHandResultStatus = 'win' | 'bust' | 'push';
+export type BoxHandResultStatus = 'win' | 'push';
 
 /** Map settled round outcome to compact box status marker. */
 export function mapOutcomeToHandResultStatus(
@@ -15,8 +15,6 @@ export function mapOutcomeToHandResultStatus(
     case 'win':
     case 'blackjack-win':
       return 'win';
-    case 'loss':
-      return 'bust';
     case 'push':
     case 'blackjack-push':
       return 'push';
@@ -56,8 +54,6 @@ export function handResultStatusText(status: BoxHandResultStatus): string {
   switch (status) {
     case 'win':
       return 'WIN';
-    case 'bust':
-      return 'BUST';
     case 'push':
       return 'EVEN';
   }

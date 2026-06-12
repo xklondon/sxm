@@ -98,6 +98,14 @@ export function isFaceRank(rank: Rank): boolean {
   return rank === 'J' || rank === 'Q' || rank === 'K';
 }
 
+/** Compact rank-only labels for player-box hand composition (e.g. `6, 7, 5`). */
+export function formatBoxCardRanksLabel(cards: Array<{ rank: Rank }>): string {
+  if (cards.length === 0) {
+    return '';
+  }
+  return cards.map((card) => card.rank).join(', ');
+}
+
 /** Compact rank+suit label for player-box hand composition (e.g. `10♠`). */
 export function formatShortCardLabel(card: { rank: Rank; suit: Suit }): string {
   return `${card.rank}${SUIT_SYMBOLS[card.suit]}`;
