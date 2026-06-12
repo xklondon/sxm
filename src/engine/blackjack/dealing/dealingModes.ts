@@ -36,6 +36,16 @@ export function isNaturalInitialDeal(mode: InitialDealMode): boolean {
   return mode === 'natural';
 }
 
+/** True when all initial cards appear at once (no paced reveal). */
+export function isInstantInitialDeal(mode: InitialDealMode): boolean {
+  return mode === 'instant';
+}
+
+/** Staged or natural — UI reveals cards one at a time with deal-speed pauses. */
+export function isPacedCardReveal(mode: InitialDealMode): boolean {
+  return mode === 'staged' || mode === 'natural';
+}
+
 export function clampNaturalDealDelayMs(ms: number): number {
   return Math.min(NATURAL_DEAL_DELAY_MAX_MS, Math.max(NATURAL_DEAL_DELAY_MIN_MS, ms));
 }

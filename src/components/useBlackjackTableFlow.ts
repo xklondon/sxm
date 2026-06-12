@@ -14,6 +14,7 @@ import {
   processPlayFlowAutoStands,
   syncBankPhaseOnState,
 } from '../engine/blackjack';
+import { sleepMs } from '../engine/blackjack/dealPacing';
 import {
   canStartCards,
   getDisplayBlackjackProtocolPhase,
@@ -33,10 +34,6 @@ import {
 } from '../engine/session/tableGameEnd';
 import { allowsBettingActions } from './blackjackViewPhase';
 import { log } from '../utils/logger';
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
 
 /** Client-side bank pacing / initial-deal loops — table driver only (not passive viewers). */
 export function shouldRunClientBankAutomation(params: {
@@ -64,6 +61,7 @@ export function useBlackjackTableFlow(
   onlineActionInFlight = false,
   canDriveTableAutomation = true,
   cardRevealComplete = true,
+  suppressEngineAutoAdvance = false,
 ) {
   const { blackjack: round, tableMeta } = gameState;
   const flow = gameState.blackjackFlowSettings;
@@ -185,7 +183,7 @@ export function useBlackjackTableFlow(
       void (async () => {
         try {
           if (delay > 0) {
-            await sleep(delay);
+            await sleepMs(delay);
           }
           options.onFirstStartShuffleAnimationEnd?.();
 
@@ -352,7 +350,7 @@ export function useBlackjackTableFlow(
         setBankUiMessage('Bank thinking…');
         const startDelay = getCardDealDelayMs(gameStateRef.current, 'bank-turn-start');
         if (startDelay > 0) {
-          await sleep(startDelay);
+          await sleepMs(startDelay);
           if (bankRunIdRef.current !== runId) {
             return;
           }
@@ -374,7 +372,7 @@ export function useBlackjackTableFlow(
           }
           const between = getCardDealDelayMs(gameStateRef.current, 'bank-card-draw');
           if (between > 0) {
-            await sleep(between);
+            await sleepMs(between);
           }
         }
       }
@@ -386,7 +384,7 @@ export function useBlackjackTableFlow(
       const afterDraw = gameStateRef.current;
       if (afterDraw.blackjack?.status === 'banking') {
         setBankUiMessage(getBankFinalMessage(afterDraw));
-        await sleep(getCardDealDelayMs(afterDraw, 'bank-pause'));
+        await sleepMs(getCardDealDelayMs(afterDraw, 'bank-pause'));
         if (bankRunIdRef.current !== runId) {
           return;
         }
@@ -449,7 +447,10 @@ export function useBlackjackTableFlow(
     // Online mode is server-authoritative: auto-stand runs on the server (deal +
     // afterPlayerAction). Never mutate state locally here or the client's
     // activeHandKey drifts ahead of the server and triggers stale-turn rejects.
-    if (onlineDispatch) {
+    if (onlineDispatch || suppressEngineAutoAdvance) {
+      return;
+    }
+    if (!cardRevealComplete) {
       return;
     }
     if (round?.status !== 'player-turns' || !round.activeHandKey) {
@@ -476,6 +477,8 @@ export function useBlackjackTableFlow(
     onGameStateChange,
     onlineDispatch,
     canDriveTableAutomation,
+    suppressEngineAutoAdvance,
+    cardRevealComplete,
   ]);
 
   return {

@@ -25,6 +25,12 @@ export function isStepwiseInitialDeal(mode) {
 export function isNaturalInitialDeal(mode) {
     return mode === 'natural';
 }
+export function isInstantInitialDeal(mode) {
+    return mode === 'instant';
+}
+export function isPacedCardReveal(mode) {
+    return mode === 'staged' || mode === 'natural';
+}
 export function clampNaturalDealDelayMs(ms) {
     return Math.min(NATURAL_DEAL_DELAY_MAX_MS, Math.max(NATURAL_DEAL_DELAY_MIN_MS, ms));
 }

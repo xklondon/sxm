@@ -5,7 +5,7 @@ import { cardsFromIds, getBlackjackHandValue } from '../engine/blackjack/hand';
 import type { GameState } from '../types';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 
-import { CARD_VIEW_BUST_HOLD_MS } from './blackjackUxConstants';
+import { waitForResultHoldMs } from '../engine/blackjack/dealPacing';
 
 export interface CardViewHandHold {
   holdBoxId: string | null;
@@ -44,10 +44,11 @@ export function useCardViewBustHold(
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
+    const delay = waitForResultHoldMs(gameState);
     timerRef.current = setTimeout(() => {
       setHold({ holdBoxId: null, holdHandKey: null });
       timerRef.current = null;
-    }, CARD_VIEW_BUST_HOLD_MS);
+    }, delay);
   }
 
   useEffect(() => {

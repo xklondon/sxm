@@ -77,7 +77,7 @@ describe('blackjack UX fixes — active turn highlight', () => {
 describe('blackjack UX fixes — Card View bust hold', () => {
   it('defines 3 second Card View hand hold and wires hero override', () => {
     expect(CARD_VIEW_BUST_HOLD_MS).toBe(3000);
-    expect(PANEL_SRC).toContain('useCardViewBustHold');
+    expect(PANEL_SRC).toContain('useHandTransitionHold');
     expect(PANEL_SRC).toContain('uiActiveBoxId');
     expect(PANEL_SRC).toContain('heroHandKeyOverride');
     expect(PANEL_SRC).toContain('handHoldActive');

@@ -116,7 +116,8 @@ import type { GameOverIouFeedback } from './GameOverActionOverlay';
 import { buildRoundResultSummary } from '../engine/blackjack';
 import { buildRoundSummaryOverlayModel } from '../engine/blackjack/roundSummaryOverlay';
 import { buildBlackjackCommandText } from './tableCommandDisplay';
-import { useCardViewBustHold } from './useCardViewBustHold';
+import { useHandTransitionHold } from './useHandTransitionHold';
+import { OptionalPlayDecisionOverlay } from './OptionalPlayDecisionOverlay';
 import { RoundSummaryOverlay } from './RoundSummaryOverlay';
 import { ROUND_SUMMARY_OVERLAY_DELAY_MS } from './roundSummaryOverlayTiming';
 import {
@@ -147,6 +148,7 @@ import {
   getActiveTurnBoxId,
   isPlayerTurnPhase,
 } from './blackjackViewPhase';
+import { getDisplayBlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
 import {
   BET_BOX_PULSE,
@@ -305,6 +307,12 @@ export function BlackjackPanel({
     onlineMode: Boolean(onlineDispatch) || isOnlineModeEnabled(),
   });
   const cardRevealComplete = !isRevealing;
+  const protocolPhaseForHold = getDisplayBlackjackProtocolPhase(gameState, cardRevealComplete);
+  const handTransitionHold = useHandTransitionHold(gameState, protocolPhaseForHold, {
+    cardRevealComplete,
+    activeHandRevealComplete,
+    isRevealing,
+  });
 
   const {
     centerStatus,
@@ -332,6 +340,7 @@ export function BlackjackPanel({
     onlineActionInFlight,
     canDriveTableAutomation,
     cardRevealComplete,
+    handTransitionHold.suppressEngineAutoAdvance,
   );
 
   // Full Table felt only degrades to the "Use Card View" hint on ultra-narrow
@@ -381,12 +390,9 @@ export function BlackjackPanel({
   const canResetTable = canUserResetTable(gameState, controllerName);
   const activeProtocol = getBlackjackProtocolForState(gameState);
   const activeBoxId = getActiveTurnBoxId(gameState, protocolPhase);
-  const cardViewHandHold = useCardViewBustHold(
-    gameState,
-    protocolPhase,
-    viewMode === 'card',
-  );
-  const uiActiveBoxId = cardViewHandHold.holdBoxId ?? activeBoxId;
+  const uiActiveBoxId = handTransitionHold.holdActiveBoxId ?? activeBoxId;
+  const playerDecisionActionsEnabled =
+    !handTransitionHold.playerActionsBlocked && !dealActionPending && !onlineActionInFlight;
 
   const magic8ShakeAllowed =
     !gameEnded &&
@@ -449,7 +455,7 @@ export function BlackjackPanel({
   ]);
 
   useEffect(() => {
-    if (cardViewHandHold.holdHandKey) {
+    if (handTransitionHold.holdActiveHandKey) {
       return;
     }
     if (round?.status !== 'player-turns' || !round.activeHandKey) {
@@ -460,7 +466,7 @@ export function BlackjackPanel({
     if (current.selectedSeatId !== playerId) {
       onGameStateChange({ ...current, selectedSeatId: playerId });
     }
-  }, [round?.status, round?.activeHandKey, cardViewHandHold.holdHandKey, onGameStateChange]);
+  }, [round?.status, round?.activeHandKey, handTransitionHold.holdActiveHandKey, onGameStateChange]);
 
   useEffect(() => {
     return () => {
@@ -646,6 +652,9 @@ export function BlackjackPanel({
     online?: { type: string; payload?: Record<string, unknown> },
   ) {
     setError(null);
+    if (handTransitionHold.playerActionsBlocked) {
+      return;
+    }
     if (onlineDispatch && online) {
       if (onlineActionInFlight) {
         return;
@@ -1263,10 +1272,68 @@ export function BlackjackPanel({
     );
   }
 
+  function renderOptionalPlayDecisionOverlay() {
+    if (round?.evenMoneyOfferHandKey) {
+      return null;
+    }
+    if (
+      !canShowPlayerDecisionControls(gameState, protocolPhase, {
+        cardRevealComplete,
+        activeHandRevealComplete,
+      })
+    ) {
+      return null;
+    }
+    if (!round?.activeHandKey) {
+      return null;
+    }
+    const actionPermission = resolveViewerActionPermission(gameState, viewerPersonId);
+    if (!actionPermission.canAct) {
+      return null;
+    }
+    const actionable = actionPermission.actionable!;
+    const canDouble =
+      Boolean(deck) && canDoubleBlackjackForState(gameState, actionable.handKey);
+    const canSplit = canSplitBlackjackForState(gameState, actionable.handKey);
+    const showDouble = blackjackSettings.allowDoubleDown;
+    const showSplit = blackjackSettings.allowSplit && Boolean(deck);
+    if (!showDouble && !showSplit) {
+      return null;
+    }
+    if (!canDouble && !canSplit) {
+      return null;
+    }
+    return (
+      <OptionalPlayDecisionOverlay
+        canDouble={canDouble}
+        canSplit={canSplit}
+        showDouble={showDouble}
+        showSplit={showSplit}
+        actionsEnabled={playerDecisionActionsEnabled}
+        onDouble={() =>
+          run((s) => doubleDownBlackjackOnState(s, actionable.handKey), {
+            type: 'double',
+            payload: {},
+          })
+        }
+        onSplit={() =>
+          run((s) => splitBlackjackOnState(s, actionable.handKey), {
+            type: 'split',
+            payload: {},
+          })
+        }
+      />
+    );
+  }
+
   function renderSummaryContent() {
     const insurance = renderInsuranceDecisionOverlay();
     if (insurance) {
       return insurance;
+    }
+    const optionalPlay = renderOptionalPlayDecisionOverlay();
+    if (optionalPlay) {
+      return optionalPlay;
     }
     const alert = renderTableAlert();
     return alert ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />;
@@ -1486,13 +1553,13 @@ export function BlackjackPanel({
     return (
       <BlackjackActionPanel
         variant="table"
-        actionsEnabled
+        actionsEnabled={playerDecisionActionsEnabled}
         canHit={canHit}
         canStand={canStand}
         canDouble={canDouble}
         canSplit={canSplit}
-        showDouble={blackjackSettings.allowDoubleDown}
-        showSplit={blackjackSettings.allowSplit && Boolean(deck)}
+        showDouble={false}
+        showSplit={false}
         showAid={flowSettings.adviceEnabled}
         onStand={() =>
           run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} })
@@ -2383,8 +2450,8 @@ export function BlackjackPanel({
                   deviceView={deviceView}
                   focusBoxId={focusBoxId ?? undefined}
                   activeBoxId={uiActiveBoxId}
-                  heroHandKeyOverride={cardViewHandHold.holdHandKey}
-                  handHoldActive={Boolean(cardViewHandHold.holdHandKey)}
+                  heroHandKeyOverride={handTransitionHold.holdActiveHandKey}
+                  handHoldActive={Boolean(handTransitionHold.holdActiveHandKey)}
                   showHoleHidden={showHoleHidden}
                   protocolPhase={protocolPhase}
                   cardRevealComplete={cardRevealComplete}

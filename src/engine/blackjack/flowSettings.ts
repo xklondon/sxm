@@ -100,6 +100,7 @@ export type CardDealDelayContext =
   | 'split'
   | 'double'
   | 'dealer'
+  | 'result-hold'
   | 'bank-pause'
   | 'bank-turn-start'
   | 'bank-card-draw'
@@ -121,6 +122,9 @@ export function getCardDealDelayMs(
     context === 'bank-card-draw'
   ) {
     return getBankTurnDelayMs(state.blackjackFlowSettings);
+  }
+  if (context === 'result-hold') {
+    return cardDealDelayMs(state.blackjackFlowSettings);
   }
   return cardDealDelayMs(state.blackjackFlowSettings);
 }

@@ -13,7 +13,7 @@ import {
   findCardId,
 } from '../engine/blackjack/sanity/fixtures';
 import { claimBoxSlot } from '../engine/session';
-import { blackjackHandKey } from '../engine/blackjack';
+import { addChipToBoxStake, blackjackHandKey, confirmBoxStake } from '../engine/blackjack';
 
 const noop = () => {};
 
@@ -57,13 +57,25 @@ function playingState(): GameState {
   let state = tableAfterStartPlaying(500);
   state = claimBoxSlot(state, 1);
   state = claimBoxSlot(state, 2);
-  const deck = state.deck!;
+  const ownerId = state.tableMeta.ownerPersonId!;
   const box2 = boxPlayerId(state, 2)!;
+  state = addChipToBoxStake(state, box2, 10, ownerId);
+  state = confirmBoxStake(state, box2);
+  const deck = state.deck!;
   const k2 = blackjackHandKey(box2, 0);
   return {
     ...state,
     selectedSeatId: box2,
     tableViewMode: 'card',
+    blackjackFlowSettings: {
+      ...state.blackjackFlowSettings,
+      initialDealMode: 'instant',
+    },
+    blackjackSettings: {
+      ...state.blackjackSettings,
+      allowDoubleDown: true,
+    },
+    tableMeta: { ...state.tableMeta, bettingLocked: true },
     blackjack: {
       ...state.blackjack!,
       status: 'player-turns',
@@ -74,7 +86,7 @@ function playingState(): GameState {
       playerHands: {
         [k2]: {
           ...createBlackjackPlayerHand(box2, 0),
-          cardIds: [findCardId(deck, '6'), findCardId(deck, '7')],
+          cardIds: [findCardId(deck, '9'), findCardId(deck, '2')],
           currentBet: 10,
           actionStatus: 'acting',
         },
@@ -104,7 +116,7 @@ describe('Card View layout polish', () => {
     expect(primaryIdx).toBeGreaterThan(actionsIdx);
     expect(html).toContain('sxm-secondary-actions');
     expect(html).toMatch(/sxm-primary-actions[\s\S]*Stay/);
-    expect(html).toMatch(/sxm-secondary-actions[\s\S]*2×/);
+    expect(html).toMatch(/bj-table-zone--summary[\s\S]*>Double</);
   });
 
   it('command sits under dealer stack, hero cards below command, then actions', () => {

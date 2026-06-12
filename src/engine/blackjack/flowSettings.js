@@ -60,6 +60,9 @@ export function getCardDealDelayMs(state, context = 'initial-deal') {
         context === 'bank-card-draw') {
         return getBankTurnDelayMs(state.blackjackFlowSettings);
     }
+    if (context === 'result-hold') {
+        return cardDealDelayMs(state.blackjackFlowSettings);
+    }
     return cardDealDelayMs(state.blackjackFlowSettings);
 }
 /** Bank draw pacing between individual bank cards — uses deal speed, not bank timer. */

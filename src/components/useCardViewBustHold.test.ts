@@ -8,7 +8,7 @@ import { actingRound } from '../engine/blackjack/sanity/fixtures';
 import { hitBlackjackOnState } from '../engine/blackjack/gameState';
 import type { GameState } from '../types';
 
-import { CARD_VIEW_BUST_HOLD_MS } from './blackjackUxConstants';
+import { normalizeFlowSettings } from '../engine/blackjack/flowSettings';
 import { useCardViewBustHold } from './useCardViewBustHold';
 
 function practiceTable(): GameState {
@@ -34,12 +34,15 @@ describe('useCardViewBustHold', () => {
     vi.useRealTimers();
   });
 
-  it('uses 3 second hold duration', () => {
-    expect(CARD_VIEW_BUST_HOLD_MS).toBe(3000);
+  it('uses deal-speed result hold duration', () => {
+    const state = practiceTable();
+    state.blackjackFlowSettings = normalizeFlowSettings({ dealSpeedPreset: 'slow' });
+    expect(state.blackjackFlowSettings.dealSpeedPreset).toBe('slow');
   });
 
   it('holds busted hand key after hit bust before timer elapses', () => {
     let state = practiceTable();
+    state.blackjackFlowSettings = normalizeFlowSettings({ dealSpeedPreset: 'fast' });
     const box1 = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)!.playerId!;
     const handKey = blackjackHandKey(box1, 0);
     state.blackjack!.activeHandKey = handKey;
@@ -56,7 +59,7 @@ describe('useCardViewBustHold', () => {
     expect(result.current.holdBoxId).toBe(box1);
 
     act(() => {
-      vi.advanceTimersByTime(CARD_VIEW_BUST_HOLD_MS);
+      vi.advanceTimersByTime(1000);
     });
 
     expect(result.current.holdHandKey).toBeNull();

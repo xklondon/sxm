@@ -240,6 +240,25 @@ export function shouldUseOrderedInitialReveal(
   return true;
 }
 
+/** True when the next reveal step is the first card on a hand after another hand already has cards. */
+export function isHandBoundaryRevealStep(
+  visible: CardVisibilityCounts,
+  stepped: CardVisibilityCounts,
+): boolean {
+  for (const [handKey, nextCount] of Object.entries(stepped.hands)) {
+    const prevCount = visible.hands[handKey] ?? 0;
+    if (prevCount === 0 && nextCount > 0) {
+      const otherHandsStarted = Object.entries(visible.hands).some(
+        ([key, count]) => key !== handKey && count > 0,
+      );
+      if (otherHandsStarted) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /** Pick deal-speed vs bank-timer delay for the next sequential reveal step. */
 export function resolveCardRevealDelayMs(
   state: Pick<GameState, 'blackjackFlowSettings'>,
