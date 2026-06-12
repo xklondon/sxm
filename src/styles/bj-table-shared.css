@@ -1892,6 +1892,10 @@
   margin: 0 0 0.04rem;
 }
 
+.bj-arc--cards .bj-arc__slot--card-column .bj-phone-view__box-value--card-column-below {
+  margin: 0.04rem 0 0;
+}
+
 .bj-card-outcome-marker {
   display: block;
   width: 100%;

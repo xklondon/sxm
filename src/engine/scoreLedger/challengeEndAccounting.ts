@@ -111,6 +111,22 @@ export function resolveEffectiveSettlementMode(state: GameState): BankBustSettle
   return isFractionalChallengeEnd(state, reason) ? 'fractional' : 'winner-takes-all';
 }
 
+/** Final chip holdings for every seated participant — sums to total chips in play. */
+export function buildGameEndChipTotalsMessage(state: GameState): string {
+  const rankings = buildChallengeEndRankings(state);
+  if (rankings.length === 0) {
+    return '';
+  }
+  const lines = ['Final chips:'];
+  let total = 0;
+  for (const row of rankings) {
+    lines.push(`${row.name} — ${row.endingChips}`);
+    total += row.endingChips;
+  }
+  lines.push(`Total in play — ${total}`);
+  return lines.join('\n');
+}
+
 export function buildFractionalEndMessage(state: GameState): string {
   const rankings = buildChallengeEndRankings(state);
   const bankId = state.session.bankPlayerId;

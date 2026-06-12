@@ -6,7 +6,10 @@ import {
   IOU_GAME_MESSAGE,
   type GameEndIouHandoff,
 } from '../../utils/iouWalletHandoff';
-import { listPersonBankrollOwnerIds } from '../session/bankroll';
+import {
+  getLedgerBalanceForBankrollOwner,
+  listPersonBankrollOwnerIds,
+} from '../session/bankroll';
 import {
   resolveWinnerDisplayName as resolveWinnerDisplayNameCore,
 } from './challengeBankDisplay';
@@ -20,6 +23,44 @@ function isHumanPlayer(state: GameState, playerId: string): boolean {
   return Boolean(player && player.playerType !== 'virtual');
 }
 
+function normalizeLabel(value: string | undefined | null): string {
+  return value?.trim().toLowerCase() ?? '';
+}
+
+function ownerEmailFromMeta(state: GameState): string | null {
+  const ownerEmail = state.tableMeta.owner?.ownerEmail?.trim().toLowerCase();
+  return ownerEmail || null;
+}
+
+/** True when the bank seat is the table owner (e.g. challenge setup "Me" as bank). */
+export function bankRepresentsTableOwner(state: GameState, bankId: string): boolean {
+  if (!bankId || bankId !== state.session.bankPlayerId) {
+    return false;
+  }
+
+  const ownerName = normalizeLabel(state.tableMeta.owner?.ownerName);
+  if (!ownerName) {
+    return false;
+  }
+
+  const setup = state.tableMeta.bankerSetup;
+  if (setup.mode === 'person' && setup.playerId === bankId) {
+    const setupName = normalizeLabel(setup.displayName);
+    if (setupName && setupName === ownerName) {
+      return true;
+    }
+  }
+
+  const bank = state.players[bankId];
+  const bankName = normalizeLabel(bank?.controllerName || bank?.displayName);
+  if (bankName && bankName === ownerName) {
+    return true;
+  }
+
+  const controllerName = normalizeLabel(state.tableMeta.controllerName);
+  return controllerName === ownerName && bankName === ownerName;
+}
+
 /** Resolve email for a person/bank player id from owner + invite records. */
 export function resolveEmailForPlayerId(state: GameState, playerId: string): string | null {
   const player = state.players[playerId];
@@ -28,7 +69,15 @@ export function resolveEmailForPlayerId(state: GameState, playerId: string): str
   }
 
   if (playerId === state.tableMeta.ownerPersonId) {
-    const ownerEmail = state.tableMeta.owner?.ownerEmail?.trim().toLowerCase();
+    const ownerEmail = ownerEmailFromMeta(state);
+    if (ownerEmail) {
+      return ownerEmail;
+    }
+  }
+
+  const bankId = state.session.bankPlayerId;
+  if (bankId && playerId === bankId && bankRepresentsTableOwner(state, bankId)) {
+    const ownerEmail = ownerEmailFromMeta(state);
     if (ownerEmail) {
       return ownerEmail;
     }
@@ -53,6 +102,26 @@ export function resolveEmailForPlayerId(state: GameState, playerId: string): str
     if (displayName && local && displayName.toLowerCase() === local.toLowerCase()) {
       return trimmed;
     }
+  }
+
+  return null;
+}
+
+/** Non-bank opponent when the bank wins — prefer broke players, else sole non-bank human. */
+function resolveBankWinLoserId(state: GameState, bankId: string): string | null {
+  const candidates = listPersonBankrollOwnerIds(state).filter(
+    (id) => id !== bankId && isHumanPlayer(state, id),
+  );
+
+  const broke = candidates.filter(
+    (id) => getLedgerBalanceForBankrollOwner(state, id) <= 0,
+  );
+  if (broke.length === 1) {
+    return broke[0]!;
+  }
+
+  if (candidates.length === 1) {
+    return candidates[0]!;
   }
 
   return null;
@@ -101,8 +170,10 @@ export function resolveGameEndParties(state: GameState): GameEndParties | null {
 
   let loserId: string | null = null;
   if (winnerIsBank) {
-    const persons = listPersonBankrollOwnerIds(state);
-    loserId = persons[0] ?? state.tableMeta.ownerPersonId;
+    if (!bankId) {
+      return null;
+    }
+    loserId = resolveBankWinLoserId(state, bankId);
   } else if (bankId) {
     loserId = bankId;
   }
@@ -110,15 +181,30 @@ export function resolveGameEndParties(state: GameState): GameEndParties | null {
   if (loserId && !isHumanPlayer(state, loserId)) {
     loserId = null;
   }
+  if (loserId && loserId === winnerId) {
+    loserId = null;
+  }
+  if (winnerIsBank && loserId === bankId) {
+    loserId = null;
+  }
   if (!isHumanPlayer(state, winnerId)) {
+    return null;
+  }
+  if (winnerIsBank && !loserId) {
+    return null;
+  }
+
+  const winnerEmail = resolveEmailForPlayerId(state, winnerId);
+  const loserEmail = loserId ? resolveEmailForPlayerId(state, loserId) : null;
+  if (!winnerEmail || !loserEmail || winnerEmail === loserEmail) {
     return null;
   }
 
   return {
     winnerId,
     loserId,
-    winnerEmail: resolveEmailForPlayerId(state, winnerId),
-    loserEmail: loserId ? resolveEmailForPlayerId(state, loserId) : null,
+    winnerEmail,
+    loserEmail,
   };
 }
 
@@ -209,6 +295,41 @@ export function buildGameEndIouHandoff(
 
 export function canOfferGameEndIou(state: GameState, viewerEmail: string): boolean {
   return canCreateGameEndIou(state, viewerEmail);
+}
+
+const IOU_MISSING_EMAIL_MESSAGE =
+  'Cannot create IOU because one player is missing an email address.';
+
+/** Hint when Create IOU is disabled on the game-over overlay. */
+export function getGameEndIouDisabledReason(state: GameState): string {
+  if (state.tableMeta.gameStatus !== 'ended') {
+    return 'Add a counterparty email to create an IOU handoff.';
+  }
+
+  const parties = resolveGameEndParties(state);
+  if (parties?.winnerId && parties.loserId && (!parties.winnerEmail || !parties.loserEmail)) {
+    return IOU_MISSING_EMAIL_MESSAGE;
+  }
+
+  const winnerId = state.tableMeta.winnerId;
+  const bankId = state.session.bankPlayerId;
+  if (winnerId && isHumanPlayer(state, winnerId)) {
+    const loserId =
+      winnerId === bankId && bankId
+        ? resolveBankWinLoserId(state, bankId)
+        : bankId && winnerId !== bankId
+          ? bankId
+          : null;
+    if (loserId) {
+      const winnerEmail = resolveEmailForPlayerId(state, winnerId);
+      const loserEmail = resolveEmailForPlayerId(state, loserId);
+      if (!winnerEmail || !loserEmail) {
+        return IOU_MISSING_EMAIL_MESSAGE;
+      }
+    }
+  }
+
+  return 'Add a counterparty email to create an IOU handoff.';
 }
 
 export function resolveWinnerDisplayName(state: GameState, winnerId: string): string {

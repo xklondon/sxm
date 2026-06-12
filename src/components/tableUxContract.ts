@@ -97,6 +97,8 @@ export const TABLE_UX = {
   cardViewBoxValueAbove: 'bj-phone-view__box-value--above',
   cardViewBoxValueReserved: 'bj-phone-view__box-value--reserved',
   cardColumnValueAbove: 'bj-phone-view__box-value--card-column',
+  /** Full-table arc card column: hand total below the card stack. */
+  cardColumnValueBelow: 'bj-phone-view__box-value--card-column bj-phone-view__box-value--card-column-below',
   /** @deprecated Use cardViewBoxChipStack — chip stack is a fixed grid row, not a wrapper. */
   cardViewBoxStake: 'bj-phone-view__box-chip-stack',
   /** Compact hero total badge in Card View grid. */

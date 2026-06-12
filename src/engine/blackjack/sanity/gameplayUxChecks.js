@@ -99,7 +99,7 @@ export function runGameplayUxSanityChecks() {
     const { message, entry } = buildGameOverSummary(endState);
     results.push(check('game-over message uses congrats format', message.includes('Game Over, congrats')));
     results.push(check('game-over message includes round count', message.includes('rounds.')));
-    results.push(check('game-over message is single block', !message.includes('\n')));
+    results.push(check('game-over message includes final chip totals', message.includes('Final chips:') || message.includes('Final totals:')));
     results.push(check('score ledger entry preview at game over', entry !== null && entry.owedDescription.includes('$5')));
     if (typeof globalThis.localStorage === 'undefined') {
         const bag = {};

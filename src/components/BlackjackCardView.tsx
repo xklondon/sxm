@@ -656,7 +656,37 @@ export function BlackjackCardView({
 
     const heroCenter = (
       <div className="bj-phone-view__hero-center">
-        <div className="bj-phone-view__hand-meta bj-phone-view__hand-meta--above-cards">
+        <div className="bj-phone-view__cards-slot">
+          {heroCardIds.length > 0 ? (
+            <div
+              {...sxmSectionProps(
+                SXM_LAYOUT.heroCards,
+                'bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched',
+              )}
+            >
+              {heroCardIds.map((id, i) => (
+                <div
+                  key={`${heroHandKey}-${i}-${id}`}
+                  className="bj-phone-view__card-wrap"
+                  style={{ "--card-i": i } as CSSProperties}
+                >
+                  {renderHugeCard(
+                    id,
+                    false,
+                    "hero",
+                    `${heroHandKey}-${i}-${id}`,
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              {...sxmSectionProps(SXM_LAYOUT.heroCards, 'bj-phone-view__cards-placeholder')}
+              aria-hidden="true"
+            />
+          )}
+        </div>
+        <div className="bj-phone-view__hand-meta bj-phone-view__hand-meta--below-cards">
           {hideHeroValueOnMobile && heroOutcomeMarker ? (
             <span
               className={[
@@ -701,36 +731,6 @@ export function BlackjackCardView({
               BUST
             </span>
           ) : null}
-        </div>
-        <div className="bj-phone-view__cards-slot">
-          {heroCardIds.length > 0 ? (
-            <div
-              {...sxmSectionProps(
-                SXM_LAYOUT.heroCards,
-                'bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched',
-              )}
-            >
-              {heroCardIds.map((id, i) => (
-                <div
-                  key={`${heroHandKey}-${i}-${id}`}
-                  className="bj-phone-view__card-wrap"
-                  style={{ "--card-i": i } as CSSProperties}
-                >
-                  {renderHugeCard(
-                    id,
-                    false,
-                    "hero",
-                    `${heroHandKey}-${i}-${id}`,
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div
-              {...sxmSectionProps(SXM_LAYOUT.heroCards, 'bj-phone-view__cards-placeholder')}
-              aria-hidden="true"
-            />
-          )}
         </div>
         {deviceView === "mobile" && showSideControls && isActiveTurn && (
           <p className="bj-phone-view__swipe-guide" aria-hidden="true">

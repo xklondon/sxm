@@ -90,8 +90,8 @@ describe('blackjack UX fixes — Card View hero layout', () => {
     expect(CARD_LAYOUT_CSS).toMatch(/--bj-card-hero-card-max-height:\s*clamp\(/);
   });
 
-  it('renders hand total above hero cards', () => {
-    expect(CARD_VIEW_SRC).toContain('bj-phone-view__hand-meta--above-cards');
+  it('renders hand total below hero cards', () => {
+    expect(CARD_VIEW_SRC).toContain('bj-phone-view__hand-meta--below-cards');
     let state = tableWithClaimedBox(1);
     const box1 = boxPlayerId(state, 1)!;
     const k1 = blackjackHandKey(box1, 0);
@@ -115,10 +115,10 @@ describe('blackjack UX fixes — Card View hero layout', () => {
         activeHandRevealComplete
       />,
     );
-    const aboveIdx = html.indexOf('bj-phone-view__hand-meta--above-cards');
+    const belowIdx = html.indexOf('bj-phone-view__hand-meta--below-cards');
     const cardsIdx = html.indexOf('bj-phone-view__cards-slot');
-    expect(aboveIdx).toBeGreaterThan(-1);
-    expect(cardsIdx).toBeGreaterThan(aboveIdx);
+    expect(belowIdx).toBeGreaterThan(-1);
+    expect(belowIdx).toBeGreaterThan(cardsIdx);
   });
 
   it('shows mobile side indicators beside hero (not hidden)', () => {

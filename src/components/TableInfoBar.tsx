@@ -9,13 +9,24 @@ import './TableInfoBar.css';
 interface TableInfoBarProps {
   gameState: GameState;
   viewerPersonId: string | null;
+  /** Masked visual state for paced card reveal — bank hand value follows visible cards only. */
+  displayState?: GameState;
   /** Dealer: bank hand under cards. Felt/header: bank chip total only. */
   variant?: 'dealer' | 'header' | 'felt';
 }
 
 /** Bank value + bank chip balance — dealer variant under cards; felt row shows total only. */
-export function TableInfoBar({ gameState, viewerPersonId, variant = 'dealer' }: TableInfoBarProps) {
-  const { bankValue, bankChips, bankHolderLabel } = buildTableInfoDisplay(gameState, viewerPersonId);
+export function TableInfoBar({
+  gameState,
+  viewerPersonId,
+  displayState,
+  variant = 'dealer',
+}: TableInfoBarProps) {
+  const { bankValue, bankChips, bankHolderLabel } = buildTableInfoDisplay(
+    gameState,
+    viewerPersonId,
+    displayState ?? gameState,
+  );
   const isDealer = variant === 'dealer';
   const isHeader = variant === 'header';
   const isFelt = variant === 'felt';

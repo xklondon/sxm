@@ -24,6 +24,7 @@ import {
 import {
   buildChallengeBankBustEndMessage,
   buildChallengeEndRankings,
+  buildGameEndChipTotalsMessage,
   hasSingleClearWinner,
   isFractionalChallengeEnd,
   resolveEffectiveSettlementMode,
@@ -187,6 +188,11 @@ export function buildGameOverSummary(state: GameState): {
     message = isChallengeTable(state)
       ? buildChallengeBankBustEndMessage(state)
       : 'GAME OVER\nBank is bust.';
+  } else {
+    const chipTotals = buildGameEndChipTotalsMessage(state);
+    if (chipTotals) {
+      message = `${message}\n\n${chipTotals}`;
+    }
   }
 
   const participants = buildParticipantResults(state, winnerId).map((p) => ({

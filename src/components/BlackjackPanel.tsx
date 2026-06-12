@@ -109,6 +109,7 @@ import {
 import {
   buildIouHandoffCreateRequest,
   canOfferGameEndIou,
+  getGameEndIouDisabledReason,
 } from '../engine/scoreLedger/gameEndIou';
 import { createIouHandoff } from '../api/iouHandoff';
 import { iouHandoffStorageKey } from '../lib/iouHandoffPayload';
@@ -119,7 +120,10 @@ import { buildBlackjackCommandText } from './tableCommandDisplay';
 import { useHandTransitionHold } from './useHandTransitionHold';
 import { OptionalPlayDecisionOverlay } from './OptionalPlayDecisionOverlay';
 import { RoundSummaryOverlay } from './RoundSummaryOverlay';
-import { ROUND_SUMMARY_OVERLAY_DELAY_MS } from './roundSummaryOverlayTiming';
+import {
+  MOBILE_GAME_OVER_OVERLAY_DELAY_MS,
+  ROUND_SUMMARY_OVERLAY_DELAY_MS,
+} from './roundSummaryOverlayTiming';
 import {
   formatPlaceBetError,
   getChipPlacementTarget,
@@ -280,6 +284,7 @@ export function BlackjackPanel({
   const [magic8Answer, setMagic8Answer] = useState<string | null>(null);
   const [roundSummaryDismissed, setRoundSummaryDismissed] = useState(false);
   const [roundSummaryDelayReady, setRoundSummaryDelayReady] = useState(false);
+  const [gameOverDelayReady, setGameOverDelayReady] = useState(false);
   const [expandedVisibleBoxCount, setExpandedVisibleBoxCount] = useState(DEFAULT_VISIBLE_TABLE_BOXES);
   /** Single local chip target — tray pulse and placement both read from here. */
   const [localChipSelection, setLocalChipSelection] = useState<LocalSelectedChipTarget>(() =>
@@ -488,6 +493,7 @@ export function BlackjackPanel({
   const canSaveToLedger = canAddGameToPersonalLedger(gameState);
   const viewerEmail = viewerAuth?.email?.trim() || profile.email.trim();
   const canAddIou = canOfferGameEndIou(gameState, viewerEmail);
+  const iouDisabledReason = canAddIou ? undefined : getGameEndIouDisabledReason(gameState);
   // Consolidated end-of-round summary, shown once (in the dealer block, above
   // the Next Round button). Per-box result chips are intentionally not repeated.
   const roundSummaryLines = useMemo(
@@ -532,8 +538,13 @@ export function BlackjackPanel({
 
   const showGameOverActions =
     gameEnded && !gameOverOverlayDismissed && !gameOverOverlayConfirmed;
-  const showGameOverOverlay = showGameOverActions && deviceView === 'mobile';
+  const showGameOverOverlay =
+    showGameOverActions &&
+    deviceView === 'mobile' &&
+    cardRevealComplete &&
+    gameOverDelayReady;
   const showGameOverDesktopPanel = showGameOverActions && deviceView === 'desktop';
+  const canDealCards = tableOwner && canDeal;
 
   useEffect(() => {
     if (!gameEnded) {
@@ -567,6 +578,22 @@ export function BlackjackPanel({
     );
     return () => window.clearTimeout(timer);
   }, [awaitingNextRound, gameEnded, cardRevealComplete]);
+
+  useEffect(() => {
+    if (!gameEnded) {
+      setGameOverDelayReady(false);
+      return;
+    }
+    if (!cardRevealComplete) {
+      setGameOverDelayReady(false);
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setGameOverDelayReady(true),
+      MOBILE_GAME_OVER_OVERLAY_DELAY_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [gameEnded, cardRevealComplete, gameState.session.id]);
 
   function handleAddToPersonalLedger() {
     setError(null);
@@ -1172,6 +1199,9 @@ export function BlackjackPanel({
   };
 
   function handlePrimaryDealAction() {
+    if (!tableOwner) {
+      return;
+    }
     runPrimaryDealAction({
       firstStartShuffleDelayMs: tableMeta.shoeStarted ? 0 : SHUFFLE_ANIM_DURATION_MS,
       onFirstStartShuffleAnimationStart: () => {
@@ -1212,7 +1242,7 @@ export function BlackjackPanel({
     bankerReady,
     shoeStarted,
     bettingOpen,
-    canDeal,
+    canDeal: canDealCards,
     hasStakes,
     onShuffleToStart: handleShuffleToStart,
     shuffleAnimating,
@@ -1225,7 +1255,12 @@ export function BlackjackPanel({
     initialDealManual: initialDealStaged,
     bankDrawManual: flowSettings.bankDrawMode === 'manual',
     bankInfo: (
-      <TableInfoBar gameState={gameState} viewerPersonId={viewerPersonId} variant="dealer" />
+      <TableInfoBar
+        gameState={gameState}
+        displayState={tableVisualState}
+        viewerPersonId={viewerPersonId}
+        variant="dealer"
+      />
     ),
   };
 
@@ -1665,19 +1700,6 @@ export function BlackjackPanel({
             {cardAreaOutcomeMarkerText(outcomeMarker)}
           </span>
         ) : null}
-        <span
-          className={[
-            boxValueSpanClassName(
-              Boolean(cardColumnValueLabel),
-              isBusted,
-              cardAreaOutcomeToneFromMarker(outcomeMarker),
-            ),
-            TABLE_UX.cardColumnValueAbove,
-          ].join(' ')}
-          aria-hidden={cardColumnValueLabel ? undefined : 'true'}
-        >
-          {cardColumnValueLabel || '\u00a0'}
-        </span>
         {isSplit ? (
           <div className="bj-arc__split-hands">
             {handKeys.map((handKey) => {
@@ -1712,6 +1734,19 @@ export function BlackjackPanel({
             handKeys[0] ? getVisibleHandCardIds(visualRound, handKeys[0]) : [],
           )
         )}
+        <span
+          className={[
+            boxValueSpanClassName(
+              Boolean(cardColumnValueLabel),
+              isBusted,
+              cardAreaOutcomeToneFromMarker(outcomeMarker),
+            ),
+            TABLE_UX.cardColumnValueBelow,
+          ].join(' ')}
+          aria-hidden={cardColumnValueLabel ? undefined : 'true'}
+        >
+          {cardColumnValueLabel || '\u00a0'}
+        </span>
       </div>
     );
   }
@@ -2154,9 +2189,7 @@ export function BlackjackPanel({
         canCreateIou={canAddIou}
         iouPending={iouPending}
         iouFeedback={iouFeedback}
-        iouDisabledReason={
-          canAddIou ? undefined : 'Add a counterparty email to create an IOU handoff.'
-        }
+        iouDisabledReason={iouDisabledReason}
         onConfirm={handleGameOverConfirm}
         onDismiss={() => setSideRailPanel(null)}
       />
@@ -2396,6 +2429,7 @@ export function BlackjackPanel({
             tableBankInfo={
               <TableInfoBar
                 gameState={gameState}
+                displayState={tableVisualState}
                 viewerPersonId={viewerPersonId}
                 variant="felt"
               />

@@ -92,7 +92,9 @@ describe('game end cleanup', () => {
   it('renders game-over command with winner and round count', () => {
     const state = endedChallengeState();
     const { message } = buildGameOverSummary(state);
-    expect(message).toBe('Game Over, congrats Alice, you won in 4 rounds.');
+    expect(message).toContain('Game Over, congrats Alice, you won in 4 rounds.');
+    expect(message).toContain('Final chips:');
+    expect(message).toContain('Total in play — 1000');
   });
 
   it('add to ledger is idempotent per table', () => {

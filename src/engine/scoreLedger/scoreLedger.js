@@ -5,7 +5,7 @@ import { getLedgerBalanceForBankrollOwner, listPersonBankrollOwnerIds, } from '.
 import { log } from '../../utils/logger';
 import { resolveEmailForPlayerId } from './gameEndIou';
 import { bankShortName, formatBankHolderLabel, isChallengeTable, personShortName, resolveLedgerWinnerPersonId, resolveWinnerDisplayName, } from './challengeBankDisplay';
-import { buildChallengeBankBustEndMessage, buildChallengeEndRankings, buildFractionalEndMessage, hasSingleClearWinner, isFractionalChallengeEnd, resolveEffectiveSettlementMode, } from './challengeEndAccounting';
+import { buildChallengeBankBustEndMessage, buildChallengeEndRankings, buildGameEndChipTotalsMessage, hasSingleClearWinner, isFractionalChallengeEnd, resolveEffectiveSettlementMode, } from './challengeEndAccounting';
 /** True when the bank seat is a bot (virtual) — i.e. not a human-vs-human game. */
 export function isBotBankGame(state) {
     const bankId = state.session.bankPlayerId;
@@ -196,6 +196,12 @@ export function buildGameOverSummary(state) {
         message = isChallengeTable(state)
             ? buildChallengeBankBustEndMessage(state)
             : 'GAME OVER\nBank is bust.';
+    }
+    else {
+        const chipTotals = buildGameEndChipTotalsMessage(state);
+        if (chipTotals) {
+            message = `${message}\n\n${chipTotals}`;
+        }
     }
     const participants = buildParticipantResults(state, winnerId).map((p) => ({
         ...p,

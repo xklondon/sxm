@@ -43,9 +43,9 @@ const MASTER_SPEC = readFileSync(join(process.cwd(), 'docs/SXM_MASTER_SPEC.md'),
 const CHANGE_LOG = readFileSync(join(process.cwd(), 'docs/CHANGE_LOG.md'), 'utf8');
 
 describe('blackjack UX protocol fixes — card column values', () => {
-  it('renders hand value above card columns in Table View', () => {
+  it('renders hand value below card columns in Table View', () => {
     expect(PANEL_SRC).toContain('resolvePrimaryHandValueLabel');
-    expect(PANEL_SRC).toContain('TABLE_UX.cardColumnValueAbove');
+    expect(PANEL_SRC).toContain('TABLE_UX.cardColumnValueBelow');
     expect(PANEL_SRC).toMatch(/renderArcCardColumn[\s\S]*boxValueSpanClassName/);
   });
 });

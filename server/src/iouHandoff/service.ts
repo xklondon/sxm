@@ -55,7 +55,20 @@ export class IouHandoffService {
     }
 
     const resolved = resolveHandoffParties(body, tableState);
-    validateHandoffParties(resolved, normalizedViewer);
+    try {
+      validateHandoffParties(resolved, normalizedViewer);
+    } catch (err) {
+      logHandoffRejection({
+        tableId: resolved.tableId,
+        sessionId: resolved.sessionId,
+        viewerEmail: normalizedViewer,
+        debtorEmailPresent: Boolean(resolved.debtorEmail),
+        creditorEmailPresent: Boolean(resolved.creditorEmail),
+        rejectionReason: err instanceof Error ? err.message : 'IOU handoff validation failed',
+        tableState,
+      });
+      throw err;
+    }
 
     const payload = buildServerIouCreatePayload({
       source: this.config.source,
@@ -201,6 +214,29 @@ function validateHandoffParties(
   if (!participants.has(viewerEmail)) {
     throw new Error('You are not a party to this wager handoff');
   }
+}
+
+function logHandoffRejection(details: {
+  tableId: string;
+  sessionId: string;
+  viewerEmail: string;
+  debtorEmailPresent: boolean;
+  creditorEmailPresent: boolean;
+  rejectionReason: string;
+  tableState?: GameState | null;
+}): void {
+  const parties = details.tableState ? resolveGameEndParties(details.tableState) : null;
+  // eslint-disable-next-line no-console
+  console.info('[SXM][iou-handoff] rejected', {
+    tableId: details.tableId,
+    gameId: details.sessionId,
+    viewerEmail: details.viewerEmail,
+    debtorPlayerId: parties?.loserId ?? null,
+    creditorPlayerId: parties?.winnerId ?? null,
+    debtorEmailPresent: details.debtorEmailPresent,
+    creditorEmailPresent: details.creditorEmailPresent,
+    rejectionReason: details.rejectionReason,
+  });
 }
 
 function rememberDuplicate(

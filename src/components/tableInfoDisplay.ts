@@ -14,14 +14,17 @@ export interface TableInfoDisplay {
   bankHolderLabel: string | null;
 }
 
-function getBankDisplayValue(state: GameState): number | null {
-  const round = state.blackjack;
-  const deck = state.deck;
+function getBankDisplayValue(
+  state: GameState,
+  displayState: GameState = state,
+): number | null {
+  const round = displayState.blackjack;
+  const deck = displayState.deck ?? state.deck;
   if (!round || !deck) {
     return null;
   }
 
-  let cardIds = getVisibleDealerCardIds(state);
+  let cardIds = getVisibleDealerCardIds(displayState);
   const holeHidden =
     round.dealerHoleHidden &&
     round.status !== 'resolved' &&
@@ -42,6 +45,7 @@ function getBankDisplayValue(state: GameState): number | null {
 export function buildTableInfoDisplay(
   state: GameState,
   viewerPersonId: string | null,
+  displayState: GameState = state,
 ): TableInfoDisplay {
   const bankRow = buildTableBankRow(state);
   const bankId = state.session.bankPlayerId;
@@ -54,7 +58,7 @@ export function buildTableInfoDisplay(
   const playerAvailable = clampAvailableForDisplay(rawAvailable);
 
   return {
-    bankValue: getBankDisplayValue(state),
+    bankValue: getBankDisplayValue(state, displayState),
     bankChips: bankRow !== null ? clampAvailableForDisplay(bankRow.available) : null,
     playerAvailable,
     bankHolderLabel,

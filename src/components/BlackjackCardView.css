@@ -1087,6 +1087,11 @@
   margin-bottom: 0.2rem;
 }
 
+.bj-phone-view__hand-meta--below-cards {
+  order: 1;
+  margin-top: 0.2rem;
+}
+
 .bj-phone-view__total--blackjack {
   animation: bj-hero-blackjack-pulse 1.4s ease-in-out infinite;
   color: var(--ds-color-gold, #fbbf24);

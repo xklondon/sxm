@@ -110,12 +110,17 @@ describe('challenge game end presentation', () => {
     expect(html).toContain('Add to Ledger');
   });
 
-  it('keeps mobile game-over centered overlay route', () => {
+  it('keeps mobile game-over centered overlay route after reveal delay', () => {
     simulatedWidth = 390;
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    const overlaySrc = readFileSync(join(process.cwd(), 'src/components/GameOverActionOverlay.tsx'), 'utf8');
+    expect(overlaySrc).toContain('bj-game-over-overlay');
+    expect(panelSrc).toContain('showGameOverOverlay');
+    expect(panelSrc).toContain('MOBILE_GAME_OVER_OVERLAY_DELAY_MS');
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={endedChallengeState()} onGameStateChange={noop} />,
     );
-    expect(html).toContain('bj-game-over-overlay');
+    expect(html).not.toContain('bj-game-over-overlay');
     expect(html).not.toContain('bj-game-over--inline');
   });
 
