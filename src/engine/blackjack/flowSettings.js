@@ -6,7 +6,7 @@ export const DEAL_SPEED_MS = {
     slow: 5000,
 };
 export const DEFAULT_BLACKJACK_FLOW_SETTINGS = {
-    initialDealMode: 'staged',
+    initialDealMode: 'natural',
     bankDrawMode: 'auto',
     autoDealDelayMs: DEAL_SPEED_MS.fast,
     naturalDealDelayMs: DEAL_SPEED_MS.fast,

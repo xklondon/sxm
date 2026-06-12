@@ -21,6 +21,7 @@ import type { LoadTableEntry } from './components/LoadTableList';
 import { GameSetupScreen } from './screens/GameSetupScreen';
 import { TableScreen, type TableNavHandlers } from './screens/TableScreen';
 import { LeaveTableConfirmDialog } from './components/LeaveTableConfirmDialog';
+import { shouldConfirmLeaveActiveTable } from './tableLeaveGuard';
 import { LocalProfileSetup } from './components/LocalProfileSetup';
 import { ScoreLedgerModal } from './components/LedgerModals';
 import {
@@ -140,6 +141,7 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
   const [tableVersion, setTableVersion] = useState<number | null>(null);
   const [tableNavHandlers, setTableNavHandlers] = useState<TableNavHandlers | null>(null);
   const [leaveTableConfirmOpen, setLeaveTableConfirmOpen] = useState(false);
+  const pendingLeaveActionRef = useRef<(() => void) | null>(null);
   const [bootstrappingTable, setBootstrappingTable] = useState(false);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
   const [navMenuOpen, setNavMenuOpen] = useState(false);
@@ -418,6 +420,18 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
   }, [onlineMode, forceNewTable]);
 
   useEffect(() => {
+    if (!shouldConfirmLeaveActiveTable(screen, gameState)) {
+      return;
+    }
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [screen, gameState]);
+
+  useEffect(() => {
     if (!navMenuOpen) {
       return;
     }
@@ -441,16 +455,32 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
     setScreen(onlineMode && user ? 'lobby' : 'start');
   }
 
-  function requestLeaveTable() {
+  function requestLeaveTable(onConfirmed?: () => void) {
+    pendingLeaveActionRef.current = onConfirmed ?? null;
     setLeaveTableConfirmOpen(true);
+  }
+
+  function requestNavigateAway(action: () => void) {
+    if (shouldConfirmLeaveActiveTable(screen, gameState)) {
+      requestLeaveTable(action);
+      return;
+    }
+    action();
   }
 
   function handleCancelLeaveTable() {
     setLeaveTableConfirmOpen(false);
+    pendingLeaveActionRef.current = null;
   }
 
   function handleLeaveTableWithoutSaving() {
     setLeaveTableConfirmOpen(false);
+    const pending = pendingLeaveActionRef.current;
+    pendingLeaveActionRef.current = null;
+    if (pending) {
+      pending();
+      return;
+    }
     exitTableScreen();
   }
 
@@ -458,6 +488,12 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
     setLeaveTableConfirmOpen(false);
     if (tableNavHandlers) {
       tableNavHandlers.saveTable();
+    }
+    const pending = pendingLeaveActionRef.current;
+    pendingLeaveActionRef.current = null;
+    if (pending) {
+      pending();
+      return;
     }
     exitTableScreen();
   }
@@ -600,9 +636,11 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
           onClose={() => setActiveTablesOpen(false)}
           currentTableId={activeTableId}
           onOpenTable={(tableId) => {
-            setDismissStoredTable(false);
-            enterOnlineTable(tableId);
-            setActiveTablesOpen(false);
+            requestNavigateAway(() => {
+              setDismissStoredTable(false);
+              enterOnlineTable(tableId);
+              setActiveTablesOpen(false);
+            });
           }}
         />
       )}
@@ -688,7 +726,10 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
                       role="menuitem"
                       onClick={() => {
                         setNavMenuOpen(false);
-                        setScreen('people');
+                        requestNavigateAway(() => {
+                          exitTableScreen();
+                          setScreen('people');
+                        });
                       }}
                     >
                       People
@@ -724,7 +765,7 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
                       role="menuitem"
                       onClick={() => {
                         setNavMenuOpen(false);
-                        void handleLogout();
+                        requestNavigateAway(() => void handleLogout());
                       }}
                     >
                       Sign out
@@ -771,7 +812,14 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
         />
       )}
       {screen === 'people' && isPeopleAdmin(user) && (
-        <PeopleScreen onBack={() => setScreen(onlineMode && user ? 'lobby' : 'start')} />
+        <PeopleScreen
+          onBack={() =>
+            requestNavigateAway(() => {
+              exitTableScreen();
+              setScreen(onlineMode && user ? 'lobby' : 'start');
+            })
+          }
+        />
       )}
       {screen === 'setup' && (
         <GameSetupScreen

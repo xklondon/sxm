@@ -30,6 +30,7 @@
   --bj-seat-label-size: 0.42rem;
   --bj-seat-name-size: 0.48rem;
   --bj-seat-total-size: 1.25rem;
+  --bj-box-stake-amount-size: 0.72rem;
   --bj-seat-meta-size: 0.42rem;
 
   --bj-actions-panel-bg: transparent;
@@ -1319,6 +1320,13 @@
   text-align: center;
   line-height: var(--bj-box-value-band-height);
   order: -1;
+  font-size: var(--bj-box-stake-amount-size);
+  font-weight: var(--ds-weight-bold, 700);
+}
+
+.bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above.bj-player-hand-value--emphasis {
+  font-size: var(--bj-box-stake-amount-size);
+  font-weight: var(--ds-weight-bold, 700);
 }
 
 .bj-phone-view__box-value--placeholder {
@@ -1893,7 +1901,7 @@
 }
 
 .bj-arc--cards .bj-arc__slot--card-column .bj-phone-view__box-value--card-column-below {
-  margin: 0.04rem 0 0;
+  margin: 0.14rem 0 0;
 }
 
 .bj-card-outcome-marker {

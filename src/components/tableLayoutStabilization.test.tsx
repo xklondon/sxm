@@ -57,6 +57,10 @@ describe('table layout stabilization contract', () => {
     return {
       ...state,
       selectedSeatId: box1,
+      blackjackFlowSettings: {
+        ...state.blackjackFlowSettings,
+        initialDealMode: 'instant',
+      },
       blackjack: {
         ...state.blackjack!,
         status: 'player-turns',
@@ -232,6 +236,10 @@ describe('table layout polish contract', () => {
     return {
       ...state,
       selectedSeatId: box1,
+      blackjackFlowSettings: {
+        ...state.blackjackFlowSettings,
+        initialDealMode: 'instant',
+      },
       blackjack: {
         ...state.blackjack!,
         status: 'player-turns',

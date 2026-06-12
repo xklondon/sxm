@@ -178,8 +178,8 @@ describe('table center alignment polish', () => {
 });
 
 describe('default table flow settings', () => {
-  it('defaults new tables to manual staged dealing and 1 second deal speed', () => {
-    expect(FLOW_SETTINGS_SRC).toMatch(/initialDealMode:\s*'staged'/);
+  it('defaults new tables to natural dealing and 1 second deal speed', () => {
+    expect(FLOW_SETTINGS_SRC).toMatch(/initialDealMode:\s*'natural'/);
     expect(FLOW_SETTINGS_SRC).toMatch(/dealSpeedPreset:\s*'fast'/);
   });
 });

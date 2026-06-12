@@ -66,8 +66,8 @@ describe('Leave table confirmation', () => {
         onCancel={() => {}}
       />,
     );
-    expect(html).toContain('Save this table before leaving?');
-    expect(html).toContain('Save and leave');
+    expect(html).toContain('Save table before leaving?');
+    expect(html).toContain('Save table');
     expect(html).toContain('Leave without saving');
     expect(html).toContain('Cancel');
   });
@@ -75,6 +75,9 @@ describe('Leave table confirmation', () => {
   it('App wires leave confirmation without changing logout', () => {
     expect(APP_SRC).toContain('LeaveTableConfirmDialog');
     expect(APP_SRC).toContain('requestLeaveTable');
+    expect(APP_SRC).toContain('requestNavigateAway');
+    expect(APP_SRC).toContain('beforeunload');
+    expect(APP_SRC).toContain('shouldConfirmLeaveActiveTable');
     expect(APP_SRC).toContain('handleSaveAndLeaveTable');
     expect(APP_SRC).toContain('handleLeaveTableWithoutSaving');
     expect(APP_SRC).toMatch(/handleLogout[\s\S]*Sign out/);

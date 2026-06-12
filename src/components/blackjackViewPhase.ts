@@ -3,7 +3,7 @@ import type { BlackjackRound } from '../types/blackjack';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { getBlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { isInitialDealRoundComplete } from '../engine/blackjack/initialDealGuards';
-import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
+import { isPacedCardReveal } from '../engine/blackjack/dealing/dealingModes';
 import { isActionRevealReady } from '../engine/blackjack/dealing/cardRevealDisplay';
 import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
 import { getInsuranceEligibleBoxIds } from '../engine/blackjack/protocols/activeRules';
@@ -98,8 +98,8 @@ export function canShowPlayerDecisionControls(
   if (!showPlayerActionControls(displayPhase, round)) {
     return false;
   }
-  const naturalDealing = isNaturalInitialDeal(state.blackjackFlowSettings.initialDealMode);
-  const revealReady = isActionRevealReady(naturalDealing, {
+  const pacedReveal = isPacedCardReveal(state.blackjackFlowSettings.initialDealMode);
+  const revealReady = isActionRevealReady(pacedReveal, {
     cardRevealComplete: options.cardRevealComplete,
     activeHandRevealComplete: options.activeHandRevealComplete ?? false,
   });

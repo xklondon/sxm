@@ -32,11 +32,11 @@ export function LeaveTableConfirmDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="leave-table-dialog-title" className="leave-table-dialog__title">
-          Save this table before leaving?
+          Save table before leaving?
         </h2>
         <div className="leave-table-dialog__actions">
           <button type="button" className="ds-btn ds-btn--primary" onClick={onSaveAndLeave}>
-            Save and leave
+            Save table
           </button>
           <button type="button" className="ds-btn ds-btn--secondary" onClick={onLeaveWithoutSaving}>
             Leave without saving

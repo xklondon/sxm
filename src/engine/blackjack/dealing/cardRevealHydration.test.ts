@@ -3,7 +3,11 @@ import {
   applyCardVisibility,
   cardRevealScopeKey,
   countVisibleCards,
+  emptyCardVisibility,
+  hasPendingCardReveal,
+  isStaleHandVisibility,
   maxVisibilityForRound,
+  resolveRevealScopeTransition,
   shouldHydrateCardRevealScope,
   shouldUseOrderedInitialReveal,
   totalCardCount,
@@ -17,6 +21,18 @@ describe('card reveal hydration helpers', () => {
   it('scope key is stable per table and round', () => {
     expect(cardRevealScopeKey('table-a', 3)).toBe('table-a:3');
     expect(cardRevealScopeKey('table-a', 4)).toBe('table-a:4');
+  });
+
+  it('empty visibility starts a paced round from no revealed cards', () => {
+    expect(emptyCardVisibility()).toEqual({ dealer: 0, hands: {} });
+    expect(resolveRevealScopeTransition('t:1', 't:2')).toBe('reset');
+  });
+
+  it('stale visibility from prior round hands forces pending reveal', () => {
+    const stale = { dealer: 2, hands: { 'round1:0': 2 } };
+    const target = { dealer: 2, hands: { 'round2:0': 2 } };
+    expect(isStaleHandVisibility(stale, target)).toBe(true);
+    expect(hasPendingCardReveal(stale, target)).toBe(true);
   });
 
   it('hydrates on first snapshot and on table/round change', () => {

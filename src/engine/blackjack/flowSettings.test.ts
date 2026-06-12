@@ -7,8 +7,8 @@ import {
 } from './flowSettings';
 
 describe('flowSettings deal speed', () => {
-  it('defaults to manual staged dealing with 1 second deal speed', () => {
-    expect(DEFAULT_BLACKJACK_FLOW_SETTINGS.initialDealMode).toBe('staged');
+  it('defaults to natural dealing with 1 second deal speed', () => {
+    expect(DEFAULT_BLACKJACK_FLOW_SETTINGS.initialDealMode).toBe('natural');
     expect(DEFAULT_BLACKJACK_FLOW_SETTINGS.dealSpeedPreset).toBe('fast');
     expect(dealDelayMsForPreset('fast')).toBe(1000);
     expect(DEFAULT_BLACKJACK_FLOW_SETTINGS.naturalDealDelayMs).toBe(1000);

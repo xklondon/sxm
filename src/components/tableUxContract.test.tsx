@@ -156,6 +156,10 @@ describe('TABLE_UX markup across views', () => {
     return {
       ...state,
       selectedSeatId: box1,
+      blackjackFlowSettings: {
+        ...state.blackjackFlowSettings,
+        initialDealMode: 'instant',
+      },
       blackjack: {
         ...state.blackjack!,
         status: 'player-turns',

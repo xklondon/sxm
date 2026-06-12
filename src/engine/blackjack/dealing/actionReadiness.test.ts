@@ -82,6 +82,17 @@ describe('action readiness — natural dealing OFF', () => {
   });
 });
 
+describe('action readiness — staged dealing', () => {
+  it('waits for reveal flags in staged mode like natural', () => {
+    expect(
+      isActionRevealReady(true, {
+        cardRevealComplete: false,
+        activeHandRevealComplete: false,
+      }),
+    ).toBe(false);
+  });
+});
+
 describe('action readiness — natural dealing ON', () => {
   it('waits for active-hand reveal before enabling controls', () => {
     expect(

@@ -44,7 +44,7 @@ export const DEAL_SPEED_MS: Record<DealSpeedPreset, number> = {
 };
 
 export const DEFAULT_BLACKJACK_FLOW_SETTINGS: BlackjackFlowSettings = {
-  initialDealMode: 'staged',
+  initialDealMode: 'natural',
   bankDrawMode: 'auto',
   autoDealDelayMs: DEAL_SPEED_MS.fast,
   naturalDealDelayMs: DEAL_SPEED_MS.fast,

@@ -1,18 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import type { GameState } from '../types';
-import { isInstantInitialDeal } from '../engine/blackjack/dealing/dealingModes';
+import {
+  isInstantInitialDeal,
+  isStagedInitialDeal,
+} from '../engine/blackjack/dealing/dealingModes';
 import {
   applyCardVisibility,
   applyRevealStep,
   buildInitialRevealSteps,
   cardRevealScopeKey,
+  emptyCardVisibility,
   hasPendingCardReveal,
   isActiveHandRevealComplete,
   isHandBoundaryRevealStep,
+  isStaleHandVisibility,
   maxVisibilityForRound,
   nextGameplayRevealStep,
   resolveCardRevealDelayMs,
-  shouldHydrateCardRevealScope,
+  resolveRevealScopeTransition,
   shouldUseOrderedInitialReveal,
   totalCardCount,
   type CardVisibilityCounts,
@@ -53,6 +58,9 @@ function nextRevealStep(
   round: NonNullable<GameState['blackjack']> | null,
   roundStatus: NonNullable<GameState['blackjack']>['status'] | undefined,
 ): CardVisibilityCounts | null {
+  if (isStaleHandVisibility(visible, target)) {
+    return null;
+  }
   if (
     round &&
     shouldUseOrderedInitialReveal(roundStatus, visible, target)
@@ -98,27 +106,35 @@ export function useSequentialCardReveal(
   gameState: GameState,
   _options?: SequentialCardRevealOptions,
 ): { displayState: GameState; isRevealing: boolean; activeHandRevealComplete: boolean } {
-  const pacedReveal = !isInstantInitialDeal(gameState.blackjackFlowSettings.initialDealMode);
+  const initialDealMode = gameState.blackjackFlowSettings.initialDealMode;
+  const pacedReveal = !isInstantInitialDeal(initialDealMode);
+  const stagedManual = isStagedInitialDeal(initialDealMode);
 
   const scopeKey = cardRevealScopeKey(
     gameState.session.id,
     gameState.session.currentRound,
   );
 
-  const initialTarget = maxVisibilityForRound(gameState.blackjack);
-  const visibleRef = useRef<CardVisibilityCounts>(initialTarget);
-  const scopeKeyRef = useRef<string | null>(scopeKey);
-  const hasHydratedRef = useRef(true);
+  const visibleRef = useRef<CardVisibilityCounts>(
+    pacedReveal ? emptyCardVisibility() : maxVisibilityForRound(gameState.blackjack),
+  );
+  const scopeKeyRef = useRef<string | null>(null);
   const runIdRef = useRef(0);
   const gameStateRef = useRef(gameState);
   gameStateRef.current = gameState;
 
   const [displayState, setDisplayState] = useState(() =>
-    pacedReveal ? applyCardVisibility(gameState, initialTarget) : gameState,
+    pacedReveal
+      ? applyCardVisibility(gameState, emptyCardVisibility())
+      : gameState,
   );
   const [isRevealing, setIsRevealing] = useState(false);
   const [activeHandRevealComplete, setActiveHandRevealComplete] = useState(() =>
-    computeActiveHandRevealComplete(gameState, initialTarget, pacedReveal),
+    computeActiveHandRevealComplete(
+      gameState,
+      pacedReveal ? emptyCardVisibility() : maxVisibilityForRound(gameState.blackjack),
+      pacedReveal,
+    ),
   );
 
   useEffect(() => {
@@ -136,10 +152,18 @@ export function useSequentialCardReveal(
       cancelReveal();
       const target = maxVisibilityForRound(state.blackjack);
       visibleRef.current = target;
-      setDisplayState(state);
+      setDisplayState(applyCardVisibility(state, target));
       setIsRevealing(false);
       setActiveHandRevealComplete(computeActiveHandRevealComplete(state, target, pacedReveal));
-      hasHydratedRef.current = true;
+    };
+
+    const resetRevealQueue = (state: GameState) => {
+      cancelReveal();
+      const empty = emptyCardVisibility();
+      visibleRef.current = empty;
+      setDisplayState(applyCardVisibility(state, empty));
+      setIsRevealing(false);
+      setActiveHandRevealComplete(computeActiveHandRevealComplete(state, empty, pacedReveal));
     };
 
     if (!pacedReveal) {
@@ -148,30 +172,36 @@ export function useSequentialCardReveal(
       return;
     }
 
-    const scopeChanged = shouldHydrateCardRevealScope(
-      scopeKeyRef.current,
-      scopeKey,
-      hasHydratedRef.current,
-    );
-
-    if (scopeChanged) {
-      scopeKeyRef.current = scopeKey;
+    const transition = resolveRevealScopeTransition(scopeKeyRef.current, scopeKey);
+    if (transition === 'hydrate') {
       hydrateInstant(gameState);
+      scopeKeyRef.current = scopeKey;
       return;
+    }
+    if (transition === 'reset') {
+      resetRevealQueue(gameState);
+      scopeKeyRef.current = scopeKey;
     }
 
     const target = maxVisibilityForRound(gameState.blackjack);
-    const current = visibleRef.current;
+    let current = visibleRef.current;
+
+    if (isStaleHandVisibility(current, target)) {
+      resetRevealQueue(gameState);
+      current = emptyCardVisibility();
+    }
 
     if (countsEqual(current, target)) {
-      setDisplayState(gameState);
+      setDisplayState(applyCardVisibility(gameState, target));
       setIsRevealing(false);
       setActiveHandRevealComplete(computeActiveHandRevealComplete(gameState, target, pacedReveal));
+      scopeKeyRef.current = scopeKey;
       return;
     }
 
     if (totalCardCount(target) < totalCardCount(current)) {
       hydrateInstant(gameState);
+      scopeKeyRef.current = scopeKey;
       return;
     }
 
@@ -184,6 +214,12 @@ export function useSequentialCardReveal(
         const authoritative = gameStateRef.current;
         const authoritativeTarget = maxVisibilityForRound(authoritative.blackjack);
         let visible = visibleRef.current;
+
+        if (isStaleHandVisibility(visible, authoritativeTarget)) {
+          visible = emptyCardVisibility();
+          visibleRef.current = visible;
+          setDisplayState(applyCardVisibility(authoritative, visible));
+        }
 
         if (countsEqual(visible, authoritativeTarget)) {
           break;
@@ -223,18 +259,23 @@ export function useSequentialCardReveal(
           computeActiveHandRevealComplete(authoritative, visible, pacedReveal),
         );
         await sleepMs(delay);
+        if (stagedManual && !countsEqual(visible, authoritativeTarget)) {
+          break;
+        }
       }
 
       if (runIdRef.current === runId) {
         const final = gameStateRef.current;
         const finalTarget = maxVisibilityForRound(final.blackjack);
         visibleRef.current = finalTarget;
-        setDisplayState(final);
+        setDisplayState(applyCardVisibility(final, finalTarget));
         setIsRevealing(false);
         setActiveHandRevealComplete(computeActiveHandRevealComplete(final, finalTarget, pacedReveal));
       }
     })();
-  }, [gameState, pacedReveal, scopeKey]);
+
+    scopeKeyRef.current = scopeKey;
+  }, [gameState, pacedReveal, stagedManual, scopeKey]);
 
   return {
     displayState: pacedReveal ? displayState : gameState,

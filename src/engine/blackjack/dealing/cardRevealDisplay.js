@@ -1,6 +1,38 @@
 import { buildInitialDealPlanFromHandKeys } from '../initialDeal';
 import { cardsFromIds, getBlackjackHandValue } from '../hand';
 import { getCardDealDelayMs } from '../flowSettings';
+import { isStagedInitialDeal } from './dealingModes';
+
+export function emptyCardVisibility() {
+    return { dealer: 0, hands: {} };
+}
+
+/** How reveal hydration should react when table/round scope changes. */
+export function resolveRevealScopeTransition(previousScope, nextScope) {
+    if (!previousScope) {
+        return 'hydrate';
+    }
+    const prevTable = previousScope.split(':')[0] ?? '';
+    const nextTable = nextScope.split(':')[0] ?? '';
+    if (prevTable !== nextTable) {
+        return 'hydrate';
+    }
+    if (previousScope !== nextScope) {
+        return 'reset';
+    }
+    return 'continue';
+}
+
+/** True when visible counts reference a different hand set than the authoritative round. */
+export function isStaleHandVisibility(visible, target) {
+    for (const key of Object.keys(visible.hands)) {
+        if (!(key in target.hands)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export function countVisibleCards(round) {
     if (!round) {
         return { dealer: 0, hands: {} };
@@ -14,6 +46,7 @@ export function countVisibleCards(round) {
         hands,
     };
 }
+
 export function totalCardCount(counts) {
     let n = counts.dealer;
     for (const v of Object.values(counts.hands)) {
@@ -21,12 +54,14 @@ export function totalCardCount(counts) {
     }
     return n;
 }
+
 function handKeysForRound(round) {
     if (round.initialDealHandKeys?.length) {
         return round.initialDealHandKeys;
     }
     return Object.keys(round.playerHands);
 }
+
 /** True when visibility targets are still within the two-card initial deal. */
 export function isInitialDealVisibilityCounts(target) {
     if (target.dealer > 2) {
@@ -39,12 +74,14 @@ export function isInitialDealVisibilityCounts(target) {
     }
     return true;
 }
+
 /** Steps to reveal when authoritative state already has all initial-deal cards. */
 export function buildInitialRevealSteps(round) {
     const handKeys = handKeysForRound(round);
     const holeLast = !round.dealerCardIds[1];
     return buildInitialDealPlanFromHandKeys(handKeys, holeLast);
 }
+
 function maskRound(round, counts) {
     const playerHands = { ...round.playerHands };
     for (const [handKey, hand] of Object.entries(playerHands)) {
@@ -60,6 +97,7 @@ function maskRound(round, counts) {
         playerHands,
     };
 }
+
 export function applyCardVisibility(state, counts) {
     if (!state.blackjack) {
         return state;
@@ -69,6 +107,7 @@ export function applyCardVisibility(state, counts) {
         blackjack: maskRound(state.blackjack, counts),
     };
 }
+
 /** Apply one initial-deal step onto visibility counts. */
 export function applyRevealStep(counts, step) {
     if (step.type === 'dealer') {
@@ -83,6 +122,7 @@ export function applyRevealStep(counts, step) {
         },
     };
 }
+
 export function countsFromRevealSteps(steps) {
     let counts = { dealer: 0, hands: {} };
     for (const step of steps) {
@@ -90,9 +130,11 @@ export function countsFromRevealSteps(steps) {
     }
     return counts;
 }
+
 export function maxVisibilityForRound(round) {
     return countVisibleCards(round);
 }
+
 export function isActiveHandRevealComplete(round, visible, handKey) {
     if (!round || !handKey) {
         return false;
@@ -108,20 +150,24 @@ export function isActiveHandRevealComplete(round, visible, handKey) {
     const visibleCount = visible.hands[handKey] ?? 0;
     return visibleCount >= targetCount;
 }
-/** Player controls may enable before the full table reveal finishes (natural dealing). */
-export function isActionRevealReady(naturalDealing, options) {
-    if (!naturalDealing) {
+
+/** Player controls may enable once the active hand or full table reveal has caught up. */
+export function isActionRevealReady(pacedReveal, options) {
+    if (!pacedReveal) {
         return true;
     }
     return options.cardRevealComplete || options.activeHandRevealComplete;
 }
+
 /** Stable key for per-table, per-round visual hydration. */
 export function cardRevealScopeKey(sessionId, roundNumber) {
     return `${sessionId}:${roundNumber}`;
 }
+
 export function shouldHydrateCardRevealScope(previousScope, nextScope, hasHydrated) {
     return !hasHydrated || previousScope !== nextScope;
 }
+
 /** Reveal one gameplay card (hit, double, bank draw) toward target visibility. */
 export function nextGameplayRevealStep(visible, target) {
     if (visible.dealer < target.dealer) {
@@ -142,9 +188,22 @@ export function nextGameplayRevealStep(visible, target) {
     }
     return null;
 }
+
 export function hasPendingCardReveal(visible, target) {
+    if (isStaleHandVisibility(visible, target)) {
+        return totalCardCount(target) > 0;
+    }
+    if (visible.dealer < target.dealer) {
+        return true;
+    }
+    for (const [handKey, targetCount] of Object.entries(target.hands)) {
+        if ((visible.hands[handKey] ?? 0) < targetCount) {
+            return true;
+        }
+    }
     return totalCardCount(target) > totalCardCount(visible);
 }
+
 /** Ordered initial-deal reveal while catching up the first two cards per hand. */
 export function shouldUseOrderedInitialReveal(roundStatus, visible, target) {
     if (!hasPendingCardReveal(visible, target) || !isInitialDealVisibilityCounts(target)) {
@@ -157,6 +216,7 @@ export function shouldUseOrderedInitialReveal(roundStatus, visible, target) {
     }
     return true;
 }
+
 /** True when the next reveal step is the first card on a hand after another hand already has cards. */
 export function isHandBoundaryRevealStep(visible, stepped) {
     for (const [handKey, nextCount] of Object.entries(stepped.hands)) {
@@ -170,8 +230,12 @@ export function isHandBoundaryRevealStep(visible, stepped) {
     }
     return false;
 }
+
 /** Pick deal-speed vs bank-timer delay for the next sequential reveal step. */
 export function resolveCardRevealDelayMs(state, round, roundStatus, visible, target) {
+    if (isStagedInitialDeal(state.blackjackFlowSettings.initialDealMode)) {
+        return 0;
+    }
     if (round && shouldUseOrderedInitialReveal(roundStatus, visible, target)) {
         return getCardDealDelayMs(state, 'initial-deal');
     }
@@ -187,10 +251,12 @@ export function resolveCardRevealDelayMs(state, round, roundStatus, visible, tar
     }
     return getCardDealDelayMs(state, 'hit');
 }
+
 /** Visible card ids for a hand in the current display round (masked or full). */
 export function getVisibleHandCardIds(round, handKey) {
     return (round?.playerHands[handKey]?.cardIds ?? []).filter(Boolean);
 }
+
 /**
  * Hand total from visible cards only — totals must never lead card reveal.
  * Returns null when no visible cards exist yet.
