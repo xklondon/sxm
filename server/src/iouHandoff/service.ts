@@ -81,6 +81,7 @@ export class IouHandoffService {
       tableId: resolved.tableId,
       gameId: resolved.sessionId,
       gameType: resolved.gameType,
+      message: body.message?.trim() || undefined,
     });
 
     const cached = this.submittedByNonce.get(payload.nonce);

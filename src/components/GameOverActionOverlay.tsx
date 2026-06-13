@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { GameOverPresentationModel } from './gameOverPresentation';
 import './GameOverActionOverlay.css';
 
 export type GameOverIouFeedback = {
@@ -7,11 +8,17 @@ export type GameOverIouFeedback = {
   openUrl?: string;
 };
 
+export type GameOverCompleteOptions = {
+  saveLedger: boolean;
+  createIou: boolean;
+  iouMessage?: string;
+};
+
 export interface GameOverActionOverlayProps {
   open: boolean;
   /** Mobile: centered overlay. Desktop: inline in This Table side panel. */
   layout?: 'overlay' | 'inline';
-  summaryMessage: string;
+  presentation: GameOverPresentationModel;
   canSaveToLedger: boolean;
   ledgerAlreadyAdded: boolean;
   canCreateIou: boolean;
@@ -19,15 +26,17 @@ export interface GameOverActionOverlayProps {
   iouPending?: boolean;
   iouFeedback?: GameOverIouFeedback | null;
   pending?: boolean;
-  onConfirm: (options: { saveLedger: boolean; createIou: boolean }) => void;
+  canStartNewGame?: boolean;
+  newGameDisabledReason?: string | null;
+  onComplete: (options: GameOverCompleteOptions) => void | Promise<void>;
   onDismiss: () => void;
 }
 
-/** Small game-end sheet — ledger + optional IOU handoff; table shows summary text only. */
+/** Game-end sheet — summary, ledger choice, optional IOU, New Game. */
 export function GameOverActionOverlay({
   open,
   layout = 'overlay',
-  summaryMessage,
+  presentation,
   canSaveToLedger,
   ledgerAlreadyAdded,
   canCreateIou,
@@ -35,14 +44,14 @@ export function GameOverActionOverlay({
   iouPending = false,
   iouFeedback = null,
   pending = false,
-  onConfirm,
+  canStartNewGame = true,
+  newGameDisabledReason = null,
+  onComplete,
   onDismiss,
 }: GameOverActionOverlayProps) {
+  const [ledgerChoice, setLedgerChoice] = useState<'add' | 'skip'>('skip');
   const [createIou, setCreateIou] = useState(false);
-  const [step, setStep] = useState<'actions' | 'iou-confirm'>('actions');
-  const [pendingLedgerChoice, setPendingLedgerChoice] = useState<{
-    saveLedger: boolean;
-  } | null>(null);
+  const [iouMessage, setIouMessage] = useState('');
 
   if (!open) {
     return null;
@@ -50,153 +59,166 @@ export function GameOverActionOverlay({
 
   const busy = pending || iouPending;
   const iouToggleDisabled = !canCreateIou || busy;
-  const ledgerSaveDisabled = !canSaveToLedger || ledgerAlreadyAdded || busy;
+  const ledgerAddDisabled = !canSaveToLedger || ledgerAlreadyAdded || busy;
+  const newGameDisabled = !canStartNewGame || busy;
 
-  function resetIouStep() {
-    setStep('actions');
-    setPendingLedgerChoice(null);
-  }
-
-  function handlePrimaryAction(saveLedger: boolean) {
-    if (createIou && canCreateIou) {
-      setPendingLedgerChoice({ saveLedger });
-      setStep('iou-confirm');
+  async function handleNewGame() {
+    if (newGameDisabled) {
       return;
     }
-    onConfirm({ saveLedger, createIou: false });
-  }
-
-  function handleIouConfirmYes() {
-    if (!pendingLedgerChoice) {
-      return;
-    }
-    onConfirm({ saveLedger: pendingLedgerChoice.saveLedger, createIou: true });
-    resetIouStep();
+    const saveLedger = ledgerChoice === 'add' && !ledgerAlreadyAdded && canSaveToLedger;
+    const trimmedMessage = iouMessage.trim();
+    await onComplete({
+      saveLedger,
+      createIou: createIou && canCreateIou,
+      iouMessage: trimmedMessage || undefined,
+    });
   }
 
   const isInline = layout === 'inline';
-  const title = isInline ? 'Game Summary' : 'Game Over';
 
   const panel = (
-      <div
-        className={[
-          'invite-modal invite-modal--ledger invite-modal--table-panel bj-game-over',
-          isInline ? 'bj-game-over--inline' : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        role="dialog"
-        aria-labelledby="bj-game-over-title"
-        aria-modal={isInline ? undefined : 'true'}
-        onClick={isInline ? undefined : (e) => e.stopPropagation()}
-      >
-        <header className="bj-game-over__header">
-          <h2 id="bj-game-over-title" className="bj-game-over__title">
-            {title}
-          </h2>
-          <button
-            type="button"
-            className="bj-game-over__close ds-btn ds-btn--icon"
-            aria-label="Close without saving"
-            disabled={busy}
-            onClick={onDismiss}
-          >
-            ×
-          </button>
-        </header>
+    <div
+      className={[
+        'invite-modal invite-modal--ledger invite-modal--table-panel bj-game-over',
+        isInline ? 'bj-game-over--inline' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      role="dialog"
+      aria-labelledby="bj-game-over-title"
+      aria-modal={isInline ? undefined : 'true'}
+      onClick={isInline ? undefined : (e) => e.stopPropagation()}
+    >
+      <header className="bj-game-over__header">
+        <h2 id="bj-game-over-title" className="bj-game-over__title">
+          {presentation.title}
+        </h2>
+        <button
+          type="button"
+          className="bj-game-over__close ds-btn ds-btn--icon"
+          aria-label="Close without saving"
+          disabled={busy}
+          onClick={onDismiss}
+        >
+          ×
+        </button>
+      </header>
 
-        {step === 'iou-confirm' ? (
-          <>
-            <p className="bj-game-over__summary">
-              Create IOU in IOU Wallet for this wager?
-            </p>
-            <p className="bj-game-over__iou-hint">
-              The counterparty can accept or decline it later in IOU Wallet.
-            </p>
-            <div className="bj-game-over__actions">
-              <button
-                type="button"
-                className="ds-btn ds-btn--primary"
-                disabled={busy}
-                onClick={handleIouConfirmYes}
-              >
-                {iouPending ? 'Creating IOU…' : 'Create IOU'}
-              </button>
-              <button
-                type="button"
-                className="ds-btn ds-btn--secondary"
-                disabled={busy}
-                onClick={resetIouStep}
-              >
-                Back
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="bj-game-over__summary">{summaryMessage}</p>
-            {iouFeedback ? (
-              <p
-                className={[
-                  'bj-game-over__feedback',
-                  `bj-game-over__feedback--${iouFeedback.tone}`,
-                ].join(' ')}
-                role="status"
-              >
-                {iouFeedback.message}
-              </p>
-            ) : null}
-            {iouFeedback?.openUrl ? (
-              <a
-                className="ds-btn ds-btn--secondary bj-game-over__open-link"
-                href={iouFeedback.openUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Open in IOU Wallet
-              </a>
-            ) : null}
-            <div className="bj-game-over__actions">
-              <button
-                type="button"
-                className="ds-btn ds-btn--primary"
-                disabled={ledgerSaveDisabled}
-                onClick={() => handlePrimaryAction(true)}
-              >
-                {ledgerAlreadyAdded ? 'Added to Ledger' : 'Add to Ledger'}
-              </button>
-              <button
-                type="button"
-                className="ds-btn ds-btn--secondary"
-                disabled={busy}
-                onClick={() => handlePrimaryAction(false)}
-              >
-                Don&apos;t Add
-              </button>
-            </div>
-            <label
-              className={[
-                'bj-game-over__iou-toggle',
-                iouToggleDisabled ? 'bj-game-over__iou-toggle--disabled' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              title={iouToggleDisabled ? iouDisabledReason : undefined}
-            >
-              <input
-                type="checkbox"
-                checked={createIou && canCreateIou}
-                disabled={iouToggleDisabled}
-                onChange={(e) => setCreateIou(e.target.checked)}
-              />
-              <span>Create IOU</span>
-            </label>
-            {iouToggleDisabled && iouDisabledReason ? (
-              <p className="bj-game-over__iou-hint">{iouDisabledReason}</p>
-            ) : null}
-          </>
-        )}
+      <div className="bj-game-over__visual" aria-hidden="true">
+        <span className="bj-game-over__visual-glyph">{presentation.visual.glyph}</span>
+        <span className="bj-game-over__visual-label">{presentation.visual.label}</span>
       </div>
+
+      <div className="bj-game-over__summary-block">
+        <p className="bj-game-over__summary-line bj-game-over__summary-line--winner">
+          {presentation.winnerLine}
+        </p>
+        <p className="bj-game-over__summary-line">{presentation.resultLine}</p>
+        <p className="bj-game-over__summary-line bj-game-over__summary-line--meta">
+          {presentation.roundsLine}
+        </p>
+      </div>
+
+      <blockquote className="bj-game-over__magic8">
+        <span className="bj-game-over__magic8-label">Magic 8 Ball</span>
+        <p className="bj-game-over__magic8-text">{presentation.magic8Line}</p>
+      </blockquote>
+
+      {iouFeedback ? (
+        <p
+          className={[
+            'bj-game-over__feedback',
+            `bj-game-over__feedback--${iouFeedback.tone}`,
+          ].join(' ')}
+          role="status"
+        >
+          {iouFeedback.message}
+        </p>
+      ) : null}
+      {iouFeedback?.openUrl ? (
+        <a
+          className="ds-btn ds-btn--secondary bj-game-over__open-link"
+          href={iouFeedback.openUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open in IOU Wallet
+        </a>
+      ) : null}
+
+      <fieldset className="bj-game-over__ledger-choice" disabled={busy}>
+        <legend className="bj-game-over__section-label">Personal ledger</legend>
+        <label className="bj-game-over__ledger-option">
+          <input
+            type="radio"
+            name="bj-game-over-ledger"
+            checked={ledgerChoice === 'add'}
+            disabled={ledgerAddDisabled}
+            onChange={() => setLedgerChoice('add')}
+          />
+          <span>{ledgerAlreadyAdded ? 'Added to Ledger' : 'Add to Ledger'}</span>
+        </label>
+        <label className="bj-game-over__ledger-option">
+          <input
+            type="radio"
+            name="bj-game-over-ledger"
+            checked={ledgerChoice === 'skip'}
+            disabled={busy}
+            onChange={() => setLedgerChoice('skip')}
+          />
+          <span>Don&apos;t Add</span>
+        </label>
+      </fieldset>
+
+      <div className="bj-game-over__iou-row">
+        <label
+          className={[
+            'bj-game-over__iou-toggle',
+            iouToggleDisabled ? 'bj-game-over__iou-toggle--disabled' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          title={iouToggleDisabled ? iouDisabledReason : undefined}
+        >
+          <input
+            type="checkbox"
+            checked={createIou && canCreateIou}
+            disabled={iouToggleDisabled}
+            onChange={(e) => setCreateIou(e.target.checked)}
+          />
+          <span>Create IOU</span>
+        </label>
+      </div>
+
+      <label className="bj-game-over__iou-message">
+        <span className="bj-game-over__section-label">Add message to IOU</span>
+        <textarea
+          className="bj-game-over__iou-message-input"
+          value={iouMessage}
+          disabled={iouToggleDisabled || !createIou}
+          rows={2}
+          placeholder="Optional note for the IOU handoff"
+          onChange={(e) => setIouMessage(e.target.value)}
+        />
+      </label>
+
+      {iouToggleDisabled && iouDisabledReason ? (
+        <p className="bj-game-over__iou-hint">{iouDisabledReason}</p>
+      ) : null}
+
+      <div className="bj-game-over__actions">
+        <button
+          type="button"
+          className="ds-btn ds-btn--primary"
+          disabled={newGameDisabled}
+          title={newGameDisabled ? newGameDisabledReason ?? undefined : undefined}
+          onClick={() => void handleNewGame()}
+        >
+          {iouPending ? 'Creating IOU…' : 'New Game'}
+        </button>
+      </div>
+    </div>
   );
 
   if (isInline) {

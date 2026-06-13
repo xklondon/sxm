@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LedgerEntry } from '../../types/ledger';
-import { tableAfterStartPlaying } from '../blackjack/sanity/fixtures';
+import { tableAfterStartPlaying, tableWithClaimedBox } from '../blackjack/sanity/fixtures';
 import { addPlayer, mergeSessionUpdate } from '../session/session';
 import { finalizeInviteJoinAtTable } from '../session/inviteJoin';
 import {
@@ -123,5 +123,50 @@ describe('challengeEndAccounting', () => {
   it('disables IOU when multiple non-bank players hold chips', () => {
     const state = fractionalBankBustState();
     expect(buildIouHandoffCreateRequest(state)).toBeNull();
+  });
+
+  it('passes optional custom IOU message into handoff request', () => {
+    const state = tableWithClaimedBox(1);
+    const bankId = state.session.bankPlayerId!;
+    const ownerPersonId = state.tableMeta.ownerPersonId!;
+    const ended = {
+      ...state,
+      tableMeta: {
+        ...state.tableMeta,
+        gameStatus: 'ended' as const,
+        winnerId: ownerPersonId,
+        tableMode: 'challenge' as const,
+        agreement: {
+          stakeDescription: '€20',
+          defaultChips: 500,
+          agreedAt: new Date().toISOString(),
+        },
+        owner: {
+          ownerName: 'Alice',
+          ownerEmail: 'alice@example.com',
+          createdAt: new Date().toISOString(),
+        },
+        setupInvitedEmails: ['bob@example.com'],
+        invites: [
+          {
+            inviteId: 'inv-1',
+            tableId: state.session.id,
+            invitedEmail: 'bob@example.com',
+            invitedName: 'Bob',
+            invitedBy: 'alice@example.com',
+            inviteStatus: 'accepted' as const,
+            canInviteOthers: false,
+            createdAt: new Date().toISOString(),
+            token: 'token-1',
+          },
+        ],
+      },
+      players: {
+        ...state.players,
+        [bankId]: { ...state.players[bankId]!, playerType: 'real' as const, controllerName: 'Bob' },
+      },
+    };
+    expect(buildIouHandoffCreateRequest(ended, { message: '  Pay up  ' })?.message).toBe('Pay up');
+    expect(buildIouHandoffCreateRequest(ended)?.message).toBeUndefined();
   });
 });

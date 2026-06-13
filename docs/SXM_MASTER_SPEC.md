@@ -192,8 +192,9 @@ Challenge bank plays against boxes; `session.bankPlayerId` is always a seated **
 **Game end presentation:**
 
 - **Final cards stay visible** — summary/ledger UI must not obscure the felt.
-- **Desktop:** **Game Summary** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — Add to Ledger, IOU toggle **below** action buttons, close/back; table remains on the left.
-- **Mobile:** existing centered **Game Over** overlay unchanged (`bj-game-over-overlay`).
+- **Desktop:** **Game Over** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — random happy/sad glyph visual, winner/result/round summary, Magic 8 wisdom, **Add to Ledger / Don't Add** radio choice, **Create IOU** toggle with optional **Add message to IOU** field, single **New Game** button applies choices then opens reset flow; close/dismiss does not save ledger or create IOU; dealer **New Game** hidden while panel is open.
+- **Mobile:** centered **Game Over** overlay (`bj-game-over-overlay`) with the same content/flow after reveal delay.
+- **Desktop polish:** toolbar nav aligned to felt right edge; card column hand totals below stacks near boxes; tray label (e.g. **SxM Casino Challenge**) on desktop + mobile; ~10% larger mobile table typography (text tokens only).
 
 ### Personal score ledger (challenge games)
 

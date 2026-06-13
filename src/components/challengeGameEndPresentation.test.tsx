@@ -7,6 +7,7 @@ import { cleanup, render, screen, act } from '@testing-library/react';
 
 import type { GameState } from '../types';
 import { GameOverActionOverlay } from './GameOverActionOverlay';
+import { buildGameOverPresentationModel } from './gameOverPresentation';
 import { BlackjackPanel } from './BlackjackPanel';
 import { tableWithClaimedBox } from '../engine/blackjack/sanity/fixtures';
 import {
@@ -151,19 +152,21 @@ describe('challenge game end presentation', () => {
     simulatedWidth = 1280;
   });
 
-  it('keeps IOU toggle below ledger action buttons', () => {
+  it('orders game-over sections: ledger choice, IOU toggle, then New Game', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/GameOverActionOverlay.tsx'), 'utf8');
-    const actionsIdx = src.indexOf('bj-game-over__actions');
+    const ledgerIdx = src.indexOf('bj-game-over__ledger-choice');
     const toggleIdx = src.indexOf('bj-game-over__iou-toggle');
-    expect(actionsIdx).toBeGreaterThan(-1);
-    expect(toggleIdx).toBeGreaterThan(actionsIdx);
+    const actionsIdx = src.indexOf('bj-game-over__actions');
+    expect(ledgerIdx).toBeGreaterThan(-1);
+    expect(toggleIdx).toBeGreaterThan(ledgerIdx);
+    expect(actionsIdx).toBeGreaterThan(toggleIdx);
   });
 
   it('renders desktop game summary when player bank wins', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={instantDeal(bankWinsChallengeState())} onGameStateChange={noop} />,
     );
-    expect(html).toContain('Game Summary');
+    expect(html).toContain('Game Over');
     expect(html).toContain('bj-game-over--inline');
     expect(html).toContain('Add to Ledger');
   });
@@ -172,7 +175,7 @@ describe('challenge game end presentation', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={instantDeal(endedChallengeState())} onGameStateChange={noop} />,
     );
-    expect(html).toContain('Game Summary');
+    expect(html).toContain('Game Over');
     expect(html).toContain('Add to Ledger');
   });
 
@@ -182,7 +185,7 @@ describe('challenge game end presentation', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={instantDeal(state)} onGameStateChange={noop} />,
     );
-    expect(html).toContain('Game Summary');
+    expect(html).toContain('Game Over');
     expect(html).toContain('Add to Ledger');
     expect(html).toContain('disabled');
   });
@@ -234,7 +237,7 @@ describe('challenge game end presentation', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={state} onGameStateChange={noop} />,
     );
-    expect(html).toContain('Game Summary');
+    expect(html).toContain('Game Over');
     expect(html).toContain('bj-game-over--inline');
     expect(html).not.toContain('bj-game-over-overlay');
     expect(html).toContain('Add to Ledger');
@@ -271,20 +274,25 @@ describe('challenge game end presentation', () => {
     expect(html).toContain('Bank: Bob');
   });
 
-  it('inline Game Summary close hides panel only', () => {
+  it('inline Game Over close hides panel only', () => {
     render(
       <GameOverActionOverlay
         layout="inline"
         open
-        summaryMessage="Final totals"
+        presentation={buildGameOverPresentationModel(
+          endedChallengeState(),
+          'Final totals',
+          null,
+          'Try again later.',
+        )}
         canSaveToLedger
         ledgerAlreadyAdded={false}
         canCreateIou={false}
-        onConfirm={noop}
+        onComplete={noop}
         onDismiss={noop}
       />,
     );
-    expect(screen.getByRole('heading', { name: 'Game Summary' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Game Over' })).toBeTruthy();
     expect(screen.queryByRole('presentation')).toBeNull();
   });
 });

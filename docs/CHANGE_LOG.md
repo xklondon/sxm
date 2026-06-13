@@ -13,6 +13,15 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Game Over upgrade + desktop table polish
+
+- **Game Over UI:** Title **Game Over**; extensible glyph visuals; winner/result/rounds summary; Magic 8 line; ledger either/or (**Add to Ledger** / **Don't Add**); **Create IOU** toggle + optional **Add message to IOU** (passed as IOU `message` param); **New Game** applies choices then reset — dismiss/close does not save.
+- **Desktop polish:** Nav buttons aligned to felt right edge; card values below stacks; game-ended card-row spacing; dealer New Game suppressed while game-over UI active; desktop tray label restored.
+- **Mobile:** ~10% larger table typography via scoped CSS tokens (not chip/card scale).
+- **Tests:** `blackjackDesktopPolish.test.tsx`, updated game-over overlay/presentation tests.
+
+---
+
 ## 2026-06-12 — Box/token placement stabilization
 
 - **Stable UI anchor:** Local chip target is `{ slotNumber }` only; arc React keys are `slot-${slotNumber}`; unified `renderArcSlot`.

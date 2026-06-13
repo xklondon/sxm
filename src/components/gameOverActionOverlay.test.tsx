@@ -13,6 +13,7 @@ vi.mock('../storage/profileStorage', async (importOriginal) => {
 
 import type { GameState } from '../types';
 import { GameOverActionOverlay } from './GameOverActionOverlay';
+import type { GameOverPresentationModel } from './gameOverPresentation';
 import { BlackjackPanel } from './BlackjackPanel';
 import * as iouHandoffApi from '../api/iouHandoff';
 import { tableWithClaimedBox } from '../engine/blackjack/sanity/fixtures';
@@ -22,6 +23,16 @@ import {
 import { saveScoreLedgerEntries } from '../storage/scoreLedgerStorage';
 
 const noop = () => {};
+
+const samplePresentation: GameOverPresentationModel = {
+  title: 'Game Over',
+  visual: { id: 'happy-chips', tone: 'happy', glyph: '🎉', label: 'Victory dance' },
+  winnerLine: 'Alice won.',
+  resultLine: '€20 owed',
+  roundsLine: '4 rounds played',
+  magic8Line: 'Outlook good.',
+  rawSummary: 'Game Over\nAlice won\nFinal chips: 520',
+};
 
 function endedChallengeState(): GameState {
   const base = tableWithClaimedBox(1);
@@ -90,16 +101,27 @@ function installLocalStorageMock(): void {
   } as Storage;
 }
 
-async function confirmIouFromOverlay(saveLedger: boolean) {
+async function clickNewGame(options: {
+  saveLedger?: boolean;
+  createIou?: boolean;
+  iouMessage?: string;
+}) {
   const overlay = screen.getByRole('dialog');
-  fireEvent.click(within(overlay).getByRole('checkbox', { name: /create iou/i }));
-  fireEvent.click(
-    within(overlay).getByRole('button', {
-      name: saveLedger ? 'Add to Ledger' : "Don't Add",
-    }),
-  );
-  const confirmOverlay = screen.getByRole('dialog');
-  fireEvent.click(within(confirmOverlay).getByRole('button', { name: 'Create IOU' }));
+  if (options.saveLedger) {
+    fireEvent.click(within(overlay).getByRole('radio', { name: /add to ledger/i }));
+  }
+  if (options.createIou) {
+    const checkbox = within(overlay).getByRole('checkbox', { name: /create iou/i }) as HTMLInputElement;
+    if (!checkbox.checked) {
+      fireEvent.click(checkbox);
+    }
+    if (options.iouMessage) {
+      fireEvent.change(within(overlay).getByPlaceholderText(/optional note for the iou handoff/i), {
+        target: { value: options.iouMessage },
+      });
+    }
+  }
+  fireEvent.click(within(overlay).getByRole('button', { name: 'New Game' }));
 }
 
 describe('GameOverActionOverlay', () => {
@@ -108,54 +130,78 @@ describe('GameOverActionOverlay', () => {
     vi.clearAllMocks();
   });
 
-  it('renders summary, ledger actions, and Create IOU toggle', () => {
+  it('renders title, visual, summary, Magic 8, ledger choice, IOU toggle, message field, and New Game', () => {
     const html = renderToStaticMarkup(
       <GameOverActionOverlay
         open
-        summaryMessage="Game Over, congrats Alice, you won in 4 rounds."
+        presentation={samplePresentation}
         canSaveToLedger
         ledgerAlreadyAdded={false}
         canCreateIou
-        onConfirm={noop}
+        onComplete={noop}
         onDismiss={noop}
       />,
     );
     expect(html).toContain('Game Over');
+    expect(html).toContain('Victory dance');
+    expect(html).toContain('Alice won.');
+    expect(html).toContain('Magic 8 Ball');
+    expect(html).toContain('Outlook good.');
     expect(html).toContain('Add to Ledger');
+    expect(html).toContain('Don&#x27;t Add');
     expect(html).toContain('Create IOU');
+    expect(html).toContain('Add message to IOU');
+    expect(html).toContain('New Game');
   });
 
-  it('shows SXM-side IOU confirmation before calling onConfirm', () => {
-    const onConfirm = vi.fn();
+  it('calls onComplete with ledger and IOU choices only from New Game', async () => {
+    const onComplete = vi.fn();
     render(
       <GameOverActionOverlay
         open
-        summaryMessage="Game over."
+        presentation={samplePresentation}
         canSaveToLedger
         ledgerAlreadyAdded={false}
         canCreateIou
-        onConfirm={onConfirm}
+        onComplete={onComplete}
         onDismiss={noop}
       />,
     );
-    const overlay = screen.getByRole('dialog');
-    fireEvent.click(within(overlay).getByRole('checkbox', { name: /create iou/i }));
-    fireEvent.click(within(overlay).getByRole('button', { name: "Don't Add" }));
-    expect(screen.getByText(/Create IOU in IOU Wallet for this wager/i)).toBeTruthy();
-    fireEvent.click(within(overlay).getByRole('button', { name: 'Create IOU' }));
-    expect(onConfirm).toHaveBeenCalledWith({ saveLedger: false, createIou: true });
+    await clickNewGame({ saveLedger: true, createIou: true, iouMessage: 'Pay up soon' });
+    expect(onComplete).toHaveBeenCalledWith({
+      saveLedger: true,
+      createIou: true,
+      iouMessage: 'Pay up soon',
+    });
+  });
+
+  it('does not call onComplete when dismissed', () => {
+    const onComplete = vi.fn();
+    render(
+      <GameOverActionOverlay
+        open
+        presentation={samplePresentation}
+        canSaveToLedger
+        ledgerAlreadyAdded={false}
+        canCreateIou={false}
+        onComplete={onComplete}
+        onDismiss={noop}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /close without saving/i }));
+    expect(onComplete).not.toHaveBeenCalled();
   });
 
   it('disables Create IOU toggle when no valid counterparty email', () => {
     const html = renderToStaticMarkup(
       <GameOverActionOverlay
         open
-        summaryMessage="Game over."
+        presentation={samplePresentation}
         canSaveToLedger
         ledgerAlreadyAdded={false}
         canCreateIou={false}
         iouDisabledReason="Add a counterparty email to create an IOU handoff."
-        onConfirm={noop}
+        onComplete={noop}
         onDismiss={noop}
       />,
     );
@@ -190,7 +236,7 @@ describe('GameOverActionOverlay — panel integration', () => {
     expect(html).not.toContain('bj-game-end-actions');
   });
 
-  it('add to ledger from overlay is idempotent and closes overlay', () => {
+  it('applies Add to Ledger only when New Game is clicked', async () => {
     const state = endedChallengeState();
     const onBeginTableReset = vi.fn();
     render(
@@ -200,24 +246,36 @@ describe('GameOverActionOverlay — panel integration', () => {
         onBeginTableReset={onBeginTableReset}
       />,
     );
-    const overlay = screen.getByRole('dialog');
-    fireEvent.click(within(overlay).getByRole('button', { name: 'Add to Ledger' }));
+    expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(false);
+    await clickNewGame({ saveLedger: true });
     expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(true);
-    expect(screen.queryByRole('dialog')).toBeNull();
-    const newGame = screen.getByRole('button', { name: 'New Game' });
-    expect(newGame.hasAttribute('disabled')).toBe(false);
-    fireEvent.click(newGame);
     expect(onBeginTableReset).toHaveBeenCalledWith('newGame');
   });
 
-  it('calls backend IOU create without saving ledger when toggled', async () => {
+  it('calls backend IOU create with custom message without saving ledger', async () => {
     const state = endedChallengeState();
-    render(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
-    await confirmIouFromOverlay(false);
+    render(
+      <BlackjackPanel
+        gameState={state}
+        onGameStateChange={noop}
+        onBeginTableReset={vi.fn()}
+      />,
+    );
+    await clickNewGame({ createIou: true, iouMessage: 'Custom IOU note' });
     await waitFor(() => {
       expect(iouHandoffApi.createIouHandoff).toHaveBeenCalledTimes(1);
     });
+    expect(iouHandoffApi.createIouHandoff).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Custom IOU note' }),
+    );
     expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(false);
-    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('does not save ledger or create IOU when overlay is dismissed', async () => {
+    const state = endedChallengeState();
+    render(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
+    fireEvent.click(screen.getByRole('button', { name: /close without saving/i }));
+    expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(false);
+    expect(iouHandoffApi.createIouHandoff).not.toHaveBeenCalled();
   });
 });

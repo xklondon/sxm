@@ -152,6 +152,17 @@
 
 /* MOBILE_LAYOUT_MEDIA — sync with src/styles/mobileLayoutContract.ts */
 @media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
+  .bj-view-full-mobile.bj-casino,
+  .bj-view-card-mobile.bj-casino {
+    --bj-seat-label-size: 0.462rem;
+    --bj-seat-name-size: 0.528rem;
+    --bj-seat-total-size: 0.792rem;
+    --bj-box-stake-amount-size: 0.792rem;
+    --bj-seat-meta-size: 0.462rem;
+    --bj-actions-btn-font-size: 0.638rem;
+    --bj-actions-btn-sm-font-size: 0.55rem;
+  }
+
   :root {
     --bj-seat-total-size: 0.72rem;
     --bj-actions-btn-font-size: 0.58rem;

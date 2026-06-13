@@ -194,9 +194,9 @@ describe('Mobile tray safe-area layout', () => {
     expect(html.indexOf('>500<')).toBeLessThan(html.indexOf(DEFAULT_TABLE_TRAY_LABEL));
   });
 
-  it('passes mobile tray label from panel renderTrayInner', () => {
+  it('passes tray label from panel renderTrayInner on all device views', () => {
     expect(PANEL_SRC).toContain('resolveTableTrayLabel');
-    expect(PANEL_SRC).toContain('trayLabel={deviceView === \'mobile\' ? trayLabel : undefined}');
+    expect(PANEL_SRC).toContain('trayLabel={trayLabel}');
   });
 });
 

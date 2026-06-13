@@ -3,9 +3,10 @@
 }
 
 .bj-game-over {
-  width: min(92vw, 22rem);
-  max-height: min(80vh, 24rem);
+  width: min(92vw, 24rem);
+  max-height: min(86vh, 32rem);
   padding: 0.85rem 1rem 1rem;
+  overflow-y: auto;
 }
 
 .bj-game-over__header {
@@ -18,7 +19,7 @@
 
 .bj-game-over__title {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: var(--ds-weight-extrabold, 800);
   letter-spacing: 0.04em;
 }
@@ -27,25 +28,135 @@
   flex-shrink: 0;
 }
 
-.bj-game-over__summary {
-  margin: 0 0 0.75rem;
-  font-size: 0.72rem;
+.bj-game-over__visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin: 0 0 0.65rem;
+  text-align: center;
+}
+
+.bj-game-over__visual-glyph {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.bj-game-over__visual-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.bj-game-over__summary-block {
+  margin: 0 0 0.65rem;
+}
+
+.bj-game-over__summary-line {
+  margin: 0 0 0.35rem;
+  font-size: 0.74rem;
   line-height: 1.45;
-  white-space: pre-line;
+}
+
+.bj-game-over__summary-line--winner {
+  font-weight: var(--ds-weight-bold, 700);
+  color: var(--ds-color-gold);
+}
+
+.bj-game-over__summary-line--meta {
+  opacity: 0.82;
+  font-size: 0.68rem;
+}
+
+.bj-game-over__magic8 {
+  margin: 0 0 0.75rem;
+  padding: 0.45rem 0.55rem;
+  border-left: 2px solid rgb(251 191 36 / 0.55);
+  background: rgb(255 255 255 / 0.04);
+  border-radius: 0 var(--ds-radius-sm) var(--ds-radius-sm) 0;
+}
+
+.bj-game-over__magic8-label {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.bj-game-over__magic8-text {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  font-style: italic;
+}
+
+.bj-game-over__section-label {
+  display: block;
+  margin: 0 0 0.35rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.78;
+}
+
+.bj-game-over__ledger-choice {
+  margin: 0 0 0.55rem;
+  padding: 0;
+  border: none;
+  min-inline-size: 0;
+}
+
+.bj-game-over__ledger-option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.bj-game-over__iou-row {
+  margin: 0 0 0.35rem;
 }
 
 .bj-game-over__iou-toggle {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  margin: 0.55rem 0 0.35rem;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   cursor: pointer;
 }
 
 .bj-game-over__iou-toggle--disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.bj-game-over__iou-message {
+  display: block;
+  margin: 0 0 0.55rem;
+}
+
+.bj-game-over__iou-message-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0.25rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  background: rgb(0 0 0 / 0.25);
+  color: inherit;
+  font: inherit;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  resize: vertical;
+}
+
+.bj-game-over__iou-message-input:disabled {
+  opacity: 0.5;
 }
 
 .bj-game-over__iou-hint {
@@ -59,6 +170,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+  margin-top: 0.15rem;
 }
 
 .bj-game-over__actions .ds-btn {

@@ -1461,3 +1461,64 @@
     flex-shrink: 0;
   }
 }
+
+/* Desktop polish — nav aligned to felt inset; game-end spacing; card column value band. */
+@media (min-width: 721px) {
+  .bj-view-full-desktop.bj-casino .bj-table-desktop-shell > .bj-casino__table-header .bj-casino__toolbar,
+  .bj-view-card-desktop.bj-casino .bj-table-desktop-shell > .bj-casino__table-header .bj-casino__toolbar {
+    padding-inline: calc(0.5rem + 0.45rem);
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-game-ended='true']
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--table
+    .bj-arc--cards,
+  .bj-view-card-desktop.bj-casino[data-game-ended='true']
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--table
+    .bj-arc--cards {
+    padding-top: 0.95rem;
+  }
+
+  .bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column,
+  .bj-view-card-desktop .bj-arc--cards .bj-arc__slot--card-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: calc(var(--bj-table-card-height) + var(--bj-box-value-band-height) + 1.25rem);
+  }
+
+  .bj-view-full-desktop .bj-arc--cards .bj-card-outcome-marker,
+  .bj-view-card-desktop .bj-arc--cards .bj-card-outcome-marker {
+    flex: 0 0 auto;
+    order: 1;
+  }
+
+  .bj-view-full-desktop .bj-arc--cards .bj-arc__split-hands,
+  .bj-view-card-desktop .bj-arc--cards .bj-arc__split-hands,
+  .bj-view-full-desktop .bj-arc--cards .bj-arc__cards--stack-vertical,
+  .bj-view-card-desktop .bj-arc--cards .bj-arc__cards--stack-vertical {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    order: 2;
+    min-height: 0;
+  }
+
+  .bj-view-full-desktop .bj-arc--cards .bj-phone-view__box-value--card-column-below,
+  .bj-view-card-desktop .bj-arc--cards .bj-phone-view__box-value--card-column-below {
+    flex: 0 0 var(--bj-box-value-band-height);
+    order: 3;
+    margin-top: 0.06rem;
+    margin-bottom: 0;
+  }
+
+  .bj-view-full-desktop .bj-value-chips--with-label,
+  .bj-view-card-desktop .bj-value-chips--with-label {
+    min-height: 3.65rem;
+    padding-bottom: 0.35rem;
+  }
+}

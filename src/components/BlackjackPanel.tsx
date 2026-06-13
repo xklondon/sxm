@@ -174,7 +174,8 @@ import {
 } from './cardAreaOutcomeDisplay';
 import { shouldShowBoxHandResultMarkers } from './boxHandStatusDisplay';
 import { buildBlackjackCountByBoxDisplay } from './blackjackCountByBoxDisplay';
-import { GameOverActionOverlay } from './GameOverActionOverlay';
+import { GameOverActionOverlay, type GameOverCompleteOptions } from './GameOverActionOverlay';
+import { buildGameOverPresentationModel } from './gameOverPresentation';
 import { AceDecisionButtonRow } from './blackjackAceDecisionActions';
 import {
   buildViewerIdentityHints,
@@ -561,6 +562,11 @@ export function BlackjackPanel({
   const showGameOverDesktopPanel =
     showGameOverActions && deviceView === 'desktop' && gameEndRevealReady;
 
+  const gameOverPresentation = useMemo(
+    () => buildGameOverPresentationModel(gameState, gameOverMessage, viewerPersonId, magic8Answer),
+    [gameState, gameOverMessage, viewerPersonId, magic8Answer, gameState.session.id],
+  );
+
   useEffect(() => {
     if (!gameEnded) {
       setGameOverOverlayDismissed(false);
@@ -628,12 +634,14 @@ export function BlackjackPanel({
     }
   }
 
-  async function submitIouHandoff() {
+  async function submitIouHandoff(customMessage?: string) {
     setError(null);
     setIouPending(true);
     setIouFeedback(null);
     try {
-      const request = buildIouHandoffCreateRequest(gameStateRef.current);
+      const request = buildIouHandoffCreateRequest(gameStateRef.current, {
+        message: customMessage,
+      });
       if (!request) {
         throw new Error('Missing debtor or creditor email for this wager.');
       }
@@ -674,14 +682,22 @@ export function BlackjackPanel({
     }
   }
 
-  async function handleGameOverConfirm(options: { saveLedger: boolean; createIou: boolean }) {
+  async function handleGameOverComplete(options: GameOverCompleteOptions) {
     if (options.saveLedger) {
       handleAddToPersonalLedger();
     }
     if (options.createIou) {
-      await submitIouHandoff();
+      await submitIouHandoff(options.iouMessage);
     }
     setGameOverOverlayConfirmed(true);
+  }
+
+  async function handleGameOverNewGame(options: GameOverCompleteOptions) {
+    await handleGameOverComplete(options);
+    if (onBeginTableReset && canResetTable) {
+      setSideRailPanel(null);
+      onBeginTableReset('newGame');
+    }
   }
 
   function handleGameOverDismiss() {
@@ -1191,7 +1207,7 @@ export function BlackjackPanel({
     awaitingNextRound,
     gameEnded,
     onNewGame:
-      gameEnded && onBeginTableReset
+      gameEnded && onBeginTableReset && !showGameOverActions
         ? () => onBeginTableReset('newGame')
         : undefined,
     canStartNewGame: canResetTable,
@@ -1383,7 +1399,7 @@ export function BlackjackPanel({
           onChipPointerDown={chipPointerDrag.onChipPointerDown}
           disabled={!bettingOpen}
           minimumBet={minimumBet}
-          trayLabel={deviceView === 'mobile' ? trayLabel : undefined}
+          trayLabel={trayLabel}
         />
         {inBetting && chipTrayHint && (
           <p className="bj-casino__tray-hint" role="status">{chipTrayHint}</p>
@@ -2019,14 +2035,18 @@ export function BlackjackPanel({
       <GameOverActionOverlay
         layout="inline"
         open
-        summaryMessage={gameOverMessage}
+        presentation={gameOverPresentation}
         canSaveToLedger={canSaveToLedger}
         ledgerAlreadyAdded={personalLedgerAdded}
         canCreateIou={canAddIou}
         iouPending={iouPending}
         iouFeedback={iouFeedback}
         iouDisabledReason={iouDisabledReason}
-        onConfirm={handleGameOverConfirm}
+        canStartNewGame={canResetTable && Boolean(onBeginTableReset)}
+        newGameDisabledReason={
+          !canResetTable ? 'Only the table owner can start a new game.' : null
+        }
+        onComplete={handleGameOverNewGame}
         onDismiss={() => setSideRailPanel(null)}
       />
     );
@@ -2039,7 +2059,7 @@ export function BlackjackPanel({
     const isOverlay = variant === 'overlay';
     const title =
       showGameOverDesktopPanel && !isOverlay
-        ? 'Game Summary'
+        ? 'Game Over'
         : mobileSidePanelTab === 'playLedger'
           ? 'Play Ledger'
           : mobileSidePanelTab === 'settings'
@@ -2135,6 +2155,8 @@ export function BlackjackPanel({
       data-view-mode={viewMode}
       data-device-view={deviceView}
       data-phase={protocolPhase}
+      data-game-ended={gameEnded ? 'true' : 'false'}
+      data-game-over-ui={showGameOverActions ? 'true' : 'false'}
     >
       {tableMeta.showBankerSetup && tableMeta.agreement && (
         <BankerSetupPanel gameState={gameState} onConfirm={onGameStateChange} />
@@ -2160,16 +2182,18 @@ export function BlackjackPanel({
       {showGameOverOverlay && (
         <GameOverActionOverlay
           open
-          summaryMessage={gameOverMessage}
+          presentation={gameOverPresentation}
           canSaveToLedger={canSaveToLedger}
           ledgerAlreadyAdded={personalLedgerAdded}
           canCreateIou={canAddIou}
           iouPending={iouPending}
           iouFeedback={iouFeedback}
-          iouDisabledReason={
-            canAddIou ? undefined : 'Add a counterparty email to create an IOU handoff.'
+          iouDisabledReason={iouDisabledReason}
+          canStartNewGame={canResetTable && Boolean(onBeginTableReset)}
+          newGameDisabledReason={
+            !canResetTable ? 'Only the table owner can start a new game.' : null
           }
-          onConfirm={handleGameOverConfirm}
+          onComplete={handleGameOverNewGame}
           onDismiss={handleGameOverDismiss}
         />
       )}

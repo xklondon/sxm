@@ -63,6 +63,7 @@ export interface IouHandoffCreateRequestBody {
   creditorName?: string;
   gameType?: string;
   title?: string;
+  message?: string;
 }
 
 export interface IouHandoffCreateSuccessResponse {

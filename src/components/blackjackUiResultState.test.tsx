@@ -258,7 +258,7 @@ describe('game end presentation', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={endedState()} onGameStateChange={noop} />,
     );
-    expect(html).toContain('Game Summary');
+    expect(html).toContain('Game Over');
     expect(html).toContain('bj-game-over--inline');
   });
 

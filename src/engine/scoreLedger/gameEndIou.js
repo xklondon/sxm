@@ -151,12 +151,13 @@ export function resolveGameEndParties(state) {
         loserEmail,
     };
 }
-export function buildIouHandoffCreateRequest(state) {
+export function buildIouHandoffCreateRequest(state, options) {
     const parties = resolveGameEndParties(state);
     if (!parties?.winnerEmail || !parties.loserEmail) {
         return null;
     }
     const wager = state.tableMeta.agreement?.stakeDescription?.trim() || 'Blackjack wager';
+    const customMessage = options?.message?.trim();
     return {
         tableId: state.session.id,
         sessionId: state.session.id,
@@ -166,6 +167,7 @@ export function buildIouHandoffCreateRequest(state) {
         creditorName: resolveWinnerDisplayName(state, parties.winnerId),
         gameType: state.tableGame ?? 'blackjack',
         title: wager,
+        message: customMessage || undefined,
     };
 }
 /** True when both human parties have emails and the viewer is debtor or creditor. */

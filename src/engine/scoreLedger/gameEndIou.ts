@@ -208,7 +208,10 @@ export function resolveGameEndParties(state: GameState): GameEndParties | null {
   };
 }
 
-export function buildIouHandoffCreateRequest(state: GameState): IouHandoffCreateRequestBody | null {
+export function buildIouHandoffCreateRequest(
+  state: GameState,
+  options?: { message?: string },
+): IouHandoffCreateRequestBody | null {
   const parties = resolveGameEndParties(state);
   if (!parties?.winnerEmail || !parties.loserEmail) {
     return null;
@@ -216,6 +219,7 @@ export function buildIouHandoffCreateRequest(state: GameState): IouHandoffCreate
 
   const wager =
     state.tableMeta.agreement?.stakeDescription?.trim() || 'Blackjack wager';
+  const customMessage = options?.message?.trim();
 
   return {
     tableId: state.session.id,
@@ -226,6 +230,7 @@ export function buildIouHandoffCreateRequest(state: GameState): IouHandoffCreate
     creditorName: resolveWinnerDisplayName(state, parties.winnerId),
     gameType: state.tableGame ?? 'blackjack',
     title: wager,
+    message: customMessage || undefined,
   };
 }
 
