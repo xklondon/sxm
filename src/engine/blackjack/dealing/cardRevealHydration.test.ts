@@ -25,6 +25,7 @@ describe('card reveal hydration helpers', () => {
 
   it('empty visibility starts a paced round from no revealed cards', () => {
     expect(emptyCardVisibility()).toEqual({ dealer: 0, hands: {} });
+    expect(resolveRevealScopeTransition(null, 't:1')).toBe('reset');
     expect(resolveRevealScopeTransition('t:1', 't:2')).toBe('reset');
   });
 

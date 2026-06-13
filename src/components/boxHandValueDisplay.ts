@@ -1,6 +1,6 @@
 import type { Deck } from '../types/deck';
 import type { BlackjackRound } from '../types/blackjack';
-import { getDisplayedHandValue } from '../engine/blackjack/dealing/cardRevealDisplay';
+import { getDisplayedHandValue } from './blackjackDealingContract';
 import type { BoxNetResultTone } from './boxBetResultDisplay';
 import {
   BOX_CARD_VALUE,

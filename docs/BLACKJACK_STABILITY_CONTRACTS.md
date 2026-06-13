@@ -47,35 +47,56 @@ Protected boundaries between **protocol**, **layout**, **dealing**, and **accoun
 
 ---
 
-## Dealing ownership
+## DEALING CONTRACT
 
 **Modules:** `src/hooks/useSequentialCardReveal.ts`, `src/components/blackjackDealingContract.ts`, `src/engine/blackjack/dealing/cardRevealDisplay.ts`
+
+**Only `blackjackDealingContract` (and its engine helpers) may expose:**
+
+- Reveal order (`buildInitialRevealSteps`, `applyRevealStep`, ordered initial reveal)
+- Visible cards (`applyCardVisibility`, `getVisibleHandCardIds`, `getVisibleDealerCardIds`)
+- Visible values (`getDisplayedHandValue`, `resolveDealerDisplayValue`, `resolveHandDisplayValue`)
+- Reveal completion (`isActiveHandRevealComplete`, `shouldSnapCardRevealOnMount`, `resolveRevealScopeTransition`)
 
 | Responsibility | Canonical API |
 |----------------|---------------|
 | Reveal queue (natural + staged) | `useSequentialCardReveal` only |
 | Visible card subsets | `applyCardVisibility`, `getVisibleHandCardIds`, `getVisibleDealerCardIds` |
 | Hand values in UI | `getDisplayedHandValue` (null until revealed) |
+| Dealer value in UI | `resolveDealerDisplayValue` / masked `displayState` |
 | Action timing | `canShowPlayerDecisionControls` + `isActionRevealReady` |
-| Round scope / round 2 reset | `resolveRevealScopeTransition`, `cardRevealScopeKey` |
+| Round scope / round 2 reset | `resolveRevealScopeTransition` → `'reset'` on first mount; `'hydrate'` only on cross-table join |
+| Mid-round join snap | `shouldSnapCardRevealOnMount` |
 
 **Views must not:**
 
 - Maintain a second reveal timer or parallel visibility state.
-- Show hand totals from authoritative card ids while visibility counts are zero.
+- Import `cardRevealDisplay` or `protocolState` directly for display.
+- Call `hydrateInstant` on first mount for fresh natural deals (P→D→P→D must step from empty).
+- Show hand totals or dealer totals from authoritative card ids while visibility counts are zero.
+- Show “Round finished” command text before `cardRevealComplete`.
 - Enable Hit/Stay before `activeHandRevealComplete` during natural deal.
+
+**Initial deal order (round 1 and round 2):** player card → dealer up → player card → dealer hole (P→D→P→D per box).
 
 ---
 
-## Accounting ownership
+## ACCOUNTING CONTRACT
 
 **Modules:** `src/engine/session/playerCommittedExposure.ts`, `src/components/blackjackAccountingDisplay.ts`, `src/engine/session/bankroll.ts`
+
+**Only `blackjackAccountingDisplay` may expose:**
+
+- Available (`resolvePersonDisplayBalances`, `resolveViewerTrayAvailable`)
+- Betting / committed exposure (`resolvePersonDisplayBalances` → `betting`)
+- End-game bankroll checks (`resolvePersonEndGameBalances` → `evaluateTableGameEnd`)
 
 | Responsibility | Canonical API |
 |----------------|---------------|
 | Committed exposure | `getTotalCommittedExposureForPerson` |
 | Tray available | `resolveViewerTrayAvailable` → `buildTableInfoDisplay` |
 | This Table rows | `resolvePersonDisplayBalances` → `buildTablePeopleRows` |
+| End-game eligibility | `resolvePersonEndGameBalances` → `evaluateTableGameEnd` |
 | Display clamp | `clampAvailableForDisplay` (never show negative available) |
 
 **Formula (display):**
@@ -86,8 +107,11 @@ Protected boundaries between **protocol**, **layout**, **dealing**, and **accoun
 **Views must not:**
 
 - Subtract stakes manually in the panel or This Table.
+- Read `getAvailableChipsForBankrollOwner` or ledger helpers directly in UI or end-game code.
 - Double-count optimistic/pending box ids.
 - Use native `bankrollOwnerId` alone for multi-box staker exposure.
+
+**Note:** Felt/header bank chip totals (`bankChips`) are the **bank’s** balance, not the viewer’s tray available.
 
 ---
 
@@ -96,7 +120,7 @@ Protected boundaries between **protocol**, **layout**, **dealing**, and **accoun
 | File | Guards |
 |------|--------|
 | `blackjackStabilityContracts.test.ts` | Protocol, layout, dealing, accounting boundaries + render smoke |
-| `dealingRoundRegression.test.ts` | Round 1 natural/instant reveal, round 2 scope reset, control gating |
+| `dealingRoundRegression.test.ts` | P→D→P→D round 1/2, dealer value gating, reveal mount snap, round-finished command, end-game |
 | `playerCommittedExposure.test.ts` | Multi-box same-player tray + This Table parity |
 
 Run: `npm test` (includes all contract tests).

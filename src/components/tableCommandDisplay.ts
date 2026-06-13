@@ -15,7 +15,10 @@ import {
 } from '../engine/blackjack';
 import { cardsFromIds, getBlackjackHandValue } from '../engine/blackjack/hand';
 import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
-import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
+import {
+  getDisplayedHandValue,
+  getVisibleDealerCardIds,
+} from './blackjackDealingContract';
 import {
   getInsuranceActionsForController,
   canCallEvenMoneyForHand,
@@ -63,14 +66,14 @@ export function formatPlayerTurnOptions(
   return `Options: ${options.join(', ')}.`;
 }
 
-function formatBankHandPhrase(state: GameState): string {
-  const round = state.blackjack;
-  const deck = state.deck;
+function formatBankHandPhrase(displayState: GameState): string {
+  const round = displayState.blackjack;
+  const deck = displayState.deck;
   if (!round || !deck) {
     return 'Bank has no cards.';
   }
 
-  let cardIds = getVisibleDealerCardIds(state);
+  let cardIds = getVisibleDealerCardIds(displayState);
   const holeHidden =
     round.dealerHoleHidden &&
     round.status !== 'resolved' &&
@@ -103,6 +106,7 @@ export function formatPlayerTurnCommand(
     handIndex?: number;
     actionStatus?: string;
     gameState?: GameState;
+    displayState?: GameState;
     handKey?: string;
     allowSplit?: boolean;
     allowDouble?: boolean;
@@ -127,8 +131,9 @@ export function formatPlayerTurnCommand(
   const playerScore = formatHandValuePhrase(handValue.value, handValue.isSoft);
 
   const lines: string[] = [];
-  if (options?.gameState) {
-    lines.push(`${formatBankHandPhrase(options.gameState)} against your ${playerScore}${splitNote}.`);
+  const bankDisplayState = options?.displayState ?? options?.gameState;
+  if (bankDisplayState) {
+    lines.push(`${formatBankHandPhrase(bankDisplayState)} against your ${playerScore}${splitNote}.`);
   }
 
   if (options?.gameState && options.handKey && options.gameState.blackjack) {
@@ -199,11 +204,11 @@ export function turnFlavor(_options: {
 }
 
 function resolveHandCommandContext(
-  gameState: GameState,
+  displayState: GameState,
   handKey: string,
 ): { value: number; isSoft: boolean; isBlackjack: boolean; handIndex: number; actionStatus?: string } | null {
-  const round = gameState.blackjack;
-  const deck = gameState.deck;
+  const round = displayState.blackjack;
+  const deck = displayState.deck;
   if (!round || !deck) {
     return null;
   }
@@ -211,14 +216,18 @@ function resolveHandCommandContext(
   if (!hand) {
     return null;
   }
-  const cardIds = hand.cardIds.filter(Boolean);
-  if (cardIds.length === 0) {
+  const displayedValue = getDisplayedHandValue(deck, round, handKey);
+  if (displayedValue === null) {
     return null;
   }
-  const { value, isSoft, isBlackjack } = getBlackjackHandValue(cardsFromIds(deck, cardIds));
+  const visibleIds = (round.playerHands[handKey]?.cardIds ?? []).filter(Boolean);
+  if (visibleIds.length === 0) {
+    return null;
+  }
+  const { isSoft, isBlackjack } = getBlackjackHandValue(cardsFromIds(deck, visibleIds));
   const { handIndex } = parseBlackjackHandKey(handKey);
   return {
-    value,
+    value: displayedValue,
     isSoft,
     isBlackjack,
     handIndex,
@@ -269,6 +278,9 @@ function polishCenterStatusMessage(message: string, phase: BlackjackProtocolPhas
 /** Single canonical builder for Full Table + Card View command text. */
 export function buildBlackjackCommandText(params: {
   gameState: GameState;
+  /** Masked visual state for paced reveal — dealer/player phrases follow visible cards only. */
+  displayState?: GameState;
+  cardRevealComplete?: boolean;
   gameEnded: boolean;
   gameOverMessage: string;
   centerStatus: string;
@@ -280,6 +292,8 @@ export function buildBlackjackCommandText(params: {
 }): CommandMessage {
   const {
     gameState,
+    displayState: displayStateParam,
+    cardRevealComplete = true,
     gameEnded,
     gameOverMessage,
     centerStatus,
@@ -289,6 +303,7 @@ export function buildBlackjackCommandText(params: {
     viewerPersonId: viewerPersonIdParam,
     viewerHints,
   } = params;
+  const displayState = displayStateParam ?? gameState;
   const viewerPersonId =
     viewerPersonIdParam ??
     (viewerHints ? resolveViewerPersonId(gameState, viewerHints) : null) ??
@@ -300,7 +315,7 @@ export function buildBlackjackCommandText(params: {
     return { commandMessage: gameOverMessage, commandLines: [] };
   }
 
-  if (roundSummaryLines.length > 0) {
+  if (roundSummaryLines.length > 0 && cardRevealComplete) {
     return { commandMessage: 'Round finished. Summary ready.', commandLines: [] };
   }
 
@@ -370,12 +385,13 @@ export function buildBlackjackCommandText(params: {
       };
     }
 
-    const handContext = resolveHandCommandContext(gameState, turnHandKey);
+    const handContext = resolveHandCommandContext(displayState, turnHandKey);
     if (handContext) {
       return formatPlayerTurnCommand(activeSlotNum, callerName, handContext, {
         handIndex: handContext.handIndex,
         actionStatus: handContext.actionStatus,
         gameState,
+        displayState,
         handKey: turnHandKey,
         allowSplit: gameState.blackjackSettings.allowSplit,
         allowDouble: gameState.blackjackSettings.allowDoubleDown,

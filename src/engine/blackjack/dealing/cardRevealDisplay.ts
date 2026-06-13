@@ -22,7 +22,7 @@ export function resolveRevealScopeTransition(
   nextScope: string,
 ): 'hydrate' | 'reset' | 'continue' {
   if (!previousScope) {
-    return 'hydrate';
+    return 'reset';
   }
   const prevTable = previousScope.split(':')[0] ?? '';
   const nextTable = nextScope.split(':')[0] ?? '';
@@ -225,6 +225,43 @@ export function shouldHydrateCardRevealScope(
   hasHydrated: boolean,
 ): boolean {
   return !hasHydrated || previousScope !== nextScope;
+}
+
+/**
+ * First mount on a paced table: snap only when joining mid-round (cards already in play).
+ * Fresh natural initial deals must start from empty visibility and step P→D→P→D.
+ */
+export function shouldSnapCardRevealOnMount(state: GameState): boolean {
+  if (state.tableMeta.gameStatus === 'ended') {
+    return true;
+  }
+  const round = state.blackjack;
+  if (!round) {
+    return false;
+  }
+  const target = maxVisibilityForRound(round);
+  if (totalCardCount(target) === 0) {
+    return false;
+  }
+  if (
+    round.status === 'bank-turn' ||
+    round.status === 'banking' ||
+    round.status === 'resolved'
+  ) {
+    return true;
+  }
+  if (round.status === 'player-turns' || round.insuranceOfferPending) {
+    if (target.dealer > 2) {
+      return true;
+    }
+    for (const count of Object.values(target.hands)) {
+      if (count > 2) {
+        return true;
+      }
+    }
+    return false;
+  }
+  return false;
 }
 
 /** Reveal one gameplay card (hit, double, bank draw) toward target visibility. */

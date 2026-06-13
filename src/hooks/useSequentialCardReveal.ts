@@ -18,6 +18,7 @@ import {
   nextGameplayRevealStep,
   resolveCardRevealDelayMs,
   resolveRevealScopeTransition,
+  shouldSnapCardRevealOnMount,
   shouldUseOrderedInitialReveal,
   totalCardCount,
   type CardVisibilityCounts,
@@ -185,6 +186,11 @@ export function useSequentialCardReveal(
       return;
     }
     if (transition === 'reset') {
+      if (!scopeKeyRef.current && shouldSnapCardRevealOnMount(gameState)) {
+        hydrateInstant(gameState);
+        scopeKeyRef.current = scopeKey;
+        return;
+      }
       resetRevealQueue(gameState);
       scopeKeyRef.current = scopeKey;
     }

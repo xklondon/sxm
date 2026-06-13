@@ -1,4 +1,5 @@
-import { getAvailableChipsForBankrollOwner, getLedgerBalanceForBankrollOwner, getTotalBettingExposureForBankrollOwner, listPersonBankrollOwnerIds, } from './bankroll';
+import { resolvePersonEndGameBalances } from '../../components/blackjackAccountingDisplay';
+import { listPersonBankrollOwnerIds } from './bankroll';
 import { buildGameOverSummary } from '../scoreLedger/scoreLedger';
 import { formatBankHolderLabel, isChallengeTable, resolveWinnerDisplayName, } from '../scoreLedger/challengeBankDisplay';
 import { resolveBankBustWinnerId, resolveEffectiveSettlementMode, } from '../scoreLedger/challengeEndAccounting';
@@ -29,21 +30,23 @@ export function evaluateTableGameEnd(state) {
     const personIds = listPersonBankrollOwnerIds(state);
     const holders = [];
     if (bankId && state.players[bankId]) {
+        const bankBalances = resolvePersonEndGameBalances(state, bankId);
         holders.push({
             id: bankId,
             label: formatBankHolderLabel(state, bankId),
-            ledger: getLedgerBalanceForBankrollOwner(state, bankId),
-            available: getAvailableChipsForBankrollOwner(state, bankId),
+            ledger: bankBalances.ledger,
+            available: bankBalances.available,
             betting: 0,
         });
     }
     for (const personId of personIds) {
+        const balances = resolvePersonEndGameBalances(state, personId);
         holders.push({
             id: personId,
             label: personDisplayName(state, personId),
-            ledger: getLedgerBalanceForBankrollOwner(state, personId),
-            available: getAvailableChipsForBankrollOwner(state, personId),
-            betting: getTotalBettingExposureForBankrollOwner(state, personId),
+            ledger: balances.ledger,
+            available: balances.available,
+            betting: balances.betting,
         });
     }
     const totalChips = holders.reduce((sum, h) => sum + h.ledger, 0);
@@ -102,7 +105,7 @@ export function evaluateTableGameEnd(state) {
                     return topPerson && topPerson.ledger > 0 ? topPerson.id : null;
                 })();
             if (isChallengeTable(state)
-                ? listPersonBankrollOwnerIds(state).some((id) => getLedgerBalanceForBankrollOwner(state, id) > 0)
+                ? listPersonBankrollOwnerIds(state).some((id) => resolvePersonEndGameBalances(state, id).ledger > 0)
                 : winnerId) {
                 return {
                     ended: true,

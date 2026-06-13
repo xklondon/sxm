@@ -1,5 +1,5 @@
 import type { GameState } from '../types';
-import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
+import { getVisibleDealerCardIds } from './blackjackDealingContract';
 import { cardsFromIds, getBlackjackHandValue } from '../engine/blackjack/hand';
 import { buildTableBankRow } from '../engine/session/tablePeople';
 import { resolveViewerTrayAvailable } from './blackjackAccountingDisplay';

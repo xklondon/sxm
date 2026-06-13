@@ -42,7 +42,7 @@ import {
   cardAreaOutcomeMarkerText,
   resolveCardAreaOutcomeMarker,
 } from "./cardAreaOutcomeDisplay";
-import { getDisplayedHandValue } from "../engine/blackjack/dealing/cardRevealDisplay";
+import { getDisplayedHandValue } from "./blackjackDealingContract";
 
 import { type DeviceView } from "./tableViewContract";
 import { TABLE_UX } from "./tableUxContract";

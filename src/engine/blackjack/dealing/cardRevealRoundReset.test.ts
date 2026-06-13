@@ -83,7 +83,7 @@ describe('card reveal round reset', () => {
   it('resets reveal scope on same-table round change', () => {
     expect(resolveRevealScopeTransition('table-a:1', 'table-a:2')).toBe('reset');
     expect(resolveRevealScopeTransition('table-a:1', 'table-a:1')).toBe('continue');
-    expect(resolveRevealScopeTransition(null, 'table-a:1')).toBe('hydrate');
+    expect(resolveRevealScopeTransition(null, 'table-a:1')).toBe('reset');
     expect(resolveRevealScopeTransition('table-a:1', 'table-b:1')).toBe('hydrate');
   });
 

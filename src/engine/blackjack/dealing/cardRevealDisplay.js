@@ -10,7 +10,7 @@ export function emptyCardVisibility() {
 /** How reveal hydration should react when table/round scope changes. */
 export function resolveRevealScopeTransition(previousScope, nextScope) {
     if (!previousScope) {
-        return 'hydrate';
+        return 'reset';
     }
     const prevTable = previousScope.split(':')[0] ?? '';
     const nextTable = nextScope.split(':')[0] ?? '';
@@ -166,6 +166,38 @@ export function cardRevealScopeKey(sessionId, roundNumber) {
 
 export function shouldHydrateCardRevealScope(previousScope, nextScope, hasHydrated) {
     return !hasHydrated || previousScope !== nextScope;
+}
+
+/** First mount on a paced table: snap only when joining mid-round (cards already in play). */
+export function shouldSnapCardRevealOnMount(state) {
+    if (state.tableMeta.gameStatus === 'ended') {
+        return true;
+    }
+    const round = state.blackjack;
+    if (!round) {
+        return false;
+    }
+    const target = maxVisibilityForRound(round);
+    if (totalCardCount(target) === 0) {
+        return false;
+    }
+    if (round.status === 'bank-turn' ||
+        round.status === 'banking' ||
+        round.status === 'resolved') {
+        return true;
+    }
+    if (round.status === 'player-turns' || round.insuranceOfferPending) {
+        if (target.dealer > 2) {
+            return true;
+        }
+        for (const count of Object.values(target.hands)) {
+            if (count > 2) {
+                return true;
+            }
+        }
+        return false;
+    }
+    return false;
 }
 
 /** Reveal one gameplay card (hit, double, bank draw) toward target visibility. */

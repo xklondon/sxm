@@ -134,7 +134,11 @@ import {
   canUserChangeProtocol,
   canUserResetTable,
 } from '../engine/table/adminControls';
-import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
+import {
+  getDisplayedHandValue,
+  getVisibleDealerCardIds,
+  getVisibleHandCardIds,
+} from './blackjackDealingContract';
 import {
   getBlackjackProtocolForState,
   getBlackjackProtocolOrDefault,
@@ -153,7 +157,6 @@ import {
   isPlayerTurnPhase,
 } from './blackjackViewPhase';
 import { getDisplayBlackjackProtocolPhase } from '../engine/blackjack/protocol';
-import { getDisplayedHandValue, getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
 import {
   BET_BOX_PULSE,
   getBoxActivePulseClassName,
@@ -514,6 +517,8 @@ export function BlackjackPanel({
     () =>
       buildBlackjackCommandText({
         gameState,
+        displayState: tableVisualState,
+        cardRevealComplete,
         gameEnded,
         gameOverMessage,
         centerStatus,
@@ -525,6 +530,8 @@ export function BlackjackPanel({
       }),
     [
       gameState,
+      tableVisualState,
+      cardRevealComplete,
       gameEnded,
       gameOverMessage,
       centerStatus,

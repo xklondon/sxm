@@ -14,7 +14,9 @@ import {
 } from './blackjackActionContract';
 import {
   ACCOUNTING_DISPLAY_VIEW_FILES,
+  ACCOUNTING_END_GAME_FILES,
   resolvePersonDisplayBalances,
+  resolveViewerTrayAvailable,
 } from './blackjackAccountingDisplay';
 import {
   ACTIVE_HAND_VALUE_CLASS,
@@ -32,6 +34,7 @@ import {
   resolveRevealScopeTransition,
 } from './blackjackDealingContract';
 import { cardColumnHandValueClassName } from './boxHandValueDisplay';
+import { buildTableInfoDisplay } from './tableInfoDisplay';
 import { getBoxBorderVisualClasses, resolveBoxBorderVisualState } from './cardViewBox';
 import {
   actingRound,
@@ -254,9 +257,25 @@ describe('stability contracts — dealing boundary', () => {
   });
 
   it('round scope change resets reveal queue (round 2 regression guard)', () => {
-    expect(resolveRevealScopeTransition(null, 'table-a:1')).toBe('hydrate');
+    expect(resolveRevealScopeTransition(null, 'table-a:1')).toBe('reset');
     expect(resolveRevealScopeTransition('table-a:1', 'table-a:2')).toBe('reset');
     expect(resolveRevealScopeTransition('table-a:2', 'table-a:2')).toBe('continue');
+  });
+
+  it('view files route card visibility through blackjackDealingContract', () => {
+    const dealingViewFiles = [
+      'src/components/BlackjackPanel.tsx',
+      'src/components/BlackjackCardView.tsx',
+      'src/components/boxHandValueDisplay.ts',
+      'src/components/tableInfoDisplay.ts',
+      'src/components/tableCommandDisplay.ts',
+    ];
+    for (const file of dealingViewFiles) {
+      const src = readSrc(file);
+      expect(src).toContain('blackjackDealingContract');
+      expect(src).not.toMatch(/from ['"].*\/dealing\/cardRevealDisplay['"]/);
+      expect(src).not.toMatch(/from ['"].*\/protocolState['"]/);
+    }
   });
 });
 
@@ -278,8 +297,21 @@ describe('stability contracts — accounting boundary', () => {
     }
 
     const balances = resolvePersonDisplayBalances(state, p2);
+    const trayAvailable = buildTableInfoDisplay(state, p2).playerAvailable;
+    const contractAvailable = resolveViewerTrayAvailable(state, p2);
     expect(balances.available).toBe(0);
     expect(balances.betting).toBe(500);
+    expect(trayAvailable).toBe(0);
+    expect(contractAvailable).toBe(0);
+    expect(trayAvailable).toBe(balances.available);
+  });
+
+  it('end-game evaluation routes through blackjackAccountingDisplay', () => {
+    for (const file of ACCOUNTING_END_GAME_FILES) {
+      const src = readSrc(file);
+      expect(src).toContain('blackjackAccountingDisplay');
+      expect(src).not.toMatch(/\bgetAvailableChipsForBankrollOwner\b/);
+    }
   });
 });
 

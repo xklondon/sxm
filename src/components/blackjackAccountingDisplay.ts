@@ -6,12 +6,17 @@ import type { GameState } from '../types';
 import { clampAvailableForDisplay } from './displayBalance';
 import {
   getAvailableChipsForBankrollOwner,
+  getLedgerBalanceForBankrollOwner,
   getTotalBettingExposureForBankrollOwner,
 } from '../engine/session/bankroll';
 
 export interface PersonDisplayBalances {
   available: number;
   betting: number;
+}
+
+export interface PersonEndGameBalances extends PersonDisplayBalances {
+  ledger: number;
 }
 
 /** Canonical tray + This Table numbers for one seated person. */
@@ -23,6 +28,18 @@ export function resolvePersonDisplayBalances(
   return {
     available: clampAvailableForDisplay(rawAvailable) ?? 0,
     betting: getTotalBettingExposureForBankrollOwner(state, personId),
+  };
+}
+
+/** End-game eligibility uses the same projection as tray + This Table. */
+export function resolvePersonEndGameBalances(
+  state: GameState,
+  personId: string,
+): PersonEndGameBalances {
+  const display = resolvePersonDisplayBalances(state, personId);
+  return {
+    ...display,
+    ledger: getLedgerBalanceForBankrollOwner(state, personId),
   };
 }
 
@@ -44,3 +61,6 @@ export const ACCOUNTING_DISPLAY_VIEW_FILES = [
   'src/components/tableInfoDisplay.ts',
   'src/engine/session/tablePeople.ts',
 ] as const;
+
+/** Files that must use resolvePersonEndGameBalances for end-game bankroll checks. */
+export const ACCOUNTING_END_GAME_FILES = ['src/engine/session/tableGameEnd.ts'] as const;
