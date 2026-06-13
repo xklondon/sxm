@@ -33,6 +33,7 @@ function renderDealerBlock(overrides: Partial<Parameters<typeof DealerBlock>[0]>
       bankerReady
       shoeStarted={false}
       bettingOpen
+      canUserDealTable={false}
       canDeal={false}
       hasStakes
       onShuffleToStart={noop}

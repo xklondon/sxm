@@ -16,6 +16,7 @@ describe('New Cards — single click', () => {
         bankerReady
         shoeStarted
         bettingOpen={false}
+        canUserDealTable={false}
         canDeal={false}
         hasStakes
         onShuffleToStart={vi.fn()}

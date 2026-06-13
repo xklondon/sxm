@@ -16,6 +16,7 @@ function renderDealerBlock(overrides: Partial<Parameters<typeof DealerBlock>[0]>
       bankerReady
       shoeStarted={false}
       bettingOpen
+      canUserDealTable={false}
       canDeal={false}
       hasStakes
       onShuffleToStart={noop}
@@ -70,6 +71,28 @@ describe('DealerBlock New Game', () => {
     expect(html).not.toContain('New Game');
   });
 
+  it('enables New Cards for table owner when engine canDeal is false', () => {
+    const html = renderDealerBlock({
+      awaitingNextRound: true,
+      canUserDealTable: true,
+      canDeal: false,
+      protocolPhase: 'round-complete',
+    });
+    expect(html).toContain('New Cards');
+    expect(html).not.toContain('dealer-block__action--disabled');
+  });
+
+  it('disables New Cards for non-owner viewers', () => {
+    const html = renderDealerBlock({
+      awaitingNextRound: true,
+      canUserDealTable: false,
+      canDeal: false,
+      protocolPhase: 'round-complete',
+    });
+    expect(html).toContain('New Cards');
+    expect(html).toContain('dealer-block__action--disabled');
+  });
+
   it('does not show New Game while betting or playing', () => {
     const dealing = renderDealerBlock({
       gameEnded: false,
@@ -77,6 +100,7 @@ describe('DealerBlock New Game', () => {
       canStartNewGame: true,
       shoeStarted: true,
       canDeal: true,
+      canUserDealTable: true,
       protocolPhase: 'betting',
     });
     expect(dealing).toContain('Deal Cards');

@@ -35,6 +35,7 @@ function renderDealerBlock(overrides: Partial<React.ComponentProps<typeof Dealer
       bankerReady
       shoeStarted
       bettingOpen
+      canUserDealTable={false}
       canDeal={false}
       hasStakes
       onShuffleToStart={noop}
@@ -157,9 +158,9 @@ describe('blackjack five-issue fixes', () => {
   });
 
   it('keeps Deal Cards enabled for table host', () => {
-    expect(PANEL_SRC).toContain('const canDealCards = tableOwner && canDeal');
-    expect(PANEL_SRC).toContain('canDeal: canDealCards');
-    expect(PANEL_SRC).toMatch(/function handlePrimaryDealAction\(\) \{[\s\S]*if \(!tableOwner\)/);
+    expect(PANEL_SRC).toContain('canCurrentUserDealTable');
+    expect(PANEL_SRC).toContain('canUserDealTable');
+    expect(PANEL_SRC).toMatch(/function handlePrimaryDealAction\(\) \{[\s\S]*if \(!canUserDealTable\)/);
   });
 
   it('does not fire deal action when non-host handler is guarded', () => {
@@ -174,6 +175,7 @@ describe('blackjack five-issue fixes', () => {
         bankerReady
         shoeStarted
         bettingOpen
+        canUserDealTable={false}
         canDeal={false}
         hasStakes
         onShuffleToStart={noop}

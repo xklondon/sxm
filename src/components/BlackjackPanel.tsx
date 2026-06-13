@@ -100,6 +100,7 @@ import {
   getStakeBetValidationMessage,
 } from '../engine/blackjack';
 import { isTableOwner } from '../engine/session';
+import { canCurrentUserDealTable } from '../engine/session/tableDealPermission';
 import { getTableWagerDisplay } from '../engine/session/wagerDisplay';
 import {
   addGameToPersonalLedger,
@@ -302,6 +303,7 @@ export function BlackjackPanel({
   const controllerName = profile.name.trim() || tableMeta.controllerName;
   const viewerHints = buildViewerIdentityHints(gameState, onlineTableId, viewerAuth);
   const viewerPersonId = resolveViewerPersonIdForTable(gameState, onlineTableId, viewerAuth);
+  const canUserDealTable = canCurrentUserDealTable(gameState, viewerPersonId);
   const tableOwner = isTableOwner(gameState, controllerName);
   const canDriveTableAutomation =
     tableOwner || controllerName === tableMeta.controllerName;
@@ -545,7 +547,6 @@ export function BlackjackPanel({
     gameOverDelayReady;
   const showGameOverDesktopPanel =
     showGameOverActions && deviceView === 'desktop' && cardRevealComplete;
-  const canDealCards = tableOwner && canDeal;
 
   useEffect(() => {
     if (!gameEnded) {
@@ -1200,7 +1201,7 @@ export function BlackjackPanel({
   };
 
   function handlePrimaryDealAction() {
-    if (!tableOwner) {
+    if (!canUserDealTable) {
       return;
     }
     runPrimaryDealAction({
@@ -1243,7 +1244,8 @@ export function BlackjackPanel({
     bankerReady,
     shoeStarted,
     bettingOpen,
-    canDeal: canDealCards,
+    canUserDealTable,
+    canDeal,
     hasStakes,
     onShuffleToStart: handleShuffleToStart,
     shuffleAnimating,

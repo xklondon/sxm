@@ -20,6 +20,7 @@ describe('primary Deal Cards start sequence', () => {
         bankerReady
         shoeStarted={false}
         bettingOpen
+        canUserDealTable={false}
         canDeal={false}
         hasStakes
         onShuffleToStart={() => {}}

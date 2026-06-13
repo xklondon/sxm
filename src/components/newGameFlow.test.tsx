@@ -101,6 +101,7 @@ describe('New Game flow', () => {
         bankerReady
         shoeStarted={false}
         bettingOpen={false}
+        canUserDealTable={false}
         canDeal={false}
         hasStakes
         onShuffleToStart={noop}

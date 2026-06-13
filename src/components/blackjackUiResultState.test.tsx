@@ -183,6 +183,7 @@ describe('deal/new cards host permission', () => {
         bankerReady
         shoeStarted
         bettingOpen
+        canUserDealTable={false}
         canDeal={false}
         hasStakes
         onShuffleToStart={noop}
@@ -206,6 +207,7 @@ describe('deal/new cards host permission', () => {
         bankerReady
         shoeStarted
         bettingOpen
+        canUserDealTable={false}
         canDeal={false}
         hasStakes
         onShuffleToStart={noop}
@@ -220,9 +222,10 @@ describe('deal/new cards host permission', () => {
     expect(nextHtml).toMatch(/disabled/);
   });
 
-  it('keeps host deal path wired through tableOwner && canDeal', () => {
-    expect(PANEL_SRC).toContain('const canDealCards = tableOwner && canDeal');
-    expect(PANEL_SRC).toContain('canDeal: canDealCards');
+  it('wires deal permission through canCurrentUserDealTable', () => {
+    expect(PANEL_SRC).toContain('canCurrentUserDealTable');
+    expect(PANEL_SRC).toContain('canUserDealTable');
+    expect(PANEL_SRC).toMatch(/function handlePrimaryDealAction\(\) \{[\s\S]*if \(!canUserDealTable\)/);
   });
 });
 

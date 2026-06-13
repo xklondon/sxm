@@ -24,6 +24,7 @@ describe('dealer shuffle animation', () => {
         bankerReady
         shoeStarted={false}
         bettingOpen
+        canUserDealTable={false}
         canDeal={false}
         hasStakes
         onShuffleToStart={() => {}}

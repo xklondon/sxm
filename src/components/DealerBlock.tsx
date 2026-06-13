@@ -29,6 +29,9 @@ interface DealerBlockProps {
   bankerReady: boolean;
   shoeStarted: boolean;
   bettingOpen: boolean;
+  /** Table owner/host may run deal controls (Deal Cards, New Cards, Card, Draw). */
+  canUserDealTable: boolean;
+  /** Engine eligibility for betting-phase Deal Cards (stakes, shoe, protocol). */
   canDeal: boolean;
   hasStakes: boolean;
   onShuffleToStart: () => void;
@@ -106,6 +109,7 @@ export function DealerBlock({
   bankerReady,
   shoeStarted,
   bettingOpen,
+  canUserDealTable,
   canDeal,
   hasStakes,
   onShuffleToStart: _onShuffleToStart,
@@ -142,7 +146,7 @@ export function DealerBlock({
       const pending = nextRoundPending || dealActionPending;
       return {
         label: pending ? 'Starting…' : 'New Cards',
-        disabled: pending || !canDeal,
+        disabled: pending || !canUserDealTable,
         onClick: onNextRound,
       };
     }
@@ -151,14 +155,14 @@ export function DealerBlock({
       if (status === 'initial-deal' && initialDealManual) {
         return {
           label: 'Card',
-          disabled: !canDeal,
+          disabled: !canUserDealTable,
           onClick: onDealNextCard,
         };
       }
       if (status === 'bank-turn' && bankDrawManual) {
         return {
           label: 'Draw',
-          disabled: !canDeal,
+          disabled: !canUserDealTable,
           onClick: onDrawBank,
         };
       }
@@ -174,7 +178,7 @@ export function DealerBlock({
       const pending = dealActionPending || shuffleAnimating;
       return {
         label: pending ? 'Dealing…' : 'Deal Cards',
-        disabled: !canDeal || !bankerReady || !hasStakes || pending,
+        disabled: !canUserDealTable || !bankerReady || !hasStakes || pending,
         onClick: onDealCards,
         cardsVariant: true,
       };
@@ -182,7 +186,7 @@ export function DealerBlock({
 
     return {
       label: dealActionPending ? 'Dealing…' : 'Deal Cards',
-      disabled: !canDeal || !bettingOpen || !bankerReady || dealActionPending,
+      disabled: !canUserDealTable || !canDeal || !bettingOpen || !bankerReady || dealActionPending,
       onClick: onDealCards,
       cardsVariant: true,
     };
