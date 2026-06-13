@@ -3,8 +3,7 @@ import type { GameState } from '../../types';
 import type { BlackjackRound } from '../../types/blackjack';
 import { createBlackjackPlayerHand, createEmptyBlackjackRound } from '../../types/blackjack';
 import {
-  takeInsuranceOnState,
-  declineInsuranceOnState,
+  takeInsuranceForPersonOnState,
   applyInsuranceAdvanceOnState,
 } from './gameState';
 import { getBlackjackProtocolPhase } from './protocol';
@@ -88,20 +87,23 @@ describe('multi-box insurance', () => {
     expect(eligible).toHaveLength(2);
   });
 
-  it('same player: accepting Box 1 leaves Box 2 pending until decided', () => {
+  it('same player: one decision covers every eligible box', () => {
     let state = readyTwoBoxInsurance();
     const box1 = boxPlayerId(state, 1)!;
     const box2 = boxPlayerId(state, 2)!;
+    const personId = state.tableMeta.ownerPersonId!;
 
     expect(getPendingInsurancePlayerIds(state, state.blackjack!)).toEqual([box1, box2]);
 
-    state = takeInsuranceOnState(state, box1);
-    expect(state.blackjack?.insuranceOfferPending).toBe(true);
-    expect(state.blackjack?.insuranceBets?.[box1]).toBe(25);
-    expect(getPendingInsurancePlayerIds(state, state.blackjack!)).toEqual([box2]);
+    const actions = getInsuranceActionsForController(state, state.blackjack!, personId);
+    expect(actions).toHaveLength(1);
+    expect(actions[0]?.boxIds).toEqual([box1, box2]);
+    expect(actions[0]?.maxBet).toBe(30);
 
-    state = declineInsuranceOnState(state, box2);
+    state = takeInsuranceForPersonOnState(state, personId);
     expect(state.blackjack?.insuranceOfferPending).toBe(false);
+    expect(state.blackjack?.insuranceBets?.[box1]).toBe(25);
+    expect(state.blackjack?.insuranceBets?.[box2]).toBe(5);
     expect(getBlackjackProtocolPhase(state)).not.toBe('insurance');
   });
 
@@ -156,9 +158,11 @@ describe('multi-box insurance', () => {
     const round = state.blackjack!;
 
     const aliceActions = getInsuranceActionsForController(state, round, aliceId);
-    expect(aliceActions.map((a) => a.playerId)).toEqual([box1]);
+    expect(aliceActions).toHaveLength(1);
+    expect(aliceActions[0]?.boxIds).toEqual([box1]);
 
     const bobActions = getInsuranceActionsForController(state, round, bobId);
-    expect(bobActions.map((a) => a.playerId)).toEqual([box2]);
+    expect(bobActions).toHaveLength(1);
+    expect(bobActions[0]?.boxIds).toEqual([box2]);
   });
 });

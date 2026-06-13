@@ -15,6 +15,11 @@ import {
 } from '../../../src/engine/blackjack/dealEligibility.js';
 import { hasAnyStakes } from '../../../src/engine/blackjack/stakes.js';
 import { isBankerReady } from '../../../src/engine/session/boxOps.js';
+import {
+  getInsuranceDecisionPersonIdForBox,
+  canPersonDecideInsuranceForBox,
+  getPendingInsuranceBoxIdsForPerson,
+} from '../../../src/engine/blackjack/insurance.js';
 
 export interface ActionContext {
   tableId: string;
@@ -66,7 +71,7 @@ export function assertActionAuthorized(state: GameState, ctx: ActionContext): vo
       if (phase !== 'insurance') {
         throw new Error('Insurance not offered');
       }
-      assertBoxOwner(state, ctx, ctx.payload.playerId as string);
+      assertInsuranceDecision(state, ctx);
       return;
 
     case 'takeEvenMoney':
@@ -236,6 +241,43 @@ function assertBetOnExistingBox(state: GameState, personId: string, boxId: strin
   }
   // Shared betting: any seated table member may add chips; decision ownership is separate.
   if (!isSeatedPersonAtTable(state, personId)) {
+    throw new Error('Not authorized for this box');
+  }
+}
+
+function assertInsuranceDecision(state: GameState, ctx: ActionContext): void {
+  const personId = ctx.payload.personId as string | undefined;
+  if (personId) {
+    if (personId !== ctx.personId) {
+      throw new Error('Not authorized for this insurance decision');
+    }
+    const round = state.blackjack;
+    if (!round?.insuranceOfferPending) {
+      throw new Error('Insurance not offered');
+    }
+    const boxIds = getPendingInsuranceBoxIdsForPerson(state, round, ctx.personId);
+    if (boxIds.length === 0) {
+      throw new Error('No pending insurance decision');
+    }
+    return;
+  }
+  const boxPlayerId = ctx.payload.playerId as string;
+  assertInsuranceBoxDecision(state, ctx, boxPlayerId);
+}
+
+function assertInsuranceBoxDecision(
+  state: GameState,
+  ctx: ActionContext,
+  boxPlayerId: string,
+): void {
+  if (!boxPlayerId) {
+    throw new Error('boxId required');
+  }
+  const owner = getInsuranceDecisionPersonIdForBox(state, boxPlayerId);
+  if (owner !== ctx.personId) {
+    throw new Error('Not authorized for this box');
+  }
+  if (!canPersonDecideInsuranceForBox(state, boxPlayerId, ctx.personId)) {
     throw new Error('Not authorized for this box');
   }
 }

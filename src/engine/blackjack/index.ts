@@ -42,6 +42,8 @@ export {
   splitBlackjackOnState,
   takeInsuranceOnState,
   declineInsuranceOnState,
+  takeInsuranceForPersonOnState,
+  declineInsuranceForPersonOnState,
   newBlackjackRoundOnState,
   updateBlackjackFlowSettings,
   processVirtualTurns,

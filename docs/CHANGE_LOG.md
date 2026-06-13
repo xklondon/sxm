@@ -13,6 +13,34 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Blackjack stability contract layer
+
+- **Protocol:** `blackjackActionContract.ts` — single view import for action permission + hand legality; Panel/Card View migrated off direct engine imports.
+- **Layout:** `blackjackLayoutContract.ts` + contract tests for view roots, `displaySlots` alignment, active-value highlight.
+- **Dealing:** `blackjackDealingContract.ts` + `dealingRoundRegression.test.ts` (round 1/2 reveal gating).
+- **Accounting:** `blackjackAccountingDisplay.ts` — tray + This Table use `resolvePersonDisplayBalances` / `resolveViewerTrayAvailable`.
+- **Docs:** `docs/BLACKJACK_STABILITY_CONTRACTS.md`; SXM_MASTER_SPEC stability table.
+
+---
+
+## 2026-06-12 — Blackjack wiring/display fixes (controls, exposure, highlight, alignment)
+
+- **Hit/Stay:** `canShowPlayerDecisionControls` treats engine player-turn + active-hand reveal ready as effective player phase; `resolveViewerActionPermission` gates controls to box caller only.
+- **This Table + tray:** `playerCommittedExposure.ts` canonical helper; `bankroll.ts` delegates exposure; `clampAvailableForDisplay` prevents negative tray/This Table available.
+- **Active value:** `cardColumnHandValueClassName` — circular highlight on card-column number only; no box turn border.
+- **Alignment:** Card row and box row both iterate `displaySlots` in slot order (shared 1fr grid).
+- **Box content:** Owner name + rank list (`formatBoxCardRanksLabel`) inside box; committed amount above box.
+
+---
+
+## 2026-06-12 — Insurance targeting fix
+
+- Insurance decision owner follows **stake attribution** (`getInsuranceDecisionPersonIdForBox`): sole staker decides and pays from their bankroll; shared boxes fall back to box caller.
+- **One person-scoped decision** covers all pending eligible boxes (`takeInsuranceForPersonOnState` / `declineInsuranceForPersonOnState`); overlay only for viewers with a pending decision.
+- Online authority accepts `personId` payload for insurance actions; synced engine `.js` mirrors.
+
+---
+
 ## 2026-06-09 — Challenge bank-bust settlement setup option
 
 - **New Table → Challenge:** required **Bank bust settlement** choice — **Fractional / Ranked** (default) or **Winner Takes All**; stored as `tableMeta.bankBustSettlementMode`.
@@ -83,7 +111,7 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 ## 2026-06-10 — Blackjack UX fixes
 
 - **Player box stability:** Fixed stake/composition reserved height in slot row — chips no longer reflow box dimensions.
-- **Active turn:** Shared `bj-box--turn` highlight in Full Table and Card View (betting pulse separate).
+- **Active turn:** Card-column / hero circular `bj-phone-view__box-value--active-turn` only; no box border or slot turn frame.
 - **Card View:** Larger hero cards via `clamp()` tokens; score above hero; mobile Stay/Hit me side indicators restored.
 - **Bust delay:** Card View holds busted hero 2s (`CARD_VIEW_BUST_HOLD_MS`) before following next box.
 - **Dealer info:** Bank Total in felt row; Bank Hand under dealer cards only.

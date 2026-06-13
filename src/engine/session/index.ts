@@ -118,6 +118,7 @@ export {
 } from './playerAssignment';
 export {
   assignTemporaryBoxOwnerOnFirstBet,
+  canActCurrentHand,
   formatDecisionOwnerWaitMessage,
   getActionableHandForView,
   getBoxDecisionOwner,
@@ -132,6 +133,14 @@ export {
   type ViewerActionBlockReason,
   type ViewerActionPermission,
 } from './boxDecisionOwnership';
+export {
+  getBoxIdsWithCommittedExposureForPerson,
+  getInRoundBetExposureForPerson,
+  getOpenStakeExposureForPerson,
+  getStakeContributorPersonIds,
+  getTotalCommittedExposureForPerson,
+  isBoxExposureAttributedToPerson,
+} from './playerCommittedExposure';
 export type { ViewerIdentityHints } from './playerAssignment';
 export { getTableWagerDisplay } from './wagerDisplay';
 export {

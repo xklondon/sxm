@@ -48,7 +48,7 @@ describe('blackjack UX fixes — player box stability', () => {
 });
 
 describe('blackjack UX fixes — active turn highlight', () => {
-  it('applies shared bj-box--turn class for active player turn', () => {
+  it('does not apply box turn border during player turn — highlight is card-column only', () => {
     let state = tableAfterStartPlaying(500);
     state = {
       ...state,
@@ -67,10 +67,11 @@ describe('blackjack UX fixes — active turn highlight', () => {
       activeBoxId: box1,
       playerPhase: true,
     });
-    expect(getBoxBorderVisualClasses(resolved)).toContain(BOX_BORDER_TURN);
+    expect(getBoxBorderVisualClasses(resolved)).not.toContain(BOX_BORDER_TURN);
     expect(getBoxActivePulseClassName(resolved)).toBe('');
+    expect(PANEL_SRC).not.toContain("'bj-arc__slot--turn'");
     expect(PANEL_SRC).toContain('getBoxActivePulseClassName(borderState)');
-    expect(PANEL_SRC).toContain('getBoxCardVisualClasses(borderState)');
+    expect(PANEL_SRC).toContain('cardColumnHandValueClassName');
   });
 });
 
@@ -187,7 +188,7 @@ describe('blackjack UX fixes — command text', () => {
         allowDouble: true,
       },
     );
-    expect(msg.commandMessage).toBe('Box 2, Alice, your turn.');
+    expect(msg.commandMessage).toBe('Box 2 — your turn.');
     expect(msg.commandLines.some((line) => /Bank has/.test(line))).toBe(true);
     expect(msg.commandLines.some((line) => /^Options:/.test(line))).toBe(true);
     expect(formatPlayerTurnOptions(true, true, true, false)).toBe(

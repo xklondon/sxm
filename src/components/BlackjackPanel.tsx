@@ -13,10 +13,6 @@ import {
 import { isJoinAssignedHighlight } from '../engine/session/inviteJoin';
 import {
   blackjackHandKey,
-  canDoubleBlackjackForState,
-  canHitBlackjack,
-  canSplitBlackjackForState,
-  canStandBlackjack,
   doubleDownBlackjackOnState,
   getAidAdvice,
   getShoeDeckCount,
@@ -93,8 +89,8 @@ import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
 import { TableAccountsPanel } from './TableAccountsPanel';
 import {
-  takeInsuranceOnState,
-  declineInsuranceOnState,
+  takeInsuranceForPersonOnState,
+  declineInsuranceForPersonOnState,
   takeEvenMoneyOnState,
   waitForBlackjackPayoutOnState,
   getStakeBetValidationMessage,
@@ -149,7 +145,10 @@ import {
 import {
   canShowPlayerDecisionControls,
   resolveViewerActionPermission,
+  resolvePlayerHandActionOptions,
   getPrimaryInsuranceActionForController,
+} from './blackjackActionContract';
+import {
   getActiveTurnBoxId,
   isPlayerTurnPhase,
 } from './blackjackViewPhase';
@@ -157,12 +156,11 @@ import { getDisplayBlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { getDisplayedHandValue, getVisibleHandCardIds } from '../engine/blackjack/dealing/cardRevealDisplay';
 import {
   BET_BOX_PULSE,
-  BOX_NET_RESULT,
   getBoxActivePulseClassName,
   getBoxCardVisualClasses,
   resolveBoxBorderVisualState,
 } from './cardViewBox';
-import { boxValueSpanClassName, resolvePrimaryHandValueLabel } from './boxHandValueDisplay';
+import { boxStakeLabelClassName, cardColumnHandValueClassName, resolvePrimaryHandValueLabel } from './boxHandValueDisplay';
 import {
   formatBoxNetResultLabel,
   resolveBoxBetAmountDuringPlay,
@@ -1288,22 +1286,26 @@ export function BlackjackPanel({
       return null;
     }
 
-    const { playerId, maxBet, canAfford, slotNumber } = primary;
+    const { personId, maxBet, canAfford, slotNumbers } = primary;
+    const boxLabel =
+      slotNumbers.length > 1
+        ? `Boxes ${slotNumbers.join(' & ')}`
+        : `Box ${slotNumbers[0] ?? '?'}`;
     return (
       <InsuranceDecisionOverlay
-        boxLabel={`Box ${slotNumber ?? '?'}`}
+        boxLabel={boxLabel}
         maxBet={maxBet}
         canAfford={canAfford}
         onInsurance={() =>
-          run((s) => takeInsuranceOnState(s, playerId), {
+          run((s) => takeInsuranceForPersonOnState(s, personId), {
             type: 'takeInsurance',
-            payload: { playerId },
+            payload: { personId },
           })
         }
         onDecline={() =>
-          run((s) => declineInsuranceOnState(s, playerId), {
+          run((s) => declineInsuranceForPersonOnState(s, personId), {
             type: 'declineInsurance',
-            payload: { playerId },
+            payload: { personId },
           })
         }
       />
@@ -1330,11 +1332,13 @@ export function BlackjackPanel({
       return null;
     }
     const actionable = actionPermission.actionable!;
-    const canDouble =
-      Boolean(deck) && canDoubleBlackjackForState(gameState, actionable.handKey);
-    const canSplit = canSplitBlackjackForState(gameState, actionable.handKey);
-    const showDouble = blackjackSettings.allowDoubleDown;
-    const showSplit = blackjackSettings.allowSplit && Boolean(deck);
+    const handOptions = resolvePlayerHandActionOptions(
+      gameState,
+      actionable.handKey,
+      blackjackSettings,
+      Boolean(deck),
+    );
+    const { canDouble, canSplit, showDouble, showSplit } = handOptions;
     if (!showDouble && !showSplit) {
       return null;
     }
@@ -1571,12 +1575,13 @@ export function BlackjackPanel({
     }
 
     const actionable = actionPermission.actionable!;
-    const canHit = canHitBlackjack(activeRound, actionable.handKey);
-    const canStand = canStandBlackjack(activeRound, actionable.handKey);
-
-    const canDouble =
-      Boolean(deck) && canDoubleBlackjackForState(gameState, actionable.handKey);
-    const canSplit = canSplitBlackjackForState(gameState, actionable.handKey);
+    const handOptions = resolvePlayerHandActionOptions(
+      gameState,
+      actionable.handKey,
+      blackjackSettings,
+      Boolean(deck),
+    );
+    const { canHit, canStand, canDouble, canSplit } = handOptions;
 
     function handleTableAid() {
       if (!deck) {
@@ -1748,13 +1753,13 @@ export function BlackjackPanel({
         )}
         <span
           className={[
-            boxValueSpanClassName(
+            cardColumnHandValueClassName(
               Boolean(cardColumnValueLabel),
               isBusted,
+              isActiveHand,
               cardAreaOutcomeToneFromMarker(outcomeMarker),
             ),
             TABLE_UX.cardColumnValueBelow,
-            isActiveHand ? 'bj-phone-view__box-value--active-turn' : '',
           ].join(' ')}
           aria-hidden={cardColumnValueLabel ? undefined : 'true'}
         >
@@ -1794,7 +1799,6 @@ export function BlackjackPanel({
       bettingStage: inBetting,
       playerPhase: isPlayerTurnPhase(protocolPhase),
     });
-    const isTurn = borderState.isTurn;
     const boxInfo = buildBlackjackPlayerBoxInfo(gameState, slotNumber, boxId);
     let handKeys = handKeysByBox.get(boxId) ?? [];
     if (handKeys.length === 0 && visualRound) {
@@ -1833,7 +1837,6 @@ export function BlackjackPanel({
       showBoxHandResultMarkers && boxParticipated && boxNetChips !== null
         ? boxNetResultTone(boxNetChips)
         : null;
-    const showBoxNetResult = showBoxHandResultMarkers && boxParticipated;
     const stakeChips = getStakeChipsForBox(gameState, boxId);
     const showBettingChips = inBetting && openStake > 0 && stakeChips.length > 0;
     const showPlayChips = !inBetting && wager > 0;
@@ -1857,7 +1860,6 @@ export function BlackjackPanel({
           'bj-arc__slot--owned',
           TABLE_UX.boxHitZone,
           isJoinAssigned ? 'bj-arc__slot--join-highlight' : '',
-          isTurn ? 'bj-arc__slot--turn' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
       >
@@ -1866,7 +1868,7 @@ export function BlackjackPanel({
           className={TABLE_UX.boxHitArea}
           {...bindBoxTapSelect(() => selectBox(boxId))}
           aria-label={`Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`}
-          aria-current={borderState.isSelected || isTurn ? 'true' : undefined}
+          aria-current={borderState.isSelected || uiActiveBoxId === boxId ? 'true' : undefined}
           onDragOver={inBetting ? handleDragOver : undefined}
           onDragEnter={
             inBetting
@@ -1887,12 +1889,7 @@ export function BlackjackPanel({
           onDrop={inBetting ? (e) => handleBetZoneDrop(boxId, slotNumber, e) : undefined}
         />
         <span
-          className={[
-            boxValueSpanClassName(Boolean(boxValueLabel), isBusted, boxNetTone),
-            showBoxNetResult ? BOX_NET_RESULT : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
+          className={boxStakeLabelClassName(Boolean(boxValueLabel), isBusted, boxNetTone)}
           aria-hidden={boxValueLabel ? undefined : 'true'}
         >
           {boxValueLabel || '\u00a0'}

@@ -167,6 +167,15 @@ export interface ResolveViewerActionPermissionOptions {
   cardViewHeroBoxId?: string | null;
 }
 
+/** Canonical player-turn action gate — shared by Hit/Stay, swipe, and command copy. */
+export function canActCurrentHand(
+  state: GameState,
+  viewerPersonId: string | null,
+  options: ResolveViewerActionPermissionOptions = {},
+): boolean {
+  return resolveViewerActionPermission(state, viewerPersonId, options).canAct;
+}
+
 /**
  * Single permission route for action buttons, swipe, and waiting copy.
  * Full Table omits cardViewHeroBoxId; Card View passes the hero box id.

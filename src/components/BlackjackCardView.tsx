@@ -11,8 +11,6 @@ import type { GameState } from "../types";
 import type { BlackjackProtocolPhase } from "../engine/blackjack/protocol";
 
 import {
-  canHitBlackjack,
-  canStandBlackjack,
   parseBlackjackHandKey,
 } from "../engine/blackjack";
 
@@ -23,6 +21,11 @@ import { resolveViewerPersonIdForTable } from "./viewerIdentity";
 import type { AuthUser } from "../api/client";
 
 import {
+  canShowPlayerDecisionControls,
+  resolveViewerActionPermission,
+  resolvePlayerHandActionOptions,
+} from "./blackjackActionContract";
+import {
   getCardViewHeroBoxId,
   getCardViewHeroHandKey,
   showHeroPlayerCards,
@@ -32,8 +35,6 @@ import {
   showBettingMainStage,
   showEvenMoneyControls,
   showInsuranceControls,
-  canShowPlayerDecisionControls,
-  resolveViewerActionPermission,
 } from "./blackjackViewPhase";
 import { shouldShowBoxHandResultMarkers } from "./boxHandStatusDisplay";
 import {
@@ -163,20 +164,26 @@ export function BlackjackCardView({
       ? round.playerHands[heroHandKey]
       : undefined;
 
+  const handActionOptions =
+    actionableHandKey && round
+      ? resolvePlayerHandActionOptions(
+          logicalGameState,
+          actionableHandKey,
+          logicalGameState.blackjackSettings,
+          Boolean(deck),
+        )
+      : null;
+
   const canHit = Boolean(
     !handHoldActive &&
       isActiveTurn &&
-      actionableHandKey &&
-      round &&
-      canHitBlackjack(round, actionableHandKey),
+      handActionOptions?.canHit,
   );
 
   const canStand = Boolean(
     !handHoldActive &&
       isActiveTurn &&
-      actionableHandKey &&
-      round &&
-      canStandBlackjack(round, actionableHandKey),
+      handActionOptions?.canStand,
   );
 
   const logicalCardIds = (logicalHand?.cardIds ?? []).filter((id) => id.length > 0);
@@ -434,11 +441,11 @@ export function BlackjackCardView({
     if (dx > SWIPE_THRESHOLD) {
       logSwipe(
         "right",
-        canHitBlackjack(round, swipeHandKey) ? "hit" : null,
+        handActionOptions?.canHit ? "hit" : null,
         beforeHandCards,
       );
 
-      if (canHitBlackjack(round, swipeHandKey)) {
+      if (handActionOptions?.canHit) {
         setSwipeHint("Hit");
 
         onCard(swipeHandKey);
@@ -446,11 +453,11 @@ export function BlackjackCardView({
     } else if (dx < -SWIPE_THRESHOLD) {
       logSwipe(
         "left",
-        canStandBlackjack(round, swipeHandKey) ? "stay" : null,
+        handActionOptions?.canStand ? "stay" : null,
         beforeHandCards,
       );
 
-      if (canStandBlackjack(round, swipeHandKey)) {
+      if (handActionOptions?.canStand) {
         setSwipeHint("Stay");
 
         onStay(swipeHandKey);

@@ -2,7 +2,7 @@ import { normalizeFlowSettings, syncDealTimingFromPreset } from './flowSettings'
 import { lockProtocolOnState, getBlackjackProtocolForState } from './protocolState';
 import { createBlackjackRound, doubleDownBlackjackPlayer, hitBlackjackPlayer, placeBlackjackBet, resetBlackjackRound, resolveBlackjackRound, splitBlackjackPlayer, standBlackjackPlayer, applyBlackjackToGameState, } from './round';
 import { beginInitialDeal, dealNextInitialCard, } from './initialDeal';
-import { takeInsuranceBet, declineInsurance, closeInsuranceOffer, allInsuranceResolved, advanceInsurancePhaseIfComplete, getInsuranceOfferForBox, } from './insurance';
+import { takeInsuranceBet, declineInsurance, closeInsuranceOffer, allInsuranceResolved, advanceInsurancePhaseIfComplete, getInsuranceOfferForBox, getInsuranceDecisionPersonIdForBox, getPendingInsuranceBoxIdsForPerson, } from './insurance';
 import { drawSingleBankCard, enterBankingIfComplete } from './bankTurn';
 import { activePlayerIdFromRound, getVirtualBlackjackAction, isVirtualPlayer } from './virtual';
 import { parseBlackjackHandKey, blackjackHandKey } from './handKeys';
@@ -519,14 +519,72 @@ export function takeInsuranceOnState(state, playerId) {
     if (!offer.canAfford) {
         throw new Error('Not enough chips for insurance');
     }
-    const result = takeInsuranceBet(s.session, s.players, s.ledger, s.blackjack, playerId, bankrollContextFromState(s), getBlackjackProtocolForState(s));
-    let next = { ...s, session: result.session, ledger: result.ledger, blackjack: result.round };
-    if (allInsuranceResolved(next, result.round, getBlackjackProtocolForState(next))) {
-        const closed = closeInsuranceOffer(next.session, next.players, result.round);
-        next = { ...next, players: closed.players, blackjack: closed.round };
-        next = resolvePendingNaturalsAfterDealerPeek(next);
+    const bankrollOwnerId = getInsuranceDecisionPersonIdForBox(s, playerId);
+    if (!bankrollOwnerId) {
+        throw new Error('Insurance not offered for this box');
     }
+    const result = takeInsuranceBet(s.session, s.players, s.ledger, s.blackjack, playerId, bankrollContextFromState(s), protocol, bankrollOwnerId);
+    let next = { ...s, session: result.session, ledger: result.ledger, blackjack: result.round };
+    return finishInsurancePhaseIfComplete(next);
+}
+function finishInsurancePhaseIfComplete(state) {
+    const round = state.blackjack;
+    if (!round) {
+        return state;
+    }
+    const protocol = getBlackjackProtocolForState(state);
+    if (!allInsuranceResolved(state, round, protocol)) {
+        return state;
+    }
+    const closed = closeInsuranceOffer(state.session, state.players, round);
+    let next = { ...state, players: closed.players, blackjack: closed.round };
+    next = resolvePendingNaturalsAfterDealerPeek(next);
     return next;
+}
+export function takeInsuranceForPersonOnState(state, personId) {
+    const s = requireBlackjackState(state);
+    if (!s.blackjack?.insuranceOfferPending) {
+        throw new Error('Insurance is not offered');
+    }
+    const protocol = getBlackjackProtocolForState(s);
+    const boxIds = getPendingInsuranceBoxIdsForPerson(s, s.blackjack, personId, protocol);
+    if (boxIds.length === 0) {
+        throw new Error('No pending insurance decision for this player');
+    }
+    let next = s;
+    for (const boxId of boxIds) {
+        const offer = getInsuranceOfferForBox(next, next.blackjack, boxId, protocol);
+        if (!offer) {
+            continue;
+        }
+        if (!offer.canAfford) {
+            throw new Error('Not enough chips for insurance');
+        }
+        const ownerId = getInsuranceDecisionPersonIdForBox(next, boxId);
+        if (!ownerId || ownerId !== personId) {
+            continue;
+        }
+        const result = takeInsuranceBet(next.session, next.players, next.ledger, next.blackjack, boxId, bankrollContextFromState(next), protocol, ownerId);
+        next = { ...next, session: result.session, ledger: result.ledger, blackjack: result.round };
+    }
+    return finishInsurancePhaseIfComplete(next);
+}
+export function declineInsuranceForPersonOnState(state, personId) {
+    const s = requireBlackjackState(state);
+    if (!s.blackjack?.insuranceOfferPending) {
+        throw new Error('Insurance is not offered');
+    }
+    const protocol = getBlackjackProtocolForState(s);
+    const boxIds = getPendingInsuranceBoxIdsForPerson(s, s.blackjack, personId, protocol);
+    if (boxIds.length === 0) {
+        throw new Error('No pending insurance decision for this player');
+    }
+    let round = s.blackjack;
+    for (const boxId of boxIds) {
+        round = declineInsurance(round, boxId);
+    }
+    const next = { ...s, blackjack: round };
+    return finishInsurancePhaseIfComplete(next);
 }
 export function declineInsuranceOnState(state, playerId) {
     const s = requireBlackjackState(state);
@@ -535,12 +593,7 @@ export function declineInsuranceOnState(state, playerId) {
     }
     const round = declineInsurance(s.blackjack, playerId);
     let next = { ...s, blackjack: round };
-    if (allInsuranceResolved(next, round, getBlackjackProtocolForState(next))) {
-        const closed = closeInsuranceOffer(next.session, next.players, round);
-        next = { ...next, players: closed.players, blackjack: closed.round };
-        next = resolvePendingNaturalsAfterDealerPeek(next);
-    }
-    return next;
+    return finishInsurancePhaseIfComplete(next);
 }
 export function hitBlackjackOnState(state, handKey) {
     const key = handKey ?? requireActiveHandKey(state);

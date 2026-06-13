@@ -46,7 +46,7 @@ describe('blackjack UX protocol fixes — card column values', () => {
   it('renders hand value below card columns in Table View', () => {
     expect(PANEL_SRC).toContain('resolvePrimaryHandValueLabel');
     expect(PANEL_SRC).toContain('TABLE_UX.cardColumnValueBelow');
-    expect(PANEL_SRC).toMatch(/renderArcCardColumn[\s\S]*boxValueSpanClassName/);
+    expect(PANEL_SRC).toMatch(/renderArcCardColumn[\s\S]*cardColumnHandValueClassName/);
   });
 });
 

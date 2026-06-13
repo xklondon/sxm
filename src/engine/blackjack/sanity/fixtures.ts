@@ -38,6 +38,17 @@ export function tableAfterStartPlaying(seatChips = 500, bankChips?: number): Gam
   return state;
 }
 
+/** Skip paced natural-deal empty visibility on first paint (SSR/tests, mid-round snapshots). */
+export function withInstantInitialDeal(state: GameState): GameState {
+  return {
+    ...state,
+    blackjackFlowSettings: {
+      ...state.blackjackFlowSettings,
+      initialDealMode: 'instant',
+    },
+  };
+}
+
 export function baseTestTable(): GameState {
   return tableAfterStartPlaying(500);
 }

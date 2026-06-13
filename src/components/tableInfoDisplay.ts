@@ -2,7 +2,7 @@ import type { GameState } from '../types';
 import { getVisibleDealerCardIds } from '../engine/blackjack/protocolState';
 import { cardsFromIds, getBlackjackHandValue } from '../engine/blackjack/hand';
 import { buildTableBankRow } from '../engine/session/tablePeople';
-import { getAvailableChipsForBankrollOwner } from '../engine/session/bankroll';
+import { resolveViewerTrayAvailable } from './blackjackAccountingDisplay';
 import { formatBankHolderLabel, isChallengeTable } from '../engine/scoreLedger/challengeBankDisplay';
 import { clampAvailableForDisplay } from './displayBalance';
 
@@ -51,11 +51,7 @@ export function buildTableInfoDisplay(
   const bankId = state.session.bankPlayerId;
   const bankHolderLabel =
     bankId && isChallengeTable(state) ? formatBankHolderLabel(state, bankId) : null;
-  const rawAvailable =
-    viewerPersonId !== null
-      ? getAvailableChipsForBankrollOwner(state, viewerPersonId)
-      : null;
-  const playerAvailable = clampAvailableForDisplay(rawAvailable);
+  const playerAvailable = resolveViewerTrayAvailable(state, viewerPersonId);
 
   return {
     bankValue: getBankDisplayValue(state, displayState),

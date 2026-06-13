@@ -2,9 +2,12 @@ import type { GameState } from '../../types';
 import type { BoxSlotState } from '../../types/table';
 import type { Player } from '../../types/player';
 import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
-import { getStakeForBox } from '../blackjack/stakes';
-import { listHandKeysForPlayer } from '../blackjack/handKeys';
 import { log } from '../../utils/logger';
+import {
+  getInRoundBetExposureForPerson,
+  getOpenStakeExposureForPerson,
+  getTotalCommittedExposureForPerson,
+} from './playerCommittedExposure';
 
 export interface BankrollContext {
   players: Record<string, Player>;
@@ -129,13 +132,7 @@ export function getTotalOpenStakesForBankrollOwner(
   state: GameState,
   bankrollOwnerId: string,
 ): number {
-  if (state.tableMeta.bettingLocked) {
-    return 0;
-  }
-  return getBoxIdsForBankrollOwner(state, bankrollOwnerId).reduce(
-    (sum, boxId) => sum + getStakeForBox(state, boxId),
-    0,
-  );
+  return getOpenStakeExposureForPerson(state, bankrollOwnerId);
 }
 
 /** In-round bet totals across all boxes for one person. */
@@ -143,41 +140,14 @@ export function getTotalInRoundBetsForBankrollOwner(
   state: GameState,
   bankrollOwnerId: string,
 ): number {
-  const round = state.blackjack;
-  if (!round) {
-    return 0;
-  }
-  return getBoxIdsForBankrollOwner(state, bankrollOwnerId).reduce((sum, boxId) => {
-    return (
-      sum +
-      listHandKeysForPlayer(round.playerHands, boxId).reduce(
-        (handSum, key) => handSum + (round.playerHands[key]?.currentBet ?? 0),
-        0,
-      )
-    );
-  }, 0);
+  return getInRoundBetExposureForPerson(state, bankrollOwnerId);
 }
 
 export function getTotalBettingExposureForBankrollOwner(
   state: GameState,
   bankrollOwnerId: string,
 ): number {
-  const round = state.blackjack;
-  if (state.tableMeta.awaitingNextRound || round?.isSettled || round?.status === 'resolved') {
-    return 0;
-  }
-
-  const open = getTotalOpenStakesForBankrollOwner(state, bankrollOwnerId);
-  const inRound = getTotalInRoundBetsForBankrollOwner(state, bankrollOwnerId);
-
-  if (!state.tableMeta.bettingLocked) {
-    if (open > 0) {
-      return open;
-    }
-    return inRound;
-  }
-
-  return inRound;
+  return getTotalCommittedExposureForPerson(state, bankrollOwnerId);
 }
 
 export function getLedgerBalanceForBankrollOwner(

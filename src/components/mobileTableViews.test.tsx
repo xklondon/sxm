@@ -11,6 +11,7 @@ import {
   tableAfterStartPlaying,
   boxPlayerId,
   findCardId,
+  withInstantInitialDeal,
 } from '../engine/blackjack/sanity/fixtures';
 import { claimBoxSlot } from '../engine/session';
 import { addChipToBoxStake, blackjackHandKey } from '../engine/blackjack';
@@ -63,7 +64,7 @@ function playingState(): GameState {
   const k1 = blackjackHandKey(box1, 0);
   const k2 = blackjackHandKey(box2, 0);
 
-  return {
+  return withInstantInitialDeal({
     ...state,
     selectedSeatId: box2,
     blackjack: {
@@ -89,7 +90,7 @@ function playingState(): GameState {
         },
       },
     },
-  };
+  });
 }
 
 /** Betting table with a confirmed stake (chip tray should be reachable). */
@@ -132,7 +133,7 @@ const FULL_TABLE_PLAYING_SECTIONS = [
   ...FULL_TABLE_SECTIONS,
   'dealer-block__status',
   'bj-table-actions',
-  'bj-box--turn',
+  'bj-phone-view__box-value--active-turn',
 ] as const;
 
 const FULL_TABLE_BETTING_SECTIONS = [
@@ -267,9 +268,10 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     }
   });
 
-  it('highlights the active/turn box', () => {
+  it('highlights the active hand value in the card column', () => {
     const html = renderPanelAt(390, withView(playingState(), 'full'));
-    expect(html).toContain('bj-box--turn');
+    expect(html).toContain('bj-phone-view__box-value--active-turn');
+    expect(html).not.toContain('bj-box--turn');
   });
 
   it('keeps a busted box visible with BUST in cards area and bet on box', () => {
@@ -351,7 +353,7 @@ describe('mobile Card View structure', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).toContain('bj-arc--player-boxes');
     expect(html).toContain('>10<');
-    expect(html).toContain('bj-box--turn');
+    expect(html).toContain('bj-phone-view__box-value--active-turn');
     expect(html).toContain('Join');
     const order = cardViewMiniBoxOrder(html);
     expect(order.length).toBe(4);

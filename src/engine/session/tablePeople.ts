@@ -2,12 +2,11 @@ import type { GameState } from '../../types';
 import type { TableInviteRecord } from '../../types/invites';
 import type { Player } from '../../types/player';
 import { log } from '../../utils/logger';
+import { resolvePersonDisplayBalances } from '../../components/blackjackAccountingDisplay';
 import { isTableOwner } from './tokens';
 import {
   findPersonPlayerIdByController,
-  getAvailableChipsForBankrollOwner,
   getLedgerBalanceForBankrollOwner,
-  getTotalBettingExposureForBankrollOwner,
   listPersonBankrollOwnerIds,
 } from './bankroll';
 import {
@@ -139,7 +138,7 @@ export function buildTableBankRow(state: GameState): TableBankRow | null {
   }
   const bank = state.players[bankId];
   const ledgerBalance = getLedgerBalanceForBankrollOwner(state, bankId);
-  const available = getAvailableChipsForBankrollOwner(state, bankId);
+  const { available } = resolvePersonDisplayBalances(state, bankId);
   return {
     participantId: bankId,
     bankName: bankDisplayName(bank),
@@ -184,8 +183,7 @@ export function buildTablePeopleRows(state: GameState): TablePersonRow[] {
     const coBoxSlots = getCoBoxSlotsForPerson(state, personId);
     const boxSlots = [...runningBoxSlots, ...coBoxSlots];
     const ledgerBalance = getLedgerBalanceForBankrollOwner(state, personId);
-    const betting = getTotalBettingExposureForBankrollOwner(state, personId);
-    const available = getAvailableChipsForBankrollOwner(state, personId);
+    const { available, betting } = resolvePersonDisplayBalances(state, personId);
 
     rows.push({
       key: personId,

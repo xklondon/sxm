@@ -11,6 +11,7 @@ import {
   tableAfterStartPlaying,
   boxPlayerId,
   findCardId,
+  withInstantInitialDeal,
 } from '../engine/blackjack/sanity/fixtures';
 import { claimBoxSlot } from '../engine/session';
 import { addChipToBoxStake, blackjackHandKey } from '../engine/blackjack';
@@ -63,7 +64,7 @@ function playingState(): GameState {
   const deck = state.deck!;
   const box2 = boxPlayerId(state, 2)!;
   const k2 = blackjackHandKey(box2, 0);
-  return {
+  return withInstantInitialDeal({
     ...state,
     selectedSeatId: box2,
     blackjack: {
@@ -82,7 +83,7 @@ function playingState(): GameState {
         },
       },
     },
-  };
+  });
 }
 
 const CANONICAL_SHELL_ZONES = [
@@ -153,14 +154,18 @@ describe('mobile Card View composition contract', () => {
     );
 
     const html = renderPanelAt(390, withView(playingState(), 'card'));
+    const heroZone = html.split('bj-cards-area--hero')[1]?.split('bj-table-zone--actions')[0] ?? '';
+    expect(heroZone).toContain('bj-phone-view__box-value--active-turn');
+    expect(heroZone).not.toContain('bj-box--turn');
+
     const ownedTurnSlot = html.match(
-      /bj-arc__slot--owned[\s\S]{0,1200}?bj-box--turn[\s\S]{0,400}?bj-phone-view__mini-hand--full-arc/,
+      /bj-arc__slot--owned[\s\S]{0,1200}?bj-phone-view__mini-hand--full-arc/,
     );
     expect(ownedTurnSlot).toBeTruthy();
     const slotChunk = ownedTurnSlot![0];
     expect(slotChunk).not.toMatch(/bj-arc__play-zone/);
     expect(slotChunk).toContain(TABLE_UX.fullArcBox);
-    expect(slotChunk).toContain('bj-box--turn');
+    expect(slotChunk).not.toContain('bj-box--turn');
     expect(slotChunk).not.toContain('bj-box--selected');
   });
 

@@ -230,9 +230,15 @@ describe('deal/new cards host permission', () => {
 });
 
 describe('active hand value highlight', () => {
-  it('adds active-turn highlight class to card-area hand values', () => {
-    expect(PANEL_SRC).toContain('bj-phone-view__box-value--active-turn');
-    expect(PANEL_SRC).toMatch(/isActiveHand[\s\S]*bj-phone-view__box-value--active-turn/);
+  it('adds active-turn highlight via cardColumnHandValueClassName', () => {
+    const boxValueSrc = readFileSync(join(process.cwd(), 'src/components/boxHandValueDisplay.ts'), 'utf8');
+    expect(PANEL_SRC).toContain('cardColumnHandValueClassName');
+    expect(boxValueSrc).toMatch(
+      /export function cardColumnHandValueClassName[\s\S]*bj-phone-view__box-value--active-turn[\s\S]*\}/,
+    );
+    expect(boxValueSrc).not.toMatch(
+      /export function cardColumnHandValueClassName[\s\S]*bj-player-hand-value--emphasis/,
+    );
   });
 });
 

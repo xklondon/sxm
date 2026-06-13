@@ -44,7 +44,7 @@ describe('table command display', () => {
       controllerName: 'Alice',
       viewerPersonId: state.tableMeta.ownerPersonId,
     });
-    expect(result.commandMessage).toBe('Box 1, Alice, your turn.');
+    expect(result.commandMessage).toBe('Box 1 — your turn.');
     expect(result.commandLines).toContain(
       formatPlayerTurnOptions(true, true, true, false),
     );

@@ -187,9 +187,7 @@ export function getBoxBorderVisualClasses(resolved: BoxBorderVisualState): strin
   if (resolved.isSelected) {
     parts.push(BOX_BORDER_SELECTED);
   }
-  if (resolved.isTurn) {
-    parts.push(BOX_BORDER_TURN);
-  }
+  /* Active turn highlight is card-column numeric value only — not box border (mockup §C). */
   return parts.join(' ');
 }
 

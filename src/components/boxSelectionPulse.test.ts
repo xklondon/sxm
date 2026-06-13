@@ -118,7 +118,7 @@ describe('box selection + turn pulse', () => {
       playerPhase: true,
     });
     expect(resolved.isTurn).toBe(true);
-    expect(getBoxBorderVisualClasses(resolved)).toContain('bj-box--turn');
+    expect(getBoxBorderVisualClasses(resolved)).not.toContain('bj-box--turn');
     expect(getBoxActivePulseClassName(resolved)).toBe('');
   });
 

@@ -3,7 +3,6 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   buildBlackjackCommandText,
-  formatPlayerTurnCommand,
 } from './tableCommandDisplay';
 import {
   actingRound,
@@ -125,9 +124,7 @@ describe('multiplayer turn-owner visibility (UI)', () => {
       controllerName: 'Wrong',
       viewerPersonId: bobId,
     });
-    expect(result.commandMessage).toBe(
-      formatPlayerTurnCommand(2, 'Bob', { value: 13, isSoft: false, isBlackjack: false }).commandMessage,
-    );
+    expect(result.commandMessage).toBe('Box 2 — your turn.');
   });
 
   it('Card View uses viewer person id not profile name for controls', () => {

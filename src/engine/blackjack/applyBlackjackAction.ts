@@ -9,6 +9,8 @@ import {
   splitBlackjackOnState,
   takeInsuranceOnState,
   declineInsuranceOnState,
+  takeInsuranceForPersonOnState,
+  declineInsuranceForPersonOnState,
   takeEvenMoneyOnState,
   waitForBlackjackPayoutOnState,
   startNextRoundOnState,
@@ -92,12 +94,20 @@ export function applyBlackjackActionToState(
     case 'split':
       next = splitBlackjackOnState(state);
       break;
-    case 'takeInsurance':
-      next = takeInsuranceOnState(state, ctx.payload.playerId as string);
+    case 'takeInsurance': {
+      const personId = ctx.payload.personId as string | undefined;
+      next = personId
+        ? takeInsuranceForPersonOnState(state, personId)
+        : takeInsuranceOnState(state, ctx.payload.playerId as string);
       break;
-    case 'declineInsurance':
-      next = declineInsuranceOnState(state, ctx.payload.playerId as string);
+    }
+    case 'declineInsurance': {
+      const personId = ctx.payload.personId as string | undefined;
+      next = personId
+        ? declineInsuranceForPersonOnState(state, personId)
+        : declineInsuranceOnState(state, ctx.payload.playerId as string);
       break;
+    }
     case 'takeEvenMoney':
       next = takeEvenMoneyOnState(state, ctx.payload.handKey as string);
       break;

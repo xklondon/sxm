@@ -9,9 +9,10 @@ import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
 import { getInsuranceEligibleBoxIds } from '../engine/blackjack/protocols/activeRules';
 import { isInsuranceBoxDecisionResolved } from '../engine/blackjack/insurance';
 import { getBlackjackProtocolForState } from '../engine/blackjack/protocolState';
-import { getInsuranceOfferForBox } from '../engine/blackjack/insurance';
+import { getInsuranceOfferForBox, canPersonDecideInsuranceForBox } from '../engine/blackjack/insurance';
 import {
   canControllerCallBox,
+  isSeatedPersonAtTable,
   resolveViewerPersonId,
   type ViewerIdentityHints,
 } from '../engine/session';
@@ -95,7 +96,13 @@ export function canShowPlayerDecisionControls(
   options: { cardRevealComplete: boolean; activeHandRevealComplete?: boolean },
 ): boolean {
   const round = state.blackjack;
-  if (!showPlayerActionControls(displayPhase, round)) {
+  const enginePhase = getBlackjackProtocolPhase(state);
+  const activeHandReady =
+    options.activeHandRevealComplete ?? options.cardRevealComplete;
+  const effectivePhase =
+    enginePhase === 'player' && activeHandReady ? 'player' : displayPhase;
+
+  if (!showPlayerActionControls(effectivePhase, round)) {
     return false;
   }
   const pacedReveal = isPacedCardReveal(state.blackjackFlowSettings.initialDealMode);
@@ -103,7 +110,7 @@ export function canShowPlayerDecisionControls(
     cardRevealComplete: options.cardRevealComplete,
     activeHandRevealComplete: options.activeHandRevealComplete ?? false,
   });
-  if (!revealReady || isDealingPhase(displayPhase)) {
+  if (!revealReady || isDealingPhase(effectivePhase)) {
     return false;
   }
   if (round?.status === 'initial-deal') {
@@ -424,39 +431,65 @@ export function getMyPendingInsurancePlayerIds(
   round: BlackjackRound,
   viewerPersonId: string | null,
 ): string[] {
-  return getPendingInsurancePlayerIds(state, round).filter((playerId) =>
-    canCallBoxForPlayer(state, playerId, viewerPersonId),
+  if (!viewerPersonId || !isSeatedPersonAtTable(state, viewerPersonId)) {
+    return [];
+  }
+  return getPendingInsurancePlayerIds(state, round).filter((boxId) =>
+    canPersonDecideInsuranceForBox(state, boxId, viewerPersonId),
   );
 }
 
 export interface InsuranceActionView {
-  playerId: string;
+  personId: string;
+  boxIds: string[];
   maxBet: number;
   canAfford: boolean;
+  slotNumbers: number[];
+  /** @deprecated First box id — prefer boxIds */
+  playerId: string;
+  /** @deprecated First slot — prefer slotNumbers */
   slotNumber: number | undefined;
 }
 
-/** Insurance buttons for boxes the local controller may act on. */
+/** One insurance decision per viewer covering all their pending eligible boxes. */
 export function getInsuranceActionsForController(
   state: GameState,
   round: BlackjackRound,
   viewerPersonId: string | null,
 ): InsuranceActionView[] {
+  if (!viewerPersonId) {
+    return [];
+  }
   const protocol = getBlackjackProtocolForState(state);
-  return getMyPendingInsurancePlayerIds(state, round, viewerPersonId).flatMap((boxId) => {
-    const offer = getInsuranceOfferForBox(state, round, boxId, protocol);
-    if (!offer) {
-      return [];
-    }
-    return [
-      {
-        playerId: boxId,
-        maxBet: offer.maxBet,
-        canAfford: offer.canAfford,
-        slotNumber: state.session.boxSlotNumbers?.[boxId],
-      },
-    ];
-  });
+  const pendingBoxIds = getMyPendingInsurancePlayerIds(state, round, viewerPersonId);
+  const offers = pendingBoxIds
+    .map((boxId) => ({
+      boxId,
+      offer: getInsuranceOfferForBox(state, round, boxId, protocol),
+    }))
+    .filter((entry): entry is { boxId: string; offer: NonNullable<typeof entry.offer> } =>
+      Boolean(entry.offer),
+    );
+  if (offers.length === 0) {
+    return [];
+  }
+  const slotNumbers = offers
+    .map(({ boxId }) => state.session.boxSlotNumbers?.[boxId])
+    .filter((n): n is number => typeof n === 'number');
+  const maxBet = offers.reduce((sum, { offer }) => sum + offer.maxBet, 0);
+  const canAfford = offers.every(({ offer }) => offer.canAfford);
+  const boxIds = offers.map(({ boxId }) => boxId);
+  return [
+    {
+      personId: viewerPersonId,
+      boxIds,
+      maxBet,
+      canAfford,
+      slotNumbers,
+      playerId: boxIds[0]!,
+      slotNumber: slotNumbers[0],
+    },
+  ];
 }
 
 /** Next insurance decision for this controller (Card View shows one box at a time). */

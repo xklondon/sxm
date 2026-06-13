@@ -12,6 +12,7 @@ import {
   tableAfterStartPlaying,
   boxPlayerId,
   findCardId,
+  withInstantInitialDeal,
 } from '../engine/blackjack/sanity/fixtures';
 import { claimBoxSlot } from '../engine/session';
 import { blackjackHandKey } from '../engine/blackjack';
@@ -53,7 +54,7 @@ function playingState(): GameState {
   const deck = state.deck!;
   const box1 = boxPlayerId(state, 1)!;
   const k1 = blackjackHandKey(box1, 0);
-  return {
+  return withInstantInitialDeal({
     ...state,
     selectedSeatId: box1,
     blackjack: {
@@ -72,7 +73,7 @@ function playingState(): GameState {
         },
       },
     },
-  };
+  });
 }
 
 function renderCardPanel(state: GameState): string {
@@ -161,9 +162,11 @@ describe('Card View polish guards', () => {
   it('shared arc player boxes use the same mini-hand shell as Full Table', () => {
     const html = renderCardPanel(playingState());
     const slot = arcBoxSlot(html, 1);
+    const heroZone = html.split('bj-cards-area--hero')[1]?.split('bj-table-zone--actions')[0] ?? '';
     expect(slot).toContain(TABLE_UX.fullArcBox);
     expect(slot).toContain('bj-phone-view__mini-hand-head');
-    expect(slot).toContain('bj-box--turn');
+    expect(heroZone).toContain('bj-phone-view__box-value--active-turn');
+    expect(slot).not.toContain('bj-box--turn');
   });
 
   it('renders stake chips under shared arc player box tile', () => {

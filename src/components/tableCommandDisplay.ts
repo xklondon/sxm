@@ -97,7 +97,7 @@ function formatBankHandPhrase(state: GameState): string {
 /** Canonical player-turn lines — strict format, no sentimental copy. */
 export function formatPlayerTurnCommand(
   slotNum: number | undefined,
-  callerName: string,
+  _callerName: string,
   handValue: { value: number; isSoft: boolean; isBlackjack: boolean },
   options?: {
     handIndex?: number;
@@ -147,7 +147,7 @@ export function formatPlayerTurnCommand(
   }
 
   return {
-    commandMessage: `${boxLabel}, ${callerName}, your turn.`,
+    commandMessage: `${boxLabel} — your turn.`,
     commandLines: lines,
   };
 }
@@ -162,7 +162,7 @@ export function formatCallerTurnMessage(
   if (handValue) {
     return formatPlayerTurnCommand(slotNum, callerName, handValue, options).commandMessage ?? '';
   }
-  return `Box ${slotNum ?? '?'}, ${callerName}, your turn.`;
+  return `Box ${slotNum ?? '?'} — your turn.`;
 }
 
 /** Gold command-area hints (split/double) vs green generic turn lines. */
@@ -338,8 +338,12 @@ export function buildBlackjackCommandText(params: {
       };
     }
     const first = actions[0]!;
+    const boxLabel =
+      first.slotNumbers.length > 1
+        ? `Boxes ${first.slotNumbers.join(' & ')}`
+        : `Box ${first.slotNumber ?? '?'}`;
     return {
-      commandMessage: `Box ${first.slotNumber ?? '?'} — your insurance call.`,
+      commandMessage: `${boxLabel} — your insurance call.`,
       commandLines: ['Insurance pays 2:1 when the dealer has blackjack.'],
     };
   }

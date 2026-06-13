@@ -49,9 +49,9 @@ describe('blackjack four visual fixes', () => {
   });
 
   it('places box value above the player box frame with reserved band height', () => {
-    expect(PANEL_SRC).toContain('boxValueSpanClassName');
+    expect(PANEL_SRC).toContain('boxStakeLabelClassName');
     expect(PANEL_SRC).toMatch(
-      /bj-arc__slot--owned[\s\S]*boxValueSpanClassName[\s\S]*TABLE_UX\.fullArcBox/,
+      /bj-arc__slot--owned[\s\S]*boxStakeLabelClassName[\s\S]*TABLE_UX\.fullArcBox/,
     );
     expect(SHARED_CSS).toContain('--bj-box-value-band-height');
     expect(SHARED_CSS).toMatch(

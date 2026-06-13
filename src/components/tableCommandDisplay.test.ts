@@ -75,7 +75,7 @@ describe('buildBlackjackCommandText', () => {
       roundSummaryLines: [],
       controllerName: 'Alice',
     });
-    expect(result.commandMessage).toBe('Box 2, Alice, your turn.');
+    expect(result.commandMessage).toBe('Box 2 — your turn.');
     expect(result.commandLines.some((line) => /Bank has/.test(line))).toBe(true);
     expect(result.commandLines.some((line) => /^Options:/.test(line))).toBe(true);
   });
@@ -123,7 +123,7 @@ describe('buildBlackjackCommandText', () => {
       allowSplit: false,
       allowDouble: false,
     });
-    expect(result.commandMessage).toBe('Box 3, Kji, your turn.');
+    expect(result.commandMessage).toBe('Box 3 — your turn.');
     expect(result.commandLines.some((line) => /against your soft 17/.test(line))).toBe(true);
   });
 });

@@ -2,7 +2,11 @@ import type { GameState } from '../../types';
 import type { Deck } from '../../types/deck';
 import type { Ledger } from '../../types/ledger';
 import type { GameSession } from '../../types/session';
-import { getCallerPersonIdForBox } from '../session/playerAssignment';
+import { getCallerPersonIdForBox, isSinglePlayerTable } from '../session/playerAssignment';
+import {
+  getStakeContributorPersonIds,
+  isBoxExposureAttributedToPerson,
+} from '../session/playerCommittedExposure';
 import type { Player } from '../../types/player';
 import type { BlackjackRound } from '../../types/blackjack';
 import type { BlackjackProtocol } from './protocols/types';
@@ -15,7 +19,6 @@ import { handKeysWithConfirmedBets, syncPlayerBetsFromRound } from './helpers';
 import { parseBlackjackHandKey } from './handKeys';
 import {
   getAvailableChipsForBankrollOwner,
-  resolveBankrollOwnerIdForBox,
 } from '../session/bankroll';
 import { findNextActingHand } from './virtual';
 import { syncActivePlayerId } from './helpers';
@@ -92,6 +95,55 @@ export function getInsuranceHandKeyForBox(
   );
 }
 
+/**
+ * Person who may accept/decline insurance on this box and pays from their bankroll.
+ * Sole staker owns the decision; shared boxes fall back to the box caller.
+ */
+export function getInsuranceDecisionPersonIdForBox(
+  state: GameState,
+  boxPlayerId: string,
+): string | null {
+  const contributors = getStakeContributorPersonIds(state, boxPlayerId);
+  if (contributors.length === 1) {
+    return contributors[0]!;
+  }
+  if (contributors.length > 1) {
+    return getCallerPersonIdForBox(state, boxPlayerId);
+  }
+  return getCallerPersonIdForBox(state, boxPlayerId);
+}
+
+/** True when this seated person must decide insurance for the box. */
+export function canPersonDecideInsuranceForBox(
+  state: GameState,
+  boxPlayerId: string,
+  personId: string,
+): boolean {
+  if (!isBoxExposureAttributedToPerson(state, boxPlayerId, personId)) {
+    return false;
+  }
+  if (isSinglePlayerTable(state)) {
+    return true;
+  }
+  return getInsuranceDecisionPersonIdForBox(state, boxPlayerId) === personId;
+}
+
+/** Pending eligible boxes this person must still accept or decline. */
+export function getPendingInsuranceBoxIdsForPerson(
+  state: GameState,
+  round: BlackjackRound,
+  personId: string,
+  protocol?: BlackjackProtocol,
+): string[] {
+  const resolvedProtocol = protocol ?? getBlackjackProtocolOrDefault();
+  const eligible = getInsuranceEligibleBoxIds(state.session, round, resolvedProtocol);
+  return eligible.filter(
+    (boxId) =>
+      !isInsuranceBoxDecisionResolved(state, round, resolvedProtocol, boxId) &&
+      canPersonDecideInsuranceForBox(state, boxId, personId),
+  );
+}
+
 export function canAffordInsuranceForBox(
   state: GameState,
   round: BlackjackRound,
@@ -106,10 +158,10 @@ export function canAffordInsuranceForBox(
   if (maxBet <= 0) {
     return false;
   }
-  if (!getCallerPersonIdForBox(state, boxId)) {
+  const bankrollOwnerId = getInsuranceDecisionPersonIdForBox(state, boxId);
+  if (!bankrollOwnerId) {
     return false;
   }
-  const bankrollOwnerId = resolveBankrollOwnerIdForBox(state, boxId);
   return getAvailableChipsForBankrollOwner(state, bankrollOwnerId) >= maxBet;
 }
 
@@ -134,7 +186,11 @@ export function isInsuranceBoxDecisionResolved(
   if ((round.insuranceBets?.[boxId] ?? 0) > 0) {
     return true;
   }
-  if (!getCallerPersonIdForBox(state, boxId)) {
+  const decisionPersonId = getInsuranceDecisionPersonIdForBox(state, boxId);
+  if (!decisionPersonId) {
+    return true;
+  }
+  if (!canAffordInsuranceForBox(state, round, boxId)) {
     return true;
   }
   return false;
@@ -195,7 +251,7 @@ export function getInsuranceOfferForBox(
   if (maxBet <= 0) {
     return null;
   }
-  if (!getCallerPersonIdForBox(state, boxId)) {
+  if (!getInsuranceDecisionPersonIdForBox(state, boxId)) {
     return null;
   }
   return {
@@ -213,6 +269,7 @@ export function takeInsuranceBet(
   playerId: string,
   bankrollCtx: BankrollContext,
   protocol?: BlackjackProtocol,
+  bankrollOwnerIdOverride?: string,
 ): {
   session: GameSession;
   players: Record<string, Player>;
@@ -233,7 +290,11 @@ export function takeInsuranceBet(
   if (maxBet <= 0) {
     throw new Error('Bet too small for insurance');
   }
-  const bankrollOwnerId = resolveBankrollOwnerId(bankrollCtx, boxId);
+  const bankrollOwnerId =
+    bankrollOwnerIdOverride ?? resolveBankrollOwnerId(bankrollCtx, boxId);
+  if (!bankrollOwnerId) {
+    throw new Error('No insurance decision owner for this box');
+  }
   const balance = derivePlayerBalanceFromLedger(bankrollOwnerId, ledger);
   if (balance < maxBet) {
     throw new Error('Not enough chips for insurance');

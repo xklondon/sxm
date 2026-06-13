@@ -1,4 +1,4 @@
-import { shuffleToStartOnState, completeStepwiseInitialDealIfNeeded, dealCardsButtonOnState, hitBlackjackOnState, standBlackjackOnState, doubleDownBlackjackOnState, splitBlackjackOnState, takeInsuranceOnState, declineInsuranceOnState, takeEvenMoneyOnState, waitForBlackjackPayoutOnState, startNextRoundOnState, processPlayFlowAutoStands, syncBankPhaseOnState, resolveBankTurnAuto, } from './gameState';
+import { shuffleToStartOnState, completeStepwiseInitialDealIfNeeded, dealCardsButtonOnState, hitBlackjackOnState, standBlackjackOnState, doubleDownBlackjackOnState, splitBlackjackOnState, takeInsuranceOnState, declineInsuranceOnState, takeInsuranceForPersonOnState, declineInsuranceForPersonOnState, takeEvenMoneyOnState, waitForBlackjackPayoutOnState, startNextRoundOnState, processPlayFlowAutoStands, syncBankPhaseOnState, resolveBankTurnAuto, } from './gameState';
 /**
  * Canonical blackjack gameplay actions. These carry rule behavior (phase
  * transitions, dealing, hitting, auto-stand, insurance, settlement, next round)
@@ -50,12 +50,20 @@ export function applyBlackjackActionToState(state, action, ctx) {
         case 'split':
             next = splitBlackjackOnState(state);
             break;
-        case 'takeInsurance':
-            next = takeInsuranceOnState(state, ctx.payload.playerId);
+        case 'takeInsurance': {
+            const personId = ctx.payload.personId;
+            next = personId
+                ? takeInsuranceForPersonOnState(state, personId)
+                : takeInsuranceOnState(state, ctx.payload.playerId);
             break;
-        case 'declineInsurance':
-            next = declineInsuranceOnState(state, ctx.payload.playerId);
+        }
+        case 'declineInsurance': {
+            const personId = ctx.payload.personId;
+            next = personId
+                ? declineInsuranceForPersonOnState(state, personId)
+                : declineInsuranceOnState(state, ctx.payload.playerId);
             break;
+        }
         case 'takeEvenMoney':
             next = takeEvenMoneyOnState(state, ctx.payload.handKey);
             break;

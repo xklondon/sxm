@@ -1,11 +1,12 @@
-import { getCallerPersonIdForBox } from '../session/playerAssignment';
+import { getCallerPersonIdForBox, isSinglePlayerTable } from '../session/playerAssignment';
+import { getStakeContributorPersonIds, isBoxExposureAttributedToPerson, } from '../session/playerCommittedExposure';
 import { getCardById } from '../deck/deck';
 import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 import { insuranceBetMax, insuranceWinPayout } from './rules';
 import { getBlackjackHandValue, cardsFromIds } from './hand';
 import { handKeysWithConfirmedBets, syncPlayerBetsFromRound } from './helpers';
 import { parseBlackjackHandKey } from './handKeys';
-import { getAvailableChipsForBankrollOwner, resolveBankrollOwnerIdForBox, } from '../session/bankroll';
+import { getAvailableChipsForBankrollOwner, } from '../session/bankroll';
 import { findNextActingHand } from './virtual';
 import { syncActivePlayerId } from './helpers';
 import { resolveBankrollOwnerId } from '../session/bankroll';
@@ -52,6 +53,31 @@ export function activateInsuranceOfferIfNeeded(round, deck, settings, session, p
 export function getInsuranceHandKeyForBox(session, round, boxId) {
     return (handKeysWithConfirmedBets(session, round).find((handKey) => parseBlackjackHandKey(handKey).playerId === boxId) ?? null);
 }
+export function getInsuranceDecisionPersonIdForBox(state, boxPlayerId) {
+    const contributors = getStakeContributorPersonIds(state, boxPlayerId);
+    if (contributors.length === 1) {
+        return contributors[0];
+    }
+    if (contributors.length > 1) {
+        return getCallerPersonIdForBox(state, boxPlayerId);
+    }
+    return getCallerPersonIdForBox(state, boxPlayerId);
+}
+export function canPersonDecideInsuranceForBox(state, boxPlayerId, personId) {
+    if (!isBoxExposureAttributedToPerson(state, boxPlayerId, personId)) {
+        return false;
+    }
+    if (isSinglePlayerTable(state)) {
+        return true;
+    }
+    return getInsuranceDecisionPersonIdForBox(state, boxPlayerId) === personId;
+}
+export function getPendingInsuranceBoxIdsForPerson(state, round, personId, protocol) {
+    const resolvedProtocol = protocol ?? getBlackjackProtocolOrDefault();
+    const eligible = getInsuranceEligibleBoxIds(state.session, round, resolvedProtocol);
+    return eligible.filter((boxId) => !isInsuranceBoxDecisionResolved(state, round, resolvedProtocol, boxId) &&
+        canPersonDecideInsuranceForBox(state, boxId, personId));
+}
 export function canAffordInsuranceForBox(state, round, boxId) {
     const handKey = getInsuranceHandKeyForBox(state.session, round, boxId);
     const hand = handKey ? round.playerHands[handKey] : undefined;
@@ -62,10 +88,10 @@ export function canAffordInsuranceForBox(state, round, boxId) {
     if (maxBet <= 0) {
         return false;
     }
-    if (!getCallerPersonIdForBox(state, boxId)) {
+    const bankrollOwnerId = getInsuranceDecisionPersonIdForBox(state, boxId);
+    if (!bankrollOwnerId) {
         return false;
     }
-    const bankrollOwnerId = resolveBankrollOwnerIdForBox(state, boxId);
     return getAvailableChipsForBankrollOwner(state, bankrollOwnerId) >= maxBet;
 }
 /** Box insurance complete: taken, declined, ineligible, no caller, or unfunded (auto-skip). */
@@ -84,7 +110,7 @@ export function isInsuranceBoxDecisionResolved(state, round, protocol, boxId) {
     if ((round.insuranceBets?.[boxId] ?? 0) > 0) {
         return true;
     }
-    if (!getCallerPersonIdForBox(state, boxId)) {
+    if (!getInsuranceDecisionPersonIdForBox(state, boxId)) {
         return true;
     }
     if (!canAffordInsuranceForBox(state, round, boxId)) {
@@ -125,7 +151,7 @@ export function getInsuranceOfferForBox(state, round, boxId, protocol) {
     if (maxBet <= 0) {
         return null;
     }
-    if (!getCallerPersonIdForBox(state, boxId)) {
+    if (!getInsuranceDecisionPersonIdForBox(state, boxId)) {
         return null;
     }
     return {
@@ -134,7 +160,7 @@ export function getInsuranceOfferForBox(state, round, boxId, protocol) {
         canAfford: canAffordInsuranceForBox(state, round, boxId),
     };
 }
-export function takeInsuranceBet(session, players, ledger, round, playerId, bankrollCtx, protocol) {
+export function takeInsuranceBet(session, players, ledger, round, playerId, bankrollCtx, protocol, bankrollOwnerIdOverride) {
     if (!round.insuranceOfferPending) {
         throw new Error('Insurance is not offered');
     }
@@ -148,7 +174,7 @@ export function takeInsuranceBet(session, players, ledger, round, playerId, bank
     if (maxBet <= 0) {
         throw new Error('Bet too small for insurance');
     }
-    const bankrollOwnerId = resolveBankrollOwnerId(bankrollCtx, boxId);
+    const bankrollOwnerId = bankrollOwnerIdOverride ?? resolveBankrollOwnerId(bankrollCtx, boxId);
     const balance = derivePlayerBalanceFromLedger(bankrollOwnerId, ledger);
     if (balance < maxBet) {
         throw new Error('Not enough chips for insurance');

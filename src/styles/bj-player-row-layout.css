@@ -52,6 +52,26 @@
 }
 
 @media (min-width: 721px) {
+  .bj-view-full-desktop .bj-player-boxes-wrap {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+    justify-content: stretch;
+    justify-items: center;
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
+    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 721px) {
   .bj-table-layout-shell .bj-table-zone--cards .bj-table-slot-row.bj-arc--cards {
     display: grid;
     overflow: visible;

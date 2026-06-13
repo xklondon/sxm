@@ -386,6 +386,19 @@ Scoped under view root classes (`tableViewContract.ts`):
 
 **View mode is client-local** — never sourced from server `gameState` (socket updates must not flip Card View back to Full Table).
 
+### Blackjack stability contracts
+
+Protected boundaries so protocol, layout, dealing, and accounting cannot drift apart. Full detail: **`docs/BLACKJACK_STABILITY_CONTRACTS.md`**.
+
+| Boundary | Module | Rule |
+|----------|--------|------|
+| Protocol | `blackjackActionContract.ts` | Views use `resolveViewerActionPermission` + `resolvePlayerHandActionOptions`; no direct engine legality imports. |
+| Layout | `tableViewContract.ts`, `blackjackLayoutContract.ts` | CSS scoped under `bj-view-*` roots; card/box rows share `displaySlots`. |
+| Dealing | `useSequentialCardReveal`, `blackjackDealingContract.ts` | One reveal queue; values via `getDisplayedHandValue`; controls gated until reveal ready. |
+| Accounting | `blackjackAccountingDisplay.ts`, `playerCommittedExposure.ts` | Tray + This Table use `resolvePersonDisplayBalances` / `resolveViewerTrayAvailable`. |
+
+Contract tests: `blackjackStabilityContracts.test.ts`, `dealingRoundRegression.test.ts`.
+
 ### Mobile invariants
 
 - Same canonical components as desktop (`BlackjackPanel`, `BlackjackCardView`, shared selectors)
@@ -407,7 +420,7 @@ Shake-to-roll optional. Primary action label: **Dice** (roll).
 
 **Player box stability:** Slot-row boxes reserve fixed stake (`--bj-full-table-stake-min-height`) and composition height so adding chips/tokens does not reflow box width or row height.
 
-**Active turn highlight:** Shared class `bj-box--turn` on the active player box in both Full Table and Card View (subtle `bj-turn-pulse` animation). Betting selection uses `bj-box--selected` + `bj-phone-view__bet-chip--pulse` only.
+**Active turn highlight:** Card-column / hero hand totals use circular `bj-phone-view__box-value--active-turn` only — one circled numeric value, no box border or rectangle frame. Stake labels above boxes do not use hand-total emphasis. Betting selection uses `bj-box--selected` + `bj-phone-view__bet-chip--pulse` only.
 
 **Card View layout:**
 
@@ -585,7 +598,7 @@ Enforced in `server/src/tables/authority.ts` before `applyTableAction`:
 | Betting | Phase `betting`, not locked; any seated member may place chips |
 | Player turns | Box owner for active `activeHandKey` only |
 | Host-only | shuffle, deal, nextRound, configureTable, resetTable, zilch host actions |
-| Insurance | Box caller for specific hand |
+| Insurance | Sole staker on a box (or box caller when multiple stakers); one person-scoped decision covers all their eligible boxes; `personId` payload online |
 | Zilch | `currentPlayerId === ctx.personId` |
 | assignChips | `canUserAssignChips` (table admin + owner rules) |
 | Personal ledger | Game ended, not already added |
@@ -629,6 +642,7 @@ before the work is considered complete. See `.cursorrules`.
 | Table setup | `src/components/TableStakePanel.tsx` |
 | Table play | `src/screens/TableScreen.tsx` |
 | BJ engine | `src/engine/blackjack/applyBlackjackAction.ts` |
+| BJ stability contracts | `docs/BLACKJACK_STABILITY_CONTRACTS.md`, `src/components/blackjackActionContract.ts` |
 | Zilch engine | `src/engine/zilch/` |
 | Hold'em engine | `src/engine/holdem/` |
 | Server actions | `server/src/tables/applyAction.ts`, `authority.ts` |

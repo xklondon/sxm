@@ -33,6 +33,16 @@ export function tableAfterStartPlaying(seatChips = 500, bankChips) {
     state = ensureTableOwnerPersonBankroll(state);
     return state;
 }
+/** Skip paced natural-deal empty visibility on first paint (SSR/tests, mid-round snapshots). */
+export function withInstantInitialDeal(state) {
+    return {
+        ...state,
+        blackjackFlowSettings: {
+            ...state.blackjackFlowSettings,
+            initialDealMode: 'instant',
+        },
+    };
+}
 export function baseTestTable() {
     return tableAfterStartPlaying(500);
 }

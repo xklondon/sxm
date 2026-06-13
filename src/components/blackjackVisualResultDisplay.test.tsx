@@ -64,7 +64,10 @@ function settledMultiBoxState(): GameState {
 
 describe('blackjack visual result display', () => {
   it('desktop net result uses compact net-result class', () => {
-    expect(PANEL_SRC).toContain('BOX_NET_RESULT');
+    expect(PANEL_SRC).toContain('boxStakeLabelClassName');
+    expect(readFileSync(join(process.cwd(), 'src/components/boxHandValueDisplay.ts'), 'utf8')).toContain(
+      'BOX_NET_RESULT',
+    );
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-arc--player-boxes \.bj-phone-view__box-value--net-result/,
     );
