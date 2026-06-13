@@ -149,6 +149,31 @@ export function buildGameOverSummary(state: GameState): {
   }
 
   if (!winnerId) {
+    if (
+      isChallengeTable(state) &&
+      isFractionalChallengeEnd(state, state.tableMeta.gameEndReason)
+    ) {
+      const message = buildChallengeBankBustEndMessage(state);
+      const participants = buildParticipantResults(state, null);
+      return {
+        message,
+        entry: participants.length
+          ? buildLedgerEntryFromParts(state, {
+              winnerId: null,
+              winnerName: 'Fractional result',
+              loserId: bankId,
+              loserName:
+                bankId && isChallengeTable(state)
+                  ? `${formatBankHolderLabel(state, bankId)} (Bank)`
+                  : 'Bank',
+              owedDescription: `Fractional settlement — ${wager}`,
+              participants,
+              roundCount,
+              wager,
+            })
+          : null,
+      };
+    }
     return { message: 'Game over.', entry: null };
   }
 

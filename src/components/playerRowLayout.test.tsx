@@ -122,6 +122,19 @@ describe('canonical player row layout engine', () => {
     );
   });
 
+  it('desktop card columns share player-box slot grid geometry', () => {
+    expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--cards[\s\S]*minmax\(0,\s*max-content\)/,
+    );
+    expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-slot-row--with-add\.bj-arc--cards[\s\S]*var\(--bj-table-slot-add-size\)/,
+    );
+    expect(DESKTOP_MIN_WIDTH_CSS).toMatch(/\.bj-table-slot-row__lead-spacer/);
+    expect(DESKTOP_MIN_WIDTH_CSS).not.toMatch(
+      /\.bj-table-slot-row\.bj-arc--cards[\s\S]*minmax\(0,\s*1fr\)/,
+    );
+  });
+
   it('mobile equal-column behavior is scoped to portrait media query only', () => {
     expect(MOBILE_PORTRAIT_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
@@ -211,7 +224,7 @@ describe('canonical player row layout engine', () => {
 
   it('uses same slot row class for Full Table cards arc', () => {
     expect(PANEL_SRC).toMatch(
-      /className=\{\['bj-table-slot-row',\s*'bj-arc',\s*'bj-arc--cards'/,
+      /className=\{\[[\s\S]*'bj-table-slot-row'[\s\S]*'bj-arc--cards'/,
     );
   });
 

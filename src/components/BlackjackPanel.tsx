@@ -552,13 +552,14 @@ export function BlackjackPanel({
 
   const showGameOverActions =
     gameEnded && !gameOverOverlayDismissed && !gameOverOverlayConfirmed;
+  const gameEndRevealReady = cardRevealComplete || gameEnded;
   const showGameOverOverlay =
     showGameOverActions &&
     deviceView === 'mobile' &&
-    cardRevealComplete &&
+    gameEndRevealReady &&
     gameOverDelayReady;
   const showGameOverDesktopPanel =
-    showGameOverActions && deviceView === 'desktop' && cardRevealComplete;
+    showGameOverActions && deviceView === 'desktop' && gameEndRevealReady;
 
   useEffect(() => {
     if (!gameEnded) {
@@ -598,7 +599,7 @@ export function BlackjackPanel({
       setGameOverDelayReady(false);
       return;
     }
-    if (!cardRevealComplete) {
+    if (!gameEndRevealReady) {
       setGameOverDelayReady(false);
       return;
     }
@@ -607,7 +608,7 @@ export function BlackjackPanel({
       MOBILE_GAME_OVER_OVERLAY_DELAY_MS,
     );
     return () => window.clearTimeout(timer);
-  }, [gameEnded, cardRevealComplete, gameState.session.id]);
+  }, [gameEnded, gameEndRevealReady, gameState.session.id]);
 
   function handleAddToPersonalLedger() {
     setError(null);
@@ -1029,6 +1030,7 @@ export function BlackjackPanel({
   }
 
   const inBetting = bettingOpen;
+  const showAddBoxLead = canAddVisibleBox && inBetting;
   const showBoxHandResultMarkers = shouldShowBoxHandResultMarkers({
     awaitingNextRound,
     protocolPhase,
@@ -1666,6 +1668,7 @@ export function BlackjackPanel({
         key={`cards-empty-${slotNumber}`}
         className="bj-arc__slot bj-arc__slot--card-column bj-arc__slot--card-empty"
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
+        data-box-slot={slotNumber}
         aria-hidden="true"
       />
     );
@@ -1878,7 +1881,6 @@ export function BlackjackPanel({
   }
 
   function renderPlayerBoxesArc() {
-    const showAddBox = canAddVisibleBox && inBetting;
     return (
       <div className="bj-player-boxes-wrap">
         <div
@@ -1887,13 +1889,13 @@ export function BlackjackPanel({
             'bj-arc',
             'bj-arc--player-boxes',
             visibleArcClass,
-            showAddBox ? 'bj-table-slot-row--with-add' : '',
+            showAddBoxLead ? 'bj-table-slot-row--with-add' : '',
           ]
             .filter(Boolean)
             .join(' ')}
           style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
         >
-          {showAddBox ? (
+          {showAddBoxLead ? (
             <button
               type="button"
               className="bj-table-slot-row__add bj-player-boxes-wrap__add"
@@ -2297,11 +2299,20 @@ export function BlackjackPanel({
             cardsArea={
               viewMode === 'full' ? (
                 <div
-                  className={['bj-table-slot-row', 'bj-arc', 'bj-arc--cards', visibleArcClass].join(
-                    ' ',
-                  )}
+                  className={[
+                    'bj-table-slot-row',
+                    'bj-arc',
+                    'bj-arc--cards',
+                    visibleArcClass,
+                    showAddBoxLead ? 'bj-table-slot-row--with-add' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                   style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
                 >
+                  {showAddBoxLead ? (
+                    <div className="bj-table-slot-row__lead-spacer" aria-hidden="true" />
+                  ) : null}
                   {displaySlots.map((slot) =>
                     slot.playerId
                       ? renderArcCardColumn(slot.playerId, slot.slotNumber)

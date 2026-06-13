@@ -125,11 +125,47 @@
     line-height: 1;
   }
 
+  /* Desktop Full Table — card columns share player-box row geometry (slot-aligned). */
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards {
+    width: max-content;
+    max-width: 100%;
+    margin-inline: auto;
+    justify-content: center;
+    justify-items: center;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, max-content));
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards {
+    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, max-content));
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards > .bj-arc__slot {
+    width: var(--bj-full-table-box-width);
+    max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+    align-self: center;
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards > .bj-table-slot-row__lead-spacer {
+    width: var(--bj-table-slot-add-size);
+    min-width: var(--bj-table-slot-add-size);
+    max-width: var(--bj-table-slot-add-size);
+    align-self: center;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-table-slot-row.bj-arc--cards {
+    flex: 0 0 auto;
+    align-self: center;
+    width: max-content;
+    max-width: 100%;
+    height: auto;
+    max-height: none;
+  }
+
   .bj-table-layout-shell .bj-table-zone--cards .bj-table-slot-row.bj-arc--cards {
     display: grid;
     overflow: visible;
     flex-wrap: nowrap;
-    justify-content: stretch;
+    justify-content: center;
     align-items: stretch;
   }
 }
@@ -185,6 +221,21 @@
   box-sizing: border-box;
   font-size: 0;
   line-height: 0;
+}
+
+.bj-table-slot-row__lead-spacer {
+  grid-column: 1;
+  width: var(--bj-table-slot-add-size);
+  min-width: var(--bj-table-slot-add-size);
+  max-width: var(--bj-table-slot-add-size);
+  height: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  visibility: hidden;
+  pointer-events: none;
+  box-sizing: border-box;
 }
 
 .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,

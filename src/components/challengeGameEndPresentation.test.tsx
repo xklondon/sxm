@@ -3,14 +3,21 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, act } from '@testing-library/react';
 
 import type { GameState } from '../types';
 import { GameOverActionOverlay } from './GameOverActionOverlay';
 import { BlackjackPanel } from './BlackjackPanel';
 import { tableWithClaimedBox } from '../engine/blackjack/sanity/fixtures';
+import {
+  buildGameEndIouHandoff,
+  canOfferGameEndIou,
+} from '../engine/scoreLedger/gameEndIou';
+import { MOBILE_GAME_OVER_OVERLAY_DELAY_MS } from './roundSummaryOverlayTiming';
 
 const noop = () => {};
+const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 
 vi.mock('../storage/profileStorage', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../storage/profileStorage')>();
@@ -37,6 +44,10 @@ beforeAll(() => {
         dispatchEvent: () => false,
       };
     },
+    addEventListener: noop,
+    removeEventListener: noop,
+    setTimeout: (...args: Parameters<typeof setTimeout>) => setTimeout(...args),
+    clearTimeout: (...args: Parameters<typeof clearTimeout>) => clearTimeout(...args),
     localStorage: {
       getItem: () => null,
       setItem: () => {},
@@ -85,10 +96,59 @@ function endedChallengeState(): GameState {
   };
 }
 
+function bankWinsChallengeState(): GameState {
+  const base = endedChallengeState();
+  return {
+    ...base,
+    tableMeta: {
+      ...base.tableMeta,
+      winnerId: base.session.bankPlayerId!,
+      gameEndReason: 'bank-has-all-chips',
+    },
+  };
+}
+
+function fractionalBankBustEndedState(): GameState {
+  const base = endedChallengeState();
+  return {
+    ...base,
+    tableMeta: {
+      ...base.tableMeta,
+      winnerId: null,
+      gameEndReason: 'bank-bust',
+      settlementMode: 'fractional',
+      bankBustSettlementMode: 'winner-takes-all',
+    },
+  };
+}
+
+function practiceEndedState(): GameState {
+  const base = endedChallengeState();
+  return {
+    ...base,
+    tableMeta: {
+      ...base.tableMeta,
+      tableMode: 'practice',
+    },
+  };
+}
+
+function instantDeal(state: GameState): GameState {
+  return {
+    ...state,
+    blackjackFlowSettings: {
+      ...state.blackjackFlowSettings,
+      initialDealMode: 'instant',
+    },
+  };
+}
+
 describe('challenge game end presentation', () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+    vi.useRealTimers();
+    simulatedWidth = 1280;
   });
 
   it('keeps IOU toggle below ledger action buttons', () => {
@@ -97,6 +157,69 @@ describe('challenge game end presentation', () => {
     const toggleIdx = src.indexOf('bj-game-over__iou-toggle');
     expect(actionsIdx).toBeGreaterThan(-1);
     expect(toggleIdx).toBeGreaterThan(actionsIdx);
+  });
+
+  it('renders desktop game summary when player bank wins', () => {
+    const html = renderToStaticMarkup(
+      <BlackjackPanel gameState={instantDeal(bankWinsChallengeState())} onGameStateChange={noop} />,
+    );
+    expect(html).toContain('Game Summary');
+    expect(html).toContain('bj-game-over--inline');
+    expect(html).toContain('Add to Ledger');
+  });
+
+  it('renders desktop game summary when non-bank player wins', () => {
+    const html = renderToStaticMarkup(
+      <BlackjackPanel gameState={instantDeal(endedChallengeState())} onGameStateChange={noop} />,
+    );
+    expect(html).toContain('Game Summary');
+    expect(html).toContain('Add to Ledger');
+  });
+
+  it('renders desktop game summary for fractional bank-bust with null winnerId', () => {
+    const state = fractionalBankBustEndedState();
+    expect(canOfferGameEndIou(state, 'alice@example.com')).toBe(false);
+    const html = renderToStaticMarkup(
+      <BlackjackPanel gameState={instantDeal(state)} onGameStateChange={noop} />,
+    );
+    expect(html).toContain('Game Summary');
+    expect(html).toContain('Add to Ledger');
+    expect(html).toContain('disabled');
+  });
+
+  it('renders practice ended game with Add to Ledger option', () => {
+    const html = renderToStaticMarkup(
+      <BlackjackPanel gameState={instantDeal(practiceEndedState())} onGameStateChange={noop} />,
+    );
+    expect(html).toContain('Add to Ledger');
+  });
+
+  it('shows mobile game-over overlay after reveal delay elapses', async () => {
+    vi.useFakeTimers();
+    simulatedWidth = 390;
+    render(<BlackjackPanel gameState={instantDeal(endedChallengeState())} onGameStateChange={noop} />);
+    expect(screen.queryByRole('dialog', { name: /Game Over/i })).toBeNull();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(MOBILE_GAME_OVER_OVERLAY_DELAY_MS);
+    });
+    expect(screen.getByRole('dialog', { name: /Game Over/i })).toBeTruthy();
+  });
+
+  it('enables IOU toggle only when buildGameEndIouHandoff resolves a valid handoff', () => {
+    const state = endedChallengeState();
+    expect(buildGameEndIouHandoff(state, 'alice@example.com')).not.toBeNull();
+    expect(buildGameEndIouHandoff(fractionalBankBustEndedState(), 'alice@example.com')).toBeNull();
+  });
+
+  it('aligns desktop card columns to player boxes via shared slot row geometry', () => {
+    expect(PANEL_SRC).toContain('bj-table-slot-row__lead-spacer');
+    expect(PANEL_SRC).toContain('showAddBoxLead');
+    expect(PANEL_SRC).toMatch(
+      /displaySlots\.map\(\(slot\)[\s\S]*renderArcCardColumn\(slot\.playerId, slot\.slotNumber\)/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--cards[\s\S]*minmax\(0,\s*max-content\)/,
+    );
   });
 
   it('renders desktop game summary after ended state with instant dealing', () => {

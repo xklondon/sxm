@@ -249,8 +249,9 @@ describe('game end presentation', () => {
 
   it('waits for reveal completion before desktop game summary panel', () => {
     expect(PANEL_SRC).toMatch(
-      /showGameOverDesktopPanel[\s\S]*cardRevealComplete/,
+      /showGameOverDesktopPanel[\s\S]*gameEndRevealReady/,
     );
+    expect(PANEL_SRC).toMatch(/gameEndRevealReady = cardRevealComplete \|\| gameEnded/);
   });
 
   it('renders desktop game summary after ended state with instant dealing', () => {
