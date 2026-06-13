@@ -71,6 +71,7 @@ export function TableInfoBar({
     >
       <span
         className={[
+          'bj-dealer-hand-value',
           boxValueSpanClassName(Boolean(bankValue), false),
           TABLE_UX.cardColumnValueAbove,
           BOX_CARD_VALUE,

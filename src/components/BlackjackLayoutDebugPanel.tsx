@@ -61,7 +61,7 @@ export function BlackjackLayoutDebugPanel({
   }
 
   const targetLine = chipTargetPreview?.ok
-    ? `${chipTargetPreview.target.kind}:${chipTargetPreview.target.kind === 'box' ? chipTargetPreview.target.boxId : chipTargetPreview.target.slotNumber} (${chipTargetPreview.source})`
+    ? `slot:${chipTargetPreview.slotNumber} (${chipTargetPreview.source})`
     : chipTargetPreview
       ? `null (${chipTargetPreview.reason})`
       : 'n/a';

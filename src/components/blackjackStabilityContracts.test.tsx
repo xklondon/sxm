@@ -162,7 +162,7 @@ describe('stability contracts — layout boundary', () => {
         /displaySlots\.map\(\(slot\)[\s\S]*renderArcCardColumn\(slot\.playerId, slot\.slotNumber\)/,
       );
       expect(src).toMatch(
-        /displaySlots\.map\(\(slot\)[\s\S]*renderArcBoxSlot\(slot\.playerId, slot\.slotNumber\)/,
+        /displaySlots\.map\(\(slot\)[\s\S]*renderArcSlot\(slot\.slotNumber\)/,
       );
     }
   });

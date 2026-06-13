@@ -14,7 +14,6 @@ import {
   type LocalSelectedChipTarget,
 } from './localChipTargetSelection';
 
-/** Mirrors BlackjackPanel reconcile effect (betting phase). */
 function simulatePanelReconcile(
   local: LocalSelectedChipTarget,
   gameState: GameState,
@@ -23,14 +22,12 @@ function simulatePanelReconcile(
 ): LocalSelectedChipTarget {
   let next = reconcileLocalChipTarget(local, gameState, online);
   if (bettingOpen && local.hasUserSelected && local.target) {
-    if (!next.target) {
-      next = { ...local, hasUserSelected: true };
-    }
-  } else if (next.hasUserSelected && next.target) {
-    next = affirmChipTargetAfterPlacement(next, gameState, next.target, online);
-  }
-  if (next.hasUserSelected && !next.target && local.target) {
-    return { ...next, target: local.target };
+    next = affirmChipTargetAfterPlacement(
+      { ...local, hasUserSelected: true },
+      gameState,
+      local.target.slotNumber,
+      online,
+    );
   }
   return next;
 }
@@ -39,10 +36,7 @@ function simulateJoinAndRepeatChips(slotNumber: 2 | 3 | 4, amounts: [number, num
   let state = tableAfterStartPlaying(500);
   state = claimBoxSlot(state, 1);
   const personId = resolveControllerPersonId(state, 'Alice')!;
-  let ref = selectLocalChipTarget(createEmptyLocalChipTarget(), {
-    kind: 'slot',
-    slotNumber,
-  });
+  let ref = selectLocalChipTarget(createEmptyLocalChipTarget(), slotNumber);
   let reactState = createEmptyLocalChipTarget();
 
   for (const amount of amounts) {
@@ -58,16 +52,12 @@ function simulateJoinAndRepeatChips(slotNumber: 2 | 3 | 4, amounts: [number, num
     if (!result.ok) {
       return { state, ref, personId, slotNumber };
     }
-    const target = result.target;
-    if (target.kind === 'slot') {
-      state = claimBoxSlot(state, target.slotNumber);
-      const boxId = boxPlayerId(state, target.slotNumber)!;
-      state = addChipToBoxStake(state, boxId, amount as 5, personId);
-      ref = affirmChipTargetAfterPlacement(ref, state, target, false);
-    } else {
-      state = addChipToBoxStake(state, target.boxId, amount as 5, personId);
-      ref = affirmChipTargetAfterPlacement(ref, state, target, false);
+    if (!state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber)?.playerId) {
+      state = claimBoxSlot(state, slotNumber);
     }
+    const boxId = boxPlayerId(state, slotNumber)!;
+    state = addChipToBoxStake(state, boxId, amount as 5, personId);
+    ref = affirmChipTargetAfterPlacement(ref, state, slotNumber, false);
     ref = simulatePanelReconcile(ref, state, false, true);
     reactState = ref;
   }
@@ -108,14 +98,11 @@ describe('repeat chip stacking — empty slot join flow', () => {
     state = claimBoxSlot(state, 2);
     const box2 = boxPlayerId(state, 2)!;
 
-    const ref = selectLocalChipTarget(createEmptyLocalChipTarget(), {
-      kind: 'box',
-      boxId: box2,
-    });
+    const ref = selectLocalChipTarget(createEmptyLocalChipTarget(), 2);
     const staleReact = createEmptyLocalChipTarget();
 
     state = addChipToBoxStake(state, box2, 5, personId);
-    const affirmed = affirmChipTargetAfterPlacement(ref, state, { kind: 'box', boxId: box2 }, false);
+    const affirmed = affirmChipTargetAfterPlacement(ref, state, 2, false);
 
     const second = getCurrentChipTargetForBetting({
       ref: affirmed,
@@ -127,8 +114,9 @@ describe('repeat chip stacking — empty slot join flow', () => {
     });
     expect(second.ok).toBe(true);
     if (second.ok) {
-      expect(second.target).toEqual({ kind: 'box', boxId: box2 });
-      expect(second.source).toBe('ref');
+      expect(second.slotNumber).toBe(2);
     }
+    state = addChipToBoxStake(state, box2, 5, personId);
+    expect(getStakeForBox(state, box2)).toBe(10);
   });
 });

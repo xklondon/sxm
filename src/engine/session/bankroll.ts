@@ -8,6 +8,13 @@ import {
   getOpenStakeExposureForPerson,
   getTotalCommittedExposureForPerson,
 } from './playerCommittedExposure';
+import {
+  getSharedPotAvailableChips,
+  getSharedPotBettingExposure,
+  getSharedPotLedgerBalance,
+  resolveCanonicalBankrollOwnerId,
+  usesSharedBankPlayerPot,
+} from './sharedBankroll';
 
 export interface BankrollContext {
   players: Record<string, Player>;
@@ -42,7 +49,8 @@ export function resolveBankrollOwnerIdForBox(
   state: GameState,
   boxPlayerId: string,
 ): string {
-  return resolveBankrollOwnerId(bankrollContextFromState(state), boxPlayerId);
+  const raw = resolveBankrollOwnerId(bankrollContextFromState(state), boxPlayerId);
+  return resolveCanonicalBankrollOwnerId(state, raw);
 }
 
 export function resolveBankrollOwnerId(
@@ -147,6 +155,9 @@ export function getTotalBettingExposureForBankrollOwner(
   state: GameState,
   bankrollOwnerId: string,
 ): number {
+  if (usesSharedBankPlayerPot(state, bankrollOwnerId)) {
+    return getSharedPotBettingExposure(state, bankrollOwnerId);
+  }
   return getTotalCommittedExposureForPerson(state, bankrollOwnerId);
 }
 
@@ -154,6 +165,9 @@ export function getLedgerBalanceForBankrollOwner(
   state: GameState,
   bankrollOwnerId: string,
 ): number {
+  if (usesSharedBankPlayerPot(state, bankrollOwnerId)) {
+    return getSharedPotLedgerBalance(state, bankrollOwnerId);
+  }
   return derivePlayerBalanceFromLedger(bankrollOwnerId, state.ledger);
 }
 
@@ -161,6 +175,9 @@ export function getAvailableChipsForBankrollOwner(
   state: GameState,
   bankrollOwnerId: string,
 ): number {
+  if (usesSharedBankPlayerPot(state, bankrollOwnerId)) {
+    return getSharedPotAvailableChips(state, bankrollOwnerId);
+  }
   return (
     getLedgerBalanceForBankrollOwner(state, bankrollOwnerId) -
     getTotalBettingExposureForBankrollOwner(state, bankrollOwnerId)

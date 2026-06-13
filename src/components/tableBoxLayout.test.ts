@@ -33,7 +33,7 @@ describe('tableBoxLayout — visible box count and arc sizing', () => {
     expect(filterVisibleBoxSlots(slots, 5)).toHaveLength(5);
   });
 
-  it('grows to highest occupied slot when a player joins a higher box', () => {
+  it('does not expand visible count when a higher slot is occupied without user add', () => {
     const slots = [
       slot(1, 'p1'),
       slot(2),
@@ -43,7 +43,7 @@ describe('tableBoxLayout — visible box count and arc sizing', () => {
       slot(6),
       slot(7),
     ];
-    expect(resolveEffectiveVisibleBoxCount(slots, 4)).toBe(5);
+    expect(resolveEffectiveVisibleBoxCount(slots, 4)).toBe(4);
   });
 
   it('maps visible count to adaptive arc CSS class', () => {

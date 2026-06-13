@@ -18,6 +18,40 @@ const INDEX_CSS = readFileSync(join(process.cwd(), 'src/index.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const DEBUG_SRC = readFileSync(join(process.cwd(), 'src/components/blackjackLayoutDebug.ts'), 'utf8');
 
+function extractAllMediaBlocks(css: string, mediaQuery: string): string {
+  const marker = `@media ${mediaQuery}`;
+  const blocks: string[] = [];
+  let searchFrom = 0;
+  while (searchFrom < css.length) {
+    const start = css.indexOf(marker, searchFrom);
+    if (start === -1) break;
+    let depth = 0;
+    const braceStart = css.indexOf('{', start);
+    if (braceStart === -1) break;
+    let closedAt = -1;
+    for (let i = braceStart; i < css.length; i += 1) {
+      if (css[i] === '{') depth += 1;
+      else if (css[i] === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          closedAt = i + 1;
+          break;
+        }
+      }
+    }
+    if (closedAt === -1) break;
+    blocks.push(css.slice(start, closedAt));
+    searchFrom = closedAt;
+  }
+  return blocks.join('\n');
+}
+
+const DESKTOP_MIN_WIDTH_CSS = extractAllMediaBlocks(PLAYER_ROW_CSS, '(min-width: 721px)');
+const MOBILE_PORTRAIT_CSS = extractAllMediaBlocks(
+  PLAYER_ROW_CSS,
+  '(max-width: 720px) and (orientation: portrait)',
+);
+
 const noop = () => {};
 let simulatedViewport: SimulatedViewport = { width: 390, height: 844 };
 const globalRef = globalThis as unknown as { window?: unknown };
@@ -76,6 +110,30 @@ describe('canonical player row layout engine', () => {
     expect(PLAYER_ROW_CSS).toContain(MOBILE_LAYOUT_MEDIA_LANDSCAPE.split(',')[0]!.trim());
   });
 
+  it('desktop compact row uses max-content columns and never equal 1fr stretch', () => {
+    expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*max-content\)/,
+    );
+    expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*max-content\)/,
+    );
+    expect(DESKTOP_MIN_WIDTH_CSS).not.toMatch(
+      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
+    );
+  });
+
+  it('mobile equal-column behavior is scoped to portrait media query only', () => {
+    expect(MOBILE_PORTRAIT_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
+    );
+    expect(MOBILE_PORTRAIT_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row--with-add\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
+    );
+    expect(DESKTOP_MIN_WIDTH_CSS).not.toMatch(
+      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
+    );
+  });
+
   it('desktop compact row uses max-content columns and fixed add width', () => {
     expect(PLAYER_ROW_CSS).toMatch(
       /\.bj-table-slot-row--with-add\.bj-arc--player-boxes[\s\S]*grid-template-columns:\s*var\(--bj-table-slot-add-size\) repeat/,
@@ -101,13 +159,10 @@ describe('canonical player row layout engine', () => {
 
   it('aligns owned Box 1 with empty boxes via shared value band and flex-start', () => {
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot--owned[\s\S]*justify-content:\s*flex-start/,
-    );
-    expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot--empty::before[\s\S]*--bj-box-value-band-height/,
-    );
-    expect(PLAYER_ROW_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot--owned[\s\S]*justify-content:\s*flex-start/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot--empty::before[\s\S]*--bj-box-value-band-height/,
     );
     expect(PLAYER_ROW_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand--full-arc\.bj-box--native-assigned[\s\S]*aspect-ratio:\s*1\.05 \/ 1/,
@@ -120,8 +175,12 @@ describe('canonical player row layout engine', () => {
     );
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*background:\s*transparent/);
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*border:\s*none/);
-    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add::after[\s\S]*content:\s*'\+'/);
-    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add::after[\s\S]*aspect-ratio:\s*1\.05 \/ 1/);
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row__add::after[\s\S]*content:\s*'\+'/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row__add::after[\s\S]*aspect-ratio:\s*1\.05 \/ 1/,
+    );
     expect(PLAYER_ROW_CSS).not.toMatch(/\.bj-table-slot-row__add[\s\S]*align-self:\s*end/);
     expect(PLAYER_ROW_CSS).not.toMatch(
       /\.bj-table-slot-row__add[\s\S]*min-height:\s*calc\(var\(--bj-full-table-box-height\)/,

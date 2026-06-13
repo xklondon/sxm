@@ -1,15 +1,17 @@
 import type { GameState } from '../types';
 import type { PlaceBetTarget } from '../engine/blackjack/chipPlacement';
-import { getChipPlacementTargetFromBoxId } from '../engine/blackjack/chipPlacement';
+import { getAssignedSlotForPerson } from '../engine/session/playerAssignment';
 import {
-  resolveLocalChipTrayTarget,
-  resolveViewerAssignedBoxPlayerId,
-  shouldClearExplicitChipTarget,
-} from './chipTargetSelection';
+  isSlotOnTable,
+  resolveOccupantBoxIdForSlot,
+  resolvePlaceBetPayloadTarget,
+  type LocalChipSlotTarget,
+  uiBettingFocusFromSlotTarget,
+} from './blackjackBoxPlacementContract';
 
-/** Canonical local-only chip tray target — never synced to engine/backend. */
+/** Canonical local-only chip tray target — slotNumber is the only stable anchor. */
 export interface LocalSelectedChipTarget {
-  target: PlaceBetTarget | null;
+  target: LocalChipSlotTarget | null;
   /** True after any explicit box/slot tap; blocks assigned default overwrite. */
   hasUserSelected: boolean;
 }
@@ -18,27 +20,24 @@ export function createEmptyLocalChipTarget(): LocalSelectedChipTarget {
   return { target: null, hasUserSelected: false };
 }
 
-export function uiFromLocalChipTarget(target: PlaceBetTarget | null): {
+export function uiFromLocalChipTarget(
+  target: LocalChipSlotTarget | null,
+  state: GameState,
+): {
   selectedBettingBoxId: string | null;
   selectedBettingSlotNumber: number | null;
 } {
-  if (!target) {
-    return { selectedBettingBoxId: null, selectedBettingSlotNumber: null };
-  }
-  if (target.kind === 'box') {
-    return { selectedBettingBoxId: target.boxId, selectedBettingSlotNumber: null };
-  }
-  return { selectedBettingBoxId: null, selectedBettingSlotNumber: target.slotNumber };
+  return uiBettingFocusFromSlotTarget(state, target);
 }
 
 export function selectLocalChipTarget(
   _local: LocalSelectedChipTarget,
-  target: PlaceBetTarget,
+  slotNumber: number,
 ): LocalSelectedChipTarget {
-  return { target, hasUserSelected: true };
+  return { target: { slotNumber }, hasUserSelected: true };
 }
 
-/** Initial assigned box — only before any user selection. */
+/** Initial assigned slot — only before any user selection. */
 export function applyDefaultAssignedChipTarget(
   local: LocalSelectedChipTarget,
   state: GameState,
@@ -47,146 +46,29 @@ export function applyDefaultAssignedChipTarget(
   if (local.hasUserSelected || local.target) {
     return local;
   }
-  const boxId = resolveViewerAssignedBoxPlayerId(state, viewerPersonId);
-  if (!boxId) {
+  const slotNumber = viewerPersonId ? getAssignedSlotForPerson(state, viewerPersonId) : null;
+  if (slotNumber == null || !isSlotOnTable(state, slotNumber)) {
     return local;
   }
-  return { ...local, target: { kind: 'box', boxId } };
+  return { ...local, target: { slotNumber } };
 }
 
-function resolveTargetOnTable(
-  state: GameState,
-  target: PlaceBetTarget,
-  online: boolean,
-): PlaceBetTarget | null {
-  if (target.kind === 'slot') {
-    const slot = state.tableMeta.boxSlots.find((s) => s.slotNumber === target.slotNumber);
-    if (!slot) {
-      return null;
-    }
-    if (slot.playerId) {
-      return { kind: 'box', boxId: slot.playerId };
-    }
-    return target;
-  }
-
-  try {
-    return getChipPlacementTargetFromBoxId(state, target.boxId, online);
-  } catch {
-    return resolveLocalChipTrayTarget(state, {
-      userPicked: true,
-      explicit: target,
-      online,
-    });
-  }
+/** True only when the selected slot row is genuinely gone. */
+export function isUserChipTargetRemoved(state: GameState, slotNumber: number): boolean {
+  return !isSlotOnTable(state, slotNumber);
 }
 
-/** Rebind a user-selected box to the current occupant at its mapped slot (online id rotation). */
-function rebindUserBoxTarget(state: GameState, boxId: string): PlaceBetTarget | null {
-  const slotNum = state.session.boxSlotNumbers?.[boxId];
-  if (slotNum == null) {
-    return null;
-  }
-  const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNum);
-  if (!row) {
-    return null;
-  }
-  if (row.playerId) {
-    return { kind: 'box', boxId: row.playerId };
-  }
-  return { kind: 'slot', slotNumber: slotNum };
-}
-
-/** True only when the selected row is genuinely gone — not during transient online sync. */
-export function isUserChipTargetRemoved(
-  state: GameState,
-  target: PlaceBetTarget,
-  online: boolean,
-): boolean {
-  if (target.kind === 'slot') {
-    return !state.tableMeta.boxSlots.some((s) => s.slotNumber === target.slotNumber);
-  }
-
-  if (state.tableMeta.boxSlots.some((s) => s.playerId === target.boxId)) {
-    return false;
-  }
-
-  const slotNum = state.session.boxSlotNumbers?.[target.boxId];
-  if (slotNum != null && state.tableMeta.boxSlots.some((s) => s.slotNumber === slotNum)) {
-    return false;
-  }
-
-  if (!online && state.players[target.boxId]) {
-    return false;
-  }
-
-  return true;
-}
-
-/** Upgrade materialized slots; clear only when the target row is truly gone. */
+/** Preserve slotNumber anchor across server reconcile — never flip to boxId in local state. */
 export function reconcileLocalChipTarget(
   local: LocalSelectedChipTarget,
   state: GameState,
-  online: boolean,
+  _online: boolean,
 ): LocalSelectedChipTarget {
   if (!local.target) {
     return local;
   }
-
-  const currentTarget = local.target;
-
-  if (currentTarget.kind === 'slot') {
-    const slot = state.tableMeta.boxSlots.find((s) => s.slotNumber === currentTarget.slotNumber);
-    if (!slot) {
-      return local.hasUserSelected ? local : { ...local, target: null };
-    }
-    // Online: keep slot anchor for repeat tray taps; coerce at bet time resolves occupant.
-    if (slot.playerId && !online) {
-      return { ...local, target: { kind: 'box', boxId: slot.playerId } };
-    }
-    return local;
-  }
-
-  if (local.hasUserSelected) {
-    const rebound = rebindUserBoxTarget(state, currentTarget.boxId);
-    if (rebound) {
-      if (rebound.kind === 'box' && rebound.boxId !== currentTarget.boxId) {
-        return { ...local, target: rebound };
-      }
-      if (rebound.kind === 'slot') {
-        return { ...local, target: rebound };
-      }
-    }
-    if (online) {
-      const degraded = degradeChipTargetToSlot(state, currentTarget);
-      if (degraded?.kind === 'slot') {
-        return { ...local, target: degraded };
-      }
-      if (degraded?.kind === 'box') {
-        return { ...local, target: degraded };
-      }
-    }
-    if (isUserChipTargetRemoved(state, currentTarget, online)) {
-      return local;
-    }
-    return local;
-  }
-
-  if (shouldClearExplicitChipTarget(state, currentTarget, online)) {
-    return { ...local, target: null };
-  }
-
-  const resolved = resolveTargetOnTable(state, currentTarget, online);
-  if (
-    resolved?.kind === 'box' &&
-    currentTarget.kind === 'box' &&
-    resolved.boxId !== currentTarget.boxId
-  ) {
-    return { ...local, target: resolved };
-  }
-
-  if (!resolved) {
-    return local;
+  if (isUserChipTargetRemoved(state, local.target.slotNumber)) {
+    return local.hasUserSelected ? local : { ...local, target: null };
   }
   return local;
 }
@@ -199,25 +81,6 @@ export interface ResolveCurrentChipTargetInput {
   visibleBoxCount?: number;
 }
 
-/** When a box id is stale, fall back to its slot row (or current occupant). */
-export function degradeChipTargetToSlot(
-  state: GameState,
-  target: PlaceBetTarget,
-): PlaceBetTarget | null {
-  const slotNumber = localChipTargetSlotNumber(state, target);
-  if (slotNumber == null) {
-    return null;
-  }
-  const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
-  if (row?.playerId) {
-    return { kind: 'box', boxId: row.playerId };
-  }
-  if (row) {
-    return { kind: 'slot', slotNumber };
-  }
-  return null;
-}
-
 export type ChipBetDiagnosticStage =
   | 'tap-target'
   | 'coerce'
@@ -228,7 +91,7 @@ export type ChipBetDiagnosticStage =
 
 export interface ChipBetDiagnostic {
   stage: ChipBetDiagnosticStage;
-  selectedTarget: PlaceBetTarget | null;
+  selectedTarget: LocalChipSlotTarget | null;
   payload?: Record<string, unknown>;
   optimisticBoxId?: string | null;
   slotNumber?: number | null;
@@ -246,86 +109,26 @@ export function logChipBetDiagnostic(detail: ChipBetDiagnostic): void {
   console.debug('[SXMCards][chip-bet]', detail);
 }
 
-/**
- * Online rapid taps: preserve slotNumber anchor instead of locking optimistic boxIds.
- * Box 1 (native assigned box target) keeps box id — reference behavior unchanged.
- */
-export function anchorOnlineChipTarget(
-  state: GameState,
-  target: PlaceBetTarget,
-  online: boolean,
-): PlaceBetTarget {
-  if (!online) {
-    return target;
-  }
-  if (target.kind === 'slot') {
-    return target;
-  }
-  const slotNumber = localChipTargetSlotNumber(state, target);
-  if (slotNumber == null || slotNumber === 1) {
-    return target;
-  }
-  const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
-  if (!row) {
-    return target;
-  }
-  if (row.playerId === target.boxId) {
-    return target;
-  }
-  return { kind: 'slot', slotNumber };
-}
-
-/**
- * Online placeBet payload — send slotNumber when the box id is stale or a bet is in-flight.
- * Box 1 keeps boxId (reference behavior).
- */
-export function resolveOnlinePlaceBetPayloadTarget(
-  state: GameState,
-  target: PlaceBetTarget,
-  online: boolean,
-  inFlightForSlot = false,
-): PlaceBetTarget {
-  if (!online) {
-    return target;
-  }
-  if (target.kind === 'slot') {
-    return target;
-  }
-  const slotNumber = localChipTargetSlotNumber(state, target);
-  if (slotNumber == null || slotNumber === 1) {
-    return target;
-  }
-  if (inFlightForSlot) {
-    return { kind: 'slot', slotNumber };
-  }
-  const row = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
-  if (!row?.playerId || row.playerId !== target.boxId) {
-    return { kind: 'slot', slotNumber };
-  }
-  return target;
-}
-
 export function localChipTargetSlotNumber(
   state: GameState,
-  target: PlaceBetTarget,
+  target: LocalChipSlotTarget | PlaceBetTarget,
 ): number | null {
-  if (target.kind === 'slot') {
+  if ('slotNumber' in target && !('kind' in target)) {
     return target.slotNumber;
   }
-  const slot = state.tableMeta.boxSlots.find((s) => s.playerId === target.boxId);
+  const placeTarget = target as PlaceBetTarget;
+  if (placeTarget.kind === 'slot') {
+    return placeTarget.slotNumber;
+  }
+  const slot = state.tableMeta.boxSlots.find((s) => s.playerId === placeTarget.boxId);
   if (slot) {
     return slot.slotNumber;
   }
-  return state.session.boxSlotNumbers?.[target.boxId] ?? null;
+  return state.session.boxSlotNumbers?.[placeTarget.boxId] ?? null;
 }
 
-function isTargetOnVisibleBox(
-  state: GameState,
-  target: PlaceBetTarget,
-  visibleBoxCount: number,
-): boolean {
-  const slotNumber = localChipTargetSlotNumber(state, target);
-  return slotNumber != null && slotNumber >= 1 && slotNumber <= visibleBoxCount;
+function isTargetOnVisibleBox(state: GameState, slotNumber: number, visibleBoxCount: number): boolean {
+  return slotNumber >= 1 && slotNumber <= visibleBoxCount && isSlotOnTable(state, slotNumber);
 }
 
 export type ChipTargetResolutionReason =
@@ -336,7 +139,7 @@ export type ChipTargetResolutionReason =
 export type ChipTargetBettingSource = 'ref' | 'state' | 'merged' | 'drop';
 
 export type GetCurrentChipTargetForBettingResult =
-  | { ok: true; target: PlaceBetTarget; source: ChipTargetBettingSource }
+  | { ok: true; slotNumber: number; source: ChipTargetBettingSource }
   | { ok: false; reason: ChipTargetResolutionReason; source: ChipTargetBettingSource | null };
 
 /** Prefer synchronous ref over possibly stale React state during rapid tray taps. */
@@ -367,7 +170,7 @@ export function logChipTargetResolution(
     selectedBettingSlotNumber: number | null;
     hasUserSelected: boolean;
     visibleBoxCount?: number;
-    resolvedTarget?: PlaceBetTarget | null;
+    resolvedSlotNumber?: number | null;
   },
 ): void {
   const enabled =
@@ -379,10 +182,6 @@ export function logChipTargetResolution(
   console.debug('[SXMCards][chip-target]', reason, details);
 }
 
-/**
- * Canonical chip tray/drop target — local selection only, never selectedSeatId.
- * Falls back to assigned box only before any user pick; survives transient sync gaps.
- */
 export interface GetCurrentChipTargetForBettingInput {
   ref: LocalSelectedChipTarget;
   state: LocalSelectedChipTarget;
@@ -390,18 +189,18 @@ export interface GetCurrentChipTargetForBettingInput {
   online: boolean;
   viewerPersonId: string | null;
   visibleBoxCount?: number;
-  explicitDropTarget?: PlaceBetTarget | null;
+  explicitDropSlotNumber?: number | null;
 }
 
 /**
  * Canonical chip tray / drop target for betting — reads ref first, then state fallback.
- * Never uses selectedSeatId.
+ * Never uses selectedSeatId. Local state is slotNumber-only; boxId derived at payload time.
  */
 export function getCurrentChipTargetForBetting(
   input: GetCurrentChipTargetForBettingInput,
 ): GetCurrentChipTargetForBettingResult {
-  if (input.explicitDropTarget) {
-    return { ok: true, target: input.explicitDropTarget, source: 'drop' };
+  if (input.explicitDropSlotNumber != null) {
+    return { ok: true, slotNumber: input.explicitDropSlotNumber, source: 'drop' };
   }
 
   const merged = mergeLocalChipTargetRefAndState(input.ref, input.state);
@@ -412,7 +211,7 @@ export function getCurrentChipTargetForBetting(
         ? 'state'
         : 'merged';
 
-  const target = resolveCurrentChipTarget({
+  const slotNumber = resolveCurrentChipTargetSlot({
     local: merged,
     state: input.gameState,
     online: input.online,
@@ -420,8 +219,8 @@ export function getCurrentChipTargetForBetting(
     visibleBoxCount: input.visibleBoxCount,
   });
 
-  if (!target) {
-    const ui = uiFromLocalChipTarget(merged.target);
+  if (slotNumber == null) {
+    const ui = uiFromLocalChipTarget(merged.target, input.gameState);
     const reason: ChipTargetResolutionReason =
       merged.target || merged.hasUserSelected ? 'tray-resolution-null' : 'no-local-target';
     logChipTargetResolution(reason, {
@@ -432,14 +231,14 @@ export function getCurrentChipTargetForBetting(
     return { ok: false, reason, source };
   }
 
-  return { ok: true, target, source };
+  return { ok: true, slotNumber, source };
 }
 
-export function resolveCurrentChipTarget(input: ResolveCurrentChipTargetInput): PlaceBetTarget | null {
-  const { local, state, online, viewerPersonId, visibleBoxCount } = input;
-  const target = resolveTrayTargetFromLocalSelection(local, state, online, viewerPersonId);
-  if (!target) {
-    const ui = uiFromLocalChipTarget(local.target);
+export function resolveCurrentChipTargetSlot(input: ResolveCurrentChipTargetInput): number | null {
+  const { local, state, viewerPersonId, visibleBoxCount } = input;
+  const slotNumber = resolveTraySlotFromLocalSelection(local, state, viewerPersonId);
+  if (slotNumber == null) {
+    const ui = uiFromLocalChipTarget(local.target, state);
     logChipTargetResolution(
       local.target || local.hasUserSelected ? 'tray-resolution-null' : 'no-local-target',
       {
@@ -451,84 +250,52 @@ export function resolveCurrentChipTarget(input: ResolveCurrentChipTargetInput): 
     return null;
   }
 
-  // User picks are always from visible UI boxes — never null them during stake/sync churn.
   if (
     visibleBoxCount != null &&
     !local.hasUserSelected &&
-    !isTargetOnVisibleBox(state, target, visibleBoxCount)
+    !isTargetOnVisibleBox(state, slotNumber, visibleBoxCount)
   ) {
-    const ui = uiFromLocalChipTarget(local.target);
+    const ui = uiFromLocalChipTarget(local.target, state);
     logChipTargetResolution('hidden-box-filter', {
       ...ui,
       hasUserSelected: local.hasUserSelected,
       visibleBoxCount,
-      resolvedTarget: target,
+      resolvedSlotNumber: slotNumber,
     });
     return null;
   }
-  return target;
+  return slotNumber;
 }
 
-/** After a successful bet, lock the same target and mark it user-selected for repeat tray taps. */
+/** After a successful bet, lock the same slot for repeat tray taps. */
 export function affirmChipTargetAfterPlacement(
   local: LocalSelectedChipTarget,
   state: GameState,
-  placedTarget: PlaceBetTarget,
-  online: boolean,
+  placedSlotNumber: number,
+  _online: boolean,
 ): LocalSelectedChipTarget {
-  const picked = selectLocalChipTarget(local, placedTarget);
-  const reconciled = reconcileLocalChipTarget(picked, state, online);
-  const anchor = anchorOnlineChipTarget(state, placedTarget, online);
-  if (online && anchor.kind === 'slot') {
-    return selectLocalChipTarget(reconciled, anchor);
+  if (!isSlotOnTable(state, placedSlotNumber)) {
+    return local;
   }
-  const seed = reconciled.target ?? anchor;
-  const resolved =
-    resolveTargetOnTable(state, seed, online) ??
-    (online ? degradeChipTargetToSlot(state, seed) : null) ??
-    seed;
-  return selectLocalChipTarget(reconciled, resolved);
+  return selectLocalChipTarget(local, placedSlotNumber);
 }
 
 /**
  * Chip tray target resolution:
- * 1. explicit local selected target
- * 2. initial assigned/default ONLY if user has never selected
+ * 1. explicit local selected slot
+ * 2. initial assigned slot ONLY if user has never selected
  * 3. otherwise null
  */
-export function resolveTrayTargetFromLocalSelection(
+export function resolveTraySlotFromLocalSelection(
   local: LocalSelectedChipTarget,
   state: GameState,
-  online: boolean,
   viewerPersonId: string | null,
-): PlaceBetTarget | null {
+): number | null {
   if (local.target) {
-    if (local.hasUserSelected) {
-      const resolved = resolveLocalChipTrayTarget(state, {
-        userPicked: true,
-        explicit: local.target,
-        online,
-      });
-      if (resolved) {
-        return resolved;
-      }
-      const fallback = resolveTargetOnTable(state, local.target, online);
-      if (fallback) {
-        return fallback;
-      }
-      if (online) {
-        const degraded = degradeChipTargetToSlot(state, local.target);
-        if (degraded) {
-          return degraded;
-        }
-      }
-      return null;
+    if (isSlotOnTable(state, local.target.slotNumber)) {
+      return local.target.slotNumber;
     }
-
-    const resolved = resolveTargetOnTable(state, local.target, online);
-    if (resolved) {
-      return resolved;
-    }
+    return null;
   }
 
   if (local.hasUserSelected) {
@@ -536,10 +303,46 @@ export function resolveTrayTargetFromLocalSelection(
   }
 
   const withDefault = applyDefaultAssignedChipTarget(local, state, viewerPersonId);
-  if (!withDefault.target) {
+  return withDefault.target?.slotNumber ?? null;
+}
+
+/** @deprecated Use resolvePlaceBetPayloadTarget from blackjackBoxPlacementContract. */
+export function resolveOnlinePlaceBetPayloadTarget(
+  state: GameState,
+  target: PlaceBetTarget,
+  online: boolean,
+  inFlightForSlot = false,
+): PlaceBetTarget {
+  const slotNumber = localChipTargetSlotNumber(state, target);
+  if (slotNumber == null) {
+    return target;
+  }
+  return resolvePlaceBetPayloadTarget(state, slotNumber, online, inFlightForSlot);
+}
+
+/** @deprecated Slot-only local targets — kept for migration tests. */
+export function anchorOnlineChipTarget(
+  _state: GameState,
+  target: PlaceBetTarget,
+  _online: boolean,
+): PlaceBetTarget {
+  return target;
+}
+
+/** @deprecated Slot-only local targets — derive occupant at payload time instead. */
+export function degradeChipTargetToSlot(
+  state: GameState,
+  target: PlaceBetTarget,
+): PlaceBetTarget | null {
+  const slotNumber = localChipTargetSlotNumber(state, target);
+  if (slotNumber == null) {
     return null;
   }
-  return resolveTargetOnTable(state, withDefault.target, online);
+  const boxId = resolveOccupantBoxIdForSlot(state, slotNumber);
+  if (boxId) {
+    return { kind: 'box', boxId };
+  }
+  return { kind: 'slot', slotNumber };
 }
 
 export function localChipTargetsEqual(
@@ -557,14 +360,38 @@ export function localChipTargetsEqual(
   if (!ta || !tb) {
     return ta === tb;
   }
-  if (ta.kind !== tb.kind) {
-    return false;
+  return ta.slotNumber === tb.slotNumber;
+}
+
+/** Resolve PlaceBetTarget for drop handlers that still emit box/slot union. */
+export function resolvePlaceBetTargetForSlotNumber(
+  state: GameState,
+  slotNumber: number,
+  online: boolean,
+  inFlightForSlot = false,
+): PlaceBetTarget {
+  return resolvePlaceBetPayloadTarget(state, slotNumber, online, inFlightForSlot);
+}
+
+/** @deprecated Use resolveCurrentChipTargetSlot — derives PlaceBetTarget at payload time. */
+export function resolveCurrentChipTarget(input: ResolveCurrentChipTargetInput): PlaceBetTarget | null {
+  const slotNumber = resolveCurrentChipTargetSlot(input);
+  if (slotNumber == null) {
+    return null;
   }
-  if (ta.kind === 'box' && tb.kind === 'box') {
-    return ta.boxId === tb.boxId;
+  return resolvePlaceBetPayloadTarget(input.state, slotNumber, input.online, false);
+}
+
+/** @deprecated Use resolveTraySlotFromLocalSelection — derives PlaceBetTarget at payload time. */
+export function resolveTrayTargetFromLocalSelection(
+  local: LocalSelectedChipTarget,
+  state: GameState,
+  online: boolean,
+  viewerPersonId: string | null,
+): PlaceBetTarget | null {
+  const slotNumber = resolveTraySlotFromLocalSelection(local, state, viewerPersonId);
+  if (slotNumber == null) {
+    return null;
   }
-  if (ta.kind === 'slot' && tb.kind === 'slot') {
-    return ta.slotNumber === tb.slotNumber;
-  }
-  return false;
+  return resolvePlaceBetPayloadTarget(state, slotNumber, online, false);
 }

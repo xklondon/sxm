@@ -56,8 +56,12 @@ describe('blackjack UX protocol fixes — box stability', () => {
       /\.bj-view-full-mobile \.bj-table-slot-row__add[\s\S]*width:\s*100%/,
     );
     expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*background:\s*transparent/);
-    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add::after[\s\S]*aspect-ratio:\s*1\.05 \/ 1/);
-    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row__add[\s\S]*align-self:\s*stretch/);
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row__add::after[\s\S]*aspect-ratio:\s*1\.05 \/ 1/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot--owned[\s\S]*align-self:\s*stretch/,
+    );
   });
 
   it('uses box-shadow-only turn pulse without layout-affecting border changes', () => {

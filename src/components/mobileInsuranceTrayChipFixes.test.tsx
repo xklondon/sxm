@@ -8,19 +8,14 @@ import { BlackjackPanel } from './BlackjackPanel';
 import { InsuranceDecisionOverlay } from './InsuranceDecisionOverlay';
 import {
   affirmChipTargetAfterPlacement,
-  anchorOnlineChipTarget,
   createEmptyLocalChipTarget,
-  degradeChipTargetToSlot,
   getCurrentChipTargetForBetting,
   reconcileLocalChipTarget,
-  resolveOnlinePlaceBetPayloadTarget,
   resolveTrayTargetFromLocalSelection,
   selectLocalChipTarget,
 } from './localChipTargetSelection';
-import {
-  coercePlaceBetTarget,
-  placeBetPayloadFromTarget,
-} from '../engine/blackjack/chipPlacement';
+import { resolvePlaceBetPayloadTarget } from './blackjackBoxPlacementContract';
+import { placeBetPayloadFromTarget } from '../engine/blackjack/chipPlacement';
 import { addChipToBoxStake, getStakeForBox } from '../engine/blackjack/stakes';
 import { claimBoxSlot } from '../engine/session';
 import { resolveControllerPersonId } from '../engine/session';
@@ -131,45 +126,31 @@ describe('fast chip taps on boxes 2–4', () => {
       let state = tableAfterStartPlaying(500);
       state = claimBoxSlot(state, 1);
       const personId = resolveControllerPersonId(state, 'Alice')!;
-      let local = selectLocalChipTarget(createEmptyLocalChipTarget(), {
-        kind: 'slot',
-        slotNumber,
-      });
+      let local = selectLocalChipTarget(createEmptyLocalChipTarget(), slotNumber);
 
-      const serverLag = state;
       let optimistic = claimBoxSlot(state, slotNumber);
       const serverBoxId = boxPlayerId(optimistic, slotNumber)!;
       optimistic = addChipToBoxStake(optimistic, serverBoxId, 5, personId);
-      local = affirmChipTargetAfterPlacement(
-        local,
-        optimistic,
-        { kind: 'slot', slotNumber },
-        true,
-      );
+      local = affirmChipTargetAfterPlacement(local, optimistic, slotNumber, true);
 
       for (let tap = 0; tap < 3; tap += 1) {
-        const trayTarget = resolveTrayTargetFromLocalSelection(local, optimistic, true, personId);
-        expect(trayTarget).toEqual({ kind: 'slot', slotNumber });
-
-        const anchored = anchorOnlineChipTarget(optimistic, trayTarget!, true);
-        expect(anchored).toEqual({ kind: 'slot', slotNumber });
-
-        const coerced = coercePlaceBetTarget(serverLag, anchored, true);
-        expect(coerced).toEqual({ kind: 'slot', slotNumber });
-
-        const payloadTarget = resolveOnlinePlaceBetPayloadTarget(serverLag, coerced, true, tap > 0);
-        expect(placeBetPayloadFromTarget(payloadTarget, 5)).toEqual({
-          slotNumber,
-          amount: 5,
+        expect(resolveTrayTargetFromLocalSelection(local, optimistic, true, personId)).toEqual({
+          kind: 'box',
+          boxId: serverBoxId,
         });
 
-        optimistic = addChipToBoxStake(optimistic, serverBoxId, 5, personId);
-        local = affirmChipTargetAfterPlacement(
-          local,
+        const payloadTarget = resolvePlaceBetPayloadTarget(
           optimistic,
-          { kind: 'slot', slotNumber },
+          slotNumber,
           true,
+          tap > 0,
         );
+        expect(placeBetPayloadFromTarget(payloadTarget, 5)).toEqual(
+          tap > 0 ? { slotNumber, amount: 5 } : { boxId: serverBoxId, amount: 5 },
+        );
+
+        optimistic = addChipToBoxStake(optimistic, serverBoxId, 5, personId);
+        local = affirmChipTargetAfterPlacement(local, optimistic, slotNumber, true);
       }
 
       expect(getStakeForBox(optimistic, serverBoxId)).toBe(20);
@@ -181,19 +162,17 @@ describe('fast chip taps on boxes 2–4', () => {
     state = claimBoxSlot(state, 1);
     const personId = resolveControllerPersonId(state, 'Alice')!;
     const box1 = boxPlayerId(state, 1)!;
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box1 });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 1);
 
     for (let tap = 0; tap < 2; tap += 1) {
       state = addChipToBoxStake(state, box1, 10, personId);
-      local = affirmChipTargetAfterPlacement(local, state, { kind: 'box', boxId: box1 }, true);
-      const anchored = anchorOnlineChipTarget(state, { kind: 'box', boxId: box1 }, true);
-      expect(anchored).toEqual({ kind: 'box', boxId: box1 });
-      const payload = resolveOnlinePlaceBetPayloadTarget(state, anchored, true);
+      local = affirmChipTargetAfterPlacement(local, state, 1, true);
+      const payload = resolvePlaceBetPayloadTarget(state, 1, true, false);
       expect(placeBetPayloadFromTarget(payload, 10)).toEqual({ boxId: box1, amount: 10 });
     }
   });
 
-  it('stale optimistic boxId degrades to slotNumber for payload', () => {
+  it('stale optimistic boxId resolves via slotNumber at payload time', () => {
     let state = tableAfterStartPlaying(500);
     const staleBoxId = 'client-stale-box-2';
     const personId = state.tableMeta.ownerPersonId!;
@@ -220,11 +199,7 @@ describe('fast chip taps on boxes 2–4', () => {
       },
     };
 
-    const payloadTarget = resolveOnlinePlaceBetPayloadTarget(
-      state,
-      { kind: 'box', boxId: staleBoxId },
-      true,
-    );
+    const payloadTarget = resolvePlaceBetPayloadTarget(state, 2, true, false);
     expect(payloadTarget).toEqual({ kind: 'slot', slotNumber: 2 });
   });
 
@@ -255,13 +230,8 @@ describe('fast chip taps on boxes 2–4', () => {
       },
     };
 
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), {
-      kind: 'slot',
-      slotNumber: 3,
-    });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
     local = reconcileLocalChipTarget(local, state, true);
-    const degraded = degradeChipTargetToSlot(state, { kind: 'box', boxId: staleBoxId });
-    expect(degraded).toEqual({ kind: 'slot', slotNumber: 3 });
 
     const betting = getCurrentChipTargetForBetting({
       ref: local,
@@ -273,7 +243,7 @@ describe('fast chip taps on boxes 2–4', () => {
     });
     expect(betting.ok).toBe(true);
     if (betting.ok) {
-      expect(betting.target).toEqual({ kind: 'slot', slotNumber: 3 });
+      expect(betting.slotNumber).toBe(3);
     }
   });
 });

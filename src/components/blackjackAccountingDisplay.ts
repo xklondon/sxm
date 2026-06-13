@@ -55,6 +55,11 @@ export function resolveViewerTrayAvailable(
 }
 
 export { getTotalCommittedExposureForPerson } from '../engine/session/playerCommittedExposure';
+export {
+  personsShareOneChipPot,
+  resolveCanonicalBankrollOwnerId,
+  usesSharedBankPlayerPot,
+} from '../engine/session/sharedBankroll';
 
 /** Files that must use resolvePersonDisplayBalances / resolveViewerTrayAvailable for player amounts. */
 export const ACCOUNTING_DISPLAY_VIEW_FILES = [

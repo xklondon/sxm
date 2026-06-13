@@ -23,11 +23,8 @@ import {
   splitBlackjackOnState,
   standBlackjackOnState,
   addChipToBoxStake,
-  clearBoxStake,
   removeLastChipFromBoxStake,
-  confirmBoxStake,
   getStakeForBox,
-  getStakeChipsForBox,
   getTableMinimumBet,
   canChangeMinimumBet,
   setPersonPlayFlow,
@@ -64,21 +61,23 @@ import { PlayLedgerModal, PlayLedgerPanel } from './LedgerModals';
 import { TableSideRailShell } from './TableSideRailShell';
 import {
   affirmChipTargetAfterPlacement,
-  anchorOnlineChipTarget,
-  degradeChipTargetToSlot,
   applyDefaultAssignedChipTarget,
   createEmptyLocalChipTarget,
   getCurrentChipTargetForBetting,
-  localChipTargetSlotNumber,
   localChipTargetsEqual,
   logChipBetDiagnostic,
   logChipTargetResolution,
   reconcileLocalChipTarget,
-  resolveOnlinePlaceBetPayloadTarget,
   selectLocalChipTarget,
   uiFromLocalChipTarget,
   type LocalSelectedChipTarget,
 } from './localChipTargetSelection';
+import {
+  mergeStakeChipsForSlotDisplay,
+  resolveOccupantBoxIdForSlot,
+  resolvePlaceBetPayloadTarget,
+  slotArcReactKey,
+} from './blackjackBoxPlacementContract';
 import { InsuranceDecisionOverlay } from './InsuranceDecisionOverlay';
 import { bindTapSelect, createTapSelectHandler } from './tapSelect';
 import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
@@ -123,11 +122,7 @@ import {
 } from './roundSummaryOverlayTiming';
 import {
   formatPlaceBetError,
-  getChipPlacementTarget,
-  getChipPlacementTargetFromBoxId,
-  coercePlaceBetTarget,
   placeBetPayloadFromTarget,
-  type PlaceBetTarget,
 } from '../engine/blackjack/chipPlacement';
 import {
   canUserAssignChips,
@@ -295,6 +290,10 @@ export function BlackjackPanel({
   const localSelectedChipTargetRef = useRef<LocalSelectedChipTarget>(createEmptyLocalChipTarget());
   const betInFlightSlotsRef = useRef<Set<number>>(new Set());
   const betChainBySlotRef = useRef<Map<number, Promise<void>>>(new Map());
+  const [pendingOnlineStakesBySlot, setPendingOnlineStakesBySlot] = useState<
+    Record<number, ChipValue[]>
+  >({});
+  const pendingOnlineStakesBySlotRef = useRef<Record<number, ChipValue[]>>({});
   const tapSelectRef = useRef(createTapSelectHandler());
   const SHUFFLE_ANIM_DURATION_MS = 3000;
   const [shuffleAnimating, setShuffleAnimating] = useState(false);
@@ -386,7 +385,7 @@ export function BlackjackPanel({
   const deviceView = getDeviceView(isMobileViewport);
   const viewRootClass = getViewRootClass(deviceView, viewMode);
   const { selectedBettingBoxId: selectedBettingBoxIdForUi, selectedBettingSlotNumber } =
-    uiFromLocalChipTarget(localChipSelection.target);
+    uiFromLocalChipTarget(localChipSelection.target, gameState);
   const focusFallbackBoxId = defaultBlackjackSeatId(gameState);
   const flowSettings = gameState.blackjackFlowSettings;
   const canAssignChips = canUserAssignChips(gameState, controllerName);
@@ -429,26 +428,12 @@ export function BlackjackPanel({
     const online = Boolean(onlineDispatch);
     let next = reconcileLocalChipTarget(local, gameState, online);
     if (bettingOpen && local.hasUserSelected && local.target) {
-      if (!next.target) {
-        next = { ...local, hasUserSelected: true };
-      } else {
-        next = affirmChipTargetAfterPlacement(
-          { ...local, hasUserSelected: true },
-          gameState,
-          local.target,
-          online,
-        );
-      }
-    } else if (next.hasUserSelected && next.target) {
-      next = affirmChipTargetAfterPlacement(next, gameState, next.target, online);
-    }
-    if (next.hasUserSelected && !next.target && local.target) {
-      const degraded =
-        online && local.target ? degradeChipTargetToSlot(gameState, local.target) : local.target;
-      if (degraded) {
-        commitLocalChipTarget({ ...next, target: degraded });
-      }
-      return;
+      next = affirmChipTargetAfterPlacement(
+        { ...local, hasUserSelected: true },
+        gameState,
+        local.target.slotNumber,
+        online,
+      );
     }
     if (!localChipTargetsEqual(localSelectedChipTargetRef.current, next)) {
       commitLocalChipTarget(next);
@@ -461,6 +446,28 @@ export function BlackjackPanel({
     gameState.session.id,
     bettingOpen,
   ]);
+
+  useEffect(() => {
+    if (!onlineDispatch) {
+      return;
+    }
+    const pending = pendingOnlineStakesBySlotRef.current;
+    const slotsToClear = Object.keys(pending)
+      .map(Number)
+      .filter((slotNumber) => {
+        const boxId = resolveOccupantBoxIdForSlot(gameState, slotNumber);
+        return boxId != null && getStakeForBox(gameState, boxId) > 0;
+      });
+    if (slotsToClear.length === 0) {
+      return;
+    }
+    const next = { ...pendingOnlineStakesBySlotRef.current };
+    for (const slotNumber of slotsToClear) {
+      delete next[slotNumber];
+    }
+    pendingOnlineStakesBySlotRef.current = next;
+    setPendingOnlineStakesBySlot(next);
+  }, [gameState.tableMeta.boxStakes, gameState.tableMeta.boxSlots, onlineDispatch]);
 
   useEffect(() => {
     if (handTransitionHold.holdActiveHandKey) {
@@ -721,39 +728,55 @@ export function BlackjackPanel({
     setLocalChipSelection(next);
   }
 
-  function selectLocalTarget(target: PlaceBetTarget) {
-    commitLocalChipTarget(selectLocalChipTarget(localSelectedChipTargetRef.current, target));
+  function selectLocalTarget(slotNumber: number) {
+    commitLocalChipTarget(selectLocalChipTarget(localSelectedChipTargetRef.current, slotNumber));
+  }
+
+  function addPendingOnlineStake(slotNumber: number, amount: ChipValue) {
+    const prev = pendingOnlineStakesBySlotRef.current[slotNumber] ?? [];
+    const next = {
+      ...pendingOnlineStakesBySlotRef.current,
+      [slotNumber]: [...prev, amount],
+    };
+    pendingOnlineStakesBySlotRef.current = next;
+    setPendingOnlineStakesBySlot(next);
+  }
+
+  function rollbackPendingOnlineStake(slotNumber: number) {
+    const prev = pendingOnlineStakesBySlotRef.current[slotNumber];
+    if (!prev?.length) {
+      return;
+    }
+    const chips = prev.slice(0, -1);
+    const next = { ...pendingOnlineStakesBySlotRef.current };
+    if (chips.length === 0) {
+      delete next[slotNumber];
+    } else {
+      next[slotNumber] = chips;
+    }
+    pendingOnlineStakesBySlotRef.current = next;
+    setPendingOnlineStakesBySlot(next);
   }
 
   function preserveLocalChipTargetAfterStateSync(
     nextState?: GameState,
-    placedTarget?: PlaceBetTarget,
+    placedSlotNumber?: number,
   ) {
     const state = nextState ?? gameStateRef.current;
     const online = Boolean(onlineDispatch);
-    const next = placedTarget
-      ? affirmChipTargetAfterPlacement(
-          localSelectedChipTargetRef.current,
-          state,
-          placedTarget,
-          online,
-        )
-      : reconcileLocalChipTarget(localSelectedChipTargetRef.current, state, online);
-    if (next.hasUserSelected && !next.target && localSelectedChipTargetRef.current.target) {
-      const stale = localSelectedChipTargetRef.current.target;
-      const degraded = online && stale ? degradeChipTargetToSlot(state, stale) : stale;
-      if (degraded) {
-        commitLocalChipTarget({
-          ...next,
-          target: degraded,
-        });
-      }
-      return;
-    }
+    const next =
+      placedSlotNumber != null
+        ? affirmChipTargetAfterPlacement(
+            localSelectedChipTargetRef.current,
+            state,
+            placedSlotNumber,
+            online,
+          )
+        : reconcileLocalChipTarget(localSelectedChipTargetRef.current, state, online);
     commitLocalChipTarget(next);
   }
 
-  function resolveActiveChipTrayTarget(explicitDropTarget?: PlaceBetTarget | null) {
+  function resolveActiveChipTrayTarget(explicitDropSlotNumber?: number | null) {
     return getCurrentChipTargetForBetting({
       ref: localSelectedChipTargetRef.current,
       state: localChipSelection,
@@ -761,78 +784,56 @@ export function BlackjackPanel({
       online: Boolean(onlineDispatch),
       viewerPersonId,
       visibleBoxCount: effectiveVisibleBoxCount,
-      explicitDropTarget,
+      explicitDropSlotNumber,
     });
   }
 
-  function applyOptimisticChipPlacement(target: PlaceBetTarget, amount: ChipValue): GameState {
+  function applyOptimisticChipPlacement(slotNumber: number, amount: ChipValue, online: boolean): GameState {
     let state = gameStateRef.current;
-    if (target.kind === 'slot') {
-      const slot = state.tableMeta.boxSlots.find((s) => s.slotNumber === target.slotNumber);
-      if (!slot?.playerId) {
-        state = claimBoxSlot(state, target.slotNumber);
+    let boxId = resolveOccupantBoxIdForSlot(state, slotNumber);
+    if (!boxId) {
+      if (online) {
+        return state;
       }
-      const boxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === target.slotNumber)
-        ?.playerId;
+      state = claimBoxSlot(state, slotNumber);
+      boxId = resolveOccupantBoxIdForSlot(state, slotNumber);
       if (!boxId) {
         throw new Error('Could not claim box');
       }
-      const personId = resolveControllerPersonId(state, controllerName);
-      return addChipToBoxStake(state, boxId, amount, personId ?? undefined);
     }
     const personId = resolveControllerPersonId(state, controllerName);
-    return addChipToBoxStake(state, target.boxId, amount, personId ?? undefined);
+    return addChipToBoxStake(state, boxId, amount, personId ?? undefined);
   }
 
-  async function placeBetAtTargetCore(target: PlaceBetTarget, amount: ChipValue): Promise<void> {
+  async function placeBetAtTargetCore(slotNumber: number, amount: ChipValue): Promise<void> {
     const online = Boolean(onlineDispatch);
-    const anchor = anchorOnlineChipTarget(gameStateRef.current, target, online);
-    const slotNumber = localChipTargetSlotNumber(gameStateRef.current, anchor);
+    selectLocalTarget(slotNumber);
 
     logChipBetDiagnostic({
       stage: 'tap-target',
       selectedTarget: localSelectedChipTargetRef.current.target,
       slotNumber,
-      optimisticBoxId: anchor.kind === 'box' ? anchor.boxId : null,
+      optimisticBoxId: resolveOccupantBoxIdForSlot(gameStateRef.current, slotNumber),
     });
 
-    let betTarget: PlaceBetTarget;
+    const inFlight = betInFlightSlotsRef.current.has(slotNumber);
+    let payloadTarget;
     try {
-      betTarget = coercePlaceBetTarget(gameStateRef.current, anchor, online);
+      payloadTarget = resolvePlaceBetPayloadTarget(
+        gameStateRef.current,
+        slotNumber,
+        online,
+        inFlight,
+      );
     } catch (err) {
-      const degraded = degradeChipTargetToSlot(gameStateRef.current, anchor);
-      if (degraded) {
-        try {
-          betTarget = coercePlaceBetTarget(gameStateRef.current, degraded, online);
-        } catch (inner) {
-          logChipBetDiagnostic({
-            stage: 'error',
-            selectedTarget: anchor,
-            slotNumber,
-            message: formatPlaceBetError(inner),
-          });
-          setError(formatPlaceBetError(inner));
-          preserveLocalChipTargetAfterStateSync(gameStateRef.current, anchor);
-          return;
-        }
-      } else {
-        setError(formatPlaceBetError(err));
-        return;
-      }
+      setError(formatPlaceBetError(err));
+      return;
     }
-
-    const inFlight = slotNumber != null && betInFlightSlotsRef.current.has(slotNumber);
-    const payloadTarget = resolveOnlinePlaceBetPayloadTarget(
-      gameStateRef.current,
-      betTarget,
-      online,
-      inFlight,
-    );
     const payload = placeBetPayloadFromTarget(payloadTarget, amount);
 
     logChipBetDiagnostic({
       stage: 'payload',
-      selectedTarget: anchor,
+      selectedTarget: localSelectedChipTargetRef.current.target,
       payload,
       slotNumber,
     });
@@ -840,25 +841,28 @@ export function BlackjackPanel({
     if (onlineDispatch) {
       setError(null);
       const snapshot = gameStateRef.current;
-      const optimisticSource = anchor.kind === 'slot' ? anchor : betTarget;
+      const hadOccupant = resolveOccupantBoxIdForSlot(snapshot, slotNumber) != null;
       try {
-        const optimistic = applyOptimisticChipPlacement(optimisticSource, amount);
-        onGameStateChange(optimistic);
-        const optBoxId =
-          optimisticSource.kind === 'slot'
-            ? optimistic.tableMeta.boxSlots.find((s) => s.slotNumber === optimisticSource.slotNumber)
-                ?.playerId
-            : optimisticSource.boxId;
-        logChipBetDiagnostic({
-          stage: 'optimistic',
-          selectedTarget: anchor,
-          optimisticBoxId: optBoxId ?? null,
-          slotNumber,
-        });
-        preserveLocalChipTargetAfterStateSync(optimistic, anchor);
-        if (slotNumber != null) {
-          betInFlightSlotsRef.current.add(slotNumber);
+        if (hadOccupant) {
+          const optimistic = applyOptimisticChipPlacement(slotNumber, amount, true);
+          onGameStateChange(optimistic);
+          logChipBetDiagnostic({
+            stage: 'optimistic',
+            selectedTarget: localSelectedChipTargetRef.current.target,
+            optimisticBoxId: resolveOccupantBoxIdForSlot(optimistic, slotNumber),
+            slotNumber,
+          });
+        } else {
+          addPendingOnlineStake(slotNumber, amount);
+          logChipBetDiagnostic({
+            stage: 'optimistic',
+            selectedTarget: localSelectedChipTargetRef.current.target,
+            optimisticBoxId: null,
+            slotNumber,
+          });
         }
+        preserveLocalChipTargetAfterStateSync(undefined, slotNumber);
+        betInFlightSlotsRef.current.add(slotNumber);
       } catch (err) {
         setError(formatPlaceBetError(err));
         return;
@@ -870,85 +874,60 @@ export function BlackjackPanel({
           selectedTarget: localSelectedChipTargetRef.current.target,
           slotNumber,
         });
-        preserveLocalChipTargetAfterStateSync(gameStateRef.current, anchor);
+        preserveLocalChipTargetAfterStateSync(undefined, slotNumber);
       } catch (err) {
         onGameStateChange(snapshot);
+        if (!hadOccupant) {
+          rollbackPendingOnlineStake(slotNumber);
+        }
         logChipBetDiagnostic({
           stage: 'error',
-          selectedTarget: anchor,
+          selectedTarget: localSelectedChipTargetRef.current.target,
           slotNumber,
           message: formatPlaceBetError(err),
         });
-        preserveLocalChipTargetAfterStateSync(snapshot, anchor);
+        preserveLocalChipTargetAfterStateSync(snapshot, slotNumber);
         setError(formatPlaceBetError(err));
       } finally {
-        if (slotNumber != null) {
-          betInFlightSlotsRef.current.delete(slotNumber);
-        }
+        betInFlightSlotsRef.current.delete(slotNumber);
       }
       return;
     }
 
     setError(null);
     try {
-      let state = gameStateRef.current;
-      if (anchor.kind === 'slot') {
-        const slot = state.tableMeta.boxSlots.find((s) => s.slotNumber === anchor.slotNumber);
-        if (!slot?.playerId) {
-          state = claimBoxSlot(state, anchor.slotNumber);
-        }
-        const boxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === anchor.slotNumber)
-          ?.playerId;
-        if (!boxId) {
-          throw new Error('Could not claim box');
-        }
-        const personId = resolveControllerPersonId(state, controllerName);
-        const nextState = addChipToBoxStake(state, boxId, amount, personId ?? undefined);
-        onGameStateChange(nextState);
-        preserveLocalChipTargetAfterStateSync(nextState, anchor);
-        return;
-      }
-      const personId = resolveControllerPersonId(state, controllerName);
-      const nextState = addChipToBoxStake(state, anchor.boxId, amount, personId ?? undefined);
+      const nextState = applyOptimisticChipPlacement(slotNumber, amount, false);
       onGameStateChange(nextState);
-      preserveLocalChipTargetAfterStateSync(nextState, anchor);
+      preserveLocalChipTargetAfterStateSync(nextState, slotNumber);
     } catch (err) {
       setError(formatPlaceBetError(err));
     }
   }
 
-  function placeBetAtTarget(target: PlaceBetTarget, amount: ChipValue) {
+  function placeBetAtTarget(slotNumber: number, amount: ChipValue) {
     const online = Boolean(onlineDispatch);
-    const anchor = anchorOnlineChipTarget(gameStateRef.current, target, online);
-    const slotNumber = localChipTargetSlotNumber(gameStateRef.current, anchor);
-
-    if (online && slotNumber != null && slotNumber >= 2) {
+    if (online && slotNumber >= 2) {
       const prev = betChainBySlotRef.current.get(slotNumber) ?? Promise.resolve();
       const chained = prev
         .catch(() => {})
-        .then(() => placeBetAtTargetCore(anchor, amount));
+        .then(() => placeBetAtTargetCore(slotNumber, amount));
       betChainBySlotRef.current.set(slotNumber, chained);
       void chained;
       return;
     }
 
-    void placeBetAtTargetCore(anchor, amount);
+    void placeBetAtTargetCore(slotNumber, amount);
   }
 
   function selectBox(boxId: string) {
-    try {
-      selectLocalTarget(
-        getChipPlacementTargetFromBoxId(
-          gameStateRef.current,
-          boxId,
-          Boolean(onlineDispatch),
-        ),
-      );
-    } catch {
-      const slotNum = gameStateRef.current.session.boxSlotNumbers?.[boxId];
-      if (slotNum != null) {
-        selectLocalTarget(getChipPlacementTarget(gameStateRef.current, { slotNumber: slotNum }));
-      }
+    const slot = gameStateRef.current.tableMeta.boxSlots.find((s) => s.playerId === boxId);
+    if (slot) {
+      selectLocalTarget(slot.slotNumber);
+      return;
+    }
+    const slotNum = gameStateRef.current.session.boxSlotNumbers?.[boxId];
+    if (slotNum != null) {
+      selectLocalTarget(slotNum);
     }
   }
 
@@ -956,10 +935,6 @@ export function BlackjackPanel({
     return bindTapSelect(tapSelectRef.current, action);
   }
 
-
-  function clearBoxStakeOnBox(boxId: string) {
-    run((s) => clearBoxStake(s, boxId), { type: 'clearBet', payload: { boxId } });
-  }
 
   function removeLastChipFromBox(boxId: string) {
     run((s) => removeLastChipFromBoxStake(s, boxId), { type: 'retractChip', payload: { boxId } });
@@ -969,22 +944,13 @@ export function BlackjackPanel({
     run((s) => setPersonPlayFlow(s, personId, playFlow));
   }
 
-  function confirmBoxStakeOnBox(boxId: string) {
-    setError(null);
-    try {
-      run((s) => confirmBoxStake(s, boxId));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Cannot confirm bet');
-    }
-  }
-
   function handleDragOver(e: React.DragEvent) {
     e.preventDefault();
     e.stopPropagation();
     e.dataTransfer.dropEffect = 'copy';
   }
 
-  function handleSlotChipDrop(slotNumber: number, boxId: string | null, e: React.DragEvent) {
+  function handleSlotChipDrop(slotNumber: number, e: React.DragEvent) {
     e.preventDefault();
     e.stopPropagation();
     setDropTargetId(null);
@@ -996,26 +962,15 @@ export function BlackjackPanel({
       return;
     }
 
-    const target = getChipPlacementTarget(gameStateRef.current, { slotNumber, boxId });
-    selectLocalTarget(target);
-    placeBetAtTarget(target, value);
-  }
-
-  function handleBetZoneDrop(boxId: string, slotNumber: number, e: React.DragEvent) {
-    handleSlotChipDrop(slotNumber, boxId, e);
+    selectLocalTarget(slotNumber);
+    placeBetAtTarget(slotNumber, value);
   }
 
   function handleClaimOrSelectSlot(slotNumber: number) {
-    const slot = tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
-    if (!slot) {
+    if (!tableMeta.boxSlots.some((s) => s.slotNumber === slotNumber)) {
       return;
     }
-    if (slot.playerId) {
-      selectBox(slot.playerId);
-      return;
-    }
-
-    selectLocalTarget({ kind: 'slot', slotNumber });
+    selectLocalTarget(slotNumber);
   }
 
   function handleChipTrayClick(value: ChipValue) {
@@ -1030,7 +985,7 @@ export function BlackjackPanel({
     }
     if (!result.ok) {
       const local = localSelectedChipTargetRef.current;
-      const ui = uiFromLocalChipTarget(local.target ?? localChipSelection.target);
+      const ui = uiFromLocalChipTarget(local.target ?? localChipSelection.target, gameStateRef.current);
       logChipTargetResolution(result.reason, {
         ...ui,
         hasUserSelected: local.hasUserSelected || localChipSelection.hasUserSelected,
@@ -1039,7 +994,7 @@ export function BlackjackPanel({
       setError('Tap a box to bet');
       return;
     }
-    placeBetAtTarget(result.target, value);
+    placeBetAtTarget(result.slotNumber, value);
   }
 
   function renderCard(cardId: string, faceDown = false, compact = true, reactKey?: string) {
@@ -1088,9 +1043,8 @@ export function BlackjackPanel({
           if (!bettingOpen) {
             return;
           }
-          const placementTarget = getChipPlacementTarget(gameStateRef.current, target);
-          selectLocalTarget(placementTarget);
-          placeBetAtTarget(placementTarget, value);
+          selectLocalTarget(target.slotNumber);
+          placeBetAtTarget(target.slotNumber, value);
         },
       }),
     [inBetting, bettingOpen],
@@ -1436,80 +1390,6 @@ export function BlackjackPanel({
     );
   }
 
-  function renderBetZone(boxId: string, slotNumber: number) {
-    const stake = getStakeForBox(gameState, boxId);
-    const chips = getStakeChipsForBox(gameState, boxId);
-    const dropKey = `box-${boxId}`;
-    const isDrop = dropTargetId === dropKey;
-    const hasStake = stake > 0;
-    const stakeValidationMessage = hasStake ? getStakeBetValidationMessage(gameState, boxId) : null;
-    const belowMin = Boolean(stakeValidationMessage);
-
-    return (
-      <div
-        className={[
-          'bj-bet-zone',
-          TABLE_UX.boxInteractive,
-          isDrop ? 'bj-bet-zone--drop' : '',
-          hasStake ? 'bj-bet-zone--has-chips' : '',
-          belowMin ? 'bj-bet-zone--below-min' : '',
-        ].filter(Boolean).join(' ')}
-        {...{
-          [CHIP_DROP_SLOT_ATTR]: slotNumber,
-          [CHIP_DROP_BOX_ATTR]: boxId,
-        }}
-        onDragOver={handleDragOver}
-        onDragEnter={(e) => {
-          e.stopPropagation();
-          if (inBetting) {
-            setDropTargetId(dropKey);
-          }
-        }}
-        onDragLeave={(e) => {
-          e.stopPropagation();
-          setDropTargetId(null);
-        }}
-        onDrop={(e) => inBetting && handleBetZoneDrop(boxId, slotNumber, e)}
-        {...bindBoxTapSelect(() => selectBox(boxId))}
-      >
-        {hasStake && (
-          <>
-            <span className="bj-bet-zone__amount bj-bet-zone__amount--confirmed">{stake}</span>
-            <StakeChips
-              chips={chips}
-              variant="bet"
-              removable={inBetting}
-              onRemoveTopChip={() => removeLastChipFromBox(boxId)}
-            />
-          </>
-        )}
-        {belowMin && stakeValidationMessage && (
-          <span className="bj-bet-zone__min-warn">{stakeValidationMessage}</span>
-        )}
-        {inBetting && hasStake && (
-          <div className="bj-bet-zone__actions">
-            {belowMin && (
-              <button
-                type="button"
-                className="bj-bet-zone__confirm"
-                onClick={() => confirmBoxStakeOnBox(boxId)}
-              >
-                Confirm
-              </button>
-            )}
-            <button
-              type="button"
-              className="bj-bet-zone__clear-all"
-              onClick={() => clearBoxStakeOnBox(boxId)}
-            >
-              Clear
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
-
   function handleMovePlayer(personId: string, direction: 'up' | 'down') {
     run((s) => movePlayerInOrder(s, personId, direction));
   }
@@ -1791,14 +1671,19 @@ export function BlackjackPanel({
     );
   }
 
-  function renderArcBoxSlot(boxId: string, slotNumber: number) {
-    const openStake = getStakeForBox(gameState, boxId);
+  function renderArcSlot(slotNumber: number) {
+    const slot = tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
+    const boxId = slot?.playerId ?? null;
+    const isEmpty = !boxId;
+    const pendingChips = pendingOnlineStakesBySlot[slotNumber] ?? [];
+    const openStake = boxId ? getStakeForBox(gameState, boxId) : 0;
+    const pendingStakeTotal = pendingChips.reduce((sum, chip) => sum + chip, 0);
     const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
     const borderState = resolveBoxBorderVisualState({
       state: gameState,
-      boxPlayerId: boxId,
+      boxPlayerId: boxId ?? `slot-${slotNumber}`,
       viewerPersonId,
-      openStake,
+      openStake: openStake || pendingStakeTotal,
       selectedBettingBoxId: selectedBettingBoxIdForUi,
       selectedBettingSlotNumber,
       activeBoxId: uiActiveBoxId,
@@ -1806,9 +1691,11 @@ export function BlackjackPanel({
       bettingStage: inBetting,
       playerPhase: isPlayerTurnPhase(protocolPhase),
     });
-    const boxInfo = buildBlackjackPlayerBoxInfo(gameState, slotNumber, boxId);
-    let handKeys = handKeysByBox.get(boxId) ?? [];
-    if (handKeys.length === 0 && visualRound) {
+    const boxInfo = boxId
+      ? buildBlackjackPlayerBoxInfo(gameState, slotNumber, boxId)
+      : null;
+    let handKeys = boxId ? (handKeysByBox.get(boxId) ?? []) : [];
+    if (boxId && handKeys.length === 0 && visualRound) {
       const primaryKey = blackjackHandKey(boxId, 0);
       const hand = visualRound.playerHands[primaryKey];
       if (hand && (hand.currentBet > 0 || hand.cardIds.some(Boolean))) {
@@ -1821,10 +1708,14 @@ export function BlackjackPanel({
       ? getVisibleHandCardIds(visualRound, primaryHandKey)
       : [];
     const isBusted = primaryHand?.actionStatus === 'busted';
-    const wager = inBetting ? openStake : (primaryHand?.currentBet ?? openStake);
-    const betAmount = resolveBoxBetAmountDuringPlay(inBetting, openStake, primaryHand?.currentBet);
+    const wager = inBetting ? openStake || pendingStakeTotal : (primaryHand?.currentBet ?? openStake);
+    const betAmount = resolveBoxBetAmountDuringPlay(
+      inBetting,
+      openStake || pendingStakeTotal,
+      primaryHand?.currentBet,
+    );
     const boxParticipated =
-      Boolean(visualRound) && boxHadActiveHandInRound(visualRound!, handKeys);
+      Boolean(visualRound) && boxId != null && boxHadActiveHandInRound(visualRound!, handKeys);
     const boxNetChips =
       showBoxHandResultMarkers && visualRound && boxParticipated
         ? resolveBoxNetChipsForHands(
@@ -1844,8 +1735,8 @@ export function BlackjackPanel({
       showBoxHandResultMarkers && boxParticipated && boxNetChips !== null
         ? boxNetResultTone(boxNetChips)
         : null;
-    const stakeChips = getStakeChipsForBox(gameState, boxId);
-    const showBettingChips = inBetting && openStake > 0 && stakeChips.length > 0;
+    const stakeChips = mergeStakeChipsForSlotDisplay(gameState, slotNumber, boxId, pendingChips);
+    const showBettingChips = inBetting && (openStake > 0 || pendingChips.length > 0) && stakeChips.length > 0;
     const showPlayChips = !inBetting && wager > 0;
     const displayChips = showBettingChips
       ? stakeChips
@@ -1858,23 +1749,35 @@ export function BlackjackPanel({
       deviceView === 'mobile'
         ? 0
         : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
+    const isSelected = inBetting && selectedBettingSlotNumber === slotNumber;
+    const isDrop = dropTargetId === dropKey || dropTargetId === `slot-${slotNumber}`;
+    const onSelect = () => (boxId ? selectBox(boxId) : handleClaimOrSelectSlot(slotNumber));
 
     return (
       <div
-        key={`box-${boxId}`}
+        key={slotArcReactKey(slotNumber)}
         className={[
           'bj-arc__slot',
-          'bj-arc__slot--owned',
+          isEmpty ? 'bj-arc__slot--empty' : 'bj-arc__slot--owned',
           TABLE_UX.boxHitZone,
           isJoinAssigned ? 'bj-arc__slot--join-highlight' : '',
+          isDrop ? 'bj-arc__slot--drop' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
+        {...{
+          [CHIP_DROP_SLOT_ATTR]: slotNumber,
+          [CHIP_DROP_BOX_ATTR]: boxId ?? '',
+        }}
       >
         <button
           type="button"
           className={TABLE_UX.boxHitArea}
-          {...bindBoxTapSelect(() => selectBox(boxId))}
-          aria-label={`Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`}
+          {...bindBoxTapSelect(onSelect)}
+          aria-label={
+            isEmpty
+              ? `Join box ${slotNumber}${pendingStakeTotal > 0 ? `, ${pendingStakeTotal}c staked` : ''}`
+              : `Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`
+          }
           aria-current={borderState.isSelected || uiActiveBoxId === boxId ? 'true' : undefined}
           onDragOver={inBetting ? handleDragOver : undefined}
           onDragEnter={
@@ -1893,7 +1796,7 @@ export function BlackjackPanel({
                 }
               : undefined
           }
-          onDrop={inBetting ? (e) => handleBetZoneDrop(boxId, slotNumber, e) : undefined}
+          onDrop={inBetting ? (e) => handleSlotChipDrop(slotNumber, e) : undefined}
         />
         <span
           className={boxStakeLabelClassName(Boolean(boxValueLabel), isBusted, boxNetTone)}
@@ -1907,17 +1810,24 @@ export function BlackjackPanel({
             getBoxCardVisualClasses(borderState),
             TABLE_UX.fullArcBox,
             'bj-player-box-mobile',
+            isEmpty ? 'bj-phone-view__mini-hand--empty' : '',
+            isSelected ? 'bj-box--selected' : '',
+            isSelected ? BET_BOX_PULSE : '',
+            isDrop ? 'bj-bet-zone--drop' : '',
             getBoxActivePulseClassName(borderState),
           )}
-          {...{
-            [CHIP_DROP_SLOT_ATTR]: slotNumber,
-            [CHIP_DROP_BOX_ATTR]: boxId,
-          }}
         >
-          <BlackjackPlayerBoxHead
-            boxLabel={boxInfo.boxLabel}
-            callerDisplayName={boxInfo.callerDisplayName}
-          />
+          {boxInfo ? (
+            <BlackjackPlayerBoxHead
+              boxLabel={boxInfo.boxLabel}
+              callerDisplayName={boxInfo.callerDisplayName}
+            />
+          ) : (
+            <span className="bj-phone-view__mini-hand-head">
+              <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
+              <span className="bj-phone-view__mini-hand-name">Join</span>
+            </span>
+          )}
           {visibleCardIds.length > 0 && visualDeck ? (
             <span
               className="bj-phone-view__mini-hand-composition"
@@ -1953,81 +1863,14 @@ export function BlackjackPanel({
               <StakeChips
                 chips={displayChips}
                 variant="bet"
-                removable={inBetting && showBettingChips}
-                onRemoveTopChip={() => removeLastChipFromBox(boxId)}
+                removable={inBetting && showBettingChips && Boolean(boxId) && pendingChips.length === 0}
+                onRemoveTopChip={boxId ? () => removeLastChipFromBox(boxId) : undefined}
               />
-            ) : inBetting ? (
-              renderBetZone(boxId, slotNumber)
             ) : (
               <span className={TABLE_UX.stakeSlotReserved} aria-hidden="true">
                 &nbsp;
               </span>
             )}
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  function renderEmptyBoxSlot(slotNumber: number) {
-    const rotation =
-      deviceView === 'mobile'
-        ? 0
-        : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
-    const dropKey = `slot-${slotNumber}`;
-    const isDrop = dropTargetId === dropKey;
-    const isSelected = inBetting && selectedBettingSlotNumber === slotNumber;
-    return (
-      <div
-        key={`empty-${slotNumber}`}
-        className={[
-          'bj-arc__slot',
-          'bj-arc__slot--empty',
-          TABLE_UX.boxHitZone,
-          isDrop ? 'bj-arc__slot--drop' : '',
-        ].filter(Boolean).join(' ')}
-        style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
-        {...{
-          [CHIP_DROP_SLOT_ATTR]: slotNumber,
-          [CHIP_DROP_BOX_ATTR]: '',
-        }}
-      >
-        <button
-          type="button"
-          className={TABLE_UX.boxHitArea}
-          {...bindBoxTapSelect(() => handleClaimOrSelectSlot(slotNumber))}
-          aria-label={`Join box ${slotNumber}`}
-          aria-current={isSelected ? 'true' : undefined}
-          onDragOver={handleDragOver}
-          onDragEnter={() => inBetting && setDropTargetId(dropKey)}
-          onDragLeave={() => setDropTargetId(null)}
-          onDrop={(e) => inBetting && handleSlotChipDrop(slotNumber, null, e)}
-        />
-        <div
-          className={[
-            'bj-phone-view__mini-hand',
-            TABLE_UX.fullArcBox,
-            'bj-player-box-mobile',
-            'bj-phone-view__mini-hand--empty',
-            isSelected ? 'bj-box--selected' : '',
-            isSelected ? BET_BOX_PULSE : '',
-            isDrop ? 'bj-bet-zone--drop' : '',
-          ].filter(Boolean).join(' ')}
-        >
-          <span className="bj-phone-view__mini-hand-head">
-            <span className="bj-phone-view__mini-hand-box">Box {slotNumber}</span>
-            <span className="bj-phone-view__mini-hand-name">Join</span>
-          </span>
-          <span
-            className="bj-phone-view__mini-hand-composition bj-phone-view__mini-hand-composition--placeholder"
-            aria-hidden="true"
-          >
-            &nbsp;
-          </span>
-          <span className="bj-phone-view__mini-stake-slot" aria-hidden="true">
-            <span className={TABLE_UX.stakeSlotReserved} aria-hidden="true">
-              &nbsp;
-            </span>
           </span>
         </div>
       </div>
@@ -2064,28 +1907,17 @@ export function BlackjackPanel({
               +
             </button>
           ) : null}
-          {displaySlots.map((slot) =>
-            slot.playerId
-              ? renderArcBoxSlot(slot.playerId, slot.slotNumber)
-              : renderEmptyBoxSlot(slot.slotNumber),
-          )}
+          {displaySlots.map((slot) => renderArcSlot(slot.slotNumber))}
         </div>
       </div>
     );
   }
 
-  const materializedSlotBoxId =
-    selectedBettingSlotNumber != null
-      ? gameState.tableMeta.boxSlots.find((s) => s.slotNumber === selectedBettingSlotNumber)
-          ?.playerId ?? null
-      : null;
-  const localBettingFocusBoxId = selectedBettingBoxIdForUi ?? materializedSlotBoxId;
-
   const focusBoxId =
     round?.status === 'player-turns' && uiActiveBoxId
       ? uiActiveBoxId
-      : bettingOpen && (selectedBettingBoxIdForUi != null || selectedBettingSlotNumber != null)
-        ? localBettingFocusBoxId
+      : bettingOpen && selectedBettingSlotNumber != null
+        ? selectedBettingBoxIdForUi
         : selectedBettingBoxIdForUi ?? focusFallbackBoxId;
 
   const dealerCardNodes =

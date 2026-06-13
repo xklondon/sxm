@@ -69,24 +69,9 @@ function isValidBetTarget(state, target, online) {
     return slot !== undefined && !slot.playerId;
 }
 /**
- * Chip-tray target: last valid selection, then assigned/native slot, then first owned box.
- * Never returns a client-only boxId that is absent from tableMeta.boxSlots when online.
+ * @deprecated Legacy chip-tray resolver — Panel uses slot-only localChipTargetSelection.
  */
 export function resolveChipTrayBetTarget(state, controllerName, lastTarget, online) {
-    if (state.selectedSeatId) {
-        try {
-            const fromSelection = getChipPlacementTargetFromBoxId(state, state.selectedSeatId, online);
-            if (fromSelection.kind === 'box' || online) {
-                return fromSelection;
-            }
-        }
-        catch {
-            if (lastTarget && isValidBetTarget(state, lastTarget, online)) {
-                return lastTarget;
-            }
-            return null;
-        }
-    }
     if (lastTarget && isValidBetTarget(state, lastTarget, online)) {
         return lastTarget;
     }

@@ -52,26 +52,79 @@
 }
 
 @media (min-width: 721px) {
-  .bj-view-full-desktop .bj-player-boxes-wrap {
+  .bj-view-full-desktop .bj-player-boxes-wrap,
+  .bj-view-card-desktop .bj-player-boxes-wrap {
     width: 100%;
     max-width: 100%;
   }
 
-  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes {
-    width: 100%;
+  /* CONTRACT A/B — desktop compact max-content row (never equal 1fr stretch). */
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes,
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes {
+    width: max-content;
     max-width: 100%;
-    margin-inline: 0;
-    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
-    justify-content: stretch;
+    margin-inline: auto;
+    justify-content: center;
     justify-items: center;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, max-content));
   }
 
-  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
-    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, 1fr));
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes,
+  .bj-view-card-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
+    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, max-content));
   }
-}
 
-@media (min-width: 721px) {
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot,
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
+    width: var(--bj-full-table-box-width);
+    max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+    align-self: center;
+  }
+
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
+    width: var(--bj-cardview-desktop-mini-hand-width);
+    max-width: calc(var(--bj-cardview-desktop-mini-hand-width) + 0.35rem);
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty,
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty {
+    align-self: center;
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row__add,
+  .bj-view-full-desktop .bj-player-boxes-wrap__add,
+  .bj-view-card-desktop .bj-table-slot-row__add,
+  .bj-view-card-desktop .bj-player-boxes-wrap__add {
+    align-self: center;
+    height: var(--bj-full-table-box-height);
+    min-height: var(--bj-full-table-box-height);
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row__add::before,
+  .bj-view-full-desktop .bj-player-boxes-wrap__add::before,
+  .bj-view-card-desktop .bj-table-slot-row__add::before,
+  .bj-view-card-desktop .bj-player-boxes-wrap__add::before {
+    display: none;
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row__add::after,
+  .bj-view-full-desktop .bj-player-boxes-wrap__add::after,
+  .bj-view-card-desktop .bj-table-slot-row__add::after,
+  .bj-view-card-desktop .bj-player-boxes-wrap__add::after {
+    content: '+';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    aspect-ratio: auto;
+    height: 100%;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
   .bj-table-layout-shell .bj-table-zone--cards .bj-table-slot-row.bj-arc--cards {
     display: grid;
     overflow: visible;
@@ -134,50 +187,16 @@
   line-height: 0;
 }
 
-/* Same column stack as player boxes: value band + aspect-ratio tile (plus-only, no box chrome). */
-.bj-table-slot-row__add::before,
-.bj-player-boxes-wrap__add::before {
-  content: '';
-  display: block;
-  flex: 0 0 var(--bj-box-value-band-height);
-  min-height: var(--bj-box-value-band-height);
-  width: 100%;
-}
-
-.bj-table-slot-row__add::after,
-.bj-player-boxes-wrap__add::after {
-  content: '+';
-  flex: 1 1 auto;
-  aspect-ratio: 1.05 / 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-  font-size: 0.9rem;
-  font-weight: 700;
-  line-height: 1;
-}
-
 .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,
 .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  align-self: stretch;
   min-height: 0;
 }
 
-/* Empty slots reserve the same value band as owned Box 1 — row height stays uniform */
-.bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty::before {
-  content: '';
-  display: block;
-  flex: 0 0 var(--bj-box-value-band-height);
-  min-height: var(--bj-box-value-band-height);
-  width: 100%;
-}
-
-/* CONTRACT A/B/D — fixed-width tiles inside compact columns. */
+/* CONTRACT A/B/D — fixed-width tiles (desktop + mobile landscape). Mobile portrait overrides below. */
 .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
 .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-player-box-mobile,
 .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-bet-zone,
@@ -253,6 +272,50 @@
     max-width: none;
   }
 
+  /* Mobile portrait — plus-only stack aligned with player box tiles. */
+  .bj-view-full-mobile .bj-table-slot-row__add::before,
+  .bj-view-full-mobile .bj-player-boxes-wrap__add::before,
+  .bj-view-card-mobile .bj-table-slot-row__add::before,
+  .bj-view-card-mobile .bj-player-boxes-wrap__add::before {
+    content: '';
+    display: block;
+    flex: 0 0 var(--bj-box-value-band-height);
+    min-height: var(--bj-box-value-band-height);
+    width: 100%;
+  }
+
+  .bj-view-full-mobile .bj-table-slot-row__add::after,
+  .bj-view-full-mobile .bj-player-boxes-wrap__add::after,
+  .bj-view-card-mobile .bj-table-slot-row__add::after,
+  .bj-view-card-mobile .bj-player-boxes-wrap__add::after {
+    content: '+';
+    flex: 1 1 auto;
+    aspect-ratio: 1.05 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,
+  .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty,
+  .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,
+  .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty {
+    align-self: stretch;
+  }
+
+  .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty::before,
+  .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty::before {
+    content: '';
+    display: block;
+    flex: 0 0 var(--bj-box-value-band-height);
+    min-height: var(--bj-box-value-band-height);
+    width: 100%;
+  }
+
   .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
   .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-player-box-mobile,
   .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-bet-zone,
@@ -320,6 +383,39 @@
     width: var(--bj-table-slot-add-size);
     max-width: var(--bj-table-slot-add-size);
   }
+}
+
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips--bet,
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips--bet.stake-chips--removable {
+  min-height: 0;
+}
+
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips__pile {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips__remove {
+  position: absolute;
+  top: -0.15rem;
+  right: -0.15rem;
+  pointer-events: auto;
+}
+
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot {
+  position: relative;
 }
 
 .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,

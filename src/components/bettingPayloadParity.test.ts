@@ -58,9 +58,9 @@ describe('mobile/desktop betting payload parity (shared helper)', () => {
       },
     };
 
-    const trayTarget = resolveChipTrayBetTarget(staleState, 'Alice', null, true);
-    expect(trayTarget).toEqual({ kind: 'slot', slotNumber: 3 });
-    expect(placeBetPayloadFromTarget(trayTarget!, 5)).toEqual({ slotNumber: 3, amount: 5 });
+    const target = getChipPlacementTarget(staleState, { slotNumber: 3 });
+    expect(target).toEqual({ kind: 'slot', slotNumber: 3 });
+    expect(placeBetPayloadFromTarget(target, 5)).toEqual({ slotNumber: 3, amount: 5 });
   });
 
   it('chip tray uses last valid empty-slot target when selection is stale', () => {

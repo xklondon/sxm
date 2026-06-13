@@ -3,6 +3,7 @@ import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 import { addPlayer, mergeSessionUpdate } from './session';
 import { allocateChipsToBankrollOwner } from './allocation';
 import { findPersonPlayerIdByController } from './bankroll';
+import { personsShareOneChipPot } from './sharedBankroll';
 import { buildTablePeopleRows } from './tablePeople';
 import { syncPlayerOrderAndAssignments } from './playerAssignment';
 import { getStartingChipsEachSeat } from './tokens';
@@ -52,7 +53,9 @@ export function ensureTableOwnerPersonBankroll(state) {
         });
     }
     const balanceBefore = derivePlayerBalanceFromLedger(personId, next.ledger);
-    if (balanceBefore === 0 && seatChips > 0) {
+    const bankId = next.session.bankPlayerId;
+    const sharesBankPot = bankId !== null && personsShareOneChipPot(next, personId, bankId);
+    if (balanceBefore === 0 && seatChips > 0 && !sharesBankPot) {
         next = allocateChipsToBankrollOwner(next, {
             bankrollOwnerId: personId,
             amount: seatChips,

@@ -418,7 +418,7 @@ Shake-to-roll optional. Primary action label: **Dice** (roll).
 
 ### Blackjack presentation (Full Table + Card View)
 
-**Player box stability:** Slot-row boxes reserve fixed stake (`--bj-full-table-stake-min-height`) and composition height so adding chips/tokens does not reflow box width or row height.
+**Player box stability:** Slot row uses one `renderArcSlot(slotNumber)` with React key `slot-${slotNumber}` (never `boxId`). Local chip-tray target stores `{ slotNumber }` only; `boxId` is derived at `placeBet` payload time. Online empty-slot first chip uses a pending preview keyed by slot — no client `claimBoxSlot`. Visible box count expands only via the user **+** control, not when a high slot is first occupied. Fixed stake slot (`--bj-full-table-stake-min-height`) with absolutely positioned chip pile so adding/removing chips does not reflow box width or row height.
 
 **Active turn highlight:** Card-column / hero hand totals use circular `bj-phone-view__box-value--active-turn` only — one circled numeric value, no box border or rectangle frame. Stake labels above boxes do not use hand-total emphasis. Betting selection uses `bj-box--selected` + `bj-phone-view__bet-chip--pulse` only.
 

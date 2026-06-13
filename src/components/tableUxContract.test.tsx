@@ -302,10 +302,13 @@ describe('TABLE_UX markup across views', () => {
     expect(full).not.toContain(TABLE_UX.cardsFan);
   });
 
-  it('bet zones use rectangular seat shell class during betting', () => {
+  it('arc stake slots use fixed mini-stake shell during betting', () => {
     const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
-    expect(panelSrc).toContain("'bj-bet-zone'");
-    expect(readSrc('src/styles/bj-table-shared.css')).toMatch(/\.bj-bet-zone[\s\S]*--bj-seat-radius/);
+    expect(panelSrc).toContain('bj-phone-view__mini-stake-slot');
+    expect(panelSrc).toContain('TABLE_UX.fullArcBox');
+    expect(readSrc('src/styles/bj-player-row-layout.css')).toMatch(
+      /\.bj-phone-view__mini-stake-slot \.stake-chips[\s\S]*position:\s*absolute/,
+    );
   });
 });
 

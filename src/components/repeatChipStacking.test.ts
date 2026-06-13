@@ -24,7 +24,7 @@ function simulateTwoTrayBets(slotNumber: 1 | 2 | 3 | 4, amounts: [StakeChipValue
   const targetBox = boxPlayerId(state, slotNumber)!;
   const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
 
-  let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: targetBox });
+  let local = selectLocalChipTarget(createEmptyLocalChipTarget(), slotNumber);
   const visibleBoxCount = 4;
 
   for (const amount of amounts) {
@@ -37,16 +37,18 @@ function simulateTwoTrayBets(slotNumber: 1 | 2 | 3 | 4, amounts: [StakeChipValue
     });
     expect(resolved).toEqual({ kind: 'box', boxId: targetBox });
     state = addChipToBoxStake(state, targetBox, amount, personId);
-    local = affirmChipTargetAfterPlacement(local, state, resolved!, false);
+    local = affirmChipTargetAfterPlacement(local, state, slotNumber, false);
     local = reconcileLocalChipTarget(local, state, false);
-    expect(uiFromLocalChipTarget(local.target).selectedBettingBoxId).toBe(targetBox);
-    expect(resolveCurrentChipTarget({
-      local,
-      state,
-      online: false,
-      viewerPersonId: personId,
-      visibleBoxCount,
-    })).toEqual({ kind: 'box', boxId: targetBox });
+    expect(uiFromLocalChipTarget(local.target, state).selectedBettingBoxId).toBe(targetBox);
+    expect(
+      resolveCurrentChipTarget({
+        local,
+        state,
+        online: false,
+        viewerPersonId: personId,
+        visibleBoxCount,
+      }),
+    ).toEqual({ kind: 'box', boxId: targetBox });
   }
 
   return { state, targetBox, personId };
@@ -68,11 +70,11 @@ describe('repeat chip stacking — canonical target resolution', () => {
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
     const visibleBoxCount = 4;
 
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box2 });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 2);
     state = addChipToBoxStake(state, box2, 5, personId);
-    local = affirmChipTargetAfterPlacement(local, state, { kind: 'box', boxId: box2 }, false);
+    local = affirmChipTargetAfterPlacement(local, state, 2, false);
 
-    local = selectLocalChipTarget(local, { kind: 'box', boxId: box3 });
+    local = selectLocalChipTarget(local, 3);
     expect(
       resolveCurrentChipTarget({
         local,
@@ -103,7 +105,7 @@ describe('repeat chip stacking — canonical target resolution', () => {
     state = claimBoxSlot(state, 1);
     const targetBox = boxPlayerId(state, 1)!;
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: targetBox });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 1);
     const visibleBoxCount = 4;
     for (const amount of [5, 5] as const) {
       const resolved = resolveCurrentChipTarget({
@@ -115,7 +117,7 @@ describe('repeat chip stacking — canonical target resolution', () => {
       });
       expect(resolved).toEqual({ kind: 'box', boxId: targetBox });
       state = addChipToBoxStake(state, targetBox, amount, personId);
-      local = affirmChipTargetAfterPlacement(local, state, resolved!, false);
+      local = affirmChipTargetAfterPlacement(local, state, 1, false);
       local = reconcileLocalChipTarget(local, state, false);
     }
     expect(getStakeForBox(state, targetBox)).toBe(10);
@@ -127,7 +129,7 @@ describe('repeat chip stacking — canonical target resolution', () => {
     state = claimBoxSlot(state, 3);
     const box3 = boxPlayerId(state, 3)!;
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
 
     const first = resolveCurrentChipTarget({
       local,
@@ -138,10 +140,10 @@ describe('repeat chip stacking — canonical target resolution', () => {
     });
     expect(first).toEqual({ kind: 'box', boxId: box3 });
     state = addChipToBoxStake(state, box3, 10, personId);
-    local = affirmChipTargetAfterPlacement(local, state, first!, true);
+    local = affirmChipTargetAfterPlacement(local, state, 3, true);
     local = reconcileLocalChipTarget(local, state, true);
 
-    expect(uiFromLocalChipTarget(local.target).selectedBettingBoxId).toBe(box3);
+    expect(uiFromLocalChipTarget(local.target, state).selectedBettingBoxId).toBe(box3);
     expect(
       resolveCurrentChipTarget({
         local,
@@ -159,11 +161,10 @@ describe('repeat chip stacking — canonical target resolution', () => {
     state = claimBoxSlot(state, 3);
     const box3 = boxPlayerId(state, 3)!;
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
-    const dropTarget = { kind: 'box' as const, boxId: box3 };
 
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), dropTarget);
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
     state = addChipToBoxStake(state, box3, 10, personId);
-    local = affirmChipTargetAfterPlacement(local, state, dropTarget, false);
+    local = affirmChipTargetAfterPlacement(local, state, 3, false);
     local = reconcileLocalChipTarget(local, state, false);
 
     expect(
@@ -177,7 +178,7 @@ describe('repeat chip stacking — canonical target resolution', () => {
     ).toEqual({ kind: 'box', boxId: box3 });
 
     state = addChipToBoxStake(state, box3, 5, personId);
-    local = affirmChipTargetAfterPlacement(local, state, dropTarget, false);
+    local = affirmChipTargetAfterPlacement(local, state, 3, false);
     expect(getStakeForBox(state, box3)).toBe(15);
   });
 
@@ -195,28 +196,30 @@ describe('repeat chip stacking — canonical target resolution', () => {
     const nativeBox = boxPlayerId(state, 1)!;
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
     let local = createEmptyLocalChipTarget();
-    local = { ...local, target: { kind: 'box', boxId: nativeBox }, hasUserSelected: false };
+    local = { ...local, target: { slotNumber: 1 }, hasUserSelected: false };
 
     state = addChipToBoxStake(state, nativeBox, 5, personId);
-    local = affirmChipTargetAfterPlacement(local, state, { kind: 'box', boxId: nativeBox }, false);
+    local = affirmChipTargetAfterPlacement(local, state, 1, false);
     expect(local.hasUserSelected).toBe(true);
-    expect(uiFromLocalChipTarget(local.target).selectedBettingBoxId).toBe(nativeBox);
+    expect(uiFromLocalChipTarget(local.target, state).selectedBettingBoxId).toBe(nativeBox);
 
     state = addChipToBoxStake(state, nativeBox, 5, personId);
     local = reconcileLocalChipTarget(local, state, false);
-    expect(resolveCurrentChipTarget({
-      local,
-      state,
-      online: false,
-      viewerPersonId: personId,
-    })).toEqual({ kind: 'box', boxId: nativeBox });
+    expect(
+      resolveCurrentChipTarget({
+        local,
+        state,
+        online: false,
+        viewerPersonId: personId,
+      }),
+    ).toEqual({ kind: 'box', boxId: nativeBox });
   });
 
-  it('online-style transient sync keeps user-selected target when slot row still exists', () => {
+  it('online-style transient sync keeps user-selected slot when row still exists', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 3);
     const box3 = boxPlayerId(state, 3)!;
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
     const transient = {
       ...state,
       tableMeta: {
@@ -228,7 +231,7 @@ describe('repeat chip stacking — canonical target resolution', () => {
     } as typeof state;
     local = reconcileLocalChipTarget(local, transient, true);
     expect(local.hasUserSelected).toBe(true);
-    expect(local.target).toEqual({ kind: 'slot', slotNumber: 3 });
+    expect(local.target).toEqual({ slotNumber: 3 });
     expect(
       resolveCurrentChipTarget({
         local,
@@ -258,10 +261,10 @@ describe('repeat chip stacking — canonical target resolution', () => {
     state = claimBoxSlot(state, 2);
     const box2 = boxPlayerId(state, 2)!;
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box2 });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 2);
 
     state = addChipToBoxStake(state, box2, 5, personId);
-    local = affirmChipTargetAfterPlacement(local, state, { kind: 'box', boxId: box2 }, false);
+    local = affirmChipTargetAfterPlacement(local, state, 2, false);
     local = reconcileLocalChipTarget(local, state, false);
 
     expect(
@@ -285,7 +288,7 @@ describe('repeat chip stacking — canonical target resolution', () => {
     state = claimBoxSlot(state, 2);
     const box2 = boxPlayerId(state, 2)!;
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
-    const refTarget = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box2 });
+    const refTarget = selectLocalChipTarget(createEmptyLocalChipTarget(), 2);
     const staleState = createEmptyLocalChipTarget();
 
     for (const amount of [5, 5] as const) {
@@ -300,7 +303,7 @@ describe('repeat chip stacking — canonical target resolution', () => {
       expect(result.ok).toBe(true);
       if (!result.ok) continue;
       expect(result.source).toBe('ref');
-      expect(result.target).toEqual({ kind: 'box', boxId: box2 });
+      expect(result.slotNumber).toBe(2);
       state = addChipToBoxStake(state, box2, amount, personId);
     }
     expect(getStakeForBox(state, box2)).toBe(10);
@@ -320,11 +323,10 @@ describe('repeat chip stacking — canonical target resolution', () => {
     if (empty.ok) return;
     expect(empty.reason).toBe('no-local-target');
 
-    const box2 = boxPlayerId(claimBoxSlot(state, 2), 2)!;
     const withRef = getCurrentChipTargetForBetting({
-      ref: selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box2 }),
+      ref: selectLocalChipTarget(createEmptyLocalChipTarget(), 2),
       state: createEmptyLocalChipTarget(),
-      gameState: state,
+      gameState: claimBoxSlot(state, 2),
       online: false,
       viewerPersonId: null,
       visibleBoxCount: 4,
@@ -338,8 +340,8 @@ describe('repeat chip stacking — canonical target resolution', () => {
     expect(PANEL_SRC).toMatch(
       /function handleChipTrayClick\(value: ChipValue\) \{[\s\S]*resolveActiveChipTrayTarget\(\)/,
     );
-    expect(PANEL_SRC).toContain('preserveLocalChipTargetAfterStateSync(nextState, anchor)');
-    expect(PANEL_SRC).toContain('selectLocalTarget(placementTarget)');
+    expect(PANEL_SRC).toContain('preserveLocalChipTargetAfterStateSync(undefined, slotNumber)');
+    expect(PANEL_SRC).toContain('selectLocalTarget(slotNumber)');
     expect(PANEL_SRC).not.toContain('resolveChipTrayBetTarget');
     expect(PANEL_SRC).not.toMatch(/localSelectedChipTargetRef\.current = localChipSelection/);
   });

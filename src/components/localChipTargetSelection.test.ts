@@ -2,25 +2,29 @@ import { describe, expect, it } from 'vitest';
 import {
   applyDefaultAssignedChipTarget,
   createEmptyLocalChipTarget,
-  degradeChipTargetToSlot,
+  getCurrentChipTargetForBetting,
   reconcileLocalChipTarget,
-  resolveTrayTargetFromLocalSelection,
+  resolveTraySlotFromLocalSelection,
   selectLocalChipTarget,
   uiFromLocalChipTarget,
+  affirmChipTargetAfterPlacement,
 } from './localChipTargetSelection';
-import { coercePlaceBetTarget, placeBetPayloadFromTarget } from '../engine/blackjack/chipPlacement';
+import { resolvePlaceBetPayloadTarget } from './blackjackBoxPlacementContract';
 import { addChipToBoxStake, getStakeForBox } from '../engine/blackjack/stakes';
 import { createNewBlackjackTable } from '../engine/session';
 import { claimBoxSlot } from '../engine/session/boxOps';
 import { tableAfterStartPlaying, boxPlayerId } from '../engine/blackjack/sanity/fixtures';
 
 describe('localChipTargetSelection', () => {
-  it('maps local target to UI pulse ids', () => {
-    expect(uiFromLocalChipTarget({ kind: 'box', boxId: 'box-3' })).toEqual({
-      selectedBettingBoxId: 'box-3',
-      selectedBettingSlotNumber: null,
+  it('maps local slot target to UI pulse ids', () => {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 3);
+    const box3 = boxPlayerId(state, 3)!;
+    expect(uiFromLocalChipTarget({ slotNumber: 3 }, state)).toEqual({
+      selectedBettingBoxId: box3,
+      selectedBettingSlotNumber: 3,
     });
-    expect(uiFromLocalChipTarget({ kind: 'slot', slotNumber: 5 })).toEqual({
+    expect(uiFromLocalChipTarget({ slotNumber: 5 }, state)).toEqual({
       selectedBettingBoxId: null,
       selectedBettingSlotNumber: 5,
     });
@@ -31,86 +35,71 @@ describe('localChipTargetSelection', () => {
     state = claimBoxSlot(state, 1);
     state = claimBoxSlot(state, 3);
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
-    const assigned = boxPlayerId(state, 1)!;
-    const box3 = boxPlayerId(state, 3)!;
 
     const empty = createEmptyLocalChipTarget();
     const defaulted = applyDefaultAssignedChipTarget(empty, state, personId);
     expect(defaulted.hasUserSelected).toBe(false);
-    expect(defaulted.target).toEqual({ kind: 'box', boxId: assigned });
+    expect(defaulted.target).toEqual({ slotNumber: 1 });
 
-    const userPicked = selectLocalChipTarget(empty, { kind: 'box', boxId: box3 });
+    const userPicked = selectLocalChipTarget(empty, 3);
     const blocked = applyDefaultAssignedChipTarget(userPicked, state, personId);
     expect(blocked).toEqual(userPicked);
   });
 
-  it('resolves tray to explicit Box 3 after assigned default when user selected', () => {
+  it('resolves tray to explicit slot 3 after user selected', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 1);
     state = claimBoxSlot(state, 3);
-    const box3 = boxPlayerId(state, 3)!;
-    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
-    expect(
-      resolveTrayTargetFromLocalSelection(local, state, false, null),
-    ).toEqual({ kind: 'box', boxId: box3 });
+    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
+    expect(resolveTraySlotFromLocalSelection(local, state, null)).toBe(3);
   });
 
-  it('upgrades selected slot to materialized box instead of clearing', () => {
+  it('preserves slot anchor when box materializes offline', () => {
     let state = createNewBlackjackTable();
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'slot', slotNumber: 5 });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 5);
     state = claimBoxSlot(state, 5);
-    const box5 = state.tableMeta.boxSlots.find((s) => s.slotNumber === 5)!.playerId!;
     local = reconcileLocalChipTarget(local, state, false);
-    expect(local.target).toEqual({ kind: 'box', boxId: box5 });
+    expect(local.target).toEqual({ slotNumber: 5 });
     expect(local.hasUserSelected).toBe(true);
   });
 
-  it('preserves user selection after optimistic chip placement state refresh', () => {
+  it('preserves user selection after chip placement state refresh', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 1);
     state = claimBoxSlot(state, 3);
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
     const box3 = boxPlayerId(state, 3)!;
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
     state = addChipToBoxStake(state, box3, 10, personId);
     local = reconcileLocalChipTarget(local, state, false);
     expect(local.hasUserSelected).toBe(true);
-    expect(resolveTrayTargetFromLocalSelection(local, state, false, personId)).toEqual({
-      kind: 'box',
-      boxId: box3,
-    });
+    expect(resolveTraySlotFromLocalSelection(local, state, personId)).toBe(3);
   });
 
-  it('preserves user selection when reconcile cannot resolve target transiently', () => {
+  it('preserves slot when occupant transiently clears', () => {
     let state = tableAfterStartPlaying(500);
-    state = claimBoxSlot(state, 1);
     state = claimBoxSlot(state, 3);
-    const box3 = boxPlayerId(state, 3)!;
-    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
-
+    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
     const stripped = {
       ...state,
       tableMeta: {
         ...state.tableMeta,
         boxSlots: state.tableMeta.boxSlots.map((slot) =>
-          slot.playerId === box3 ? { ...slot, playerId: null } : slot,
+          slot.slotNumber === 3 ? { ...slot, playerId: null } : slot,
         ),
       },
     } as typeof state;
-
     const reconciled = reconcileLocalChipTarget(local, stripped, false);
     expect(reconciled.hasUserSelected).toBe(true);
-    expect(reconciled.target).toEqual({ kind: 'slot', slotNumber: 3 });
-    expect(
-      resolveTrayTargetFromLocalSelection(reconciled, stripped, false, null),
-    ).toEqual({ kind: 'slot', slotNumber: 3 });
+    expect(reconciled.target).toEqual({ slotNumber: 3 });
+    expect(resolveTraySlotFromLocalSelection(reconciled, stripped, null)).toBe(3);
   });
 
-  it('rebinds user-selected box when online slot occupant id rotates', () => {
+  it('keeps slot anchor when online slot occupant id rotates', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 3);
     const oldBox = boxPlayerId(state, 3)!;
-    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: oldBox });
+    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
     const newBox = 'rotated-box-id';
     const rotated = {
       ...state,
@@ -132,177 +121,58 @@ describe('localChipTargetSelection', () => {
     };
     const reconciled = reconcileLocalChipTarget(local, rotated, true);
     expect(reconciled.hasUserSelected).toBe(true);
-    expect(reconciled.target).toEqual({ kind: 'box', boxId: newBox });
+    expect(reconciled.target).toEqual({ slotNumber: 3 });
+    expect(uiFromLocalChipTarget(reconciled.target, rotated).selectedBettingBoxId).toBe(newBox);
   });
 
-  it('clears user selection only when the target row is genuinely removed', () => {
-    let state = createNewBlackjackTable();
-    state = claimBoxSlot(state, 5);
-    const box5 = state.tableMeta.boxSlots.find((s) => s.slotNumber === 5)!.playerId!;
-    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box5 });
-    const cleared = reconcileLocalChipTarget(
-      local,
-      {
-        ...state,
-        players: Object.fromEntries(
-          Object.entries(state.players).filter(([id]) => id !== box5),
-        ),
-        session: {
-          ...state.session,
-          boxSlotNumbers: {},
-        },
-        tableMeta: {
-          ...state.tableMeta,
-          boxSlots: state.tableMeta.boxSlots.map((slot) =>
-            slot.playerId === box5 ? { ...slot, playerId: null } : slot,
-          ),
-        },
-      },
-      false,
-    );
-    expect(cleared.target).toEqual({ kind: 'box', boxId: box5 });
-    expect(cleared.hasUserSelected).toBe(true);
-  });
-
-  it('repeat tray taps keep routing to the same explicit box after two chip placements', () => {
+  it('repeat tray taps keep routing to the same slot after two chip placements', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 1);
     state = claimBoxSlot(state, 3);
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
-    const nativeBox = boxPlayerId(state, 1)!;
     const box3 = boxPlayerId(state, 3)!;
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
 
     state = addChipToBoxStake(state, box3, 10, personId);
     local = reconcileLocalChipTarget(local, state, false);
-    expect(resolveTrayTargetFromLocalSelection(local, state, false, personId)).toEqual({
-      kind: 'box',
-      boxId: box3,
-    });
+    expect(resolveTraySlotFromLocalSelection(local, state, personId)).toBe(3);
 
     state = addChipToBoxStake(state, box3, 5, personId);
     local = reconcileLocalChipTarget(local, state, false);
-    expect(resolveTrayTargetFromLocalSelection(local, state, false, personId)).toEqual({
-      kind: 'box',
-      boxId: box3,
-    });
+    expect(resolveTraySlotFromLocalSelection(local, state, personId)).toBe(3);
     expect(getStakeForBox(state, box3)).toBe(15);
-    expect(getStakeForBox(state, nativeBox)).toBe(0);
   });
 
-  it('repeat tray taps keep routing to native box after two chip placements', () => {
-    let state = tableAfterStartPlaying(500);
-    state = claimBoxSlot(state, 1);
-    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
-    const nativeBox = boxPlayerId(state, 1)!;
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: nativeBox });
-
-    state = addChipToBoxStake(state, nativeBox, 10, personId);
-    local = reconcileLocalChipTarget(local, state, false);
-    state = addChipToBoxStake(state, nativeBox, 10, personId);
-    local = reconcileLocalChipTarget(local, state, false);
-    expect(resolveTrayTargetFromLocalSelection(local, state, false, personId)).toEqual({
-      kind: 'box',
-      boxId: nativeBox,
-    });
-  });
-
-  it('repeat tray taps keep routing to free box after two chip placements', () => {
-    let state = tableAfterStartPlaying(500);
-    state = claimBoxSlot(state, 3);
-    const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 3)?.bankrollOwnerId ?? '';
-    const freeBox = boxPlayerId(state, 3)!;
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: freeBox });
-
-    state = addChipToBoxStake(state, freeBox, 10, personId);
-    local = reconcileLocalChipTarget(local, state, false);
-    state = addChipToBoxStake(state, freeBox, 10, personId);
-    local = reconcileLocalChipTarget(local, state, false);
-    expect(resolveTrayTargetFromLocalSelection(local, state, false, personId)).toEqual({
-      kind: 'box',
-      boxId: freeBox,
-    });
-  });
-
-  it('online repeat tray taps on boxes 2–4 survive optimistic id rotation', () => {
+  it('online repeat tray taps on boxes 2–4 derive payload from slot', () => {
     for (const slotNumber of [2, 3, 4] as const) {
       let state = tableAfterStartPlaying(500);
-      const staleBoxId = `client-box-slot-${slotNumber}`;
-      const ownerId = state.tableMeta.ownerPersonId!;
-      state = {
-        ...state,
-        players: {
-          ...state.players,
-          [staleBoxId]: {
-            id: staleBoxId,
-            displayName: `Box ${slotNumber}`,
-            controllerName: 'Alice',
-            role: 'box' as const,
-            bankrollOwnerId: ownerId,
-            playerType: 'real' as const,
-            startingBalance: 0,
-            currentBet: 0,
-            cardIds: [],
-            status: 'active' as const,
-          },
-        },
-        session: {
-          ...state.session,
-          boxSlotNumbers: { ...state.session.boxSlotNumbers, [staleBoxId]: slotNumber },
-        },
-      };
-
-      let local = selectLocalChipTarget(createEmptyLocalChipTarget(), {
-        kind: 'slot',
-        slotNumber,
-      });
       state = claimBoxSlot(state, slotNumber);
-      const serverBoxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber)!
-        .playerId!;
-      state = {
-        ...state,
-        session: {
-          ...state.session,
-          boxSlotNumbers: { ...state.session.boxSlotNumbers, [staleBoxId]: slotNumber },
-        },
-      };
-      local = reconcileLocalChipTarget(local, state, true);
-
-      const first = resolveTrayTargetFromLocalSelection(local, state, true, ownerId);
-      expect(first).not.toBeNull();
-      const coercedFirst = coercePlaceBetTarget(state, first!, true);
-      expect(() => placeBetPayloadFromTarget(coercedFirst, 5)).not.toThrow();
-
-      state = addChipToBoxStake(state, serverBoxId, 5, ownerId);
-      local = reconcileLocalChipTarget(
-        selectLocalChipTarget(local, coercedFirst),
-        state,
-        true,
-      );
-      const second = resolveTrayTargetFromLocalSelection(local, state, true, ownerId);
-      expect(second).not.toBeNull();
-      const coercedSecond = coercePlaceBetTarget(state, second!, true);
-      expect(placeBetPayloadFromTarget(coercedSecond, 5)).toEqual({
-        boxId: serverBoxId,
-        amount: 5,
-      });
-      expect(degradeChipTargetToSlot(state, { kind: 'box', boxId: staleBoxId })).toEqual({
+      const serverBoxId = boxPlayerId(state, slotNumber)!;
+      const ownerId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
+      let local = selectLocalChipTarget(createEmptyLocalChipTarget(), slotNumber);
+      local = affirmChipTargetAfterPlacement(local, state, slotNumber, true);
+      expect(resolvePlaceBetPayloadTarget(state, slotNumber, true, false)).toEqual({
         kind: 'box',
         boxId: serverBoxId,
       });
+      state = addChipToBoxStake(state, serverBoxId, 5, ownerId);
+      local = reconcileLocalChipTarget(local, state, true);
+      expect(getCurrentChipTargetForBetting({
+        ref: local,
+        state: local,
+        gameState: state,
+        online: true,
+        viewerPersonId: ownerId,
+      })).toMatchObject({ ok: true, slotNumber });
     }
   });
 
-  it('does not fall back to assigned box after user selected another target', () => {
+  it('does not fall back to assigned slot after user selected another target', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 1);
     state = claimBoxSlot(state, 3);
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
-    const box3 = boxPlayerId(state, 3)!;
-    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
-    expect(resolveTrayTargetFromLocalSelection(local, state, false, personId)).toEqual({
-      kind: 'box',
-      boxId: box3,
-    });
+    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
+    expect(resolveTraySlotFromLocalSelection(local, state, personId)).toBe(3);
   });
 });

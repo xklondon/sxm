@@ -125,13 +125,20 @@ describe('getChipPlacementTargetFromBoxId (online)', () => {
 });
 
 describe('resolveChipTrayBetTarget', () => {
-  it('prefers selectedSeatId when server-backed', () => {
+  it('prefers lastTarget over selectedSeatId (legacy resolver)', () => {
     let state = createNewBlackjackTable();
-    state = claimBoxSlot(state, 2);
-    const boxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 2)!.playerId!;
-    state = { ...state, selectedSeatId: boxId };
-    const target = resolveChipTrayBetTarget(state, 'Host', null, true);
-    expect(target).toEqual({ kind: 'box', boxId });
+    state = claimBoxSlot(state, 1);
+    state = claimBoxSlot(state, 3);
+    const box1 = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)!.playerId!;
+    const box3 = state.tableMeta.boxSlots.find((s) => s.slotNumber === 3)!.playerId!;
+    state = { ...state, selectedSeatId: box1 };
+    const target = resolveChipTrayBetTarget(
+      state,
+      'Host',
+      { kind: 'box', boxId: box3 },
+      false,
+    );
+    expect(target).toEqual({ kind: 'box', boxId: box3 });
   });
 
   it('uses last slot target when selection is empty', () => {

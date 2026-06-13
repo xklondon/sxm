@@ -36,7 +36,7 @@ Protected boundaries between **protocol**, **layout**, **dealing**, and **accoun
 | View roots (CSS scope) | `getViewRootClass` → `bj-view-{full\|card}-{desktop\|mobile}` |
 | Client-local view mode | `preserveClientViewMode`, `resolveInitialViewMode` |
 | Visible box slot order | `sortBoxSlotsForTableVisualOrder`, `displaySlots` in `BlackjackPanel` |
-| Arc card + box alignment | Both rows map `displaySlots` → `renderArcCardColumn` / `renderArcBoxSlot` |
+| Arc card + box alignment | Both rows map `displaySlots` → `renderArcCardColumn` / `renderArcSlot` |
 | Active turn highlight | `cardColumnHandValueClassName` / hero `bj-phone-view__box-value--active-turn` only |
 
 **Views must not:**
@@ -115,10 +115,37 @@ Protected boundaries between **protocol**, **layout**, **dealing**, and **accoun
 
 ---
 
+## BOX PLACEMENT CONTRACT
+
+**Modules:** `src/components/blackjackBoxPlacementContract.ts`, `src/components/localChipTargetSelection.ts`, `src/components/tableBoxLayout.ts`
+
+| Responsibility | Canonical API / rule |
+|----------------|----------------------|
+| Stable UI anchor | `slotNumber` only in local chip target (`LocalChipSlotTarget`) |
+| React keys for arc slots | `slotArcReactKey(slotNumber)` → `slot-${slotNumber}` — never `boxId` |
+| Payload at send time | `resolvePlaceBetPayloadTarget(state, slotNumber, online, inFlight)` |
+| Visible row expansion | User **+** button only — `resolveEffectiveVisibleBoxCount` ignores occupied max |
+| Online empty-slot first chip | Pending preview keyed by `slotNumber` — no client `claimBoxSlot` / visual `boxId` |
+| Arc slot DOM | Single `renderArcSlot(slotNumber)` shape for empty/occupied/staked |
+| Stake pile layout | Fixed `bj-phone-view__mini-stake-slot`; chips absolutely positioned + clipped |
+
+**Views must not:**
+
+- Key arc player boxes by `boxId` or branch empty vs occupied into separate render functions.
+- Store betting selection as `boxId` in local React state (derive occupant at payload time only).
+- Call `claimBoxSlot` in the online optimistic placement path for empty slots.
+- Auto-expand visible box count when a high slot is first occupied.
+- Use `resolveChipTrayBetTarget` or `selectedSeatId` for chip-tray betting (legacy only).
+
+**Allowed consumers:** `BlackjackPanel.tsx` chip tray, drag/drop, arc row.
+
+---
+
 ## Contract tests
 
 | File | Guards |
 |------|--------|
+| `blackjackBoxPlacementStability.test.ts` | Slot-only keys, payload derivation, pending online preview, visible-count decouple |
 | `blackjackStabilityContracts.test.ts` | Protocol, layout, dealing, accounting boundaries + render smoke |
 | `dealingRoundRegression.test.ts` | P→D→P→D round 1/2, dealer value gating, reveal mount snap, round-finished command, end-game |
 | `playerCommittedExposure.test.ts` | Multi-box same-player tray + This Table parity |

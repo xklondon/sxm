@@ -1,10 +1,11 @@
 import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 import { log } from '../../utils/logger';
 import {
-  getInRoundBetExposureForPerson,
-  getOpenStakeExposureForPerson,
-  getTotalCommittedExposureForPerson,
+    getInRoundBetExposureForPerson,
+    getOpenStakeExposureForPerson,
+    getTotalCommittedExposureForPerson,
 } from './playerCommittedExposure';
+import { getSharedPotAvailableChips, getSharedPotBettingExposure, getSharedPotLedgerBalance, resolveCanonicalBankrollOwnerId, usesSharedBankPlayerPot, } from './sharedBankroll';
 export function bankrollContextFromState(state) {
     return {
         players: state.players,
@@ -25,7 +26,8 @@ function isBankParticipant(ctx, playerId) {
 }
 /** Resolve ledger bankroll owner for a box position id. */
 export function resolveBankrollOwnerIdForBox(state, boxPlayerId) {
-    return resolveBankrollOwnerId(bankrollContextFromState(state), boxPlayerId);
+    const raw = resolveBankrollOwnerId(bankrollContextFromState(state), boxPlayerId);
+    return resolveCanonicalBankrollOwnerId(state, raw);
 }
 export function resolveBankrollOwnerId(ctx, boxPlayerId) {
     const slot = ctx.boxSlots.find((s) => s.playerId === boxPlayerId);
@@ -99,12 +101,21 @@ export function getTotalInRoundBetsForBankrollOwner(state, bankrollOwnerId) {
     return getInRoundBetExposureForPerson(state, bankrollOwnerId);
 }
 export function getTotalBettingExposureForBankrollOwner(state, bankrollOwnerId) {
+    if (usesSharedBankPlayerPot(state, bankrollOwnerId)) {
+        return getSharedPotBettingExposure(state, bankrollOwnerId);
+    }
     return getTotalCommittedExposureForPerson(state, bankrollOwnerId);
 }
 export function getLedgerBalanceForBankrollOwner(state, bankrollOwnerId) {
+    if (usesSharedBankPlayerPot(state, bankrollOwnerId)) {
+        return getSharedPotLedgerBalance(state, bankrollOwnerId);
+    }
     return derivePlayerBalanceFromLedger(bankrollOwnerId, state.ledger);
 }
 export function getAvailableChipsForBankrollOwner(state, bankrollOwnerId) {
+    if (usesSharedBankPlayerPot(state, bankrollOwnerId)) {
+        return getSharedPotAvailableChips(state, bankrollOwnerId);
+    }
     return (getLedgerBalanceForBankrollOwner(state, bankrollOwnerId) -
         getTotalBettingExposureForBankrollOwner(state, bankrollOwnerId));
 }

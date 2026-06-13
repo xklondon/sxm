@@ -25,6 +25,7 @@ import {
 import {
   findPersonPlayerIdByController,
 } from './bankroll';
+import { personsShareOneChipPot, resolveCanonicalBankrollOwnerId } from './sharedBankroll';
 import { syncPlayerOrderAndAssignments } from './playerAssignment';
 
 function slotByNumber(state: GameState, slotNumber: number) {
@@ -242,7 +243,10 @@ export function claimBoxSlot(state: GameState, slotNumber: number): GameState {
     personId = personSpl.session.playerIds[personSpl.session.playerIds.length - 1]!;
 
     const balanceBefore = derivePlayerBalanceFromLedger(personId, next.ledger);
-    if (balanceBefore === 0 && chips > 0) {
+    const bankId = next.session.bankPlayerId;
+    const sharesBankPot =
+      bankId !== null && personsShareOneChipPot(next, personId, bankId);
+    if (balanceBefore === 0 && chips > 0 && !sharesBankPot) {
       next = allocateChipsToBankrollOwner(next, {
         bankrollOwnerId: personId,
         amount: chips,
@@ -266,11 +270,13 @@ export function claimBoxSlot(state: GameState, slotNumber: number): GameState {
     });
   }
 
+  const bankrollOwnerId = resolveCanonicalBankrollOwnerId(next, personId);
+
   const boxSpl = addPlayer(next.session, next.players, next.ledger, {
     displayName: `Box ${slotNumber}`,
     controllerName: controller,
     role: 'box',
-    bankrollOwnerId: personId,
+    bankrollOwnerId,
     startingChips: 0,
   });
   next = mergeSessionUpdate(next, boxSpl);
@@ -281,7 +287,7 @@ export function claimBoxSlot(state: GameState, slotNumber: number): GameState {
       ? {
           ...s,
           playerId: boxPlayerId,
-          bankrollOwnerId: personId,
+          bankrollOwnerId,
           nativeAssignedPersonId:
             s.nativeAssignedPersonId ??
             (next.tableMeta.assignedBoxByPersonId?.[personId] === slotNumber
@@ -305,11 +311,12 @@ export function claimBoxSlot(state: GameState, slotNumber: number): GameState {
     selectedSeatId: boxPlayerId,
   };
 
-  const balanceAfter = derivePlayerBalanceFromLedger(personId, next.ledger);
+  const balanceAfter = derivePlayerBalanceFromLedger(bankrollOwnerId, next.ledger);
   log.info('claimBoxLinkedToBankroll', {
     slotNumber,
     boxPlayerId,
     personId,
+    bankrollOwnerId,
     chipsAllocated: allocated ? chips : 0,
     personBalanceAfter: balanceAfter,
   });

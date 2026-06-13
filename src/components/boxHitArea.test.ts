@@ -20,8 +20,8 @@ describe('box hit area — single reliable tap target', () => {
     expect(PANEL_SRC).toContain('TABLE_UX.boxHitArea');
     expect(PANEL_SRC).toContain('TABLE_UX.boxHitZone');
     expect(PANEL_SRC).toContain('bindBoxTapSelect');
-    expect(PANEL_SRC).toMatch(/function renderArcBoxSlot[\s\S]*bindBoxTapSelect[\s\S]*selectBox\(boxId\)/);
-    expect(PANEL_SRC).toMatch(/function renderEmptyBoxSlot[\s\S]*bindBoxTapSelect[\s\S]*handleClaimOrSelectSlot/);
+    expect(PANEL_SRC).toMatch(/function renderArcSlot[\s\S]*bindBoxTapSelect[\s\S]*onSelect/);
+    expect(PANEL_SRC).toMatch(/function renderArcSlot[\s\S]*handleClaimOrSelectSlot/);
   });
 
   it('Card View and Full Table player boxes use shared arc hit areas from Panel', () => {
@@ -29,15 +29,12 @@ describe('box hit area — single reliable tap target', () => {
     expect(PANEL_SRC).toContain('renderPlayerBoxesArc');
     expect(PANEL_SRC).toContain('TABLE_UX.boxHitArea');
     expect(PANEL_SRC).toContain('bindBoxTapSelect');
-    expect(PANEL_SRC).toMatch(/function renderArcBoxSlot[\s\S]*TABLE_UX\.boxHitArea/);
+    expect(PANEL_SRC).toMatch(/function renderArcSlot[\s\S]*TABLE_UX\.boxHitArea/);
   });
 
-  it('bet zone no longer blocks selection with stopPropagation on click', () => {
-    const start = PANEL_SRC.indexOf('function renderBetZone');
-    const end = PANEL_SRC.indexOf('function handleMovePlayer', start);
-    const block = PANEL_SRC.slice(start, end);
-    expect(block).not.toMatch(/onClick=\{\(e\) => e\.stopPropagation\(\)\}/);
-    expect(block).toMatch(/bindBoxTapSelect\(\(\) => selectBox\(boxId\)\)/);
+  it('arc stake slot uses bindBoxTapSelect without renderBetZone click stopPropagation', () => {
+    expect(PANEL_SRC).not.toContain('function renderBetZone');
+    expect(PANEL_SRC).toMatch(/function renderArcSlot[\s\S]*bindBoxTapSelect\(onSelect\)/);
   });
 
   it('card stacks and labels pass taps through to the hit area', () => {

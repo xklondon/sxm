@@ -40,18 +40,14 @@ export function arcSlotRotation(
   return rotations[idx] ?? 0;
 }
 
-/** Highest slot in use (occupied) or user-expanded count, floored at default visible count. */
+/** User-expanded count only — occupancy must not auto-expand the visible row. */
 export function resolveEffectiveVisibleBoxCount(
-  boxSlots: readonly BoxSlotState[],
+  _boxSlots: readonly BoxSlotState[],
   expandedCount: number,
 ): number {
-  const occupiedMax = boxSlots.reduce(
-    (max, slot) => (slot.playerId ? Math.max(max, slot.slotNumber) : max),
-    0,
-  );
   return Math.min(
     MAX_TABLE_BOXES,
-    Math.max(DEFAULT_VISIBLE_TABLE_BOXES, expandedCount, occupiedMax),
+    Math.max(DEFAULT_VISIBLE_TABLE_BOXES, expandedCount),
   );
 }
 

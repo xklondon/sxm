@@ -21,19 +21,7 @@ import { addChipToBoxStake } from '../engine/blackjack/stakes';
 import { tableAfterStartPlaying, boxPlayerId } from '../engine/blackjack/sanity/fixtures';
 
 describe('box selection — single chip target', () => {
-  it('resolveChipTrayBetTarget keeps selected box when set', () => {
-    let state = createNewBlackjackTable();
-    state = claimBoxSlot(state, 1);
-    state = claimBoxSlot(state, 3);
-    const nativeBox = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)!.playerId!;
-    const box3 = state.tableMeta.boxSlots.find((s) => s.slotNumber === 3)!.playerId!;
-    state = { ...state, selectedSeatId: box3 };
-    const target = resolveChipTrayBetTarget(state, 'Host', null, false);
-    expect(target).toEqual({ kind: 'box', boxId: box3 });
-    expect(target?.kind === 'box' ? target.boxId : null).not.toBe(nativeBox);
-  });
-
-  it('does not fall through to native box when selectedSeatId is set', () => {
+  it('resolveChipTrayBetTarget keeps lastTarget when set (legacy — no selectedSeatId)', () => {
     let state = createNewBlackjackTable();
     state = claimBoxSlot(state, 1);
     state = claimBoxSlot(state, 3);
@@ -42,10 +30,27 @@ describe('box selection — single chip target', () => {
     const target = resolveChipTrayBetTarget(
       state,
       'Host',
-      { kind: 'box', boxId: state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)!.playerId! },
+      { kind: 'box', boxId: box3 },
       false,
     );
     expect(target).toEqual({ kind: 'box', boxId: box3 });
+  });
+
+  it('legacy resolveChipTrayBetTarget ignores selectedSeatId without lastTarget', () => {
+    let state = createNewBlackjackTable();
+    state = claimBoxSlot(state, 1);
+    state = claimBoxSlot(state, 3);
+    const box3 = state.tableMeta.boxSlots.find((s) => s.slotNumber === 3)!.playerId!;
+    state = { ...state, selectedSeatId: box3 };
+    const withoutSeat = resolveChipTrayBetTarget(state, 'Host', null, false);
+    const withLastTarget = resolveChipTrayBetTarget(
+      state,
+      'Host',
+      { kind: 'box', boxId: box3 },
+      false,
+    );
+    expect(withLastTarget).toEqual({ kind: 'box', boxId: box3 });
+    expect(withoutSeat?.kind === 'box' ? withoutSeat.boxId : null).not.toBe(box3);
   });
 
   it('uses pulse for selected box and keeps native border underneath', () => {
@@ -216,14 +221,19 @@ describe('box selection — single chip target', () => {
     expect(getBoxActivePulseClassName(resolved)).toBe(BET_BOX_PULSE);
   });
 
-  it('chip tray uses selectedBettingBoxId local target, not assigned native box', () => {
+  it('chip tray uses lastTarget in legacy resolver, not selectedSeatId', () => {
     let state = tableAfterStartPlaying(500);
     state = claimBoxSlot(state, 1);
     state = claimBoxSlot(state, 3);
     const nativeBox = boxPlayerId(state, 1)!;
     const freeBox = boxPlayerId(state, 3)!;
     const trayState = { ...state, selectedSeatId: freeBox };
-    const target = resolveChipTrayBetTarget(trayState, 'Host', null, false);
+    const target = resolveChipTrayBetTarget(
+      trayState,
+      'Host',
+      { kind: 'box', boxId: freeBox },
+      false,
+    );
     expect(target).toEqual({ kind: 'box', boxId: freeBox });
     expect(target?.kind === 'box' ? target.boxId : null).not.toBe(nativeBox);
   });
@@ -235,16 +245,15 @@ describe('box selection — single chip target', () => {
     );
     expect(src).not.toMatch(/setSelectedBettingBoxId/);
     expect(src).toContain('localChipSelection');
-    expect(src).toMatch(/uiFromLocalChipTarget\(localChipSelection\.target\)/);
+    expect(src).toMatch(/uiFromLocalChipTarget\(localChipSelection\.target, gameState\)/);
   });
 
   it('does not overwrite local selection during chip placement', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-    expect(src).toMatch(/function placeBetAtTarget\(target: PlaceBetTarget[\s\S]*?placeBetAtTargetCore/);
+    expect(src).toMatch(/function placeBetAtTarget\(slotNumber: number[\s\S]*?placeBetAtTargetCore/);
     expect(src).toMatch(/const payload = placeBetPayloadFromTarget/);
-    expect(src).toContain('preserveLocalChipTargetAfterStateSync(nextState, anchor)');
-    expect(src).toContain('selectLocalTarget(placementTarget)');
-    expect(src).toContain('selectLocalTarget(target)');
+    expect(src).toContain('preserveLocalChipTargetAfterStateSync(undefined, slotNumber)');
+    expect(src).toContain('selectLocalTarget(slotNumber)');
   });
 
   it('selectBox sets canonical local chip target for occupied boxes', () => {

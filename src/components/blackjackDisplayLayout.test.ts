@@ -85,11 +85,11 @@ describe('blackjack display layout contract', () => {
   it('Full Table renders cards in dedicated cards zone above player boxes zone', () => {
     expect(SHELL_SRC).toContain('BlackjackCardsAreaZone');
     expect(PANEL_SRC).toContain('renderArcCardColumn');
-    expect(PANEL_SRC).toContain('renderArcBoxSlot');
+    expect(PANEL_SRC).toContain('renderArcSlot');
     expect(PANEL_SRC).toContain('TABLE_UX.arcCardsStackVertical');
     expect(PANEL_SRC).toContain('TABLE_UX.arcCardsStack');
     expect(PANEL_SRC).toContain('bj-arc__play-zone');
-    expect(PANEL_SRC).not.toMatch(/renderArcBoxSlot[\s\S]*TABLE_UX\.cardsFan/);
+    expect(PANEL_SRC).not.toMatch(/renderArcSlot[\s\S]*TABLE_UX\.cardsFan/);
     expect(PANEL_SRC).toMatch(
       /cardsAreaMode=\{viewMode === 'full' \? 'table' : 'hero'\}/,
     );

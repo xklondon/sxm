@@ -18,7 +18,8 @@ import {
 } from './tokens';
 import { allocateChipsToBankrollOwner } from './allocation';
 import { listPersonBankrollOwnerIds } from './bankroll';
-import { appendLedgerEntry } from '../ledger/ledger';
+import { personsShareOneChipPot } from './sharedBankroll';
+import { appendLedgerEntry, derivePlayerBalanceFromLedger } from '../ledger/ledger';
 import { generateId } from '../utils/id';
 import { DEFAULT_BLACKJACK_SETTINGS } from '../blackjack/settings';
 import { DEFAULT_HOLDEM_SETTINGS } from '../holdem/settings';
@@ -148,6 +149,14 @@ export function startNewTable(state: GameState): GameState {
 
   for (const personId of listPersonBankrollOwnerIds(next)) {
     const seatChips = getStartingChipsEachSeat(next);
+    const bankId = next.session.bankPlayerId;
+    if (
+      bankId &&
+      personsShareOneChipPot(next, personId, bankId) &&
+      derivePlayerBalanceFromLedger(bankId, next.ledger) > 0
+    ) {
+      continue;
+    }
     if (seatChips > 0) {
       next = allocateChipsToBankrollOwner(next, {
         bankrollOwnerId: personId,

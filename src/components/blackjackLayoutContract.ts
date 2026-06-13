@@ -22,7 +22,7 @@ export const VIEW_ROOT_CLASSES = [
   'bj-view-card-mobile',
 ] as const;
 
-/** Active turn highlight — numeric value only (no box border). */
+/** Active turn highlight — tight numeric frame only (no box/card-stack oval). */
 export const ACTIVE_HAND_VALUE_CLASS = 'bj-phone-view__box-value--active-turn';
 
 /** Deprecated box turn border — must not appear during player turn. */

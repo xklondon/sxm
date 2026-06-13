@@ -137,7 +137,7 @@ describe('Mobile chip target persistence', () => {
     state = claimBoxSlot(state, 3);
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
     const box3 = boxPlayerId(state, 3)!;
-    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
+    let local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
 
     state = addChipToBoxStake(state, box3, 10, personId);
     local = reconcileLocalChipTarget(local, state, false);
@@ -160,14 +160,14 @@ describe('Mobile chip target persistence', () => {
     state = claimBoxSlot(state, 3);
     const personId = state.tableMeta.boxSlots.find((s) => s.slotNumber === 1)?.bankrollOwnerId ?? '';
     const box3 = boxPlayerId(state, 3)!;
-    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), { kind: 'box', boxId: box3 });
+    const local = selectLocalChipTarget(createEmptyLocalChipTarget(), 3);
     state = addChipToBoxStake(state, box3, 10, personId);
     const blocked = applyDefaultAssignedChipTarget(local, state, personId);
     expect(blocked).toEqual(local);
   });
 
   it('uses same arc box render path for owned boxes', () => {
-    expect(PANEL_SRC).toContain('renderArcBoxSlot');
+    expect(PANEL_SRC).toContain('renderArcSlot');
     expect(PANEL_SRC).toContain('getBoxCardVisualClasses(borderState)');
     expect(PANEL_SRC).toContain('getCurrentChipTargetForBetting');
     expect(PANEL_SRC).toContain('affirmChipTargetAfterPlacement');
