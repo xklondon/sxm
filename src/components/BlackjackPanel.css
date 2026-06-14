@@ -1481,44 +1481,45 @@
     padding-top: 0.95rem;
   }
 
-  .bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column,
-  .bj-view-card-desktop .bj-arc--cards .bj-arc__slot--card-column {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-    min-height: calc(var(--bj-table-card-height) + var(--bj-box-value-band-height) + 1.25rem);
+  .bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column {
+    display: grid;
+    grid-template-rows:
+      var(--bj-full-desktop-card-outcome-zone-height, 0.72rem)
+      minmax(0, 1fr)
+      var(--bj-box-value-band-height);
+    justify-content: stretch;
+    align-items: end;
+    min-height: calc(
+      var(--bj-table-card-height) + var(--bj-box-value-band-height) +
+        var(--bj-full-desktop-card-outcome-zone-height, 0.72rem)
+    );
   }
 
-  .bj-view-full-desktop .bj-arc--cards .bj-card-outcome-marker,
-  .bj-view-card-desktop .bj-arc--cards .bj-card-outcome-marker {
-    flex: 0 0 auto;
-    order: 1;
+  .bj-view-full-desktop .bj-arc--cards .bj-card-outcome-marker {
+    grid-row: 1;
+    align-self: end;
+    order: unset;
+    min-height: var(--bj-full-desktop-card-outcome-zone-height, 0.72rem);
+    margin: 0;
   }
 
   .bj-view-full-desktop .bj-arc--cards .bj-arc__split-hands,
-  .bj-view-card-desktop .bj-arc--cards .bj-arc__split-hands,
-  .bj-view-full-desktop .bj-arc--cards .bj-arc__cards--stack-vertical,
-  .bj-view-card-desktop .bj-arc--cards .bj-arc__cards--stack-vertical {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    order: 2;
+  .bj-view-full-desktop .bj-arc--cards .bj-arc__cards--stack-vertical {
+    grid-row: 2;
+    align-self: end;
+    order: unset;
+    flex: unset;
     min-height: 0;
   }
 
-  .bj-view-full-desktop .bj-arc--cards .bj-phone-view__box-value--card-column-below,
-  .bj-view-card-desktop .bj-arc--cards .bj-phone-view__box-value--card-column-below {
-    flex: 0 0 var(--bj-box-value-band-height);
-    order: 3;
-    margin-top: 0.06rem;
-    margin-bottom: 0;
-  }
-
-  .bj-view-full-desktop .bj-value-chips--with-label,
-  .bj-view-card-desktop .bj-value-chips--with-label {
-    min-height: 3.65rem;
-    padding-bottom: 0.35rem;
+  .bj-view-full-desktop .bj-arc--cards .bj-phone-view__box-value--card-column-below {
+    grid-row: 3;
+    align-self: center;
+    order: unset;
+    flex: unset;
+    margin: 0;
+    height: var(--bj-box-value-band-height);
+    min-height: var(--bj-box-value-band-height);
+    max-height: var(--bj-box-value-band-height);
   }
 }

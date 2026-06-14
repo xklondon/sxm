@@ -161,6 +161,31 @@
     max-height: none;
   }
 
+  /*
+   * Full Table desktop — spread fixed-width box/card columns across felt width.
+   * Card View desktop keeps compact max-content row above.
+   */
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes,
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards {
+    width: 100%;
+    max-width: 100%;
+    justify-content: space-evenly;
+    justify-items: center;
+    column-gap: 0;
+    grid-template-columns: repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes,
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards {
+    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-table-slot-row.bj-arc--cards {
+    width: 100%;
+    max-width: 100%;
+    align-self: stretch;
+  }
+
   .bj-table-layout-shell .bj-table-zone--cards .bj-table-slot-row.bj-arc--cards {
     display: grid;
     overflow: visible;

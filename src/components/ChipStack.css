@@ -298,6 +298,37 @@
   touch-action: manipulation;
 }
 
+/* Full Table desktop — tray label below token row (not beside plaques). */
+@media (min-width: 721px) {
+  .bj-view-full-desktop .bj-value-chips--with-label {
+    display: grid;
+    grid-template-rows: auto auto;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    justify-items: stretch;
+    width: 100%;
+    max-width: min(100%, 32rem);
+    min-height: 0;
+    padding: 0.5rem 1.05rem 0.35rem;
+    gap: 0.28rem;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-desktop .bj-value-chips--with-label .bj-value-chips__row--main {
+    grid-row: 1;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .bj-view-full-desktop .bj-value-chips--with-label .bj-value-chips__row--label {
+    grid-row: 2;
+    width: 100%;
+    flex: 0 0 auto;
+    padding-top: 0.08rem;
+  }
+}
+
 /* Mobile tray — row 1: value (left) + chips; row 2: table label only. */
 @media (max-width: 720px) {
   .bj-view-full-mobile .bj-value-chips,

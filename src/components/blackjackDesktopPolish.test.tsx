@@ -13,9 +13,9 @@ describe('blackjack desktop polish contracts', () => {
     );
   });
 
-  it('places desktop card values below stacks near the box band', () => {
-    expect(PANEL_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc--cards \.bj-phone-view__box-value--card-column-below[\s\S]*order:\s*3/,
+  it('places desktop Full Table card values in fixed bottom grid row', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
     );
     expect(PANEL_SRC).toContain('TABLE_UX.cardColumnValueBelow');
   });

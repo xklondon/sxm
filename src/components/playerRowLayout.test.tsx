@@ -122,9 +122,9 @@ describe('canonical player row layout engine', () => {
     );
   });
 
-  it('desktop card columns share player-box slot grid geometry', () => {
+  it('desktop card columns share Full Table spread grid geometry with player boxes', () => {
     expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--cards[\s\S]*minmax\(0,\s*max-content\)/,
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--cards[\s\S]*grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*var\(--bj-full-table-box-width\)\)/,
     );
     expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-slot-row--with-add\.bj-arc--cards[\s\S]*var\(--bj-table-slot-add-size\)/,
