@@ -1,0 +1,1 @@
+export const IOU_HANDOFF_MESSAGE_MAX_LENGTH = 180;

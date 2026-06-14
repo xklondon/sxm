@@ -69,6 +69,11 @@
   font-size: 0.68rem;
 }
 
+.bj-game-over__round-comment {
+  font-style: italic;
+  opacity: 0.88;
+}
+
 .bj-game-over__magic8 {
   margin: 0 0 0.75rem;
   padding: 0.45rem 0.55rem;
@@ -102,37 +107,43 @@
   opacity: 0.78;
 }
 
-.bj-game-over__ledger-choice {
-  margin: 0 0 0.55rem;
-  padding: 0;
-  border: none;
-  min-inline-size: 0;
-}
-
-.bj-game-over__ledger-option {
+.bj-game-over__action-row {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  margin: 0 0 0.35rem;
-  font-size: 0.72rem;
-  cursor: pointer;
+  justify-content: space-between;
+  gap: 0.55rem;
+  margin: 0 0 0.45rem;
 }
 
-.bj-game-over__iou-row {
-  margin: 0 0 0.35rem;
-}
-
-.bj-game-over__iou-toggle {
-  display: flex;
+.bj-game-over__toggle {
+  display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   font-size: 0.72rem;
   cursor: pointer;
 }
 
-.bj-game-over__iou-toggle--disabled {
+.bj-game-over__toggle--disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.bj-game-over__inline-link {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ds-color-gold);
+  font: inherit;
+  font-size: 0.66rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.bj-game-over__inline-link:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  text-decoration: none;
 }
 
 .bj-game-over__iou-message {
@@ -170,7 +181,9 @@
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
-  margin-top: 0.15rem;
+  margin-top: 0.35rem;
+  position: relative;
+  z-index: 1;
 }
 
 .bj-game-over__actions .ds-btn {
@@ -206,7 +219,12 @@
 .bj-game-over--inline {
   width: 100%;
   max-height: none;
-  padding: 0;
+  padding: 0 0 0.35rem;
   box-shadow: none;
   background: transparent;
+  overflow: visible;
+}
+
+.bj-game-over--inline .bj-game-over__actions {
+  padding-bottom: 0.15rem;
 }

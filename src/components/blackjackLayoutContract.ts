@@ -30,3 +30,25 @@ export const DEPRECATED_BOX_TURN_CLASS = 'bj-box--turn';
 
 /** Panel files that own arc card/box slot rendering. */
 export const LAYOUT_SLOT_OWNER_FILES = ['src/components/BlackjackPanel.tsx'] as const;
+
+/**
+ * Full Table card column — canonical three-zone grid between command box and player boxes.
+ * Row 1: outcome marker (reserved height). Row 2: stack grows upward. Row 3: fixed value band.
+ * Applies to `.bj-view-full-desktop` and `.bj-view-full-mobile` only (not Card View).
+ */
+export const FULL_TABLE_CARD_COLUMN_CLASS = 'bj-arc__slot--card-column';
+
+export const FULL_TABLE_CARD_COLUMN_OUTCOME_ZONE_HEIGHT =
+  'var(--bj-full-table-card-outcome-zone-height, 0.72rem)';
+
+export const FULL_TABLE_CARD_COLUMN_GRID_ROWS = [
+  FULL_TABLE_CARD_COLUMN_OUTCOME_ZONE_HEIGHT,
+  'minmax(var(--bj-table-card-height), auto)',
+  'var(--bj-box-value-band-height)',
+] as const;
+
+/** View roots that use FULL_TABLE_CARD_COLUMN_GRID_ROWS. */
+export const FULL_TABLE_CARD_COLUMN_VIEW_ROOTS = [
+  'bj-view-full-desktop',
+  'bj-view-full-mobile',
+] as const;

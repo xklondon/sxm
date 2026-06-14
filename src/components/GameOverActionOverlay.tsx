@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { GameOverPresentationModel } from './gameOverPresentation';
+import { IOU_HANDOFF_MESSAGE_MAX_LENGTH } from './gameOverIouMessage';
 import './GameOverActionOverlay.css';
 
 export type GameOverIouFeedback = {
@@ -28,11 +29,12 @@ export interface GameOverActionOverlayProps {
   pending?: boolean;
   canStartNewGame?: boolean;
   newGameDisabledReason?: string | null;
+  onOpenLedger?: () => void;
   onComplete: (options: GameOverCompleteOptions) => void | Promise<void>;
   onDismiss: () => void;
 }
 
-/** Game-end sheet — summary, ledger choice, optional IOU, New Game. */
+/** Game-end sheet — summary, ledger/IOU choices, Start New Game. */
 export function GameOverActionOverlay({
   open,
   layout = 'overlay',
@@ -46,11 +48,13 @@ export function GameOverActionOverlay({
   pending = false,
   canStartNewGame = true,
   newGameDisabledReason = null,
+  onOpenLedger,
   onComplete,
   onDismiss,
 }: GameOverActionOverlayProps) {
-  const [ledgerChoice, setLedgerChoice] = useState<'add' | 'skip'>('skip');
+  const [addToLedger, setAddToLedger] = useState(false);
   const [createIou, setCreateIou] = useState(false);
+  const [showIouMessage, setShowIouMessage] = useState(false);
   const [iouMessage, setIouMessage] = useState('');
 
   if (!open) {
@@ -59,17 +63,16 @@ export function GameOverActionOverlay({
 
   const busy = pending || iouPending;
   const iouToggleDisabled = !canCreateIou || busy;
-  const ledgerAddDisabled = !canSaveToLedger || ledgerAlreadyAdded || busy;
-  const newGameDisabled = !canStartNewGame || busy;
+  const ledgerToggleDisabled = !canSaveToLedger || ledgerAlreadyAdded || busy;
+  const startNewGameDisabled = !canStartNewGame || busy;
 
-  async function handleNewGame() {
-    if (newGameDisabled) {
+  async function handleStartNewGame() {
+    if (startNewGameDisabled) {
       return;
     }
-    const saveLedger = ledgerChoice === 'add' && !ledgerAlreadyAdded && canSaveToLedger;
-    const trimmedMessage = iouMessage.trim();
+    const trimmedMessage = iouMessage.trim().slice(0, IOU_HANDOFF_MESSAGE_MAX_LENGTH);
     await onComplete({
-      saveLedger,
+      saveLedger: addToLedger && !ledgerAlreadyAdded && canSaveToLedger,
       createIou: createIou && canCreateIou,
       iouMessage: trimmedMessage || undefined,
     });
@@ -118,6 +121,9 @@ export function GameOverActionOverlay({
         <p className="bj-game-over__summary-line bj-game-over__summary-line--meta">
           {presentation.roundsLine}
         </p>
+        <p className="bj-game-over__summary-line bj-game-over__round-comment">
+          {presentation.roundCommentLine}
+        </p>
       </div>
 
       <blockquote className="bj-game-over__magic8">
@@ -147,35 +153,40 @@ export function GameOverActionOverlay({
         </a>
       ) : null}
 
-      <fieldset className="bj-game-over__ledger-choice" disabled={busy}>
-        <legend className="bj-game-over__section-label">Personal ledger</legend>
-        <label className="bj-game-over__ledger-option">
+      <div className="bj-game-over__action-row">
+        <label
+          className={[
+            'bj-game-over__toggle',
+            ledgerToggleDisabled ? 'bj-game-over__toggle--disabled' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           <input
-            type="radio"
-            name="bj-game-over-ledger"
-            checked={ledgerChoice === 'add'}
-            disabled={ledgerAddDisabled}
-            onChange={() => setLedgerChoice('add')}
+            type="checkbox"
+            checked={addToLedger && !ledgerAlreadyAdded}
+            disabled={ledgerToggleDisabled}
+            onChange={(e) => setAddToLedger(e.target.checked)}
           />
           <span>{ledgerAlreadyAdded ? 'Added to Ledger' : 'Add to Ledger'}</span>
         </label>
-        <label className="bj-game-over__ledger-option">
-          <input
-            type="radio"
-            name="bj-game-over-ledger"
-            checked={ledgerChoice === 'skip'}
+        {onOpenLedger ? (
+          <button
+            type="button"
+            className="bj-game-over__inline-link"
             disabled={busy}
-            onChange={() => setLedgerChoice('skip')}
-          />
-          <span>Don&apos;t Add</span>
-        </label>
-      </fieldset>
+            onClick={onOpenLedger}
+          >
+            Open Ledger
+          </button>
+        ) : null}
+      </div>
 
-      <div className="bj-game-over__iou-row">
+      <div className="bj-game-over__action-row">
         <label
           className={[
-            'bj-game-over__iou-toggle',
-            iouToggleDisabled ? 'bj-game-over__iou-toggle--disabled' : '',
+            'bj-game-over__toggle',
+            iouToggleDisabled ? 'bj-game-over__toggle--disabled' : '',
           ]
             .filter(Boolean)
             .join(' ')}
@@ -185,23 +196,40 @@ export function GameOverActionOverlay({
             type="checkbox"
             checked={createIou && canCreateIou}
             disabled={iouToggleDisabled}
-            onChange={(e) => setCreateIou(e.target.checked)}
+            onChange={(e) => {
+              const next = e.target.checked;
+              setCreateIou(next);
+              if (!next) {
+                setShowIouMessage(false);
+              }
+            }}
           />
           <span>Create IOU</span>
         </label>
+        <button
+          type="button"
+          className="bj-game-over__inline-link"
+          disabled={iouToggleDisabled || !createIou}
+          onClick={() => setShowIouMessage((open) => !open)}
+        >
+          Add message
+        </button>
       </div>
 
-      <label className="bj-game-over__iou-message">
-        <span className="bj-game-over__section-label">Add message to IOU</span>
-        <textarea
-          className="bj-game-over__iou-message-input"
-          value={iouMessage}
-          disabled={iouToggleDisabled || !createIou}
-          rows={2}
-          placeholder="Optional note for the IOU handoff"
-          onChange={(e) => setIouMessage(e.target.value)}
-        />
-      </label>
+      {showIouMessage && createIou && canCreateIou ? (
+        <label className="bj-game-over__iou-message">
+          <span className="bj-game-over__section-label">IOU message</span>
+          <textarea
+            className="bj-game-over__iou-message-input"
+            value={iouMessage}
+            disabled={busy}
+            rows={2}
+            maxLength={IOU_HANDOFF_MESSAGE_MAX_LENGTH}
+            placeholder="Optional note for the IOU handoff"
+            onChange={(e) => setIouMessage(e.target.value.slice(0, IOU_HANDOFF_MESSAGE_MAX_LENGTH))}
+          />
+        </label>
+      ) : null}
 
       {iouToggleDisabled && iouDisabledReason ? (
         <p className="bj-game-over__iou-hint">{iouDisabledReason}</p>
@@ -211,11 +239,11 @@ export function GameOverActionOverlay({
         <button
           type="button"
           className="ds-btn ds-btn--primary"
-          disabled={newGameDisabled}
-          title={newGameDisabled ? newGameDisabledReason ?? undefined : undefined}
-          onClick={() => void handleNewGame()}
+          disabled={startNewGameDisabled}
+          title={startNewGameDisabled ? newGameDisabledReason ?? undefined : undefined}
+          onClick={() => void handleStartNewGame()}
         >
-          {iouPending ? 'Creating IOU…' : 'New Game'}
+          {iouPending ? 'Creating IOU…' : 'Start New Game'}
         </button>
       </div>
     </div>

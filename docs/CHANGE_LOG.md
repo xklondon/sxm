@@ -13,6 +13,24 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Full Table card-column contract + game-end flow regression
+
+- **Card area:** Canonical three-zone grid (outcome / stack / fixed value) for Full Table desktop + mobile; card-row slots bottom-aligned; arc height auto.
+- **Game end:** Desktop panel re-opens when game-over active; dismiss uses `handleGameOverDismiss` (no ledger/IOU save); summary fallback from chip totals when message generic/null winner.
+- **Tests:** `blackjackFullTableCardColumnLayout.test.ts`, `gameEndFlowRegression.test.ts`.
+
+---
+
+## 2026-06-12 — Game Over CTA + desktop card column + command copy
+
+- **Game Over CTA:** **Add to Ledger** checkbox + **Open Ledger** link; **Create IOU** checkbox + expandable **Add message** (180 chars); **Start New Game** (owner-only) saves ledger/creates IOU then reset — toggles alone do nothing; dismiss does not save.
+- **Game Over copy:** Round-count comment line via `resolveGameOverRoundComment` helper (extensible tiers).
+- **Command text:** Options line omits Stay — `Options: Hit, Double — one card.` / singular `Option:` when one choice.
+- **Desktop Full Table cards:** Values anchored at bottom of card column; stacks grow upward; horizontal alignment with boxes; scoped `.bj-view-full-desktop` CSS only.
+- **Tests:** Updated overlay, command, desktop layout, game-end UI tests.
+
+---
+
 ## 2026-06-12 — Game Over upgrade + desktop table polish
 
 - **Game Over UI:** Title **Game Over**; extensible glyph visuals; winner/result/rounds summary; Magic 8 line; ledger either/or (**Add to Ledger** / **Don't Add**); **Create IOU** toggle + optional **Add message to IOU** (passed as IOU `message` param); **New Game** applies choices then reset — dismiss/close does not save.

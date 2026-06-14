@@ -13,9 +13,15 @@ describe('blackjack desktop polish contracts', () => {
     );
   });
 
-  it('places desktop Full Table card values in fixed bottom grid row', () => {
+  it('places Full Table card values in fixed bottom grid row on desktop and mobile', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-arc__slot--card-column,\s*\n\.bj-view-full-mobile \.bj-arc__slot--card-column[\s\S]*minmax\(var\(--bj-table-card-height\),\s*auto\)/,
     );
     expect(PANEL_SRC).toContain('TABLE_UX.cardColumnValueBelow');
   });

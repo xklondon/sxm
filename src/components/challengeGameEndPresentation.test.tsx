@@ -152,14 +152,14 @@ describe('challenge game end presentation', () => {
     simulatedWidth = 1280;
   });
 
-  it('orders game-over sections: ledger choice, IOU toggle, then New Game', () => {
+  it('orders game-over sections: ledger row, IOU row, then Start New Game', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/GameOverActionOverlay.tsx'), 'utf8');
-    const ledgerIdx = src.indexOf('bj-game-over__ledger-choice');
-    const toggleIdx = src.indexOf('bj-game-over__iou-toggle');
+    const ledgerIdx = src.indexOf('bj-game-over__action-row');
+    const iouIdx = src.indexOf('Create IOU');
     const actionsIdx = src.indexOf('bj-game-over__actions');
     expect(ledgerIdx).toBeGreaterThan(-1);
-    expect(toggleIdx).toBeGreaterThan(ledgerIdx);
-    expect(actionsIdx).toBeGreaterThan(toggleIdx);
+    expect(iouIdx).toBeGreaterThan(ledgerIdx);
+    expect(actionsIdx).toBeGreaterThan(iouIdx);
   });
 
   it('renders desktop game summary when player bank wins', () => {
@@ -177,6 +177,14 @@ describe('challenge game end presentation', () => {
     );
     expect(html).toContain('Game Over');
     expect(html).toContain('Add to Ledger');
+  });
+
+  it('renders desktop game summary for practice ended table', () => {
+    const html = renderToStaticMarkup(
+      <BlackjackPanel gameState={instantDeal(practiceEndedState())} onGameStateChange={noop} />,
+    );
+    expect(html).toContain('Game Over');
+    expect(html).toContain('Start New Game');
   });
 
   it('renders desktop game summary for fractional bank-bust with null winnerId', () => {

@@ -1725,44 +1725,50 @@
   padding-bottom: 0.04rem;
 }
 
-.bj-view-full-desktop .bj-arc__slot--card-column {
-  padding-top: 0.35rem;
-}
-
-.bj-view-full-desktop .bj-arc__slot--card-column {
+/* Full Table card column — canonical outcome / stack / value grid (desktop + mobile). */
+.bj-view-full-desktop .bj-arc__slot--card-column,
+.bj-view-full-mobile .bj-arc__slot--card-column {
   display: grid;
   grid-template-rows:
-    var(--bj-full-desktop-card-outcome-zone-height, 0.72rem)
-    minmax(0, 1fr)
+    var(--bj-full-table-card-outcome-zone-height, 0.72rem)
+    minmax(var(--bj-table-card-height), auto)
     var(--bj-box-value-band-height);
   align-content: end;
   align-items: end;
   justify-items: center;
-  height: 100%;
+  height: auto;
   min-height: calc(
     var(--bj-table-card-height) + var(--bj-box-value-band-height) +
-      var(--bj-full-desktop-card-outcome-zone-height, 0.72rem)
+      var(--bj-full-table-card-outcome-zone-height, 0.72rem)
   );
   overflow: visible;
 }
 
-.bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column > .bj-card-outcome-marker {
+.bj-view-full-desktop .bj-arc__slot--card-column {
+  padding-top: 0.35rem;
+}
+
+.bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column > .bj-card-outcome-marker,
+.bj-view-full-mobile .bj-arc--cards .bj-arc__slot--card-column > .bj-card-outcome-marker {
   grid-row: 1;
   align-self: end;
   width: 100%;
-  min-height: var(--bj-full-desktop-card-outcome-zone-height, 0.72rem);
+  min-height: var(--bj-full-table-card-outcome-zone-height, 0.72rem);
   margin: 0;
 }
 
 .bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column > .bj-arc__cards--stack-vertical,
-.bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column > .bj-arc__split-hands {
+.bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column > .bj-arc__split-hands,
+.bj-view-full-mobile .bj-arc--cards .bj-arc__slot--card-column > .bj-arc__cards--stack-vertical,
+.bj-view-full-mobile .bj-arc--cards .bj-arc__slot--card-column > .bj-arc__split-hands {
   grid-row: 2;
   align-self: end;
   width: 100%;
   min-height: 0;
 }
 
-.bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column > .bj-phone-view__box-value--card-column-below {
+.bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column > .bj-phone-view__box-value--card-column-below,
+.bj-view-full-mobile .bj-arc--cards .bj-arc__slot--card-column > .bj-phone-view__box-value--card-column-below {
   grid-row: 3;
   align-self: center;
   width: 100%;
@@ -1775,7 +1781,8 @@
   box-sizing: border-box;
 }
 
-.bj-view-full-desktop .bj-arc--cards .bj-phone-view__box-value--active-turn {
+.bj-view-full-desktop .bj-arc--cards .bj-phone-view__box-value--active-turn,
+.bj-view-full-mobile .bj-arc--cards .bj-phone-view__box-value--active-turn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1810,15 +1817,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bj-view-full-desktop .bj-arc--cards .bj-phone-view__box-value--active-turn {
+  .bj-view-full-desktop .bj-arc--cards .bj-phone-view__box-value--active-turn,
+  .bj-view-full-mobile .bj-arc--cards .bj-phone-view__box-value--active-turn {
     animation: none;
   }
-}
-
-.bj-view-full-mobile .bj-arc__slot--card-column,
-.bj-view-card-mobile .bj-arc__slot--card-column {
-  align-items: flex-end;
-  justify-content: flex-end;
 }
 
 .bj-view-full-desktop .bj-arc__cards--stack-vertical,
@@ -2533,12 +2535,20 @@
 }
 
 .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-arc--cards {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   align-self: stretch;
   min-height: 0;
-  height: 100%;
-  max-height: 100%;
+  height: auto;
+  max-height: none;
   align-items: flex-end;
+}
+
+.bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-arc--cards,
+.bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-arc--cards {
+  flex: 0 0 auto;
+  height: auto;
+  max-height: none;
+  min-height: 0;
 }
 
 .bj-table-layout-shell .bj-table-zone--boxes {
@@ -3285,6 +3295,43 @@
   .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-7 {
     --bj-cardview-desktop-mini-hand-width: var(--bj-player-box-width);
     --bj-cardview-desktop-mini-hand-height: var(--bj-player-box-height);
+  }
+
+  /* Full Table desktop — pin card row to bottom of cards zone, values above boxes. */
+  .bj-view-full-desktop .bj-table-layout-shell {
+    grid-template-rows:
+      [dealer] var(--bj-desktop-zone-dealer-height)
+      [command] var(--bj-desktop-zone-command-height)
+      [cards] max-content
+      [actions] var(--bj-desktop-zone-actions-height)
+      [boxes] var(--bj-desktop-zone-boxes-height)
+      [tray] var(--bj-desktop-zone-tray-height);
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards {
+    align-self: end;
+    margin-top: 0.1rem;
+    padding-top: 0.05rem;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-arc--cards,
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-table-slot-row.bj-arc--cards {
+    flex: 0 0 auto;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    margin-top: 0;
+    padding-top: 0;
+    padding-bottom: 0.02rem;
+  }
+
+  .bj-view-full-desktop .bj-arc__slot--card-column {
+    padding-top: 0;
+    height: auto;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
+    padding-top: 0.04rem;
   }
 }
 

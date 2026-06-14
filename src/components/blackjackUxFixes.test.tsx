@@ -190,9 +190,9 @@ describe('blackjack UX fixes — command text', () => {
     );
     expect(msg.commandMessage).toBe('Box 2 — your turn.');
     expect(msg.commandLines.some((line) => /Bank has/.test(line))).toBe(true);
-    expect(msg.commandLines.some((line) => /^Options:/.test(line))).toBe(true);
+    expect(msg.commandLines.some((line) => /^(Option|Options):/.test(line))).toBe(true);
     expect(formatPlayerTurnOptions(true, true, true, false)).toBe(
-      'Options: Hit, Stay, Double one card.',
+      'Options: Hit, Double — one card.',
     );
   });
 

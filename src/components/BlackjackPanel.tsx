@@ -578,10 +578,10 @@ export function BlackjackPanel({
   }, [gameEnded, gameState.session.id]);
 
   useEffect(() => {
-    if (showGameOverDesktopPanel) {
+    if (showGameOverDesktopPanel && sideRailPanel !== 'thisTable') {
       setSideRailPanel('thisTable');
     }
-  }, [showGameOverDesktopPanel]);
+  }, [showGameOverDesktopPanel, sideRailPanel]);
 
   useEffect(() => {
     if (!awaitingNextRound) {
@@ -1686,7 +1686,17 @@ export function BlackjackPanel({
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
         data-box-slot={slotNumber}
         aria-hidden="true"
-      />
+      >
+        <span
+          className={[
+            TABLE_UX.cardColumnValueBelow,
+            'bj-phone-view__box-value--placeholder',
+          ].join(' ')}
+          aria-hidden="true"
+        >
+          {'\u00a0'}
+        </span>
+      </div>
     );
   }
 
@@ -2042,14 +2052,27 @@ export function BlackjackPanel({
         iouPending={iouPending}
         iouFeedback={iouFeedback}
         iouDisabledReason={iouDisabledReason}
-        canStartNewGame={canResetTable && Boolean(onBeginTableReset)}
+        canStartNewGame={canResetTable}
         newGameDisabledReason={
-          !canResetTable ? 'Only the table owner can start a new game.' : null
+          !canResetTable
+            ? 'Only the table owner can start a new game.'
+            : !onBeginTableReset
+              ? 'New game setup is unavailable on this table.'
+              : null
         }
+        onOpenLedger={() => setActiveTablePanel('playLedger')}
         onComplete={handleGameOverNewGame}
-        onDismiss={() => setSideRailPanel(null)}
+        onDismiss={handleGameOverDismiss}
       />
     );
+  }
+
+  function closeSideRailPanel() {
+    if (showGameOverDesktopPanel) {
+      handleGameOverDismiss();
+      return;
+    }
+    setSideRailPanel(null);
   }
 
   function renderSideRailPanel(variant: 'dock' | 'overlay') {
@@ -2093,7 +2116,7 @@ export function BlackjackPanel({
         data-side-panel={sideRailPanel}
       >
         {isOverlay && sideRailPanel === 'thisTable' && renderMobileSidePanelTabs()}
-        <TableSideRailShell title={title} onClose={() => setSideRailPanel(null)}>
+        <TableSideRailShell title={title} onClose={closeSideRailPanel}>
           {panelContent}
         </TableSideRailShell>
       </div>
@@ -2189,10 +2212,15 @@ export function BlackjackPanel({
           iouPending={iouPending}
           iouFeedback={iouFeedback}
           iouDisabledReason={iouDisabledReason}
-          canStartNewGame={canResetTable && Boolean(onBeginTableReset)}
+          canStartNewGame={canResetTable}
           newGameDisabledReason={
-            !canResetTable ? 'Only the table owner can start a new game.' : null
+            !canResetTable
+              ? 'Only the table owner can start a new game.'
+              : !onBeginTableReset
+                ? 'New game setup is unavailable on this table.'
+                : null
           }
+          onOpenLedger={() => setActiveTablePanel('playLedger')}
           onComplete={handleGameOverNewGame}
           onDismiss={handleGameOverDismiss}
         />

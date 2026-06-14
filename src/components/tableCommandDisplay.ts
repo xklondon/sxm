@@ -40,22 +40,20 @@ export function formatHandValuePhrase(value: number, isSoft: boolean): string {
   return isSoft ? `soft ${value}` : String(value);
 }
 
-/** Build comma-separated option list — only actions valid for the active hand. */
+/** Build comma-separated option list — only actions valid for the active hand (Stay is a button, not listed here). */
 export function formatPlayerTurnOptions(
   canHit: boolean,
   canStand: boolean,
   canDouble: boolean,
   canSplit: boolean,
 ): string {
+  void canStand;
   const options: string[] = [];
   if (canHit) {
     options.push('Hit');
   }
-  if (canStand) {
-    options.push('Stay');
-  }
   if (canDouble) {
-    options.push('Double one card');
+    options.push('Double — one card');
   }
   if (canSplit) {
     options.push('Split');
@@ -63,7 +61,8 @@ export function formatPlayerTurnOptions(
   if (options.length === 0) {
     return '';
   }
-  return `Options: ${options.join(', ')}.`;
+  const prefix = options.length === 1 ? 'Option' : 'Options';
+  return `${prefix}: ${options.join(', ')}.`;
 }
 
 function formatBankHandPhrase(displayState: GameState): string {

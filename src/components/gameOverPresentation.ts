@@ -2,6 +2,10 @@ import type { GameState } from '../types';
 import { getMagic8Wisdom } from '../content/magic8';
 import { buildGameOverSummary } from '../engine/scoreLedger/scoreLedger';
 import {
+  buildChallengeEndRankings,
+  buildGameEndChipTotalsMessage,
+} from '../engine/scoreLedger/challengeEndAccounting';
+import {
   resolveWinnerDisplayName,
 } from '../engine/scoreLedger/challengeBankDisplay';
 
@@ -32,8 +36,48 @@ export interface GameOverPresentationModel {
   winnerLine: string;
   resultLine: string;
   roundsLine: string;
+  roundCommentLine: string;
   magic8Line: string;
   rawSummary: string;
+}
+
+export interface GameOverRoundCommentTier {
+  id: string;
+  minRounds: number;
+  maxRounds: number;
+  phrases: readonly string[];
+}
+
+/** Admin-extensible round-count comments for the game-over panel. */
+export const GAME_OVER_ROUND_COMMENT_TIERS: readonly GameOverRoundCommentTier[] = [
+  {
+    id: 'quick',
+    minRounds: 1,
+    maxRounds: 3,
+    phrases: ['Ouch, that was a quick one.'],
+  },
+  {
+    id: 'medium',
+    minRounds: 4,
+    maxRounds: 8,
+    phrases: ['Nice table fight.'],
+  },
+  {
+    id: 'long',
+    minRounds: 9,
+    maxRounds: Number.POSITIVE_INFINITY,
+    phrases: ['That was a proper battle.'],
+  },
+];
+
+export function resolveGameOverRoundComment(rounds: number): string {
+  const safeRounds = Math.max(1, rounds);
+  const tier =
+    GAME_OVER_ROUND_COMMENT_TIERS.find(
+      (entry) => safeRounds >= entry.minRounds && safeRounds <= entry.maxRounds,
+    ) ?? GAME_OVER_ROUND_COMMENT_TIERS[1]!;
+  const phrase = tier.phrases[0] ?? GAME_OVER_ROUND_COMMENT_TIERS[1]!.phrases[0]!;
+  return phrase;
 }
 
 function visualsForTone(tone: GameOverVisualTone): GameOverVisual[] {
@@ -57,14 +101,31 @@ function resolveViewerOutcome(state: GameState, viewerPersonId: string | null): 
   return winnerId === viewerPersonId;
 }
 
+/** Fallback when ledger summary message is empty or generic. */
+export function resolveGameOverSummaryMessage(state: GameState, summaryMessage: string): string {
+  const trimmed = summaryMessage.trim();
+  if (trimmed && trimmed !== 'Game over.') {
+    return summaryMessage;
+  }
+  const chipTotals = buildGameEndChipTotalsMessage(state);
+  if (chipTotals) {
+    return chipTotals;
+  }
+  return trimmed || 'Game over.';
+}
+
 function resolveWinnerLine(state: GameState, summaryMessage: string): string {
   const winnerId = state.tableMeta.winnerId;
   if (winnerId) {
     return `${resolveWinnerDisplayName(state, winnerId)} won.`;
   }
   const firstLine = summaryMessage.split('\n').find((line) => line.trim())?.trim();
-  if (firstLine && /bust|fractional|winner|won/i.test(firstLine)) {
+  if (firstLine && /bust|fractional|winner|won|leads|chips/i.test(firstLine)) {
     return firstLine.replace(/^GAME OVER\s*/i, '').trim();
+  }
+  const top = buildChallengeEndRankings(state).find((row) => row.endingChips > 0);
+  if (top) {
+    return `${top.name} leads with ${top.endingChips} chips.`;
   }
   return 'Final result recorded.';
 }
@@ -91,6 +152,7 @@ export function buildGameOverPresentationModel(
   magic8Answer?: string | null,
 ): GameOverPresentationModel {
   const rounds = Math.max(1, state.session.currentRound || 1);
+  const resolvedSummary = resolveGameOverSummaryMessage(state, summaryMessage);
   const magic8Line =
     magic8Answer?.trim() ||
     getMagic8Wisdom({ gameType: 'blackjack', includeRare: true });
@@ -98,10 +160,11 @@ export function buildGameOverPresentationModel(
   return {
     title: 'Game Over',
     visual: pickGameOverVisual(resolveViewerOutcome(state, viewerPersonId)),
-    winnerLine: resolveWinnerLine(state, summaryMessage),
-    resultLine: resolveResultLine(state, summaryMessage),
+    winnerLine: resolveWinnerLine(state, resolvedSummary),
+    resultLine: resolveResultLine(state, resolvedSummary),
     roundsLine: `${rounds} round${rounds === 1 ? '' : 's'} played`,
+    roundCommentLine: resolveGameOverRoundComment(rounds),
     magic8Line,
-    rawSummary: summaryMessage,
+    rawSummary: resolvedSummary,
   };
 }

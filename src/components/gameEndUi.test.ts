@@ -17,7 +17,8 @@ describe('game end UI wiring', () => {
     expect(PANEL_SRC).toContain('layout="inline"');
     expect(OVERLAY_SRC).toContain('bj-game-over-overlay');
     expect(OVERLAY_SRC).toContain('Add to Ledger');
-    expect(OVERLAY_SRC).toContain("Don&apos;t Add");
+    expect(OVERLAY_SRC).toContain('Open Ledger');
+    expect(OVERLAY_SRC).toContain('Start New Game');
     expect(OVERLAY_SRC).toContain('Create IOU');
   });
 

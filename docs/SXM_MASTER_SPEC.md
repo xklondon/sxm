@@ -192,9 +192,9 @@ Challenge bank plays against boxes; `session.bankPlayerId` is always a seated **
 **Game end presentation:**
 
 - **Final cards stay visible** — summary/ledger UI must not obscure the felt.
-- **Desktop:** **Game Over** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — random happy/sad glyph visual, winner/result/round summary, Magic 8 wisdom, **Add to Ledger / Don't Add** radio choice, **Create IOU** toggle with optional **Add message to IOU** field, single **New Game** button applies choices then opens reset flow; close/dismiss does not save ledger or create IOU; dealer **New Game** hidden while panel is open.
-- **Mobile:** centered **Game Over** overlay (`bj-game-over-overlay`) with the same content/flow after reveal delay.
-- **Desktop polish:** toolbar nav aligned to felt right edge; card column hand totals below stacks near boxes; tray label (e.g. **SxM Casino Challenge**) on desktop + mobile; ~10% larger mobile table typography (text tokens only).
+- **Desktop:** **Game Over** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — random happy/sad glyph visual, winner/result/round summary, round-count comment line, Magic 8 wisdom; **Add to Ledger** checkbox + **Open Ledger** link (toggle only — no save until **Start New Game**); **Create IOU** checkbox + **Add message** expand (max 180 chars; empty uses default IOU message); main **Start New Game** button (owner only) applies ledger/IOU choices then reset flow; close/dismiss does not save ledger or create IOU (dismiss hides game-over UI and restores dealer fallback); panel re-opens automatically while game-over is active; dealer **New Game** hidden while panel is open.
+- **Mobile:** centered **Game Over** overlay (`bj-game-over-overlay`) with the same content/flow after reveal delay; `gameEndRevealReady = cardRevealComplete || gameStatus === 'ended'`.
+- **Desktop polish:** toolbar nav aligned to felt right edge; Full Table card stacks align with player boxes; hand totals fixed at bottom of card column (stacks grow upward toward dealer; outcome/active frame must not shift value); tray label (e.g. **SxM Casino Challenge**) on desktop + mobile; ~10% larger mobile table typography (text tokens only).
 
 ### Personal score ledger (challenge games)
 
@@ -442,14 +442,15 @@ Shake-to-roll optional. Primary action label: **Dice** (roll).
 ```
 Box [n], [name], your turn.
 Bank has [up-card or total] against your [score].
-Options: Hit, Stay, Double one card, Split.  (valid options only)
+Options: Hit, Double — one card, Split.  (valid options only; singular Option: when one choice)
 ```
 
-- Use **Stay** in command copy (action buttons may still say Stand where protocol-named).
+- **Stay/Stand** is not listed in the options sentence (Stay button/action unchanged).
+- Use **Stay** elsewhere in command copy only where protocol-named (not in the options list).
 - No sentimental/random phrasing.
 - Natural blackjack: `Box [n], Blackjack.` only for `actionStatus === 'blackjack'`.
 
-**Table View card-column values:** Each occupied box shows the same hand total above its card column (`bj-phone-view__box-value--card-column`) using shared `resolvePrimaryHandValueLabel` — no duplicate scoring logic.
+**Table View card-column values (Full Table desktop + mobile):** Canonical three-zone grid per column — outcome (reserved) / stack (grows upward) / value (fixed `--bj-box-value-band-height` at bottom, aligned with player boxes). Outcome markers and active-turn frame must not shift the value band. Card View hero layout unchanged. Shared `resolvePrimaryHandValueLabel` — no duplicate scoring logic.
 
 **No-jump box stability:** `+` add-box and every player box share identical outer dimensions (`--bj-full-table-box-width`, fixed value band + box height). Reserved internal zones: score/value, chip stack (`--bj-full-table-stake-min-height`), logo/label (composition). Active turn uses inset `box-shadow` pulse only — no border-width or layout-affecting highlight changes.
 

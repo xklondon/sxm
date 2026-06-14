@@ -142,7 +142,7 @@
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards > .bj-arc__slot {
     width: var(--bj-full-table-box-width);
     max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
-    align-self: center;
+    align-self: end;
   }
 
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards > .bj-table-slot-row__lead-spacer {
@@ -561,6 +561,10 @@
 
 .bj-table-slot-row.bj-arc--cards > .bj-arc__slot {
   transform: none;
+}
+
+.bj-view-full-mobile .bj-table-slot-row.bj-arc--cards > .bj-arc__slot {
+  align-self: end;
 }
 
 .bj-player-boxes-wrap {

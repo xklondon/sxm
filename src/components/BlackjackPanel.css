@@ -1480,46 +1480,4 @@
     .bj-arc--cards {
     padding-top: 0.95rem;
   }
-
-  .bj-view-full-desktop .bj-arc--cards .bj-arc__slot--card-column {
-    display: grid;
-    grid-template-rows:
-      var(--bj-full-desktop-card-outcome-zone-height, 0.72rem)
-      minmax(0, 1fr)
-      var(--bj-box-value-band-height);
-    justify-content: stretch;
-    align-items: end;
-    min-height: calc(
-      var(--bj-table-card-height) + var(--bj-box-value-band-height) +
-        var(--bj-full-desktop-card-outcome-zone-height, 0.72rem)
-    );
-  }
-
-  .bj-view-full-desktop .bj-arc--cards .bj-card-outcome-marker {
-    grid-row: 1;
-    align-self: end;
-    order: unset;
-    min-height: var(--bj-full-desktop-card-outcome-zone-height, 0.72rem);
-    margin: 0;
-  }
-
-  .bj-view-full-desktop .bj-arc--cards .bj-arc__split-hands,
-  .bj-view-full-desktop .bj-arc--cards .bj-arc__cards--stack-vertical {
-    grid-row: 2;
-    align-self: end;
-    order: unset;
-    flex: unset;
-    min-height: 0;
-  }
-
-  .bj-view-full-desktop .bj-arc--cards .bj-phone-view__box-value--card-column-below {
-    grid-row: 3;
-    align-self: center;
-    order: unset;
-    flex: unset;
-    margin: 0;
-    height: var(--bj-box-value-band-height);
-    min-height: var(--bj-box-value-band-height);
-    max-height: var(--bj-box-value-band-height);
-  }
 }

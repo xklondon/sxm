@@ -77,7 +77,7 @@ describe('buildBlackjackCommandText', () => {
     });
     expect(result.commandMessage).toBe('Box 2 — your turn.');
     expect(result.commandLines.some((line) => /Bank has/.test(line))).toBe(true);
-    expect(result.commandLines.some((line) => /^Options:/.test(line))).toBe(true);
+    expect(result.commandLines.some((line) => /^(Option|Options):/.test(line))).toBe(true);
   });
 
   it('shows join notice during betting when tableNotice is set', () => {
@@ -106,10 +106,11 @@ describe('buildBlackjackCommandText', () => {
     expect(result.commandMessage).toBe('Kay joined the table on Box 3.');
   });
 
-  it('builds options line with Stay wording', () => {
-    expect(
-      formatPlayerTurnOptions(true, true, true, true),
-    ).toBe('Options: Hit, Stay, Double one card, Split.');
+  it('builds options line without Stay wording', () => {
+    expect(formatPlayerTurnOptions(true, true, true, true)).toBe(
+      'Options: Hit, Double — one card, Split.',
+    );
+    expect(formatPlayerTurnOptions(false, true, true, false)).toBe('Option: Double — one card.');
   });
 
   it('includes soft totals in bank-against line', () => {

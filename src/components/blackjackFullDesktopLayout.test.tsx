@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
-const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 
 describe('desktop Full Table layout polish', () => {
   it('renders tray label below the chip plaque row on Full Table desktop', () => {
@@ -32,30 +31,30 @@ describe('desktop Full Table layout polish', () => {
     );
   });
 
-  it('uses fixed bottom value zone and reserved outcome zone on Full Table card columns', () => {
+  it('uses fixed bottom value zone with card-height stack row on Full Table desktop', () => {
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
+      /\.bj-view-full-desktop \.bj-arc__slot--card-column[\s\S]*minmax\(var\(--bj-table-card-height\),\s*auto\)/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-card-outcome-marker[\s\S]*grid-row:\s*1/,
-    );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc--cards \.bj-phone-view__box-value--active-turn[\s\S]*max-height:\s*var\(--bj-box-value-band-height\)/,
-    );
-    expect(PANEL_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc--cards \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
+      /\.bj-view-full-desktop \.bj-table-layout-shell[\s\S]*\[cards\]\s*max-content/,
     );
   });
 
-  it('does not apply Full Table spread or card-grid rules to mobile viewports', () => {
+  it('does not apply Full Table spread rules to Card View mobile card-column grid', () => {
     expect(PLAYER_ROW_CSS).not.toMatch(
-      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*space-evenly/,
+      /\.bj-view-card-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*space-evenly/,
     );
     expect(SHARED_CSS).not.toMatch(
-      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
+      /\.bj-view-card-mobile \.bj-arc__slot--card-column[\s\S]*grid-template-rows:/,
     );
     expect(CHIP_CSS).not.toMatch(
       /\.bj-view-full-mobile \.bj-value-chips--with-label[\s\S]*grid-template-rows:\s*auto auto[\s\S]*grid-row:\s*2/,
+    );
+  });
+
+  it('applies canonical bottom value grid to Full Table mobile card columns', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
     );
   });
 });
