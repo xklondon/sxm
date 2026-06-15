@@ -39,13 +39,19 @@ describe('Full Table card area canonical contract', () => {
     expect(PANEL_SRC).toContain('FULL_TABLE_CARD_AREA_CLASS');
   });
 
-  it('reserves fixed card zone height and bottom-aligns columns', () => {
-    expect(CARD_AREA_CSS).toMatch(/--bj-full-table-card-area-height:/);
+  it('fills command-to-actions gap and bottom-aligns columns (desktop + mobile)', () => {
+    expect(CARD_AREA_CSS).toMatch(/--bj-full-table-card-column-height:/);
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*height:\s*var\(--bj-full-table-card-area-height\)/,
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*flex:\s*1\s+1\s+auto/,
+    );
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
     expect(CARD_AREA_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
+    );
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*padding-top:\s*0/,
     );
     for (const viewRoot of FULL_TABLE_CARD_COLUMN_VIEW_ROOTS) {
       expect(CARD_AREA_CSS).toMatch(
@@ -53,16 +59,48 @@ describe('Full Table card area canonical contract', () => {
           `\\.${viewRoot} \\.bj-arc--cards \\.bj-arc__slot--card-column > \\.bj-phone-view__box-value--card-column-below[\\s\\S]*grid-row:\\s*3`,
         ),
       );
+      expect(CARD_AREA_CSS).toMatch(
+        new RegExp(
+          `\\.${viewRoot} \\.bj-arc--cards \\.bj-arc__slot--card-column > \\.bj-phone-view__box-value--card-column-below[\\s\\S]*align-self:\\s*end`,
+        ),
+      );
     }
   });
 
+  it('pins card stack bottom directly above value zone', () => {
+    for (const viewRoot of FULL_TABLE_CARD_COLUMN_VIEW_ROOTS) {
+      expect(CARD_AREA_CSS).toMatch(
+        new RegExp(
+          `\\.${viewRoot} \\.bj-arc--cards \\.bj-arc__slot--card-column > \\.bj-arc__cards--stack-vertical[\\s\\S]*grid-row:\\s*2[\\s\\S]*align-self:\\s*end`,
+        ),
+      );
+    }
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-arc__slot--card-column[\s\S]*grid-template-rows:[\s\S]*var\(--bj-box-value-band-height\)/,
+    );
+  });
+
+  it('keeps arc row at natural column height (not vertically centered in card area)', () => {
+    const arcRowRule =
+      CARD_AREA_CSS.match(
+        /\.bj-view-full-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-table-slot-row\.bj-arc--cards,[\s\S]*?\{[^}]*\}/,
+      )?.[0] ?? '';
+    const arcAreaRule =
+      CARD_AREA_CSS.match(
+        /\.bj-view-full-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-arc--cards\.bj-full-table-card-area,[\s\S]*?\{[^}]*\}/,
+      )?.[0] ?? '';
+    expect(arcRowRule).toContain('height: auto');
+    expect(arcAreaRule).toContain('height: auto');
+    expect(arcAreaRule).not.toMatch(/[^-]height:\s*100%/);
+  });
+
   it('forbids flex-grow / vertical centering on Full Table card arc and slots', () => {
-    expect(CARD_AREA_CSS).not.toMatch(
-      /\.bj-view-full-desktop[\s\S]*\.bj-arc--cards[\s\S]*\{[^}]*flex:\s*1\s+1\s+auto/,
-    );
-    expect(CARD_AREA_CSS).not.toMatch(
-      /\.bj-view-full-mobile[\s\S]*\.bj-arc--cards[\s\S]*\{[^}]*flex:\s*1\s+1\s+auto/,
-    );
+    const arcAreaRule =
+      CARD_AREA_CSS.match(
+        /\.bj-view-full-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-arc--cards\.bj-full-table-card-area,[\s\S]*?\{[^}]*\}/,
+      )?.[0] ?? '';
+    expect(arcAreaRule).toContain('flex: 0 0 auto');
+    expect(arcAreaRule).not.toContain('flex: 1 1 auto');
     for (const viewRoot of FULL_TABLE_CARD_COLUMN_VIEW_ROOTS) {
       expect(CARD_AREA_CSS).toContain(viewRoot);
     }
@@ -92,11 +130,9 @@ describe('Full Table card area canonical contract', () => {
     );
   });
 
-  it('uses fixed desktop grid cards row height (not 1fr or max-content)', () => {
-    expect(CARD_AREA_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\[cards\]\s*var\(--bj-full-table-card-area-height\)/,
-    );
-    expect(CARD_AREA_CSS).not.toMatch(/\[cards\]\s*max-content/);
-    expect(CARD_AREA_CSS).not.toMatch(/\[cards\]\s*minmax\(0,\s*1fr\)/);
+  it('does not override desktop grid cards row — flexible 1fr stays in shared shell', () => {
+    expect(CARD_AREA_CSS).not.toMatch(/grid-template-rows:[\s\S]*\[cards\]/);
+    expect(SHARED_CSS).toContain('--bj-desktop-grid-row-cards: minmax(0, 1fr)');
+    expect(SHARED_CSS).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
   });
 });

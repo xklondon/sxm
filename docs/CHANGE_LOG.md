@@ -13,9 +13,17 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Full Table card area bottom-pin fix
+
+- **Root cause:** Card zone was locked to `--bj-full-table-card-column-height` and desktop grid `[cards]` was overridden to that same fixed height, so stacks sat in a short strip under the command box instead of filling command→actions space with columns pinned to the bottom.
+- **`bj-full-table-card-area.css`:** Zone uses `flex: 1 1 auto` + `justify-content: flex-end`; arc row `height: auto`; value band `align-self: end`; removed hero top inset (`padding-top: 0`); desktop grid row stays `1fr` in shared shell.
+- **Tests:** Updated layout contract guards for flexible zone + bottom alignment.
+
+---
+
 ## 2026-06-12 — Canonical Full Table card area contract
 
-- **Single CSS module:** `src/styles/bj-full-table-card-area.css` — fixed zone height, bottom-anchored columns (outcome / stack / value), desktop + mobile Full Table only.
+- **Single CSS module:** `src/styles/bj-full-table-card-area.css` — bottom-anchored columns (outcome / stack / value), desktop + mobile Full Table only.
 - **Removed conflicting rules** from `bj-table-shared.css`, `bj-player-row-layout.css`, `BlackjackPanel.css` (duplicate grid/flex/centering).
 - **Panel:** `bj-full-table-card-area` class on card arc row (`FULL_TABLE_CARD_AREA_CLASS`).
 - **Tests:** `blackjackFullTableCardColumnLayout.test.ts` guards against `flex: 1`, `align-self: center` regressions.

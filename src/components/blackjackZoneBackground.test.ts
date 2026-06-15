@@ -64,7 +64,7 @@ describe('blackjack zone backgrounds — continuous felt surface', () => {
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*grid-row:\s*cards/);
   });
 
-  it('uses identical CardsArea outer contract for hero; Full Table uses fixed card zone', () => {
+  it('uses identical CardsArea outer flex growth for hero; Full Table bottom-pins columns', () => {
     const heroBlock =
       SHARED_CSS.match(
         /\.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero\s*\{[\s\S]*?\}/,
@@ -72,7 +72,10 @@ describe('blackjack zone backgrounds — continuous felt surface', () => {
     expect(heroBlock).toContain('flex: 1 1 auto');
     expect(heroBlock).not.toContain('background:');
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*height:\s*var\(--bj-full-table-card-area-height\)/,
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*flex:\s*1\s+1\s+auto/,
+    );
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
   });
 

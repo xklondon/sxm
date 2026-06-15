@@ -57,7 +57,7 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
     expect(shellZoneBlock('.bj-table-zone--bottom')).toContain('height: var(--bj-zone-tray-height)');
   });
 
-  it('gives hero cards area flex growth; Full Table card zone is fixed height', () => {
+  it('gives hero and Full Table card zones flex growth with bottom-pinned columns', () => {
     const heroBlock = SHARED_CSS.match(
       /\.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero\s*\{[\s\S]*?\}/,
     )?.[0];
@@ -66,18 +66,19 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
     expect(heroBlock).toContain('min-height: var(--bj-zone-cards-min-height)');
     expect(heroBlock).not.toContain('bj-card-row-hero-min');
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*height:\s*var\(--bj-full-table-card-area-height\)/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*flex:\s*1\s+1\s+auto/,
+    );
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
   });
 
-  it('uses fixed Full Table cards grid row on desktop instead of 1fr growth', () => {
+  it('uses flexible Full Table cards grid row on desktop (1fr)', () => {
     const desktop = SHARED_CSS.slice(
       SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows'),
       SHARED_CSS.indexOf('/* Desktop stage:'),
     );
-    expect(CARD_AREA_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\[cards\]\s*var\(--bj-full-table-card-area-height\)/,
-    );
+    expect(CARD_AREA_CSS).not.toMatch(/\[cards\]\s*var\(--bj-full-table-card-area-height\)/);
     expect(desktop).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
     expect(desktop).not.toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*height:\s*var\(--bj-zone-cards-height\)/,

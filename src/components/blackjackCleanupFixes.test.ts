@@ -58,10 +58,13 @@ describe('cleanup fixes — active value highlight', () => {
 describe('cleanup fixes — desktop card area position', () => {
   it('lowers desktop full-table card columns toward player boxes', () => {
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*height:\s*var\(--bj-full-table-card-area-height\)/,
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc__slot--card-column[\s\S]*grid-row:\s*3/,
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*padding-top:\s*0/,
+    );
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
     );
   });
 

@@ -92,7 +92,7 @@ describe('layout shell reset — Full Table + Card View', () => {
         /\.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero\s*\{[\s\S]*?\}/,
       )?.[0] ?? '';
     expect(heroBlock).toContain('flex: 1 1 auto');
-    expect(CARD_AREA_CSS).toContain('--bj-full-table-card-area-height');
+    expect(CARD_AREA_CSS).toContain('--bj-full-table-card-column-height');
     expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/);
   });
 

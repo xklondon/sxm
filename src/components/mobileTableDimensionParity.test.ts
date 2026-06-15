@@ -87,7 +87,7 @@ describe('mobile table dimension parity — Full Table vs Card View', () => {
       /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*overflow:\s*hidden/,
     );
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*height:\s*var\(--bj-full-table-card-area-height\)/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*flex:\s*1\s+1\s+auto/,
     );
     expect(SHARED_CSS).toMatch(/\.bj-view-full-mobile \.bj-arc-separator[\s\S]*min-height:\s*0/);
     expect(PANEL_CSS).not.toMatch(/\.bj-view-full-mobile \.bj-arc-separator[\s\S]*min-height:\s*min\(/);

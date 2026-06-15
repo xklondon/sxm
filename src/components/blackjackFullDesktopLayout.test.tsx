@@ -32,9 +32,12 @@ describe('desktop Full Table layout polish', () => {
     );
   });
 
-  it('uses fixed card area height on Full Table desktop', () => {
+  it('fills flexible card area and bottom-pins columns on Full Table desktop', () => {
     expect(CARD_AREA_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\[cards\]\s*var\(--bj-full-table-card-area-height\)/,
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
+    );
+    expect(CARD_AREA_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*height:\s*100%/,
     );
   });
 
