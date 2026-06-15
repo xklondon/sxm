@@ -68,4 +68,33 @@ describe('resetTable action', () => {
 
     await expect(tables.applyAction(table.id, guest.id, 'resetTable', payload, reset.version)).rejects.toThrow(/host/i);
   });
+
+  it('re-adds missing host membership before reset', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    store.getMembers(table.id).splice(0, store.getMembers(table.id).length);
+    expect(store.getMember(table.id, host.id)).toBeNull();
+
+    const personId = await tables.getMemberPersonIdForSession(table.id, host.id);
+    expect(personId).toBe(table.state.tableMeta.ownerPersonId);
+    expect(store.getMember(table.id, host.id)?.role).toBe('host');
+
+    const payload = {
+      stakeDescription: 'Rematch',
+      seatChips: 500,
+      bankChips: 500,
+      bankerMode: 'bot',
+      bankerName: '',
+      controllerName: 'Host',
+      controllerEmail: '',
+      protocolId: 'las-vegas-house',
+      naturalDealing: false,
+      dealSpeedPreset: 'normal',
+      cardTimerPreset: 0,
+      bankDrawAuto: true,
+    };
+
+    const reset = await tables.applyAction(table.id, host.id, 'resetTable', payload, table.version);
+    expect(reset.state.tableMeta.gameStatus).toBe('active');
+  });
 });

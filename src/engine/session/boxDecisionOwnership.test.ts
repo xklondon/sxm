@@ -229,10 +229,10 @@ describe('boxDecisionOwnership — viewer action permission', () => {
     expect(src).not.toContain('getActionableHandForView');
   });
 
-  it('swipe path rejects non-owner actions', () => {
+  it('Card View no longer routes gameplay through hero swipe handlers', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
-    expect(src).toMatch(/handleTouchEnd[\s\S]*actionPermission\.canAct/);
-    expect(src).toMatch(/handleTouchEnd[\s\S]*actionPermission\.actionable/);
+    expect(src).not.toMatch(/handleTouchEnd[\s\S]*actionPermission\.canAct/);
+    expect(src).toContain('resolveViewerActionPermission');
   });
 
   it('single-player solo bypass unchanged', () => {

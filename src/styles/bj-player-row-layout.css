@@ -487,8 +487,8 @@
   overflow: hidden;
 }
 
-.bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
-.bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder {
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder {
   flex: 0 0 auto;
   min-height: 0.95rem;
   max-height: 1.05rem;

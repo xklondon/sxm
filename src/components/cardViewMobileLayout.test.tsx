@@ -127,11 +127,13 @@ describe('mobile Card View layout contract', () => {
     expect(playing).toContain('bj-phone-view__hero-stage');
   });
 
-  it('playing phase: hero side Stay/Hit controls beside stitched cards', () => {
+  it('playing phase: shell Stay/Hit in actions zone with stitched hero cards', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__side-action--hit');
-    expect(html).toContain('bj-phone-view__side-action--stand');
-    expect(html).toContain('bj-phone-view__play-area--controls');
+    const actionsZone =
+      html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
+    expect(actionsZone).toContain('ds-btn--hit');
+    expect(actionsZone).toContain('ds-btn--stand');
+    expect(html).not.toContain('bj-phone-view__side-action--hit');
   });
 
   it('removes redundant hero label and in-card Full Table button', () => {

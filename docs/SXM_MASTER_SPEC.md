@@ -426,9 +426,11 @@ Shake-to-roll optional. Primary action label: **Dice** (roll).
 **Card View layout:**
 
 - Hero card size uses responsive `clamp()` tokens (`--bj-card-hero-card-width`, `--bj-card-hero-card-max-height`) on mobile and desktop.
-- Hand total appears **below** hero cards (`bj-phone-view__hand-meta--below-cards`) and on each player box tile.
-- Mobile Card View shows vertical **Stay** / **Hit me** side indicators beside the hero (`bj-phone-view__side-action`).
+- Hand total appears **below** hero cards (`bj-phone-view__hand-meta--below-cards`) at dealer-value size (`bj-card-view__hero-value` / `bj-player-hand-value--emphasis`); active-turn frame wraps the value only.
+- **Hit/Stay:** All views use the same shell `BlackjackActionPanel` in `bj-table-zone--actions` (no Card View side-action or swipe path).
 - Clean natural blackjack shows **Blackjack** label with `bj-hero-blackjack-pulse` — not used for even-money (1:1) offers.
+
+**Player box in-play display (all views):** During play, each box shows card ranks + in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens are hidden inside the box; bet amount stays in the label above the box. Betting phase still shows chips inside the box.
 
 **Card View bust delay:** When a hand busts, hero stays on that box for `CARD_VIEW_BUST_HOLD_MS` (2000ms) via `useCardViewBustHold` before following the next active box. Game state/protocol advance immediately; only presentation is held.
 

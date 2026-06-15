@@ -90,7 +90,20 @@ export class TableService {
     const resolvedUserId = sessionEmail
       ? (await this.people.resolveSessionUser(userId, sessionEmail, context)).id
       : userId;
-    const member = this.store.getMember(tableId, resolvedUserId);
+    let member = this.store.getMember(tableId, resolvedUserId);
+    if (!member) {
+      const table = this.store.getTable(tableId);
+      if (table?.hostUserId === resolvedUserId && table.state.tableMeta.ownerPersonId) {
+        member = {
+          tableId,
+          userId: resolvedUserId,
+          personId: table.state.tableMeta.ownerPersonId,
+          role: 'host',
+          joinedAt: new Date().toISOString(),
+        };
+        this.store.addMember(member);
+      }
+    }
     if (!member) {
       throw new Error('Not a member of this table');
     }

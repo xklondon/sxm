@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
+import { TABLE_UX } from './tableUxContract';
 import {
   tableAfterStartPlaying,
   boxPlayerId,
@@ -15,13 +16,6 @@ import { createBlackjackPlayerHand } from '../types/blackjack';
 import { blackjackHandKey } from '../engine/blackjack';
 
 const noop = () => {};
-
-vi.mock('./storage/profileStorage', () => ({
-  loadProfile: () => ({ name: 'Alice', email: 'alice@test.com' }),
-  needsLocalProfileSetup: () => false,
-  syncAuthEmailToProfile: () => {},
-  getPlayerInitials: () => 'AL',
-}));
 
 let simulatedWidth = 390;
 const globalRef = globalThis as unknown as { window?: unknown };
@@ -80,8 +74,8 @@ function playingState(): GameState {
   };
 }
 
-describe('Card View mobile swipe affordances', () => {
-  it('shows live side swipe controls when viewer can act', () => {
+describe('Card View mobile action affordances', () => {
+  it('uses shell BlackjackActionPanel when viewer can act (no side-action path)', () => {
     simulatedWidth = 390;
     const html = renderToStaticMarkup(
       <BlackjackPanel
@@ -89,19 +83,20 @@ describe('Card View mobile swipe affordances', () => {
         onGameStateChange={noop}
       />,
     );
-    expect(html).toContain('bj-phone-view__side-action--stand');
-    expect(html).toContain('bj-phone-view__side-action--hit');
-    expect(html).toContain('bj-phone-view__side-action--live');
-    expect(html).toContain('bj-phone-view__swipe-guide');
-    expect(html).toContain('bj-phone-view__play-area--controls');
+    const actionsZone =
+      html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
+    expect(actionsZone).toContain('ds-btn--hit');
+    expect(actionsZone).toContain('ds-btn--stand');
+    expect(html).not.toContain('bj-phone-view__side-action--hit');
+    expect(html).not.toContain('bj-phone-view__swipe-guide');
   });
 
-  it('uses resolveViewerActionPermission in touch swipe handler', () => {
+  it('does not wire Card View hero swipe handlers for gameplay actions', () => {
     const cardViewSrc = readFileSync(
       join(process.cwd(), 'src/components/BlackjackCardView.tsx'),
       'utf8',
     );
     expect(cardViewSrc).toContain('resolveViewerActionPermission');
-    expect(cardViewSrc).toMatch(/handleTouchEnd[\s\S]*actionPermission\.canAct/);
+    expect(cardViewSrc).not.toContain('handleTouchEnd');
   });
 });

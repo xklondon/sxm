@@ -298,9 +298,10 @@ describe('table layout polish contract', () => {
     expect(full).not.toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*bj-cards-fan/);
   });
 
-  it('Full Table shows stake chips during play phase', () => {
+  it('Full Table shows in-box hand total during play (chips hidden inside box)', () => {
     const full = renderAt(1280, 'full');
-    expect(full).toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*stake-chips--bet/);
+    expect(full).toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*bj-phone-view__mini-hand-value/);
+    expect(full).not.toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*stake-chips--bet/);
   });
 
   it('Card View uses fixed flex-column shell with bottom-anchored compact boxes', () => {

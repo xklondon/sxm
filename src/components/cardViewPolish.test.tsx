@@ -115,11 +115,12 @@ describe('Card View polish guards', () => {
     expect(firstStart).toContain(TABLE_UX.dealerActionReserved);
   });
 
-  it('uses compact total badge class in Card View hero markup', () => {
+  it('uses dealer-value hero total token in Card View hero markup', () => {
     const html = renderCardPanel(playingState());
-    expect(html).toContain(TABLE_UX.cardViewTotalCompact);
+    expect(html).toContain('bj-card-view__hero-value');
+    expect(html).toContain('bj-player-hand-value--emphasis');
     const layoutCss = readSrc('src/styles/bj-card-layout.css');
-    expect(layoutCss).toContain('--bj-card-total-font-size: 0.54rem');
+    expect(layoutCss).toContain('bj-card-view__hero-value');
   });
 
   it('uses increased hero card size tokens inside hero row', () => {
@@ -169,10 +170,11 @@ describe('Card View polish guards', () => {
     expect(slot).toContain('bj-box--turn');
   });
 
-  it('renders stake chips under shared arc player box tile', () => {
+  it('renders in-box hand total under shared arc player box tile during play', () => {
     const html = renderCardPanel(playingState());
     const slot = arcBoxSlot(html, 1);
-    expect(slot).toContain('stake-chips--bet');
+    expect(slot).toContain('bj-phone-view__mini-hand-value');
+    expect(slot).not.toContain('stake-chips--bet');
     expect(slot).toContain('bj-phone-view__mini-stake-slot');
   });
 });

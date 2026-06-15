@@ -149,6 +149,15 @@
   box-shadow: 0 0 4px rgb(251 191 36 / 0.12);
 }
 
+.bj-table-zone--cards.bj-cards-area--hero
+  .bj-card-view__hero-value.bj-phone-view__total--hero:not(.bj-phone-view__total--blackjack) {
+  font-size: calc(var(--bj-seat-total-size) * 1.35);
+  min-height: auto;
+  max-height: none;
+  padding: 0.18rem 0.42rem;
+  line-height: 1.1;
+}
+
 .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot {
   display: flex;
   align-items: center;

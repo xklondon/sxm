@@ -93,10 +93,19 @@ export const CARD_VIEW_CARDS_AREA_MODE = 'hero' as const;
 export const CARD_VIEW_CARDS_AREA_CLASS = 'bj-cards-area--hero';
 export const FULL_TABLE_CARDS_AREA_CLASS = 'bj-cards-area--table';
 
-/** Mobile Card View — canonical side Stay/Hit; shell panel suppressed; optional play in command zone. */
+/** All views — canonical Hit/Stay via shell BlackjackActionPanel only (no Card View side-action path). */
+export const CARD_VIEW_CANONICAL_SHELL_ACTIONS_ONLY = true as const;
+
+/** @deprecated Mobile side Stay/Hit removed — shell BlackjackActionPanel is canonical for all views. */
 export const CARD_VIEW_MOBILE_DUAL_ACTION_PATH_DOCUMENTED = false as const;
 
 export const CARD_VIEW_MOBILE_SIDE_ACTION_CLASS = 'bj-phone-view__side-action';
+
+/** In-box hand total during play — all views; chips hidden in box during play. */
+export const PLAYER_BOX_IN_PLAY_HAND_VALUE_CLASS = 'bj-phone-view__mini-hand-value' as const;
+
+/** Card View hero total below cards — dealer-value emphasis token. */
+export const CARD_VIEW_HERO_VALUE_CLASS = 'bj-card-view__hero-value' as const;
 
 // ── Full Table layout markers ─────────────────────────────────────────────────
 

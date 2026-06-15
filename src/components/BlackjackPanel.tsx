@@ -1510,10 +1510,6 @@ export function BlackjackPanel({
   }
 
   function renderTablePlayerActions() {
-    if (deviceView === 'mobile' && viewMode === 'card') {
-      return null;
-    }
-
     if (round?.evenMoneyOfferHandKey) {
       return renderEvenMoneyActions();
     }
@@ -1844,21 +1840,12 @@ export function BlackjackPanel({
         : null;
     const stakeChips = mergeStakeChipsForSlotDisplay(gameState, slotNumber, boxId, pendingChips);
     const showBettingChips = inBetting && (openStake > 0 || pendingChips.length > 0) && stakeChips.length > 0;
-    const showPlayChips = !inBetting && wager > 0;
-    const displayChips = showBettingChips
-      ? stakeChips
-      : showPlayChips
-        ? (stakeChips.length > 0 ? stakeChips : [wager])
-        : [];
-    const showStakeContent = inBetting || displayChips.length > 0;
-    const inBoxHandValueLabel =
-      deviceView === 'mobile' &&
-      viewMode === 'card' &&
-      !inBetting &&
-      !showBoxHandResultMarkers &&
-      primaryHandKey
-        ? resolvePrimaryHandValueLabel(visualDeck, visualRound, primaryHandKey, primaryHand)
-        : '';
+    const displayChips = showBettingChips ? stakeChips : [];
+    const inBoxPlayPhase = !inBetting && !showBoxHandResultMarkers && Boolean(primaryHandKey);
+    const inBoxHandValueLabel = inBoxPlayPhase
+      ? resolvePrimaryHandValueLabel(visualDeck, visualRound, primaryHandKey, primaryHand)
+      : '';
+    const showStakeContent = inBetting ? displayChips.length > 0 : inBoxPlayPhase;
     const dropKey = chipDropKey({ slotNumber, boxId });
     const rotation =
       deviceView === 'mobile'
@@ -1985,7 +1972,7 @@ export function BlackjackPanel({
             >
               {inBoxHandValueLabel}
             </span>
-          ) : deviceView === 'mobile' && viewMode === 'card' ? (
+          ) : inBoxPlayPhase ? (
             <span
               className="bj-phone-view__mini-hand-value bj-phone-view__mini-hand-value--placeholder"
               aria-hidden="true"
@@ -2509,17 +2496,12 @@ export function BlackjackPanel({
                     activeBoxId={uiActiveBoxId}
                     heroHandKeyOverride={handTransitionHold.holdActiveHandKey}
                     handHoldActive={Boolean(handTransitionHold.holdActiveHandKey)}
-                    optionalPlayOverlayActive={isOptionalPlayOverlayVisible()}
                     showHoleHidden={showHoleHidden}
                     protocolPhase={protocolPhase}
                     cardRevealComplete={cardRevealComplete}
                     activeHandRevealComplete={activeHandRevealComplete}
                     bettingOpen={bettingOpen}
                     gameEnded={gameEnded}
-                    onStay={(hk) =>
-                      run((s) => standBlackjackOnState(s, hk), { type: 'stand', payload: {} })
-                    }
-                    onCard={(hk) => run((s) => hitBlackjackOnState(s, hk), { type: 'hit', payload: {} })}
                     onBack={() => setViewMode('full')}
                   />
                 </>

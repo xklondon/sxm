@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TableStakePanel } from './TableStakePanel';
 import { DealerBlock } from './DealerBlock';
@@ -113,5 +115,12 @@ describe('New Game flow', () => {
       />,
     );
     expect(html).toContain('New Game');
+  });
+
+  it('catches online reset membership errors in TableStakePanel', () => {
+    const src = readFileSync(join(process.cwd(), 'src/components/TableStakePanel.tsx'), 'utf8');
+    expect(src).toMatch(/onlineTableId && gameState\.session\.id === onlineTableId/);
+    expect(src).toMatch(/catch \(err\)[\s\S]*not a member/i);
+    expect(src).toContain('setSetupError');
   });
 });

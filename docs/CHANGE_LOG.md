@@ -13,7 +13,13 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
----
+## 2026-06-12 — Blackjack layout regressions (actions, box totals, reset)
+
+- **Desktop Full Table:** Hit/Stay row lowered (`--bj-full-desktop-actions-boxes-gap: 1.25rem`).
+- **All views:** Canonical `BlackjackActionPanel` for Hit/Stay; removed Card View side-action/swipe path.
+- **Card View hero:** Hand value below cards at dealer-value size; active-turn frame on value only.
+- **Player boxes:** In-play hand total inside box under ranks; chips hidden during play; bet amount stays above box.
+- **Reset crash:** TableStakePanel catches online reset errors; host member self-heal on server when record missing.
 
 ---
 

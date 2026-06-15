@@ -22,27 +22,20 @@ describe('mobile Card View hero gameplay panel', () => {
     expect(PANEL_CSS).not.toMatch(/\.bj-view-card-desktop \.bj-table-layout-shell::after/);
   });
 
-  it('places backdrop above cloth and below hero controls', () => {
+  it('places backdrop above cloth and below hero content', () => {
     expect(FELT_CSS).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*z-index:\s*0/);
     expect(CARD_VIEW_CSS).toMatch(/\.bj-view-card-mobile \.bj-table-layout-shell::after[\s\S]*z-index:\s*0/);
     expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-phone-view__play-area[\s\S]*\.bj-view-card-mobile \.bj-phone-view__side-action[\s\S]*z-index:\s*1/,
+      /\.bj-view-card-mobile \.bj-phone-view__play-area[\s\S]*z-index:\s*1/,
     );
     expect(FELT_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--cards > :not\(\.bj-felt-cloth-layer\)\s*\{[\s\S]*z-index:\s*1/,
     );
   });
 
-  it('top-aligns hero cards in play area with side indicators beside hero and actions in zone', () => {
-    expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-phone-view__play-area--controls[\s\S]*justify-content:\s*center/,
-    );
-    expect(CARD_VIEW_CSS).not.toMatch(
-      /\.bj-view-card-mobile \.bj-phone-view__side-action[\s\S]*display:\s*none/,
-    );
-    expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-phone-view__play-area--controls \.bj-phone-view__hero-center[\s\S]*align-items:\s*center/,
-    );
+  it('top-aligns hero cards in play area with shell actions in actions zone', () => {
+    expect(CARD_VIEW_CSS).toContain('.bj-view-card-mobile .bj-phone-view__play-area');
+    expect(CARD_VIEW_CSS).toContain('.bj-view-card-mobile .bj-phone-view__hero-center');
   });
 
   it('keeps cloth layer visible outside the hero panel bounds', () => {

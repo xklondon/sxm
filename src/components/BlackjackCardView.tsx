@@ -1,9 +1,6 @@
 import {
-  useRef,
-  useState,
   useEffect,
   type CSSProperties,
-  type TouchEvent,
 } from "react";
 
 import type { GameState } from "../types";
@@ -21,9 +18,7 @@ import { resolveViewerPersonIdForTable } from "./viewerIdentity";
 import type { AuthUser } from "../api/client";
 
 import {
-  canShowPlayerDecisionControls,
   resolveViewerActionPermission,
-  resolvePlayerHandActionOptions,
 } from "./blackjackActionContract";
 import {
   getCardViewHeroBoxId,
@@ -45,7 +40,6 @@ import {
 import { getDisplayedHandValue } from "./blackjackDealingContract";
 
 import { type DeviceView } from "./tableViewContract";
-import { TABLE_UX } from "./tableUxContract";
 
 import { PlayingCard } from "./PlayingCard";
 
@@ -64,24 +58,22 @@ interface BlackjackCardViewProps {
   /** Card View hand-hold — keep hero on completed bust/18+ hand before turn advance. */
   heroHandKeyOverride?: string | null;
   handHoldActive?: boolean;
-  /** When true, hero side Stay/Hit yield to shell OptionalPlayDecisionOverlay. */
-  optionalPlayOverlayActive?: boolean;
   showHoleHidden: boolean;
   protocolPhase: BlackjackProtocolPhase;
   cardRevealComplete?: boolean;
   activeHandRevealComplete?: boolean;
   bettingOpen: boolean;
   gameEnded: boolean;
-  onStay: (handKey: string) => void;
-  onCard: (handKey: string) => void;
+  /** @deprecated Gameplay actions use shell BlackjackActionPanel. */
+  onStay?: (handKey: string) => void;
+  /** @deprecated Gameplay actions use shell BlackjackActionPanel. */
+  onCard?: (handKey: string) => void;
   /** @deprecated View toggle lives in table toolbar. */
   onBack: () => void;
   viewerPersonId?: string | null;
   onlineTableId?: string | null;
   viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
 }
-
-const SWIPE_THRESHOLD = 48;
 
 /** Card View hero cards area — rendered inside the shared table layout shell. */
 export function BlackjackCardView({
@@ -91,16 +83,14 @@ export function BlackjackCardView({
   focusBoxId,
   activeBoxId,
   heroHandKeyOverride = null,
-  handHoldActive = false,
-  optionalPlayOverlayActive = false,
+  handHoldActive: _handHoldActive = false,
   showHoleHidden: _showHoleHidden,
   protocolPhase,
-  cardRevealComplete = true,
-  activeHandRevealComplete = true,
+  cardRevealComplete: _cardRevealComplete = true,
+  activeHandRevealComplete: _activeHandRevealComplete = true,
   bettingOpen: _bettingOpen,
   gameEnded,
-  onStay,
-  onCard,
+  onBack: _onBack,
   viewerPersonId: viewerPersonIdProp,
   onlineTableId = null,
   viewerAuth = null,
@@ -114,18 +104,9 @@ export function BlackjackCardView({
   } = gameState;
   const logicalRound = logicalGameState.blackjack;
 
-  const [swipeHint, setSwipeHint] = useState<string | null>(null);
-
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
-
   const bettingMainStage = showBettingMainStage(protocolPhase, gameEnded);
   const insuranceActive = showInsuranceControls(protocolPhase, round);
   const evenMoneyActive = showEvenMoneyControls(protocolPhase, round);
-  const stitchedActionsActive = canShowPlayerDecisionControls(
-    logicalGameState,
-    protocolPhase,
-    { cardRevealComplete, activeHandRevealComplete },
-  );
   const isPlayerPhase = isPlayerTurnPhase(protocolPhase);
 
   const turnHandKey = isPlayerPhase ? (round?.activeHandKey ?? null) : null;
@@ -167,28 +148,6 @@ export function BlackjackCardView({
       ? round.playerHands[heroHandKey]
       : undefined;
 
-  const handActionOptions =
-    actionableHandKey && round
-      ? resolvePlayerHandActionOptions(
-          logicalGameState,
-          actionableHandKey,
-          logicalGameState.blackjackSettings,
-          Boolean(deck),
-        )
-      : null;
-
-  const canHit = Boolean(
-    !handHoldActive &&
-      isActiveTurn &&
-      handActionOptions?.canHit,
-  );
-
-  const canStand = Boolean(
-    !handHoldActive &&
-      isActiveTurn &&
-      handActionOptions?.canStand,
-  );
-
   const logicalCardIds = (logicalHand?.cardIds ?? []).filter((id) => id.length > 0);
   const visualCardIds = (visualHand?.cardIds ?? []).filter((id) => id.length > 0);
   /** Reveal may lag authoritative state — show dealt cards once engine has them. */
@@ -223,11 +182,6 @@ export function BlackjackCardView({
     gameEnded,
     logicalCardIds.length,
   );
-  const showSideControls =
-    stitchedActionsActive &&
-    !evenMoneyActive &&
-    !insuranceActive &&
-    !optionalPlayOverlayActive;
 
   function getActionDisabledReason(): string | null {
     if (isBettingPhase(protocolPhase)) {
@@ -306,13 +260,7 @@ export function BlackjackCardView({
       logicalCardIds,
       heroCardIds,
 
-      canHit,
-
-      canStand,
-
       disabledReason,
-
-      showSideControls,
     });
   }, [
     protocolPhase,
@@ -336,40 +284,8 @@ export function BlackjackCardView({
     logicalCardIds,
     heroCardIds,
 
-    canHit,
-
-    canStand,
-
     disabledReason,
-
-    showSideControls,
   ]);
-
-  function logSwipe(
-    swipeDirection: "left" | "right" | null,
-
-    actionTriggered: "stay" | "hit" | null,
-
-    beforeHandCards: string[],
-
-    afterHandCards?: string[],
-  ) {
-    if (!import.meta.env?.DEV) {
-      return;
-    }
-
-    console.log("[SXMCards] cardViewSwipe", {
-      swipeDirection,
-
-      actionTriggered,
-
-      activeHandKey: turnHandKey,
-
-      beforeHandCards,
-
-      afterHandCards: afterHandCards ?? beforeHandCards,
-    });
-  }
 
   function renderHugeCard(
     cardId: string,
@@ -409,106 +325,6 @@ export function BlackjackCardView({
     );
   }
 
-  function handleTouchStart(e: TouchEvent) {
-    const t = e.changedTouches[0];
-
-    if (t) {
-      touchStart.current = { x: t.clientX, y: t.clientY };
-    }
-  }
-
-  function handleTouchEnd(e: TouchEvent) {
-    if (!showSideControls || !actionPermission.canAct || !actionPermission.actionable || !round) {
-      return;
-    }
-
-    const swipeHandKey = actionPermission.actionable.handKey;
-
-    const start = touchStart.current;
-
-    touchStart.current = null;
-
-    const t = e.changedTouches[0];
-
-    if (!start || !t) {
-      return;
-    }
-
-    const dx = t.clientX - start.x;
-
-    const dy = Math.abs(t.clientY - start.y);
-
-    if (dy > 60) {
-      return;
-    }
-
-    const beforeHandCards = [...logicalCardIds];
-
-    if (dx > SWIPE_THRESHOLD) {
-      logSwipe(
-        "right",
-        handActionOptions?.canHit ? "hit" : null,
-        beforeHandCards,
-      );
-
-      if (handActionOptions?.canHit) {
-        setSwipeHint("Hit");
-
-        onCard(swipeHandKey);
-      }
-    } else if (dx < -SWIPE_THRESHOLD) {
-      logSwipe(
-        "left",
-        handActionOptions?.canStand ? "stay" : null,
-        beforeHandCards,
-      );
-
-      if (handActionOptions?.canStand) {
-        setSwipeHint("Stay");
-
-        onStay(swipeHandKey);
-      }
-    }
-
-    window.setTimeout(() => setSwipeHint(null), 600);
-  }
-
-  function handleStayClick() {
-    if (!actionableHandKey || !canStand) {
-      return;
-    }
-
-    if (import.meta.env?.DEV) {
-      console.log("[SXMCards] cardViewAction", {
-        actionTriggered: "stay",
-
-        activeHandKey: actionableHandKey,
-
-        beforeHandCards: logicalCardIds,
-      });
-    }
-
-    onStay(actionableHandKey);
-  }
-
-  function handleHitClick() {
-    if (!actionableHandKey || !canHit) {
-      return;
-    }
-
-    if (import.meta.env?.DEV) {
-      console.log("[SXMCards] cardViewAction", {
-        actionTriggered: "hit",
-
-        activeHandKey: actionableHandKey,
-
-        beforeHandCards: logicalCardIds,
-      });
-    }
-
-    onCard(actionableHandKey);
-  }
-
   function renderBettingHeroPlaceholder() {
     return (
       <div className="bj-phone-view__hand bj-phone-view__hand--waiting">
@@ -525,7 +341,6 @@ export function BlackjackCardView({
                 {...sxmSectionProps(
                   SXM_LAYOUT.handTotal,
                   'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
-                  TABLE_UX.cardViewTotalCompact,
                   'bj-phone-view__total--placeholder',
                 )}
                 aria-hidden="true"
@@ -559,7 +374,6 @@ export function BlackjackCardView({
                 {...sxmSectionProps(
                   SXM_LAYOUT.handTotal,
                   'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
-                  TABLE_UX.cardViewTotalCompact,
                   'bj-phone-view__total--placeholder',
                 )}
                 aria-hidden="true"
@@ -574,64 +388,6 @@ export function BlackjackCardView({
           </div>
         </div>
       </div>
-    );
-  }
-
-  function renderMobileStandControl() {
-    if (deviceView !== "mobile" || !showSideControls || !isActiveTurn) {
-      return null;
-    }
-
-    return (
-      <button
-        type="button"
-        className={[
-          "bj-phone-view__side-action",
-          "bj-phone-view__side-action--stand",
-          "ds-btn",
-          "ds-btn--stand",
-          canStand ? "bj-phone-view__side-action--live" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        disabled={!canStand}
-        onClick={handleStayClick}
-        aria-label="Stay — swipe left"
-      >
-        <span className="bj-phone-view__side-action-icon" aria-hidden="true">
-          ✋
-        </span>
-        <span className="bj-phone-view__side-action-label">Stay</span>
-      </button>
-    );
-  }
-
-  function renderMobileHitControl() {
-    if (deviceView !== "mobile" || !showSideControls || !isActiveTurn) {
-      return null;
-    }
-
-    return (
-      <button
-        type="button"
-        className={[
-          "bj-phone-view__side-action",
-          "bj-phone-view__side-action--hit",
-          "ds-btn",
-          "ds-btn--hit",
-          canHit ? "bj-phone-view__side-action--live" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        disabled={!canHit}
-        onClick={handleHitClick}
-        aria-label="Hit — swipe right"
-      >
-        <span className="bj-phone-view__side-action-icon" aria-hidden="true">
-          ⊕
-        </span>
-        <span className="bj-phone-view__side-action-label">Hit me</span>
-      </button>
     );
   }
 
@@ -716,26 +472,21 @@ export function BlackjackCardView({
               {...sxmSectionProps(
                 SXM_LAYOUT.handTotal,
                 'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
-                TABLE_UX.cardViewTotalCompact,
-                deviceView === 'mobile' ? 'bj-card-view__hero-value' : '',
+                'bj-card-view__hero-value',
+                'bj-player-hand-value--emphasis',
                 heroNatural ? 'bj-phone-view__total--blackjack' : '',
                 isActiveTurn && isPlayerPhase && !showCardAreaResults
                   ? 'bj-phone-view__box-value--active-turn'
                   : '',
               )}
             >
-              {heroNatural
-                ? 'Blackjack'
-                : deviceView === 'mobile'
-                  ? String(heroDisplayValue)
-                  : `Total ${heroDisplayValue}`}
+              {heroNatural ? 'Blackjack' : String(heroDisplayValue)}
             </div>
           ) : (
             <div
               {...sxmSectionProps(
                 SXM_LAYOUT.handTotal,
                 'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
-                TABLE_UX.cardViewTotalCompact,
                 'bj-phone-view__total--placeholder',
               )}
               aria-hidden="true"
@@ -749,30 +500,14 @@ export function BlackjackCardView({
             </span>
           ) : null}
         </div>
-        {deviceView === "mobile" && showSideControls && isActiveTurn && (
-          <p className="bj-phone-view__swipe-guide" aria-hidden="true">
-            ← Stay · Hit →
-          </p>
-        )}
       </div>
     );
 
     return (
       <div className="bj-phone-view__hand">
         <div className="bj-phone-view__hero-stage">
-          <div
-            className={[
-              "bj-phone-view__play-area",
-              deviceView === "mobile" && showSideControls && isActiveTurn
-                ? "bj-phone-view__play-area--controls"
-                : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            {renderMobileStandControl()}
+          <div className="bj-phone-view__play-area">
             {heroCenter}
-            {renderMobileHitControl()}
           </div>
         </div>
       </div>
@@ -782,16 +517,8 @@ export function BlackjackCardView({
   return (
     <div className="bj-phone-view__axis">
       <div className="bj-phone-view__play-stack">
-        <div
-          className="bj-phone-view__stage"
-          onTouchStart={bettingMainStage ? undefined : handleTouchStart}
-          onTouchEnd={bettingMainStage ? undefined : handleTouchEnd}
-        >
+        <div className="bj-phone-view__stage">
           {bettingMainStage ? renderBettingHeroPlaceholder() : renderStageContent()}
-
-          {!bettingMainStage && swipeHint && (
-            <p className="bj-phone-view__swipe-hint">{swipeHint}</p>
-          )}
         </div>
       </div>
     </div>

@@ -313,7 +313,7 @@ export function TableStakePanel({
       inviteNote: inviteNote.trim() || undefined,
     });
 
-    if (onlineMode && onlineDispatch && isReset) {
+    if (onlineMode && onlineDispatch && onlineTableId && gameState.session.id === onlineTableId && isReset) {
       setSubmitting(true);
       try {
         const resetPayload =
@@ -322,6 +322,15 @@ export function TableStakePanel({
             : { ...input, inviteNote: inviteNote.trim() || undefined };
         await onlineDispatch('resetTable', resetPayload);
         onFinished?.();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Reset failed';
+        if (/not a member/i.test(message)) {
+          setSetupError(
+            'You are not seated at this online table. Reload it from the lobby, or reset locally after leaving online mode.',
+          );
+        } else {
+          setSetupError(message);
+        }
       } finally {
         setSubmitting(false);
       }

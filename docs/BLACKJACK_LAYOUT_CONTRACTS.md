@@ -83,7 +83,7 @@ Double/Split are **not** duplicated in `BlackjackActionPanel` (`showDouble={fals
 
 Scoped under `@media (min-width: 721px) .bj-view-full-desktop` in `bj-full-table-card-area.css`:
 
-- `--bj-full-desktop-actions-boxes-gap: 0.625rem`
+- `--bj-full-desktop-actions-boxes-gap: 1.25rem`
 - `--bj-full-desktop-stack-value-gap: 0.3125rem`
 - `--bj-full-desktop-dealer-command-gap: 0.1875rem`
 - Card arc nudge: `translateY(18px)` on `.bj-full-table-card-area`
@@ -181,7 +181,9 @@ Aggregate flag: `CARD_VIEW_FROZEN = false` until C1–C3 are frozen.
 Status: `CARD_VIEW_DESKTOP_FROZEN = false`  
 View root: `CARD_VIEW_DESKTOP_ROOT` (`bj-view-card-desktop`)
 
-**Structure:** Shell hero fan + value below cards; Hit/Stay/2×/Split/AID in shell `bj-table-zone--actions`; player box arc (Contract B); This Table docked right; cloth hidden in hero on desktop.
+**Structure:** Shell hero fan + hand value below cards (dealer-value size token `bj-card-view__hero-value`); canonical Hit/Stay via shell `BlackjackActionPanel` in `bj-table-zone--actions` (same component/position as Full Table); optional Double/Split in command zone overlay; player box arc (Contract B); This Table docked right.
+
+**Player boxes (all views):** During play, box shows card ranks + in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside box; bet amount stays above box. Betting phase still shows chips inside box.
 
 **Owner files:** `BlackjackCardView.tsx`, `BlackjackCardView.css`, `bj-card-layout.css`, `bj-table-shared.css` (desktop card-desktop block), `bj-player-row-layout.css`, `bj-felt-skins.css`, `BlackjackPanel.tsx`.
 
@@ -198,16 +200,15 @@ View root: `CARD_VIEW_DESKTOP_ROOT` (`bj-view-card-desktop`)
 Status: `CARD_VIEW_MOBILE_PORTRAIT_FROZEN = false`  
 View root: `CARD_VIEW_MOBILE_ROOT` (`bj-view-card-mobile`)
 
-**Structure:** Hero with side Stay/Hit (`bj-phone-view__side-action`) + swipe; shell also renders `BlackjackActionPanel` in actions zone during player turn.
+**Structure:** Same shell action zone as Full Table — canonical `BlackjackActionPanel` for Hit/Stay in `bj-table-zone--actions` (no hero side-action path). Hero value below cards at dealer-value size. Player boxes match all-view in-play total contract.
 
 **Owner files:** Same as C1 + portrait box row (Contract C) in `bj-player-row-layout.css`.
 
 **Current risks (documented):**
 
-- **Dual action path** — shell `BlackjackActionPanel` and hero side controls both present in DOM during player turn; primary UX is side/swipe, but exclusivity is not enforced yet.
 - Hero `overflow: hidden` on cards slot — fan clipping on short viewports.
 
-**Freeze criteria:** Single documented primary action path (or explicit dual-path contract); shell zone order; shared `fullArcBox` boxes with mobile Full Table; no horizontal page scroll.
+**Freeze criteria:** `CARD_VIEW_CANONICAL_SHELL_ACTIONS_ONLY`; shell zone order; shared `fullArcBox` boxes with mobile Full Table; no horizontal page scroll.
 
 **Tests before freeze:** `cardViewMobilePortraitFrozen.test.ts` (future); extend `mobileCardViewComposition.test.tsx`.
 

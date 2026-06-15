@@ -12,6 +12,7 @@ import { tableAfterStartPlaying, boxPlayerId, findCardId } from '../engine/black
 import {
   BLACKJACK_LAYOUT_CONTRACT_DOC,
   CARD_VIEW_CARDS_AREA_CLASS,
+  CARD_VIEW_CANONICAL_SHELL_ACTIONS_ONLY,
   CARD_VIEW_DESKTOP_FROZEN,
   CARD_VIEW_DESKTOP_ROOT,
   CARD_VIEW_FROZEN,
@@ -20,7 +21,6 @@ import {
   CARD_VIEW_MOBILE_LANDSCAPE_FROZEN,
   CARD_VIEW_MOBILE_PORTRAIT_FROZEN,
   CARD_VIEW_MOBILE_ROOT,
-  CARD_VIEW_MOBILE_SIDE_ACTION_CLASS,
   FULL_TABLE_CARD_AREA_CLASS,
   FULL_TABLE_CARDS_AREA_CLASS,
   FULL_TABLE_MOBILE_LANDSCAPE_FROZEN,
@@ -197,7 +197,8 @@ describe('layout contract audit guards — Card View Desktop (C1 pending)', () =
 });
 
 describe('layout contract audit guards — Mobile Card View (C2 pending)', () => {
-  it('mobile Card View uses single canonical action path during player turn', () => {
+  it('mobile Card View uses shell BlackjackActionPanel during player turn', () => {
+    expect(CARD_VIEW_CANONICAL_SHELL_ACTIONS_ONLY).toBe(true);
     expect(CARD_VIEW_MOBILE_DUAL_ACTION_PATH_DOCUMENTED).toBe(false);
     simulatedWidth = 390;
     const html = renderToStaticMarkup(
@@ -209,12 +210,11 @@ describe('layout contract audit guards — Mobile Card View (C2 pending)', () =>
     expect(html).toContain(CARD_VIEW_MOBILE_ROOT);
     const heroZone =
       html.split(CARD_VIEW_CARDS_AREA_CLASS)[1]?.split(TABLE_UX.tableZoneActions)[0] ?? '';
-    expect(heroZone).toContain(CARD_VIEW_MOBILE_SIDE_ACTION_CLASS);
-    expect(heroZone).toContain('bj-phone-view__side-action--hit');
+    expect(heroZone).not.toContain('bj-phone-view__side-action--hit');
     const actionsZone =
       html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
-    expect(actionsZone).not.toContain('ds-btn--hit');
-    expect(actionsZone).not.toContain('ds-btn--stand');
+    expect(actionsZone).toContain('ds-btn--hit');
+    expect(actionsZone).toContain('ds-btn--stand');
     expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(false);
   });
 });

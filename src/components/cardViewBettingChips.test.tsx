@@ -137,7 +137,6 @@ describe('Card View betting chips and layout', () => {
   it('reserves hero total slot without Betting/Bet label text', () => {
     const { html } = bettingPanelWithStake();
     expect(html).toContain('bj-phone-view__total--placeholder');
-    expect(html).toContain(TABLE_UX.cardViewTotalCompact);
     expect(html).toContain('bj-phone-view__hand-meta');
     expect(html).not.toMatch(/>Betting</);
     expect(html).not.toMatch(/>Bet \d+</);

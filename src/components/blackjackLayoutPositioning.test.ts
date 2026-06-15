@@ -5,6 +5,7 @@ import { ROUND_SUMMARY_OVERLAY_DELAY_MS } from './roundSummaryOverlayTiming';
 
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
+const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const ACTION_PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackActionPanel.tsx'), 'utf8');
 
@@ -62,16 +63,11 @@ describe('Card View actions route', () => {
     expect(ACTION_PANEL_SRC).toContain('bj-table-actions__btn');
   });
 
-  it('routes mobile Card View Hit/Stay through actions zone and side indicators beside hero', () => {
+  it('routes mobile Card View Hit/Stay through shell actions zone only', () => {
     expect(CARD_VIEW_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--actions \.bj-table-actions > \.bj-table-actions__row:first-child[\s\S]*display:\s*none/,
     );
-    expect(CARD_VIEW_CSS).not.toMatch(
-      /\.bj-view-card-mobile \.bj-phone-view__side-action[\s\S]*display:\s*none/,
-    );
-    expect(CARD_VIEW_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-phone-view__side-action/,
-    );
+    expect(CARD_VIEW_SRC).not.toContain('bj-phone-view__side-action--hit');
     expect(CARD_VIEW_CSS).not.toMatch(
       /\.bj-view-full-mobile \.bj-table-zone--actions \.bj-table-actions > \.bj-table-actions__row:first-child[\s\S]*display:\s*none/,
     );

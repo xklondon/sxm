@@ -15,7 +15,6 @@ import { BOX_BORDER_TURN } from './cardViewBox';
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
 
 const noop = () => {};
 let simulatedWidth = 1280;
@@ -164,7 +163,7 @@ describe('Card View reuse fixes', () => {
     );
   });
 
-  it('mobile Card View uses one action path and optional play in command zone when split is legal', () => {
+  it('mobile Card View uses shell actions and optional play in command when split is legal', () => {
     simulatedWidth = 390;
     const html = renderPanel(splitEligibleCardViewState());
     const heroZone =
@@ -176,8 +175,8 @@ describe('Card View reuse fixes', () => {
     expect(html).toContain('>Split<');
     const actionsZone =
       html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
-    expect(actionsZone).not.toContain('ds-btn--hit');
-    expect(CARD_VIEW_SRC).toContain('optionalPlayOverlayActive');
+    expect(actionsZone).toContain('ds-btn--hit');
+    expect(actionsZone).toContain('ds-btn--stand');
   });
 
   it('mobile Card View shows hand value inside player box under ranks', () => {

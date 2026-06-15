@@ -2083,7 +2083,8 @@
     font-size: 0.78rem;
   }
 
-  .bj-view-card-mobile .bj-card-view__hero-value.bj-phone-view__total--hero:not(.bj-phone-view__total--blackjack) {
+  .bj-view-card-mobile .bj-card-view__hero-value.bj-phone-view__total--hero:not(.bj-phone-view__total--blackjack),
+  .bj-view-card-desktop .bj-card-view__hero-value.bj-phone-view__total--hero:not(.bj-phone-view__total--blackjack) {
     font-size: calc(var(--bj-seat-total-size) * 1.35);
     min-height: auto;
     max-height: none;

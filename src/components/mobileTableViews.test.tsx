@@ -217,7 +217,7 @@ describe('mobile vs desktop — same canonical Card View sections', () => {
     const mobile = renderPanelAt(390, state);
     const desktop = renderPanelAt(1280, state);
     assertSameSections(mobile, desktop, CARD_VIEW_PLAYING_SECTIONS);
-    expect(mobile).toContain('bj-phone-view__side-action--hit');
+    expect(mobile).toContain('ds-btn--hit');
   });
 
   it('betting round: dealer, ordered betting row, This Table', () => {
@@ -383,9 +383,11 @@ describe('mobile Card View structure', () => {
     expect(order[order.length - 1]).toBe('1');
   });
 
-  it('highlights the active box as the live hero with side Stay/Hit controls', () => {
+  it('highlights the active box as the live hero with shell Stay/Hit controls', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-phone-view__side-action--hit');
+    const actionsZone =
+      html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
+    expect(actionsZone).toContain('ds-btn--hit');
     expect(html).toContain('bj-arc--player-boxes');
     expect(html).toContain('bj-box--turn');
   });
@@ -469,7 +471,7 @@ describe('stable dealer layout slots across phases', () => {
     expect(betting).toContain('dealer-block__card-placeholder');
     expect(playing).toContain('dealer-block__cards');
     expect(betting).toContain(TABLE_UX.tableZoneActions);
-    expect(playing).toContain('bj-phone-view__side-action--hit');
+    expect(playing).toContain('ds-btn--hit');
     expect(betting).toContain('bj-arc--player-boxes');
     expect(playing).toContain('bj-arc--player-boxes');
   });

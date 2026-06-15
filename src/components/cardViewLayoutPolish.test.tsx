@@ -103,14 +103,14 @@ function renderAt(width: number): string {
 }
 
 describe('Card View layout polish', () => {
-  it('action rows use hero side controls on mobile; desktop uses shell panel', () => {
+  it('action rows use shell BlackjackActionPanel on mobile and desktop', () => {
     const mobile = renderAt(390);
     const heroZone =
       mobile.split(TABLE_UX.cardsAreaHero)[1]?.split(TABLE_UX.tableZoneActions)[0] ?? '';
-    expect(heroZone).toContain('bj-phone-view__side-action--hit');
+    expect(heroZone).not.toContain('bj-phone-view__side-action--hit');
     const actionsZone =
       mobile.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
-    expect(actionsZone).not.toContain('ds-btn--hit');
+    expect(actionsZone).toContain('ds-btn--hit');
   });
 
   it('command sits under dealer stack, hero cards below command, then actions', () => {

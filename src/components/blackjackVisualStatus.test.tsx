@@ -151,10 +151,10 @@ describe('blackjack visual status — end-of-round box labels', () => {
 });
 
 describe('blackjack visual status — mobile Card View', () => {
-  it('uses numeric-only hero value class on mobile Card View', () => {
+  it('uses dealer-value hero total class on Card View', () => {
     const cardViewSrc = readSrc('src/components/BlackjackCardView.tsx');
     expect(cardViewSrc).toContain('bj-card-view__hero-value');
-    expect(cardViewSrc).toContain("deviceView === 'mobile'");
+    expect(cardViewSrc).toContain('bj-player-hand-value--emphasis');
     expect(cardViewSrc).toContain('String(heroDisplayValue)');
   });
 

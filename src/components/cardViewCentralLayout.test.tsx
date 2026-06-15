@@ -177,15 +177,14 @@ describe('Card View central layout', () => {
     expect(playing.indexOf(TABLE_UX.tableZoneActions)).toBeLessThan(boxSlotIndex(playing));
   });
 
-  it('central action rows: mobile side Stay/Hit; optional play in command when legal', () => {
+  it('central action rows: shell Stay/Hit on mobile; optional play in command when legal', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     const heroZone =
       html.split('bj-cards-area--hero')[1]?.split(TABLE_UX.tableZoneActions)[0] ?? '';
-    expect(heroZone).toContain('bj-phone-view__side-action--hit');
-    expect(heroZone).toContain('bj-phone-view__side-action--stand');
+    expect(heroZone).not.toContain('bj-phone-view__side-action--hit');
     const actionsZone =
       html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
-    expect(actionsZone).not.toContain('ds-btn--hit');
+    expect(actionsZone).toContain('ds-btn--hit');
   });
 
   it('hero content is contained inside the cards area zone', () => {
