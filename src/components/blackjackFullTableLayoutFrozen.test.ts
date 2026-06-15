@@ -16,8 +16,11 @@ import {
 } from '../engine/blackjack/sanity/fixtures';
 import {
   BLACKJACK_LAYOUT_CONTRACT_DOC,
+  CARD_VIEW_DESKTOP_FROZEN,
   CARD_VIEW_FROZEN,
   CARD_VIEW_LAYOUT_GUARD_FILES,
+  CARD_VIEW_MOBILE_LANDSCAPE_FROZEN,
+  CARD_VIEW_MOBILE_PORTRAIT_FROZEN,
   FULL_TABLE_ACTIONS_RENDER_FN,
   FULL_TABLE_ACTION_ROW_PRIMARY_BUTTONS,
   FULL_TABLE_CARD_AREA_CLASS,
@@ -32,6 +35,8 @@ import {
   FULL_TABLE_LAYOUT_GUARDED_CSS_FILES,
   FULL_TABLE_LAYOUT_OWNER_FILES,
   FULL_TABLE_MOBILE_FROZEN,
+  FULL_TABLE_MOBILE_LANDSCAPE_FROZEN,
+  FULL_TABLE_MOBILE_PORTRAIT_FROZEN,
   FULL_TABLE_MOBILE_VIEW_ROOT,
   FULL_TABLE_OPTIONAL_PLAY_BUTTON_CLASS,
   FULL_TABLE_OPTIONAL_PLAY_OVERLAY_ANCHOR_CLASS,
@@ -186,11 +191,16 @@ function zoneSlice(html: string, zoneClass: string, endClass?: string): string {
 describe('Blackjack Full Table layout freeze — contract constants', () => {
   it('documents frozen flags and reference image', () => {
     expect(FULL_TABLE_DESKTOP_FROZEN).toBe(true);
+    expect(FULL_TABLE_MOBILE_PORTRAIT_FROZEN).toBe(true);
     expect(FULL_TABLE_MOBILE_FROZEN).toBe(true);
+    expect(FULL_TABLE_MOBILE_LANDSCAPE_FROZEN).toBe(false);
+    expect(CARD_VIEW_DESKTOP_FROZEN).toBe(false);
+    expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(false);
+    expect(CARD_VIEW_MOBILE_LANDSCAPE_FROZEN).toBe(false);
     expect(CARD_VIEW_FROZEN).toBe(false);
     expect(FULL_TABLE_DESKTOP_AID_VISIBLE).toBe(false);
     expect(FULL_TABLE_DESKTOP_REFERENCE_IMAGE).toContain('a_digital_blackjack_poker_style_casino_game_ui_scr.png');
-    expect(CONTRACT_DOC).toContain('Before changing Full Table Desktop or Mobile layout');
+    expect(CONTRACT_DOC).toContain('Before changing layout');
     expect(CONTRACT_DOC).toContain('FROZEN');
     expect(CONTRACT_DOC).toContain('PENDING FREEZE');
   });

@@ -394,11 +394,11 @@ Protected boundaries so protocol, layout, dealing, and accounting cannot drift a
 | Boundary | Module | Rule |
 |----------|--------|------|
 | Protocol | `blackjackActionContract.ts` | Views use `resolveViewerActionPermission` + `resolvePlayerHandActionOptions`; no direct engine legality imports. |
-| Layout | `tableViewContract.ts`, `blackjackLayoutContract.ts` | CSS scoped under `bj-view-*` roots; card/box rows share `displaySlots`. **Full Table desktop + mobile layout frozen** — see `docs/BLACKJACK_LAYOUT_CONTRACTS.md`. |
+| Layout | `tableViewContract.ts`, `blackjackLayoutContract.ts` | CSS scoped under `bj-view-*` roots; per-view freeze flags in `BLACKJACK_LAYOUT_CONTRACTS.md` (Full Table desktop + mobile portrait frozen; landscape + Card View pending). |
 | Dealing | `useSequentialCardReveal`, `blackjackDealingContract.ts` | One reveal queue; values via `getDisplayedHandValue`; controls gated until reveal ready. |
 | Accounting | `blackjackAccountingDisplay.ts`, `playerCommittedExposure.ts` | Tray + This Table use `resolvePersonDisplayBalances` / `resolveViewerTrayAvailable`. |
 
-Contract tests: `blackjackStabilityContracts.test.ts`, `blackjackFullTableLayoutFrozen.test.ts`, `dealingRoundRegression.test.ts`.
+Contract tests: `blackjackStabilityContracts.test.ts`, `blackjackFullTableLayoutFrozen.test.ts`, `blackjackLayoutContractGuards.test.ts`, `dealingRoundRegression.test.ts`.
 
 ### Mobile invariants
 
@@ -426,7 +426,7 @@ Shake-to-roll optional. Primary action label: **Dice** (roll).
 **Card View layout:**
 
 - Hero card size uses responsive `clamp()` tokens (`--bj-card-hero-card-width`, `--bj-card-hero-card-max-height`) on mobile and desktop.
-- Hand total appears **above** hero cards (`bj-phone-view__hand-meta--above-cards`) and on each player box tile.
+- Hand total appears **below** hero cards (`bj-phone-view__hand-meta--below-cards`) and on each player box tile.
 - Mobile Card View shows vertical **Stay** / **Hit me** side indicators beside the hero (`bj-phone-view__side-action`).
 - Clean natural blackjack shows **Blackjack** label with `bj-hero-blackjack-pulse` — not used for even-money (1:1) offers.
 

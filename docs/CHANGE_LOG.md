@@ -15,6 +15,17 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+---
+
+## 2026-06-12 — Layout contract system cleanup (audit → enforceable docs)
+
+- **Docs:** `BLACKJACK_LAYOUT_CONTRACTS.md` restructured — A (desktop FT), B1 (mobile portrait FT), B2 (mobile landscape pending), C1–C3 (Card View pending), recommended freeze order.
+- **Constants:** `blackjackLayoutContract.ts` — per-view freeze flags, portrait/landscape media constants, Card View markers, dual-action-path documentation flag.
+- **Guards:** `blackjackLayoutContractGuards.test.ts` — pending-freeze audit tests (no visual changes).
+- **Spec:** `SXM_MASTER_SPEC.md` — Card View hero value below cards; layout test references.
+
+---
+
 ## 2026-06-12 — Full Table layout freeze (desktop + mobile)
 
 - **Docs:** `docs/BLACKJACK_LAYOUT_CONTRACTS.md` — frozen desktop/mobile Full Table zone order, action region, card stack/value contract, ownership guards, change checklist.

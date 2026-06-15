@@ -14,17 +14,38 @@ export {
 
 export { TABLE_UX } from './tableUxContract';
 
-/** Frozen layout flags — update only with explicit contract + test changes. */
+import {
+  MOBILE_LANDSCAPE_MAX_HEIGHT,
+  MOBILE_LANDSCAPE_MAX_WIDTH,
+  MOBILE_LAYOUT_MEDIA_LANDSCAPE,
+  MOBILE_MAX_WIDTH,
+} from '../styles/mobileLayoutContract';
+
+// ── Freeze flags (see BLACKJACK_LAYOUT_CONTRACTS.md) ─────────────────────────
+
 export const FULL_TABLE_DESKTOP_FROZEN = true as const;
-export const FULL_TABLE_MOBILE_FROZEN = true as const;
-/** Card View layout is not frozen yet — see docs/BLACKJACK_LAYOUT_CONTRACTS.md §C. */
-export const CARD_VIEW_FROZEN = false as const;
+export const FULL_TABLE_MOBILE_PORTRAIT_FROZEN = true as const;
+export const FULL_TABLE_MOBILE_LANDSCAPE_FROZEN = false as const;
+export const CARD_VIEW_DESKTOP_FROZEN = false as const;
+export const CARD_VIEW_MOBILE_PORTRAIT_FROZEN = false as const;
+export const CARD_VIEW_MOBILE_LANDSCAPE_FROZEN = false as const;
+
+/** @deprecated Use FULL_TABLE_MOBILE_PORTRAIT_FROZEN — alias for existing tests. */
+export const FULL_TABLE_MOBILE_FROZEN = FULL_TABLE_MOBILE_PORTRAIT_FROZEN;
+
+/** True only when all Card View sub-views (C1–C3) are frozen. */
+export const CARD_VIEW_FROZEN =
+  CARD_VIEW_DESKTOP_FROZEN &&
+  CARD_VIEW_MOBILE_PORTRAIT_FROZEN &&
+  CARD_VIEW_MOBILE_LANDSCAPE_FROZEN;
 
 export const BLACKJACK_LAYOUT_CONTRACT_DOC = 'docs/BLACKJACK_LAYOUT_CONTRACTS.md' as const;
 
 /** Reference screenshot for desktop Full Table freeze. */
 export const FULL_TABLE_DESKTOP_REFERENCE_IMAGE =
   'reference-ui/views/a_digital_blackjack_poker_style_casino_game_ui_scr.png' as const;
+
+// ── View roots ───────────────────────────────────────────────────────────────
 
 /** Canonical view root class prefixes — all view CSS must scope under one of these. */
 export const VIEW_ROOT_CLASSES = [
@@ -38,6 +59,46 @@ export const FULL_TABLE_DESKTOP_VIEW_ROOT = 'bj-view-full-desktop' as const;
 export const FULL_TABLE_MOBILE_VIEW_ROOT = 'bj-view-full-mobile' as const;
 export const CARD_VIEW_DESKTOP_VIEW_ROOT = 'bj-view-card-desktop' as const;
 export const CARD_VIEW_MOBILE_VIEW_ROOT = 'bj-view-card-mobile' as const;
+
+/** Card View root class aliases (audit naming). */
+export const CARD_VIEW_DESKTOP_ROOT = CARD_VIEW_DESKTOP_VIEW_ROOT;
+export const CARD_VIEW_MOBILE_ROOT = CARD_VIEW_MOBILE_VIEW_ROOT;
+
+// ── Media / orientation boundaries ───────────────────────────────────────────
+
+/**
+ * Portrait mobile Full Table — sync with Contract C in bj-player-row-layout.css.
+ * JS mobile detection: MOBILE_LAYOUT_MEDIA + MOBILE_MAX_WIDTH in mobileLayoutContract.ts.
+ */
+export const FULL_TABLE_MOBILE_PORTRAIT_MEDIA =
+  `(max-width: ${MOBILE_MAX_WIDTH}px) and (orientation: portrait), ((max-width: ${MOBILE_LANDSCAPE_MAX_WIDTH}px) and (max-height: ${MOBILE_LANDSCAPE_MAX_HEIGHT}px) and (pointer: coarse) and (orientation: portrait))` as const;
+
+/** Landscape mobile Full Table — sync with MOBILE_LAYOUT_MEDIA_LANDSCAPE. */
+export const FULL_TABLE_MOBILE_LANDSCAPE_MEDIA = MOBILE_LAYOUT_MEDIA_LANDSCAPE;
+
+/** Documented risk: landscape tokens appear in two blocks in bj-table-shared.css. */
+export const FULL_TABLE_MOBILE_LANDSCAPE_TOKEN_SOURCES = [
+  'src/styles/bj-table-shared.css',
+] as const;
+
+/** Known duplicate landscape @media selectors to consolidate before B2 freeze. */
+export const FULL_TABLE_MOBILE_LANDSCAPE_MEDIA_BLOCKS = [
+  '@media (orientation: landscape)',
+  '@media (min-width: 721px) and (orientation: landscape)',
+] as const;
+
+// ── Card View layout markers ─────────────────────────────────────────────────
+
+export const CARD_VIEW_CARDS_AREA_MODE = 'hero' as const;
+export const CARD_VIEW_CARDS_AREA_CLASS = 'bj-cards-area--hero';
+export const FULL_TABLE_CARDS_AREA_CLASS = 'bj-cards-area--table';
+
+/** Documented C2 risk — shell panel + hero side controls both render today. */
+export const CARD_VIEW_MOBILE_DUAL_ACTION_PATH_DOCUMENTED = true as const;
+
+export const CARD_VIEW_MOBILE_SIDE_ACTION_CLASS = 'bj-phone-view__side-action';
+
+// ── Full Table layout markers ─────────────────────────────────────────────────
 
 /** Active turn highlight — tight numeric frame only (no box/card-stack oval). */
 export const ACTIVE_HAND_VALUE_CLASS = 'bj-phone-view__box-value--active-turn';
@@ -64,7 +125,7 @@ export const FULL_TABLE_CARD_COLUMN_CLASS = 'bj-arc__slot--card-column';
 /** Card column value band — always below stack (grid row 3). */
 export const FULL_TABLE_CARD_VALUE_CLASS = 'bj-phone-view__box-value--card-column-below';
 
-/** Desktop optional Double/Split overlay anchor in cards zone. */
+/** Desktop optional Double/Split overlay anchor in cards zone (not the Hit/Stay row). */
 export const FULL_TABLE_OPTIONAL_PLAY_OVERLAY_ANCHOR_CLASS = 'bj-optional-play-overlay-anchor';
 
 /** Full Table play zone CSS — command, card area, actions (imported last among table layout CSS). */
@@ -95,6 +156,23 @@ export const FULL_TABLE_LAYOUT_GUARDED_CSS_FILES = [
 export const CARD_VIEW_LAYOUT_GUARD_FILES = [
   'src/components/BlackjackCardView.tsx',
   'src/styles/bj-card-layout.css',
+] as const;
+
+/** Card View CSS owners (pending freeze — C1–C3). */
+export const CARD_VIEW_LAYOUT_OWNER_FILES = [
+  'src/components/BlackjackCardView.tsx',
+  'src/components/BlackjackCardView.css',
+  'src/styles/bj-card-layout.css',
+  'src/styles/bj-table-shared.css',
+  'src/styles/bj-player-row-layout.css',
+] as const;
+
+/** Recommended freeze order (docs + guards only until each flag is true). */
+export const LAYOUT_FREEZE_RECOMMENDED_ORDER = [
+  'FULL_TABLE_MOBILE_LANDSCAPE',
+  'CARD_VIEW_DESKTOP',
+  'CARD_VIEW_MOBILE_PORTRAIT',
+  'CARD_VIEW_MOBILE_LANDSCAPE',
 ] as const;
 
 /** Canonical shell zone order for Full Table (matches BlackjackTableLayoutShell DOM). */

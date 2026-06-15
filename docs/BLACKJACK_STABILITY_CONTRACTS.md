@@ -31,7 +31,7 @@ Protected boundaries between **protocol**, **layout**, **dealing**, and **accoun
 
 **Modules:** `src/components/tableViewContract.ts`, `src/components/tableUxContract.ts`, `src/components/blackjackLayoutContract.ts`
 
-**Canonical layout doc:** [BLACKJACK_LAYOUT_CONTRACTS.md](./BLACKJACK_LAYOUT_CONTRACTS.md) — frozen Full Table desktop/mobile rules, zone order, regression checklist.
+**Canonical layout doc:** [BLACKJACK_LAYOUT_CONTRACTS.md](./BLACKJACK_LAYOUT_CONTRACTS.md) — per-view freeze flags (A, B1, B2, C1–C3), media boundaries, audit guards in `blackjackLayoutContractGuards.test.ts`.
 
 | Responsibility | Canonical API / rule |
 |----------------|----------------------|

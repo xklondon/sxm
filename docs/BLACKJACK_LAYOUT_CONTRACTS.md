@@ -1,31 +1,59 @@
 # Blackjack layout contracts
 
-Canonical **Full Table** layout rules for desktop and mobile. Card View is not frozen yet.
-
-**Reference (desktop Full Table):** [`reference-ui/views/a_digital_blackjack_poker_style_casino_game_ui_scr.png`](../reference-ui/views/a_digital_blackjack_poker_style_casino_game_ui_scr.png)
+Canonical layout rules for all supported blackjack table views. Protocol, betting, and dealing boundaries live in [BLACKJACK_STABILITY_CONTRACTS.md](./BLACKJACK_STABILITY_CONTRACTS.md).
 
 **Code constants:** `src/components/blackjackLayoutContract.ts`  
-**Regression tests:** `src/components/blackjackFullTableLayoutFrozen.test.ts`, `src/components/blackjackFullTablePlayZoneLayout.test.ts`
+**Mobile boundary:** `src/styles/mobileLayoutContract.ts` (`MOBILE_MAX_WIDTH`, `MOBILE_LAYOUT_MEDIA`)
+
+| View | Status | Constant |
+|------|--------|----------|
+| Full Table Desktop | **FROZEN** | `FULL_TABLE_DESKTOP_FROZEN` |
+| Full Table Mobile Portrait | **FROZEN** | `FULL_TABLE_MOBILE_PORTRAIT_FROZEN` |
+| Full Table Mobile Landscape | **PENDING FREEZE** | `FULL_TABLE_MOBILE_LANDSCAPE_FROZEN` |
+| Card View Desktop | **PENDING FREEZE** | `CARD_VIEW_DESKTOP_FROZEN` |
+| Card View Mobile Portrait | **PENDING FREEZE** | `CARD_VIEW_MOBILE_PORTRAIT_FROZEN` |
+| Card View Mobile Landscape | **PENDING FREEZE** | `CARD_VIEW_MOBILE_LANDSCAPE_FROZEN` |
+
+**Regression tests (frozen):** `blackjackFullTableLayoutFrozen.test.ts`, `blackjackFullTablePlayZoneLayout.test.ts`  
+**Audit guards (pending areas):** `blackjackLayoutContractGuards.test.ts`
 
 ---
 
-## Before changing Full Table Desktop or Mobile layout
+## Before changing layout
 
-1. Update **this document** with the intended change and rationale.
-2. Add or update **contract tests** in `blackjackFullTableLayoutFrozen.test.ts` (and related files).
-3. Update **`blackjackLayoutContract.ts`** constants if zone order, allowed buttons, or owner files change.
+### Frozen views (A, B1)
+
+1. Update **this document** with rationale.
+2. Add or update tests in `blackjackFullTableLayoutFrozen.test.ts`.
+3. Update `blackjackLayoutContract.ts` if zone order, tokens, or owner files change.
 4. Run `npm test` and `npm run build`.
-5. Verify desktop Full Table against the reference image and confirm mobile Full Table + Card View are unchanged unless explicitly in scope.
+5. Verify against reference screenshots; confirm other views unchanged unless in scope.
 
-**Full Table Desktop and Mobile layouts are frozen unless this checklist is followed.**
+### Pending-freeze views (B2, C1–C3)
+
+1. Update the relevant section below (freeze criteria, tests required).
+2. Add guard or freeze tests **before** setting the flag to `true`.
+3. Do not change frozen Full Table Desktop / Mobile Portrait visuals unless a proven bug is found.
 
 ---
 
-## A. Full Table Desktop — frozen
+## Recommended freeze order
 
-Status: **FROZEN** (`FULL_TABLE_DESKTOP_FROZEN`)
+Work remaining views in this order (highest risk first):
 
-View root: `bj-view-full-desktop`
+1. **Mobile Landscape Full Table** (B2) — consolidate landscape tokens, orientation tests
+2. **Desktop Card View** (C1) — consolidate hero CSS ownership, freeze gaps/actions
+3. **Mobile Portrait Card View** (C2) — resolve or document dual action path, then freeze
+4. **Mobile Landscape Card View** (C3) — extend B2 + C2 contracts at landscape breakpoints
+
+---
+
+## A. Full Table Desktop — FROZEN
+
+Status: **FROZEN** (`FULL_TABLE_DESKTOP_FROZEN = true`)
+
+View root: `bj-view-full-desktop`  
+Reference: [`reference-ui/views/a_digital_blackjack_poker_style_casino_game_ui_scr.png`](../reference-ui/views/a_digital_blackjack_poker_style_casino_game_ui_scr.png)
 
 ### Zone order (top → bottom)
 
@@ -33,78 +61,170 @@ View root: `bj-view-full-desktop`
 |------|-------------|---------|
 | Bank info | (felt header) | Table name, bank total |
 | Dealer | `bj-table-zone--dealer` | Dealer cards, hole card |
-| Command | `bj-table-zone--summary` | Command box text; insurance overlay when offered |
-| Cards | `bj-table-zone--cards` `bj-cards-area--table` | Per-box card stacks + values; optional Double/Split overlay |
-| Actions | `bj-table-zone--actions` | Hit / Stay primary row |
+| Command | `bj-table-zone--summary` | Command box; insurance overlay when offered |
+| Cards | `bj-table-zone--cards` `bj-cards-area--table` | Per-box stacks + values; **optional Double/Split overlay anchor** |
+| Actions | `bj-table-zone--actions` | **Hit / Stay only** (primary row) |
 | Player boxes | `bj-table-zone--boxes` | Box seats, committed amounts |
 | Chip tray | `bj-table-zone--bottom` | Value + chip stash |
 
-Exact vertical rule:
-
-1. **Cards stack above value** — grid row 2 (stack host `bj-arc__play-zone`), cards grow **upward**.
-2. **Value below cards** — grid row 3 (`bj-phone-view__box-value--card-column-below`).
-3. **Actions below card area** — `bj-table-zone--actions` follows `bj-table-zone--cards` in DOM.
-4. **Player boxes below actions** — `bj-table-zone--boxes` follows actions.
+Vertical rules: stack above value (grid row 2 → 3); actions below card area; boxes below actions.
 
 ### Action region (frozen)
 
-| Control | Location | Size / style |
-|---------|----------|--------------|
-| **Stay / Hit** | Actions zone primary row | `ds-btn--stand` / `ds-btn--hit` — primary row buttons |
-| **Double / Split** | Optional play overlay above card stacks (`bj-optional-play-overlay-anchor`) | `bj-insurance-overlay__btn` — compact; smaller chrome than Hit/Stay |
-| **Play Hand** | Same overlay (decline split) | Same compact overlay buttons |
-| **AID** | **Hidden** on desktop Full Table (`FULL_TABLE_DESKTOP_AID_VISIBLE = false`) | — |
+| Control | Location | Notes |
+|---------|----------|-------|
+| **Stay / Hit** | `bj-table-zone--actions` | `ds-btn--stand` / `ds-btn--hit` |
+| **Double / Split / Play Hand** | **Cards zone** — `bj-optional-play-overlay-anchor` above stacks | `bj-insurance-overlay__btn`; **not** in the Hit/Stay row |
+| **AID** | Hidden | `FULL_TABLE_DESKTOP_AID_VISIBLE = false` |
 
-Double and Split are **not** duplicated in the Hit/Stay action row (`showDouble={false}`, `showSplit={false}` in `BlackjackActionPanel`).
+Double/Split are **not** duplicated in `BlackjackActionPanel` (`showDouble={false}`, `showSplit={false}`).
 
-### Spacing tokens (desktop polish)
+### Spacing tokens
 
 Scoped under `@media (min-width: 721px) .bj-view-full-desktop` in `bj-full-table-card-area.css`:
 
-- `--bj-full-desktop-actions-boxes-gap: 0.625rem` (~10px Hit/Stay → box amounts)
-- `--bj-full-desktop-stack-value-gap: 0.3125rem` (~5px stack → value)
-- `--bj-full-desktop-dealer-command-gap: 0.1875rem` (~3px command clearance)
+- `--bj-full-desktop-actions-boxes-gap: 0.625rem`
+- `--bj-full-desktop-stack-value-gap: 0.3125rem`
+- `--bj-full-desktop-dealer-command-gap: 0.1875rem`
 - Card arc nudge: `translateY(18px)` on `.bj-full-table-card-area`
 
 ### Invariants
 
-- **No internal scrollbars** in the Full Table card zone (`overflow: visible`; no `overflow-x: hidden` + `overflow-y: visible` pair).
-- **No vertical centering** of the card column grid in the card area (`justify-content: flex-end` on card zone).
-- **Single Hit/Stay render path** — `renderActionsContent()` → `BlackjackActionPanel` (one instance in `BlackjackPanel.tsx`).
-- **Layout ownership** — card column geometry only in `bj-full-table-card-area.css` + Full Table render path in `BlackjackPanel.tsx` (see contract constants).
+- No internal scrollbars in card zone (`overflow: visible`).
+- Single Hit/Stay path: `renderActionsContent()` → `BlackjackActionPanel`.
+- Card column geometry owned by `bj-full-table-card-area.css` + `BlackjackPanel.tsx`.
 
 ---
 
-## B. Full Table Mobile — frozen
+## B1. Full Table Mobile Portrait — FROZEN
 
-Status: **FROZEN** (`FULL_TABLE_MOBILE_FROZEN`)
+Status: **FROZEN** (`FULL_TABLE_MOBILE_PORTRAIT_FROZEN = true`)
 
-View root: `bj-view-full-mobile`
+View root: `bj-view-full-mobile` (portrait orientation within mobile boundary)
 
-### Rules
+**Media boundary:** `FULL_TABLE_MOBILE_PORTRAIT_MEDIA` in `blackjackLayoutContract.ts` — portrait `@media` lists in `bj-player-row-layout.css` (Contract C). JS mobile detection uses `MOBILE_LAYOUT_MEDIA` + viewport width/height (`MOBILE_MAX_WIDTH = 720`).
 
-- **Same canonical zone order** as desktop Full Table (dealer → command → cards → actions → boxes → tray).
-- **Same card column contract** — outcome / stack / value grid rows; stacks visible; values below cards.
-- **Same DOM components** as desktop Full Table (`BlackjackPanel`, `BlackjackTableLayoutShell`, shared selectors in `bj-full-table-card-area.css` paired with `.bj-view-full-mobile`).
-- **Optional Double/Split overlay** renders in the **command zone** (not cards-zone anchor) when legal.
-- **Hit/Stay** only in `bj-table-zone--actions` (never inside card area).
-- **AID** may show when `adviceEnabled` (mobile Full Table is not subject to desktop AID freeze).
+### Rules (same logic as desktop Full Table)
+
+- Canonical zone order: dealer → command → cards → actions → boxes → tray.
+- Same card column grid as desktop (outcome / stack / value); `bj-full-table-card-area.css` paired with `.bj-view-full-mobile`.
+- **Optional Double/Split** in **command zone** (`renderSummaryContent`) — **not** the desktop cards-zone anchor.
+- **Hit/Stay** only in `bj-table-zone--actions`.
+- **AID** may show when `adviceEnabled`.
+- Player boxes: Contract C (equal `1fr` columns) in `bj-player-row-layout.css`.
 
 ### Isolation
 
-- Desktop-only polish (`translateY(18px)`, desktop gap tokens) must stay under `@media (min-width: 721px) .bj-view-full-desktop` — **no desktop CSS may change mobile Full Table**.
-- Card View CSS (`bj-view-card-desktop`, `bj-view-card-mobile`, `bj-cards-area--hero`) must **not** override Full Table card-column layout.
-- View boundary: `MOBILE_MAX_WIDTH` (720) — JS (`useIsMobileViewport`) and CSS media queries must agree.
+- Desktop polish tokens only under `@media (min-width: 721px) .bj-view-full-desktop`.
+- Card View CSS must not override Full Table card-column layout.
+
+**Backward-compatible alias:** `FULL_TABLE_MOBILE_FROZEN = true` (same as portrait).
 
 ---
 
-## C. Card View — not frozen yet
+## B2. Full Table Mobile Landscape — PENDING FREEZE
 
-Status: **PENDING FREEZE** (`CARD_VIEW_FROZEN = false`)
+Status: **PENDING FREEZE** (`FULL_TABLE_MOBILE_LANDSCAPE_FROZEN = false`)
 
-View roots: `bj-view-card-desktop`, `bj-view-card-mobile`
+View root: still `bj-view-full-mobile` (device stays mobile when width > 720 on rotated phones).
 
-Card View shares the table shell zone order but uses `bj-cards-area--hero` instead of the Full Table arc card row. Layout polish and hero/action-bar rules may still change. Do not treat Card View CSS as authoritative for Full Table.
+**Media boundary:** `FULL_TABLE_MOBILE_LANDSCAPE_MEDIA` — sync with `MOBILE_LAYOUT_MEDIA_LANDSCAPE` in `mobileLayoutContract.ts`.
+
+### Current layout (intended contract target)
+
+- **Same zone order and card-column logic as B1** — landscape must not change gameplay layout semantics.
+- **Different size tokens** — compressed dealer/command/actions/box/tray heights via `--bj-mobile-landscape-compact` and related `--bj-zone-*` overrides.
+- Player boxes: Contract D (compact horizontal row) in `bj-player-row-layout.css`.
+- Optional Double/Split: command zone (same as portrait).
+
+### Owner files
+
+| Role | Owner |
+|------|--------|
+| Landscape zone tokens | `src/styles/bj-table-shared.css` (landscape `@media` blocks) |
+| Landscape felt flex / tray pin | `bj-table-shared.css`, `BlackjackPanel.css` |
+| Box row Contract D | `bj-player-row-layout.css` |
+| Card columns (unchanged from B1) | `bj-full-table-card-area.css` |
+
+### Current risks (documented, not fixed yet)
+
+1. **Duplicate landscape `@media` blocks** in `bj-table-shared.css` — `(orientation: landscape)` inside the mobile block and `(min-width: 721px) and (orientation: landscape)` for wide phones; token values can drift.
+2. **`overflow: hidden` on mobile felt/shell in landscape** — clip risk for card stacks if zone math is wrong.
+3. **Same view root as portrait** — portrait CSS changes can break landscape silently.
+4. **Tests often simulate width only** — orientation-specific behavior under-covered.
+
+### Freeze criteria (before setting flag `true`)
+
+- Single authoritative landscape token block (or documented parity between both blocks).
+- Orientation-aware tests at e.g. 844×390 using `createMobileLayoutMatchMedia`.
+- Zone order, visible cards, value below stack, actions below cards asserted.
+- Portrait vs landscape media constants remain distinguishable.
+- No `--bj-mobile-landscape-compact` on `.bj-view-full-desktop`.
+
+### Tests required before freezing
+
+- `fullTableMobileLandscapeFrozen.test.ts` (future) — markup + token guards
+- Extend `blackjackLayoutContractGuards.test.ts` landscape section
+
+---
+
+## C. Card View — PENDING FREEZE (overview)
+
+Card View shares `BlackjackTableLayoutShell` zone order but uses **`bj-cards-area--hero`** instead of `bj-cards-area--table`. Hero UI lives in `BlackjackCardView.tsx`. Do not treat Card View CSS as authoritative for Full Table.
+
+Aggregate flag: `CARD_VIEW_FROZEN = false` until C1–C3 are frozen.
+
+---
+
+### C1. Desktop Card View — PENDING FREEZE
+
+Status: `CARD_VIEW_DESKTOP_FROZEN = false`  
+View root: `CARD_VIEW_DESKTOP_ROOT` (`bj-view-card-desktop`)
+
+**Structure:** Shell hero fan + value below cards; Hit/Stay/2×/Split/AID in shell `bj-table-zone--actions`; player box arc (Contract B); This Table docked right; cloth hidden in hero on desktop.
+
+**Owner files:** `BlackjackCardView.tsx`, `BlackjackCardView.css`, `bj-card-layout.css`, `bj-table-shared.css` (desktop card-desktop block), `bj-player-row-layout.css`, `bj-felt-skins.css`, `BlackjackPanel.tsx`.
+
+**Current risks:** CSS split across 4+ files; hero zone `overflow: hidden` on desktop; optional play in command zone (differs from Full Table desktop overlay).
+
+**Freeze criteria:** Documented gap tokens; actions only in shell on desktop; hero value below cards; guards against `bj-full-table-card-area` in Card View paths.
+
+**Tests before freeze:** `cardViewDesktopLayoutFrozen.test.ts` (future); consolidate `cardViewLayoutGuards`, `cardViewCentralLayout`, `cardViewDesktopFix`.
+
+---
+
+### C2. Mobile Portrait Card View — PENDING FREEZE
+
+Status: `CARD_VIEW_MOBILE_PORTRAIT_FROZEN = false`  
+View root: `CARD_VIEW_MOBILE_ROOT` (`bj-view-card-mobile`)
+
+**Structure:** Hero with side Stay/Hit (`bj-phone-view__side-action`) + swipe; shell also renders `BlackjackActionPanel` in actions zone during player turn.
+
+**Owner files:** Same as C1 + portrait box row (Contract C) in `bj-player-row-layout.css`.
+
+**Current risks (documented):**
+
+- **Dual action path** — shell `BlackjackActionPanel` and hero side controls both present in DOM during player turn; primary UX is side/swipe, but exclusivity is not enforced yet.
+- Hero `overflow: hidden` on cards slot — fan clipping on short viewports.
+
+**Freeze criteria:** Single documented primary action path (or explicit dual-path contract); shell zone order; shared `fullArcBox` boxes with mobile Full Table; no horizontal page scroll.
+
+**Tests before freeze:** `cardViewMobilePortraitFrozen.test.ts` (future); extend `mobileCardViewComposition.test.tsx`.
+
+---
+
+### C3. Mobile Landscape Card View — PENDING FREEZE
+
+Status: `CARD_VIEW_MOBILE_LANDSCAPE_FROZEN = false`  
+View root: `bj-view-card-mobile` at landscape media (`FULL_TABLE_MOBILE_LANDSCAPE_MEDIA` / `MOBILE_LAYOUT_MEDIA_LANDSCAPE`)
+
+**Structure:** Same as C2 with Contract D box row and landscape shell tokens from `bj-table-shared.css`.
+
+**Current risks:** Inherits B2 landscape token drift; C2 dual action path; hero fit at short heights (844×390).
+
+**Freeze criteria:** B2 landscape tokens stable; C2 portrait frozen or dual-path resolved; landscape-specific composition tests pass.
+
+**Tests before freeze:** `cardViewMobileLandscapeFrozen.test.ts` (future); landscape cases in `mobileCardViewComposition.test.tsx`.
 
 ---
 
@@ -112,21 +232,23 @@ Card View shares the table shell zone order but uses `bj-cards-area--hero` inste
 
 | Role | Owner |
 |------|--------|
-| Full Table card column grid, stack/value pinning, actions zone height | `src/styles/bj-full-table-card-area.css` |
-| Zone order, view roots, frozen constants | `src/components/blackjackLayoutContract.ts` |
-| Full Table arc render, overlay placement, action wiring | `src/components/BlackjackPanel.tsx` |
-| Shell DOM structure | `src/components/BlackjackTableLayoutShell.tsx` |
-| Desktop optional-play overlay positioning | `src/components/OptionalPlayDecisionOverlay.css` |
-| Compact optional-play button chrome | `src/components/InsuranceDecisionOverlay.css` (`.bj-insurance-overlay__btn`) |
+| Full Table card column grid | `src/styles/bj-full-table-card-area.css` |
+| Zone order, flags, media constants | `src/components/blackjackLayoutContract.ts` |
+| Full Table arc + overlay wiring | `src/components/BlackjackPanel.tsx` |
+| Shell DOM | `src/components/BlackjackTableLayoutShell.tsx` |
+| Desktop optional-play overlay position | `src/components/OptionalPlayDecisionOverlay.css` |
+| Compact optional-play buttons | `src/components/InsuranceDecisionOverlay.css` |
+| Card View hero markup | `src/components/BlackjackCardView.tsx` |
+| Mobile boundary | `src/styles/mobileLayoutContract.ts` |
 
-**Guarded files** (must not introduce competing card-column layout):  
+**Guarded CSS** (must not introduce competing Full Table card-column grid):  
 `bj-table-shared.css`, `bj-card-layout.css`, `bj-player-row-layout.css`, `BlackjackPanel.css`
 
-**Card View guard:** `BlackjackCardView.tsx` and Card View sections of `bj-card-layout.css` must not import or override Full Table layout classes (`bj-full-table-card-area`, Full Table card-column grid).
+**Card View guard:** `BlackjackCardView.tsx` and Card View sections of `bj-card-layout.css` must not import or override `bj-full-table-card-area` / Full Table column grid.
 
 ---
 
 ## Related docs
 
-- [SXM_MASTER_SPEC.md](./SXM_MASTER_SPEC.md) — product spec
-- [BLACKJACK_STABILITY_CONTRACTS.md](./BLACKJACK_STABILITY_CONTRACTS.md) — protocol / dealing / accounting boundaries
+- [SXM_MASTER_SPEC.md](./SXM_MASTER_SPEC.md) — product spec (§13 mobile / view rules)
+- [BLACKJACK_STABILITY_CONTRACTS.md](./BLACKJACK_STABILITY_CONTRACTS.md) — protocol / dealing / accounting
