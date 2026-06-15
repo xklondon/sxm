@@ -13,7 +13,15 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-12 — Full Table scrollbar, reveal order, game-end visibility
+## 2026-06-12 — Desktop Full Table layout polish (spacing + bust badge)
+
+- **Hit/Stay ↔ boxes:** Desktop Full Table actions row height tightened; ~5px (`0.3125rem`) padding below Hit/Stay.
+- **Stack ↔ value:** ~5px gap via `--bj-full-desktop-stack-value-gap`; columns nudged down (`translateY(14px)`).
+- **Command clearance:** ~3px (`0.1875rem`) between dealer Deal/New Cards and command box on desktop Full Table.
+- **BUST badge:** Desktop Full Table bust renders as compact overlay on card stack (`bj-card-outcome-marker--stack-badge`), not floating outcome row.
+- **Tests:** `blackjackFullTableDesktopPolish.test.ts`.
+
+---
 
 - **Desktop scrollbar:** Removed `overflow-x: hidden` + `overflow-y: visible` pair on Full Table card zone (CSS computes to `overflow-y: auto`); scoped hero-only `overflow: hidden`; card zone uses `overflow: visible`.
 - **Desktop card values:** Value band uses flex centering + `overflow: visible`; removed forced `height: 100%` on desktop card zone.

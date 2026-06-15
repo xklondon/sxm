@@ -417,14 +417,6 @@
     align-self: stretch;
     overflow: visible;
   }
-
-  /* Desktop-only: nudge card stacks + values ~10px toward player boxes. */
-  .bj-view-full-desktop
-    .bj-table-layout-shell
-    .bj-table-zone--cards.bj-cards-area--table
-    .bj-full-table-card-area {
-    transform: translateY(10px);
-  }
 }
 
 @media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
@@ -434,5 +426,123 @@
     min-height: 0;
     max-height: none;
     overflow: visible;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Desktop Full Table polish — spacing + bust stack badge (mobile / Card View unchanged)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 721px) {
+  .bj-view-full-desktop {
+    --bj-full-desktop-dealer-command-gap: 0.1875rem;
+    --bj-full-desktop-actions-boxes-gap: 0.3125rem;
+    --bj-full-desktop-stack-value-gap: 0.3125rem;
+    --bj-full-desktop-zone-actions-height: calc(1.55rem + var(--bj-full-desktop-actions-boxes-gap));
+    --bj-full-desktop-cards-actions-gap: 0.28rem;
+  }
+
+  /* Command box — clear Deal/New Cards button by ~3px */
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--summary {
+    padding-top: var(--bj-full-desktop-dealer-command-gap);
+  }
+
+  /* Hit/Stay — sit ~5px above box amount labels */
+  .bj-view-full-desktop .bj-table-layout-shell {
+    --bj-desktop-zone-actions-height: var(--bj-full-desktop-zone-actions-height);
+    --bj-cards-actions-gap: var(--bj-full-desktop-cards-actions-gap);
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions {
+    padding-top: 0;
+    padding-bottom: var(--bj-full-desktop-actions-boxes-gap);
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  /* Card stacks + values — lower toward boxes; ~5px gap stack bottom → value */
+  .bj-view-full-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--table
+    .bj-full-table-card-area {
+    transform: translateY(14px);
+  }
+
+  .bj-view-full-desktop
+    .bj-arc--cards.bj-full-table-card-area
+    .bj-arc__slot--card-column
+    > .bj-phone-view__box-value--card-column-below {
+    margin-top: var(--bj-full-desktop-stack-value-gap);
+  }
+
+  /* Bust badge overlays stack — no floating outcome row */
+  .bj-view-full-desktop
+    .bj-arc--cards.bj-full-table-card-area
+    .bj-arc__slot--card-column--stack-outcome {
+    grid-template-rows:
+      var(--bj-full-table-card-stack-zone-height)
+      var(--bj-box-value-band-height);
+    height: calc(
+      var(--bj-full-table-card-stack-zone-height) + var(--bj-full-desktop-stack-value-gap) +
+        var(--bj-box-value-band-height)
+    );
+    min-height: calc(
+      var(--bj-full-table-card-stack-zone-height) + var(--bj-full-desktop-stack-value-gap) +
+        var(--bj-box-value-band-height)
+    );
+    max-height: calc(
+      var(--bj-full-table-card-stack-zone-height) + var(--bj-full-desktop-stack-value-gap) +
+        var(--bj-box-value-band-height)
+    );
+  }
+
+  .bj-view-full-desktop
+    .bj-arc--cards.bj-full-table-card-area
+    .bj-arc__slot--card-column--stack-outcome
+    > .bj-arc__play-zone {
+    grid-row: 1;
+  }
+
+  .bj-view-full-desktop
+    .bj-arc--cards.bj-full-table-card-area
+    .bj-arc__slot--card-column--stack-outcome
+    > .bj-phone-view__box-value--card-column-below {
+    grid-row: 2;
+  }
+
+  .bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__play-zone {
+    position: relative;
+  }
+
+  .bj-view-full-desktop
+    .bj-arc--cards.bj-full-table-card-area
+    .bj-arc__play-zone
+    > .bj-card-outcome-marker--stack-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 8;
+    width: auto;
+    min-width: 2.1rem;
+    margin: 0;
+    padding: 0.12rem 0.38rem;
+    border-radius: 0.28rem;
+    background: rgb(69 10 10 / 0.88);
+    border: 1px solid rgb(252 165 165 / 0.72);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.45);
+    font-size: 0.5rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    text-align: center;
+    text-transform: uppercase;
+    color: #fecaca;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
   }
 }

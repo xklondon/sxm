@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo, type CSSProperties } from 'react';
+import { useRef, useState, useEffect, useMemo, type CSSProperties, type ReactNode } from 'react';
 import type { GameState, TableViewMode } from '../types';
 import { resolveShowRoundSummaryOverlay } from '../types/table';
 import { feltSkinModifierClass, resolveTableClothName, resolveTableClothWager, resolveTableFeltSkin, resolveTableTrayLabel } from '../types/tableFeltSkin';
@@ -170,8 +170,10 @@ import {
 import {
   cardAreaOutcomeMarkerClass,
   cardAreaOutcomeMarkerText,
+  cardAreaOutcomeStackBadgeText,
   cardAreaOutcomeToneFromMarker,
   resolveCardAreaOutcomeMarker,
+  type CardAreaOutcomeMarker,
 } from './cardAreaOutcomeDisplay';
 import { shouldShowBoxHandResultMarkers } from './boxHandStatusDisplay';
 import { buildBlackjackCountByBoxDisplay } from './blackjackCountByBoxDisplay';
@@ -1550,12 +1552,13 @@ export function BlackjackPanel({
     );
   }
 
-  function renderArcCardStack(cardIds: string[]) {
+  function renderArcCardStack(cardIds: string[], stackBadge: ReactNode = null) {
     if (cardIds.length === 0 || !visualDeck) {
       return null;
     }
     return (
       <div className="bj-arc__play-zone">
+        {stackBadge}
         <div
           className={[
             TABLE_UX.arcCards,
@@ -1622,6 +1625,22 @@ export function BlackjackPanel({
             mobile: false,
           });
     const isSplit = handKeys.length > 1;
+    const isFullTableDesktop = deviceView === 'desktop' && viewMode === 'full';
+    const bustBadgeOnStack = isFullTableDesktop && outcomeMarker === 'bust';
+    const floatingOutcomeMarker =
+      outcomeMarker && !isSplit && !bustBadgeOnStack ? outcomeMarker : null;
+    const stackOutcomeBadge = (marker: CardAreaOutcomeMarker | null) =>
+      marker && isFullTableDesktop && marker === 'bust' ? (
+        <span
+          className={[
+            cardAreaOutcomeMarkerClass(marker),
+            'bj-card-outcome-marker--stack-badge',
+          ].join(' ')}
+          aria-hidden="true"
+        >
+          {cardAreaOutcomeStackBadgeText(marker)}
+        </span>
+      ) : null;
     return (
       <div
         key={`cards-${boxId}`}
@@ -1629,13 +1648,14 @@ export function BlackjackPanel({
           'bj-arc__slot',
           'bj-arc__slot--card-column',
           isSplit ? 'bj-arc__slot--card-split' : '',
+          bustBadgeOnStack ? 'bj-arc__slot--card-column--stack-outcome' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
         data-box-slot={slotNumber}
       >
-        {outcomeMarker && !isSplit ? (
-          <span className={cardAreaOutcomeMarkerClass(outcomeMarker)} aria-hidden="true">
-            {cardAreaOutcomeMarkerText(outcomeMarker)}
+        {floatingOutcomeMarker ? (
+          <span className={cardAreaOutcomeMarkerClass(floatingOutcomeMarker)} aria-hidden="true">
+            {cardAreaOutcomeMarkerText(floatingOutcomeMarker)}
           </span>
         ) : null}
         {isSplit ? (
@@ -1656,14 +1676,17 @@ export function BlackjackPanel({
                     getDisplayedHandValue(visualDeck, visualRound, handKey),
                   )
                 : null;
+              const splitBustOnStack = isFullTableDesktop && splitMarker === 'bust';
+              const splitFloatingMarker =
+                splitMarker && !splitBustOnStack ? splitMarker : null;
               return (
                 <div key={handKey} className="bj-arc__split-hand">
-                  {splitMarker ? (
-                    <span className={cardAreaOutcomeMarkerClass(splitMarker)} aria-hidden="true">
-                      {cardAreaOutcomeMarkerText(splitMarker)}
+                  {splitFloatingMarker ? (
+                    <span className={cardAreaOutcomeMarkerClass(splitFloatingMarker)} aria-hidden="true">
+                      {cardAreaOutcomeMarkerText(splitFloatingMarker)}
                     </span>
                   ) : null}
-                  {renderArcCardStack(cardIds)}
+                  {renderArcCardStack(cardIds, stackOutcomeBadge(splitMarker))}
                 </div>
               );
             })}
@@ -1671,6 +1694,7 @@ export function BlackjackPanel({
         ) : (
           renderArcCardStack(
             handKeys[0] ? getVisibleHandCardIds(visualRound, handKeys[0]) : [],
+            stackOutcomeBadge(outcomeMarker),
           )
         )}
         <span

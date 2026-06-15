@@ -49,6 +49,14 @@ export function cardAreaOutcomeMarkerText(marker: CardAreaOutcomeMarker): string
   }
 }
 
+/** Compact stack badge copy — desktop Full Table bust overlay. */
+export function cardAreaOutcomeStackBadgeText(marker: CardAreaOutcomeMarker): string {
+  if (marker === 'bust') {
+    return 'BUST';
+  }
+  return cardAreaOutcomeMarkerText(marker);
+}
+
 export function cardAreaOutcomeMarkerClass(marker: CardAreaOutcomeMarker): string {
   return `bj-card-outcome-marker bj-card-outcome-marker--${marker}`;
 }
