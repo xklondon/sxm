@@ -64,6 +64,8 @@ interface BlackjackCardViewProps {
   /** Card View hand-hold — keep hero on completed bust/18+ hand before turn advance. */
   heroHandKeyOverride?: string | null;
   handHoldActive?: boolean;
+  /** When true, hero side Stay/Hit yield to shell OptionalPlayDecisionOverlay. */
+  optionalPlayOverlayActive?: boolean;
   showHoleHidden: boolean;
   protocolPhase: BlackjackProtocolPhase;
   cardRevealComplete?: boolean;
@@ -90,6 +92,7 @@ export function BlackjackCardView({
   activeBoxId,
   heroHandKeyOverride = null,
   handHoldActive = false,
+  optionalPlayOverlayActive = false,
   showHoleHidden: _showHoleHidden,
   protocolPhase,
   cardRevealComplete = true,
@@ -221,7 +224,10 @@ export function BlackjackCardView({
     logicalCardIds.length,
   );
   const showSideControls =
-    stitchedActionsActive && !evenMoneyActive && !insuranceActive;
+    stitchedActionsActive &&
+    !evenMoneyActive &&
+    !insuranceActive &&
+    !optionalPlayOverlayActive;
 
   function getActionDisabledReason(): string | null {
     if (isBettingPhase(protocolPhase)) {

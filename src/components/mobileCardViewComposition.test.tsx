@@ -159,13 +159,13 @@ describe('mobile Card View composition contract', () => {
     expect(heroZone).not.toContain('bj-box--turn');
 
     const ownedTurnSlot = html.match(
-      /bj-arc__slot--owned[\s\S]{0,1200}?bj-phone-view__mini-hand--full-arc/,
+      /bj-arc__slot--owned[\s\S]{0,1200}?bj-phone-view__mini-hand--full-arc[\s\S]{0,200}?bj-box--turn/,
     );
     expect(ownedTurnSlot).toBeTruthy();
     const slotChunk = ownedTurnSlot![0];
     expect(slotChunk).not.toMatch(/bj-arc__play-zone/);
     expect(slotChunk).toContain(TABLE_UX.fullArcBox);
-    expect(slotChunk).not.toContain('bj-box--turn');
+    expect(slotChunk).toContain('bj-box--turn');
     expect(slotChunk).not.toContain('bj-box--selected');
   });
 

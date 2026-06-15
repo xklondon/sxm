@@ -197,13 +197,8 @@ describe('layout contract audit guards — Card View Desktop (C1 pending)', () =
 });
 
 describe('layout contract audit guards — Mobile Card View (C2 pending)', () => {
-  it('documents dual action path as a known risk without changing behavior', () => {
-    expect(CARD_VIEW_MOBILE_DUAL_ACTION_PATH_DOCUMENTED).toBe(true);
-    expect(CONTRACT_DOC).toContain('Dual action path');
-    expect(CONTRACT_DOC).toContain('side/swipe');
-  });
-
-  it('renders hero side-action path on mobile Card View', () => {
+  it('mobile Card View uses single canonical action path during player turn', () => {
+    expect(CARD_VIEW_MOBILE_DUAL_ACTION_PATH_DOCUMENTED).toBe(false);
     simulatedWidth = 390;
     const html = renderToStaticMarkup(
       createElement(BlackjackPanel, {
@@ -216,20 +211,10 @@ describe('layout contract audit guards — Mobile Card View (C2 pending)', () =>
       html.split(CARD_VIEW_CARDS_AREA_CLASS)[1]?.split(TABLE_UX.tableZoneActions)[0] ?? '';
     expect(heroZone).toContain(CARD_VIEW_MOBILE_SIDE_ACTION_CLASS);
     expect(heroZone).toContain('bj-phone-view__side-action--hit');
-  });
-
-  it('currently also renders shell BlackjackActionPanel during player turn (dual path)', () => {
-    simulatedWidth = 390;
-    const html = renderToStaticMarkup(
-      createElement(BlackjackPanel, {
-        gameState: playingCardViewState(),
-        onGameStateChange: noop,
-      }),
-    );
     const actionsZone =
       html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
-    expect(actionsZone).toContain('ds-btn--hit');
-    expect(actionsZone).toContain('ds-btn--stand');
+    expect(actionsZone).not.toContain('ds-btn--hit');
+    expect(actionsZone).not.toContain('ds-btn--stand');
     expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(false);
   });
 });

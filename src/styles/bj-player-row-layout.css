@@ -4,8 +4,8 @@
  * Imported after bj-table-shared.css.
  *
  * SIZING CONTRACTS (do not collapse into one universal box size):
- * A. Desktop/laptop Full Table — compact max-content columns, fixed box tokens.
- * B. Desktop/laptop Card View — compact max-content, card-view mini-hand tokens.
+ * A. Desktop/laptop Full Table + Card View — compact max-content columns, fixed box tokens.
+ * B. Desktop/laptop Card View — same player-box tokens as Full Table (hero layout separate).
  * C. Mobile portrait Full Table + Card View — equal 1fr columns, aspect-ratio tiles.
  * D. Mobile landscape Full Table + Card View — compact horizontal (laptop-like).
  */
@@ -79,11 +79,6 @@
     width: var(--bj-full-table-box-width);
     max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
     align-self: center;
-  }
-
-  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
-    width: var(--bj-cardview-desktop-mini-hand-width);
-    max-width: calc(var(--bj-cardview-desktop-mini-hand-width) + 0.35rem);
   }
 
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,
@@ -292,21 +287,6 @@
   box-sizing: border-box;
 }
 
-.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
-.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-player-box-mobile,
-.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-bet-zone {
-  width: var(--bj-cardview-desktop-mini-hand-width);
-  min-width: var(--bj-cardview-desktop-mini-hand-width);
-  max-width: calc(var(--bj-cardview-desktop-mini-hand-width) + 0.35rem);
-  height: var(--bj-cardview-desktop-mini-hand-height);
-  min-height: var(--bj-cardview-desktop-mini-hand-height);
-}
-
-.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
-  width: var(--bj-cardview-desktop-mini-hand-width);
-  max-width: calc(var(--bj-cardview-desktop-mini-hand-width) + 0.35rem);
-}
-
 /* CONTRACT C — mobile portrait equal 1fr columns (Full Table + Card View). */
 @media (max-width: 720px) and (orientation: portrait),
   ((max-width: 960px) and (max-height: 520px) and (pointer: coarse) and (orientation: portrait)) {
@@ -406,10 +386,12 @@
     width: 100%;
     min-width: 0;
     max-width: none;
-    height: auto;
+    height: 100%;
     min-height: 0;
+    max-height: 100%;
     flex: 1 1 auto;
     aspect-ratio: 1.05 / 1;
+    overflow: hidden;
   }
 }
 
@@ -503,6 +485,18 @@
   min-height: 1.05rem;
   max-height: 1.35rem;
   overflow: hidden;
+}
+
+.bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
+.bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder {
+  flex: 0 0 auto;
+  min-height: 0.95rem;
+  max-height: 1.05rem;
+  overflow: hidden;
+  text-align: center;
+  font-size: 0.58rem;
+  font-weight: var(--ds-weight-bold, 700);
+  line-height: 1.05;
 }
 
 .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips--bet {

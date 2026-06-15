@@ -201,7 +201,7 @@ describe('desktop Full Table layout polish', () => {
   });
 
   it('does not render AID on desktop Full Table (frozen layout)', () => {
-    expect(PANEL_SRC).toContain('showAid={flowSettings.adviceEnabled && !isFullTableDesktop}');
+    expect(PANEL_SRC).toContain('showAid={flowSettings.adviceEnabled && !isFullTableDesktop && !isCardViewDesktop}');
     simulatedWidth = 1280;
     const html = renderToStaticMarkup(
       createElement(BlackjackPanel, { gameState: splittableDesktopState(), onGameStateChange: noop }),

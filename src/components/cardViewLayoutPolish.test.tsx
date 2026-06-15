@@ -86,7 +86,7 @@ function playingState(): GameState {
       playerHands: {
         [k2]: {
           ...createBlackjackPlayerHand(box2, 0),
-          cardIds: [findCardId(deck, '9'), findCardId(deck, '2')],
+          cardIds: [findCardId(deck, '6'), findCardId(deck, '7')],
           currentBet: 10,
           actionStatus: 'acting',
         },
@@ -103,20 +103,14 @@ function renderAt(width: number): string {
 }
 
 describe('Card View layout polish', () => {
-  it('action rows render in actions zone below hero hand meta', () => {
-    const html = renderAt(390);
-    const heroIdx = html.indexOf(TABLE_UX.cardsAreaHero);
-    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
-    const metaIdx = html.indexOf('bj-phone-view__hand-meta');
-    const primaryIdx = html.indexOf('sxm-primary-actions');
-    expect(heroIdx).toBeGreaterThan(-1);
-    expect(actionsIdx).toBeGreaterThan(heroIdx);
-    expect(metaIdx).toBeGreaterThan(heroIdx);
-    expect(metaIdx).toBeLessThan(actionsIdx);
-    expect(primaryIdx).toBeGreaterThan(actionsIdx);
-    expect(html).toContain('sxm-secondary-actions');
-    expect(html).toMatch(/sxm-primary-actions[\s\S]*Stay/);
-    expect(html).toMatch(/bj-table-zone--summary[\s\S]*>Double</);
+  it('action rows use hero side controls on mobile; desktop uses shell panel', () => {
+    const mobile = renderAt(390);
+    const heroZone =
+      mobile.split(TABLE_UX.cardsAreaHero)[1]?.split(TABLE_UX.tableZoneActions)[0] ?? '';
+    expect(heroZone).toContain('bj-phone-view__side-action--hit');
+    const actionsZone =
+      mobile.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
+    expect(actionsZone).not.toContain('ds-btn--hit');
   });
 
   it('command sits under dealer stack, hero cards below command, then actions', () => {

@@ -127,13 +127,11 @@ describe('mobile Card View layout contract', () => {
     expect(playing).toContain('bj-phone-view__hero-stage');
   });
 
-  it('playing phase: two centered action rows under total', () => {
+  it('playing phase: hero side Stay/Hit controls beside stitched cards', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toContain('bj-table-actions__row');
-    expect(html).toContain('sxm-secondary-actions');
-    expect(html).toContain('ds-btn--stand');
-    expect(html).toContain('ds-btn--hit');
-    expect(html).toContain('bj-table-actions');
+    expect(html).toContain('bj-phone-view__side-action--hit');
+    expect(html).toContain('bj-phone-view__side-action--stand');
+    expect(html).toContain('bj-phone-view__play-area--controls');
   });
 
   it('removes redundant hero label and in-card Full Table button', () => {

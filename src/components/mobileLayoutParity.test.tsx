@@ -221,7 +221,7 @@ describe('mobile layout parity audit — Full Table vs Card View', () => {
     );
   });
 
-  it('uses the same player box classes in mobile Full Table and Card View (except Full Table turn highlight)', () => {
+  it('uses the same player box classes in mobile Full Table and Card View', () => {
     const fullBoxes = extractBoxClasses(renderAt('full'));
     const cardBoxes = extractBoxClasses(renderAt('card'));
     expect(fullBoxes.length).toBeGreaterThan(0);
@@ -230,10 +230,7 @@ describe('mobile layout parity audit — Full Table vs Card View', () => {
       expect(cls).toContain(TABLE_UX.fullArcBox);
       expect(cls).not.toContain('mini-hand--card-compact');
     }
-    const stripTurn = (cls: string) => cls.replace(/\s*bj-box--turn\b/g, '').trim();
-    expect(cardBoxes.map(stripTurn)).toEqual(fullBoxes.map(stripTurn));
-    expect(fullBoxes.some((cls) => cls.includes('bj-box--turn'))).toBe(true);
-    expect(cardBoxes.every((cls) => !cls.includes('bj-box--turn'))).toBe(true);
+    expect(cardBoxes).toEqual(fullBoxes);
   });
 
   it('neutralizes legacy card-layout and phone-view composition CSS', () => {

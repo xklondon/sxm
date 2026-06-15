@@ -134,7 +134,7 @@ describe('Card View polish guards', () => {
 
   it('uses compact table action buttons in Card View actions row', () => {
     const html = renderCardPanel(playingState());
-    expect(html).toContain('bj-table-actions__btn--sm');
+    expect(html).toContain('bj-table-actions__btn');
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
     expect(sharedCss).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions__btn--sm[\s\S]*font-size:/,
@@ -166,7 +166,7 @@ describe('Card View polish guards', () => {
     expect(slot).toContain(TABLE_UX.fullArcBox);
     expect(slot).toContain('bj-phone-view__mini-hand-head');
     expect(heroZone).toContain('bj-phone-view__box-value--active-turn');
-    expect(slot).not.toContain('bj-box--turn');
+    expect(slot).toContain('bj-box--turn');
   });
 
   it('renders stake chips under shared arc player box tile', () => {

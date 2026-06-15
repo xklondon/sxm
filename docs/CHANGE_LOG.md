@@ -17,6 +17,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Card View reuse + mobile box stability
+
+- **Player boxes:** Desktop Card View reuses Full Table box width tokens and `renderArcSlot` / `BlackjackPlayerBoxHead` / `ValueAndChipsBar` tray path; active-turn `bj-box--turn` applies in all views.
+- **Actions:** Desktop Card View — shell `BlackjackActionPanel` (Hit/Stay) + cards-zone `OptionalPlayDecisionOverlay` (Double/Split). Mobile Card View — single path: hero side Stay/Hit OR command-zone optional overlay; shell panel suppressed on mobile Card View.
+- **Mobile boxes:** Portrait tiles use fixed height + `overflow: hidden`; Mobile Card View shows in-box hand value under ranks (`bj-phone-view__mini-hand-value`).
+- **Hero value:** Mobile Card View hero total matches bank emphasis token (`calc(var(--bj-seat-total-size) * 1.35)`).
+- **Tests:** `cardViewReuseFixes.test.tsx`; updated layout guard / parity tests.
+
+---
+
 ## 2026-06-12 — Layout contract system cleanup (audit → enforceable docs)
 
 - **Docs:** `BLACKJACK_LAYOUT_CONTRACTS.md` restructured — A (desktop FT), B1 (mobile portrait FT), B2 (mobile landscape pending), C1–C3 (Card View pending), recommended freeze order.

@@ -187,7 +187,7 @@ describe('blackjack polish regression', () => {
     });
     expect(active.isTurn).toBe(true);
     expect(inactive.isTurn).toBe(false);
-    expect(PANEL_SRC).toContain("borderState.isTurn && viewMode === 'full' ? BOX_BORDER_TURN : ''");
+    expect(PANEL_SRC).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
   });
 
   it('keeps selected betting pulse separate from active-turn box border', () => {
@@ -217,7 +217,7 @@ describe('blackjack polish regression', () => {
       playerPhase: true,
     });
     expect(getBoxBorderVisualClasses(play)).not.toContain(BOX_BORDER_TURN);
-    expect(PANEL_SRC).toContain("borderState.isTurn && viewMode === 'full' ? BOX_BORDER_TURN : ''");
+    expect(PANEL_SRC).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
     expect(getBoxActivePulseClassName(play)).toBe('');
   });
 

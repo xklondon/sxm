@@ -70,7 +70,7 @@ describe('blackjack UX fixes — active turn highlight', () => {
     expect(resolved.isTurn).toBe(true);
     expect(getBoxBorderVisualClasses(resolved)).not.toContain(BOX_BORDER_TURN);
     expect(getBoxActivePulseClassName(resolved)).toBe('');
-    expect(PANEL_SRC).toContain("borderState.isTurn && viewMode === 'full' ? BOX_BORDER_TURN : ''");
+    expect(PANEL_SRC).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
     expect(PANEL_SRC).not.toContain("'bj-arc__slot--turn'");
     expect(PANEL_SRC).toContain('getBoxActivePulseClassName(borderState)');
     expect(PANEL_SRC).toContain('cardColumnHandValueClassName');

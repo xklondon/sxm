@@ -186,7 +186,7 @@ describe('stability contracts — layout boundary', () => {
     expect(getBoxBorderVisualClasses(resolved)).not.toContain(DEPRECATED_BOX_TURN_CLASS);
 
     const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
-    expect(panelSrc).toContain("borderState.isTurn && viewMode === 'full' ? BOX_BORDER_TURN : ''");
+    expect(panelSrc).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
     expect(panelSrc).not.toContain("'bj-arc__slot--turn'");
   });
 });

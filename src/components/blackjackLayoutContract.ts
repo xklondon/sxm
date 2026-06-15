@@ -93,8 +93,8 @@ export const CARD_VIEW_CARDS_AREA_MODE = 'hero' as const;
 export const CARD_VIEW_CARDS_AREA_CLASS = 'bj-cards-area--hero';
 export const FULL_TABLE_CARDS_AREA_CLASS = 'bj-cards-area--table';
 
-/** Documented C2 risk — shell panel + hero side controls both render today. */
-export const CARD_VIEW_MOBILE_DUAL_ACTION_PATH_DOCUMENTED = true as const;
+/** Mobile Card View — canonical side Stay/Hit; shell panel suppressed; optional play in command zone. */
+export const CARD_VIEW_MOBILE_DUAL_ACTION_PATH_DOCUMENTED = false as const;
 
 export const CARD_VIEW_MOBILE_SIDE_ACTION_CLASS = 'bj-phone-view__side-action';
 
