@@ -13,6 +13,7 @@ function readSrc(relativePath: string): string {
 }
 
 const SHARED_CSS = readSrc('src/styles/bj-table-shared.css');
+const CARD_AREA_CSS = readSrc('src/styles/bj-full-table-card-area.css');
 const TABLE_INFO_CSS = readSrc('src/components/TableInfoBar.css');
 const TABLE_INFO_TSX = readSrc('src/components/TableInfoBar.tsx');
 const PANEL_SRC = readSrc('src/components/BlackjackPanel.tsx');
@@ -40,8 +41,9 @@ describe('cleanup fixes — active value highlight', () => {
     expect(block).toBeTruthy();
     expect(block).not.toContain('border-radius: 50%');
     expect(block).toContain('border-radius: 0.32em');
-    expect(block).not.toContain('min-width: 1.65em');
-    expect(block).not.toContain('height: 1.65em');
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-arc--cards \.bj-arc__slot--card-column \.bj-phone-view__box-value--active-turn[\s\S]*height:\s*var\(--bj-box-value-band-height\)/,
+    );
   });
 
   it('panel does not duplicate hand value on card stack container', () => {
@@ -55,10 +57,12 @@ describe('cleanup fixes — active value highlight', () => {
 
 describe('cleanup fixes — desktop card area position', () => {
   it('lowers desktop full-table card columns toward player boxes', () => {
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-arc--cards[\s\S]*padding-top:/,
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*height:\s*var\(--bj-full-table-card-area-height\)/,
     );
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-arc__slot--card-column[\s\S]*padding-top:/);
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-arc__slot--card-column[\s\S]*grid-row:\s*3/,
+    );
   });
 
   it('does not add desktop card-column padding to mobile full table', () => {

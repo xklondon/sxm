@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 
 const VIEW_ROOTS = [
@@ -87,9 +88,11 @@ describe('blackjack canonical shell order — Dealer → Command → Cards → A
   });
 
   it('keeps Full Table card stacks bottom-aligned', () => {
-    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/);
-    expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-arc--cards[\s\S]*align-items:\s*flex-end/,
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
+    );
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-full-table-card-area[\s\S]*align-items:\s*end/,
     );
   });
 });

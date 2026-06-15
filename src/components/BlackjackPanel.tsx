@@ -207,6 +207,7 @@ import {
 } from './tableViewContract';
 import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
 import { applyBlackjackTableTheme } from '../design/blackjackTableTheme';
+import { FULL_TABLE_CARD_AREA_CLASS } from './blackjackLayoutContract';
 import { MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
 import type { TableResetSetupVariant } from './TableStakePanel';
 import './BlackjackPanel.css';
@@ -2355,6 +2356,7 @@ export function BlackjackPanel({
                     'bj-table-slot-row',
                     'bj-arc',
                     'bj-arc--cards',
+                    FULL_TABLE_CARD_AREA_CLASS,
                     visibleArcClass,
                     showAddBoxLead ? 'bj-table-slot-row--with-add' : '',
                   ]

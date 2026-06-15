@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
 
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 const MAGIC8_CSS = readFileSync(join(process.cwd(), 'src/components/magic8/Magic8Ball.css'), 'utf8');
 
@@ -83,7 +84,10 @@ describe('mobile table dimension parity — Full Table vs Card View', () => {
 
   it('keeps CardsArea internals from changing outer shell dimensions', () => {
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*min-height:\s*0[\s\S]*overflow:\s*hidden/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*overflow:\s*hidden/,
+    );
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*height:\s*var\(--bj-full-table-card-area-height\)/,
     );
     expect(SHARED_CSS).toMatch(/\.bj-view-full-mobile \.bj-arc-separator[\s\S]*min-height:\s*0/);
     expect(PANEL_CSS).not.toMatch(/\.bj-view-full-mobile \.bj-arc-separator[\s\S]*min-height:\s*min\(/);

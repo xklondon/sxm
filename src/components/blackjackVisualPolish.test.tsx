@@ -6,6 +6,7 @@ import { ValueAndChipsBar } from './ChipStack';
 import { TABLE_UX } from './tableUxContract';
 
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
@@ -117,17 +118,16 @@ describe('desktop canonical vertical grid polish', () => {
 
 describe('Full Table card stack bottom alignment', () => {
   it('bottom-aligns table card stacks in CardsArea for all viewports', () => {
-    expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-arc--cards[\s\S]*align-items:\s*flex-end/,
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-full-table-card-area[\s\S]*align-items:\s*end/,
     );
-    expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/);
   });
 
   it('stacks cards upward with column-reverse toward dealer', () => {
-    expect(SHARED_CSS).toMatch(
+    expect(CARD_AREA_CSS).toMatch(
       /\.bj-arc__cards--stack-vertical \.bj-arc__cards-stack[\s\S]*flex-direction:\s*column-reverse/,
     );
   });

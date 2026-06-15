@@ -13,6 +13,15 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Canonical Full Table card area contract
+
+- **Single CSS module:** `src/styles/bj-full-table-card-area.css` — fixed zone height, bottom-anchored columns (outcome / stack / value), desktop + mobile Full Table only.
+- **Removed conflicting rules** from `bj-table-shared.css`, `bj-player-row-layout.css`, `BlackjackPanel.css` (duplicate grid/flex/centering).
+- **Panel:** `bj-full-table-card-area` class on card arc row (`FULL_TABLE_CARD_AREA_CLASS`).
+- **Tests:** `blackjackFullTableCardColumnLayout.test.ts` guards against `flex: 1`, `align-self: center` regressions.
+
+---
+
 ## 2026-06-12 — Full Table card-column contract + game-end flow regression
 
 - **Card area:** Canonical three-zone grid (outcome / stack / fixed value) for Full Table desktop + mobile; card-row slots bottom-aligned; arc height auto.

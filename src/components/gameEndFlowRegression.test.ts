@@ -8,10 +8,11 @@ const OVERLAY_SRC = readFileSync(join(process.cwd(), 'src/components/GameOverAct
 describe('game end flow regression guards', () => {
   it('uses safe reveal gate without requiring winnerPersonId', () => {
     expect(PANEL_SRC).toMatch(/gameEndRevealReady = cardRevealComplete \|\| gameEnded/);
-    expect(PANEL_SRC).toMatch(/showGameOverActions[\s\S]*gameEnded/);
-    expect(PANEL_SRC).not.toMatch(/showGameOverActions[\s\S]*winnerId/);
-    expect(PANEL_SRC).not.toMatch(/showGameOverDesktopPanel[\s\S]*canSaveToLedger/);
-    expect(PANEL_SRC).not.toMatch(/showGameOverDesktopPanel[\s\S]*canAddIou/);
+    expect(PANEL_SRC).toMatch(/const showGameOverActions =\s*\n\s*gameEnded && !gameOverOverlayDismissed/);
+    expect(PANEL_SRC).not.toMatch(/const showGameOverActions[\s\S]*winnerId/);
+    expect(PANEL_SRC).toMatch(
+      /const showGameOverDesktopPanel =\s*\n\s*showGameOverActions && deviceView === 'desktop' && gameEndRevealReady/,
+    );
   });
 
   it('re-opens desktop This Table panel while game-over UI is active', () => {

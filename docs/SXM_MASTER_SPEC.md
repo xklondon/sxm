@@ -450,7 +450,7 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 - No sentimental/random phrasing.
 - Natural blackjack: `Box [n], Blackjack.` only for `actionStatus === 'blackjack'`.
 
-**Table View card-column values (Full Table desktop + mobile):** Canonical three-zone grid per column — outcome (reserved) / stack (grows upward) / value (fixed `--bj-box-value-band-height` at bottom, aligned with player boxes). Outcome markers and active-turn frame must not shift the value band. Card View hero layout unchanged. Shared `resolvePrimaryHandValueLabel` — no duplicate scoring logic.
+**Table View card-column values (Full Table desktop + mobile):** Canonical contract in `bj-full-table-card-area.css` — fixed card zone height (`--bj-full-table-card-area-height`); per-column grid: outcome (reserved) / stack (grows upward) / value (fixed `--bj-box-value-band-height` at bottom). Card View hero layout unchanged (`bj-cards-area--hero`).
 
 **No-jump box stability:** `+` add-box and every player box share identical outer dimensions (`--bj-full-table-box-width`, fixed value band + box height). Reserved internal zones: score/value, chip stack (`--bj-full-table-stake-min-height`), logo/label (composition). Active turn uses inset `box-shadow` pulse only — no border-width or layout-affecting highlight changes.
 

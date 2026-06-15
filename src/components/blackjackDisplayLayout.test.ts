@@ -10,6 +10,7 @@ const ACTION_PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/Blackj
 const DEALER_AREA_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackDealerArea.tsx'), 'utf8');
 const VIEW_ZONES_SRC = readFileSync(join(process.cwd(), 'src/components/blackjackViewZones.tsx'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const TABLE_UX_SRC = readFileSync(join(process.cwd(), 'src/components/tableUxContract.ts'), 'utf8');
 
@@ -101,19 +102,19 @@ describe('blackjack display layout contract', () => {
     expect(SHARED_CSS).toContain('--bj-table-card-overlap-3');
     expect(SHARED_CSS).toContain('--bj-table-card-overlap-4plus');
     expect(SHARED_CSS).toContain('--bj-table-card-height');
-    expect(SHARED_CSS).toMatch(
+    expect(CARD_AREA_CSS).toMatch(
       /\[data-bj-card-count='2'\][\s\S]*--bj-table-card-overlap-2/,
     );
-    expect(SHARED_CSS).toMatch(
+    expect(CARD_AREA_CSS).toMatch(
       /\[data-bj-card-count='3'\][\s\S]*--bj-table-card-overlap-3/,
     );
-    expect(SHARED_CSS).toMatch(
+    expect(CARD_AREA_CSS).toMatch(
       /\[data-bj-card-count='4'\][\s\S]*--bj-table-card-overlap-4plus/,
     );
-    expect(SHARED_CSS).toMatch(
+    expect(CARD_AREA_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-arc__cards--stack-vertical \.bj-arc__cards-stack \.playing-card[\s\S]*opacity:\s*1/,
     );
-    expect(SHARED_CSS).toMatch(
+    expect(CARD_AREA_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-arc__cards--stack-vertical \.bj-arc__cards-stack \.playing-card[\s\S]*height:\s*var\(--bj-table-card-height\)/,
     );
     expect(SHARED_CSS).not.toContain('--bj-table-card-strip-visible');

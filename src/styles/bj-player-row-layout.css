@@ -149,16 +149,16 @@
     width: var(--bj-table-slot-add-size);
     min-width: var(--bj-table-slot-add-size);
     max-width: var(--bj-table-slot-add-size);
-    align-self: center;
+    align-self: end;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-table-slot-row.bj-arc--cards {
     flex: 0 0 auto;
-    align-self: center;
+    align-self: end;
     width: max-content;
     max-width: 100%;
-    height: auto;
-    max-height: none;
+    height: 100%;
+    max-height: 100%;
   }
 
   /*

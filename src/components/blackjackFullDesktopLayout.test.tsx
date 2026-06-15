@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
+const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
 
@@ -31,12 +32,9 @@ describe('desktop Full Table layout polish', () => {
     );
   });
 
-  it('uses fixed bottom value zone with card-height stack row on Full Table desktop', () => {
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc__slot--card-column[\s\S]*minmax\(var\(--bj-table-card-height\),\s*auto\)/,
-    );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell[\s\S]*\[cards\]\s*max-content/,
+  it('uses fixed card area height on Full Table desktop', () => {
+    expect(CARD_AREA_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*\[cards\]\s*var\(--bj-full-table-card-area-height\)/,
     );
   });
 
@@ -53,7 +51,7 @@ describe('desktop Full Table layout polish', () => {
   });
 
   it('applies canonical bottom value grid to Full Table mobile card columns', () => {
-    expect(SHARED_CSS).toMatch(
+    expect(CARD_AREA_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
     );
   });

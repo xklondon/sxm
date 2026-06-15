@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 
 function shellZoneBlock(zone: string): string {
@@ -56,22 +57,27 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
     expect(shellZoneBlock('.bj-table-zone--bottom')).toContain('height: var(--bj-zone-tray-height)');
   });
 
-  it('gives hero and table cards areas the same outer zone flex contract on mobile', () => {
-    const cardsBlock = SHARED_CSS.match(
-      /\.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table\s*\{[\s\S]*?\}/,
+  it('gives hero cards area flex growth; Full Table card zone is fixed height', () => {
+    const heroBlock = SHARED_CSS.match(
+      /\.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero\s*\{[\s\S]*?\}/,
     )?.[0];
-    expect(cardsBlock).toBeTruthy();
-    expect(cardsBlock).toContain('flex: 1 1 auto');
-    expect(cardsBlock).toContain('min-height: var(--bj-zone-cards-min-height)');
-    expect(cardsBlock).not.toContain('bj-card-row-hero-min');
+    expect(heroBlock).toBeTruthy();
+    expect(heroBlock).toContain('flex: 1 1 auto');
+    expect(heroBlock).toContain('min-height: var(--bj-zone-cards-min-height)');
+    expect(heroBlock).not.toContain('bj-card-row-hero-min');
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*height:\s*var\(--bj-full-table-card-area-height\)/,
+    );
   });
 
-  it('uses flexible CardsArea grid row on desktop instead of calc height token', () => {
+  it('uses fixed Full Table cards grid row on desktop instead of 1fr growth', () => {
     const desktop = SHARED_CSS.slice(
       SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows'),
       SHARED_CSS.indexOf('/* Desktop stage:'),
     );
-    expect(SHARED_CSS).toContain('--bj-desktop-grid-row-cards: minmax(0, 1fr)');
+    expect(CARD_AREA_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*\[cards\]\s*var\(--bj-full-table-card-area-height\)/,
+    );
     expect(desktop).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
     expect(desktop).not.toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*height:\s*var\(--bj-zone-cards-height\)/,

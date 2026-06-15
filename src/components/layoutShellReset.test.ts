@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
 
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
@@ -86,11 +87,12 @@ describe('layout shell reset — Full Table + Card View', () => {
     expect(SHARED_CSS).toContain('--bj-mobile-zone-dealer-height: 5.15rem');
     expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2.25rem');
 
-    const cardsBlock =
+    const heroBlock =
       SHARED_CSS.match(
-        /\.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table\s*\{[\s\S]*?\}/,
+        /\.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero\s*\{[\s\S]*?\}/,
       )?.[0] ?? '';
-    expect(cardsBlock).toContain('flex: 1 1 auto');
+    expect(heroBlock).toContain('flex: 1 1 auto');
+    expect(CARD_AREA_CSS).toContain('--bj-full-table-card-area-height');
     expect(CARD_LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/);
   });
 

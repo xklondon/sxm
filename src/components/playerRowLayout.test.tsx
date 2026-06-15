@@ -77,8 +77,11 @@ function renderMobilePanel(state: GameState): string {
 }
 
 describe('canonical player row layout engine', () => {
-  it('imports shared player row CSS after table shared CSS', () => {
+  it('imports shared player row CSS after table shared CSS and before card-area contract', () => {
     expect(INDEX_CSS.indexOf('bj-table-shared.css')).toBeLessThan(INDEX_CSS.indexOf('bj-player-row-layout.css'));
+    expect(INDEX_CSS.indexOf('bj-player-row-layout.css')).toBeLessThan(
+      INDEX_CSS.indexOf('bj-full-table-card-area.css'),
+    );
   });
 
   it('uses one flat bj-table-slot-row for player boxes on all viewports', () => {
@@ -194,7 +197,9 @@ describe('canonical player row layout engine', () => {
     expect(PLAYER_ROW_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-slot-row__add::after[\s\S]*aspect-ratio:\s*1\.05 \/ 1/,
     );
-    expect(PLAYER_ROW_CSS).not.toMatch(/\.bj-table-slot-row__add[\s\S]*align-self:\s*end/);
+    expect(PLAYER_ROW_CSS).not.toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row__add::after\s*\{[^}]*align-self:\s*end/,
+    );
     expect(PLAYER_ROW_CSS).not.toMatch(
       /\.bj-table-slot-row__add[\s\S]*min-height:\s*calc\(var\(--bj-full-table-box-height\)/,
     );

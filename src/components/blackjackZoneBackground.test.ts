@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const SHELL_SRC = readFileSync(
   join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'),
@@ -63,13 +64,16 @@ describe('blackjack zone backgrounds — continuous felt surface', () => {
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*grid-row:\s*cards/);
   });
 
-  it('uses identical CardsArea outer contract for hero and table modifiers', () => {
-    const cardsBlock =
+  it('uses identical CardsArea outer contract for hero; Full Table uses fixed card zone', () => {
+    const heroBlock =
       SHARED_CSS.match(
-        /\.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table\s*\{[\s\S]*?\}/,
+        /\.bj-table-layout-shell \.bj-table-zone--cards,\s*\n\s*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero\s*\{[\s\S]*?\}/,
       )?.[0] ?? '';
-    expect(cardsBlock).toContain('flex: 1 1 auto');
-    expect(cardsBlock).not.toContain('background:');
+    expect(heroBlock).toContain('flex: 1 1 auto');
+    expect(heroBlock).not.toContain('background:');
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*height:\s*var\(--bj-full-table-card-area-height\)/,
+    );
   });
 
   it('keeps cloth inside CardsArea without overlapping command/actions', () => {
