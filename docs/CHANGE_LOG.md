@@ -13,6 +13,17 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+---
+
+## 2026-06-12 — Full Table layout freeze (desktop + mobile)
+
+- **Docs:** `docs/BLACKJACK_LAYOUT_CONTRACTS.md` — frozen desktop/mobile Full Table zone order, action region, card stack/value contract, ownership guards, change checklist.
+- **Constants:** `blackjackLayoutContract.ts` — `FULL_TABLE_DESKTOP_FROZEN`, `FULL_TABLE_MOBILE_FROZEN`, zone classes, action/overlay button contracts, forbidden CSS patterns.
+- **Tests:** `blackjackFullTableLayoutFrozen.test.ts` — scrollbar, zone order, overlay vs action row, AID hidden on desktop, source guards.
+- **AID:** Hidden on desktop Full Table per freeze (`FULL_TABLE_DESKTOP_AID_VISIBLE = false`).
+
+---
+
 ## 2026-06-12 — Desktop Full Table split overlay + action layout
 
 - **Split overlay:** Optional Double/Split offer moves from command zone to cards zone on desktop Full Table — centered above stacks (`bj-optional-play-overlay-anchor`, z-index 25); mobile unchanged in command zone.

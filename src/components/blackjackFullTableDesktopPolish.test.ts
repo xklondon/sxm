@@ -6,7 +6,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { GameState } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
 import { BlackjackPanel } from './BlackjackPanel';
-import { BlackjackActionPanel } from './BlackjackActionPanel';
 import { OptionalPlayDecisionOverlay } from './OptionalPlayDecisionOverlay';
 import { claimBoxSlot } from '../engine/session';
 import { blackjackHandKey } from '../engine/blackjack';
@@ -20,7 +19,6 @@ const OPTIONAL_PLAY_CSS = readFileSync(
   join(process.cwd(), 'src/components/OptionalPlayDecisionOverlay.css'),
   'utf8',
 );
-const ACTION_PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackActionPanel.tsx'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_AREA_DISPLAY_SRC = readFileSync(
   join(process.cwd(), 'src/components/cardAreaOutcomeDisplay.ts'),
@@ -202,34 +200,14 @@ describe('desktop Full Table layout polish', () => {
     expect(html).toContain('>Play Hand<');
   });
 
-  it('places AID to the right of Hit on desktop Full Table only', () => {
-    expect(ACTION_PANEL_SRC).toContain('aidInlineWithHit');
-    expect(PANEL_SRC).toContain('aidInlineWithHit={isFullTableDesktop}');
-
+  it('does not render AID on desktop Full Table (frozen layout)', () => {
+    expect(PANEL_SRC).toContain('showAid={flowSettings.adviceEnabled && !isFullTableDesktop}');
+    simulatedWidth = 1280;
     const html = renderToStaticMarkup(
-      createElement(BlackjackActionPanel, {
-        variant: 'table',
-        actionsEnabled: true,
-        canHit: true,
-        canStand: true,
-        canDouble: false,
-        canSplit: false,
-        showDouble: false,
-        showSplit: false,
-        showAid: true,
-        aidInlineWithHit: true,
-        onHit: noop,
-        onStand: noop,
-        onDouble: noop,
-        onSplit: noop,
-        onAid: noop,
-      }),
+      createElement(BlackjackPanel, { gameState: splittableDesktopState(), onGameStateChange: noop }),
     );
-    const hitIdx = html.indexOf('>Hit<');
-    const aidIdx = html.indexOf('>AID<');
-    expect(hitIdx).toBeGreaterThan(-1);
-    expect(aidIdx).toBeGreaterThan(hitIdx);
-    expect(html.split('bj-table-actions__row').length).toBe(2);
+    expect(html).toContain('bj-view-full-desktop');
+    expect(html).not.toMatch(/bj-view-full-desktop[\s\S]*>AID</);
   });
 
   it('renders desktop bust as stack badge inside play-zone, not floating outcome row', () => {

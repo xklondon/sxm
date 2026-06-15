@@ -1549,8 +1549,8 @@ export function BlackjackPanel({
         canSplit={canSplit}
         showDouble={false}
         showSplit={false}
-        showAid={flowSettings.adviceEnabled}
-        aidInlineWithHit={isFullTableDesktop}
+        showAid={flowSettings.adviceEnabled && !isFullTableDesktop}
+        aidInlineWithHit={false}
         onStand={() =>
           run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} })
         }

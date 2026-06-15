@@ -31,6 +31,8 @@ Protected boundaries between **protocol**, **layout**, **dealing**, and **accoun
 
 **Modules:** `src/components/tableViewContract.ts`, `src/components/tableUxContract.ts`, `src/components/blackjackLayoutContract.ts`
 
+**Canonical layout doc:** [BLACKJACK_LAYOUT_CONTRACTS.md](./BLACKJACK_LAYOUT_CONTRACTS.md) — frozen Full Table desktop/mobile rules, zone order, regression checklist.
+
 | Responsibility | Canonical API / rule |
 |----------------|----------------------|
 | View roots (CSS scope) | `getViewRootClass` → `bj-view-{full\|card}-{desktop\|mobile}` |

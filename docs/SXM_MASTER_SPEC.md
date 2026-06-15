@@ -394,11 +394,11 @@ Protected boundaries so protocol, layout, dealing, and accounting cannot drift a
 | Boundary | Module | Rule |
 |----------|--------|------|
 | Protocol | `blackjackActionContract.ts` | Views use `resolveViewerActionPermission` + `resolvePlayerHandActionOptions`; no direct engine legality imports. |
-| Layout | `tableViewContract.ts`, `blackjackLayoutContract.ts` | CSS scoped under `bj-view-*` roots; card/box rows share `displaySlots`. |
+| Layout | `tableViewContract.ts`, `blackjackLayoutContract.ts` | CSS scoped under `bj-view-*` roots; card/box rows share `displaySlots`. **Full Table desktop + mobile layout frozen** — see `docs/BLACKJACK_LAYOUT_CONTRACTS.md`. |
 | Dealing | `useSequentialCardReveal`, `blackjackDealingContract.ts` | One reveal queue; values via `getDisplayedHandValue`; controls gated until reveal ready. |
 | Accounting | `blackjackAccountingDisplay.ts`, `playerCommittedExposure.ts` | Tray + This Table use `resolvePersonDisplayBalances` / `resolveViewerTrayAvailable`. |
 
-Contract tests: `blackjackStabilityContracts.test.ts`, `dealingRoundRegression.test.ts`.
+Contract tests: `blackjackStabilityContracts.test.ts`, `blackjackFullTableLayoutFrozen.test.ts`, `dealingRoundRegression.test.ts`.
 
 ### Mobile invariants
 
