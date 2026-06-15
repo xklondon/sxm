@@ -268,10 +268,10 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
     }
   });
 
-  it('highlights the active hand value in the card column', () => {
+  it('highlights the active hand value and active player box during player turn', () => {
     const html = renderPanelAt(390, withView(playingState(), 'full'));
     expect(html).toContain('bj-phone-view__box-value--active-turn');
-    expect(html).not.toContain('bj-box--turn');
+    expect(html).toContain('bj-box--turn');
   });
 
   it('keeps a busted box visible with BUST in cards area and bet on box', () => {

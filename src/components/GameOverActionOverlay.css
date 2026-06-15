@@ -3,10 +3,15 @@
 }
 
 .bj-game-over {
+  background: #1a3d2e;
+  border: 2px solid rgb(255 255 255 / 0.2);
+  border-radius: 12px;
+  box-sizing: border-box;
   width: min(92vw, 24rem);
   max-height: min(86vh, 32rem);
   padding: 0.85rem 1rem 1rem;
   overflow-y: auto;
+  color: var(--color-cream, var(--ds-color-text));
 }
 
 .bj-game-over__header {

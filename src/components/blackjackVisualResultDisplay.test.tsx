@@ -104,9 +104,9 @@ describe('blackjack visual result display', () => {
     expect(CARD_VIEW_SRC).toContain('cardAreaOutcomeMarkerText');
   });
 
-  it('mobile full-table arc hides card value when outcome marker shows', () => {
-    expect(PANEL_SRC).toContain('hideCardValueOnMobile');
-    expect(PANEL_SRC).toContain('cardColumnValueLabel');
+  it('mobile full-table arc keeps card column numeric value when outcome marker shows', () => {
+    expect(PANEL_SRC).not.toContain('hideCardValueOnMobile');
+    expect(PANEL_SRC).toContain('cardColumnValueLabel = valueLabel');
   });
 
   it('mobile tray plaques use narrower mobile-specific sizing', () => {

@@ -13,6 +13,18 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Full Table polish + game-end/insurance regressions
+
+- **Active box highlight:** Restored `bj-box--turn` on the active player box during player turn (`cardViewBox.ts`); betting selection pulse unchanged.
+- **Mobile end-state values:** Full Table card columns always show numeric hand values; outcome markers no longer hide values on mobile.
+- **Desktop card nudge:** `translateY(10px)` on desktop Full Table card arc only (`bj-full-table-card-area.css`).
+- **Active value frame:** Tight inset padding on `bj-phone-view__box-value--active-turn` without band height change.
+- **Insurance:** Duplicate-submit guard via `insuranceDecisionPending` + overlay `pending` prop; viewer `personId` unchanged.
+- **Start New Game:** Game-over shell uses compact `bj-game-over` styling (removed wide `invite-modal--table-panel`); still routes to `onBeginTableReset('newGame')` → `NewTableOverlay` + `TableStakePanel`.
+- **Tests:** `blackjackPolishRegression.test.ts`.
+
+---
+
 ## 2026-06-12 — Full Table play-zone layout rebuild
 
 - **Root cause:** Competing card/command/action CSS across `bj-card-layout.css` (imported after card-area), `bj-table-shared.css`, `bj-player-row-layout.css`, and `BlackjackPanel.css` — `overflow: hidden`, fixed stack bands, and arc `height: 100%` clipped cards; import order defeated the card-area contract. **DOM/CSS mismatch:** `renderArcCardStack` wraps stacks in `bj-arc__play-zone`, but column grid targeted direct `> .bj-arc__cards--stack-vertical`; without an outcome marker the play-zone auto-placed into row 1 (0.72rem) and clipped cards while values stayed in row 3.

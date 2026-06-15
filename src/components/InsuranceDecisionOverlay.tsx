@@ -4,6 +4,7 @@ export interface InsuranceDecisionOverlayProps {
   boxLabel: string;
   maxBet: number;
   canAfford: boolean;
+  pending?: boolean;
   onInsurance: () => void;
   onDecline: () => void;
 }
@@ -13,9 +14,11 @@ export function InsuranceDecisionOverlay({
   boxLabel,
   maxBet,
   canAfford,
+  pending = false,
   onInsurance,
   onDecline,
 }: InsuranceDecisionOverlayProps) {
+  const disabled = pending;
   return (
     <div
       className="bj-insurance-overlay"
@@ -27,7 +30,7 @@ export function InsuranceDecisionOverlay({
         <button
           type="button"
           className="bj-insurance-overlay__btn bj-insurance-overlay__btn--primary"
-          disabled={!canAfford}
+          disabled={!canAfford || disabled}
           onClick={onInsurance}
         >
           Insurance{maxBet > 0 ? ` ${maxBet}` : ''}
@@ -35,6 +38,7 @@ export function InsuranceDecisionOverlay({
         <button
           type="button"
           className="bj-insurance-overlay__btn bj-insurance-overlay__btn--secondary"
+          disabled={disabled}
           onClick={onDecline}
         >
           Don&apos;t Insure

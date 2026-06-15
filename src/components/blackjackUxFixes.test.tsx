@@ -48,7 +48,7 @@ describe('blackjack UX fixes — player box stability', () => {
 });
 
 describe('blackjack UX fixes — active turn highlight', () => {
-  it('does not apply box turn border during player turn — highlight is card-column only', () => {
+  it('applies Full Table box turn border and card-column active value during player turn', () => {
     let state = tableAfterStartPlaying(500);
     state = {
       ...state,
@@ -67,8 +67,10 @@ describe('blackjack UX fixes — active turn highlight', () => {
       activeBoxId: box1,
       playerPhase: true,
     });
+    expect(resolved.isTurn).toBe(true);
     expect(getBoxBorderVisualClasses(resolved)).not.toContain(BOX_BORDER_TURN);
     expect(getBoxActivePulseClassName(resolved)).toBe('');
+    expect(PANEL_SRC).toContain("borderState.isTurn && viewMode === 'full' ? BOX_BORDER_TURN : ''");
     expect(PANEL_SRC).not.toContain("'bj-arc__slot--turn'");
     expect(PANEL_SRC).toContain('getBoxActivePulseClassName(borderState)');
     expect(PANEL_SRC).toContain('cardColumnHandValueClassName');

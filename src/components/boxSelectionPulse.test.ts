@@ -119,6 +119,7 @@ describe('box selection + turn pulse', () => {
     });
     expect(resolved.isTurn).toBe(true);
     expect(getBoxBorderVisualClasses(resolved)).not.toContain('bj-box--turn');
+    expect(PANEL_SRC).toContain("borderState.isTurn && viewMode === 'full' ? BOX_BORDER_TURN : ''");
     expect(getBoxActivePulseClassName(resolved)).toBe('');
   });
 

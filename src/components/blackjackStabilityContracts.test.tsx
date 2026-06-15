@@ -167,7 +167,7 @@ describe('stability contracts — layout boundary', () => {
     }
   });
 
-  it('active value highlight is circular number only — no box turn border', () => {
+  it('active value highlight uses card-column frame and Full Table box turn border', () => {
     const active = cardColumnHandValueClassName(true, false, true);
     expect(active).toContain(ACTIVE_HAND_VALUE_CLASS);
     expect(active).not.toContain('bj-player-hand-value--emphasis');
@@ -186,6 +186,7 @@ describe('stability contracts — layout boundary', () => {
     expect(getBoxBorderVisualClasses(resolved)).not.toContain(DEPRECATED_BOX_TURN_CLASS);
 
     const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
+    expect(panelSrc).toContain("borderState.isTurn && viewMode === 'full' ? BOX_BORDER_TURN : ''");
     expect(panelSrc).not.toContain("'bj-arc__slot--turn'");
   });
 });
@@ -370,13 +371,13 @@ describe('stability contracts — layout render guard', () => {
     });
   }
 
-  it('Full Table render shows active-turn on card column only', () => {
+  it('Full Table render shows active-turn on card column and active player box', () => {
     simulatedViewport = { width: 390, height: 844 };
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={{ ...playingState(), tableViewMode: 'full' }} onGameStateChange={noop} />,
     );
     expect(html).toContain(ACTIVE_HAND_VALUE_CLASS);
-    expect(html).not.toContain(DEPRECATED_BOX_TURN_CLASS);
+    expect(html).toContain(DEPRECATED_BOX_TURN_CLASS);
     const cardsArea = html.split('bj-arc--cards')[1]?.split('bj-arc--player-boxes')[0] ?? '';
     expect(cardsArea).toContain('data-box-slot="2"');
   });

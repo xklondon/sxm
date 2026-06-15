@@ -192,7 +192,7 @@
   min-height: var(--bj-box-value-band-height);
   max-height: var(--bj-box-value-band-height);
   margin: 0;
-  padding: 0;
+  padding: 0.1rem 0.22rem;
   border: none;
   border-radius: 0.32em;
   background: rgb(8 28 22 / 0.55);
@@ -416,6 +416,14 @@
     align-self: stretch;
     overflow-x: hidden;
     overflow-y: visible;
+  }
+
+  /* Desktop-only: nudge card stacks + values ~10px toward player boxes. */
+  .bj-view-full-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--table
+    .bj-full-table-card-area {
+    transform: translateY(10px);
   }
 }
 

@@ -154,6 +154,7 @@ import {
 import { getDisplayBlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import {
   BET_BOX_PULSE,
+  BOX_BORDER_TURN,
   getBoxActivePulseClassName,
   getBoxCardVisualClasses,
   resolveBoxBorderVisualState,
@@ -284,6 +285,7 @@ export function BlackjackPanel({
   const [roundSummaryDismissed, setRoundSummaryDismissed] = useState(false);
   const [roundSummaryDelayReady, setRoundSummaryDelayReady] = useState(false);
   const [gameOverDelayReady, setGameOverDelayReady] = useState(false);
+  const [insuranceDecisionPending, setInsuranceDecisionPending] = useState(false);
   const [expandedVisibleBoxCount, setExpandedVisibleBoxCount] = useState(DEFAULT_VISIBLE_TABLE_BOXES);
   /** Single local chip target — tray pulse and placement both read from here. */
   const [localChipSelection, setLocalChipSelection] = useState<LocalSelectedChipTarget>(() =>
@@ -616,6 +618,12 @@ export function BlackjackPanel({
     );
     return () => window.clearTimeout(timer);
   }, [gameEnded, gameEndRevealReady, gameState.session.id]);
+
+  useEffect(() => {
+    if (protocolPhase !== 'insurance' || !round?.insuranceOfferPending) {
+      setInsuranceDecisionPending(false);
+    }
+  }, [protocolPhase, round?.insuranceOfferPending]);
 
   function handleAddToPersonalLedger() {
     setError(null);
@@ -1271,23 +1279,33 @@ export function BlackjackPanel({
       slotNumbers.length > 1
         ? `Boxes ${slotNumbers.join(' & ')}`
         : `Box ${slotNumbers[0] ?? '?'}`;
+    const insuranceBusy = insuranceDecisionPending || onlineActionInFlight;
     return (
       <InsuranceDecisionOverlay
         boxLabel={boxLabel}
         maxBet={maxBet}
         canAfford={canAfford}
-        onInsurance={() =>
+        pending={insuranceBusy}
+        onInsurance={() => {
+          if (insuranceBusy) {
+            return;
+          }
+          setInsuranceDecisionPending(true);
           run((s) => takeInsuranceForPersonOnState(s, personId), {
             type: 'takeInsurance',
             payload: { personId },
-          })
-        }
-        onDecline={() =>
+          });
+        }}
+        onDecline={() => {
+          if (insuranceBusy) {
+            return;
+          }
+          setInsuranceDecisionPending(true);
           run((s) => declineInsuranceForPersonOnState(s, personId), {
             type: 'declineInsurance',
             payload: { personId },
-          })
-        }
+          });
+        }}
       />
     );
   }
@@ -1589,11 +1607,7 @@ export function BlackjackPanel({
             : null,
         )
       : null;
-    const hideCardValueOnMobile =
-      deviceView === 'mobile' &&
-      outcomeMarker !== null &&
-      (outcomeMarker === 'blackjack' || showBoxHandResultMarkers);
-    const cardColumnValueLabel = hideCardValueOnMobile ? '' : valueLabel;
+    const cardColumnValueLabel = valueLabel;
     const isActiveHand =
       isPlayerTurnPhase(protocolPhase) &&
       uiActiveBoxId === boxId &&
@@ -1840,6 +1854,7 @@ export function BlackjackPanel({
             getBoxCardVisualClasses(borderState),
             TABLE_UX.fullArcBox,
             'bj-player-box-mobile',
+            borderState.isTurn && viewMode === 'full' ? BOX_BORDER_TURN : '',
             isEmpty ? 'bj-phone-view__mini-hand--empty' : '',
             isSelected ? 'bj-box--selected' : '',
             isSelected ? BET_BOX_PULSE : '',

@@ -83,7 +83,7 @@ export function GameOverActionOverlay({
   const panel = (
     <div
       className={[
-        'invite-modal invite-modal--ledger invite-modal--table-panel bj-game-over',
+        'bj-game-over',
         isInline ? 'bj-game-over--inline' : '',
       ]
         .filter(Boolean)
