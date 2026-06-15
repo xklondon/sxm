@@ -15,11 +15,12 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ## 2026-06-12 — Full Table play-zone layout rebuild
 
-- **Root cause:** Competing card/command/action CSS across `bj-card-layout.css` (imported after card-area), `bj-table-shared.css`, `bj-player-row-layout.css`, and `BlackjackPanel.css` — `overflow: hidden`, fixed stack bands, and arc `height: 100%` clipped cards; import order defeated the card-area contract.
-- **Single contract:** `bj-full-table-card-area.css` now owns command (B), card (C), and action (D) zones for Full Table desktop + mobile.
+- **Root cause:** Competing card/command/action CSS across `bj-card-layout.css` (imported after card-area), `bj-table-shared.css`, `bj-player-row-layout.css`, and `BlackjackPanel.css` — `overflow: hidden`, fixed stack bands, and arc `height: 100%` clipped cards; import order defeated the card-area contract. **DOM/CSS mismatch:** `renderArcCardStack` wraps stacks in `bj-arc__play-zone`, but column grid targeted direct `> .bj-arc__cards--stack-vertical`; without an outcome marker the play-zone auto-placed into row 1 (0.72rem) and clipped cards while values stayed in row 3.
+- **Single contract:** `bj-full-table-card-area.css` now owns command (B), card (C), and action (D) zones for Full Table desktop + mobile. Stack host `bj-arc__play-zone` is explicit grid row 2 with 2-card minimum band.
 - **Import order:** `bj-full-table-card-area.css` loads after `bj-card-layout.css`.
+- **Shared shell:** Full Table table-mode cards zone no longer inherits hero `padding-top` / desktop `overflow: hidden`.
 - **Actions:** One render path — `renderActionsContent()` → `BlackjackActionPanel` in `bj-table-zone--actions`; CSS hides controls inside card area; desktop uses same pill styling as mobile.
-- **Tests:** `blackjackFullTablePlayZoneLayout.test.ts` guards zone order, single action path, no clip, no competing CSS.
+- **Tests:** `blackjackFullTablePlayZoneLayout.test.ts` guards zone order, single action path, play-zone row 2, render-time visible `playing-card` desktop + mobile, Hit/Stay only in actions zone.
 
 ---
 

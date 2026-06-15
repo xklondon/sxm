@@ -1,8 +1,17 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import type { GameState } from '../types';
+import { createBlackjackPlayerHand } from '../types/blackjack';
+import { BlackjackPanel } from './BlackjackPanel';
+import { claimBoxSlot } from '../engine/session';
+import { blackjackHandKey } from '../engine/blackjack';
+import { tableAfterStartPlaying, boxPlayerId, findCardId } from '../engine/blackjack/sanity/fixtures';
 import {
   FULL_TABLE_ACTIONS_RENDER_FN,
+  FULL_TABLE_CARD_STACK_HOST_CLASS,
   FULL_TABLE_FORBIDDEN_CARD_AREA_ACTION_MARKERS,
   FULL_TABLE_PLAY_ZONE_CSS,
   FULL_TABLE_SHELL_ZONE_ORDER,
@@ -18,6 +27,105 @@ const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPane
 const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
 const INDEX_CSS = readFileSync(join(process.cwd(), 'src/index.css'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
+
+const noop = () => {};
+
+let simulatedWidth = 1280;
+const globalRef = globalThis as unknown as { window?: unknown };
+const hadWindow = 'window' in globalRef;
+
+beforeAll(() => {
+  globalRef.window = {
+    matchMedia: (query: string) => {
+      const m = /max-width:\s*(\d+)/.exec(query);
+      const max = m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+      return {
+        matches: simulatedWidth <= max,
+        media: query,
+        addEventListener: noop,
+        removeEventListener: noop,
+        addListener: noop,
+        removeListener: noop,
+        onchange: null,
+        dispatchEvent: () => false,
+      };
+    },
+  };
+});
+
+afterAll(() => {
+  if (!hadWindow) {
+    delete globalRef.window;
+  }
+});
+
+function playingState(): GameState {
+  let state = tableAfterStartPlaying(500);
+  state = claimBoxSlot(state, 1);
+  const deck = state.deck!;
+  const box1 = boxPlayerId(state, 1)!;
+  const k1 = blackjackHandKey(box1, 0);
+  return {
+    ...state,
+    tableViewMode: 'full',
+    selectedSeatId: box1,
+    blackjackFlowSettings: {
+      ...state.blackjackFlowSettings,
+      initialDealMode: 'instant',
+    },
+    blackjack: {
+      ...state.blackjack!,
+      status: 'player-turns',
+      activeHandKey: k1,
+      activePlayerId: box1,
+      dealerCardIds: [findCardId(deck, '7'), findCardId(deck, 'K')],
+      dealerHoleHidden: true,
+      playerHands: {
+        [k1]: {
+          ...createBlackjackPlayerHand(box1, 0),
+          cardIds: [findCardId(deck, '6'), findCardId(deck, '7')],
+          currentBet: 10,
+          actionStatus: 'acting',
+        },
+      },
+    },
+  };
+}
+
+function renderFullTableAt(width: number): string {
+  simulatedWidth = width;
+  return renderToStaticMarkup(
+    createElement(BlackjackPanel, { gameState: playingState(), onGameStateChange: noop }),
+  );
+}
+
+function extractCardsTableZone(html: string): string {
+  const start = html.indexOf('bj-cards-area--table');
+  if (start < 0) {
+    return '';
+  }
+  const actionsIdx = html.indexOf('bj-table-zone--actions', start);
+  return actionsIdx > start ? html.slice(start, actionsIdx) : html.slice(start);
+}
+
+function extractActionsZone(html: string): string {
+  const start = html.indexOf('bj-table-zone--actions');
+  if (start < 0) {
+    return '';
+  }
+  const boxesIdx = html.indexOf('bj-table-zone--boxes', start);
+  return boxesIdx > start ? html.slice(start, boxesIdx) : html.slice(start);
+}
+
+function cardColumnWithCards(cardsZone: string): string {
+  const columns = cardsZone.split('bj-arc__slot--card-column').slice(1);
+  for (const chunk of columns) {
+    if (chunk.includes('playing-card')) {
+      return `bj-arc__slot--card-column${chunk}`;
+    }
+  }
+  return '';
+}
 
 describe('Full Table play zone canonical contract', () => {
   it('imports play-zone CSS after shared, player-row, and card-layout', () => {
@@ -96,5 +204,68 @@ describe('Full Table play zone canonical contract', () => {
   it('marks card arc row with FULL_TABLE_CARD_AREA_CLASS in panel', () => {
     expect(PANEL_SRC).toContain('FULL_TABLE_CARD_AREA_CLASS');
     expect(PANEL_SRC).toMatch(/['"]bj-arc--cards['"][\s\S]*FULL_TABLE_CARD_AREA_CLASS/);
+    expect(PANEL_SRC).toContain(FULL_TABLE_CARD_STACK_HOST_CLASS);
+  });
+
+  it('pins stack host to grid row 2 (play-zone wrapper, not direct stack-vertical child)', () => {
+    for (const viewRoot of FULL_TABLE_CARD_COLUMN_VIEW_ROOTS) {
+      expect(PLAY_ZONE_CSS).toMatch(
+        new RegExp(
+          `\\.${viewRoot} \\.bj-arc--cards\\.bj-full-table-card-area \\.bj-arc__slot--card-column > \\.bj-arc__play-zone[\\s\\S]*grid-row:\\s*2`,
+        ),
+      );
+    }
+  });
+
+  it('card column contract avoids vertical centering / flex-grow on stack host', () => {
+    const stackHostRule =
+      PLAY_ZONE_CSS.match(
+        /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column > \.bj-arc__play-zone[\s\S]*?\{[^}]*\}/,
+      )?.[0] ?? '';
+    expect(stackHostRule).toContain('align-self: end');
+    expect(stackHostRule).toContain('justify-content: flex-end');
+    expect(stackHostRule).not.toContain('align-self: center');
+    expect(stackHostRule).not.toContain('justify-content: center');
+    expect(stackHostRule).not.toMatch(/[^-]flex:\s*1\s+1\s+auto/);
+  });
+
+  it('desktop Full Table renders visible playing cards in cards zone (not only values)', () => {
+    const html = renderFullTableAt(1280);
+    expect(html).toContain('bj-view-full-desktop');
+    const cardsZone = extractCardsTableZone(html);
+    expect(cardsZone).toContain('bj-full-table-card-area');
+    expect(cardsZone).toContain('playing-card');
+    expect(cardsZone).toContain(FULL_TABLE_CARD_STACK_HOST_CLASS);
+    const column = cardColumnWithCards(cardsZone);
+    expect(column).toContain('playing-card');
+    expect(column).toContain('bj-phone-view__box-value--card-column-below');
+    expect(column.indexOf('playing-card')).toBeLessThan(
+      column.indexOf('bj-phone-view__box-value--card-column-below'),
+    );
+  });
+
+  it('mobile Full Table renders visible playing cards in cards zone (not only values)', () => {
+    const html = renderFullTableAt(390);
+    expect(html).toContain('bj-view-full-mobile');
+    const cardsZone = extractCardsTableZone(html);
+    expect(cardsZone).toContain('playing-card');
+    const column = cardColumnWithCards(cardsZone);
+    expect(column).toContain('playing-card');
+    expect(column.indexOf('playing-card')).toBeLessThan(
+      column.indexOf('bj-phone-view__box-value--card-column-below'),
+    );
+  });
+
+  it('renders Hit/Stay only in actions zone below card area', () => {
+    for (const width of [1280, 390] as const) {
+      const html = renderFullTableAt(width);
+      const cardsZone = extractCardsTableZone(html);
+      const actionsZone = extractActionsZone(html);
+      expect(cardsZone).not.toContain('ds-btn--hit');
+      expect(cardsZone).not.toContain('ds-btn--stand');
+      expect(actionsZone).toContain('ds-btn--hit');
+      expect(actionsZone).toContain('ds-btn--stand');
+      expect(html.indexOf('bj-table-zone--cards')).toBeLessThan(html.indexOf('bj-table-zone--actions'));
+    }
   });
 });

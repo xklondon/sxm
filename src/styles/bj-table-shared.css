@@ -2374,7 +2374,14 @@
 
 .bj-table-layout-shell .bj-table-zone--cards {
   margin-top: var(--bj-command-cards-gap);
+}
+
+.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
   padding-top: var(--bj-hero-cards-top-inset);
+}
+
+.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table {
+  padding-top: 0;
 }
 
 .bj-table-layout-shell .bj-table-zone--actions {
@@ -2456,9 +2463,18 @@
     max-height: none;
     flex: unset;
     margin: var(--bj-command-cards-gap) 0 0;
-    padding-top: var(--bj-hero-cards-top-inset);
     position: relative;
+  }
+
+  .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
+    padding-top: var(--bj-hero-cards-top-inset);
     overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
+    padding-top: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
   .bj-table-layout-shell > .bj-table-zone--boxes {

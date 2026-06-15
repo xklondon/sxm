@@ -34,6 +34,9 @@ export const LAYOUT_SLOT_OWNER_FILES = ['src/components/BlackjackPanel.tsx'] as 
 /** Full Table card row between command box and actions row — see bj-full-table-card-area.css */
 export const FULL_TABLE_CARD_AREA_CLASS = 'bj-full-table-card-area';
 
+/** DOM stack host inside card column — grid row 2 (wraps vertical stack; see renderArcCardStack). */
+export const FULL_TABLE_CARD_STACK_HOST_CLASS = 'bj-arc__play-zone';
+
 /**
  * Full Table card column — canonical three-zone grid between command box and player boxes.
  * Row 1: outcome marker (reserved height). Row 2: stack grows upward. Row 3: fixed value band (bottom).

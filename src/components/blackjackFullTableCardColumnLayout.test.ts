@@ -68,11 +68,16 @@ describe('Full Table card area canonical contract', () => {
     }
   });
 
-  it('pins card stack bottom directly above value zone', () => {
+  it('pins card stack bottom directly above value zone via play-zone host', () => {
     for (const viewRoot of FULL_TABLE_CARD_COLUMN_VIEW_ROOTS) {
       expect(CARD_AREA_CSS).toMatch(
         new RegExp(
-          `\\.${viewRoot} \\.bj-arc--cards\\.bj-full-table-card-area \\.bj-arc__slot--card-column > \\.bj-arc__cards--stack-vertical[\\s\\S]*grid-row:\\s*2[\\s\\S]*align-self:\\s*end`,
+          `\\.${viewRoot} \\.bj-arc--cards\\.bj-full-table-card-area \\.bj-arc__slot--card-column > \\.bj-arc__play-zone[\\s\\S]*grid-row:\\s*2[\\s\\S]*align-self:\\s*end`,
+        ),
+      );
+      expect(CARD_AREA_CSS).toMatch(
+        new RegExp(
+          `\\.${viewRoot} \\.bj-arc--cards\\.bj-full-table-card-area \\.bj-arc__slot--card-column > \\.bj-arc__play-zone[\\s\\S]*min-height:\\s*var\\(--bj-full-table-card-stack-zone-min-2\\)`,
         ),
       );
     }

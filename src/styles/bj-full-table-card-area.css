@@ -144,12 +144,13 @@
   min-height: var(--bj-full-table-card-outcome-zone-height);
   max-height: var(--bj-full-table-card-outcome-zone-height);
   margin: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
-.bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__cards--stack-vertical,
+/* Stack host — play-zone wraps stack in DOM; must pin row 2 even when outcome row is empty. */
+.bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__play-zone,
+.bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__play-zone,
 .bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__split-hands,
-.bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__cards--stack-vertical,
 .bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__split-hands {
   grid-row: 2;
   align-self: end;
@@ -158,6 +159,11 @@
   min-height: var(--bj-full-table-card-stack-zone-min-2);
   max-height: var(--bj-full-table-card-stack-zone-height);
   overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  box-sizing: border-box;
 }
 
 .bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-phone-view__box-value--card-column-below,
@@ -311,8 +317,11 @@
   z-index: 6;
 }
 
-.bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__play-zone,
-.bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__play-zone {
+.bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__play-zone .bj-arc__cards--stack-vertical,
+.bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__play-zone .bj-arc__cards--stack-vertical {
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 0;
   overflow: visible;
 }
 
