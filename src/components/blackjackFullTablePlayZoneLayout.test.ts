@@ -164,8 +164,9 @@ describe('Full Table play zone canonical contract', () => {
       PLAY_ZONE_CSS.match(
         /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*\}/,
       )?.[0] ?? '';
-    expect(cardZoneRule).toMatch(/overflow-y:\s*visible/);
-    expect(cardZoneRule).not.toMatch(/[^-]overflow:\s*hidden/);
+    expect(cardZoneRule).toMatch(/overflow:\s*visible/);
+    expect(cardZoneRule).not.toMatch(/overflow-y:\s*visible/);
+    expect(cardZoneRule).not.toMatch(/overflow-x:\s*hidden/);
     for (const viewRoot of FULL_TABLE_CARD_COLUMN_VIEW_ROOTS) {
       expect(PLAY_ZONE_CSS).toMatch(
         new RegExp(

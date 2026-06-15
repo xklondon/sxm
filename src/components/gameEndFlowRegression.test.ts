@@ -19,6 +19,7 @@ describe('game end flow regression guards', () => {
     expect(PANEL_SRC).toMatch(
       /showGameOverDesktopPanel && sideRailPanel !== 'thisTable'[\s\S]*setSideRailPanel\('thisTable'\)/,
     );
+    expect(PANEL_SRC).toMatch(/desktopSideRailPanel[\s\S]*showGameOverDesktopPanel \? 'thisTable'/);
   });
 
   it('routes desktop game-over dismiss through handleGameOverDismiss', () => {

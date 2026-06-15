@@ -237,16 +237,34 @@ export function hasPendingCardReveal(visible, target) {
 }
 
 /** Ordered initial-deal reveal while catching up the first two cards per hand. */
-export function shouldUseOrderedInitialReveal(roundStatus, visible, target) {
+export function shouldUseOrderedInitialReveal(_roundStatus, visible, target) {
     if (!hasPendingCardReveal(visible, target) || !isInitialDealVisibilityCounts(target)) {
         return false;
     }
-    if (roundStatus === 'bank-turn' ||
-        roundStatus === 'banking' ||
-        roundStatus === 'resolved') {
-        return false;
-    }
     return true;
+}
+
+/** Next paced reveal step — ordered initial deal, then gameplay catch-up. */
+export function nextSequentialRevealStep(visible, target, round, roundStatus) {
+    if (isStaleHandVisibility(visible, target)) {
+        return null;
+    }
+    if (round && shouldUseOrderedInitialReveal(roundStatus, visible, target)) {
+        const steps = buildInitialRevealSteps(round);
+        for (const step of steps) {
+            const after = applyRevealStep(visible, step);
+            if (after.dealer !== visible.dealer ||
+                Object.keys(after.hands).some((handKey) => (after.hands[handKey] ?? 0) !== (visible.hands[handKey] ?? 0))) {
+                if (totalCardCount(after) <= totalCardCount(target)) {
+                    return after;
+                }
+            }
+        }
+    }
+    if (hasPendingCardReveal(visible, target)) {
+        return nextGameplayRevealStep(visible, target);
+    }
+    return null;
 }
 
 /** True when the next reveal step is the first card on a hand after another hand already has cards. */

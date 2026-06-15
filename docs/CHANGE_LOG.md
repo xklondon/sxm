@@ -13,6 +13,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Full Table scrollbar, reveal order, game-end visibility
+
+- **Desktop scrollbar:** Removed `overflow-x: hidden` + `overflow-y: visible` pair on Full Table card zone (CSS computes to `overflow-y: auto`); scoped hero-only `overflow: hidden`; card zone uses `overflow: visible`.
+- **Desktop card values:** Value band uses flex centering + `overflow: visible`; removed forced `height: 100%` on desktop card zone.
+- **Natural blackjack reveal:** `shouldUseOrderedInitialReveal` no longer skips `bank-turn`/`banking`/`resolved` while target counts are still initial-deal; exported `nextSequentialRevealStep`.
+- **Game Over panel:** Desktop dock opens via `desktopSideRailPanel` even when user closed This Table before end.
+- **Tests:** `blackjackFourRegression.test.ts`.
+
+---
+
 ## 2026-06-12 — Full Table polish + game-end/insurance regressions
 
 - **Active box highlight:** Restored `bj-box--turn` on the active player box during player turn (`cardViewBox.ts`); betting selection pulse unchanged.

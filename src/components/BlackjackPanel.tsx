@@ -564,6 +564,8 @@ export function BlackjackPanel({
     gameOverDelayReady;
   const showGameOverDesktopPanel =
     showGameOverActions && deviceView === 'desktop' && gameEndRevealReady;
+  const desktopSideRailPanel: SideRailPanel =
+    showGameOverDesktopPanel ? 'thisTable' : sideRailPanel;
 
   const gameOverPresentation = useMemo(
     () => buildGameOverPresentationModel(gameState, gameOverMessage, viewerPersonId, magic8Answer),
@@ -2092,7 +2094,8 @@ export function BlackjackPanel({
   }
 
   function renderSideRailPanel(variant: 'dock' | 'overlay') {
-    if (!sideRailPanel) {
+    const activePanel = variant === 'dock' ? desktopSideRailPanel : sideRailPanel;
+    if (!activePanel) {
       return null;
     }
     const isOverlay = variant === 'overlay';
@@ -2129,7 +2132,7 @@ export function BlackjackPanel({
           `${TABLE_UX.sideRailPlacement} ${isOverlay ? 'bj-casino__this-table--overlay' : TABLE_UX.sideRailDock}`,
         )}
         data-panel-placement={variant}
-        data-side-panel={sideRailPanel}
+        data-side-panel={activePanel}
       >
         {isOverlay && sideRailPanel === 'thisTable' && renderMobileSidePanelTabs()}
         <TableSideRailShell title={title} onClose={closeSideRailPanel}>
@@ -2422,7 +2425,7 @@ export function BlackjackPanel({
         </div>
       </div>
       {deviceView === 'mobile' && sideRailPanel && renderSideRailPanel('overlay')}
-      {thisTableInline && sideRailPanel && renderSideRailPanel('dock')}
+      {thisTableInline && desktopSideRailPanel && renderSideRailPanel('dock')}
       </div>
       )}
       <BlackjackLayoutDebugPanel

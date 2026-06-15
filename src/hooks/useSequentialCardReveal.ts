@@ -6,20 +6,16 @@ import {
 } from '../engine/blackjack/dealing/dealingModes';
 import {
   applyCardVisibility,
-  applyRevealStep,
-  buildInitialRevealSteps,
   cardRevealScopeKey,
   emptyCardVisibility,
-  hasPendingCardReveal,
   isActiveHandRevealComplete,
   isHandBoundaryRevealStep,
   isStaleHandVisibility,
   maxVisibilityForRound,
-  nextGameplayRevealStep,
+  nextSequentialRevealStep,
   resolveCardRevealDelayMs,
   resolveRevealScopeTransition,
   shouldSnapCardRevealOnMount,
-  shouldUseOrderedInitialReveal,
   totalCardCount,
   type CardVisibilityCounts,
 } from '../engine/blackjack/dealing/cardRevealDisplay';
@@ -51,47 +47,6 @@ function computeActiveHandRevealComplete(
     visible,
     gameState.blackjack?.activeHandKey ?? null,
   );
-}
-
-function nextRevealStep(
-  visible: CardVisibilityCounts,
-  target: CardVisibilityCounts,
-  round: NonNullable<GameState['blackjack']> | null,
-  roundStatus: NonNullable<GameState['blackjack']>['status'] | undefined,
-): CardVisibilityCounts | null {
-  if (isStaleHandVisibility(visible, target)) {
-    return null;
-  }
-  if (
-    round &&
-    shouldUseOrderedInitialReveal(roundStatus, visible, target)
-  ) {
-    const initial = nextInitialStepReveal(visible, round);
-    if (initial && !countsEqual(initial, visible)) {
-      return initial;
-    }
-  }
-  if (hasPendingCardReveal(visible, target)) {
-    return nextGameplayRevealStep(visible, target);
-  }
-  return null;
-}
-
-function nextInitialStepReveal(
-  visible: CardVisibilityCounts,
-  round: NonNullable<GameState['blackjack']>,
-): CardVisibilityCounts | null {
-  const steps = buildInitialRevealSteps(round);
-  for (const step of steps) {
-    const after = applyRevealStep(visible, step);
-    if (!countsEqual(after, visible)) {
-      const target = maxVisibilityForRound(round);
-      if (totalCardCount(after) <= totalCardCount(target)) {
-        return after;
-      }
-    }
-  }
-  return null;
 }
 
 export interface SequentialCardRevealOptions {
@@ -246,8 +201,8 @@ export function useSequentialCardReveal(
 
         const round = authoritative.blackjack;
         const stepped = round
-          ? nextRevealStep(visible, authoritativeTarget, round, round.status)
-          : nextGameplayRevealStep(visible, authoritativeTarget);
+          ? nextSequentialRevealStep(visible, authoritativeTarget, round, round.status)
+          : nextSequentialRevealStep(visible, authoritativeTarget, null, undefined);
 
         if (stepped && round && isHandBoundaryRevealStep(visible, stepped)) {
           await sleepMs(waitForResultHoldMs(authoritative));

@@ -2473,8 +2473,7 @@
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
     padding-top: 0;
-    overflow-x: hidden;
-    overflow-y: visible;
+    overflow: visible;
   }
 
   .bj-table-layout-shell > .bj-table-zone--boxes {
@@ -2554,7 +2553,6 @@
     text-overflow: clip;
   }
 
-  .bj-table-layout-shell .bj-table-zone--cards,
   .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
     overflow: hidden;
   }

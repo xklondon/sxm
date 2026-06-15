@@ -165,7 +165,10 @@ describe('initial deal order', () => {
       shouldUseOrderedInitialReveal('player-turns', { dealer: 0, hands: {} }, { dealer: 2, hands: { 'p:0': 2 } }),
     ).toBe(true);
     expect(
-      shouldUseOrderedInitialReveal('bank-turn', { dealer: 0, hands: {} }, { dealer: 3, hands: {} }),
+      shouldUseOrderedInitialReveal('bank-turn', { dealer: 0, hands: {} }, { dealer: 2, hands: { 'p:0': 2 } }),
+    ).toBe(true);
+    expect(
+      shouldUseOrderedInitialReveal('bank-turn', { dealer: 1, hands: {} }, { dealer: 3, hands: {} }),
     ).toBe(false);
   });
 

@@ -59,8 +59,7 @@
   flex-direction: column;
   justify-content: flex-end;
   align-items: stretch;
-  overflow-x: hidden;
-  overflow-y: visible;
+  overflow: visible;
   margin-top: var(--bj-full-table-command-cards-gap);
   padding-top: 0;
   padding-bottom: 0;
@@ -177,7 +176,10 @@
   max-height: var(--bj-box-value-band-height);
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
 }
 
@@ -411,11 +413,9 @@
 
 @media (min-width: 721px) {
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
-    height: 100%;
     min-height: 0;
     align-self: stretch;
-    overflow-x: hidden;
-    overflow-y: visible;
+    overflow: visible;
   }
 
   /* Desktop-only: nudge card stacks + values ~10px toward player boxes. */
@@ -433,7 +433,6 @@
     height: auto;
     min-height: 0;
     max-height: none;
-    overflow-x: hidden;
-    overflow-y: visible;
+    overflow: visible;
   }
 }

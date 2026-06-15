@@ -28,11 +28,21 @@ describe('bank turn pacing — launch timing audit', () => {
     expect(getCardDealDelayMs(state, 'initial-deal')).toBe(1000);
   });
 
-  it('bank-turn dealer reveal uses bank-card-draw context, not initial-deal', () => {
+  it('bank-turn initial-deal catch-up still uses deal speed for dealer hole', () => {
     const settings = normalizeFlowSettings({ cardTimerPreset: 0, dealSpeedPreset: 'slow' });
     const state = { blackjackFlowSettings: settings };
     const visible: CardVisibilityCounts = { dealer: 1, hands: {} };
     const target: CardVisibilityCounts = { dealer: 2, hands: {} };
+    expect(
+      resolveCardRevealDelayMs(state, { status: 'bank-turn' } as never, 'bank-turn', visible, target),
+    ).toBe(5000);
+  });
+
+  it('bank-turn bank draw uses bank-card-draw context after initial deal is visible', () => {
+    const settings = normalizeFlowSettings({ cardTimerPreset: 0, dealSpeedPreset: 'slow' });
+    const state = { blackjackFlowSettings: settings };
+    const visible: CardVisibilityCounts = { dealer: 2, hands: { 'box-0': 2 } };
+    const target: CardVisibilityCounts = { dealer: 3, hands: { 'box-0': 2 } };
     expect(
       resolveCardRevealDelayMs(state, { status: 'bank-turn' } as never, 'bank-turn', visible, target),
     ).toBe(0);
