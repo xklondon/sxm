@@ -1,4 +1,5 @@
 import './InsuranceDecisionOverlay.css';
+import './OptionalPlayDecisionOverlay.css';
 
 export interface OptionalPlayDecisionOverlayProps {
   canDouble: boolean;
@@ -8,9 +9,11 @@ export interface OptionalPlayDecisionOverlayProps {
   actionsEnabled: boolean;
   onDouble: () => void;
   onSplit: () => void;
+  /** Decline split and continue with Hit/Stay — no engine action. */
+  onPlayHand?: () => void;
 }
 
-/** Compact Double / Split offers — sits directly under the command area. */
+/** Compact Double / Split offers — command zone on mobile; cards zone on desktop Full Table. */
 export function OptionalPlayDecisionOverlay({
   canDouble,
   canSplit,
@@ -19,6 +22,7 @@ export function OptionalPlayDecisionOverlay({
   actionsEnabled,
   onDouble,
   onSplit,
+  onPlayHand,
 }: OptionalPlayDecisionOverlayProps) {
   const showDoubleBtn = showDouble && canDouble;
   const showSplitBtn = showSplit && canSplit;
@@ -27,7 +31,11 @@ export function OptionalPlayDecisionOverlay({
   }
 
   return (
-    <div className="bj-insurance-overlay" role="group" aria-label="Optional play decisions">
+    <div
+      className="bj-insurance-overlay bj-optional-play-overlay"
+      role="group"
+      aria-label="Optional play decisions"
+    >
       <div className="bj-insurance-overlay__actions">
         {showDoubleBtn ? (
           <button
@@ -47,6 +55,16 @@ export function OptionalPlayDecisionOverlay({
             onClick={onSplit}
           >
             Split
+          </button>
+        ) : null}
+        {showSplitBtn && onPlayHand ? (
+          <button
+            type="button"
+            className="bj-insurance-overlay__btn bj-insurance-overlay__btn--secondary"
+            disabled={!actionsEnabled}
+            onClick={onPlayHand}
+          >
+            Play Hand
           </button>
         ) : null}
       </div>

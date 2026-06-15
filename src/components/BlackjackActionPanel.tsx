@@ -12,6 +12,8 @@ export interface BlackjackActionPanelProps {
   showDouble: boolean;
   showSplit: boolean;
   showAid: boolean;
+  /** Desktop Full Table — AID sits to the right of Hit instead of a second row. */
+  aidInlineWithHit?: boolean;
   onHit: () => void;
   onStand: () => void;
   onDouble: () => void;
@@ -31,6 +33,7 @@ export function BlackjackActionPanel({
   showDouble,
   showSplit,
   showAid,
+  aidInlineWithHit = false,
   onHit,
   onStand,
   onDouble,
@@ -72,6 +75,14 @@ export function BlackjackActionPanel({
     variant === 'table'
       ? 'bj-table-actions__row'
       : 'bj-phone-view__action-bar-row bj-phone-view__action-bar-row--secondary';
+
+  const aidBtnClass =
+    variant === 'table'
+      ? 'ds-btn ds-btn--ghost bj-table-actions__btn bj-table-actions__btn--sm'
+      : `bj-phone-view__action-bar-extra ${TABLE_UX.cardViewActionCompact} bj-phone-view__action-btn--tappable bj-phone-view__action-bar-extra--aid`;
+
+  const showSecondaryRow =
+    variant !== 'table' || !aidInlineWithHit || showDouble || showSplit;
 
   const standBtnClass =
     variant === 'table'
@@ -136,7 +147,18 @@ export function BlackjackActionPanel({
         >
           Hit
         </button>
+        {aidInlineWithHit && showAid ? (
+          <button
+            type="button"
+            className={aidBtnClass}
+            disabled={!actionsEnabled}
+            onClick={onAid}
+          >
+            AID
+          </button>
+        ) : null}
       </div>
+      {showSecondaryRow ? (
       <div {...sxmSectionProps(SXM_LAYOUT.secondaryActions, secondaryRowClass)}>
         {showDouble ? (
           <button
@@ -168,14 +190,10 @@ export function BlackjackActionPanel({
             aria-hidden="true"
           />
         )}
-        {showAid ? (
+        {showAid && !aidInlineWithHit ? (
           <button
             type="button"
-            className={
-              variant === 'table'
-                ? 'ds-btn ds-btn--ghost bj-table-actions__btn bj-table-actions__btn--sm'
-                : `bj-phone-view__action-bar-extra ${TABLE_UX.cardViewActionCompact} bj-phone-view__action-btn--tappable bj-phone-view__action-bar-extra--aid`
-            }
+            className={aidBtnClass}
             disabled={!actionsEnabled}
             onClick={onAid}
           >
@@ -188,6 +206,7 @@ export function BlackjackActionPanel({
           />
         )}
       </div>
+      ) : null}
     </div>
   );
 }

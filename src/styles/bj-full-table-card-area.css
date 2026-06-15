@@ -436,7 +436,7 @@
 @media (min-width: 721px) {
   .bj-view-full-desktop {
     --bj-full-desktop-dealer-command-gap: 0.1875rem;
-    --bj-full-desktop-actions-boxes-gap: 0.3125rem;
+    --bj-full-desktop-actions-boxes-gap: 0.625rem;
     --bj-full-desktop-stack-value-gap: 0.3125rem;
     --bj-full-desktop-zone-actions-height: calc(1.55rem + var(--bj-full-desktop-actions-boxes-gap));
     --bj-full-desktop-cards-actions-gap: 0.28rem;
@@ -447,7 +447,7 @@
     padding-top: var(--bj-full-desktop-dealer-command-gap);
   }
 
-  /* Hit/Stay — sit ~5px above box amount labels */
+  /* Hit/Stay — sit ~10px above box amount labels */
   .bj-view-full-desktop .bj-table-layout-shell {
     --bj-desktop-zone-actions-height: var(--bj-full-desktop-zone-actions-height);
     --bj-cards-actions-gap: var(--bj-full-desktop-cards-actions-gap);
@@ -470,7 +470,7 @@
     .bj-table-layout-shell
     .bj-table-zone--cards.bj-cards-area--table
     .bj-full-table-card-area {
-    transform: translateY(14px);
+    transform: translateY(18px);
   }
 
   .bj-view-full-desktop

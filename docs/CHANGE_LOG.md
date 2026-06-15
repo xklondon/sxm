@@ -13,6 +13,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Desktop Full Table split overlay + action layout
+
+- **Split overlay:** Optional Double/Split offer moves from command zone to cards zone on desktop Full Table — centered above stacks (`bj-optional-play-overlay-anchor`, z-index 25); mobile unchanged in command zone.
+- **Play Hand:** Decline split without engine action — dismisses overlay for current hand; Hit/Stay remain available.
+- **Hit/Stay ↔ boxes:** ~10px gap (`0.625rem`); card stacks nudged to `translateY(18px)`.
+- **AID:** Inline to the right of Hit on desktop Full Table (`aidInlineWithHit`); mobile / Card View unchanged.
+- **Tests:** `blackjackFullTableDesktopPolish.test.ts`, `optionalPlayDealPacing.test.tsx`, `blackjackPolishRegression.test.ts`.
+
+---
+
 ## 2026-06-12 — Desktop Full Table layout polish (spacing + bust badge)
 
 - **Hit/Stay ↔ boxes:** Desktop Full Table actions row height tightened; ~5px (`0.3125rem`) padding below Hit/Stay.

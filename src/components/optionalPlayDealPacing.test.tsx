@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeAll, afterAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -18,6 +18,35 @@ import { blackjackHandKey, confirmBoxStake, addChipToBoxStake } from '../engine/
 
 const noop = () => {};
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+
+let simulatedWidth = 390;
+const globalRef = globalThis as unknown as { window?: unknown };
+const hadWindow = 'window' in globalRef;
+
+beforeAll(() => {
+  globalRef.window = {
+    matchMedia: (query: string) => {
+      const m = /max-width:\s*(\d+)/.exec(query);
+      const max = m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+      return {
+        matches: simulatedWidth <= max,
+        media: query,
+        addEventListener: noop,
+        removeEventListener: noop,
+        addListener: noop,
+        removeListener: noop,
+        onchange: null,
+        dispatchEvent: () => false,
+      };
+    },
+  };
+});
+
+afterAll(() => {
+  if (!hadWindow) {
+    delete globalRef.window;
+  }
+});
 
 vi.mock('./storage/profileStorage', () => ({
   loadProfile: () => ({ name: 'Alice', email: 'alice@test.com' }),
@@ -121,14 +150,32 @@ describe('optional play overlay under command', () => {
     expect(html).toBe('');
   });
 
-  it('panel wires overlay in summary and removes table double/split row', () => {
+  it('renders Play Hand when split is offered', () => {
+    const html = renderToStaticMarkup(
+      <OptionalPlayDecisionOverlay
+        canDouble={false}
+        canSplit
+        showDouble={false}
+        showSplit
+        actionsEnabled
+        onDouble={noop}
+        onSplit={noop}
+        onPlayHand={noop}
+      />,
+    );
+    expect(html).toContain('>Split<');
+    expect(html).toContain('>Play Hand<');
+  });
+
+  it('panel wires overlay in summary on mobile and cards zone on desktop Full Table', () => {
     expect(PANEL_SRC).toContain('OptionalPlayDecisionOverlay');
     expect(PANEL_SRC).toContain('renderOptionalPlayDecisionOverlay');
+    expect(PANEL_SRC).toContain('bj-optional-play-overlay-anchor');
     expect(PANEL_SRC).toContain('showDouble={false}');
     expect(PANEL_SRC).toContain('showSplit={false}');
   });
 
-  it('panel renders split offer under command zone when legal', () => {
+  it('panel renders split offer under command zone on mobile Full Table when legal', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={splittableState()} onGameStateChange={noop} />,
     );

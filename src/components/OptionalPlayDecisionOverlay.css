@@ -1,0 +1,28 @@
+/* Desktop Full Table — optional Double/Split offer above card stacks (not command zone). */
+@media (min-width: 721px) {
+  .bj-view-full-desktop
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--table
+    > .bj-optional-play-overlay-anchor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: calc(var(--bj-full-table-card-column-height) + 0.2rem);
+    z-index: 25;
+    pointer-events: none;
+  }
+
+  .bj-view-full-desktop
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--table
+    > .bj-optional-play-overlay-anchor
+    .bj-optional-play-overlay {
+    pointer-events: auto;
+    max-width: 14rem;
+    margin: 0;
+  }
+}

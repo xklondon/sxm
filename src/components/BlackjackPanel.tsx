@@ -288,6 +288,9 @@ export function BlackjackPanel({
   const [roundSummaryDelayReady, setRoundSummaryDelayReady] = useState(false);
   const [gameOverDelayReady, setGameOverDelayReady] = useState(false);
   const [insuranceDecisionPending, setInsuranceDecisionPending] = useState(false);
+  const [optionalPlayDismissedHandKey, setOptionalPlayDismissedHandKey] = useState<string | null>(
+    null,
+  );
   const [expandedVisibleBoxCount, setExpandedVisibleBoxCount] = useState(DEFAULT_VISIBLE_TABLE_BOXES);
   /** Single local chip target — tray pulse and placement both read from here. */
   const [localChipSelection, setLocalChipSelection] = useState<LocalSelectedChipTarget>(() =>
@@ -389,6 +392,7 @@ export function BlackjackPanel({
   const remaining = deck ? getRemainingCardCount(deck) : 0;
   const viewMode = localViewMode;
   const deviceView = getDeviceView(isMobileViewport);
+  const isFullTableDesktop = deviceView === 'desktop' && viewMode === 'full';
   const viewRootClass = getViewRootClass(deviceView, viewMode);
   const { selectedBettingBoxId: selectedBettingBoxIdForUi, selectedBettingSlotNumber } =
     uiFromLocalChipTarget(localChipSelection.target, gameState);
@@ -628,6 +632,10 @@ export function BlackjackPanel({
       setInsuranceDecisionPending(false);
     }
   }, [protocolPhase, round?.insuranceOfferPending]);
+
+  useEffect(() => {
+    setOptionalPlayDismissedHandKey(null);
+  }, [round?.activeHandKey]);
 
   function handleAddToPersonalLedger() {
     setError(null);
@@ -1329,6 +1337,9 @@ export function BlackjackPanel({
     if (!round?.activeHandKey) {
       return null;
     }
+    if (optionalPlayDismissedHandKey === round.activeHandKey) {
+      return null;
+    }
     const actionPermission = resolveViewerActionPermission(gameState, viewerPersonId);
     if (!actionPermission.canAct) {
       return null;
@@ -1366,6 +1377,11 @@ export function BlackjackPanel({
             payload: {},
           })
         }
+        onPlayHand={
+          showSplit && canSplit
+            ? () => setOptionalPlayDismissedHandKey(actionable.handKey)
+            : undefined
+        }
       />
     );
   }
@@ -1375,9 +1391,11 @@ export function BlackjackPanel({
     if (insurance) {
       return insurance;
     }
-    const optionalPlay = renderOptionalPlayDecisionOverlay();
-    if (optionalPlay) {
-      return optionalPlay;
+    if (!isFullTableDesktop) {
+      const optionalPlay = renderOptionalPlayDecisionOverlay();
+      if (optionalPlay) {
+        return optionalPlay;
+      }
     }
     const alert = renderTableAlert();
     return alert ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />;
@@ -1532,6 +1550,7 @@ export function BlackjackPanel({
         showDouble={false}
         showSplit={false}
         showAid={flowSettings.adviceEnabled}
+        aidInlineWithHit={isFullTableDesktop}
         onStand={() =>
           run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} })
         }
@@ -2393,28 +2412,35 @@ export function BlackjackPanel({
             actions={renderActionsContent()}
             cardsArea={
               viewMode === 'full' ? (
-                <div
-                  className={[
-                    'bj-table-slot-row',
-                    'bj-arc',
-                    'bj-arc--cards',
-                    FULL_TABLE_CARD_AREA_CLASS,
-                    visibleArcClass,
-                    showAddBoxLead ? 'bj-table-slot-row--with-add' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
-                >
-                  {showAddBoxLead ? (
-                    <div className="bj-table-slot-row__lead-spacer" aria-hidden="true" />
+                <>
+                  {isFullTableDesktop ? (
+                    <div className="bj-optional-play-overlay-anchor">
+                      {renderOptionalPlayDecisionOverlay()}
+                    </div>
                   ) : null}
-                  {displaySlots.map((slot) =>
-                    slot.playerId
-                      ? renderArcCardColumn(slot.playerId, slot.slotNumber)
-                      : renderEmptyCardColumn(slot.slotNumber),
-                  )}
-                </div>
+                  <div
+                    className={[
+                      'bj-table-slot-row',
+                      'bj-arc',
+                      'bj-arc--cards',
+                      FULL_TABLE_CARD_AREA_CLASS,
+                      visibleArcClass,
+                      showAddBoxLead ? 'bj-table-slot-row--with-add' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
+                  >
+                    {showAddBoxLead ? (
+                      <div className="bj-table-slot-row__lead-spacer" aria-hidden="true" />
+                    ) : null}
+                    {displaySlots.map((slot) =>
+                      slot.playerId
+                        ? renderArcCardColumn(slot.playerId, slot.slotNumber)
+                        : renderEmptyCardColumn(slot.slotNumber),
+                    )}
+                  </div>
+                </>
               ) : (
                 <BlackjackCardView
                   gameState={tableVisualState}

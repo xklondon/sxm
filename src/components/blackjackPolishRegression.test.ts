@@ -235,9 +235,9 @@ describe('blackjack polish regression', () => {
     expect(cardsZone).toMatch(/bj-phone-view__box-value--card-column-below[^>]*>13</);
   });
 
-  it('desktop Full Table card area has +10px downward offset only on desktop', () => {
+  it('desktop Full Table card area has downward offset only on desktop', () => {
     expect(CARD_AREA_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*translateY\(14px\)/,
+      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*translateY\(18px\)/,
     );
     expect(CARD_AREA_CSS).not.toMatch(
       /@media \(max-width: 720px\)[\s\S]*translateY\(10px\)/,
