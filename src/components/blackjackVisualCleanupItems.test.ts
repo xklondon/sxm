@@ -8,6 +8,7 @@ const SETTINGS_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackF
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+const PLAY_ZONE_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
 
 describe('blackjack visual cleanup items', () => {
@@ -52,8 +53,11 @@ describe('blackjack visual cleanup items', () => {
     );
     expect(LAYOUT_CSS).toMatch(/@container bj-hero-cards[\s\S]*58cqh/);
     expect(LAYOUT_CSS).toContain('--bj-card-hero-card-max-height: min(22vh, 9.5rem)');
-    expect(LAYOUT_CSS).toMatch(
+    expect(LAYOUT_CSS).not.toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-arc--cards[\s\S]*overflow:\s*hidden/,
+    );
+    expect(PLAY_ZONE_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area[\s\S]*overflow:\s*visible/,
     );
   });
 });

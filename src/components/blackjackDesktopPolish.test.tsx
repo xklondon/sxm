@@ -16,10 +16,10 @@ describe('blackjack desktop polish contracts', () => {
 
   it('places Full Table card values in fixed bottom grid row on desktop and mobile', () => {
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
+      /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
     );
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
+      /\.bj-view-full-mobile \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
     );
     expect(CARD_AREA_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-arc__slot--card-column,\s*\n\.bj-view-full-mobile \.bj-arc__slot--card-column[\s\S]*var\(--bj-full-table-card-stack-zone-height\)/,

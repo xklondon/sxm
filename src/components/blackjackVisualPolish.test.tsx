@@ -11,7 +11,6 @@ const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-lay
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
-const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 
 describe('Value & Chips bottom row', () => {
   it('renders bankroll value left of chip stash in one horizontal row', () => {
@@ -133,8 +132,8 @@ describe('Full Table card stack bottom alignment', () => {
   });
 
   it('does not use margin-top auto on mobile full-table arc cards row', () => {
-    expect(PANEL_CSS).toMatch(/\.bj-view-full-mobile \.bj-arc--cards[\s\S]*margin-top:\s*0/);
-    expect(PANEL_CSS).not.toMatch(/\.bj-view-full-mobile \.bj-arc--cards[\s\S]*margin-top:\s*auto/);
+    expect(CARD_AREA_CSS).toMatch(/\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--cards[\s\S]*height:\s*auto/);
+    expect(CARD_AREA_CSS).not.toMatch(/\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--cards[\s\S]*margin-top:\s*auto/);
   });
 
   it('leaves Card View hero cards area centered', () => {

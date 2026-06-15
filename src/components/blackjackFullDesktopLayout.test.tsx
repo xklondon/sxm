@@ -55,7 +55,7 @@ describe('desktop Full Table layout polish', () => {
 
   it('applies canonical bottom value grid to Full Table mobile card columns', () => {
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
+      /\.bj-view-full-mobile \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
     );
   });
 });

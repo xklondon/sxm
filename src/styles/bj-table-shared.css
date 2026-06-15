@@ -2539,14 +2539,11 @@
   }
 
   .bj-table-layout-shell .bj-table-zone--cards,
-  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero,
-  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table {
+  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
     overflow: hidden;
   }
 
-  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table {
-    justify-content: flex-end;
-  }
+  /* Full Table table card zone — bj-full-table-card-area.css */
 
   .bj-casino.bj-view-full-desktop,
   .bj-casino.bj-view-card-desktop {
@@ -2765,7 +2762,7 @@
     margin-bottom: 0.2rem;
   }
 
-  .bj-view-full-desktop .bj-arc--cards {
+  .bj-view-full-desktop .bj-arc--cards:not(.bj-full-table-card-area) {
     flex: 0 0 auto;
     margin-top: 0;
     align-items: flex-end;

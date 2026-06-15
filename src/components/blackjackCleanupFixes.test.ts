@@ -42,7 +42,7 @@ describe('cleanup fixes — active value highlight', () => {
     expect(block).not.toContain('border-radius: 50%');
     expect(block).toContain('border-radius: 0.32em');
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc--cards \.bj-arc__slot--card-column \.bj-phone-view__box-value--active-turn[\s\S]*height:\s*var\(--bj-box-value-band-height\)/,
+      /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column \.bj-phone-view__box-value--active-turn[\s\S]*height:\s*var\(--bj-box-value-band-height\)/,
     );
   });
 
@@ -64,7 +64,7 @@ describe('cleanup fixes — desktop card area position', () => {
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*padding-top:\s*0/,
     );
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc--cards \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
+      /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column > \.bj-phone-view__box-value--card-column-below[\s\S]*grid-row:\s*3/,
     );
   });
 

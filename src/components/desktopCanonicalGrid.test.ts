@@ -78,12 +78,13 @@ describe('desktop canonical grid — Full Table and Card View parity', () => {
     );
   });
 
-  it('contains hero and table card content inside CardsArea without overlap contracts', () => {
+  it('contains hero card content inside CardsArea; Full Table table mode in play-zone CSS', () => {
     expect(CARD_LAYOUT_CSS).toMatch(
       /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*hidden/,
     );
-    expect(CARD_LAYOUT_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-arc--cards[\s\S]*overflow:\s*hidden/,
+    const playZoneCss = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
+    expect(playZoneCss).toMatch(
+      /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area[\s\S]*overflow:\s*visible/,
     );
   });
 
@@ -105,11 +106,12 @@ describe('desktop canonical grid — Full Table and Card View parity', () => {
   });
 
   it('only differs CardsArea inner content between hero and table modifiers', () => {
+    const playZoneCss = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
     expect(CARD_LAYOUT_CSS).toMatch(
       /@media \(min-width: 721px\)[\s\S]*\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*justify-content:\s*center/,
     );
-    expect(CARD_LAYOUT_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
+    expect(playZoneCss).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
   });
 

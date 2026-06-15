@@ -128,7 +128,8 @@ describe('mobile layout cleanup', () => {
   });
 
   it('mobile Full Table arc fits shell without inner horizontal scroll', () => {
-    expect(panelCss).toContain('contract: mobile-arc-fit');
+    const playZoneCss = readCss('src/styles/bj-full-table-card-area.css');
+    expect(playZoneCss).toContain('Full Table play zone');
     const playerRowCss = readCss('src/styles/bj-player-row-layout.css');
     expect(playerRowCss).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell[\s\S]*overflow:\s*visible/,

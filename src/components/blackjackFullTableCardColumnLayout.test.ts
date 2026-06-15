@@ -17,18 +17,19 @@ const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPane
 
 function cardSlotRules(css: string): string {
   const match = css.match(
-    /\.bj-view-full-(?:desktop|mobile) \.bj-table-slot-row\.bj-arc--cards > \.bj-arc__slot\s*\{[^}]*\}/s,
+    /\.bj-view-full-(?:desktop|mobile) \.bj-table-slot-row\.bj-arc--cards\.bj-full-table-card-area > \.bj-arc__slot\s*\{[^}]*\}/s,
   );
   return match?.[0] ?? '';
 }
 
 describe('Full Table card area canonical contract', () => {
-  it('imports dedicated CSS after shared and player-row layout', () => {
+  it('imports dedicated CSS after shared, player-row, and card-layout', () => {
     expect(INDEX_CSS.indexOf('bj-table-shared.css')).toBeLessThan(INDEX_CSS.indexOf('bj-full-table-card-area.css'));
     expect(INDEX_CSS.indexOf('bj-player-row-layout.css')).toBeLessThan(
       INDEX_CSS.indexOf('bj-full-table-card-area.css'),
     );
-    expect(INDEX_CSS.indexOf('bj-full-table-card-area.css')).toBeLessThan(INDEX_CSS.indexOf('bj-card-layout.css'));
+    expect(INDEX_CSS.indexOf('bj-card-layout.css')).toBeLessThan(INDEX_CSS.indexOf('bj-full-table-card-area.css'));
+    expect(INDEX_CSS.indexOf('bj-full-table-card-area.css')).toBeLessThan(INDEX_CSS.indexOf('bj-felt-skins.css'));
   });
 
   it('documents three-zone column grid for Full Table desktop and mobile', () => {
@@ -56,12 +57,12 @@ describe('Full Table card area canonical contract', () => {
     for (const viewRoot of FULL_TABLE_CARD_COLUMN_VIEW_ROOTS) {
       expect(CARD_AREA_CSS).toMatch(
         new RegExp(
-          `\\.${viewRoot} \\.bj-arc--cards \\.bj-arc__slot--card-column > \\.bj-phone-view__box-value--card-column-below[\\s\\S]*grid-row:\\s*3`,
+          `\\.${viewRoot} \\.bj-arc--cards\\.bj-full-table-card-area \\.bj-arc__slot--card-column > \\.bj-phone-view__box-value--card-column-below[\\s\\S]*grid-row:\\s*3`,
         ),
       );
       expect(CARD_AREA_CSS).toMatch(
         new RegExp(
-          `\\.${viewRoot} \\.bj-arc--cards \\.bj-arc__slot--card-column > \\.bj-phone-view__box-value--card-column-below[\\s\\S]*align-self:\\s*end`,
+          `\\.${viewRoot} \\.bj-arc--cards\\.bj-full-table-card-area \\.bj-arc__slot--card-column > \\.bj-phone-view__box-value--card-column-below[\\s\\S]*align-self:\\s*end`,
         ),
       );
     }
@@ -71,7 +72,7 @@ describe('Full Table card area canonical contract', () => {
     for (const viewRoot of FULL_TABLE_CARD_COLUMN_VIEW_ROOTS) {
       expect(CARD_AREA_CSS).toMatch(
         new RegExp(
-          `\\.${viewRoot} \\.bj-arc--cards \\.bj-arc__slot--card-column > \\.bj-arc__cards--stack-vertical[\\s\\S]*grid-row:\\s*2[\\s\\S]*align-self:\\s*end`,
+          `\\.${viewRoot} \\.bj-arc--cards\\.bj-full-table-card-area \\.bj-arc__slot--card-column > \\.bj-arc__cards--stack-vertical[\\s\\S]*grid-row:\\s*2[\\s\\S]*align-self:\\s*end`,
         ),
       );
     }
@@ -107,9 +108,6 @@ describe('Full Table card area canonical contract', () => {
     const slotRule = cardSlotRules(CARD_AREA_CSS) || cardSlotRules(PLAYER_ROW_CSS);
     expect(slotRule).toContain('align-self: end');
     expect(slotRule).not.toContain('align-self: center');
-    expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--cards > \.bj-arc__slot[\s\S]*align-self:\s*end/,
-    );
     expect(PLAYER_ROW_CSS).not.toMatch(
       /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--cards > \.bj-arc__slot\s*\{[^}]*align-self:\s*center/,
     );
@@ -126,7 +124,7 @@ describe('Full Table card area canonical contract', () => {
 
   it('keeps active-turn highlight inside fixed value band', () => {
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc--cards \.bj-arc__slot--card-column \.bj-phone-view__box-value--active-turn[\s\S]*height:\s*var\(--bj-box-value-band-height\)/,
+      /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column \.bj-phone-view__box-value--active-turn[\s\S]*height:\s*var\(--bj-box-value-band-height\)/,
     );
   });
 

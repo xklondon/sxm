@@ -22,10 +22,11 @@ function bettingTable(): GameState {
 
 describe('mobile Full Table arc fit (CSS contract)', () => {
   const panelCss = readCss('src/components/BlackjackPanel.css');
+  const playZoneCss = readCss('src/styles/bj-full-table-card-area.css');
   const sharedCss = readCss('src/styles/bj-table-shared.css');
 
   it('felt-main hides horizontal overflow; arc stays within shell width', () => {
-    expect(panelCss).toContain('contract: mobile-arc-fit');
+    expect(playZoneCss).toContain('Full Table play zone');
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,
     );
@@ -33,13 +34,13 @@ describe('mobile Full Table arc fit (CSS contract)', () => {
 
   it('page root hides horizontal overflow; card arc uses full shell width', () => {
     expect(panelCss).toMatch(/\.bj-view-full-mobile[\s\S]*overflow-x:\s*hidden/);
-    expect(panelCss).toMatch(/\.bj-view-full-mobile \.bj-arc--cards[\s\S]*width:\s*100%/);
+    expect(playZoneCss).toMatch(/\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--cards[\s\S]*width:\s*100%/);
     expect(panelCss).not.toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*min-width:\s*calc\(100% \+ 2\.5rem\)/);
   });
 
-  it('card arc slots keep center-bottom transform origin and mobile scale', () => {
-    expect(panelCss).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*transform-origin:\s*center bottom/,
+  it('card arc slots keep center-bottom transform origin in play-zone contract', () => {
+    expect(playZoneCss).toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--cards\.bj-full-table-card-area > \.bj-arc__slot[\s\S]*transform-origin:\s*center bottom/,
     );
   });
 });

@@ -112,10 +112,10 @@ describe('blackjack display layout contract', () => {
       /\[data-bj-card-count='4'\][\s\S]*--bj-table-card-overlap-4plus/,
     );
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc__cards--stack-vertical \.bj-arc__cards-stack \.playing-card[\s\S]*opacity:\s*1/,
+      /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__cards--stack-vertical \.bj-arc__cards-stack \.playing-card[\s\S]*opacity:\s*1/,
     );
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-arc__cards--stack-vertical \.bj-arc__cards-stack \.playing-card[\s\S]*height:\s*var\(--bj-table-card-height\)/,
+      /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__cards--stack-vertical \.bj-arc__cards-stack \.playing-card[\s\S]*height:\s*var\(--bj-table-card-height\)/,
     );
     expect(SHARED_CSS).not.toContain('--bj-table-card-strip-visible');
     expect(SHARED_CSS).not.toMatch(

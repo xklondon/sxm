@@ -90,7 +90,7 @@ describe('shared player boxes arc', () => {
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/);
-    expect(panelCss).toMatch(/\.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*rotate\(var\(--arc-rot/);
+    expect(panelCss).toMatch(/\.bj-arc--cards:not\(\.bj-full-table-card-area\) \.bj-arc__slot[\s\S]*transform:\s*rotate\(var\(--arc-rot/);
   });
 
   it('Card View panel renders shared arc slots with stake chips on occupied box', () => {

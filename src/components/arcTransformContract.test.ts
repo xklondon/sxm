@@ -24,15 +24,12 @@ describe('arc transform CSS contract', () => {
     expect(openBlock).not.toMatch(/transform:\s*rotate/);
   });
 
-  it('scopes card-column rotation to desktop .bj-arc--cards .bj-arc__slot only', () => {
+  it('scopes card-column rotation to non–Full-Table card arcs only', () => {
     expect(PANEL_CSS).toMatch(
-      /\.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*rotate\(var\(--arc-rot/,
+      /\.bj-arc--cards:not\(\.bj-full-table-card-area\) \.bj-arc__slot[\s\S]*transform:\s*rotate\(var\(--arc-rot/,
     );
-    expect(PANEL_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*none/,
-    );
-    expect(PANEL_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-arc--cards \.bj-arc__slot[\s\S]*transform:\s*none/,
+    expect(PANEL_CSS).not.toMatch(
+      /\.bj-full-table-card-area \.bj-arc__slot[\s\S]*transform:\s*rotate/,
     );
   });
 
@@ -40,7 +37,6 @@ describe('arc transform CSS contract', () => {
     expect(SHARED_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-arc\s*\{[\s\S]*margin-top:\s*auto/,
     );
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-arc--cards[\s\S]*margin-top:\s*auto/);
     expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*margin-top:\s*0/);
   });
 

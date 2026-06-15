@@ -152,18 +152,10 @@
     align-self: end;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-table-slot-row.bj-arc--cards {
-    flex: 0 0 auto;
-    align-self: end;
-    width: max-content;
-    max-width: 100%;
-    height: 100%;
-    max-height: 100%;
-  }
-
   /*
    * Full Table desktop — spread fixed-width box/card columns across felt width.
    * Card View desktop keeps compact max-content row above.
+   * Card row geometry — bj-full-table-card-area.css
    */
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes,
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards {
@@ -183,7 +175,6 @@
   .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-table-slot-row.bj-arc--cards {
     width: 100%;
     max-width: 100%;
-    align-self: stretch;
   }
 
   .bj-table-layout-shell .bj-table-zone--cards .bj-table-slot-row.bj-arc--cards {

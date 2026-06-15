@@ -225,10 +225,7 @@
     padding: 0 0 0.18rem;
   }
 
-  .bj-table-zone--cards.bj-cards-area--table {
-    justify-content: flex-end;
-    padding: 0 0 0.18rem;
-  }
+  /* Full Table table-mode card zone — bj-full-table-card-area.css */
 
   .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center {
     padding-top: 0.06rem;
@@ -272,10 +269,7 @@
     object-fit: contain;
   }
 
-  .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-arc--cards {
-    max-height: 100%;
-    overflow: hidden;
-  }
+  /* Full Table table-mode card arc — bj-full-table-card-area.css */
 
   .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__card-wrap {
     align-self: center;

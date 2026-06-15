@@ -292,12 +292,13 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
 
   it('felt scroller CSS keeps arc inside shell (no inner horizontal scroll)', () => {
     const css = mobileFullTableCss();
+    const playZoneCss = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
     const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-    expect(css).toContain('contract: mobile-arc-fit');
+    expect(playZoneCss).toContain('Full Table play zone');
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,
     );
-    expect(css).toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*width:\s*100%/);
+    expect(playZoneCss).toMatch(/\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--cards[\s\S]*width:\s*100%/);
     expect(css).toMatch(/\.bj-view-full-mobile[\s\S]*overflow-x:\s*hidden/);
   });
 

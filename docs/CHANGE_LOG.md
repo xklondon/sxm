@@ -13,6 +13,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Full Table play-zone layout rebuild
+
+- **Root cause:** Competing card/command/action CSS across `bj-card-layout.css` (imported after card-area), `bj-table-shared.css`, `bj-player-row-layout.css`, and `BlackjackPanel.css` — `overflow: hidden`, fixed stack bands, and arc `height: 100%` clipped cards; import order defeated the card-area contract.
+- **Single contract:** `bj-full-table-card-area.css` now owns command (B), card (C), and action (D) zones for Full Table desktop + mobile.
+- **Import order:** `bj-full-table-card-area.css` loads after `bj-card-layout.css`.
+- **Actions:** One render path — `renderActionsContent()` → `BlackjackActionPanel` in `bj-table-zone--actions`; CSS hides controls inside card area; desktop uses same pill styling as mobile.
+- **Tests:** `blackjackFullTablePlayZoneLayout.test.ts` guards zone order, single action path, no clip, no competing CSS.
+
+---
+
 ## 2026-06-12 — Full Table card area bottom-pin fix
 
 - **Root cause:** Card zone was locked to `--bj-full-table-card-column-height` and desktop grid `[cards]` was overridden to that same fixed height, so stacks sat in a short strip under the command box instead of filling command→actions space with columns pinned to the bottom.

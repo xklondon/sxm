@@ -41,8 +41,32 @@ export const FULL_TABLE_CARD_AREA_CLASS = 'bj-full-table-card-area';
  */
 export const FULL_TABLE_CARD_COLUMN_CLASS = 'bj-arc__slot--card-column';
 
-/** CSS file owning the Full Table card area contract (imported last among table layout CSS). */
-export const FULL_TABLE_CARD_AREA_CSS = 'src/styles/bj-full-table-card-area.css' as const;
+/** Full Table play zone CSS — command, card area, actions (imported last among table layout CSS). */
+export const FULL_TABLE_PLAY_ZONE_CSS = 'src/styles/bj-full-table-card-area.css' as const;
+
+/** @deprecated alias — use FULL_TABLE_PLAY_ZONE_CSS */
+export const FULL_TABLE_CARD_AREA_CSS = FULL_TABLE_PLAY_ZONE_CSS;
+
+/** Canonical shell zone order for Full Table (matches BlackjackTableLayoutShell DOM). */
+export const FULL_TABLE_SHELL_ZONE_ORDER = [
+  'dealer',
+  'command',
+  'cards',
+  'actions',
+  'boxes',
+  'tray',
+] as const;
+
+/** Panel function that owns the sole Full Table Hit/Stay render path. */
+export const FULL_TABLE_ACTIONS_RENDER_FN = 'renderActionsContent' as const;
+
+/** Forbidden inside CardsArea for Full Table — actions belong in bj-table-zone--actions only. */
+export const FULL_TABLE_FORBIDDEN_CARD_AREA_ACTION_MARKERS = [
+  'bj-table-actions',
+  'bj-player-actions',
+  'ds-btn--hit',
+  'ds-btn--stand',
+] as const;
 
 export const FULL_TABLE_CARD_COLUMN_OUTCOME_ZONE_HEIGHT =
   'var(--bj-full-table-card-outcome-zone-height, 0.72rem)';

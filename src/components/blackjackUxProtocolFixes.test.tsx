@@ -238,7 +238,7 @@ describe('blackjack UX protocol fixes — shared felt tokens', () => {
 
 describe('blackjack UX protocol fixes — documentation', () => {
   it('documents protocol and layout rules in master spec and changelog', () => {
-    expect(MASTER_SPEC).toContain('card-column');
+    expect(MASTER_SPEC).toContain('play zone');
     expect(MASTER_SPEC).toContain('Short-stack min-bet top-up');
     expect(MASTER_SPEC).toContain('Play vs Ace');
     expect(MASTER_SPEC).toContain('Summary screen');

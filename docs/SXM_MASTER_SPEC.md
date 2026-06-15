@@ -450,7 +450,7 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 - No sentimental/random phrasing.
 - Natural blackjack: `Box [n], Blackjack.` only for `actionStatus === 'blackjack'`.
 
-**Table View card-column values (Full Table desktop + mobile):** Canonical contract in `bj-full-table-card-area.css` — CardsArea fills the vertical gap from command box to actions row (`flex: 1`; desktop grid `[cards] minmax(0,1fr)`); card columns are bottom-pinned inside that zone (`justify-content: flex-end`). Per-column grid: outcome (reserved) / stack (grows upward) / value (fixed `--bj-box-value-band-height` at bottom, just above Hit/Stay). Card View hero layout unchanged (`bj-cards-area--hero`).
+**Full Table play zone (command → cards → actions):** Canonical contract in `bj-full-table-card-area.css` (imported last among table layout CSS). Zone order: dealer → command (`bj-table-zone--summary`) → cards (`bj-cards-area--table`) → actions (`bj-table-zone--actions`) → boxes → tray. Card Area fills command→actions gap with columns bottom-pinned; stacks use `overflow: visible` and a 2-card minimum stack band. Hit/Stay render only via `renderActionsContent()` in the actions zone — never inside CardsArea. Card View hero unchanged.
 
 **No-jump box stability:** `+` add-box and every player box share identical outer dimensions (`--bj-full-table-box-width`, fixed value band + box height). Reserved internal zones: score/value, chip stack (`--bj-full-table-stake-min-height`), logo/label (composition). Active turn uses inset `box-shadow` pulse only — no border-width or layout-affecting highlight changes.
 
