@@ -491,6 +491,8 @@
 .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder,
 .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
 .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder {
+  display: block;
+  order: 1;
   flex: 0 0 auto;
   min-height: 0.95rem;
   max-height: 1.05rem;
@@ -499,6 +501,26 @@
   font-size: 0.58rem;
   font-weight: var(--ds-weight-bold, 700);
   line-height: 1.05;
+}
+
+.bj-view-card-desktop
+  .bj-phone-view__mini-hand--full-arc:has(
+    .bj-phone-view__mini-hand-value:not(.bj-phone-view__mini-hand-value--placeholder)
+  )
+  .bj-phone-view__mini-stake-slot,
+.bj-view-card-mobile
+  .bj-phone-view__mini-hand--full-arc:has(
+    .bj-phone-view__mini-hand-value:not(.bj-phone-view__mini-hand-value--placeholder)
+  )
+  .bj-phone-view__mini-stake-slot {
+  flex: 0 0 0;
+  min-height: 0;
+  max-height: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  visibility: hidden;
 }
 
 .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips--bet {

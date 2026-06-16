@@ -13,6 +13,14 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-16 — Card View display regressions (hero value band, tray, box totals)
+
+- **Hero value:** Reserved `--bj-cardview-hero-value-band-height` between hero cards and actions; cards clip inside slot so value is not overlapped (desktop + mobile Card View).
+- **Desktop tray:** Card View desktop uses same `ValueAndChipsBar` grid as Full Table (`label` row below chip plaques).
+- **Player boxes:** Fixed `BlackjackCardView.css` rule that hid `.bj-phone-view__box-value` without `--above` (suppressed in-box hand totals); Card View stake slot collapses when hand total shows.
+
+---
+
 ## 2026-06-16 — Final blackjack layout polish (actions, hero value, chips, layered cards)
 
 - **Desktop Full Table:** Hit/Stay lowered (`--bj-full-desktop-actions-boxes-gap: 0.125rem`); stack/value gap preserved (`--bj-full-desktop-stack-value-gap: 0.3125rem`).

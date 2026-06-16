@@ -17,6 +17,7 @@
   --bj-card-total-min-height: 0.7rem;
   --bj-card-total-padding-block: 0.02rem;
   --bj-card-total-padding-inline: 0.32rem;
+  --bj-cardview-hero-value-band-height: calc(var(--bj-seat-total-size, 0.52rem) * 1.35 + 0.42rem);
 }
 
 @media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
@@ -350,6 +351,78 @@
 .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-player-actions {
   padding: 0.06rem 0.32rem 0.04rem;
   margin: 0;
+}
+
+.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  width: 100%;
+  gap: 0;
+  overflow: visible;
+}
+
+.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: calc(100% - var(--bj-cardview-hero-value-band-height));
+  overflow: hidden;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+}
+
+.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards {
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta {
+  flex: 0 0 var(--bj-cardview-hero-value-band-height);
+  min-height: var(--bj-cardview-hero-value-band-height);
+  max-height: var(--bj-cardview-hero-value-band-height);
+  width: 100%;
+  margin: 0;
+  padding: 0.1rem 0 0;
+  overflow: visible;
+  z-index: 3;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+
+.bj-view-card-desktop
+  .bj-table-layout-shell
+  .bj-table-zone--cards.bj-cards-area--hero
+  .bj-phone-view__hand-meta--below-cards,
+.bj-view-card-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--cards.bj-cards-area--hero
+  .bj-phone-view__hand-meta--below-cards {
+  order: 1;
+  margin-top: 0;
+}
+
+.bj-view-card-desktop
+  .bj-table-layout-shell
+  .bj-table-zone--cards.bj-cards-area--hero
+  .bj-card-view__hero-value.bj-phone-view__total--hero,
+.bj-view-card-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--cards.bj-cards-area--hero
+  .bj-card-view__hero-value.bj-phone-view__total--hero {
+  font-size: calc(var(--bj-seat-total-size) * 1.35);
+  min-height: auto;
+  max-height: none;
+  line-height: 1.1;
 }
 
 .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area,

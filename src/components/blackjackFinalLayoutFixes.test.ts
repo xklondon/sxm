@@ -199,5 +199,8 @@ describe('blackjack final layout fixes', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/,
     );
+    expect(CARD_LAYOUT_CSS).toMatch(
+      /\.bj-view-card-desktop[\s\S]*\.bj-phone-view__hand-meta[\s\S]*overflow:\s*visible/,
+    );
   });
 });

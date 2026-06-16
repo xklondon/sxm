@@ -1951,8 +1951,12 @@
 /* Betting pulse — canonical rules in bj-table-shared.css (.bj-phone-view__bet-chip--pulse) */
 
 /* Box value label — above player box frame via .bj-phone-view__box-value--above in bj-table-shared.css. */
-.bj-phone-view__box-value:not(.bj-phone-view__box-value--above) {
+.bj-phone-view__box-value:not(.bj-phone-view__box-value--above):not(.bj-phone-view__mini-hand-value) {
   display: none;
+}
+
+.bj-phone-view__mini-hand-value.bj-phone-view__box-value {
+  display: block;
 }
 
 /* Active box highlight — canonical pulse in bj-table-shared.css (.bj-phone-view__mini-hand--active) */

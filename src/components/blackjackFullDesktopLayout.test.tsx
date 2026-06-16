@@ -8,15 +8,18 @@ const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
 
 describe('desktop Full Table layout polish', () => {
-  it('renders tray label below the chip plaque row on Full Table desktop', () => {
+  it('renders tray label below the chip plaque row on Full Table and Card View desktop', () => {
     expect(CHIP_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-value-chips--with-label[\s\S]*grid-template-rows:\s*auto auto/,
     );
     expect(CHIP_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-value-chips--with-label \.bj-value-chips__row--label[\s\S]*grid-row:\s*2/,
     );
-    expect(CHIP_CSS).not.toMatch(
-      /\.bj-view-card-desktop \.bj-value-chips--with-label[\s\S]*grid-row:\s*2/,
+    expect(CHIP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-value-chips--with-label[\s\S]*grid-template-rows:\s*auto auto/,
+    );
+    expect(CHIP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-value-chips--with-label \.bj-value-chips__row--label[\s\S]*grid-row:\s*2/,
     );
   });
 
