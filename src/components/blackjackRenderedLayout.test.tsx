@@ -214,7 +214,7 @@ describe('rendered position — card view hero stack', () => {
   it.each([
     { name: 'Desktop Card View', width: 1280, height: 800 },
     { name: 'Mobile Portrait Card View', width: 390, height: 844 },
-  ])('$name stacks hero cards, value, and actions without overlap', ({ width, height }) => {
+  ])('$name stacks shell zones cards → hero-value → actions → boxes → tray', ({ width, height }) => {
     simulatedWidth = width;
     simulatedHeight = height;
     const { container } = renderPanelAt({
@@ -226,6 +226,23 @@ describe('rendered position — card view hero stack', () => {
         ? 'bj-view-card-mobile'
         : 'bj-view-card-desktop',
     });
+    const cardsZone = container.querySelector('.bj-table-zone--cards');
+    const heroValueZone = container.querySelector('.bj-table-zone--hero-value');
+    const actionsZone = container.querySelector('.bj-table-zone--actions');
+    const boxesZone = container.querySelector('.bj-table-zone--boxes');
+    const trayZone = container.querySelector('.bj-table-zone--bottom');
+    expect(heroValueZone).toBeTruthy();
+    expect(cardsZone!.querySelector('.bj-table-zone--hero-value')).toBeNull();
+    assertVerticalStack(
+      [
+        measureElement(cardsZone!),
+        measureElement(heroValueZone!),
+        measureElement(actionsZone!),
+        measureElement(boxesZone!),
+        measureElement(trayZone!),
+      ],
+      { label: `card-view-shell-${width}`, tolerancePx: 0 },
+    );
     assertBandStack(container, ['hero-cards', 'hero-value', 'action-row'], `card-view-${width}`);
   });
 });

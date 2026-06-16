@@ -89,6 +89,7 @@
   --bj-desktop-grid-gap-command-cards: var(--bj-command-cards-gap);
   --bj-desktop-zone-actions-height: 2.9rem;
   --bj-hero-cards-top-inset: 0.65rem;
+  --bj-desktop-zone-hero-value-height: calc(var(--bj-seat-total-size, 0.52rem) * 1.35 + 0.42rem);
   --bj-desktop-zone-boxes-height: 6.65rem;
   --bj-desktop-zone-tray-height: 4.35rem;
   --bj-desktop-zone-boxes-tray-gap: 1.1rem;
@@ -2405,6 +2406,13 @@
   .bj-table-layout-shell {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+    column-gap: 0;
+    padding-bottom: var(--bj-desktop-bottom-padding);
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell {
     grid-template-rows:
       [dealer] var(--bj-desktop-zone-dealer-height)
       [command] var(--bj-desktop-zone-command-height)
@@ -2412,10 +2420,17 @@
       [actions] var(--bj-desktop-zone-actions-height)
       [boxes] var(--bj-desktop-zone-boxes-height)
       [tray] var(--bj-desktop-zone-tray-height);
-    row-gap: 0;
-    column-gap: 0;
-    padding-bottom: var(--bj-desktop-bottom-padding);
-    overflow: hidden;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell {
+    grid-template-rows:
+      [dealer] var(--bj-desktop-zone-dealer-height)
+      [command] var(--bj-desktop-zone-command-height)
+      [cards] var(--bj-desktop-grid-row-cards)
+      [hero-value] var(--bj-desktop-zone-hero-value-height)
+      [actions] var(--bj-desktop-zone-actions-height)
+      [boxes] var(--bj-desktop-zone-boxes-height)
+      [tray] var(--bj-desktop-zone-tray-height);
   }
 
   .bj-table-layout-shell > .bj-table-zone--dealer {
@@ -2469,6 +2484,26 @@
   .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
     padding-top: var(--bj-hero-cards-top-inset);
     overflow: hidden;
+  }
+
+  .bj-table-layout-shell > .bj-table-zone--hero-value {
+    grid-row: hero-value;
+    grid-column: 1;
+    z-index: 4;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--bj-desktop-zone-hero-value-height);
+    max-height: var(--bj-desktop-zone-hero-value-height);
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    isolation: isolate;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--hero-value {
+    display: none;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
@@ -2957,6 +2992,8 @@
   .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--dealer,
   .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--summary,
   .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--summary,
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--hero-value,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--hero-value,
   .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--actions,
   .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--actions,
   .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards,
@@ -2997,8 +3034,25 @@
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards {
     flex: 1 1 auto;
     min-height: var(--bj-zone-cards-min-height);
-    margin-top: var(--bj-actions-cards-safe-gap);
+    margin-top: var(--bj-command-cards-gap, 0.35rem);
     max-height: none;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--hero-value {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--bj-desktop-zone-hero-value-height);
+    max-height: var(--bj-desktop-zone-hero-value-height);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--hero-value {
+    display: none;
   }
 
   /* Full Table mobile card zone — bj-full-table-card-area.css */

@@ -1503,7 +1503,13 @@ export function BlackjackPanel({
         panelClassName="bj-table-actions--even-money"
         ariaLabel="Even-money decision"
         primaryLabel="Take 1:1"
-        secondaryLabel="Play vs Ace"
+        secondaryLabel={
+          deck && round.dealerCardIds[0]
+            ? getCardById(deck, round.dealerCardIds[0])?.rank === 'A'
+              ? 'Play vs Ace'
+              : 'Play vs 10'
+            : 'Play for 3:2'
+        }
         onPrimary={() =>
           run((s) => takeEvenMoneyOnState(s, offerKey), {
             type: 'takeEvenMoney',

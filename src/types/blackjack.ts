@@ -61,6 +61,8 @@ export interface BlackjackRound {
   settledAt?: string | null;
   /** Hand key awaiting even-money decision (natural vs dealer Ace/10). */
   evenMoneyOfferHandKey?: string | null;
+  /** Remaining even-money offers after the active one (multi-box). */
+  evenMoneyPendingHandKeys?: string[];
   evenMoneyDeclined?: Record<string, boolean>;
   tookEvenMoney?: Record<string, boolean>;
 }

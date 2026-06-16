@@ -207,7 +207,7 @@ export function shouldOfferEvenMoney(
   if (!dealerUpRankCanHaveBlackjack(dealerUpRank)) {
     return false;
   }
-  return protocol.insurance.offered && (protocol.dealer.peekOnAce || protocol.dealer.peekOnTen);
+  return protocol.insurance.offered;
 }
 
 /** Pay natural immediately when dealer up-card cannot make dealer blackjack. */
