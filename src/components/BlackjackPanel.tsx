@@ -1854,21 +1854,13 @@ export function BlackjackPanel({
         : null;
     const stakeChips = mergeStakeChipsForSlotDisplay(gameState, slotNumber, boxId, pendingChips);
     const showBettingChips = inBetting && (openStake > 0 || pendingChips.length > 0) && stakeChips.length > 0;
-    const showPlayChips = viewMode === 'full' && !inBetting && wager > 0;
     const inBoxPlayPhase =
-      viewMode === 'card' &&
-      !inBetting &&
-      !showBoxHandResultMarkers &&
-      Boolean(primaryHandKey);
+      !inBetting && !showBoxHandResultMarkers && Boolean(primaryHandKey);
     const inBoxHandValueLabel = inBoxPlayPhase
       ? resolvePrimaryHandValueLabel(visualDeck, visualRound, primaryHandKey, primaryHand)
       : '';
-    const displayChips = showBettingChips
-      ? stakeChips
-      : showPlayChips
-        ? (stakeChips.length > 0 ? stakeChips : [wager])
-        : [];
-    const showStakeContent = inBetting ? displayChips.length > 0 : viewMode === 'card' ? inBoxPlayPhase : displayChips.length > 0;
+    const displayChips = showBettingChips ? stakeChips : [];
+    const showStakeContent = displayChips.length > 0 || inBoxPlayPhase;
     const dropKey = chipDropKey({ slotNumber, boxId });
     const rotation =
       deviceView === 'mobile'

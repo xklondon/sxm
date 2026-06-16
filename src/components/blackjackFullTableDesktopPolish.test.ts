@@ -129,9 +129,9 @@ function bustedDesktopState(): GameState {
 }
 
 describe('desktop Full Table layout polish', () => {
-  it('tightens Hit/Stay to ~10px above player box amount labels on desktop Full Table only', () => {
+  it('tightens Hit/Stay to ~2px above player box amount labels on desktop Full Table only', () => {
     expect(CARD_AREA_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.25rem/,
+      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.125rem/,
     );
     expect(CARD_AREA_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*padding-bottom:\s*var\(--bj-full-desktop-actions-boxes-gap\)/,

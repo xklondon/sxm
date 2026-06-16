@@ -288,8 +288,18 @@
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__card-wrap,
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__card-wrap {
     align-self: flex-start;
-    transform: none;
     transform-origin: top center;
+  }
+
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__card-wrap:not(.bj-phone-view__card-wrap--layered),
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__card-wrap:not(.bj-phone-view__card-wrap--layered) {
+    transform: none;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.bj-phone-card--hero,
@@ -396,7 +406,19 @@
 .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__card-wrap {
   margin-top: 0;
   top: 0;
-  align-self: center;
+  align-self: flex-start;
+  transform-origin: top center;
+}
+
+.bj-view-card-desktop
+  .bj-table-layout-shell
+  .bj-table-zone--cards.bj-cards-area--hero
+  .bj-phone-view__card-wrap:not(.bj-phone-view__card-wrap--layered),
+.bj-view-card-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--cards.bj-cards-area--hero
+  .bj-phone-view__card-wrap:not(.bj-phone-view__card-wrap--layered) {
+  transform: none;
 }
 
 /* Deprecated grid wrapper — shell is .bj-table-layout-shell. */

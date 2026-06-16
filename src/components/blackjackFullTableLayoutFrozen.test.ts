@@ -324,9 +324,9 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
     }
   });
 
-  it('keeps frozen actions-boxes-gap at 0.25rem so Hit/Stay sits close above box amounts', () => {
+  it('keeps frozen actions-boxes-gap at 0.125rem so Hit/Stay sits close above box amounts', () => {
     expect(PLAY_ZONE_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.25rem/,
+      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.125rem/,
     );
     expect(PLAY_ZONE_CSS).not.toMatch(/--bj-full-desktop-actions-boxes-gap:\s*1\.25rem/);
   });
@@ -357,11 +357,13 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
     expect(actionsZone).not.toContain(FULL_TABLE_CARD_VALUE_CLASS);
   });
 
-  it('scopes Card View in-box hand totals away from Full Table player boxes', () => {
-    expect(PANEL_SRC).toMatch(/viewMode === 'card'[\s\S]*inBoxPlayPhase/);
+  it('shows in-box hand totals for all views during play (chips hidden)', () => {
+    expect(PANEL_SRC).toMatch(/inBoxPlayPhase[\s\S]*resolvePrimaryHandValueLabel/);
+    expect(PANEL_SRC).not.toContain("showPlayChips");
     const html = renderFullTableAt(1280);
     const boxesZone = zoneSlice(html, 'bj-table-zone--boxes', 'bj-table-zone--bottom');
-    expect(boxesZone).not.toContain('bj-phone-view__mini-hand-value');
+    expect(boxesZone).toContain('bj-phone-view__mini-hand-value');
+    expect(boxesZone).not.toContain('stake-chips--bet');
   });
 });
 

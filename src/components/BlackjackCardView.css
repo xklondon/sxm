@@ -445,6 +445,16 @@
   margin-left: 0;
 }
 
+.bj-phone-view__cards--stitched .bj-phone-view__card-wrap--layered {
+  position: relative;
+  z-index: calc(var(--card-i, 2) + 2);
+  margin-left: -1.05rem;
+  transform: rotate(calc((var(--card-i, 2) - 1.5) * 8deg))
+    translate(calc((var(--card-i, 2) - 2) * 0.4rem), calc((var(--card-i, 2) - 2) * -0.3rem));
+  transform-origin: bottom center;
+  filter: drop-shadow(0 5px 12px rgb(0 0 0 / 0.4));
+}
+
 .bj-phone-view__settle-results {
   text-align: center;
   padding: 0.5rem;

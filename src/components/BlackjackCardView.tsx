@@ -437,7 +437,12 @@ export function BlackjackCardView({
               {heroCardIds.map((id, i) => (
                 <div
                   key={`${heroHandKey}-${i}-${id}`}
-                  className="bj-phone-view__card-wrap"
+                  className={[
+                    'bj-phone-view__card-wrap',
+                    i >= 2 ? 'bj-phone-view__card-wrap--layered' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                   style={{ "--card-i": i } as CSSProperties}
                 >
                   {renderHugeCard(

@@ -2913,21 +2913,11 @@
     padding-top: var(--bj-cardview-hero-top-inset);
     justify-content: flex-start;
     align-items: stretch;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
   }
 
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
-    padding-top: var(--bj-cardview-cards-actions-gap);
-    justify-content: flex-start;
-    align-items: center;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-table-actions,
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-player-actions {
-    padding: 0.06rem 0.32rem 0.04rem;
-    margin: 0;
-  }
+  /* Desktop Card View actions — shared Full Table shell tokens (bj-full-table-card-area.css) */
 }
 
 /*

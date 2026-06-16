@@ -81,12 +81,16 @@ Double/Split are **not** duplicated in `BlackjackActionPanel` (`showDouble={fals
 
 ### Spacing tokens
 
-Scoped under `@media (min-width: 721px) .bj-view-full-desktop` in `bj-full-table-card-area.css`:
+Scoped under `@media (min-width: 721px) .bj-view-full-desktop` and shared desktop shell tokens for `.bj-view-card-desktop` actions in `bj-full-table-card-area.css`:
 
-- `--bj-full-desktop-actions-boxes-gap: 0.625rem`
-- `--bj-full-desktop-stack-value-gap: 0.3125rem`
+- `--bj-full-desktop-actions-boxes-gap: 0.125rem` (Hit/Stay close above box amount labels)
+- `--bj-full-desktop-stack-value-gap: 0.3125rem` (gap between stack bottom and hand value)
 - `--bj-full-desktop-dealer-command-gap: 0.1875rem`
-- Card arc nudge: `translateY(18px)` on `.bj-full-table-card-area`
+- Card arc nudge: `translateY(18px)` on `.bj-full-table-card-area` (Full Table desktop only)
+
+### Player boxes (all views)
+
+During **play**: box shows owner, card ranks, and in-box hand total (`bj-phone-view__mini-hand-value`); **chip tokens hidden** inside the box frame; bet amount label stays **above** the box. During **betting**: chip stacks render inside the box as before.
 
 ### Invariants
 
@@ -181,7 +185,7 @@ Aggregate flag: `CARD_VIEW_FROZEN = false` until C1–C3 are frozen.
 Status: `CARD_VIEW_DESKTOP_FROZEN = false`  
 View root: `CARD_VIEW_DESKTOP_ROOT` (`bj-view-card-desktop`)
 
-**Structure:** Shell hero fan + hand value below cards (dealer-value size token `bj-card-view__hero-value`); canonical Hit/Stay via shell `BlackjackActionPanel` in `bj-table-zone--actions` (same component/position as Full Table); optional Double/Split in command zone overlay; player box arc (Contract B); This Table docked right.
+**Structure:** Shell hero fan + hand value below cards (dealer-value size token `bj-card-view__hero-value` / `bj-player-hand-value--emphasis`; active-turn frame wraps value only); canonical Hit/Stay via shell `BlackjackActionPanel` in `bj-table-zone--actions` (**same component, placement, and button sizing as Full Table desktop**); hero third+ cards use `bj-phone-view__card-wrap--layered` offset transforms; optional Double/Split in command zone overlay; player box arc (Contract B); This Table docked right.
 
 **Player boxes (all views):** During play, box shows card ranks + in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside box; bet amount stays above box. Betting phase still shows chips inside box.
 

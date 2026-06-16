@@ -13,6 +13,15 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-16 — Final blackjack layout polish (actions, hero value, chips, layered cards)
+
+- **Desktop Full Table:** Hit/Stay lowered (`--bj-full-desktop-actions-boxes-gap: 0.125rem`); stack/value gap preserved (`--bj-full-desktop-stack-value-gap: 0.3125rem`).
+- **Desktop Card View:** Hero hand value visible below cards (overflow fix); shell `BlackjackActionPanel` shares Full Table desktop action-zone tokens; third+ hero cards use `bj-phone-view__card-wrap--layered`.
+- **All views:** Player boxes show in-play hand total inside box; chip stacks hidden during play; betting phase unchanged.
+- **Tests:** `blackjackFinalLayoutFixes.test.ts`; frozen layout tests updated.
+
+---
+
 ## 2026-06-12 — Shared-pot settlement + desktop Hit/Stay position
 
 - **Challenge same-person bank+box:** Round/bust/natural settlement skips internal bank↔box ledger transfers when `personsShareOneChipPot` — wins restore committed bet only; losses refund committed bet without crediting bank; total chips invariant.

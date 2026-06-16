@@ -300,8 +300,8 @@ describe('table layout polish contract', () => {
 
   it('Full Table keeps play-phase stake chips in player boxes (frozen contract)', () => {
     const full = renderAt(1280, 'full');
-    expect(full).toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*stake-chips--bet/);
-    expect(full).not.toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*bj-phone-view__mini-hand-value/);
+    expect(full).toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*bj-phone-view__mini-hand-value/);
+    expect(full).not.toMatch(/bj-phone-view__mini-hand--full-arc[\s\S]*stake-chips--bet/);
   });
 
   it('Card View shows in-box hand total during play (chips hidden inside box)', () => {
