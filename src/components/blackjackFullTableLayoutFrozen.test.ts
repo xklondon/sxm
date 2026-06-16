@@ -194,7 +194,7 @@ describe('Blackjack Full Table layout freeze — contract constants', () => {
     expect(FULL_TABLE_MOBILE_PORTRAIT_FROZEN).toBe(true);
     expect(FULL_TABLE_MOBILE_FROZEN).toBe(true);
     expect(FULL_TABLE_MOBILE_LANDSCAPE_FROZEN).toBe(false);
-    expect(CARD_VIEW_DESKTOP_FROZEN).toBe(false);
+    expect(CARD_VIEW_DESKTOP_FROZEN).toBe(true);
     expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(false);
     expect(CARD_VIEW_MOBILE_LANDSCAPE_FROZEN).toBe(false);
     expect(CARD_VIEW_FROZEN).toBe(false);
@@ -439,8 +439,15 @@ describe('Blackjack Full Table layout freeze — source ownership guards', () =>
       expect(src, path).not.toMatch(/\.bj-view-full-mobile[\s\S]*--bj-full-desktop-/);
     }
     const playerRowCss = GUARDED_CSS['src/styles/bj-player-row-layout.css'];
-    expect(playerRowCss).toMatch(
+    const cardDesktopLayoutCss = readFileSync(
+      join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
+      'utf8',
+    );
+    expect(cardDesktopLayoutCss).toMatch(
       /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand-value/,
+    );
+    expect(playerRowCss).not.toMatch(
+      /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand-value:not\([\s\S]*--bj-card-desktop-box-value-scale/,
     );
     expect(playerRowCss).not.toMatch(
       /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand-value/,

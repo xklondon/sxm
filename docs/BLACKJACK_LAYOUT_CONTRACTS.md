@@ -209,17 +209,16 @@ Aggregate flag: `CARD_VIEW_FROZEN = false` until C1–C3 are frozen.
 
 Status: **FROZEN** (`CARD_VIEW_DESKTOP_FROZEN = true`)  
 View root: `CARD_VIEW_DESKTOP_ROOT` (`bj-view-card-desktop`)  
-Reference: [`reference-ui/views/Mobil.png`](../reference-ui/views/Mobil.png) (canonical desktop Full Table + Card View mockup)
+Reference: [`reference-ui/views/Desktop_Card.png`](../reference-ui/views/Desktop_Card.png)
 
 **Vertical zone model (top → bottom):** Top nav → Dealer → Command → Hero cards → Hero value → Action row → Player boxes → Tray.
 
-**Layout tokens** (scoped under `.bj-view-full-desktop` / `.bj-view-card-desktop` only):
+**Layout tokens** (scoped under `.bj-view-card-desktop` in `bj-card-desktop-layout.css`):
 
-- `--bj-desktop-player-row-spread: space-evenly` — player boxes span felt width
-- `--bj-desktop-box-value-scale: 2` — in-box hand total during play
-- `--bj-desktop-cardview-hero-value-scale: 0.7` — hero value ~30% smaller than prior emphasis size
-- `--bj-desktop-action-row-offset: 0.125rem` — Hit/Stay closer to player boxes
-- `--bj-desktop-card-area-bottom-gap: 0.35rem` — hero cards stretch lower without clipping
+- `--bj-card-desktop-hero-lower-offset` — hero cards sit lower in the cards zone
+- `--bj-card-desktop-action-offset` — Hit/Stay closer to player boxes
+- `--bj-card-desktop-box-spread: space-evenly` — four boxes + add control span felt width
+- `--bj-card-desktop-box-value-scale` — in-box hand total during play
 
 **Structure:** Shell hero fan + dedicated `bj-table-zone--hero-value` below cards; canonical Hit/Stay via shared `BlackjackActionRow` in `bj-table-zone--actions`; shared `BlackjackPlayerBoxRow` / `BlackjackTrayRow`; hero third+ cards use `bj-phone-view__card-wrap--layered`; optional Double/Split in command zone overlay; This Table docked right.
 

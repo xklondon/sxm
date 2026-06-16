@@ -1,0 +1,125 @@
+/**
+ * Desktop Card View layout — scoped to .bj-view-card-desktop only.
+ * Reference: reference-ui/views/Desktop_Card.png
+ * Do not add Full Table or mobile rules here.
+ */
+
+@media (min-width: 721px) {
+  .bj-view-card-desktop {
+    --bj-card-desktop-hero-lower-offset: 1.35rem;
+    --bj-card-desktop-action-offset: 0.2rem;
+    --bj-card-desktop-box-spread: space-evenly;
+    --bj-card-desktop-box-value-scale: 2.2;
+    --bj-card-desktop-hero-value-scale: 0.62;
+    --bj-card-desktop-hero-value-band-height: calc(
+      var(--bj-seat-total-size, 1.25rem) * 1.35 * var(--bj-card-desktop-hero-value-scale) + 0.28rem
+    );
+    --bj-card-desktop-hero-card-max-height: min(28vh, 12rem);
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
+    padding-top: calc(
+      var(--bj-hero-cards-top-inset, 0.5rem) + var(--bj-card-desktop-hero-lower-offset, 1.35rem)
+    );
+    justify-content: flex-end;
+    overflow: visible;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand {
+    justify-content: flex-end;
+    overflow: visible;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot {
+    align-items: flex-end;
+    overflow: visible;
+    padding-bottom: 0.12rem;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
+    align-items: flex-end;
+    overflow: visible;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.bj-phone-card--hero,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.ds-card--hero {
+    max-height: var(--bj-card-desktop-hero-card-max-height, min(28vh, 12rem));
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--hero-value {
+    min-height: var(--bj-card-desktop-hero-value-band-height);
+    max-height: var(--bj-card-desktop-hero-value-band-height);
+  }
+
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    > .bj-table-zone--hero-value
+    .bj-card-view__hero-value.bj-phone-view__total--hero {
+    font-size: calc(
+      var(--bj-seat-total-size) * 1.35 * var(--bj-card-desktop-hero-value-scale, 0.62)
+    );
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
+    padding-top: 0;
+    padding-bottom: var(--bj-card-desktop-action-offset, 0.2rem);
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .ds-btn--hit {
+    background: rgb(8 22 16 / 0.82);
+    color: rgb(251 191 36 / 0.98);
+    border: 1px solid rgb(251 191 36 / 0.62);
+    box-shadow: none;
+    min-height: 1.55rem;
+    max-height: 1.55rem;
+    padding: 0.14rem 0.55rem;
+    border-radius: 0.38rem;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .ds-btn--stand {
+    background: rgb(0 0 0 / 0.28);
+    color: rgb(235 245 240 / 0.95);
+    border: 1px solid rgb(255 255 255 / 0.22);
+    min-height: 1.55rem;
+    max-height: 1.55rem;
+    padding: 0.14rem 0.55rem;
+    border-radius: 0.38rem;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--boxes {
+    align-items: stretch;
+    justify-content: flex-end;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    justify-content: var(--bj-card-desktop-box-spread, space-evenly);
+    grid-template-columns: repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
+  }
+
+  .bj-view-card-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
+    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
+  }
+
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ) {
+    font-size: calc(0.58rem * var(--bj-card-desktop-box-value-scale, 2.2));
+    min-height: calc(0.95rem * var(--bj-card-desktop-box-value-scale, 2.2) * 0.55);
+    max-height: calc(1.05rem * var(--bj-card-desktop-box-value-scale, 2.2) * 0.55);
+    line-height: 1.05;
+  }
+}

@@ -434,10 +434,9 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @media (min-width: 721px) {
-  .bj-view-full-desktop,
-  .bj-view-card-desktop {
+  .bj-view-full-desktop {
     --bj-full-desktop-dealer-command-gap: 0.1875rem;
-    --bj-full-desktop-actions-boxes-gap: var(--bj-desktop-action-row-offset, 0.125rem);
+    --bj-full-desktop-actions-boxes-gap: 0.125rem;
     --bj-full-desktop-stack-value-gap: 0.3125rem;
     --bj-full-desktop-zone-actions-height: calc(1.55rem + var(--bj-full-desktop-actions-boxes-gap));
     --bj-full-desktop-cards-actions-gap: 0.28rem;
@@ -448,40 +447,17 @@
     padding-top: var(--bj-full-desktop-dealer-command-gap);
   }
 
-  /* Hit/Stay — sit close above box amount labels (Full Table + Card View desktop) */
-  .bj-view-full-desktop .bj-table-layout-shell,
-  .bj-view-card-desktop .bj-table-layout-shell {
+  /* Hit/Stay — sit close above box amount labels (Full Table desktop) */
+  .bj-view-full-desktop .bj-table-layout-shell {
     --bj-desktop-zone-actions-height: var(--bj-full-desktop-zone-actions-height);
     --bj-cards-actions-gap: var(--bj-full-desktop-cards-actions-gap);
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions,
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions {
     padding-top: 0;
     padding-bottom: var(--bj-full-desktop-actions-boxes-gap);
     justify-content: flex-end;
     align-items: center;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .ds-btn--hit {
-    background: rgb(8 22 16 / 0.82);
-    color: rgb(251 191 36 / 0.98);
-    border: 1px solid rgb(251 191 36 / 0.62);
-    box-shadow: none;
-    min-height: 1.55rem;
-    max-height: 1.55rem;
-    padding: 0.14rem 0.55rem;
-    border-radius: 0.38rem;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .ds-btn--stand {
-    background: rgb(0 0 0 / 0.28);
-    color: rgb(235 245 240 / 0.95);
-    border: 1px solid rgb(255 255 255 / 0.22);
-    min-height: 1.55rem;
-    max-height: 1.55rem;
-    padding: 0.14rem 0.55rem;
-    border-radius: 0.38rem;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes {

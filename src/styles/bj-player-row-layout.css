@@ -58,9 +58,8 @@
     max-width: 100%;
   }
 
-  /* CONTRACT A/B — desktop compact max-content row (never equal 1fr stretch). */
-  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes,
-  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes {
+  /* CONTRACT A/B — desktop compact max-content row (Full Table only; Card View uses spread block below). */
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes {
     width: max-content;
     max-width: 100%;
     margin-inline: auto;
@@ -69,22 +68,18 @@
     grid-template-columns: repeat(var(--slot-count, 4), minmax(0, max-content));
   }
 
-  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes,
-  .bj-view-card-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
     grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, max-content));
   }
 
-  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot,
-  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
     width: var(--bj-full-table-box-width);
     max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
     align-self: center;
   }
 
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,
-  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty,
-  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--owned,
-  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty {
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--empty {
     align-self: center;
   }
 
@@ -149,12 +144,11 @@
 
   /*
    * Full Table desktop — spread fixed-width box/card columns across felt width.
-   * Card View desktop keeps compact max-content row above.
+   * Card View desktop spread — bj-card-desktop-layout.css
    * Card row geometry — bj-full-table-card-area.css
    */
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes,
-  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards,
-  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes {
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards {
     width: 100%;
     max-width: 100%;
     margin-inline: 0;
@@ -165,8 +159,7 @@
   }
 
   .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes,
-  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards,
-  .bj-view-card-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards {
     grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
   }
 

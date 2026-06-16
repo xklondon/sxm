@@ -3134,9 +3134,6 @@
 @media (min-width: 721px) {
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
       .bj-phone-view__mini-hand-value--placeholder
-    ),
-  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
-      .bj-phone-view__mini-hand-value--placeholder
     ) {
     font-size: calc(0.58rem * var(--bj-desktop-box-value-scale, 2));
     min-height: calc(0.95rem * var(--bj-desktop-box-value-scale, 2) * 0.55);

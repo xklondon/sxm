@@ -190,11 +190,24 @@ export const CARD_VIEW_LAYOUT_GUARD_FILES = [
   'src/styles/bj-card-layout.css',
 ] as const;
 
+/** Reference screenshot for canonical desktop Card View layout. */
+export const CARD_VIEW_DESKTOP_REFERENCE_IMAGE =
+  'reference-ui/views/Desktop_Card.png' as const;
+
+/** Desktop Card View layout tokens — scoped under .bj-view-card-desktop only. */
+export const CARD_VIEW_DESKTOP_LAYOUT_TOKENS = [
+  '--bj-card-desktop-hero-lower-offset',
+  '--bj-card-desktop-action-offset',
+  '--bj-card-desktop-box-spread',
+  '--bj-card-desktop-box-value-scale',
+] as const;
+
 /** Card View CSS owners (pending freeze — C1–C3). */
 export const CARD_VIEW_LAYOUT_OWNER_FILES = [
   'src/components/BlackjackCardView.tsx',
   'src/components/BlackjackCardView.css',
   'src/styles/bj-card-layout.css',
+  'src/styles/bj-card-desktop-layout.css',
   'src/styles/bj-table-shared.css',
   'src/styles/bj-player-row-layout.css',
 ] as const;

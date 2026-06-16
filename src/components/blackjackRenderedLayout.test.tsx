@@ -8,7 +8,7 @@ import type { GameState } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
 import { BlackjackPanel } from './BlackjackPanel';
 import { claimBoxSlot } from '../engine/session';
-import { blackjackHandKey } from '../engine/blackjack';
+import { blackjackHandKey, addChipToBoxStake } from '../engine/blackjack';
 import {
   boxPlayerId,
   findCardId,
@@ -24,8 +24,10 @@ import {
   FULL_TABLE_DESKTOP_VIEW_ROOT,
   FULL_TABLE_MOBILE_VIEW_ROOT,
   DESKTOP_LAYOUT_TOKENS,
+  CARD_VIEW_DESKTOP_LAYOUT_TOKENS,
   PLAYER_BOX_IN_PLAY_HAND_VALUE_CLASS,
 } from './blackjackLayoutContract';
+import { DEFAULT_VISIBLE_TABLE_BOXES } from './tableBoxLayout';
 import { getViewRootClass } from './tableViewContract';
 import { isMobileLayoutViewport, MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
 
@@ -34,6 +36,7 @@ const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/Blackjack
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+const CARD_DESKTOP_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
 const noop = () => {};
 
 let simulatedWidth = 1280;
@@ -285,11 +288,11 @@ describe('rendered position — full table card column', () => {
     expect(PLAYER_ROW_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%/,
     );
-    expect(PLAYER_ROW_CSS).toMatch(
+    expect(CARD_DESKTOP_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%/,
     );
-    expect(PLAYER_ROW_CSS).toMatch(
-      /justify-content:\s*var\(--bj-desktop-player-row-spread/,
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /justify-content:\s*var\(--bj-card-desktop-box-spread/,
     );
   });
 });
@@ -314,14 +317,14 @@ describe('rendered position — desktop canonical tokens', () => {
   });
 
   it('scopes Card View desktop hero rules under bj-view-card-desktop', () => {
-    expect(CARD_LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*--bj-desktop-cardview-hero-value-scale/,
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop[\s\S]*--bj-card-desktop-hero-lower-offset/,
     );
-    expect(CARD_LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*--bj-desktop-card-area-bottom-gap/,
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop[\s\S]*--bj-card-desktop-action-offset/,
     );
     expect(CARD_LAYOUT_CSS).not.toMatch(
-      /\.bj-view-full-desktop[\s\S]*--bj-desktop-cardview-hero-value-scale/,
+      /\.bj-view-full-desktop[\s\S]*--bj-card-desktop-hero-lower-offset/,
     );
   });
 
@@ -329,7 +332,7 @@ describe('rendered position — desktop canonical tokens', () => {
     expect(PLAYER_ROW_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*--bj-desktop-player-row-spread/,
     );
-    expect(PLAYER_ROW_CSS).toMatch(
+    expect(CARD_DESKTOP_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%/,
     );
   });
@@ -354,6 +357,65 @@ describe('rendered position — desktop canonical tokens', () => {
     expect(SHARED_CSS).not.toMatch(
       /\.bj-view-full-mobile[^,{]*\{[^}]*--bj-desktop-box-value-scale\s*:/,
     );
+  });
+});
+
+describe('rendered position — desktop card view reference layout', () => {
+  function bettingCardDesktopState(): GameState {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    const box1 = boxPlayerId(state, 1)!;
+    state = addChipToBoxStake(state, box1, 20);
+    return {
+      ...state,
+      tableViewMode: 'card',
+      blackjack: null,
+      tableMeta: { ...state.tableMeta, bettingLocked: false },
+    };
+  }
+
+  it('uses four initial visible boxes plus add control during betting', () => {
+    simulatedWidth = 1280;
+    simulatedHeight = 800;
+    const { container } = render(
+      createElement(BlackjackPanel, { gameState: bettingCardDesktopState(), onGameStateChange: noop }),
+    );
+    expect(container.querySelector('.bj-view-card-desktop')).toBeTruthy();
+    const row = container.querySelector('.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes');
+    expect(row).toBeTruthy();
+    expect(row!.className).toContain(`bj-arc--visible-${DEFAULT_VISIBLE_TABLE_BOXES}`);
+    expect(row!.querySelector('.bj-table-slot-row__add')).toBeTruthy();
+    expect(row!.querySelectorAll('.bj-arc__slot').length).toBe(DEFAULT_VISIBLE_TABLE_BOXES);
+  });
+
+  it('defines Card View desktop layout tokens scoped to bj-view-card-desktop', () => {
+    for (const token of CARD_VIEW_DESKTOP_LAYOUT_TOKENS) {
+      expect(CARD_DESKTOP_CSS).toContain(token);
+    }
+    expect(CARD_DESKTOP_CSS).toMatch(/\.bj-view-card-desktop[\s\S]*--bj-card-desktop-box-spread/);
+    expect(PLAYER_ROW_CSS).not.toMatch(
+      /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes\s*\{[^}]*width:\s*max-content/,
+    );
+    expect(SHARED_CSS).not.toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*align-items:\s*flex-end/,
+    );
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*align-items:\s*stretch/,
+    );
+  });
+
+  it('does not alter Full Table desktop player row spread rules', () => {
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%/,
+    );
+    expect(CARD_DESKTOP_CSS).not.toMatch(/\.bj-view-full-desktop/);
+  });
+
+  it('keeps mobile Card View hero overflow rules unchanged', () => {
+    expect(CARD_LAYOUT_CSS).toMatch(
+      /\.bj-view-card-mobile[\s\S]*\.bj-phone-view__cards[\s\S]*overflow:\s*hidden/,
+    );
+    expect(CARD_DESKTOP_CSS).not.toMatch(/\.bj-view-card-mobile/);
   });
 });
 

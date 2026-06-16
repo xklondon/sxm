@@ -148,10 +148,12 @@ describe('blackjack final layout fixes', () => {
     expect(actionsZone).toContain('ds-btn--stand');
   });
 
-  it('desktop Card View shares Full Table shell action placement tokens', () => {
-    expect(CARD_AREA_CSS).toMatch(
+  it('desktop Card View shares shell action placement with lower offset token', () => {
+    const cardDesktopCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
+    expect(cardDesktopCss).toMatch(
       /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-end/,
     );
+    expect(cardDesktopCss).toMatch(/--bj-card-desktop-action-offset/);
     expect(SHARED_CSS).not.toMatch(
       /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-start/,
     );
