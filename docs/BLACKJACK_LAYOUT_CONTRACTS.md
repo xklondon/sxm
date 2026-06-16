@@ -10,7 +10,7 @@ Canonical layout rules for all supported blackjack table views. Protocol, bettin
 | Full Table Desktop | **FROZEN** | `FULL_TABLE_DESKTOP_FROZEN` |
 | Full Table Mobile Portrait | **FROZEN** | `FULL_TABLE_MOBILE_PORTRAIT_FROZEN` |
 | Full Table Mobile Landscape | **PENDING FREEZE** | `FULL_TABLE_MOBILE_LANDSCAPE_FROZEN` |
-| Card View Desktop | **PENDING FREEZE** | `CARD_VIEW_DESKTOP_FROZEN` |
+| Card View Desktop | **FROZEN** | `CARD_VIEW_DESKTOP_FROZEN` |
 | Card View Mobile Portrait | **PENDING FREEZE** | `CARD_VIEW_MOBILE_PORTRAIT_FROZEN` |
 | Card View Mobile Landscape | **PENDING FREEZE** | `CARD_VIEW_MOBILE_LANDSCAPE_FROZEN` |
 
@@ -64,7 +64,9 @@ Work remaining views in this order (highest risk first):
 Status: **FROZEN** (`FULL_TABLE_DESKTOP_FROZEN = true`)
 
 View root: `bj-view-full-desktop`  
-Reference: [`reference-ui/views/a_digital_blackjack_poker_style_casino_game_ui_scr.png`](../reference-ui/views/a_digital_blackjack_poker_style_casino_game_ui_scr.png)
+Reference: [`reference-ui/views/Mobil.png`](../reference-ui/views/Mobil.png) (canonical desktop mockup — Full Table panel)
+
+Legacy reference: [`reference-ui/views/a_digital_blackjack_poker_style_casino_game_ui_scr.png`](../reference-ui/views/a_digital_blackjack_poker_style_casino_game_ui_scr.png)
 
 ### Zone order (top → bottom)
 
@@ -203,12 +205,23 @@ Aggregate flag: `CARD_VIEW_FROZEN = false` until C1–C3 are frozen.
 
 ---
 
-### C1. Desktop Card View — PENDING FREEZE
+### C1. Desktop Card View — FROZEN
 
-Status: `CARD_VIEW_DESKTOP_FROZEN = false`  
-View root: `CARD_VIEW_DESKTOP_ROOT` (`bj-view-card-desktop`)
+Status: **FROZEN** (`CARD_VIEW_DESKTOP_FROZEN = true`)  
+View root: `CARD_VIEW_DESKTOP_ROOT` (`bj-view-card-desktop`)  
+Reference: [`reference-ui/views/Mobil.png`](../reference-ui/views/Mobil.png) (canonical desktop Full Table + Card View mockup)
 
-**Structure:** Shell hero fan + reserved value band below cards (dealer-value size token `bj-card-view__hero-value` / `bj-player-hand-value--emphasis`; active-turn frame wraps value only); canonical Hit/Stay via shell `BlackjackActionPanel` in `bj-table-zone--actions` (**same component, placement, and button sizing as Full Table desktop** — no Card View action path); shared `renderPlayerBoxesArc` / `renderArcSlot` player boxes; shared `ValueAndChipsBar` tray; hero third+ cards use `bj-phone-view__card-wrap--layered` offset transforms; optional Double/Split in command zone overlay; This Table docked right.
+**Vertical zone model (top → bottom):** Top nav → Dealer → Command → Hero cards → Hero value → Action row → Player boxes → Tray.
+
+**Layout tokens** (scoped under `.bj-view-full-desktop` / `.bj-view-card-desktop` only):
+
+- `--bj-desktop-player-row-spread: space-evenly` — player boxes span felt width
+- `--bj-desktop-box-value-scale: 2` — in-box hand total during play
+- `--bj-desktop-cardview-hero-value-scale: 0.7` — hero value ~30% smaller than prior emphasis size
+- `--bj-desktop-action-row-offset: 0.125rem` — Hit/Stay closer to player boxes
+- `--bj-desktop-card-area-bottom-gap: 0.35rem` — hero cards stretch lower without clipping
+
+**Structure:** Shell hero fan + dedicated `bj-table-zone--hero-value` below cards; canonical Hit/Stay via shared `BlackjackActionRow` in `bj-table-zone--actions`; shared `BlackjackPlayerBoxRow` / `BlackjackTrayRow`; hero third+ cards use `bj-phone-view__card-wrap--layered`; optional Double/Split in command zone overlay; This Table docked right.
 
 **Player boxes (all views):** During play, box shows owner, card ranks, and in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside box; bet amount stays above box. Betting phase still shows chips inside box.
 

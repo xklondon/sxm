@@ -153,17 +153,20 @@
    * Card row geometry — bj-full-table-card-area.css
    */
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes,
-  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards {
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards,
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes {
     width: 100%;
     max-width: 100%;
-    justify-content: space-evenly;
+    margin-inline: 0;
+    justify-content: var(--bj-desktop-player-row-spread, space-evenly);
     justify-items: center;
     column-gap: 0;
     grid-template-columns: repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
   }
 
   .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes,
-  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards {
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards,
+  .bj-view-card-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
     grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
   }
 

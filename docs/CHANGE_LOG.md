@@ -15,6 +15,15 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-16 — Canonical desktop layout tokens (Full Table + Card View)
+
+- **Desktop layout:** Token-based vertical zone model for `.bj-view-full-desktop` and `.bj-view-card-desktop` — player row spread (`--bj-desktop-player-row-spread`), in-box value 2× scale, Card View hero value −30%, action row offset, hero card area bottom gap.
+- **Card View desktop:** Player boxes now full-width `space-evenly` (was compact centered cluster); hero cards stretch lower without clipping; hero value in dedicated shell zone.
+- **Freeze:** `CARD_VIEW_DESKTOP_FROZEN = true`; reference mockup [`reference-ui/views/Mobil.png`](../reference-ui/views/Mobil.png) documented in `BLACKJACK_LAYOUT_CONTRACTS.md`.
+- **Tests:** Extended `blackjackRenderedLayout.test.tsx` with desktop token guards and hero stack position checks.
+
+---
+
 ## 2026-06-16 — Split gameplay tests + shared layout rows + rendered-position tests
 
 - **Split engine:** No logic change — canonical `splitBlackjackOnState` / `handKey` routing already correct. Added `splitGameplay.test.ts` (7 cases: pair split, wager parity, active-hand advance, resplit, double-after-split, settlement, handKey routing).

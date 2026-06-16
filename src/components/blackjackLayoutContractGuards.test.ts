@@ -121,7 +121,7 @@ describe('layout contract audit guards — freeze flags', () => {
   it('separates portrait frozen from landscape pending flags', () => {
     expect(FULL_TABLE_MOBILE_PORTRAIT_FROZEN).toBe(true);
     expect(FULL_TABLE_MOBILE_LANDSCAPE_FROZEN).toBe(false);
-    expect(CARD_VIEW_DESKTOP_FROZEN).toBe(false);
+    expect(CARD_VIEW_DESKTOP_FROZEN).toBe(true);
     expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(false);
     expect(CARD_VIEW_MOBILE_LANDSCAPE_FROZEN).toBe(false);
     expect(CARD_VIEW_FROZEN).toBe(false);
@@ -163,9 +163,11 @@ describe('layout contract audit guards — Full Table Mobile Landscape (B2 pendi
 });
 
 describe('layout contract audit guards — Card View Desktop (C1 pending)', () => {
-  it('keeps Card View desktop freeze flag false', () => {
-    expect(CARD_VIEW_DESKTOP_FROZEN).toBe(false);
+  it('keeps Card View desktop freeze flag true after canonical layout', () => {
+    expect(CARD_VIEW_DESKTOP_FROZEN).toBe(true);
     expect(CONTRACT_DOC).toContain('C1. Desktop Card View');
+    expect(CONTRACT_DOC).toContain('FROZEN');
+    expect(CONTRACT_DOC).toContain('Mobil.png');
   });
 
   it('uses hero cards area mode, not Full Table arc class', () => {

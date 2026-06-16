@@ -23,12 +23,17 @@ import {
   FULL_TABLE_CARD_VALUE_CLASS,
   FULL_TABLE_DESKTOP_VIEW_ROOT,
   FULL_TABLE_MOBILE_VIEW_ROOT,
+  DESKTOP_LAYOUT_TOKENS,
+  PLAYER_BOX_IN_PLAY_HAND_VALUE_CLASS,
 } from './blackjackLayoutContract';
 import { getViewRootClass } from './tableViewContract';
 import { isMobileLayoutViewport, MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
 
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
+const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
+const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const noop = () => {};
 
 let simulatedWidth = 1280;
@@ -274,5 +279,101 @@ describe('rendered position — full table card column', () => {
     const max = Math.max(...widths);
     const min = Math.min(...widths);
     expect(max - min).toBeLessThanOrEqual(4);
+  });
+
+  it('Desktop Full Table + Card View player row CSS spreads boxes across felt width', () => {
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /justify-content:\s*var\(--bj-desktop-player-row-spread/,
+    );
+  });
+});
+
+describe('rendered position — desktop canonical tokens', () => {
+  it('defines desktop layout tokens under desktop view roots only', () => {
+    for (const token of DESKTOP_LAYOUT_TOKENS) {
+      expect(SHARED_CSS).toContain(token);
+    }
+    expect(SHARED_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-desktop-player-row-spread/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*\.bj-view-card-desktop[\s\S]*--bj-desktop-box-value-scale:\s*2/,
+    );
+    expect(SHARED_CSS).not.toMatch(
+      /\.bj-view-full-mobile[^,{]*\{[^}]*--bj-desktop-box-value-scale\s*:/,
+    );
+    expect(SHARED_CSS).not.toMatch(
+      /\.bj-view-card-mobile[^,{]*\{[^}]*--bj-desktop-box-value-scale\s*:/,
+    );
+  });
+
+  it('scopes Card View desktop hero rules under bj-view-card-desktop', () => {
+    expect(CARD_LAYOUT_CSS).toMatch(
+      /\.bj-view-card-desktop[\s\S]*--bj-desktop-cardview-hero-value-scale/,
+    );
+    expect(CARD_LAYOUT_CSS).toMatch(
+      /\.bj-view-card-desktop[\s\S]*--bj-desktop-card-area-bottom-gap/,
+    );
+    expect(CARD_LAYOUT_CSS).not.toMatch(
+      /\.bj-view-full-desktop[\s\S]*--bj-desktop-cardview-hero-value-scale/,
+    );
+  });
+
+  it('scopes Full Table desktop player-row spread under bj-view-full-desktop', () => {
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*--bj-desktop-player-row-spread/,
+    );
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%/,
+    );
+  });
+
+  it('Desktop Full Table in-box hand value uses 2x scale token', () => {
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-desktop[\s\S]*\.bj-phone-view__mini-hand-value[\s\S]*--bj-desktop-box-value-scale/,
+    );
+  });
+
+  it('Mobile portrait player box value keeps base size (no desktop 2x token)', () => {
+    simulatedWidth = 390;
+    simulatedHeight = 844;
+    const { container } = renderPanelAt(VIEW_SCENARIOS[2]!);
+    const value = container.querySelector(
+      `.${PLAYER_BOX_IN_PLAY_HAND_VALUE_CLASS}:not(.${PLAYER_BOX_IN_PLAY_HAND_VALUE_CLASS}--placeholder)`,
+    );
+    if (value) {
+      const fontSize = getComputedStyle(value).fontSize;
+      expect(parseFloat(fontSize)).toBeLessThan(20);
+    }
+    expect(SHARED_CSS).not.toMatch(
+      /\.bj-view-full-mobile[^,{]*\{[^}]*--bj-desktop-box-value-scale\s*:/,
+    );
+  });
+});
+
+describe('rendered position — desktop card view hero fit', () => {
+  it('Desktop Card View keeps hero cards inside cards zone without clipping value/actions', () => {
+    const { container } = renderPanelAt(VIEW_SCENARIOS[1]!);
+    const cardsZone = container.querySelector('.bj-table-zone--cards.bj-cards-area--hero');
+    const heroCards = requireBand(container, 'hero-cards');
+    const heroValue = requireBand(container, 'hero-value');
+    const actionRow = requireBand(container, 'action-row');
+    const cardsRect = measureElement(cardsZone!);
+    const heroCardsRect = measureElement(heroCards);
+    expect(heroCardsRect.bottom).toBeLessThanOrEqual(cardsRect.bottom + 1);
+    assertVerticalStack(
+      [heroCardsRect, measureElement(heroValue), measureElement(actionRow)],
+      { label: 'Desktop Card View hero stack', tolerancePx: 0 },
+    );
+    assertNoPairwiseOverlap(
+      [heroCardsRect, measureElement(heroValue), measureElement(actionRow)],
+      { label: 'Desktop Card View hero stack' },
+    );
   });
 });

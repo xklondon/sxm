@@ -89,7 +89,9 @@
   --bj-desktop-grid-gap-command-cards: var(--bj-command-cards-gap);
   --bj-desktop-zone-actions-height: 2.9rem;
   --bj-hero-cards-top-inset: 0.65rem;
-  --bj-desktop-zone-hero-value-height: calc(var(--bj-seat-total-size, 0.52rem) * 1.35 + 0.42rem);
+  --bj-desktop-zone-hero-value-height: calc(
+    var(--bj-seat-total-size, 0.52rem) * 1.35 * var(--bj-desktop-cardview-hero-value-scale, 0.7) + 0.32rem
+  );
   --bj-desktop-zone-boxes-height: 6.65rem;
   --bj-desktop-zone-tray-height: 4.35rem;
   --bj-desktop-zone-boxes-tray-gap: 1.1rem;
@@ -2403,6 +2405,15 @@
     --bj-zone-tray-padding-bottom: var(--bj-desktop-bottom-padding);
   }
 
+  .bj-view-full-desktop,
+  .bj-view-card-desktop {
+    --bj-desktop-player-row-spread: space-evenly;
+    --bj-desktop-box-value-scale: 2;
+    --bj-desktop-cardview-hero-value-scale: 0.7;
+    --bj-desktop-action-row-offset: 0.125rem;
+    --bj-desktop-card-area-bottom-gap: 0.35rem;
+  }
+
   .bj-table-layout-shell {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -3121,6 +3132,18 @@
 
 /* Desktop player boxes — compact fixed tokens (no stretch-up by visible count). */
 @media (min-width: 721px) {
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ),
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ) {
+    font-size: calc(0.58rem * var(--bj-desktop-box-value-scale, 2));
+    min-height: calc(0.95rem * var(--bj-desktop-box-value-scale, 2) * 0.55);
+    max-height: calc(1.05rem * var(--bj-desktop-box-value-scale, 2) * 0.55);
+    line-height: 1.05;
+  }
+
   .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-4,
   .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-5,
   .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-6,

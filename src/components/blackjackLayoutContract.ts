@@ -26,7 +26,7 @@ import {
 export const FULL_TABLE_DESKTOP_FROZEN = true as const;
 export const FULL_TABLE_MOBILE_PORTRAIT_FROZEN = true as const;
 export const FULL_TABLE_MOBILE_LANDSCAPE_FROZEN = false as const;
-export const CARD_VIEW_DESKTOP_FROZEN = false as const;
+export const CARD_VIEW_DESKTOP_FROZEN = true as const;
 export const CARD_VIEW_MOBILE_PORTRAIT_FROZEN = false as const;
 export const CARD_VIEW_MOBILE_LANDSCAPE_FROZEN = false as const;
 
@@ -44,6 +44,19 @@ export const BLACKJACK_LAYOUT_CONTRACT_DOC = 'docs/BLACKJACK_LAYOUT_CONTRACTS.md
 /** Reference screenshot for desktop Full Table freeze. */
 export const FULL_TABLE_DESKTOP_REFERENCE_IMAGE =
   'reference-ui/views/a_digital_blackjack_poker_style_casino_game_ui_scr.png' as const;
+
+/** Reference screenshot for canonical desktop Full Table + Card View layout. */
+export const DESKTOP_CANONICAL_LAYOUT_REFERENCE_IMAGE =
+  'reference-ui/views/Mobil.png' as const;
+
+/** Token-based desktop layout knobs — scoped under desktop view roots only. */
+export const DESKTOP_LAYOUT_TOKENS = [
+  '--bj-desktop-player-row-spread',
+  '--bj-desktop-box-value-scale',
+  '--bj-desktop-cardview-hero-value-scale',
+  '--bj-desktop-action-row-offset',
+  '--bj-desktop-card-area-bottom-gap',
+] as const;
 
 // ── View roots ───────────────────────────────────────────────────────────────
 
