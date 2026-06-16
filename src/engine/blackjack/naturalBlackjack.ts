@@ -19,7 +19,7 @@ import {
   shouldPayNaturalImmediately,
 } from './protocols/activeRules';
 import { findNextActingHand } from './virtual';
-import { blackjackHandKey, parseBlackjackHandKey } from './handKeys';
+import { parseBlackjackHandKey } from './handKeys';
 import { syncActivePlayerId } from './helpers';
 import { applySkipBankIfNeeded } from './roundFlow';
 import { log } from '../../utils/logger';
