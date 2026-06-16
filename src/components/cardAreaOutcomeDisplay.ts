@@ -49,12 +49,28 @@ export function cardAreaOutcomeMarkerText(marker: CardAreaOutcomeMarker): string
   }
 }
 
-/** Compact stack badge copy — desktop Full Table bust overlay. */
+/** Compact stack badge copy — Full Table overlay on the card stack. */
 export function cardAreaOutcomeStackBadgeText(marker: CardAreaOutcomeMarker): string {
-  if (marker === 'bust') {
-    return 'BUST';
+  switch (marker) {
+    case 'bust':
+      return 'BUST';
+    case 'win':
+      return 'WIN';
+    case 'even':
+      return 'EVEN';
+    case 'blackjack':
+      return 'BJ';
   }
-  return cardAreaOutcomeMarkerText(marker);
+}
+
+/** Outcomes that render as compact stack badges in Full Table (not floating row). */
+export function cardAreaOutcomeUsesStackBadge(marker: CardAreaOutcomeMarker): boolean {
+  return (
+    marker === 'win' ||
+    marker === 'bust' ||
+    marker === 'even' ||
+    marker === 'blackjack'
+  );
 }
 
 export function cardAreaOutcomeMarkerClass(marker: CardAreaOutcomeMarker): string {

@@ -272,6 +272,13 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — WIN stack badge + round-2 reveal order
+
+- **WIN/EVEN/BJ stack badges:** Full Table desktop/mobile now overlay all outcome markers on the card stack (same pattern as BUST), not the floating command-row marker.
+- **Round 2+ reveal:** `nextSequentialRevealStep` no longer falls through to dealer-first `nextGameplayRevealStep` while initial-deal cards are pending; reveal hook no longer snaps to full visibility on partial reveal.
+
+---
+
 ## 2026-06-12 — Auto-stop defers to Split/Double
 
 - **Optional actions first:** `processPlayFlowAutoStands` no longer auto-stands when Split or Double is legal (`shouldAutoStopPlayerHandForState`). Pairs like 9+9 and 10+10 at auto-18 wait for player choice.

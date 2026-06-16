@@ -8,6 +8,7 @@ import {
   applyCardVisibility,
   cardRevealScopeKey,
   emptyCardVisibility,
+  hasPendingCardReveal,
   isActiveHandRevealComplete,
   isHandBoundaryRevealStep,
   isStaleHandVisibility,
@@ -16,6 +17,7 @@ import {
   resolveCardRevealDelayMs,
   resolveRevealScopeTransition,
   shouldSnapCardRevealOnMount,
+  shouldUseOrderedInitialReveal,
   totalCardCount,
   type CardVisibilityCounts,
 } from '../engine/blackjack/dealing/cardRevealDisplay';
@@ -204,6 +206,18 @@ export function useSequentialCardReveal(
           ? nextSequentialRevealStep(visible, authoritativeTarget, round, round.status)
           : nextSequentialRevealStep(visible, authoritativeTarget, null, undefined);
 
+        if (!stepped) {
+          if (
+            round &&
+            shouldUseOrderedInitialReveal(round.status, visible, authoritativeTarget)
+          ) {
+            break;
+          }
+          if (!hasPendingCardReveal(visible, authoritativeTarget)) {
+            break;
+          }
+        }
+
         if (stepped && round && isHandBoundaryRevealStep(visible, stepped)) {
           await sleepMs(waitForResultHoldMs(authoritative));
           if (runIdRef.current !== runId) {
@@ -219,7 +233,7 @@ export function useSequentialCardReveal(
           authoritativeTarget,
         );
 
-        visible = stepped ?? authoritativeTarget;
+        visible = stepped ?? visible;
         visibleRef.current = visible;
         setDisplayState(applyCardVisibility(authoritative, visible));
         setActiveHandRevealComplete(
@@ -234,10 +248,16 @@ export function useSequentialCardReveal(
       if (runIdRef.current === runId) {
         const final = gameStateRef.current;
         const finalTarget = maxVisibilityForRound(final.blackjack);
-        visibleRef.current = finalTarget;
-        setDisplayState(applyCardVisibility(final, finalTarget));
-        setIsRevealing(false);
-        setActiveHandRevealComplete(computeActiveHandRevealComplete(final, finalTarget, pacedReveal));
+        const visibleNow = visibleRef.current;
+        const revealComplete = countsEqual(visibleNow, finalTarget);
+        if (revealComplete) {
+          visibleRef.current = finalTarget;
+        }
+        setDisplayState(applyCardVisibility(final, revealComplete ? finalTarget : visibleNow));
+        setIsRevealing(!revealComplete && hasPendingCardReveal(visibleNow, finalTarget));
+        setActiveHandRevealComplete(
+          computeActiveHandRevealComplete(final, revealComplete ? finalTarget : visibleNow, pacedReveal),
+        );
       }
     })();
 

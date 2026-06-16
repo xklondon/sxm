@@ -3,6 +3,7 @@ import {
   applyRevealStep,
   buildInitialRevealSteps,
   nextGameplayRevealStep,
+  nextSequentialRevealStep,
   shouldUseOrderedInitialReveal,
   type CardVisibilityCounts,
 } from './cardRevealDisplay';
@@ -70,6 +71,21 @@ describe('natural reveal order', () => {
     const gameplay = nextGameplayRevealStep(visible, target);
     expect(gameplay?.dealer).toBe(2);
     expect(gameplay?.hands['p:0']).toBe(2);
+    const round = {
+      status: 'player-turns',
+      dealerCardIds: ['d1', 'd2'],
+      dealerHoleHidden: true,
+      activeHandKey: 'p:0',
+      activePlayerId: 'p',
+      playerHands: {
+        'p:0': { cardIds: ['a', 'b'], playerId: 'p', handIndex: 0, currentBet: 10, actionStatus: 'acting' },
+        'p2:0': { cardIds: ['c', 'd'], playerId: 'p2', handIndex: 0, currentBet: 10, actionStatus: 'acting' },
+      },
+      initialDealHandKeys: ['p:0', 'p2:0'],
+    } as unknown as import('../../../types/blackjack').BlackjackRound;
+    const ordered = nextSequentialRevealStep(visible, target, round, 'player-turns');
+    expect(ordered?.dealer).toBe(2);
+    expect(ordered?.hands['p:0']).toBe(2);
   });
 
   it('three-box deal reveal matches engine plan labels', () => {

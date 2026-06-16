@@ -211,10 +211,11 @@ describe('desktop Full Table layout polish', () => {
   });
 
   it('renders desktop bust as stack badge inside play-zone, not floating outcome row', () => {
-    expect(PANEL_SRC).toContain('bustBadgeOnStack');
+    expect(PANEL_SRC).toContain('stackOutcomeBadgeMarker');
     expect(PANEL_SRC).toContain('bj-arc__slot--card-column--stack-outcome');
     expect(PANEL_SRC).toContain('bj-card-outcome-marker--stack-badge');
     expect(PANEL_SRC).toContain('cardAreaOutcomeStackBadgeText');
+    expect(PANEL_SRC).toContain('cardAreaOutcomeUsesStackBadge');
     expect(CARD_AREA_DISPLAY_SRC).toContain("return 'BUST'");
     expect(CARD_AREA_CSS).toMatch(
       /\.bj-card-outcome-marker--stack-badge[\s\S]*position:\s*absolute/,
@@ -232,8 +233,53 @@ describe('desktop Full Table layout polish', () => {
     expect(column).not.toMatch(/bj-card-outcome-marker--bust[^>]*>[\s\S]*bj-arc__play-zone/);
   });
 
-  it('uses compact bust badge text helper', () => {
+  it('renders desktop win as stack badge inside play-zone, not floating outcome row', () => {
+    simulatedWidth = 1280;
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    const deck = state.deck!;
+    const box1 = boxPlayerId(state, 1)!;
+    const k1 = blackjackHandKey(box1, 0);
+    state = {
+      ...state,
+      tableViewMode: 'full',
+      blackjackFlowSettings: {
+        ...state.blackjackFlowSettings,
+        initialDealMode: 'instant',
+      },
+      tableMeta: { ...state.tableMeta, awaitingNextRound: true },
+      blackjack: {
+        ...state.blackjack!,
+        status: 'resolved',
+        isSettled: true,
+        dealerCardIds: [findCardId(deck, '10'), findCardId(deck, '9')],
+        playerHands: {
+          [k1]: {
+            ...createBlackjackPlayerHand(box1, 0),
+            cardIds: [findCardId(deck, 'K'), findCardId(deck, '9')],
+            currentBet: 10,
+            actionStatus: 'stood',
+          },
+        },
+        outcomes: { [k1]: 'win' },
+      },
+    };
+    const html = renderToStaticMarkup(
+      createElement(BlackjackPanel, { gameState: state, onGameStateChange: noop }),
+    );
+    expect(html).toContain('bj-card-outcome-marker--stack-badge');
+    expect(html).toContain('bj-card-outcome-marker--win');
+    expect(html).toContain('>WIN<');
+    expect(html).not.toMatch(
+      /bj-arc__slot--card-column[^>]*>[\s\S]*bj-card-outcome-marker--win[^>]*>[\s\S]*bj-arc__play-zone/,
+    );
+  });
+
+  it('uses compact stack badge text helper', () => {
     expect(cardAreaOutcomeStackBadgeText('bust')).toBe('BUST');
+    expect(cardAreaOutcomeStackBadgeText('win')).toBe('WIN');
+    expect(cardAreaOutcomeStackBadgeText('even')).toBe('EVEN');
+    expect(cardAreaOutcomeStackBadgeText('blackjack')).toBe('BJ');
   });
 
   it('does not apply desktop polish tokens to mobile Full Table markup', () => {
@@ -242,9 +288,45 @@ describe('desktop Full Table layout polish', () => {
       createElement(BlackjackPanel, { gameState: bustedDesktopState(), onGameStateChange: noop }),
     );
     expect(html).toContain('bj-view-full-mobile');
-    expect(html).not.toContain('bj-arc__slot--card-column--stack-outcome');
-    expect(html).not.toContain('bj-card-outcome-marker--stack-badge');
     expect(html).not.toContain('bj-optional-play-overlay-anchor');
+  });
+
+  it('renders mobile Full Table win as stack badge on card stack', () => {
+    simulatedWidth = 390;
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    const deck = state.deck!;
+    const box1 = boxPlayerId(state, 1)!;
+    const k1 = blackjackHandKey(box1, 0);
+    state = {
+      ...state,
+      tableViewMode: 'full',
+      blackjackFlowSettings: {
+        ...state.blackjackFlowSettings,
+        initialDealMode: 'instant',
+      },
+      tableMeta: { ...state.tableMeta, awaitingNextRound: true },
+      blackjack: {
+        ...state.blackjack!,
+        status: 'resolved',
+        isSettled: true,
+        dealerCardIds: [findCardId(deck, '10'), findCardId(deck, '9')],
+        playerHands: {
+          [k1]: {
+            ...createBlackjackPlayerHand(box1, 0),
+            cardIds: [findCardId(deck, 'K'), findCardId(deck, '9')],
+            currentBet: 10,
+            actionStatus: 'stood',
+          },
+        },
+        outcomes: { [k1]: 'win' },
+      },
+    };
+    const html = renderToStaticMarkup(
+      createElement(BlackjackPanel, { gameState: state, onGameStateChange: noop }),
+    );
+    expect(html).toContain('bj-card-outcome-marker--stack-badge');
+    expect(html).toContain('>WIN<');
   });
 
   it('does not apply desktop Full Table bust stack badge in Card View', () => {

@@ -57,7 +57,7 @@ export function totalCardCount(counts) {
 
 function handKeysForRound(round) {
     if (round.initialDealHandKeys?.length) {
-        return round.initialDealHandKeys;
+        return round.initialDealHandKeys.filter((handKey) => handKey in round.playerHands);
     }
     return Object.keys(round.playerHands);
 }
@@ -246,23 +246,26 @@ export function shouldUseOrderedInitialReveal(_roundStatus, visible, target) {
 
 /** Next paced reveal step — ordered initial deal, then gameplay catch-up. */
 export function nextSequentialRevealStep(visible, target, round, roundStatus) {
-    if (isStaleHandVisibility(visible, target)) {
-        return null;
-    }
-    if (round && shouldUseOrderedInitialReveal(roundStatus, visible, target)) {
+    const workingVisible = isStaleHandVisibility(visible, target)
+        ? emptyCardVisibility()
+        : visible;
+    if (round && shouldUseOrderedInitialReveal(roundStatus, workingVisible, target)) {
         const steps = buildInitialRevealSteps(round);
         for (const step of steps) {
-            const after = applyRevealStep(visible, step);
-            if (after.dealer !== visible.dealer ||
-                Object.keys(after.hands).some((handKey) => (after.hands[handKey] ?? 0) !== (visible.hands[handKey] ?? 0))) {
+            const after = applyRevealStep(workingVisible, step);
+            if (after.dealer !== workingVisible.dealer ||
+                Object.keys(after.hands).some((handKey) => (after.hands[handKey] ?? 0) !== (workingVisible.hands[handKey] ?? 0))) {
                 if (totalCardCount(after) <= totalCardCount(target)) {
                     return after;
                 }
             }
         }
+        if (hasPendingCardReveal(workingVisible, target) && isInitialDealVisibilityCounts(target)) {
+            return null;
+        }
     }
-    if (hasPendingCardReveal(visible, target)) {
-        return nextGameplayRevealStep(visible, target);
+    if (hasPendingCardReveal(workingVisible, target)) {
+        return nextGameplayRevealStep(workingVisible, target);
     }
     return null;
 }

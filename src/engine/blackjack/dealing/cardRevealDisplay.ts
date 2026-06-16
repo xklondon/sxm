@@ -72,7 +72,7 @@ export function totalCardCount(counts: CardVisibilityCounts): number {
 
 function handKeysForRound(round: BlackjackRound): string[] {
   if (round.initialDealHandKeys?.length) {
-    return round.initialDealHandKeys;
+    return round.initialDealHandKeys.filter((handKey) => handKey in round.playerHands);
   }
   return Object.keys(round.playerHands);
 }
@@ -325,17 +325,18 @@ export function nextSequentialRevealStep(
   round: BlackjackRound | null,
   roundStatus: BlackjackRound['status'] | undefined,
 ): CardVisibilityCounts | null {
-  if (isStaleHandVisibility(visible, target)) {
-    return null;
-  }
-  if (round && shouldUseOrderedInitialReveal(roundStatus, visible, target)) {
+  const workingVisible = isStaleHandVisibility(visible, target)
+    ? emptyCardVisibility()
+    : visible;
+
+  if (round && shouldUseOrderedInitialReveal(roundStatus, workingVisible, target)) {
     const steps = buildInitialRevealSteps(round);
     for (const step of steps) {
-      const after = applyRevealStep(visible, step);
+      const after = applyRevealStep(workingVisible, step);
       if (
-        after.dealer !== visible.dealer ||
+        after.dealer !== workingVisible.dealer ||
         Object.keys(after.hands).some(
-          (handKey) => (after.hands[handKey] ?? 0) !== (visible.hands[handKey] ?? 0),
+          (handKey) => (after.hands[handKey] ?? 0) !== (workingVisible.hands[handKey] ?? 0),
         )
       ) {
         if (totalCardCount(after) <= totalCardCount(target)) {
@@ -343,9 +344,12 @@ export function nextSequentialRevealStep(
         }
       }
     }
+    if (hasPendingCardReveal(workingVisible, target) && isInitialDealVisibilityCounts(target)) {
+      return null;
+    }
   }
-  if (hasPendingCardReveal(visible, target)) {
-    return nextGameplayRevealStep(visible, target);
+  if (hasPendingCardReveal(workingVisible, target)) {
+    return nextGameplayRevealStep(workingVisible, target);
   }
   return null;
 }

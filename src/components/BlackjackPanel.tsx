@@ -172,6 +172,7 @@ import {
   cardAreaOutcomeMarkerText,
   cardAreaOutcomeStackBadgeText,
   cardAreaOutcomeToneFromMarker,
+  cardAreaOutcomeUsesStackBadge,
   resolveCardAreaOutcomeMarker,
   type CardAreaOutcomeMarker,
 } from './cardAreaOutcomeDisplay';
@@ -1669,12 +1670,13 @@ export function BlackjackPanel({
             mobile: false,
           });
     const isSplit = handKeys.length > 1;
-    const isFullTableDesktop = deviceView === 'desktop' && viewMode === 'full';
-    const bustBadgeOnStack = isFullTableDesktop && outcomeMarker === 'bust';
+    const isFullTableView = viewMode === 'full';
+    const stackOutcomeBadgeMarker =
+      isFullTableView && outcomeMarker && cardAreaOutcomeUsesStackBadge(outcomeMarker);
     const floatingOutcomeMarker =
-      outcomeMarker && !isSplit && !bustBadgeOnStack ? outcomeMarker : null;
+      outcomeMarker && !isSplit && !stackOutcomeBadgeMarker ? outcomeMarker : null;
     const stackOutcomeBadge = (marker: CardAreaOutcomeMarker | null) =>
-      marker && isFullTableDesktop && marker === 'bust' ? (
+      marker && isFullTableView && cardAreaOutcomeUsesStackBadge(marker) ? (
         <span
           className={[
             cardAreaOutcomeMarkerClass(marker),
@@ -1692,7 +1694,7 @@ export function BlackjackPanel({
           'bj-arc__slot',
           'bj-arc__slot--card-column',
           isSplit ? 'bj-arc__slot--card-split' : '',
-          bustBadgeOnStack ? 'bj-arc__slot--card-column--stack-outcome' : '',
+          stackOutcomeBadgeMarker ? 'bj-arc__slot--card-column--stack-outcome' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
         data-box-slot={slotNumber}
@@ -1720,9 +1722,10 @@ export function BlackjackPanel({
                     getDisplayedHandValue(visualDeck, visualRound, handKey),
                   )
                 : null;
-              const splitBustOnStack = isFullTableDesktop && splitMarker === 'bust';
+              const splitStackBadge =
+                isFullTableView && splitMarker && cardAreaOutcomeUsesStackBadge(splitMarker);
               const splitFloatingMarker =
-                splitMarker && !splitBustOnStack ? splitMarker : null;
+                splitMarker && !splitStackBadge ? splitMarker : null;
               return (
                 <div key={handKey} className="bj-arc__split-hand">
                   {splitFloatingMarker ? (
