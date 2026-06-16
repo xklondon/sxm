@@ -105,6 +105,7 @@ export interface Store {
   updateTable(id: string, state: GameState, version: number): void;
 
   addMember(member: TableMemberRecord): void;
+  upsertMember(member: TableMemberRecord): void;
   getMembers(tableId: string): TableMemberRecord[];
   getMember(tableId: string, userId: string): TableMemberRecord | null;
 

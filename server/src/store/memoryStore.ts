@@ -122,6 +122,17 @@ export function createMemoryStore(): Store {
       }
     },
 
+    upsertMember(member) {
+      const list = members.get(member.tableId) ?? [];
+      const index = list.findIndex((m) => m.userId === member.userId);
+      if (index === -1) {
+        list.push(member);
+      } else {
+        list[index] = { ...list[index]!, ...member };
+      }
+      members.set(member.tableId, list);
+    },
+
     getMembers(tableId) {
       return members.get(tableId) ?? [];
     },

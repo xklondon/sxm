@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { GameState } from '../types';
 
-import { fetchMe, fetchTable, sendTableAction, type AuthUser } from '../api/client';
+import { fetchMe, fetchTable, sendTableAction, TableMembershipError, type AuthUser } from '../api/client';
 import { AuthFetchError } from '../auth/authErrors';
 import { applyOnlineTableBootstrap } from '../components/viewerIdentity';
 
@@ -124,6 +124,9 @@ export function useOnlineTable(
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
+      if (err instanceof TableMembershipError) {
+        throw err;
+      }
       if (/stale/i.test(message)) {
         try {
           const refreshed = await fetchTable(tableId);

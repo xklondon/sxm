@@ -32,6 +32,7 @@ import {
   logout,
   sendTableAction,
   TableNotFoundError,
+  TableMembershipError,
   type AuthUser,
 } from './api/client';
 import { createTableInvite } from './engine/table/invites';
@@ -298,6 +299,18 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
           recoverMissingOnlineTable({
             autoCreate: Boolean(bootTableId) && userCanCreateOnlineTable(user),
           });
+          return;
+        }
+        if (err instanceof TableMembershipError) {
+          clearStaleOnlineTableContext();
+          setDismissStoredTable(true);
+          setActiveTableId(null);
+          setGameState(null);
+          setTableVersion(null);
+          setTableMissingNotice(
+            'You are not seated at this online table. Open it from the lobby or use a fresh invite link.',
+          );
+          setScreen(onlineMode && user ? 'lobby' : 'start');
           return;
         }
         setStoredOnlineTableId(null);

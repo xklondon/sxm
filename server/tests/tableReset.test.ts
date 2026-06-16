@@ -9,6 +9,7 @@ import { createMemoryStore } from '../src/store/memoryStore.js';
 import { PeopleService } from '../src/people/service.js';
 import { TableService } from '../src/tables/service.js';
 import { seedHostUser } from './testHelpers.js';
+import { addSeatAtTable } from '../../src/engine/session/table.js';
 import { TABLE_RESET_LEDGER_MESSAGE } from '../../src/engine/session/tableReset.js';
 import { hasPersonalLedgerEntryForTable } from '../../src/engine/scoreLedger/scoreLedger.js';
 
@@ -26,13 +27,21 @@ describe('resetTable action', () => {
     const host = await seedHostUser(store);
     const table = await tables.createTable(host.id, 'Host');
     const guest = await store.createUser('guest@example.com', 'Guest');
-    store.addMember({
+    let state = addSeatAtTable(table.state, {
+      displayName: 'Guest',
+      controllerName: 'Guest',
+      role: 'person',
+      startingChips: 0,
+    });
+    const guestPersonId = state.session.playerIds[state.session.playerIds.length - 1]!;
+    store.upsertMember({
       tableId: table.id,
       userId: guest.id,
-      personId: 'guest-person',
+      personId: guestPersonId,
       role: 'player',
       joinedAt: new Date().toISOString(),
     });
+    store.updateTable(table.id, state, table.version);
 
     const hostView = await tables.getTableForUser(table.id, host.id);
     const boxId = Object.keys(hostView.state.players).find(
@@ -66,7 +75,9 @@ describe('resetTable action', () => {
     ).toBe(true);
     expect(hasPersonalLedgerEntryForTable(reset.state.session.id)).toBe(false);
 
-    await expect(tables.applyAction(table.id, guest.id, 'resetTable', payload, reset.version)).rejects.toThrow(/host/i);
+    await expect(
+      tables.applyAction(table.id, guest.id, 'resetTable', payload, reset.version, guest.email),
+    ).rejects.toThrow(/host/i);
   });
 
   it('re-adds missing host membership before reset', async () => {

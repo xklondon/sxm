@@ -7,6 +7,23 @@ import { resolveRequestOrigin } from '../auth/cookies.js';
 import { clientEmailErrorMessage } from '../email/smtp.js';
 import type { Server as SocketServer } from 'socket.io';
 import { respondPeopleAuthError } from '../people/httpErrors.js';
+import { TableForbiddenError, TableMembershipError, TableNotFoundError } from './errors.js';
+
+function respondTableServiceError(res: import('express').Response, err: unknown): boolean {
+  if (err instanceof TableNotFoundError) {
+    res.status(404).json({ error: err.message, code: 'TABLE_NOT_FOUND' });
+    return true;
+  }
+  if (err instanceof TableMembershipError) {
+    res.status(403).json({ error: err.message, code: 'TABLE_NOT_MEMBER' });
+    return true;
+  }
+  if (err instanceof TableForbiddenError) {
+    res.status(403).json({ error: err.message, code: 'TABLE_FORBIDDEN' });
+    return true;
+  }
+  return false;
+}
 
 export function createTableRouter(tables: TableService, io: SocketServer): Router {
   const router = Router();
@@ -115,6 +132,9 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       res.json({ tableId: table.id, version: table.version, state: table.state, memberPersonId });
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      if (respondTableServiceError(res, err)) {
         return;
       }
       res.status(404).json({ error: err instanceof Error ? err.message : 'Not found' });
@@ -269,6 +289,9 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       res.json(result);
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      if (respondTableServiceError(res, err)) {
         return;
       }
       const message = err instanceof Error ? err.message : 'Action failed';

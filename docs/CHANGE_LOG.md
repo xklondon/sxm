@@ -13,7 +13,13 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-16 — Card View canonical shell structure (final)
+## 2026-06-16 — Online table membership stability
+
+- **Canonical membership:** `server/src/tables/membership.ts` resolves session user id, repairs missing host/invitee rows, and syncs `member.personId` when `ownerPersonId` drifts after setup/reset.
+- **Authority:** All table actions use `ensureTableMember` (no direct `getMember` + non-null assertion).
+- **Client:** `TableMembershipError` (403) distinct from table-not-found; stale local table id cleared with lobby prompt; `onlineDispatch` re-throws membership errors without wrapping.
+
+---
 
 - **Hero layout:** Reserved `--bj-cardview-hero-value-band-height` between hero cards and actions; removed conflicting `overflow: visible` reset on cards-slot; shell hero stage `min-height: 0` so value is not overlapped (desktop + mobile Card View).
 - **Actions/boxes/tray:** Canonical order hero cards → hero value → `BlackjackActionPanel` → shared player boxes → shared `ValueAndChipsBar` tray; removed Card View–only action padding overrides; player box in-play totals + stake-slot collapse apply to all views.

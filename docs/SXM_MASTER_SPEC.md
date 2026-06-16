@@ -546,6 +546,7 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 
 - **Mutations only via** `POST /api/tables/:id/actions` when `onlineDispatch` present
 - **No local gameplay mutation** when online (panels early-return local effects)
+- **Table membership:** `ensureTableMember` (`server/src/tables/membership.ts`) resolves canonical session user id, upserts host/invitee rows, and syncs `member.personId` to `ownerPersonId` / seated game-state persons before authority checks
 - Socket.IO: `table:subscribe` → `table:update`; fallback poll 15s
 - Optimistic concurrency on `version`; stale → refetch + retry message
 - Viewer identity: `memberPersonId` from bootstrap + profile viewer map

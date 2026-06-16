@@ -176,6 +176,9 @@ export async function sendTableAction(
   });
   const data = await res.json();
   if (!res.ok) {
+    if (res.status === 403 && (data as { code?: string }).code === 'TABLE_NOT_MEMBER') {
+      throw new TableMembershipError(tableId, data.error ?? 'Not a member of this table');
+    }
     throw new Error(data.error ?? 'Action failed');
   }
   return data as { state: import('../types').GameState; version: number };
@@ -189,6 +192,19 @@ export class TableNotFoundError extends Error {
     super(message);
     this.name = 'TableNotFoundError';
     this.tableId = tableId;
+  }
+}
+
+export class TableMembershipError extends Error {
+  readonly tableId: string;
+  readonly status = 403;
+  readonly code = 'TABLE_NOT_MEMBER';
+
+  constructor(tableId: string, message = 'Not a member of this table') {
+    super(message);
+    this.name = 'TableMembershipError';
+    this.tableId = tableId;
+    this.code = 'TABLE_NOT_MEMBER';
   }
 }
 
@@ -224,7 +240,10 @@ export async function requestTableAccess(tableId: string, displayName: string): 
 
 export async function fetchTable(tableId: string) {
   const res = await apiFetch(`/api/tables/${tableId}`);
-  const data = (await res.json()) as { error?: string };
+  const data = (await res.json()) as { error?: string; code?: string };
+  if (res.status === 403 && data.code === 'TABLE_NOT_MEMBER') {
+    throw new TableMembershipError(tableId, data.error ?? 'Not a member of this table');
+  }
   if (res.status === 404) {
     throw new TableNotFoundError(tableId, data.error ?? 'Table not found');
   }

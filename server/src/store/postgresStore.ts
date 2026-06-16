@@ -219,6 +219,10 @@ export function createPostgresStore(prisma: PrismaClient): Store {
       return game.addMember(member);
     },
 
+    upsertMember(member: TableMemberRecord) {
+      return game.upsertMember(member);
+    },
+
     getMembers(tableId: string) {
       return game.getMembers(tableId);
     },

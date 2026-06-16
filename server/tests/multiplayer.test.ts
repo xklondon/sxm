@@ -111,42 +111,23 @@ describe('SXMCards multiplayer API', () => {
 
 
   it('non-member cannot placeBet on host box', async () => {
-
     const host = await seedHostUser(store, 'host@example.com');
-
     const table = await tables.createTable(host.id, 'Host');
-
     const hostBoxId = Object.keys(table.state.players).find(
-
       (id) => table.state.players[id]?.role === 'box',
-
     )!;
-
-
-
-    store.addMember({
-
-      tableId: table.id,
-
-      userId: 'other-user',
-
-      personId: 'fake-person',
-
-      role: 'player',
-
-      joinedAt: new Date().toISOString(),
-
-    });
-
-
+    const outsider = await store.createUser('outsider@example.com', 'Outsider');
 
     await expect(
-      tables.applyAction(table.id, 'other-user', 'placeBet', {
-        boxId: hostBoxId,
-        amount: 10,
-      }),
-    ).rejects.toThrow(/Not authorized/i);
-
+      tables.applyAction(
+        table.id,
+        outsider.id,
+        'placeBet',
+        { boxId: hostBoxId, amount: 10 },
+        table.version,
+        outsider.email,
+      ),
+    ).rejects.toThrow(/Not a member/i);
   });
 
 

@@ -20,6 +20,8 @@ import {
   getStartingChipsBank,
   getStartingChipsEachSeat,
 } from '../../../src/engine/session/tokens.js';
+import { ensureTableMember, upsertTableMember } from './membership.js';
+import { TableNotFoundError } from './errors.js';
 
 import type { PeopleService } from '../people/service.js';
 
@@ -57,7 +59,7 @@ export class TableService {
       updatedAt: now,
     };
     this.store.createTable(record);
-    this.store.addMember({
+    upsertTableMember(this.store, {
       tableId: id,
       userId: user.id,
       personId,
@@ -72,10 +74,17 @@ export class TableService {
     userId: string,
     sessionEmail?: string,
   ): Promise<TableRecord> {
-    await this.getMemberPersonIdForSession(tableId, userId, sessionEmail, 'GET /api/tables/:id');
+    await ensureTableMember({
+      store: this.store,
+      people: this.people,
+      tableId,
+      userId,
+      sessionEmail,
+      context: 'GET /api/tables/:id',
+    });
     const table = this.store.getTable(tableId);
     if (!table) {
-      throw new Error('Table not found');
+      throw new TableNotFoundError();
     }
     return table;
   }
@@ -87,26 +96,14 @@ export class TableService {
     sessionEmail?: string,
     context = 'table member lookup',
   ): Promise<string> {
-    const resolvedUserId = sessionEmail
-      ? (await this.people.resolveSessionUser(userId, sessionEmail, context)).id
-      : userId;
-    let member = this.store.getMember(tableId, resolvedUserId);
-    if (!member) {
-      const table = this.store.getTable(tableId);
-      if (table?.hostUserId === resolvedUserId && table.state.tableMeta.ownerPersonId) {
-        member = {
-          tableId,
-          userId: resolvedUserId,
-          personId: table.state.tableMeta.ownerPersonId,
-          role: 'host',
-          joinedAt: new Date().toISOString(),
-        };
-        this.store.addMember(member);
-      }
-    }
-    if (!member) {
-      throw new Error('Not a member of this table');
-    }
+    const member = await ensureTableMember({
+      store: this.store,
+      people: this.people,
+      tableId,
+      userId,
+      sessionEmail,
+      context,
+    });
     return member.personId;
   }
 
@@ -265,13 +262,23 @@ export class TableService {
         startingChips: 0,
       });
       personId = state.session.playerIds[state.session.playerIds.length - 1]!;
-      this.store.addMember({
+      upsertTableMember(this.store, {
         tableId: params.invite.tableId,
         userId: user.id,
         personId,
         role: 'player',
         joinedAt: new Date().toISOString(),
       });
+    } else if (!state.players[personId]) {
+      const repaired = await ensureTableMember({
+        store: this.store,
+        people: this.people,
+        tableId: params.invite.tableId,
+        userId: user.id,
+        sessionEmail: params.sessionEmail,
+        context: 'POST /api/tables/join',
+      });
+      personId = repaired.personId;
     }
 
     const joined = finalizeInviteJoinAtTable(state, personId, params.displayName);
@@ -597,7 +604,7 @@ export class TableService {
         startingChips: 0,
       });
       personId = state.session.playerIds[state.session.playerIds.length - 1]!;
-      this.store.addMember({
+      upsertTableMember(this.store, {
         tableId: params.tableId,
         userId: params.userId,
         personId,
@@ -617,18 +624,24 @@ export class TableService {
     expectedVersion?: number,
     sessionEmail?: string,
   ): Promise<{ state: GameState; version: number }> {
-    const resolvedUserId = sessionEmail
-      ? (await this.people.resolveSessionUser(userId, sessionEmail, 'POST /api/tables/:id/actions'))
-          .id
-      : userId;
-    const table = await this.getTableForUser(tableId, userId, sessionEmail);
+    const member = await ensureTableMember({
+      store: this.store,
+      people: this.people,
+      tableId,
+      userId,
+      sessionEmail,
+      context: 'POST /api/tables/:id/actions',
+    });
+    const table = this.store.getTable(tableId);
+    if (!table) {
+      throw new TableNotFoundError();
+    }
     if (expectedVersion !== undefined && expectedVersion !== table.version) {
       throw new Error('Stale table version');
     }
-    const member = this.store.getMember(tableId, resolvedUserId)!;
     assertActionAuthorized(table.state, {
       tableId,
-      userId,
+      userId: member.userId,
       personId: member.personId,
       action,
       payload,
