@@ -131,6 +131,22 @@ export function canSplitBlackjackForState(state: GameState, handKey: string): bo
     : false;
 }
 
+/** Split/Double legality as if the hand were still acting — for auto-stop hold retrospection. */
+export function getPlayerOptionalActionGateIfActing(
+  state: GameState,
+  handKey: string,
+): { canSplit: boolean; canDouble: boolean } {
+  const built = rulesContextForHand(state, handKey);
+  if (!built) {
+    return { canSplit: false, canDouble: false };
+  }
+  const hand = { ...built.ctx.hand, actionStatus: 'acting' as const };
+  return {
+    canSplit: canSplitUnderProtocol(built.protocol, hand, { ...built.ctx, deck: built.deck }),
+    canDouble: canDoubleUnderProtocol(built.protocol, hand, built.ctx),
+  };
+}
+
 export function canHitBlackjackForState(state: GameState, handKey: string): boolean {
   if (!state.blackjack || !canHitBlackjack(state.blackjack, handKey)) {
     return false;

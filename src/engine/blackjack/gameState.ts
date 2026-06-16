@@ -60,7 +60,7 @@ import { shuffleGameDeck } from '../deck';
 import { resolveNaturalsAfterInitialDeal, resolvePendingNaturalsAfterDealerPeek } from './naturalBlackjack';
 import { applyShortStackMinBetTopUpOnState } from './shortStackTopUp';
 import { getCallerPersonIdForBox } from '../session/playerAssignment';
-import { autoStandThreshold, getPlayFlowForPerson } from './playFlow';
+import { getPlayFlowForPerson, shouldAutoStopPlayerHandForState } from './playFlow';
 import { cardsFromIds } from './hand';
 import { getBlackjackHandValue } from './hand';
 
@@ -848,7 +848,7 @@ export function processPlayFlowAutoStands(state: GameState): GameState {
     }
 
     const cards = cardsFromIds(next.deck!, hand.cardIds.filter(Boolean));
-    const { value, isBlackjack } = getBlackjackHandValue(cards);
+    const { isBlackjack } = getBlackjackHandValue(cards);
     if (isBlackjack) {
       break;
     }
@@ -863,12 +863,7 @@ export function processPlayFlowAutoStands(state: GameState): GameState {
       break;
     }
 
-    const threshold = autoStandThreshold(getPlayFlowForPerson(next, callerId));
-    if (threshold === null) {
-      break;
-    }
-
-    if (value > 21 || value < threshold) {
+    if (!shouldAutoStopPlayerHandForState(next, handKey, getPlayFlowForPerson(next, callerId), cards)) {
       break;
     }
 

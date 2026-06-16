@@ -64,9 +64,9 @@ interface BlackjackCardViewProps {
   activeHandRevealComplete?: boolean;
   bettingOpen: boolean;
   gameEnded: boolean;
-  /** @deprecated Gameplay actions use shell BlackjackActionPanel. */
+  /** @deprecated Gameplay actions use shell action panel. */
   onStay?: (handKey: string) => void;
-  /** @deprecated Gameplay actions use shell BlackjackActionPanel. */
+  /** @deprecated Gameplay actions use shell action panel. */
   onCard?: (handKey: string) => void;
   /** @deprecated View toggle lives in table toolbar. */
   onBack: () => void;

@@ -430,9 +430,11 @@ Shake-to-roll optional. Primary action label: **Dice** (roll).
 - **Hit/Stay:** All views use the same shell `BlackjackActionPanel` in `bj-table-zone--actions` (no Card View side-action or swipe path).
 - Clean natural blackjack shows **Blackjack** label with `bj-hero-blackjack-pulse` — not used for even-money (1:1) offers.
 
-**Player box in-play display (all views):** During play, each box shows card ranks + in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens are hidden inside the box; bet amount stays in the label above the box. Betting phase still shows chips inside the box.
+**Player box in-play display:** Card View shows card ranks + in-box hand total (`bj-phone-view__mini-hand-value`); chips hidden inside the box during play. Full Table (frozen) keeps play-phase stake chips in player boxes; hand totals stay in the card-column value band above boxes. Bet amount stays in the label above the box in all views.
 
-**Card View bust delay:** When a hand busts, hero stays on that box for `CARD_VIEW_BUST_HOLD_MS` (2000ms) via `useCardViewBustHold` before following the next active box. Game state/protocol advance immediately; only presentation is held.
+**Card View result hold:** After a hit that busts or triggers auto-stand, Card View keeps the hero on that hand/box for `CARD_VIEW_BUST_HOLD_MS` (3000ms) via `useHandTransitionHold` (Card View mode) once the dealt card is visible. Hit/Stay are disabled during the hold. Game state may advance immediately (especially online); presentation follows after the hold. Full Table uses deal-speed result hold timing, not the fixed 3s Card View hold.
+
+**Player auto-stand (play flow):** Threshold checks use the best hand total for hard hands and the **minimum/hard total** when any Ace is present (e.g. soft A+8 does not auto-stand at auto-18; hard 10+8 does). **Split and Double block auto-stop** when legal — engine uses `shouldAutoStopPlayerHandForState` (same legality as `resolvePlayerHandActionOptions`). Implemented in `shouldAutoStandHand` / `processPlayFlowAutoStands`.
 
 **Dealer info layout (all views):**
 

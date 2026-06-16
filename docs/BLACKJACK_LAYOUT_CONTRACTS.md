@@ -83,7 +83,7 @@ Double/Split are **not** duplicated in `BlackjackActionPanel` (`showDouble={fals
 
 Scoped under `@media (min-width: 721px) .bj-view-full-desktop` in `bj-full-table-card-area.css`:
 
-- `--bj-full-desktop-actions-boxes-gap: 1.25rem`
+- `--bj-full-desktop-actions-boxes-gap: 0.625rem`
 - `--bj-full-desktop-stack-value-gap: 0.3125rem`
 - `--bj-full-desktop-dealer-command-gap: 0.1875rem`
 - Card arc nudge: `translateY(18px)` on `.bj-full-table-card-area`

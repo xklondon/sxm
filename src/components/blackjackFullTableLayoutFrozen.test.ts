@@ -323,6 +323,40 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
       );
     }
   });
+
+  it('keeps frozen actions-boxes-gap at 0.625rem so Hit/Stay does not overlap card values', () => {
+    expect(PLAY_ZONE_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.625rem/,
+    );
+    expect(PLAY_ZONE_CSS).not.toMatch(/--bj-full-desktop-actions-boxes-gap:\s*1\.25rem/);
+  });
+
+  it('keeps positive cards-actions gap between card value band and Hit/Stay row', () => {
+    expect(PLAY_ZONE_CSS).toMatch(/--bj-full-desktop-cards-actions-gap:\s*0\.28rem/);
+    expect(PLAY_ZONE_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell[\s\S]*--bj-cards-actions-gap:\s*var\(--bj-full-desktop-cards-actions-gap\)/,
+    );
+    expect(PLAY_ZONE_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-full-table-cards-actions-gap\)/,
+    );
+  });
+
+  it('renders card column values in cards zone and Hit/Stay only in actions zone', () => {
+    const html = renderFullTableAt(1280);
+    const cardsZone = zoneSlice(html, 'bj-table-zone--cards', 'bj-table-zone--actions');
+    const actionsZone = zoneSlice(html, 'bj-table-zone--actions', 'bj-table-zone--boxes');
+    expect(cardsZone).toContain(FULL_TABLE_CARD_VALUE_CLASS);
+    expect(cardsZone).not.toContain(FULL_TABLE_PRIMARY_HIT_CLASS);
+    expect(actionsZone).toContain(FULL_TABLE_PRIMARY_HIT_CLASS);
+    expect(actionsZone).not.toContain(FULL_TABLE_CARD_VALUE_CLASS);
+  });
+
+  it('scopes Card View in-box hand totals away from Full Table player boxes', () => {
+    expect(PANEL_SRC).toMatch(/viewMode === 'card'[\s\S]*inBoxPlayPhase/);
+    const html = renderFullTableAt(1280);
+    const boxesZone = zoneSlice(html, 'bj-table-zone--boxes', 'bj-table-zone--bottom');
+    expect(boxesZone).not.toContain('bj-phone-view__mini-hand-value');
+  });
 });
 
 describe('Blackjack Full Table layout freeze — mobile regression guards', () => {
@@ -345,6 +379,15 @@ describe('Blackjack Full Table layout freeze — mobile regression guards', () =
     const html = renderFullTableAt(390);
     expect(html).toContain(FULL_TABLE_MOBILE_VIEW_ROOT);
     expect(html).not.toContain(FULL_TABLE_OPTIONAL_PLAY_OVERLAY_ANCHOR_CLASS);
+  });
+
+  it('keeps mobile Full Table card values in cards zone and Hit/Stay in actions zone', () => {
+    const html = renderFullTableAt(390);
+    const cardsZone = zoneSlice(html, 'bj-table-zone--cards', 'bj-table-zone--actions');
+    const actionsZone = zoneSlice(html, 'bj-table-zone--actions', 'bj-table-zone--boxes');
+    expect(cardsZone).toContain(FULL_TABLE_CARD_VALUE_CLASS);
+    expect(cardsZone).not.toContain(FULL_TABLE_PRIMARY_HIT_CLASS);
+    expect(actionsZone).toContain(FULL_TABLE_PRIMARY_HIT_CLASS);
   });
 });
 
@@ -378,6 +421,24 @@ describe('Blackjack Full Table layout freeze — source ownership guards', () =>
     }
     expect(CARD_VIEW_GUARD_SRC['src/components/BlackjackCardView.tsx']).not.toContain(
       FULL_TABLE_OPTIONAL_PLAY_OVERLAY_ANCHOR_CLASS,
+    );
+  });
+
+  it('prevents Card View CSS from altering frozen Full Table spacing tokens', () => {
+    for (const [path, src] of Object.entries(CARD_VIEW_GUARD_SRC)) {
+      expect(src, path).not.toContain('--bj-full-desktop-actions-boxes-gap');
+      expect(src, path).not.toMatch(/\.bj-view-full-desktop[\s\S]*--bj-full-desktop-/);
+      expect(src, path).not.toMatch(/\.bj-view-full-mobile[\s\S]*--bj-full-desktop-/);
+    }
+    const playerRowCss = GUARDED_CSS['src/styles/bj-player-row-layout.css'];
+    expect(playerRowCss).toMatch(
+      /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand-value/,
+    );
+    expect(playerRowCss).not.toMatch(
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand-value/,
+    );
+    expect(playerRowCss).not.toMatch(
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand-value/,
     );
   });
 

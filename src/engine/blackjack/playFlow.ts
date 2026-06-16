@@ -1,5 +1,12 @@
 import type { GameState } from '../../types';
 import type { PlayFlowAutoStand } from '../../storage/profileStorage';
+import type { Card } from '../../types/deck';
+import { getAutoStandDecisionTotal, getBlackjackHandValue } from './hand';
+import {
+  canDoubleBlackjackForState,
+  canSplitBlackjackForState,
+  getPlayerOptionalActionGateIfActing,
+} from './validation';
 
 export { PLAY_FLOW_OPTIONS } from '../../storage/profileStorage';
 
@@ -46,6 +53,62 @@ export function shouldAutoStandHandValue(
 ): boolean {
   const threshold = autoStandThreshold(playFlow);
   return threshold !== null && handTotal >= threshold;
+}
+
+/** Auto-stand uses hard/minimum total when the hand contains an ace. */
+export function shouldAutoStandHand(playFlow: PlayFlowAutoStand, cards: Card[]): boolean {
+  const { value, isBlackjack } = getBlackjackHandValue(cards);
+  if (isBlackjack || value > 21) {
+    return false;
+  }
+  const threshold = autoStandThreshold(playFlow);
+  if (threshold === null) {
+    return false;
+  }
+  return getAutoStandDecisionTotal(cards) >= threshold;
+}
+
+export interface PlayerAutoStopActionGate {
+  canSplit: boolean;
+  canDouble: boolean;
+}
+
+/**
+ * Whether the engine may auto-stand a player hand.
+ * Optional Split/Double choices block auto-stop even when the threshold is met.
+ */
+export function shouldAutoStopPlayerHand(
+  playFlow: PlayFlowAutoStand,
+  cards: Card[],
+  actionGate: PlayerAutoStopActionGate,
+): boolean {
+  if (actionGate.canSplit || actionGate.canDouble) {
+    return false;
+  }
+  return shouldAutoStandHand(playFlow, cards);
+}
+
+/** Live gate check for an acting hand — same legality as UI action options. */
+export function shouldAutoStopPlayerHandForState(
+  state: GameState,
+  handKey: string,
+  playFlow: PlayFlowAutoStand,
+  cards: Card[],
+): boolean {
+  return shouldAutoStopPlayerHand(playFlow, cards, {
+    canSplit: canSplitBlackjackForState(state, handKey),
+    canDouble: canDoubleBlackjackForState(state, handKey),
+  });
+}
+
+/** Retrospective check after stand — treats hand as acting to detect skipped optional actions. */
+export function handWasAutoStoppedByEngine(
+  state: GameState,
+  handKey: string,
+  playFlow: PlayFlowAutoStand,
+  cards: Card[],
+): boolean {
+  return shouldAutoStopPlayerHand(playFlow, cards, getPlayerOptionalActionGateIfActing(state, handKey));
 }
 
 /** Chip-tray hint format for insufficient balance during betting. */

@@ -318,6 +318,9 @@ export function BlackjackPanel({
     tableOwner || controllerName === tableMeta.controllerName;
 
   const isMobileViewport = useIsMobileViewport();
+  const [localViewMode, setLocalViewMode] = useState<TableViewMode>(() =>
+    resolveInitialViewMode(isMobileViewport, tableViewMode),
+  );
   const { displayState: tableVisualState, isRevealing, activeHandRevealComplete } =
     useSequentialCardReveal(gameState, {
     onlineMode: Boolean(onlineDispatch) || isOnlineModeEnabled(),
@@ -328,6 +331,17 @@ export function BlackjackPanel({
     cardRevealComplete,
     activeHandRevealComplete,
     isRevealing,
+    cardViewMode: localViewMode === 'card',
+    isHandRevealComplete: (handKey) => {
+      const logicalHand = gameState.blackjack?.playerHands[handKey];
+      const visualHand = tableVisualState.blackjack?.playerHands[handKey];
+      if (!logicalHand || !visualHand) {
+        return true;
+      }
+      const logicalCount = logicalHand.cardIds.filter(Boolean).length;
+      const visualCount = visualHand.cardIds.filter(Boolean).length;
+      return visualCount >= logicalCount;
+    },
   });
 
   const {
@@ -364,9 +378,6 @@ export function BlackjackPanel({
   const isUltraNarrowViewport = useIsUltraNarrowViewport();
   // View mode is CLIENT-LOCAL: it must never be sourced from server-replaced
   // gameState, or every table:update would flip Card View back to Full Table.
-  const [localViewMode, setLocalViewMode] = useState<TableViewMode>(() =>
-    resolveInitialViewMode(isMobileViewport, tableViewMode),
-  );
   const [layoutDebug, setLayoutDebug] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
@@ -1840,12 +1851,21 @@ export function BlackjackPanel({
         : null;
     const stakeChips = mergeStakeChipsForSlotDisplay(gameState, slotNumber, boxId, pendingChips);
     const showBettingChips = inBetting && (openStake > 0 || pendingChips.length > 0) && stakeChips.length > 0;
-    const displayChips = showBettingChips ? stakeChips : [];
-    const inBoxPlayPhase = !inBetting && !showBoxHandResultMarkers && Boolean(primaryHandKey);
+    const showPlayChips = viewMode === 'full' && !inBetting && wager > 0;
+    const inBoxPlayPhase =
+      viewMode === 'card' &&
+      !inBetting &&
+      !showBoxHandResultMarkers &&
+      Boolean(primaryHandKey);
     const inBoxHandValueLabel = inBoxPlayPhase
       ? resolvePrimaryHandValueLabel(visualDeck, visualRound, primaryHandKey, primaryHand)
       : '';
-    const showStakeContent = inBetting ? displayChips.length > 0 : inBoxPlayPhase;
+    const displayChips = showBettingChips
+      ? stakeChips
+      : showPlayChips
+        ? (stakeChips.length > 0 ? stakeChips : [wager])
+        : [];
+    const showStakeContent = inBetting ? displayChips.length > 0 : viewMode === 'card' ? inBoxPlayPhase : displayChips.length > 0;
     const dropKey = chipDropKey({ slotNumber, boxId });
     const rotation =
       deviceView === 'mobile'

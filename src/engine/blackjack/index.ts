@@ -63,6 +63,7 @@ export {
   canSplitBlackjack,
   canDoubleBlackjackForState,
   canSplitBlackjackForState,
+  getPlayerOptionalActionGateIfActing,
   canDrawBankCard,
   canCompleteBanking,
   canDealNextInitialCard,
@@ -241,6 +242,10 @@ export {
   setPersonPlayFlow,
   autoStandThreshold,
   shouldAutoStandHandValue,
+  shouldAutoStandHand,
+  shouldAutoStopPlayerHand,
+  shouldAutoStopPlayerHandForState,
+  handWasAutoStoppedByEngine,
   formatInsufficientChipsMessage,
   isInsufficientChipsMessage,
 } from './playFlow';

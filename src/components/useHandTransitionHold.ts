@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { parseBlackjackHandKey } from '../engine/blackjack';
-import { cardsFromIds, getBlackjackHandValue } from '../engine/blackjack/hand';
+import { cardsFromIds } from '../engine/blackjack/hand';
+import { getCallerPersonIdForBox } from '../engine/session/playerAssignment';
 import { waitForResultHoldMs } from '../engine/blackjack/dealPacing';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
+import { getPlayFlowForPerson, handWasAutoStoppedByEngine } from '../engine/blackjack/playFlow';
 import { isPlayerTurnPhase } from './blackjackViewPhase';
+import { CARD_VIEW_BUST_HOLD_MS } from './blackjackUxConstants';
 import type { GameState } from '../types';
 
 export interface HandTransitionHold {
@@ -15,15 +18,24 @@ export interface HandTransitionHold {
   playerActionsBlocked: boolean;
 }
 
-function handTotalAtLeast18(state: GameState, handKey: string): boolean {
+function handTriggeredAutoStand(state: GameState, handKey: string): boolean {
   const hand = state.blackjack?.playerHands[handKey];
   const deck = state.deck;
   if (!hand || !deck) {
     return false;
   }
+  const { playerId } = parseBlackjackHandKey(handKey);
+  const callerId = getCallerPersonIdForBox(state, playerId);
+  if (!callerId) {
+    return false;
+  }
   const cards = cardsFromIds(deck, hand.cardIds.filter(Boolean));
-  const { value } = getBlackjackHandValue(cards);
-  return value >= 18;
+  return handWasAutoStoppedByEngine(
+    state,
+    handKey,
+    getPlayFlowForPerson(state, callerId),
+    cards,
+  );
 }
 
 function handNeedsResultHold(
@@ -39,11 +51,7 @@ function handNeedsResultHold(
   if (status === 'busted' && prevStatus !== 'busted') {
     return true;
   }
-  if (
-    status === 'stood' &&
-    prevStatus === 'acting' &&
-    handTotalAtLeast18(state, handKey)
-  ) {
+  if (status === 'stood' && prevStatus === 'acting' && handTriggeredAutoStand(state, handKey)) {
     return true;
   }
   return false;
@@ -51,7 +59,7 @@ function handNeedsResultHold(
 
 /**
  * Holds the previous hand/box visible after bust, 18+ auto-stand, or turn advance
- * for the configured result-hold duration (deal speed preset).
+ * for the configured result-hold duration (deal speed preset, or Card View fixed hold).
  */
 export function useHandTransitionHold(
   gameState: GameState,
@@ -60,6 +68,8 @@ export function useHandTransitionHold(
     cardRevealComplete: boolean;
     activeHandRevealComplete: boolean;
     isRevealing: boolean;
+    cardViewMode?: boolean;
+    isHandRevealComplete?: (handKey: string) => boolean;
   },
 ): HandTransitionHold {
   const [hold, setHold] = useState<{
@@ -81,20 +91,35 @@ export function useHandTransitionHold(
     }
   }
 
+  function resultHoldDelayMs(): number {
+    if (options.cardViewMode) {
+      return CARD_VIEW_BUST_HOLD_MS;
+    }
+    return waitForResultHoldMs(gameState);
+  }
+
   function startHold(handKey: string) {
     const { playerId } = parseBlackjackHandKey(handKey);
     setPendingHoldHandKey(null);
     setHold({ holdActive: true, holdActiveBoxId: playerId, holdActiveHandKey: handKey });
     clearTimer();
-    const delay = waitForResultHoldMs(gameState);
     timerRef.current = setTimeout(() => {
       setHold({ holdActive: false, holdActiveBoxId: null, holdActiveHandKey: null });
       timerRef.current = null;
-    }, delay);
+    }, resultHoldDelayMs());
   }
 
   function queueHold(handKey: string) {
     setPendingHoldHandKey(handKey);
+  }
+
+  function pendingHandRevealReady(pending: string, round: NonNullable<GameState['blackjack']>): boolean {
+    if (options.isHandRevealComplete) {
+      return options.isHandRevealComplete(pending);
+    }
+    return (
+      options.activeHandRevealComplete || round.playerHands[pending]?.actionStatus !== 'acting'
+    );
   }
 
   useEffect(() => {
@@ -122,7 +147,13 @@ export function useHandTransitionHold(
       prevActiveHandKey !== activeHandKey &&
       !hold.holdActive
     ) {
-      queueHold(prevActiveHandKey);
+      const prevHand = round.playerHands[prevActiveHandKey];
+      if (
+        prevHand?.actionStatus === 'busted' ||
+        (prevHand?.actionStatus === 'stood' && handTriggeredAutoStand(gameState, prevActiveHandKey))
+      ) {
+        queueHold(prevActiveHandKey);
+      }
     }
 
     for (const [handKey, hand] of Object.entries(round.playerHands)) {
@@ -135,7 +166,7 @@ export function useHandTransitionHold(
       } else if (
         next === 'stood' &&
         prev === 'acting' &&
-        handTotalAtLeast18(gameState, handKey) &&
+        handTriggeredAutoStand(gameState, handKey) &&
         prevCardCount !== undefined &&
         cardCount > prevCardCount
       ) {
@@ -149,9 +180,7 @@ export function useHandTransitionHold(
     const revealReady =
       options.cardRevealComplete &&
       !options.isRevealing &&
-      (pending == null ||
-        options.activeHandRevealComplete ||
-        round.playerHands[pending]?.actionStatus !== 'acting');
+      (pending == null || pendingHandRevealReady(pending, round));
 
     if (pending && revealReady && !hold.holdActive) {
       startHold(pending);
@@ -161,10 +190,12 @@ export function useHandTransitionHold(
   }, [
     gameState,
     hold.holdActive,
-    pendingHoldHandKey,
-    options.activeHandRevealComplete,
     options.cardRevealComplete,
+    options.cardViewMode,
+    options.activeHandRevealComplete,
+    options.isHandRevealComplete,
     options.isRevealing,
+    pendingHoldHandKey,
     protocolPhase,
   ]);
 

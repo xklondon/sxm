@@ -27,6 +27,21 @@ export function getBlackjackHandValue(cards) {
     const isBlackjack = cards.length === 2 && value === 21;
     return { value, isSoft, isBlackjack };
 }
+/** Lowest total when every Ace counts as 1 — used for player auto-stand decisions. */
+export function getMinimumBlackjackHandValue(cards) {
+    let value = 0;
+    for (const card of cards) {
+        value += card.rank === 'A' ? 1 : rankBaseValue(card.rank);
+    }
+    return value;
+}
+/** Total used for auto-stand threshold — hard/minimum when the hand contains an Ace. */
+export function getAutoStandDecisionTotal(cards) {
+    if (!cards.some((card) => card.rank === 'A')) {
+        return getBlackjackHandValue(cards).value;
+    }
+    return getMinimumBlackjackHandValue(cards);
+}
 export function getBlackjackHandStatus(cards) {
     if (cards.length === 0) {
         return 'empty';

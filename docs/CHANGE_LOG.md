@@ -272,6 +272,20 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Auto-stop defers to Split/Double
+
+- **Optional actions first:** `processPlayFlowAutoStands` no longer auto-stands when Split or Double is legal (`shouldAutoStopPlayerHandForState`). Pairs like 9+9 and 10+10 at auto-18 wait for player choice.
+- **Soft-hand rule retained:** Player auto-stop still uses hard/minimum total when an Ace is present.
+
+---
+
+## 2026-06-12 — Blackjack auto-stand + Card View hand hold
+
+- **Soft-hand auto-stand:** Player auto-stand thresholds use hard/minimum total when the hand contains an Ace (`getAutoStandDecisionTotal` / `shouldAutoStandHand`). Soft A+8 and 3+4+A no longer auto-stand at auto-18; hard 10+8 and 9+9 still do.
+- **Card View result hold:** After a hit that busts or auto-stands, Card View keeps the hero on that hand for 3s (`CARD_VIEW_BUST_HOLD_MS`) once the new card is revealed; Hit/Stay disabled during hold. Full Table keeps deal-speed result hold timing via `useHandTransitionHold`.
+
+---
+
 ## 2026-06-10 — Blackjack UX fixes
 
 - **Player box stability:** Fixed stake/composition reserved height in slot row — chips no longer reflow box dimensions.

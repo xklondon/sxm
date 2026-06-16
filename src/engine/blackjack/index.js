@@ -1,6 +1,6 @@
 export { createBlackjackRound, dealInitialBlackjackCards, doubleDownBlackjackPlayer, getBlackjackHandStatus, getBlackjackHandValue, hitBlackjackPlayer, placeBlackjackBet, playDealerHand, resolveBlackjackRound, resetBlackjackRound, splitBlackjackPlayer, standBlackjackPlayer, applyBlackjackToGameState, runDealerAndResolveIfNeeded, } from './round';
 export { startBlackjackRound, placeBlackjackBetOnState, beginInitialDealOnState, dealNextInitialCardOnState, dealInitialBlackjackOnState, dealCardsFromState, completeStepwiseInitialDealIfNeeded, dealCardsButtonOnState, prepareDealState, shuffleToStartOnState, lockBetsAndShuffleOnState, lockBetsAndStartRoundOnState, shuffleFreshShoeOnState, applyBoxStakesToRound, drawBankCardOnState, completeBankingOnState, ensureBlackjackRoundSettled, resolveBankTurnAuto, startNextRoundOnState, syncBankPhaseOnState, hitBlackjackOnState, standBlackjackOnState, doubleDownBlackjackOnState, splitBlackjackOnState, takeInsuranceOnState, declineInsuranceOnState, takeInsuranceForPersonOnState, declineInsuranceForPersonOnState, newBlackjackRoundOnState, updateBlackjackFlowSettings, processVirtualTurns, processPlayFlowAutoStands, activePlayerIdFromRound, advanceBlackjackProtocol, } from './gameState';
-export { canPlaceBlackjackBet, canDealInitialBlackjack, canHitBlackjack, canStandBlackjack, canDoubleBlackjack, canSplitBlackjack, canDoubleBlackjackForState, canSplitBlackjackForState, canDrawBankCard, canCompleteBanking, canDealNextInitialCard, runBlackjackEngineChecks, } from './validation';
+export { canPlaceBlackjackBet, canDealInitialBlackjack, canHitBlackjack, canStandBlackjack, canDoubleBlackjack, canSplitBlackjack, canDoubleBlackjackForState, canSplitBlackjackForState, getPlayerOptionalActionGateIfActing, canDrawBankCard, canCompleteBanking, canDealNextInitialCard, runBlackjackEngineChecks, } from './validation';
 export { DEFAULT_BLACKJACK_SETTINGS, mergeBlackjackSettings, } from './settings';
 export { createBlackjackShoe, shuffleBlackjackShoe, getShoeDeckCount } from './shoe';
 export { cardsFromIds } from './hand';
@@ -27,7 +27,7 @@ export { shouldDealerDraw, evaluateDealerDraw } from './dealerDraw';
 export { migrateInitialDealMode, isStepwiseInitialDeal, isNaturalInitialDeal, clampNaturalDealDelayMs, DEFAULT_NATURAL_DEAL_DELAY_MS, } from './dealing/dealingModes';
 export { buildNaturalDealSequence } from './dealing/naturalDealSequence';
 export { normalizeFlowSettings } from './flowSettings';
-export { PLAY_FLOW_OPTIONS, getPlayFlowForPerson, setPersonPlayFlow, autoStandThreshold, shouldAutoStandHandValue, formatInsufficientChipsMessage, isInsufficientChipsMessage, } from './playFlow';
+export { PLAY_FLOW_OPTIONS, getPlayFlowForPerson, setPersonPlayFlow, autoStandThreshold, shouldAutoStandHandValue, shouldAutoStandHand, shouldAutoStopPlayerHand, shouldAutoStopPlayerHandForState, handWasAutoStoppedByEngine, formatInsufficientChipsMessage, isInsufficientChipsMessage, } from './playFlow';
 export { takeEvenMoneyOnState, waitForBlackjackPayoutOnState, resolvePendingNaturalsAfterDealerPeek, } from './naturalBlackjack';
 export { BLACKJACK_GAMEPLAY_ACTIONS, isBlackjackGameplayAction, applyBlackjackActionToState, } from './applyBlackjackAction';
 export { ONLINE_PLAYER_TURN_ACTIONS, isOnlinePlayerTurnAction, playerTurnActionPayload, } from './onlinePlayerActions';
