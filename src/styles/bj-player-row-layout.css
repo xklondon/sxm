@@ -487,10 +487,8 @@
   overflow: hidden;
 }
 
-.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
-.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder,
-.bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
-.bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder {
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
+.bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder {
   display: block;
   order: 1;
   flex: 0 0 auto;
@@ -503,12 +501,14 @@
   line-height: 1.05;
 }
 
-.bj-view-card-desktop
-  .bj-phone-view__mini-hand--full-arc:has(
-    .bj-phone-view__mini-hand-value:not(.bj-phone-view__mini-hand-value--placeholder)
-  )
-  .bj-phone-view__mini-stake-slot,
-.bj-view-card-mobile
+.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
+.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder,
+.bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
+.bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder {
+  display: block;
+}
+
+.bj-table-slot-row.bj-arc--player-boxes
   .bj-phone-view__mini-hand--full-arc:has(
     .bj-phone-view__mini-hand-value:not(.bj-phone-view__mini-hand-value--placeholder)
   )

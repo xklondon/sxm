@@ -13,11 +13,12 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-16 — Card View display regressions (hero value band, tray, box totals)
+## 2026-06-16 — Card View canonical shell structure (final)
 
-- **Hero value:** Reserved `--bj-cardview-hero-value-band-height` between hero cards and actions; cards clip inside slot so value is not overlapped (desktop + mobile Card View).
+- **Hero layout:** Reserved `--bj-cardview-hero-value-band-height` between hero cards and actions; removed conflicting `overflow: visible` reset on cards-slot; shell hero stage `min-height: 0` so value is not overlapped (desktop + mobile Card View).
+- **Actions/boxes/tray:** Canonical order hero cards → hero value → `BlackjackActionPanel` → shared player boxes → shared `ValueAndChipsBar` tray; removed Card View–only action padding overrides; player box in-play totals + stake-slot collapse apply to all views.
 - **Desktop tray:** Card View desktop uses same `ValueAndChipsBar` grid as Full Table (`label` row below chip plaques).
-- **Player boxes:** Fixed `BlackjackCardView.css` rule that hid `.bj-phone-view__box-value` without `--above` (suppressed in-box hand totals); Card View stake slot collapses when hand total shows.
+- **Tests:** `cardViewDisplayRegressions.test.ts` freezes shell vertical order and shared-path guards.
 
 ---
 

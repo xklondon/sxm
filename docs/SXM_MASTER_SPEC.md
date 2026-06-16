@@ -425,14 +425,17 @@ Shake-to-roll optional. Primary action label: **Dice** (roll).
 
 **Active turn highlight:** Card-column / hero hand totals use circular `bj-phone-view__box-value--active-turn` only — one circled numeric value, no box border or rectangle frame. Stake labels above boxes do not use hand-total emphasis. Betting selection uses `bj-box--selected` + `bj-phone-view__bet-chip--pulse` only.
 
-**Card View layout:**
+**Card View layout (canonical shell order):**
 
-- Hero card size uses responsive `clamp()` tokens (`--bj-card-hero-card-width`, `--bj-card-hero-card-max-height`) on mobile and desktop.
-- Hand total appears **below** hero cards (`bj-phone-view__hand-meta--below-cards`) at dealer-value size (`bj-card-view__hero-value` / `bj-player-hand-value--emphasis`); active-turn frame wraps the value only.
-- **Hit/Stay:** All views use the same shell `BlackjackActionPanel` in `bj-table-zone--actions` (no Card View side-action or swipe path).
-- Clean natural blackjack shows **Blackjack** label with `bj-hero-blackjack-pulse` — not used for even-money (1:1) offers.
+1. Hero cards (`bj-cards-area--hero`)
+2. Hero hand value (reserved band below cards; dealer-value size token; active-turn frame on value only)
+3. Hit/Stay (`bj-table-zone--actions` — shared `BlackjackActionPanel`, same component as Full Table)
+4. Player boxes (shared `renderPlayerBoxesArc` / `renderArcSlot`)
+5. Shared tray (`ValueAndChipsBar` — desktop includes “SxM Casino Challenge” label row)
 
-**Player box in-play display:** Card View shows card ranks + in-box hand total (`bj-phone-view__mini-hand-value`); chips hidden inside the box during play. Full Table (frozen) keeps play-phase stake chips in player boxes; hand totals stay in the card-column value band above boxes. Bet amount stays in the label above the box in all views.
+Hero card size uses responsive `clamp()` tokens (`--bj-card-hero-card-width`, `--bj-card-hero-card-max-height`). Cards clip inside `bj-phone-view__cards-slot`; value and actions never overlay the fan. Clean natural blackjack shows **Blackjack** label with `bj-hero-blackjack-pulse` — not used for even-money (1:1) offers.
+
+**Player box in-play display (all views):** During play, boxes show owner, card ranks, and in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside the box. Betting phase still shows chips inside the box. Bet amount stays in the label above the box in all views. Full Table card-column value band above boxes is unchanged (frozen layout).
 
 **Card View result hold:** After a hit that busts or triggers auto-stand, Card View keeps the hero on that hand/box for `CARD_VIEW_BUST_HOLD_MS` (3000ms) via `useHandTransitionHold` (Card View mode) once the dealt card is visible. Hit/Stay are disabled during the hold. Game state may advance immediately (especially online); presentation follows after the hold. Full Table uses deal-speed result hold timing, not the fixed 3s Card View hold.
 

@@ -10,13 +10,20 @@ import { claimBoxSlot } from '../engine/session';
 import { blackjackHandKey, addChipToBoxStake } from '../engine/blackjack';
 import { tableAfterStartPlaying, boxPlayerId, findCardId } from '../engine/blackjack/sanity/fixtures';
 import { TABLE_UX } from './tableUxContract';
-import { CARD_VIEW_HERO_VALUE_CLASS } from './blackjackLayoutContract';
+import {
+  CARD_VIEW_HERO_VALUE_CLASS,
+  CARD_VIEW_SHELL_VERTICAL_ORDER,
+  PLAYER_BOX_IN_PLAY_HAND_VALUE_CLASS,
+} from './blackjackLayoutContract';
 
 const noop = () => {};
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
+const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
+const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
 
 let simulatedWidth = 1280;
 const globalRef = globalThis as unknown as { window?: unknown };
@@ -47,7 +54,7 @@ afterAll(() => {
   }
 });
 
-function playingCardViewState(): GameState {
+function playingState(view: 'full' | 'card'): GameState {
   let state = tableAfterStartPlaying(500);
   state = claimBoxSlot(state, 1);
   const deck = state.deck!;
@@ -55,7 +62,7 @@ function playingCardViewState(): GameState {
   const handKey = blackjackHandKey(box1, 0);
   return {
     ...state,
-    tableViewMode: 'card',
+    tableViewMode: view,
     selectedSeatId: box1,
     blackjackFlowSettings: {
       ...state.blackjackFlowSettings,
@@ -80,8 +87,8 @@ function playingCardViewState(): GameState {
   };
 }
 
-function bettingCardViewState(): GameState {
-  let state = playingCardViewState();
+function bettingState(view: 'full' | 'card'): GameState {
+  let state = playingState(view);
   const box1 = boxPlayerId(state, 1)!;
   state = addChipToBoxStake(state, box1, 20);
   return {
@@ -111,45 +118,67 @@ function boxesZone(html: string): string {
   return zoneSlice(html, TABLE_UX.tableZoneBoxes, 'bj-table-zone--bottom');
 }
 
+function assertShellVerticalOrder(html: string): void {
+  const indices = CARD_VIEW_SHELL_VERTICAL_ORDER.map((zone) => html.indexOf(zone));
+  for (const idx of indices) {
+    expect(idx).toBeGreaterThan(-1);
+  }
+  for (let i = 1; i < indices.length; i += 1) {
+    expect(indices[i]).toBeGreaterThan(indices[i - 1]!);
+  }
+}
+
+function assertHeroBeforeActions(html: string): void {
+  const hero = heroZone(html);
+  const cardsIdx = hero.indexOf('bj-phone-view__cards-slot');
+  const valueIdx = hero.indexOf(CARD_VIEW_HERO_VALUE_CLASS);
+  const hitIdx = html.indexOf('ds-btn--hit');
+  const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
+  expect(cardsIdx).toBeGreaterThan(-1);
+  expect(valueIdx).toBeGreaterThan(cardsIdx);
+  expect(actionsIdx).toBeGreaterThan(valueIdx);
+  expect(hitIdx).toBeGreaterThan(actionsIdx);
+}
+
 describe('Card View display regressions', () => {
-  it('reserves a fixed hero value band and clips cards above it on desktop and mobile', () => {
+  it('uses one shared shell path for actions, boxes, and tray', () => {
+    expect(SHELL_SRC).toContain('BlackjackActionsZone');
+    expect(SHELL_SRC).toContain('BlackjackPlayerBoxesZone');
+    expect(PANEL_SRC).toContain('BlackjackActionPanel');
+    expect(PANEL_SRC).toContain('renderPlayerBoxesArc');
+    expect(PANEL_SRC).toContain('ValueAndChipsBar');
+    expect((PANEL_SRC.match(/<BlackjackActionPanel/g) ?? []).length).toBe(1);
+    expect(CARD_VIEW_SRC).not.toContain('BlackjackActionPanel');
+    expect(CARD_VIEW_SRC).not.toContain('renderPlayerBoxesArc');
+    expect(CARD_VIEW_SRC).not.toContain('ValueAndChipsBar');
+    expect(CARD_VIEW_SRC).not.toContain('bj-phone-view__side-action--hit');
+  });
+
+  it('reserves hero value band and clips cards (cards-slot overflow hidden in Card View)', () => {
     expect(CARD_LAYOUT_CSS).toContain('--bj-cardview-hero-value-band-height');
     expect(CARD_LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*\.bj-phone-view__cards-slot[\s\S]*max-height:\s*calc\(100% - var\(--bj-cardview-hero-value-band-height\)\)/,
+      /\.bj-view-card-desktop[\s\S]*?\.bj-phone-view__cards-slot\s*\{[\s\S]*?overflow:\s*hidden/,
     );
-    expect(CARD_LAYOUT_CSS).toMatch(
-      /\.bj-view-card-mobile[\s\S]*\.bj-phone-view__hand-meta[\s\S]*flex:\s*0 0 var\(--bj-cardview-hero-value-band-height\)/,
-    );
-    expect(CARD_LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*\.bj-phone-view__cards[\s\S]*overflow:\s*hidden/,
+    expect(CARD_VIEW_CSS).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__hero-stage[\s\S]*min-height:\s*0/,
     );
   });
 
-  it('desktop Card View renders hero value between cards and actions without overlap', () => {
+  it('desktop Card View shell order: hero cards → hero value → actions → boxes → tray', () => {
     simulatedWidth = 1280;
-    const html = renderPanel(playingCardViewState());
-    const hero = heroZone(html);
-    const cardsIdx = hero.indexOf('bj-phone-view__cards-slot');
-    const valueIdx = hero.indexOf(CARD_VIEW_HERO_VALUE_CLASS);
-    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
-    expect(cardsIdx).toBeGreaterThan(-1);
-    expect(valueIdx).toBeGreaterThan(cardsIdx);
-    expect(actionsIdx).toBeGreaterThan(valueIdx);
-    expect(hero).toContain('bj-player-hand-value--emphasis');
-    expect(hero).toMatch(/>13</);
+    const html = renderPanel(playingState('card'));
+    assertShellVerticalOrder(html);
+    assertHeroBeforeActions(html);
+    expect(heroZone(html)).toContain('bj-player-hand-value--emphasis');
+    expect(heroZone(html)).toMatch(/>13</);
   });
 
-  it('mobile Card View renders hero value between cards and actions without overlap', () => {
+  it('mobile Card View shell order: hero cards → hero value → actions → boxes → tray', () => {
     simulatedWidth = 390;
-    const html = renderPanel(playingCardViewState());
-    const hero = heroZone(html);
-    const cardsIdx = hero.indexOf('bj-phone-view__cards-slot');
-    const valueIdx = hero.indexOf(CARD_VIEW_HERO_VALUE_CLASS);
-    const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
-    expect(cardsIdx).toBeGreaterThan(-1);
-    expect(valueIdx).toBeGreaterThan(cardsIdx);
-    expect(actionsIdx).toBeGreaterThan(valueIdx);
-    expect(hero).toMatch(/>13</);
+    const html = renderPanel(playingState('card'));
+    assertShellVerticalOrder(html);
+    assertHeroBeforeActions(html);
+    expect(heroZone(html)).toMatch(/>13</);
   });
 
   it('desktop Card View tray matches shared ValueAndChipsBar label-below-row layout', () => {
@@ -161,7 +190,7 @@ describe('Card View display regressions', () => {
     );
 
     simulatedWidth = 1280;
-    const html = renderPanel(playingCardViewState());
+    const html = renderPanel(playingState('card'));
     const tray = zoneSlice(html, 'bj-table-zone--bottom', 'bj-casino__this-table');
     expect(tray).toContain('bj-value-chips--with-label');
     expect(tray).toContain('bj-value-chips__row--label');
@@ -176,35 +205,33 @@ describe('Card View display regressions', () => {
     expect(CARD_VIEW_CSS).toContain('.bj-phone-view__mini-hand-value.bj-phone-view__box-value');
   });
 
-  it('desktop Card View player boxes show hand total and hide chips during play', () => {
-    simulatedWidth = 1280;
-    const html = renderPanel(playingCardViewState());
-    const boxes = boxesZone(html);
-    expect(boxes).toContain('bj-phone-view__mini-hand-value');
-    expect(boxes).toMatch(/>13</);
-    expect(boxes).not.toContain('stake-chips--bet');
-  });
-
-  it('mobile Card View player boxes show hand total and hide chips during play', () => {
-    simulatedWidth = 390;
-    const html = renderPanel(playingCardViewState());
-    const boxes = boxesZone(html);
-    expect(boxes).toContain('bj-phone-view__mini-hand-value');
-    expect(boxes).toMatch(/>13</);
-    expect(boxes).not.toContain('stake-chips--bet');
-  });
-
-  it('Card View still shows chip stacks in player boxes during betting', () => {
-    for (const width of [1280, 390]) {
-      simulatedWidth = width;
-      const html = renderPanel(bettingCardViewState());
-      expect(boxesZone(html)).toContain('stake-chips--bet');
+  it('player boxes show in-box total and hide chips during play in Card View and Full Table', () => {
+    for (const view of ['card', 'full'] as const) {
+      for (const width of [1280, 390]) {
+        simulatedWidth = width;
+        const html = renderPanel(playingState(view));
+        const boxes = boxesZone(html);
+        expect(boxes).toContain(PLAYER_BOX_IN_PLAY_HAND_VALUE_CLASS);
+        expect(boxes).toMatch(/>13</);
+        expect(boxes).not.toContain('stake-chips--bet');
+      }
     }
   });
 
-  it('collapses stake slot when in-box hand total is shown in Card View boxes', () => {
+  it('player boxes still show chip stacks during betting in Card View and Full Table', () => {
+    for (const view of ['card', 'full'] as const) {
+      for (const width of [1280, 390]) {
+        simulatedWidth = width;
+        const html = renderPanel(bettingState(view));
+        expect(boxesZone(html)).toContain('stake-chips--bet');
+      }
+    }
+  });
+
+  it('collapses stake slot when in-box hand total is shown (all views)', () => {
     expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*:has\([\s\S]*\.bj-phone-view__mini-hand-value:not\(\.bj-phone-view__mini-hand-value--placeholder\)[\s\S]*\.bj-phone-view__mini-stake-slot/,
+      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*:has\([\s\S]*\.bj-phone-view__mini-hand-value:not\(\.bj-phone-view__mini-hand-value--placeholder\)[\s\S]*\.bj-phone-view__mini-stake-slot/,
     );
+    expect(PANEL_SRC).not.toContain('showPlayChips');
   });
 });

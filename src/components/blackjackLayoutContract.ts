@@ -109,6 +109,14 @@ export const CARD_VIEW_HERO_VALUE_CLASS = 'bj-card-view__hero-value' as const;
 /** Card View hero third+ cards — offset/layered over readable first two. */
 export const CARD_VIEW_HERO_LAYERED_CARD_WRAP_CLASS = 'bj-phone-view__card-wrap--layered' as const;
 
+/** Card View shell vertical order (matches BlackjackTableLayoutShell). */
+export const CARD_VIEW_SHELL_VERTICAL_ORDER = [
+  'bj-cards-area--hero',
+  'bj-table-zone--actions',
+  'bj-table-zone--boxes',
+  'bj-table-zone--bottom',
+] as const;
+
 // ── Full Table layout markers ─────────────────────────────────────────────────
 
 /** Active turn highlight — tight numeric frame only (no box/card-stack oval). */

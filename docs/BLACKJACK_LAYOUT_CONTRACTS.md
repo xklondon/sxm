@@ -176,6 +176,18 @@ View root: still `bj-view-full-mobile` (device stays mobile when width > 720 on 
 
 Card View shares `BlackjackTableLayoutShell` zone order but uses **`bj-cards-area--hero`** instead of `bj-cards-area--table`. Hero UI lives in `BlackjackCardView.tsx`. Do not treat Card View CSS as authoritative for Full Table.
 
+**Canonical vertical order (shell):**
+
+1. **Hero cards** (`bj-cards-area--hero` — card fan inside `BlackjackCardView`)
+2. **Hero hand value** (reserved band inside hero cards zone, below fan)
+3. **Hit / Stay** (`bj-table-zone--actions` — shared `BlackjackActionPanel` from `BlackjackPanel`, `variant="table"`)
+4. **Player boxes** (`bj-table-zone--boxes` — shared `renderPlayerBoxesArc` / `renderArcSlot`)
+5. **Shared tray** (`bj-table-zone--bottom` — shared `ValueAndChipsBar` / `renderTrayInner`)
+
+No overlay of hero value or actions on hero cards. No Card View-specific Stay/Hit, player box, or tray implementation paths.
+
+**Player boxes (all views):** During play, box shows owner, card ranks, and in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside box; bet amount stays above box. Betting phase still shows chips inside box.
+
 Aggregate flag: `CARD_VIEW_FROZEN = false` until C1–C3 are frozen.
 
 ---
@@ -185,9 +197,9 @@ Aggregate flag: `CARD_VIEW_FROZEN = false` until C1–C3 are frozen.
 Status: `CARD_VIEW_DESKTOP_FROZEN = false`  
 View root: `CARD_VIEW_DESKTOP_ROOT` (`bj-view-card-desktop`)
 
-**Structure:** Shell hero fan + hand value below cards (dealer-value size token `bj-card-view__hero-value` / `bj-player-hand-value--emphasis`; active-turn frame wraps value only); canonical Hit/Stay via shell `BlackjackActionPanel` in `bj-table-zone--actions` (**same component, placement, and button sizing as Full Table desktop**); hero third+ cards use `bj-phone-view__card-wrap--layered` offset transforms; optional Double/Split in command zone overlay; player box arc (Contract B); This Table docked right.
+**Structure:** Shell hero fan + reserved value band below cards (dealer-value size token `bj-card-view__hero-value` / `bj-player-hand-value--emphasis`; active-turn frame wraps value only); canonical Hit/Stay via shell `BlackjackActionPanel` in `bj-table-zone--actions` (**same component, placement, and button sizing as Full Table desktop** — no Card View action path); shared `renderPlayerBoxesArc` / `renderArcSlot` player boxes; shared `ValueAndChipsBar` tray; hero third+ cards use `bj-phone-view__card-wrap--layered` offset transforms; optional Double/Split in command zone overlay; This Table docked right.
 
-**Player boxes (all views):** During play, box shows card ranks + in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside box; bet amount stays above box. Betting phase still shows chips inside box.
+**Player boxes (all views):** During play, box shows owner, card ranks, and in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside box; bet amount stays above box. Betting phase still shows chips inside box.
 
 **Owner files:** `BlackjackCardView.tsx`, `BlackjackCardView.css`, `bj-card-layout.css`, `bj-table-shared.css` (desktop card-desktop block), `bj-player-row-layout.css`, `bj-felt-skins.css`, `BlackjackPanel.tsx`.
 

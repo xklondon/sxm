@@ -999,6 +999,15 @@
   max-width: 100%;
 }
 
+/* Shell hero zone — no viewport min-height bleed; bands owned by bj-card-layout.css */
+.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
+.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
+.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center {
+  min-height: 0;
+  max-height: 100%;
+  justify-content: flex-start;
+}
+
 .bj-phone-view__total--placeholder {
   visibility: hidden;
   pointer-events: none;
