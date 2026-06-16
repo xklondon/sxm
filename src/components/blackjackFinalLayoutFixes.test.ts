@@ -148,15 +148,15 @@ describe('blackjack final layout fixes', () => {
     expect(actionsZone).toContain('ds-btn--stand');
   });
 
-  it('desktop Card View shares shell action placement with lower offset token', () => {
+  it('desktop Card View actions occupy dedicated grid row (centered)', () => {
     const cardDesktopCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
     expect(cardDesktopCss).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-end/,
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/,
     );
-    expect(cardDesktopCss).toMatch(/--bj-card-desktop-action-offset/);
-    expect(SHARED_CSS).not.toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-start/,
+    expect(cardDesktopCss).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*center/,
     );
+    expect(cardDesktopCss).not.toMatch(/--bj-card-desktop-action-offset/);
   });
 
   it('hero third+ cards use layered offset transform class', () => {
@@ -198,11 +198,12 @@ describe('blackjack final layout fixes', () => {
   });
 
   it('desktop Card View hero cards zone does not clip value with overflow hidden', () => {
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/,
+    const cardDesktopCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
+    expect(cardDesktopCss).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*hidden/,
     );
-    expect(CARD_LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*\.bj-phone-view__hand-meta[\s\S]*overflow:\s*visible/,
+    expect(cardDesktopCss).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--hero-value[\s\S]*grid-row:\s*hero-value/,
     );
   });
 });

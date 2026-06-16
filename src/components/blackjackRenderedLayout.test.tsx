@@ -316,15 +316,18 @@ describe('rendered position — desktop canonical tokens', () => {
     );
   });
 
-  it('scopes Card View desktop hero rules under bj-view-card-desktop', () => {
+  it('scopes Card View desktop 7-band grid under bj-view-card-desktop', () => {
     expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*--bj-card-desktop-hero-lower-offset/,
+      /\.bj-view-card-desktop \.bj-table-layout-shell[\s\S]*\[dealer\]/,
     );
+    expect(CARD_DESKTOP_CSS).toMatch(/\[hero-value\]/);
+    expect(CARD_DESKTOP_CSS).toMatch(/\[tray\]/);
     expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*--bj-card-desktop-action-offset/,
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*grid-row:\s*cards/,
     );
+    expect(CARD_DESKTOP_CSS).not.toMatch(/--bj-card-desktop-hero-lower-offset/);
     expect(CARD_LAYOUT_CSS).not.toMatch(
-      /\.bj-view-full-desktop[\s\S]*--bj-card-desktop-hero-lower-offset/,
+      /\.bj-view-full-desktop[\s\S]*--bj-card-desktop-box-spread/,
     );
   });
 
@@ -388,19 +391,22 @@ describe('rendered position — desktop card view reference layout', () => {
     expect(row!.querySelectorAll('.bj-arc__slot').length).toBe(DEFAULT_VISIBLE_TABLE_BOXES);
   });
 
-  it('defines Card View desktop layout tokens scoped to bj-view-card-desktop', () => {
+  it('defines Card View desktop 7-band grid with isolated shell rows', () => {
     for (const token of CARD_VIEW_DESKTOP_LAYOUT_TOKENS) {
       expect(CARD_DESKTOP_CSS).toContain(token);
     }
-    expect(CARD_DESKTOP_CSS).toMatch(/\.bj-view-card-desktop[\s\S]*--bj-card-desktop-box-spread/);
+    expect(CARD_DESKTOP_CSS).toMatch(/grid-template-rows:[\s\S]*\[dealer\][\s\S]*\[tray\]/);
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--hero-value[\s\S]*grid-row:\s*hero-value/,
+    );
+    expect(CARD_DESKTOP_CSS).not.toMatch(
+      /--bj-card-desktop-hero-lower-offset|--bj-card-desktop-action-offset/,
+    );
     expect(PLAYER_ROW_CSS).not.toMatch(
       /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes\s*\{[^}]*width:\s*max-content/,
     );
-    expect(SHARED_CSS).not.toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*align-items:\s*flex-end/,
-    );
     expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*align-items:\s*stretch/,
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*align-items:\s*stretch/,
     );
   });
 

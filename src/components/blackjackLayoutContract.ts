@@ -124,10 +124,24 @@ export const CARD_VIEW_HERO_LAYERED_CARD_WRAP_CLASS = 'bj-phone-view__card-wrap-
 
 /** Card View shell vertical order (matches BlackjackTableLayoutShell). */
 export const CARD_VIEW_SHELL_VERTICAL_ORDER = [
+  'bj-table-zone--dealer',
+  'bj-table-zone--summary',
   'bj-cards-area--hero',
+  'bj-table-zone--hero-value',
   'bj-table-zone--actions',
   'bj-table-zone--boxes',
   'bj-table-zone--bottom',
+] as const;
+
+/** Desktop Card View fixed grid row names (CSS grid line labels). */
+export const CARD_VIEW_DESKTOP_GRID_ROWS = [
+  'dealer',
+  'command',
+  'cards',
+  'hero-value',
+  'actions',
+  'boxes',
+  'tray',
 ] as const;
 
 // ── Full Table layout markers ─────────────────────────────────────────────────
@@ -196,8 +210,6 @@ export const CARD_VIEW_DESKTOP_REFERENCE_IMAGE =
 
 /** Desktop Card View layout tokens — scoped under .bj-view-card-desktop only. */
 export const CARD_VIEW_DESKTOP_LAYOUT_TOKENS = [
-  '--bj-card-desktop-hero-lower-offset',
-  '--bj-card-desktop-action-offset',
   '--bj-card-desktop-box-spread',
   '--bj-card-desktop-box-value-scale',
 ] as const;

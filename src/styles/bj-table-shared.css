@@ -2937,33 +2937,7 @@
     min-height: 0;
   }
 
-  /* Card View desktop — compact command/cards/actions rows, tight stack. */
-  .bj-view-card-desktop {
-    --bj-desktop-zone-command-height: 2.55rem;
-    --bj-desktop-zone-actions-height: 2.45rem;
-    --bj-cardview-command-cards-gap: 0.25rem;
-    --bj-cardview-cards-actions-gap: 0.35rem;
-    --bj-cardview-hero-top-inset: 0.5rem;
-    --bj-command-cards-gap: var(--bj-cardview-command-cards-gap);
-    --bj-cards-actions-gap: var(--bj-cardview-cards-actions-gap);
-    --bj-hero-cards-top-inset: var(--bj-cardview-hero-top-inset);
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--summary {
-    padding-bottom: 0;
-    justify-content: flex-start;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
-    margin-top: var(--bj-cardview-command-cards-gap);
-    padding-top: var(--bj-cardview-hero-top-inset);
-    justify-content: flex-start;
-    align-items: stretch;
-    overflow: visible;
-    position: relative;
-  }
-
-  /* Desktop Card View actions — shared Full Table shell tokens (bj-full-table-card-area.css) */
+  /* Desktop Card View 7-band grid — bj-card-desktop-layout.css */
 }
 
 /*

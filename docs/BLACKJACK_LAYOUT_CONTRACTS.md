@@ -211,24 +211,24 @@ Status: **FROZEN** (`CARD_VIEW_DESKTOP_FROZEN = true`)
 View root: `CARD_VIEW_DESKTOP_ROOT` (`bj-view-card-desktop`)  
 Reference: [`reference-ui/views/Desktop_Card.png`](../reference-ui/views/Desktop_Card.png)
 
-**Vertical zone model (top → bottom):** Top nav → Dealer → Command → Hero cards → Hero value → Action row → Player boxes → Tray.
+**Vertical zone model (top → bottom):** Top nav → **7-band CSS grid** on felt: Dealer → Command → Hero cards → Hero value → Actions → Player boxes → Tray. Each band is one grid row; no cross-band margin/flex-flow offsets.
 
 **Layout tokens** (scoped under `.bj-view-card-desktop` in `bj-card-desktop-layout.css`):
 
-- `--bj-card-desktop-hero-lower-offset` — hero cards sit lower in the cards zone
-- `--bj-card-desktop-action-offset` — Hit/Stay closer to player boxes
 - `--bj-card-desktop-box-spread: space-evenly` — four boxes + add control span felt width
 - `--bj-card-desktop-box-value-scale` — in-box hand total during play
 
+**Grid rows:** `dealer` | `command` | `cards` (1fr) | `hero-value` | `actions` | `boxes` | `tray` — see `CARD_VIEW_DESKTOP_GRID_ROWS` in `blackjackLayoutContract.ts`.
+
 **Structure:** Shell hero fan + dedicated `bj-table-zone--hero-value` below cards; canonical Hit/Stay via shared `BlackjackActionRow` in `bj-table-zone--actions`; shared `BlackjackPlayerBoxRow` / `BlackjackTrayRow`; hero third+ cards use `bj-phone-view__card-wrap--layered`; optional Double/Split in command zone overlay; This Table docked right.
 
-**Player boxes (all views):** During play, box shows owner, card ranks, and in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside box; bet amount stays above box. Betting phase still shows chips inside box.
+**Player boxes (all views):** During play, box shows owner, card ranks, and in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside box; bet amount stays above box. Betting phase still shows chips inside box. **Desktop Card View:** four visible seats + add control only (`DEFAULT_VISIBLE_TABLE_BOXES = 4`).
 
-**Owner files:** `BlackjackCardView.tsx`, `BlackjackCardView.css`, `bj-card-layout.css`, `bj-table-shared.css` (desktop card-desktop block), `bj-player-row-layout.css`, `bj-felt-skins.css`, `BlackjackPanel.tsx`.
+**Owner files:** `BlackjackCardView.tsx`, `BlackjackCardView.css`, `bj-card-layout.css`, `bj-card-desktop-layout.css`, `bj-table-shared.css`, `bj-player-row-layout.css`, `bj-felt-skins.css`, `BlackjackPanel.tsx`.
 
-**Current risks:** CSS split across 4+ files; hero zone `overflow: hidden` on desktop; optional play in command zone (differs from Full Table desktop overlay).
+**Current risks:** CSS split across 4+ files; optional play in command zone (differs from Full Table desktop overlay).
 
-**Freeze criteria:** Documented gap tokens; actions only in shell on desktop; hero value below cards; guards against `bj-full-table-card-area` in Card View paths.
+**Freeze criteria:** Fixed 7-band grid; actions only in shell on desktop; hero value in own grid row; guards against `bj-full-table-card-area` in Card View paths.
 
 **Tests before freeze:** `cardViewDesktopLayoutFrozen.test.ts` (future); consolidate `cardViewLayoutGuards`, `cardViewCentralLayout`, `cardViewDesktopFix`.
 
