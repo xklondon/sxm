@@ -1,7 +1,7 @@
 import { createBlackjackPlayerHand } from '../../types/blackjack';
 import { bankrollContextFromState, resolveBankrollOwnerId, } from '../session/bankroll';
 import { appendBoxLedgerEntry } from '../session/boxLedger';
-import { appendBankLedgerEntry } from './bankLedger';
+import { appendBankLedgerEntryUnlessInternalPot, appendBoxLedgerEntryUnlessInternalPot, } from '../session/sharedPotSettlement';
 import { drawCard, getCardById } from '../deck/deck';
 import { applyDeckToGameState } from '../deck/gameState';
 import { getBlackjackHandStatus, getBlackjackHandValue } from './hand';
@@ -439,25 +439,25 @@ export function resolveBlackjackRound(session, players, ledger, deck, round, set
             const entryType = outcome === 'push' || outcome === 'blackjack-push'
                 ? 'push-refund'
                 : 'win-paid';
-            const result = appendBoxLedgerEntry(nextSession, nextLedger, bankrollCtx, hand.playerId, entryType, payout, message, session.currentRound);
+            const result = appendBoxLedgerEntryUnlessInternalPot(nextSession, nextLedger, bankrollCtx, hand.playerId, entryType, payout, message, session.currentRound, hand.currentBet);
             nextSession = result.session;
             nextLedger = result.ledger;
         }
         else if (outcome === 'loss') {
-            const result = appendBoxLedgerEntry(nextSession, nextLedger, bankrollCtx, hand.playerId, 'loss-collected', 0, message, session.currentRound);
+            const result = appendBoxLedgerEntryUnlessInternalPot(nextSession, nextLedger, bankrollCtx, hand.playerId, 'loss-collected', 0, message, session.currentRound, hand.currentBet);
             nextSession = result.session;
             nextLedger = result.ledger;
         }
         if (bankId) {
             const bet = hand.currentBet;
             if (outcome === 'loss') {
-                const bankResult = appendBankLedgerEntry(nextSession, nextLedger, bankId, bet, `House collected ${bet} chips (${message})`, session.currentRound);
+                const bankResult = appendBankLedgerEntryUnlessInternalPot(nextSession, nextLedger, bankrollCtx, hand.playerId, bankId, bet, `House collected ${bet} chips (${message})`, session.currentRound);
                 nextSession = bankResult.session;
                 nextLedger = bankResult.ledger;
             }
             else if (payout > bet) {
                 const bankPays = payout - bet;
-                const bankResult = appendBankLedgerEntry(nextSession, nextLedger, bankId, -bankPays, `House paid ${bankPays} chips (${message})`, session.currentRound);
+                const bankResult = appendBankLedgerEntryUnlessInternalPot(nextSession, nextLedger, bankrollCtx, hand.playerId, bankId, -bankPays, `House paid ${bankPays} chips (${message})`, session.currentRound);
                 nextSession = bankResult.session;
                 nextLedger = bankResult.ledger;
             }

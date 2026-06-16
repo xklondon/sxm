@@ -1,5 +1,4 @@
-import { appendBoxLedgerEntry } from '../session/boxLedger';
-import { appendBankLedgerEntry } from './bankLedger';
+import { appendBankLedgerEntryUnlessInternalPot, appendBoxLedgerEntryUnlessInternalPot, } from '../session/sharedPotSettlement';
 import { bankrollContextFromState } from '../session/bankroll';
 import { applySkipBankIfNeeded } from './roundFlow';
 import { log } from '../../utils/logger';
@@ -24,11 +23,11 @@ export function settleBustHandOnState(state, handKey) {
     let ledger = state.ledger;
     const bankId = session.bankPlayerId;
     const bet = hand.currentBet;
-    const lossResult = appendBoxLedgerEntry(session, ledger, ctx, hand.playerId, 'loss-collected', 0, BUST_MESSAGE, session.currentRound);
+    const lossResult = appendBoxLedgerEntryUnlessInternalPot(session, ledger, ctx, hand.playerId, 'loss-collected', 0, BUST_MESSAGE, session.currentRound, bet);
     session = lossResult.session;
     ledger = lossResult.ledger;
     if (bankId && bet > 0) {
-        const bankResult = appendBankLedgerEntry(session, ledger, bankId, bet, `Bust — bank takes ${bet}`, session.currentRound);
+        const bankResult = appendBankLedgerEntryUnlessInternalPot(session, ledger, ctx, hand.playerId, bankId, bet, `Bust — bank takes ${bet}`, session.currentRound);
         session = bankResult.session;
         ledger = bankResult.ledger;
     }

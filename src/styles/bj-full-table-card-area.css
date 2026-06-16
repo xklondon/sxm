@@ -436,7 +436,7 @@
 @media (min-width: 721px) {
   .bj-view-full-desktop {
     --bj-full-desktop-dealer-command-gap: 0.1875rem;
-    --bj-full-desktop-actions-boxes-gap: 0.625rem;
+    --bj-full-desktop-actions-boxes-gap: 0.25rem;
     --bj-full-desktop-stack-value-gap: 0.3125rem;
     --bj-full-desktop-zone-actions-height: calc(1.55rem + var(--bj-full-desktop-actions-boxes-gap));
     --bj-full-desktop-cards-actions-gap: 0.28rem;
@@ -456,7 +456,7 @@
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions {
     padding-top: 0;
     padding-bottom: var(--bj-full-desktop-actions-boxes-gap);
-    justify-content: flex-start;
+    justify-content: flex-end;
     align-items: center;
   }
 

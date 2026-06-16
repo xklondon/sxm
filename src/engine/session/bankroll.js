@@ -12,6 +12,8 @@ export function bankrollContextFromState(state) {
         boxSlots: state.tableMeta.boxSlots,
         bankPlayerId: state.session.bankPlayerId,
         boxSlotNumbers: state.session.boxSlotNumbers ?? {},
+        ownerPersonId: state.tableMeta.ownerPersonId,
+        bankerSetup: state.tableMeta.bankerSetup,
     };
 }
 function isBoxPosition(ctx, playerId) {

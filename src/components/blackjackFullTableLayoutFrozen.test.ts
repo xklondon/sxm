@@ -324,11 +324,17 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
     }
   });
 
-  it('keeps frozen actions-boxes-gap at 0.625rem so Hit/Stay does not overlap card values', () => {
+  it('keeps frozen actions-boxes-gap at 0.25rem so Hit/Stay sits close above box amounts', () => {
     expect(PLAY_ZONE_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.625rem/,
+      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.25rem/,
     );
     expect(PLAY_ZONE_CSS).not.toMatch(/--bj-full-desktop-actions-boxes-gap:\s*1\.25rem/);
+  });
+
+  it('pins desktop Full Table Hit/Stay to bottom of actions row toward player boxes', () => {
+    expect(PLAY_ZONE_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-end/,
+    );
   });
 
   it('keeps positive cards-actions gap between card value band and Hit/Stay row', () => {

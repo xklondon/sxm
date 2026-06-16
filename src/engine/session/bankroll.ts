@@ -1,5 +1,6 @@
 import type { GameState } from '../../types';
 import type { BoxSlotState } from '../../types/table';
+import type { TableMeta } from '../../types/table';
 import type { Player } from '../../types/player';
 import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 import { log } from '../../utils/logger';
@@ -21,6 +22,8 @@ export interface BankrollContext {
   boxSlots: BoxSlotState[];
   bankPlayerId: string | null;
   boxSlotNumbers: Record<string, number>;
+  ownerPersonId?: string | null;
+  bankerSetup?: TableMeta['bankerSetup'];
 }
 
 export function bankrollContextFromState(state: GameState): BankrollContext {
@@ -29,6 +32,8 @@ export function bankrollContextFromState(state: GameState): BankrollContext {
     boxSlots: state.tableMeta.boxSlots,
     bankPlayerId: state.session.bankPlayerId,
     boxSlotNumbers: state.session.boxSlotNumbers ?? {},
+    ownerPersonId: state.tableMeta.ownerPersonId,
+    bankerSetup: state.tableMeta.bankerSetup,
   };
 }
 

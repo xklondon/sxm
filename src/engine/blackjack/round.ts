@@ -13,7 +13,10 @@ import {
   type BankrollContext,
 } from '../session/bankroll';
 import { appendBoxLedgerEntry } from '../session/boxLedger';
-import { appendBankLedgerEntry } from './bankLedger';
+import {
+  appendBankLedgerEntryUnlessInternalPot,
+  appendBoxLedgerEntryUnlessInternalPot,
+} from '../session/sharedPotSettlement';
 import { drawCard, getCardById } from '../deck/deck';
 import { applyDeckToGameState } from '../deck/gameState';
 import type { GameState } from '../../types';
@@ -715,7 +718,7 @@ export function resolveBlackjackRound(
           ? 'push-refund'
           : 'win-paid';
 
-      const result = appendBoxLedgerEntry(
+      const result = appendBoxLedgerEntryUnlessInternalPot(
         nextSession,
         nextLedger,
         bankrollCtx,
@@ -724,11 +727,12 @@ export function resolveBlackjackRound(
         payout,
         message,
         session.currentRound,
+        hand.currentBet,
       );
       nextSession = result.session;
       nextLedger = result.ledger;
     } else if (outcome === 'loss') {
-      const result = appendBoxLedgerEntry(
+      const result = appendBoxLedgerEntryUnlessInternalPot(
         nextSession,
         nextLedger,
         bankrollCtx,
@@ -737,6 +741,7 @@ export function resolveBlackjackRound(
         0,
         message,
         session.currentRound,
+        hand.currentBet,
       );
       nextSession = result.session;
       nextLedger = result.ledger;
@@ -745,9 +750,11 @@ export function resolveBlackjackRound(
     if (bankId) {
       const bet = hand.currentBet;
       if (outcome === 'loss') {
-        const bankResult = appendBankLedgerEntry(
+        const bankResult = appendBankLedgerEntryUnlessInternalPot(
           nextSession,
           nextLedger,
+          bankrollCtx,
+          hand.playerId,
           bankId,
           bet,
           `House collected ${bet} chips (${message})`,
@@ -757,9 +764,11 @@ export function resolveBlackjackRound(
         nextLedger = bankResult.ledger;
       } else if (payout > bet) {
         const bankPays = payout - bet;
-        const bankResult = appendBankLedgerEntry(
+        const bankResult = appendBankLedgerEntryUnlessInternalPot(
           nextSession,
           nextLedger,
+          bankrollCtx,
+          hand.playerId,
           bankId,
           -bankPays,
           `House paid ${bankPays} chips (${message})`,

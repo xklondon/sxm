@@ -1,6 +1,5 @@
 import { getCardById } from '../deck/deck';
-import { appendBoxLedgerEntry } from '../session/boxLedger';
-import { appendBankLedgerEntry } from './bankLedger';
+import { appendBankLedgerEntryUnlessInternalPot, appendBoxLedgerEntryUnlessInternalPot, } from '../session/sharedPotSettlement';
 import { bankrollContextFromState } from '../session/bankroll';
 import { cardsFromIds, getBlackjackHandValue } from './hand';
 import { getBlackjackProtocolForState } from './protocolState';
@@ -30,12 +29,12 @@ function payNaturalWin(session, players, ledger, round, handKey, bankrollCtx, mu
         : `Blackjack! ${label} — win ${winnings} + bet returned (${payout} chips)`;
     let nextSession = session;
     let nextLedger = ledger;
-    const winResult = appendBoxLedgerEntry(nextSession, nextLedger, bankrollCtx, hand.playerId, 'win-paid', payout, message, session.currentRound);
+    const winResult = appendBoxLedgerEntryUnlessInternalPot(nextSession, nextLedger, bankrollCtx, hand.playerId, 'win-paid', payout, message, session.currentRound, bet);
     nextSession = winResult.session;
     nextLedger = winResult.ledger;
     const bankId = session.bankPlayerId;
     if (bankId && winnings > 0) {
-        const bankResult = appendBankLedgerEntry(nextSession, nextLedger, bankId, -winnings, `Natural blackjack payout (${message})`, session.currentRound);
+        const bankResult = appendBankLedgerEntryUnlessInternalPot(nextSession, nextLedger, bankrollCtx, hand.playerId, bankId, -winnings, `Natural blackjack payout (${message})`, session.currentRound);
         nextSession = bankResult.session;
         nextLedger = bankResult.ledger;
     }

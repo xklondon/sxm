@@ -13,6 +13,13 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-12 — Shared-pot settlement + desktop Hit/Stay position
+
+- **Challenge same-person bank+box:** Round/bust/natural settlement skips internal bank↔box ledger transfers when `personsShareOneChipPot` — wins restore committed bet only; losses refund committed bet without crediting bank; total chips invariant.
+- **Desktop Full Table:** Hit/Stay pinned to bottom of actions row (`justify-content: flex-end`); `--bj-full-desktop-actions-boxes-gap: 0.25rem`.
+
+---
+
 ## 2026-06-12 — Blackjack layout regressions (actions, box totals, reset)
 
 - **Desktop Full Table:** Hit/Stay row lowered (`--bj-full-desktop-actions-boxes-gap: 1.25rem`).

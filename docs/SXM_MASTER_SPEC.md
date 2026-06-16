@@ -330,6 +330,8 @@ Host for start/randomise/confirm starter; current turn player for gameplay actio
 
 **Entry types:** `bet-placed`, `win-paid`, `push-refund`, `loss-collected`, `bank-transfer`, buy-in/adjustment reasons, etc.
 
+**Shared bank-player pot (Challenge):** When the bank person and a box bankroll owner are the same human (`personsShareOneChipPot`), round settlement must not mint or burn chips on internal box↔bank transfers — wins credit only the committed bet back to the box ledger; losses refund the committed bet without a bank collect; bank ledger entries for that box are skipped. Other players vs the bank settle normally.
+
 ### Personal score ledger (challenge games)
 
 - Tracks wager outcomes across ended challenge tables
@@ -456,7 +458,7 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 
 **Full Table outcome markers:** WIN, BUST, EVEN, and BJ render as compact stack badges over the card stack (`bj-card-outcome-marker--stack-badge` inside `bj-arc__play-zone`) on Full Table desktop and mobile — not as floating markers in the outcome row above the stack.
 
-**Full Table play zone (command → cards → actions):** Canonical contract in `bj-full-table-card-area.css` (imported last among table layout CSS). Zone order: dealer → command (`bj-table-zone--summary`) → cards (`bj-cards-area--table`) → actions (`bj-table-zone--actions`) → boxes → tray. Card Area fills command→actions gap with columns bottom-pinned; each column grid is outcome (row 1) → stack host `bj-arc__play-zone` (row 2, wraps `bj-arc__cards--stack-vertical`) → value band (row 3). Stack host must stay row 2 even when outcome row is empty. Stacks use `overflow: visible` and a 2-card minimum stack band. Hit/Stay render only via `renderActionsContent()` in the actions zone — never inside CardsArea. Card View hero unchanged.
+**Full Table play zone (command → cards → actions):** Canonical contract in `bj-full-table-card-area.css` (imported last among table layout CSS). Zone order: dealer → command (`bj-table-zone--summary`) → cards (`bj-cards-area--table`) → actions (`bj-table-zone--actions`) → boxes → tray. Desktop Full Table: actions zone uses `justify-content: flex-end` so Hit/Stay sit just above the box amount row (`--bj-full-desktop-actions-boxes-gap: 0.25rem`). Card Area fills command→actions gap with columns bottom-pinned; each column grid is outcome (row 1) → stack host `bj-arc__play-zone` (row 2, wraps `bj-arc__cards--stack-vertical`) → value band (row 3). Stack host must stay row 2 even when outcome row is empty. Stacks use `overflow: visible` and a 2-card minimum stack band. Hit/Stay render only via `renderActionsContent()` in the actions zone — never inside CardsArea. Card View hero unchanged.
 
 **No-jump box stability:** `+` add-box and every player box share identical outer dimensions (`--bj-full-table-box-width`, fixed value band + box height). Reserved internal zones: score/value, chip stack (`--bj-full-table-stake-min-height`), logo/label (composition). Active turn uses inset `box-shadow` pulse only — no border-width or layout-affecting highlight changes.
 
