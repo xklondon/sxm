@@ -13,6 +13,18 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+---
+
+## 2026-06-16 — Split gameplay tests + shared layout rows + rendered-position tests
+
+- **Split engine:** No logic change — canonical `splitBlackjackOnState` / `handKey` routing already correct. Added `splitGameplay.test.ts` (7 cases: pair split, wager parity, active-hand advance, resplit, double-after-split, settlement, handKey routing).
+- **Shared rows:** `BlackjackActionRow`, `BlackjackPlayerBoxRow`, `BlackjackTrayRow` — single presentational path for Full Table and Card View; Panel no longer imports `BlackjackActionPanel` or `ValueAndChipsBar` directly.
+- **Card View structure:** Shell `heroValue` zone between cards and actions; `BlackjackCardView` `segment="cards" | "value"` — explicit row order without hero value/action overlay.
+- **Rendered-position tests:** `blackjackRenderedLayout.test.tsx` + `layoutMeasure.ts` — bounding-box stack/overlap checks for all five view scenarios (desktop/mobile full + card, mobile landscape full).
+- **Docs:** `BLACKJACK_LAYOUT_CONTRACTS.md` updated with shared-row table and rendered-position test references.
+
+---
+
 ## 2026-06-16 — Online table membership stability
 
 - **Canonical membership:** `server/src/tables/membership.ts` resolves session user id, repairs missing host/invitee rows, and syncs `member.personId` when `ownerPersonId` drifts after setup/reset.

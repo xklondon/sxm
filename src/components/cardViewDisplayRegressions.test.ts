@@ -144,10 +144,10 @@ describe('Card View display regressions', () => {
   it('uses one shared shell path for actions, boxes, and tray', () => {
     expect(SHELL_SRC).toContain('BlackjackActionsZone');
     expect(SHELL_SRC).toContain('BlackjackPlayerBoxesZone');
-    expect(PANEL_SRC).toContain('BlackjackActionPanel');
+    expect(PANEL_SRC).toContain('BlackjackActionRow');
     expect(PANEL_SRC).toContain('renderPlayerBoxesArc');
-    expect(PANEL_SRC).toContain('ValueAndChipsBar');
-    expect((PANEL_SRC.match(/<BlackjackActionPanel/g) ?? []).length).toBe(1);
+    expect(PANEL_SRC).toContain('BlackjackTrayRow');
+    expect((PANEL_SRC.match(/<BlackjackActionRow/g) ?? []).length).toBe(1);
     expect(CARD_VIEW_SRC).not.toContain('BlackjackActionPanel');
     expect(CARD_VIEW_SRC).not.toContain('renderPlayerBoxesArc');
     expect(CARD_VIEW_SRC).not.toContain('ValueAndChipsBar');

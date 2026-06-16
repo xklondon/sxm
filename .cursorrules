@@ -143,7 +143,65 @@ Aligned env keys (same LAN host, no localhost in links):
 - Minimal diffs; no broad refactors
 - Staged implementation; don't overbuild
 - Tests only when they cover real behavior
-- Run `npm run build`, `npm run lint`, `npm run test` after substantive changes
+- After substantive changes: run **targeted** tests for the touched area, then `npm run build` and `npm run lint` as needed
+- Full `npm test` only when user requests it, preparing deployment, or at a freeze milestone — not during iteration (see Fast fix vs refactor)
+
+## Fast fix vs refactor
+
+### Rule 1 — Fix the reported issue first
+
+When the user reports a layout, gameplay, membership, or rendering bug:
+
+1. Identify root cause
+2. Implement minimum fix
+3. Verify fix
+4. Stop
+
+Only propose refactor **after** the bug is fixed.
+
+### Rule 2 — No architectural rewrites during active bug fixing
+
+Do not introduce new component hierarchies, rendering systems, layout frameworks, state management patterns, or test frameworks unless explicitly requested. Bug fixes must remain localized.
+
+### Rule 3 — Targeted tests only
+
+Default: run only tests affected by the change.
+
+| Area | Run |
+|------|-----|
+| Layout | layout tests only |
+| Gameplay | blackjack engine tests only |
+| Membership | multiplayer/table tests only |
+
+Full suite only when user requests it, preparing deployment, or a freeze milestone is reached.
+
+### Rule 4 — Respect frozen layouts
+
+If a layout is marked frozen (`docs/BLACKJACK_LAYOUT_CONTRACTS.md`, `blackjackLayoutContract.ts`): do **not** redesign it. Only spacing, alignment, overlap, and visibility fixes are allowed. Structural layout changes require explicit approval.
+
+### Rule 5 — Reuse before creating
+
+Before creating a component, hook, layout, or service — audit existing implementations first. Prefer extending/reusing over new abstractions.
+
+### Rule 6 — No duplicate render paths
+
+Action row, player box, tray, and command box must have **one canonical render path** across Full Table and Card View. Avoid separate implementations that drift visually.
+
+### Rule 7 — Large refactors require approval
+
+Before changes touching more than 5 files, 300 lines, architecture, routing, or state shape — stop and ask. Provide reason, affected files, and expected benefit first.
+
+### Rule 8 — Full test suite protection
+
+If a full test run exceeds 2 minutes, stop, identify targeted suites, and run only impacted suites. Do not repeatedly launch full test runs during iteration.
+
+### Rule 9 — Gameplay has priority over cosmetics
+
+Priority order: (1) game rules → (2) settlement → (3) multiplayer → (4) membership → (5) persistence → (6) layouts → (7) visual polish. Never delay gameplay fixes for visual refactors.
+
+### Rule 10 — Screenshot beats assumptions
+
+If the user provides screenshots, treat them as source of truth. Do not claim an issue is fixed unless the screenshot would visibly change. Passing DOM/class tests are not proof of visual correctness — use rendered-position tests or visual verification when layout is in scope.
 
 ## Preferred vocabulary
 

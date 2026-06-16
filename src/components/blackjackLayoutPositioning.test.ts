@@ -56,8 +56,8 @@ describe('player boxes bottom placement and cards area growth', () => {
 });
 
 describe('Card View actions route', () => {
-  it('serves Hit/Stand from shared BlackjackActionPanel in the actions zone for all views', () => {
-    expect(PANEL_SRC).toContain('BlackjackActionPanel');
+  it('serves Hit/Stand from shared BlackjackActionRow in the actions zone for all views', () => {
+    expect(PANEL_SRC).toContain('BlackjackActionRow');
     expect(PANEL_SRC).toContain('renderActionsContent');
     expect(PANEL_SRC).toMatch(/variant="table"/);
     expect(ACTION_PANEL_SRC).toContain('bj-table-actions__btn');

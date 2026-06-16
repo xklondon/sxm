@@ -142,9 +142,9 @@ describe('Full Table play zone canonical contract', () => {
   it('uses one Full Table actions render path via shell actions slot', () => {
     expect(PANEL_SRC).toContain(FULL_TABLE_ACTIONS_RENDER_FN);
     expect(PANEL_SRC).toContain('actions={renderActionsContent()}');
-    expect(PANEL_SRC).toContain('BlackjackActionPanel');
-    expect(CARD_VIEW_SRC).not.toContain('BlackjackActionPanel');
-    expect((PANEL_SRC.match(/<BlackjackActionPanel/g) ?? []).length).toBe(1);
+    expect(PANEL_SRC).toContain('BlackjackActionRow');
+    expect(CARD_VIEW_SRC).not.toContain('BlackjackActionRow');
+    expect((PANEL_SRC.match(/<BlackjackActionRow/g) ?? []).length).toBe(1);
   });
 
   it('hides action controls inside Full Table card area via CSS guard', () => {

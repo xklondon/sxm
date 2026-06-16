@@ -408,7 +408,7 @@ describe('Blackjack Full Table layout freeze — source ownership guards', () =>
   it('uses one Full Table actions render path', () => {
     expect(PANEL_SRC).toContain(FULL_TABLE_ACTIONS_RENDER_FN);
     expect(PANEL_SRC).toContain('actions={renderActionsContent()}');
-    expect((PANEL_SRC.match(/<BlackjackActionPanel/g) ?? []).length).toBe(1);
+    expect((PANEL_SRC.match(/<BlackjackActionRow/g) ?? []).length).toBe(1);
   });
 
   it('does not define competing card-column grid in guarded CSS files', () => {

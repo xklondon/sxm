@@ -135,8 +135,8 @@ describe('blackjack final layout fixes', () => {
     expect(heroZone).toMatch(/>13</);
   });
 
-  it('desktop Card View uses one shell BlackjackActionPanel path for Hit/Stay', () => {
-    expect((PANEL_SRC.match(/<BlackjackActionPanel/g) ?? []).length).toBe(1);
+  it('desktop Card View uses one shell BlackjackActionRow path for Hit/Stay', () => {
+    expect((PANEL_SRC.match(/<BlackjackActionRow/g) ?? []).length).toBe(1);
     expect(CARD_VIEW_SRC).not.toContain('BlackjackActionPanel');
     expect(CARD_VIEW_SRC).not.toContain('bj-phone-view__side-action--hit');
 

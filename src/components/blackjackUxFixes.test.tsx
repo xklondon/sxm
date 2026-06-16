@@ -124,10 +124,10 @@ describe('blackjack UX fixes — Card View hero layout', () => {
     expect(belowIdx).toBeGreaterThan(cardsIdx);
   });
 
-  it('mobile Card View uses shell BlackjackActionPanel beside hero (no side-action path)', () => {
+  it('mobile Card View uses shell BlackjackActionRow beside hero (no side-action path)', () => {
     expect(CARD_VIEW_SRC).not.toContain('bj-phone-view__side-action--stand');
     expect(CARD_VIEW_SRC).not.toContain('handleTouchEnd');
-    expect(PANEL_SRC).toContain('BlackjackActionPanel');
+    expect(PANEL_SRC).toContain('BlackjackActionRow');
   });
 
   it('uses natural blackjack label animation only for clean blackjack status', () => {

@@ -14,6 +14,21 @@ export function BlackjackCommandZone({ children }: { children: ReactNode }) {
   );
 }
 
+/** Card View hero total — explicit row between hero cards and action row. */
+export function BlackjackHeroValueZone({ children }: { children: ReactNode }) {
+  return (
+    <div
+      {...sxmSectionProps(
+        SXM_LAYOUT.handTotal,
+        `bj-table-zone bj-table-zone--hero-value`,
+      )}
+      data-layout-band="hero-value"
+    >
+      {children}
+    </div>
+  );
+}
+
 /** Shared player action zone — Hit/Stay/2×/Split/AID and phase actions. */
 export function BlackjackActionsZone({ children }: { children: ReactNode }) {
   return (

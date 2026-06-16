@@ -32,7 +32,7 @@ describe('blackjack display layout contract', () => {
   it('Full Table and Card View share dealer, command, action, and box zone components', () => {
     expect(PANEL_SRC).toContain('BlackjackDealerArea');
     expect(PANEL_SRC).toContain('BlackjackCommandBox');
-    expect(PANEL_SRC).toContain('BlackjackActionPanel');
+    expect(PANEL_SRC).toContain('BlackjackActionRow');
     expect(SHELL_SRC).toContain('BlackjackCommandZone');
     expect(SHELL_SRC).toContain('BlackjackActionsZone');
     expect(SHELL_SRC).toContain('BlackjackPlayerBoxesZone');
@@ -53,8 +53,8 @@ describe('blackjack display layout contract', () => {
     expect(PANEL_SRC).toMatch(/BlackjackTableLayoutShell[\s\S]*BlackjackCommandBox/);
   });
 
-  it('Full Table and Card View share BlackjackActionPanel from Panel actions slot', () => {
-    expect(PANEL_SRC).toContain('BlackjackActionPanel');
+  it('Full Table and Card View share BlackjackActionRow from Panel actions slot', () => {
+    expect(PANEL_SRC).toContain('BlackjackActionRow');
     expect(PANEL_SRC).toContain('renderActionsContent');
     expect(ACTION_PANEL_SRC).toContain('TABLE_UX.playerActions');
     expect(CARD_VIEW_SRC).not.toContain('BlackjackActionPanel');

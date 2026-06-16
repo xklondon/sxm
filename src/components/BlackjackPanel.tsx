@@ -38,7 +38,7 @@ import {
   createChipPointerDragHandlers,
   type ChipDropTarget,
 } from './chipPointerDrag';
-import { StakeChips, ValueAndChipsBar, type ChipValue } from './ChipStack';
+import { StakeChips, type ChipValue } from './ChipStack';
 import { PlayingCard } from './PlayingCard';
 import { formatBoxCardRanksLabel } from './cardDisplay';
 import { useBlackjackTableFlow } from './useBlackjackTableFlow';
@@ -46,7 +46,9 @@ import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
 import { BlackjackCardView } from './BlackjackCardView';
 import { BankerSetupPanel } from './BankerSetupPanel';
 import { dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
-import { BlackjackActionPanel } from './BlackjackActionPanel';
+import { BlackjackActionRow } from './BlackjackActionRow';
+import { BlackjackPlayerBoxRow } from './BlackjackPlayerBoxRow';
+import { BlackjackTrayRow } from './BlackjackTrayRow';
 import { BlackjackCommandBox } from './BlackjackCommandBox';
 import { BlackjackDealerArea } from './BlackjackDealerArea';
 import { BlackjackTableLayoutShell } from './BlackjackTableLayoutShell';
@@ -406,6 +408,7 @@ export function BlackjackPanel({
   const deviceView = getDeviceView(isMobileViewport);
   const isFullTableDesktop = deviceView === 'desktop' && viewMode === 'full';
   const isCardViewDesktop = deviceView === 'desktop' && viewMode === 'card';
+  const isCardViewMobile = deviceView === 'mobile' && viewMode === 'card';
   const viewRootClass = getViewRootClass(deviceView, viewMode);
   const { selectedBettingBoxId: selectedBettingBoxIdForUi, selectedBettingSlotNumber } =
     uiFromLocalChipTarget(localChipSelection.target, gameState);
@@ -1458,20 +1461,16 @@ export function BlackjackPanel({
     const { playerAvailable } = buildTableInfoDisplay(gameState, viewerPersonId);
     const trayLabel = resolveTableTrayLabel(tableMeta, loadSettings());
     return (
-      <div className="bj-casino__tray-wrap">
-        <ValueAndChipsBar
-          available={playerAvailable}
-          showChips
-          onChipClick={handleChipTrayClick}
-          onChipPointerDown={chipPointerDrag.onChipPointerDown}
-          disabled={!bettingOpen}
-          minimumBet={minimumBet}
-          trayLabel={trayLabel}
-        />
-        {inBetting && chipTrayHint && (
-          <p className="bj-casino__tray-hint" role="status">{chipTrayHint}</p>
-        )}
-      </div>
+      <BlackjackTrayRow
+        available={playerAvailable}
+        showChips
+        onChipClick={handleChipTrayClick}
+        onChipPointerDown={chipPointerDrag.onChipPointerDown}
+        disabled={!bettingOpen}
+        minimumBet={minimumBet}
+        trayLabel={trayLabel}
+        hint={inBetting && chipTrayHint ? chipTrayHint : null}
+      />
     );
   }
 
@@ -1566,7 +1565,8 @@ export function BlackjackPanel({
     }
 
     return (
-      <BlackjackActionPanel
+      <BlackjackActionRow
+        scale={isCardViewDesktop || isCardViewMobile ? 'card-view' : 'full-table'}
         variant="table"
         actionsEnabled={playerDecisionActionsEnabled}
         canHit={canHit}
@@ -1602,7 +1602,7 @@ export function BlackjackPanel({
       return null;
     }
     return (
-      <div className="bj-arc__play-zone">
+      <div className="bj-arc__play-zone" data-layout-band="card-column-cards">
         {stackBadge}
         <div
           className={[
@@ -1745,6 +1745,7 @@ export function BlackjackPanel({
           )
         )}
         <span
+          data-layout-band="card-column-value"
           className={[
             cardColumnHandValueClassName(
               Boolean(cardColumnValueLabel),
@@ -2021,8 +2022,9 @@ export function BlackjackPanel({
 
   function renderPlayerBoxesArc() {
     return (
-      <div className="bj-player-boxes-wrap">
-        <div
+      <BlackjackPlayerBoxRow>
+        <div className="bj-player-boxes-wrap">
+          <div
           className={[
             'bj-table-slot-row',
             'bj-arc',
@@ -2049,8 +2051,9 @@ export function BlackjackPanel({
             </button>
           ) : null}
           {displaySlots.map((slot) => renderArcSlot(slot.slotNumber))}
+          </div>
         </div>
-      </div>
+      </BlackjackPlayerBoxRow>
     );
   }
 
@@ -2284,6 +2287,26 @@ export function BlackjackPanel({
       ? resolveTableClothWager(tableMeta) || 'Practice'
       : resolveTableClothWager(tableMeta) || getTableWagerDisplay(gameState);
 
+  const cardViewSharedProps = {
+    gameState: tableVisualState,
+    logicalGameState: gameState,
+    viewerPersonId,
+    onlineTableId,
+    viewerAuth,
+    deviceView,
+    focusBoxId: focusBoxId ?? undefined,
+    activeBoxId: uiActiveBoxId,
+    heroHandKeyOverride: handTransitionHold.holdActiveHandKey,
+    handHoldActive: Boolean(handTransitionHold.holdActiveHandKey),
+    showHoleHidden,
+    protocolPhase,
+    cardRevealComplete,
+    activeHandRevealComplete,
+    bettingOpen,
+    gameEnded,
+    onBack: () => setViewMode('full'),
+  };
+
   return (
     <div
       ref={layoutRootRef}
@@ -2500,29 +2523,16 @@ export function BlackjackPanel({
                       {renderOptionalPlayDecisionOverlay()}
                     </div>
                   ) : null}
-                  <BlackjackCardView
-                    gameState={tableVisualState}
-                    logicalGameState={gameState}
-                    viewerPersonId={viewerPersonId}
-                    onlineTableId={onlineTableId}
-                    viewerAuth={viewerAuth}
-                    deviceView={deviceView}
-                    focusBoxId={focusBoxId ?? undefined}
-                    activeBoxId={uiActiveBoxId}
-                    heroHandKeyOverride={handTransitionHold.holdActiveHandKey}
-                    handHoldActive={Boolean(handTransitionHold.holdActiveHandKey)}
-                    showHoleHidden={showHoleHidden}
-                    protocolPhase={protocolPhase}
-                    cardRevealComplete={cardRevealComplete}
-                    activeHandRevealComplete={activeHandRevealComplete}
-                    bettingOpen={bettingOpen}
-                    gameEnded={gameEnded}
-                    onBack={() => setViewMode('full')}
-                  />
+                  <BlackjackCardView {...cardViewSharedProps} segment="cards" />
                 </>
               )
             }
             cardsAreaMode={viewMode === 'full' ? 'table' : 'hero'}
+            heroValue={
+              viewMode === 'card' ? (
+                <BlackjackCardView {...cardViewSharedProps} segment="value" />
+              ) : undefined
+            }
             playerBoxes={renderPlayerBoxesArc()}
             chipTray={renderTrayInner()}
           />

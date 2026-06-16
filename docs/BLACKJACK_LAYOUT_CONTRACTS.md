@@ -15,7 +15,18 @@ Canonical layout rules for all supported blackjack table views. Protocol, bettin
 | Card View Mobile Landscape | **PENDING FREEZE** | `CARD_VIEW_MOBILE_LANDSCAPE_FROZEN` |
 
 **Regression tests (frozen):** `blackjackFullTableLayoutFrozen.test.ts`, `blackjackFullTablePlayZoneLayout.test.ts`  
+**Rendered-position tests (all views):** `blackjackRenderedLayout.test.tsx`, `layoutMeasure.test.ts` — measure `data-layout-band` bounding boxes; fail on overlap.  
 **Audit guards (pending areas):** `blackjackLayoutContractGuards.test.ts`
+
+### Shared presentational rows (Full Table + Card View)
+
+| Component | Band marker | Role |
+|-----------|-------------|------|
+| `BlackjackActionRow` | `data-layout-band="action-row"` | Stay / Hit / Double / Split (via inner `BlackjackActionPanel`) |
+| `BlackjackPlayerBoxRow` | `data-layout-band="player-boxes"` | Arc player box row wrapper |
+| `BlackjackTrayRow` | `data-layout-band="tray-row"` | Available balance, chip plaques, tray label |
+
+Card View explicit shell order: **Dealer → Command → HeroCards → HeroValue → ActionRow → PlayerBoxRow → TrayRow** (`heroValue` zone between cards and actions; no hero value/action overlay).
 
 ---
 
@@ -77,7 +88,7 @@ Vertical rules: stack above value (grid row 2 → 3); actions below card area; b
 | **Double / Split / Play Hand** | **Cards zone** — `bj-optional-play-overlay-anchor` above stacks | `bj-insurance-overlay__btn`; **not** in the Hit/Stay row |
 | **AID** | Hidden | `FULL_TABLE_DESKTOP_AID_VISIBLE = false` |
 
-Double/Split are **not** duplicated in `BlackjackActionPanel` (`showDouble={false}`, `showSplit={false}`).
+Double/Split are **not** duplicated in `BlackjackActionRow` (`showDouble={false}`, `showSplit={false}`).
 
 ### Spacing tokens
 
@@ -95,7 +106,7 @@ During **play**: box shows owner, card ranks, and in-box hand total (`bj-phone-v
 ### Invariants
 
 - No internal scrollbars in card zone (`overflow: visible`).
-- Single Hit/Stay path: `renderActionsContent()` → `BlackjackActionPanel`.
+- Single Hit/Stay path: `renderActionsContent()` → `BlackjackActionRow`.
 - Card column geometry owned by `bj-full-table-card-area.css` + `BlackjackPanel.tsx`.
 
 ---

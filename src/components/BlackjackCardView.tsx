@@ -53,6 +53,8 @@ interface BlackjackCardViewProps {
   /** Authoritative engine state for hand keys, totals, and hero visibility. */
   logicalGameState?: GameState;
   deviceView?: DeviceView;
+  /** Render only cards, only hero value, or combined (legacy). */
+  segment?: 'cards' | 'value' | 'all';
   focusBoxId?: string;
   activeBoxId: string | null;
   /** Card View hand-hold — keep hero on completed bust/18+ hand before turn advance. */
@@ -80,6 +82,7 @@ export function BlackjackCardView({
   gameState,
   logicalGameState: logicalGameStateProp,
   deviceView = "mobile",
+  segment = "all",
   focusBoxId,
   activeBoxId,
   heroHandKeyOverride = null,
@@ -326,32 +329,52 @@ export function BlackjackCardView({
   }
 
   function renderBettingHeroPlaceholder() {
+    const cardsBand = (
+      <div className="bj-phone-view__cards-slot" data-layout-band="hero-cards">
+        <div
+          {...sxmSectionProps(SXM_LAYOUT.heroCards, 'bj-phone-view__cards-placeholder')}
+          aria-hidden="true"
+        />
+      </div>
+    );
+    const valueBand = (
+      <div className="bj-phone-view__hand-meta" data-layout-band="hero-value">
+        <div
+          {...sxmSectionProps(
+            SXM_LAYOUT.handTotal,
+            'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
+            'bj-phone-view__total--placeholder',
+          )}
+          aria-hidden="true"
+        >
+          &nbsp;
+        </div>
+      </div>
+    );
+    if (segment === 'cards') {
+      return (
+        <div className="bj-phone-view__hand bj-phone-view__hand--waiting">
+          <div className="bj-phone-view__hero-stage">
+            <div className="bj-phone-view__hero-center">{cardsBand}</div>
+          </div>
+        </div>
+      );
+    }
+    if (segment === 'value') {
+      return (
+        <div className="bj-phone-view__hand bj-phone-view__hand--waiting">
+          <div className="bj-phone-view__hero-stage">
+            <div className="bj-phone-view__hero-center">{valueBand}</div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="bj-phone-view__hand bj-phone-view__hand--waiting">
         <div className="bj-phone-view__hero-stage">
           <div className="bj-phone-view__hero-center">
-            <div className="bj-phone-view__cards-slot">
-              <div
-                {...sxmSectionProps(SXM_LAYOUT.heroCards, 'bj-phone-view__cards-placeholder')}
-                aria-hidden="true"
-              />
-            </div>
-            <div className="bj-phone-view__hand-meta">
-              <div
-                {...sxmSectionProps(
-                  SXM_LAYOUT.handTotal,
-                  'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
-                  'bj-phone-view__total--placeholder',
-                )}
-                aria-hidden="true"
-              >
-                &nbsp;
-              </div>
-            </div>
-            <div
-              className="bj-phone-view__hero-actions bj-phone-view__hero-actions--placeholder"
-              aria-hidden="true"
-            />
+            {cardsBand}
+            {valueBand}
           </div>
         </div>
       </div>
@@ -359,40 +382,109 @@ export function BlackjackCardView({
   }
 
   function renderPlayHeroPlaceholder() {
+    return renderBettingHeroPlaceholder();
+  }
+
+  function renderHeroValueMeta() {
+    const heroBusted = logicalHand?.actionStatus === 'busted';
+    const heroNatural = logicalHand?.actionStatus === 'blackjack';
+
     return (
-      <div className="bj-phone-view__hand bj-phone-view__hand--waiting">
-        <div className="bj-phone-view__hero-stage">
-          <div className="bj-phone-view__hero-center">
-            <div className="bj-phone-view__cards-slot">
-              <div
-                {...sxmSectionProps(SXM_LAYOUT.heroCards, 'bj-phone-view__cards-placeholder')}
-                aria-hidden="true"
-              />
-            </div>
-            <div className="bj-phone-view__hand-meta">
-              <div
-                {...sxmSectionProps(
-                  SXM_LAYOUT.handTotal,
-                  'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
-                  'bj-phone-view__total--placeholder',
-                )}
-                aria-hidden="true"
-              >
-                &nbsp;
-              </div>
-            </div>
-            <div
-              className="bj-phone-view__hero-actions bj-phone-view__hero-actions--placeholder"
-              aria-hidden="true"
-            />
+      <div
+        className="bj-phone-view__hand-meta bj-phone-view__hand-meta--below-cards"
+        data-layout-band="hero-value"
+      >
+        {hideHeroValueOnMobile && heroOutcomeMarker ? (
+          <span
+            className={[
+              cardAreaOutcomeMarkerClass(heroOutcomeMarker),
+              'bj-card-view__hero-outcome',
+            ].join(' ')}
+            aria-hidden="true"
+          >
+            {cardAreaOutcomeMarkerText(heroOutcomeMarker)}
+          </span>
+        ) : heroDisplayValue !== null ? (
+          <div
+            {...sxmSectionProps(
+              SXM_LAYOUT.handTotal,
+              'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
+              'bj-card-view__hero-value',
+              'bj-player-hand-value--emphasis',
+              heroNatural ? 'bj-phone-view__total--blackjack' : '',
+              isActiveTurn && isPlayerPhase && !showCardAreaResults
+                ? 'bj-phone-view__box-value--active-turn'
+                : '',
+            )}
+          >
+            {heroNatural ? 'Blackjack' : String(heroDisplayValue)}
           </div>
-        </div>
+        ) : (
+          <div
+            {...sxmSectionProps(
+              SXM_LAYOUT.handTotal,
+              'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
+              'bj-phone-view__total--placeholder',
+            )}
+            aria-hidden="true"
+          >
+            &nbsp;
+          </div>
+        )}
+        {heroBusted && !hideHeroValueOnMobile ? (
+          <span className="bj-phone-view__bust-label bj-phone-view__bust-label--meta" aria-label="Busted">
+            BUST
+          </span>
+        ) : null}
+      </div>
+    );
+  }
+
+  function renderHeroCardsBand() {
+    return (
+      <div className="bj-phone-view__cards-slot" data-layout-band="hero-cards">
+        {heroCardIds.length > 0 ? (
+          <div
+            {...sxmSectionProps(
+              SXM_LAYOUT.heroCards,
+              'bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched',
+            )}
+          >
+            {heroCardIds.map((id, i) => (
+              <div
+                key={`${heroHandKey}-${i}-${id}`}
+                className={[
+                  'bj-phone-view__card-wrap',
+                  i >= 2 ? 'bj-phone-view__card-wrap--layered' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                style={{ "--card-i": i } as CSSProperties}
+              >
+                {renderHugeCard(
+                  id,
+                  false,
+                  "hero",
+                  `${heroHandKey}-${i}-${id}`,
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            {...sxmSectionProps(SXM_LAYOUT.heroCards, 'bj-phone-view__cards-placeholder')}
+            aria-hidden="true"
+          />
+        )}
       </div>
     );
   }
 
   function renderStageContent() {
     if (protocolPhase === "banking" || gameEnded) {
+      if (segment === 'value') {
+        return null;
+      }
       const results = round?.resultMessages ?? {};
       const lines = Object.entries(results).filter(([key]) => key !== "__round__").slice(0, 4);
 
@@ -421,90 +513,34 @@ export function BlackjackCardView({
       return renderPlayHeroPlaceholder();
     }
 
-    const heroBusted = logicalHand?.actionStatus === 'busted';
-    const heroNatural = logicalHand?.actionStatus === 'blackjack';
+    if (segment === 'cards') {
+      return (
+        <div className="bj-phone-view__hand">
+          <div className="bj-phone-view__hero-stage">
+            <div className="bj-phone-view__play-area">
+              <div className="bj-phone-view__hero-center">{renderHeroCardsBand()}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (segment === 'value') {
+      return (
+        <div className="bj-phone-view__hand">
+          <div className="bj-phone-view__hero-stage">
+            <div className="bj-phone-view__play-area">
+              <div className="bj-phone-view__hero-center">{renderHeroValueMeta()}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     const heroCenter = (
       <div className="bj-phone-view__hero-center">
-        <div className="bj-phone-view__cards-slot">
-          {heroCardIds.length > 0 ? (
-            <div
-              {...sxmSectionProps(
-                SXM_LAYOUT.heroCards,
-                'bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched',
-              )}
-            >
-              {heroCardIds.map((id, i) => (
-                <div
-                  key={`${heroHandKey}-${i}-${id}`}
-                  className={[
-                    'bj-phone-view__card-wrap',
-                    i >= 2 ? 'bj-phone-view__card-wrap--layered' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  style={{ "--card-i": i } as CSSProperties}
-                >
-                  {renderHugeCard(
-                    id,
-                    false,
-                    "hero",
-                    `${heroHandKey}-${i}-${id}`,
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div
-              {...sxmSectionProps(SXM_LAYOUT.heroCards, 'bj-phone-view__cards-placeholder')}
-              aria-hidden="true"
-            />
-          )}
-        </div>
-        <div className="bj-phone-view__hand-meta bj-phone-view__hand-meta--below-cards">
-          {hideHeroValueOnMobile && heroOutcomeMarker ? (
-            <span
-              className={[
-                cardAreaOutcomeMarkerClass(heroOutcomeMarker),
-                'bj-card-view__hero-outcome',
-              ].join(' ')}
-              aria-hidden="true"
-            >
-              {cardAreaOutcomeMarkerText(heroOutcomeMarker)}
-            </span>
-          ) : heroDisplayValue !== null ? (
-            <div
-              {...sxmSectionProps(
-                SXM_LAYOUT.handTotal,
-                'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
-                'bj-card-view__hero-value',
-                'bj-player-hand-value--emphasis',
-                heroNatural ? 'bj-phone-view__total--blackjack' : '',
-                isActiveTurn && isPlayerPhase && !showCardAreaResults
-                  ? 'bj-phone-view__box-value--active-turn'
-                  : '',
-              )}
-            >
-              {heroNatural ? 'Blackjack' : String(heroDisplayValue)}
-            </div>
-          ) : (
-            <div
-              {...sxmSectionProps(
-                SXM_LAYOUT.handTotal,
-                'ds-badge ds-badge--total bj-phone-view__total bj-phone-view__total--hero',
-                'bj-phone-view__total--placeholder',
-              )}
-              aria-hidden="true"
-            >
-              &nbsp;
-            </div>
-          )}
-          {heroBusted && !hideHeroValueOnMobile ? (
-            <span className="bj-phone-view__bust-label bj-phone-view__bust-label--meta" aria-label="Busted">
-              BUST
-            </span>
-          ) : null}
-        </div>
+        {renderHeroCardsBand()}
+        {renderHeroValueMeta()}
       </div>
     );
 

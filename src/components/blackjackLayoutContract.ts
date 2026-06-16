@@ -93,7 +93,7 @@ export const CARD_VIEW_CARDS_AREA_MODE = 'hero' as const;
 export const CARD_VIEW_CARDS_AREA_CLASS = 'bj-cards-area--hero';
 export const FULL_TABLE_CARDS_AREA_CLASS = 'bj-cards-area--table';
 
-/** All views — canonical Hit/Stay via shell BlackjackActionPanel only (no Card View side-action path). */
+/** All views — canonical Hit/Stay via shell BlackjackActionRow only (no Card View side-action path). */
 export const CARD_VIEW_CANONICAL_SHELL_ACTIONS_ONLY = true as const;
 
 /** @deprecated Mobile side Stay/Hit removed — shell BlackjackActionPanel is canonical for all views. */

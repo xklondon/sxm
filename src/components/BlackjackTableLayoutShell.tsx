@@ -3,6 +3,7 @@ import {
   BlackjackActionsZone,
   BlackjackCardsAreaZone,
   BlackjackCommandZone,
+  BlackjackHeroValueZone,
   BlackjackPlayerBoxesZone,
 } from './blackjackViewZones';
 import { TABLE_UX } from './tableUxContract';
@@ -19,6 +20,8 @@ export interface BlackjackTableLayoutShellProps {
   actions: ReactNode;
   cardsArea: ReactNode;
   cardsAreaMode: BlackjackCardsAreaMode;
+  /** Card View — hero total row between cards and actions (not an overlay). */
+  heroValue?: ReactNode;
   playerBoxes: ReactNode;
   chipTray: ReactNode;
   layoutDebug?: boolean;
@@ -26,7 +29,7 @@ export interface BlackjackTableLayoutShellProps {
 
 /**
  * Canonical blackjack table layout — same DOM order for Full Table and Card View.
- * Dealer → Command → CardsArea → Actions → PlayerBoxes → ChipTray
+ * Dealer → Command → CardsArea → HeroValue? → Actions → PlayerBoxes → ChipTray
  */
 export function BlackjackTableLayoutShell({
   tableBankInfo,
@@ -37,6 +40,7 @@ export function BlackjackTableLayoutShell({
   actions,
   cardsArea,
   cardsAreaMode,
+  heroValue,
   playerBoxes,
   chipTray,
   layoutDebug = false,
@@ -64,6 +68,8 @@ export function BlackjackTableLayoutShell({
         {feltClothLayer}
         {cardsArea}
       </BlackjackCardsAreaZone>
+
+      {heroValue ? <BlackjackHeroValueZone>{heroValue}</BlackjackHeroValueZone> : null}
 
       <BlackjackActionsZone>{actions}</BlackjackActionsZone>
 
