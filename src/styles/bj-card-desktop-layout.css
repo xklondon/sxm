@@ -11,13 +11,15 @@
     --bj-card-desktop-box-value-scale: 2.2;
     --bj-desktop-cardview-hero-value-scale: 1;
     --bj-card-desktop-actions-boxes-gap: 0.3125rem;
+    --bj-card-desktop-felt-row-reserve: 1.5rem;
+    --bj-zone-dealer-height: calc(7.75rem + var(--bj-card-desktop-felt-row-reserve));
     --bj-dealer-command-gap: 0.1875rem;
     --bj-command-cards-gap: 0;
     --bj-cards-actions-gap: 0.125rem;
     --bj-desktop-grid-row-cards: auto;
     --bj-desktop-zone-actions-height: 1.55rem;
     --bj-card-desktop-cards-band-height: auto;
-    --bj-card-desktop-cards-pull-up: 7.8125rem;
+    --bj-card-desktop-cards-pull-up: calc(7.8125rem + var(--bj-card-desktop-felt-row-reserve));
     --bj-card-desktop-boxes-nudge: 0.775rem;
     --bj-desktop-card-area-bottom-gap: 0;
     --bj-hero-cards-top-inset: 0;
@@ -68,7 +70,6 @@
     grid-row: command;
     grid-column: 1;
     margin: 0;
-    transform: translateY(1.5rem);
     height: var(--bj-zone-command-height);
     min-height: var(--bj-zone-command-height);
     max-height: var(--bj-zone-command-height);
