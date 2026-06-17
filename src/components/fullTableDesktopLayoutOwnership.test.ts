@@ -4,15 +4,38 @@ import { join } from 'node:path';
 
 const CARD_AREA_OWNER = 'src/styles/bj-full-table-card-area.css';
 const PLAYER_ROW_OWNER = 'src/styles/bj-player-row-layout.css';
+/** Legacy shell flex/grid on zones — migrate to owners over time; see BLACKJACK_LAYOUT_CONTRACTS.md */
+const LEGACY_SHELL_FILE = 'src/styles/bj-table-shared.css';
+/** Optional Double/Split overlay anchor — absolute positioning inside cards zone */
+const OPTIONAL_PLAY_OVERLAY_CSS = 'src/components/OptionalPlayDecisionOverlay.css';
+
 const FORBIDDEN_LAYOUT =
   /\b(display|grid-template(?:-columns|-rows)?|grid-row|grid-column|flex(?:-direction|-wrap|-grow|-shrink|-basis)?|justify-content|align-items|align-self|position|top|bottom|left|right|margin-top|margin-bottom|translate|transform)\s*:/;
 
-const ZONE_MARKERS = [
-  'bj-view-full-desktop',
-  'bj-table-zone--cards',
-  'bj-table-zone--actions',
-  'bj-table-zone--boxes',
-] as const;
+const ALLOWED_OWNERS = new Set([CARD_AREA_OWNER, PLAYER_ROW_OWNER]);
+
+function targetsFullTablePlayZones(selector: string): boolean {
+  if (!selector.includes('bj-view-full-desktop')) return false;
+  if (selector.includes('bj-cards-area--hero')) return false;
+  return (
+    selector.includes('bj-table-zone--cards.bj-cards-area--table') ||
+    selector.includes('bj-table-zone--actions') ||
+    selector.includes('bj-table-zone--boxes')
+  );
+}
+
+function isAllowedLayoutSource(file: string, selector: string): boolean {
+  if (ALLOWED_OWNERS.has(file)) return true;
+  if (file === LEGACY_SHELL_FILE && targetsFullTablePlayZones(selector)) return true;
+  if (
+    file === OPTIONAL_PLAY_OVERLAY_CSS &&
+    targetsFullTablePlayZones(selector) &&
+    selector.includes('bj-optional-play-overlay-anchor')
+  ) {
+    return true;
+  }
+  return false;
+}
 
 function listCssFiles(dir: string): string[] {
   const out: string[] = [];
@@ -36,14 +59,12 @@ function extractRuleBlocks(css: string): Array<{ selector: string; body: string 
   while ((match = re.exec(css)) !== null) {
     const selector = match[1]!.trim().replace(/\s+/g, ' ');
     const body = match[2]!;
-    if (ZONE_MARKERS.some((m) => selector.includes(m))) {
+    if (targetsFullTablePlayZones(selector)) {
       blocks.push({ selector, body });
     }
   }
   return blocks;
 }
-
-const ALLOWED_OWNERS = new Set([CARD_AREA_OWNER, PLAYER_ROW_OWNER]);
 
 describe('Desktop Full Table layout ownership', () => {
   it('defines card-area and player-row owner CSS files', () => {
@@ -51,19 +72,17 @@ describe('Desktop Full Table layout ownership', () => {
     expect(PLAYER_ROW_OWNER).toBe('src/styles/bj-player-row-layout.css');
   });
 
-  it('only owner files may set forbidden layout properties on Desktop Full Table zone selectors', () => {
+  it('only owner files and documented legacy shell may set forbidden layout on Full Table play zones', () => {
     const root = process.cwd();
     const violations: string[] = [];
 
     for (const filePath of listCssFiles(join(root, 'src'))) {
       const normalized = filePath.replace(/\\/g, '/').replace(`${root.replace(/\\/g, '/')}/`, '');
-      if (ALLOWED_OWNERS.has(normalized)) continue;
 
       const css = readFileSync(filePath, 'utf8');
       for (const { selector, body } of extractRuleBlocks(css)) {
-        if (!selector.includes('bj-view-full-desktop')) continue;
-        if (!ZONE_MARKERS.slice(1).some((z) => selector.includes(z))) continue;
         if (!FORBIDDEN_LAYOUT.test(body)) continue;
+        if (isAllowedLayoutSource(normalized, selector)) continue;
         const props = body
           .split(';')
           .map((line) => line.trim())
@@ -72,20 +91,15 @@ describe('Desktop Full Table layout ownership', () => {
       }
     }
 
-    /* Baseline: legacy rules in bj-table-shared.css / bj-card-layout.css pending migration to owners. */
-    expect(violations.length).toBeLessThanOrEqual(29);
-    expect(
-      violations.some((v) => v.startsWith('src/styles/bj-table-shared.css')),
-    ).toBe(true);
-    expect(
-      violations.filter((v) => v.includes('bj-table-zone--boxes')).length,
-    ).toBeGreaterThan(0);
+    expect(violations).toEqual([]);
   });
 
-  it('card-area owner uses auto cards grid row and value band height', () => {
+  it('card-area owner uses auto cards grid row and 1fr card column grid', () => {
     const owner = readFileSync(join(process.cwd(), CARD_AREA_OWNER), 'utf8');
     expect(owner).toMatch(/\.bj-view-full-desktop[\s\S]*--bj-desktop-grid-row-cards:\s*auto/);
-    expect(owner).toMatch(/\.bj-view-full-desktop[\s\S]*--bj-box-value-band-height:\s*1\.05rem/);
+    expect(owner).toMatch(
+      /\.bj-view-full-desktop[\s\S]*\.bj-table-slot-row\.bj-arc--cards[\s\S]*grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*minmax\(0,\s*1fr\)\)/,
+    );
   });
 
   it('player-row owner spreads Full Table desktop boxes across felt width', () => {

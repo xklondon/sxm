@@ -15,6 +15,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-17 — Layout contract reconciliation (structural)
+
+- **Source of truth:** `docs/BLACKJACK_LAYOUT_CONTRACTS.md` — authority order (reference images → browser captures → doc → ownership tests); test categories A–D; per-view layout owners; shell placement exception.
+- **Desktop Card View:** action-to-box gap tuned to ~5px (`margin-bottom: -0.3125rem` on actions zone); browser capture asserts 3–8px.
+- **Desktop Full Table:** play-phase card-column value suppressed (total in box); cards row 1fr grid aligned to boxes; ownership tests enforce owners + shell-only exception (no “29 violations” baseline).
+- **Tests:** `test:layout:desktop-full`, `test:layout:desktop-card`, `test:layout:ownership`, `test:layout:all-fast`; frozen/guard tests updated to match browser-validated tokens.
+- **Docs:** `SXM_MASTER_SPEC.md`, `BLACKJACK_STABILITY_CONTRACTS.md`, `.cursorrules` defer detailed layout rules to `BLACKJACK_LAYOUT_CONTRACTS.md`.
+
+---
+
 ## 2026-06-16 — Canonical desktop layout tokens (Full Table + Card View)
 
 - **Desktop layout:** Token-based vertical zone model for `.bj-view-full-desktop` and `.bj-view-card-desktop` — player row spread (`--bj-desktop-player-row-spread`), in-box value 2× scale, Card View hero value −30%, action row offset, hero card area bottom gap.

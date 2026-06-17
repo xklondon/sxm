@@ -31,7 +31,7 @@ Protected boundaries between **protocol**, **layout**, **dealing**, and **accoun
 
 **Modules:** `src/components/tableViewContract.ts`, `src/components/tableUxContract.ts`, `src/components/blackjackLayoutContract.ts`
 
-**Canonical layout doc:** [BLACKJACK_LAYOUT_CONTRACTS.md](./BLACKJACK_LAYOUT_CONTRACTS.md) — per-view freeze flags (A, B1, B2, C1–C3), media boundaries, audit guards in `blackjackLayoutContractGuards.test.ts`.
+**Canonical layout doc:** [BLACKJACK_LAYOUT_CONTRACTS.md](./BLACKJACK_LAYOUT_CONTRACTS.md) — **single source of truth** for zone order, owners, browser capture targets, and test categories. This section covers protocol/layout *boundaries* only.
 
 | Responsibility | Canonical API / rule |
 |----------------|----------------------|

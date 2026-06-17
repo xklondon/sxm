@@ -104,6 +104,8 @@ Aligned env keys (same LAN host, no localhost in links):
 
 ## View / layout invariants (blackjack table)
 
+**Canonical layout spec:** `docs/BLACKJACK_LAYOUT_CONTRACTS.md` (single source of truth). Reference screenshots and browser capture scripts beat Vitest string guards for visual layout. Use `npm run test:layout:all-fast` for layout verification — not full `npm test`.
+
 - View-specific CSS MUST be scoped under a view root class (`tableViewContract.ts`):
   `bj-view-full-desktop`, `bj-view-card-desktop`, `bj-view-full-mobile`, `bj-view-card-mobile`.
   Avoid bare `.bj-casino__felt …` / `.bj-center-status …` selectors that leak across views.
@@ -208,4 +210,9 @@ If the user provides screenshots, treat them as source of truth. Do not claim an
 Use: chips, ledger, table balance, friends, buy-in, settlement, round.
 
 
+For Blackjack layout work:
+Do not add new layout ownership tests unless an existing browser capture cannot protect the issue.
+Use BLACKJACK_LAYOUT_CONTRACTS.md + reference-ui/views as the source of truth.
+Use npm run test:layout:all-fast for layout verification.
+Do not run full npm test for layout-only work unless explicitly requested.
 

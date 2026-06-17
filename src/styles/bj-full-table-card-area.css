@@ -458,9 +458,10 @@
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions {
     margin-top: var(--bj-full-desktop-cards-actions-gap);
     padding-top: 0;
-    padding-bottom: var(--bj-full-desktop-actions-boxes-gap);
+    padding-bottom: 0;
     justify-content: flex-end;
     align-items: center;
+    align-self: end;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
@@ -532,6 +533,35 @@
     .bj-table-zone--cards.bj-cards-area--table
     .bj-full-table-card-area {
     transform: none;
+    justify-content: stretch;
+  }
+
+  /* Card columns — same 1fr grid as player boxes (slot-aligned). */
+  .bj-view-full-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--table
+    .bj-table-slot-row.bj-arc--cards {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+    column-gap: var(--bj-table-slot-row-gap);
+    justify-content: stretch;
+    justify-items: center;
+  }
+
+  .bj-view-full-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--table
+    .bj-table-slot-row--with-add.bj-arc--cards {
+    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, 1fr));
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards.bj-full-table-card-area > .bj-arc__slot {
+    width: 100%;
+    max-width: var(--bj-full-table-box-width);
+    justify-self: center;
   }
 
   .bj-view-full-desktop

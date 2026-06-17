@@ -155,6 +155,11 @@ async function main() {
     throw new Error('action row overlaps player boxes');
   }
 
+  const actionToBoxesGap = playerBoxes.top - actionButtons.bottom;
+  if (actionToBoxesGap < 3 || actionToBoxesGap > 8) {
+    throw new Error(`action-to-boxes gap ${actionToBoxesGap.toFixed(1)}px outside 3–8px target`);
+  }
+
   if (slots.length >= 4) {
     const first = slots[0]!.left;
     const last = slots[slots.length - 1]!.right;

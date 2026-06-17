@@ -31,6 +31,10 @@
     "test:watch": "vitest",
     "test:card-desktop-layout:browser": "tsx scripts/capture-card-desktop-layout.mts",
     "test:full-table-desktop-layout:browser": "tsx scripts/capture-full-table-desktop-layout.mts",
+    "test:layout:desktop-full": "npm run test:full-table-desktop-layout:browser",
+    "test:layout:desktop-card": "npm run test:card-desktop-layout:browser",
+    "test:layout:ownership": "vitest run src/components/fullTableDesktopLayoutOwnership.test.ts src/components/cardViewDesktopLayoutOwnership.test.ts",
+    "test:layout:all-fast": "npm run test:layout:desktop-full && npm run test:layout:desktop-card && npm run test:layout:ownership",
     "preview": "vite preview"
   },
   "dependencies": {

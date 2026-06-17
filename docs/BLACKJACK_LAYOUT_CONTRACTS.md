@@ -1,9 +1,95 @@
 # Blackjack layout contracts
 
-Canonical layout rules for all supported blackjack table views. Protocol, betting, and dealing boundaries live in [BLACKJACK_STABILITY_CONTRACTS.md](./BLACKJACK_STABILITY_CONTRACTS.md).
+**Single source of truth for all blackjack table layout.** Protocol, betting, and dealing boundaries live in [BLACKJACK_STABILITY_CONTRACTS.md](./BLACKJACK_STABILITY_CONTRACTS.md) — that doc defers layout detail here.
 
 **Code constants:** `src/components/blackjackLayoutContract.ts`  
 **Mobile boundary:** `src/styles/mobileLayoutContract.ts` (`MOBILE_MAX_WIDTH`, `MOBILE_LAYOUT_MEDIA`)
+
+---
+
+## Authority order (resolve conflicts)
+
+1. **Reference screenshots** — [`reference-ui/views/Desktop_Full.png`](../reference-ui/views/Desktop_Full.png) (or legacy [`Mobil.png`](../reference-ui/views/Mobil.png)), [`Desktop_Card.png`](../reference-ui/views/Desktop_Card.png), mobile references when present.
+2. **Browser geometry captures** — `npm run test:layout:desktop-full` / `test:layout:desktop-card` (Playwright bounding boxes). **Visual layout truth beats Vitest string guards.**
+3. **This document** — zone order, owners, tokens, invariants.
+4. **CSS ownership tests** — `npm run test:layout:ownership` (non-owners must not set layout properties).
+5. **Frozen/guard Vitest** — token and DOM-path guards only; must not encode obsolete pixel values.
+
+---
+
+## Test categories
+
+| Category | Scripts / files | Purpose |
+|----------|-----------------|--------|
+| **A — Browser geometry** | `test:layout:desktop-full`, `test:layout:desktop-card` | Overlap, vertical order, action-to-box gap, card/box alignment, hero value visibility |
+| **B — CSS ownership** | `test:layout:ownership` | Owner files hold layout; shell placement exception documented below |
+| **C — DOM / shared components** | `blackjackRenderedLayout.test.tsx`, panel tests | `BlackjackActionRow`, `BlackjackPlayerBoxRow`, `BlackjackTrayRow`; no duplicate Stay/Hit path |
+| **D — Frozen guards** | `blackjackFullTableLayoutFrozen.test.ts`, `cardViewLayoutGuards.test.ts` | Regression guards only — update when browser-validated layout changes |
+
+**Do not run full `npm test` for layout reconciliation.** Use `npm run test:layout:all-fast` + `npm run build`. Full Vitest suite may OOM from repeated heavy `BlackjackPanel` SSR mounts in `blackjackRenderedLayout.test.tsx` — prefer browser captures for geometry.
+
+---
+
+## Layout owners (one owner per view)
+
+### 1. Desktop Full Table (`bj-view-full-desktop`) — FROZEN
+
+| Role | Owner file |
+|------|------------|
+| Card stack / value band / actions gap / card-column grid | `src/styles/bj-full-table-card-area.css` |
+| Player box row spread + slot grid | `src/styles/bj-player-row-layout.css` |
+| Shell zone grid-row placement + legacy zone flex | `src/styles/bj-table-shared.css` (migrate to owners over time) |
+| Overlay wiring | `src/components/BlackjackPanel.tsx` (classes only, no layout CSS) |
+
+**Browser targets:** action-to-box gap ≈ 0–2px; card stack center aligned to box column (1fr grid); card-column value hidden during play (`bj-arc__slot--card-column--stack-value-in-box`); hand total in box (`bj-phone-view__mini-hand-value`).
+
+### 2. Desktop Card View (`bj-view-card-desktop`) — FROZEN
+
+| Role | Owner file |
+|------|------------|
+| Seven-band grid, hero value, actions, boxes, tray | `src/styles/bj-card-desktop-layout.css` |
+| Hero card fan markup | `src/components/BlackjackCardView.tsx` |
+| Hero card cosmetics (not zone placement) | `src/styles/bj-card-layout.css` |
+
+**Browser targets:** hero value visible below cards, above Stay/Hit; **action-to-box gap ≈ 5px** (3–8px tolerance); felt cloth visible behind hero cards.
+
+### 3. Mobile Portrait Full Table (`bj-view-full-mobile`) — FROZEN
+
+Same zone order as desktop Full Table. Card columns: `bj-full-table-card-area.css` + `bj-player-row-layout.css` (Contract C).
+
+### 4. Mobile Portrait Card View (`bj-view-card-mobile`) — PENDING FREEZE
+
+Shell actions via `BlackjackActionRow`; portrait box row in `bj-player-row-layout.css`.
+
+### 5. Mobile Landscape — PENDING FREEZE
+
+Same semantics as portrait; compact tokens in `bj-table-shared.css` landscape blocks.
+
+### Shared presentational components (all views)
+
+| Component | Band | Role |
+|-----------|------|------|
+| `BlackjackActionRow` | `action-row` | Stay / Hit / Double / Split |
+| `BlackjackPlayerBoxRow` | `player-boxes` | Arc player box row |
+| `BlackjackTrayRow` | `tray-row` | Balance + chip plaques |
+| `renderArcSlot` | — | Shared player box content |
+| `BlackjackCardView` | `hero-cards`, `hero-value` | Hero fan + value segment only — **no separate Stay/Hit** |
+
+---
+
+## CSS ownership rules
+
+**Allowed outside owners (shared style only):** color, font, border, background, shadow, radius.
+
+**Forbidden outside owners:** `display`, `grid-*`, `flex*`, `justify-content`, `align-*`, layout `width`/`height`, `position`, `margin-top`/`margin-bottom`, `transform`/`translate`, `overflow` that clips or moves layout.
+
+**Documented exception — legacy shell:** `bj-table-shared.css` may still set layout on Full Table play zones (`cards.bj-cards-area--table`, `actions`, `boxes`) until migrated into owners. Hero cards (`bj-cards-area--hero`) are out of scope for Full Table ownership audit.
+
+**Documented exception — optional play overlay:** `OptionalPlayDecisionOverlay.css` may set absolute/flex layout on `.bj-optional-play-overlay-anchor` inside the Full Table desktop cards zone only.
+
+---
+
+## View freeze status
 
 | View | Status | Constant |
 |------|--------|----------|
@@ -92,14 +178,15 @@ Vertical rules: stack above value (grid row 2 → 3); actions below card area; b
 
 Double/Split are **not** duplicated in `BlackjackActionRow` (`showDouble={false}`, `showSplit={false}`).
 
-### Spacing tokens
+### Spacing tokens (browser-validated)
 
-Scoped under `@media (min-width: 721px) .bj-view-full-desktop` and shared desktop shell tokens for `.bj-view-card-desktop` actions in `bj-full-table-card-area.css`:
+Scoped under `@media (min-width: 721px) .bj-view-full-desktop` in `bj-full-table-card-area.css`:
 
-- `--bj-full-desktop-actions-boxes-gap: 0.125rem` (Hit/Stay close above box amount labels)
-- `--bj-full-desktop-stack-value-gap: 0.3125rem` (gap between stack bottom and hand value)
-- `--bj-full-desktop-dealer-command-gap: 0.1875rem`
-- Card arc nudge: `translateY(18px)` on `.bj-full-table-card-area` (Full Table desktop only)
+- `--bj-full-desktop-actions-boxes-gap: 0.125rem` (Hit/Stay just above box row)
+- `--bj-full-desktop-cards-actions-gap: 0.125rem` (margin between cards zone and actions row)
+- `--bj-full-desktop-stack-value-gap: 0.3125rem`
+- Card columns: `repeat(var(--slot-count), minmax(0, 1fr))` aligned with player boxes
+- Play phase: card-column stack value suppressed; total in player box only
 
 ### Player boxes (all views)
 
@@ -215,8 +302,10 @@ Reference: [`reference-ui/views/Desktop_Card.png`](../reference-ui/views/Desktop
 
 **Layout tokens** (scoped under `.bj-view-card-desktop` in `bj-card-desktop-layout.css`):
 
-- `--bj-card-desktop-box-spread: space-evenly` — four boxes + add control span felt width
-- `--bj-card-desktop-box-value-scale` — in-box hand total during play
+- `--bj-card-desktop-box-spread: space-between`
+- `--bj-card-desktop-actions-boxes-gap: 0.0625rem` + `margin-bottom: -0.3125rem` on actions zone → **~5px** action-to-box gap (browser capture)
+- `--bj-desktop-zone-actions-height: 3.35rem` with `justify-content: flex-end` (buttons at bottom of actions band)
+- Felt cloth: `display: flex` on `.bj-felt-cloth-layer` in cards zone
 
 **Grid rows:** `dealer` | `command` | `cards` (1fr) | `hero-value` | `actions` | `boxes` | `tray` — see `CARD_VIEW_DESKTOP_GRID_ROWS` in `blackjackLayoutContract.ts`.
 
@@ -224,7 +313,7 @@ Reference: [`reference-ui/views/Desktop_Card.png`](../reference-ui/views/Desktop
 
 **Player boxes (all views):** During play, box shows owner, card ranks, and in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside box; bet amount stays above box. Betting phase still shows chips inside box. **Desktop Card View:** four visible seats + add control only (`DEFAULT_VISIBLE_TABLE_BOXES = 4`).
 
-**Owner files:** `BlackjackCardView.tsx`, `BlackjackCardView.css`, `bj-card-layout.css`, `bj-card-desktop-layout.css`, `bj-table-shared.css`, `bj-player-row-layout.css`, `bj-felt-skins.css`, `BlackjackPanel.tsx`.
+**Owner files:** `bj-card-desktop-layout.css` (sole layout owner), `BlackjackCardView.tsx`, `bj-card-layout.css` (hero cosmetics), `BlackjackPanel.tsx`.
 
 **Current risks:** CSS split across 4+ files; optional play in command zone (differs from Full Table desktop overlay).
 
@@ -268,27 +357,22 @@ View root: `bj-view-card-mobile` at landscape media (`FULL_TABLE_MOBILE_LANDSCAP
 
 ---
 
-## Layout ownership (source guards)
+## Layout ownership (enforced by `test:layout:ownership`)
 
-| Role | Owner |
-|------|--------|
-| Full Table card column grid | `src/styles/bj-full-table-card-area.css` |
-| Zone order, flags, media constants | `src/components/blackjackLayoutContract.ts` |
-| Full Table arc + overlay wiring | `src/components/BlackjackPanel.tsx` |
-| Shell DOM | `src/components/BlackjackTableLayoutShell.tsx` |
-| Desktop optional-play overlay position | `src/components/OptionalPlayDecisionOverlay.css` |
-| Compact optional-play buttons | `src/components/InsuranceDecisionOverlay.css` |
-| Card View hero markup | `src/components/BlackjackCardView.tsx` |
-| Mobile boundary | `src/styles/mobileLayoutContract.ts` |
+| View | Layout owners |
+|------|----------------|
+| Desktop Full Table | `bj-full-table-card-area.css`, `bj-player-row-layout.css` (+ shell placement in `bj-table-shared.css`) |
+| Desktop Card View | `bj-card-desktop-layout.css` only |
+| Shell DOM order | `BlackjackTableLayoutShell.tsx` |
+| Flags / constants | `blackjackLayoutContract.ts` |
 
-**Guarded CSS** (must not introduce competing Full Table card-column grid):  
-`bj-table-shared.css`, `bj-card-layout.css`, `bj-player-row-layout.css`, `BlackjackPanel.css`
+**Guarded non-owners:** must not set forbidden layout properties on view zone selectors (see ownership tests).
 
-**Card View guard:** `BlackjackCardView.tsx` and Card View sections of `bj-card-layout.css` must not import or override `bj-full-table-card-area` / Full Table column grid.
+**Card View guard:** `bj-card-desktop-layout.css` must not import or override Full Table card-column grid from `bj-full-table-card-area.css`.
 
 ---
 
 ## Related docs
 
-- [SXM_MASTER_SPEC.md](./SXM_MASTER_SPEC.md) — product spec (§13 mobile / view rules)
+- [SXM_MASTER_SPEC.md](./SXM_MASTER_SPEC.md) — product spec (defers layout detail here)
 - [BLACKJACK_STABILITY_CONTRACTS.md](./BLACKJACK_STABILITY_CONTRACTS.md) — protocol / dealing / accounting

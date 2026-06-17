@@ -289,10 +289,10 @@ export const FULL_TABLE_FORBIDDEN_LAYOUT_PATTERNS = [
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*overflow-x:\s*hidden[\s\S]*overflow-y:\s*visible/,
   },
   {
-    id: 'card-zone-overflow-hidden',
-    description: 'Full Table card zone must not clip stacks',
+    id: 'card-zone-overflow-x-hidden-pair',
+    description: 'overflow-x: hidden on desktop card zone (without paired clip fix) regresses stacks',
     pattern:
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*overflow:\s*hidden/,
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*overflow-x:\s*hidden/,
   },
   {
     id: 'card-column-flex-grow-stack',

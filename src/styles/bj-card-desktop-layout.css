@@ -10,6 +10,8 @@
     --bj-card-desktop-box-spread: space-between;
     --bj-card-desktop-box-value-scale: 2.2;
     --bj-desktop-cardview-hero-value-scale: 1;
+    --bj-card-desktop-actions-boxes-gap: 0.0625rem;
+    --bj-desktop-zone-actions-height: 3.35rem;
     --bj-desktop-card-area-bottom-gap: 0;
     --bj-command-cards-gap: 0;
     --bj-cards-actions-gap: 0;
@@ -17,7 +19,6 @@
     --bj-hero-cards-top-inset: 0;
     --bj-card-boxes-padding-bottom: 0;
     --bj-desktop-zone-boxes-tray-gap: 0;
-    --bj-desktop-zone-actions-height: 3.35rem;
     --bj-desktop-zone-tray-height: 5.85rem;
     --bj-full-desktop-tray-padding-bottom: 0;
     --bj-card-hero-card-width: min(15vw, 9rem);
@@ -97,7 +98,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: visible;
+    overflow: hidden;
   }
 
   .bj-view-card-desktop
@@ -118,7 +119,23 @@
   .bj-view-card-desktop
     .bj-table-layout-shell
     > .bj-table-zone--hero-value
+    .bj-phone-view__hand-meta--below-cards {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    max-height: 100%;
+    visibility: visible;
+  }
+
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    > .bj-table-zone--hero-value
     .bj-card-view__hero-value.bj-phone-view__total--hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: visible;
     font-size: calc(
       var(--bj-seat-total-size) * 1.35 * var(--bj-desktop-cardview-hero-value-scale, 0.62)
     );
@@ -127,8 +144,8 @@
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
     grid-row: actions;
     grid-column: 1;
-    margin: 0;
-    padding: 0;
+    margin: 0 0 -0.3125rem;
+    padding: 0 0 var(--bj-card-desktop-actions-boxes-gap);
     min-height: var(--bj-desktop-zone-actions-height);
     max-height: var(--bj-desktop-zone-actions-height);
     height: var(--bj-desktop-zone-actions-height);
@@ -136,7 +153,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     overflow: hidden;
     position: relative;
     top: auto;

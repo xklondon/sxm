@@ -232,15 +232,21 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
     expect(cardZoneRule).not.toMatch(/overflow-y:\s*auto/);
   });
 
-  it('keeps visible playing cards with value below stack in card area', () => {
+  it('keeps visible playing cards in card area during play (value in box, not card column)', () => {
     const html = renderFullTableAt(1280);
     expect(html).toContain(FULL_TABLE_DESKTOP_VIEW_ROOT);
     const cardsZone = zoneSlice(html, 'bj-table-zone--cards', 'bj-table-zone--actions');
+    const boxesZone = zoneSlice(html, 'bj-table-zone--boxes', 'bj-table-zone--bottom');
     expect(cardsZone).toContain(FULL_TABLE_CARD_AREA_CLASS);
     expect(cardsZone).toContain('playing-card');
-    expect(cardsZone).toContain(FULL_TABLE_CARD_VALUE_CLASS);
-    const column = cardsZone.split('bj-arc__slot--card-column').find((c) => c.includes('playing-card')) ?? '';
-    expect(column.indexOf('playing-card')).toBeLessThan(column.indexOf(FULL_TABLE_CARD_VALUE_CLASS));
+    expect(cardsZone).toContain('bj-arc__slot--card-column--stack-value-in-box');
+    const activePlayerColumn =
+      cardsZone.match(
+        /bj-arc__slot--card-column--stack-value-in-box[\s\S]*?(?=<div class="bj-arc__slot bj-arc__slot--card-column|$)/,
+      )?.[0] ?? '';
+    expect(activePlayerColumn.length).toBeGreaterThan(0);
+    expect(activePlayerColumn).not.toContain(FULL_TABLE_CARD_VALUE_CLASS);
+    expect(boxesZone).toContain('bj-phone-view__mini-hand-value');
   });
 
   it('renders Hit/Stay below card area and player boxes below actions', () => {
@@ -324,9 +330,9 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
     }
   });
 
-  it('keeps frozen actions-boxes-gap at 0.125rem so Hit/Stay sits close above box amounts', () => {
+  it('keeps frozen actions-boxes-gap at 0.0625rem so Hit/Stay sits close above box amounts', () => {
     expect(PLAY_ZONE_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.125rem/,
+      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.0625rem/,
     );
     expect(PLAY_ZONE_CSS).not.toMatch(/--bj-full-desktop-actions-boxes-gap:\s*1\.25rem/);
   });
@@ -338,7 +344,7 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
   });
 
   it('keeps positive cards-actions gap between card value band and Hit/Stay row', () => {
-    expect(PLAY_ZONE_CSS).toMatch(/--bj-full-desktop-cards-actions-gap:\s*0\.12rem/);
+    expect(PLAY_ZONE_CSS).toMatch(/--bj-full-desktop-cards-actions-gap:\s*0\.125rem/);
     expect(PLAY_ZONE_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell[\s\S]*--bj-cards-actions-gap:\s*var\(--bj-full-desktop-cards-actions-gap\)/,
     );
