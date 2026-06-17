@@ -199,10 +199,13 @@ describe('blackjack final layout fixes', () => {
   it('desktop Card View hero cards zone does not clip value with overflow hidden', () => {
     const cardDesktopCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
     expect(cardDesktopCss).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*hidden/,
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/,
     );
     expect(cardDesktopCss).toMatch(
       /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--hero-value[\s\S]*grid-row:\s*hero-value/,
+    );
+    expect(cardDesktopCss).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*align-items:\s*flex-end/,
     );
   });
 });

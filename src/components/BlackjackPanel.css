@@ -1433,11 +1433,4 @@
     box-sizing: border-box;
   }
 
-  /* Game-end card row spacing — Card View desktop only (Full Table uses play-zone contract). */
-  .bj-view-card-desktop.bj-casino[data-game-ended='true']
-    .bj-table-layout-shell
-    .bj-table-zone--cards.bj-cards-area--table
-    .bj-arc--cards {
-    padding-top: 0.95rem;
-  }
 }

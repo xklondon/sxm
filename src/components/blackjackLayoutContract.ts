@@ -214,14 +214,9 @@ export const CARD_VIEW_DESKTOP_LAYOUT_TOKENS = [
   '--bj-card-desktop-box-value-scale',
 ] as const;
 
-/** Card View CSS owners (pending freeze — C1–C3). */
+/** Card View layout owner — sole CSS file for Desktop Card View grid/flex/position rules. */
 export const CARD_VIEW_LAYOUT_OWNER_FILES = [
-  'src/components/BlackjackCardView.tsx',
-  'src/components/BlackjackCardView.css',
-  'src/styles/bj-card-layout.css',
   'src/styles/bj-card-desktop-layout.css',
-  'src/styles/bj-table-shared.css',
-  'src/styles/bj-player-row-layout.css',
 ] as const;
 
 /** Recommended freeze order (docs + guards only until each flag is true). */

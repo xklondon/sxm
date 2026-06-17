@@ -300,8 +300,7 @@
 
 /* Full Table + Card View desktop — tray label below token row (not beside plaques). */
 @media (min-width: 721px) {
-  .bj-view-full-desktop .bj-value-chips--with-label,
-  .bj-view-card-desktop .bj-value-chips--with-label {
+  .bj-view-full-desktop .bj-value-chips--with-label{
     display: grid;
     grid-template-rows: auto auto;
     grid-template-columns: minmax(0, 1fr);
@@ -315,16 +314,14 @@
     box-sizing: border-box;
   }
 
-  .bj-view-full-desktop .bj-value-chips--with-label .bj-value-chips__row--main,
-  .bj-view-card-desktop .bj-value-chips--with-label .bj-value-chips__row--main {
+  .bj-view-full-desktop .bj-value-chips--with-label .bj-value-chips__row--main{
     grid-row: 1;
     justify-content: center;
     gap: 0.75rem;
     width: 100%;
   }
 
-  .bj-view-full-desktop .bj-value-chips--with-label .bj-value-chips__row--label,
-  .bj-view-card-desktop .bj-value-chips--with-label .bj-value-chips__row--label {
+  .bj-view-full-desktop .bj-value-chips--with-label .bj-value-chips__row--label{
     grid-row: 2;
     width: 100%;
     flex: 0 0 auto;

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+const CARD_DESKTOP_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(
   join(process.cwd(), 'src/components/BlackjackCardView.css'),
   'utf8',
@@ -51,16 +52,18 @@ describe('Desktop Card View hero card clipping guards', () => {
     );
   });
 
-  it('aligns Card View hero cards from the top so rank/suit stay readable', () => {
-    expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards--fan[\s\S]*align-items:\s*flex-start/,
+  it('centers Card View desktop hero cards in grid row 3; mobile stays top-aligned', () => {
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards--fan[\s\S]*align-items:\s*center/,
     );
     expect(LAYOUT_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*align-items:\s*flex-start/,
     );
-    expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__card-wrap[\s\S]*align-self:\s*center/,
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop[\s\S]*\.bj-phone-view__card-wrap[\s\S]*align-self:\s*center/,
     );
-    expect(LAYOUT_CSS).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/);
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/,
+    );
   });
 });
