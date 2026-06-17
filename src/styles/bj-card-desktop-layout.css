@@ -4,22 +4,17 @@
  */
 
 @media (min-width: 721px) {
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center {
+  /* Cards band — fill shell 1fr row; hero stack owns vertical space (not boxes/tray). */
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero > .bj-phone-view__axis {
     flex: 1 1 auto;
     min-height: 0;
     height: 100%;
-    max-height: 100%;
     width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.28rem;
     overflow: hidden;
   }
 
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-stack,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__stage,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
@@ -37,6 +32,20 @@
     overflow: hidden;
   }
 
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.32rem;
+    overflow: hidden;
+  }
+
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
@@ -44,6 +53,7 @@
     min-height: 0;
     max-height: 100%;
     width: 100%;
+    display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
@@ -51,9 +61,11 @@
     margin: 0;
   }
 
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
-    align-items: center;
-    justify-content: center;
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
   }
 
   .bj-view-card-desktop
@@ -74,7 +86,7 @@
     .bj-table-zone--cards.bj-cards-area--hero
     .bj-phone-view__cards
     .playing-card.ds-card--hero {
-    width: min(var(--bj-card-hero-card-width), 9rem);
+    width: min(var(--bj-card-hero-card-width), 100%);
     max-height: min(var(--bj-card-hero-card-max-height), 100%);
     height: auto;
     margin-left: 0;
@@ -90,7 +102,7 @@
     .bj-table-zone--cards.bj-cards-area--hero
     .bj-phone-view__cards
     .playing-card.ds-card--hero:not(:first-child) {
-    margin-left: -1.55rem;
+    margin-left: -1.5rem;
   }
 
   .bj-view-card-desktop
@@ -106,16 +118,45 @@
     );
   }
 
+  /* Card View — subtle cloth only; hide title/rule text artifacts in hero band. */
   .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer {
     display: flex !important;
     align-items: center;
     justify-content: center;
-    opacity: 0.92;
+    opacity: 0.14;
     pointer-events: none;
   }
 
   .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__svg {
-    width: min(82%, 34rem);
-    max-height: 58%;
+    width: min(72%, 30rem);
+    max-height: 48%;
+  }
+
+  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__title,
+  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__insurance,
+  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__dealer-rule,
+  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__custom-rules,
+  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__wager {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  /* Player boxes — spread across felt; stays in shell boxes zone only. */
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+    column-gap: var(--bj-table-slot-row-gap);
+    justify-content: stretch;
+    justify-items: center;
+  }
+
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--boxes
+    .bj-table-slot-row--with-add.bj-arc--player-boxes {
+    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, 1fr));
   }
 }
