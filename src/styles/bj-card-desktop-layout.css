@@ -11,15 +11,18 @@
     --bj-card-desktop-box-value-scale: 2.2;
     --bj-desktop-cardview-hero-value-scale: 1;
     --bj-card-desktop-actions-boxes-gap: 0.3125rem;
-    --bj-desktop-zone-actions-height: 3.35rem;
-    --bj-desktop-card-area-bottom-gap: 0;
+    --bj-dealer-command-gap: 0.1875rem;
     --bj-command-cards-gap: 0;
-    --bj-cards-actions-gap: 0;
-    --bj-dealer-command-gap: 0;
+    --bj-cards-actions-gap: 0.125rem;
+    --bj-desktop-grid-row-cards: auto;
+    --bj-desktop-zone-actions-height: 1.55rem;
+    --bj-card-desktop-cards-band-height: auto;
+    --bj-card-desktop-cards-pull-up: 7.8125rem;
+    --bj-card-desktop-boxes-nudge: 0.775rem;
+    --bj-desktop-card-area-bottom-gap: 0;
     --bj-hero-cards-top-inset: 0;
-    --bj-card-boxes-padding-bottom: 0;
-    --bj-desktop-zone-boxes-tray-gap: 0;
-    --bj-desktop-zone-tray-height: 5.85rem;
+    --bj-card-boxes-padding-bottom: 0.35rem;
+    --bj-desktop-zone-boxes-tray-gap: 1.1rem;
     --bj-full-desktop-tray-padding-bottom: 0;
     --bj-card-hero-card-width: min(15vw, 9rem);
     --bj-card-hero-card-max-height: min(26vh, 11.5rem);
@@ -42,13 +45,13 @@
     grid-template-rows:
       [dealer] var(--bj-desktop-zone-dealer-height)
       [command] var(--bj-desktop-zone-command-height)
-      [cards] minmax(5.5rem, 1fr)
-      [hero-value] var(--bj-desktop-zone-hero-value-height)
+      [cards] var(--bj-card-desktop-cards-band-height)
       [actions] var(--bj-desktop-zone-actions-height)
       [boxes] var(--bj-desktop-zone-boxes-height)
       [tray] var(--bj-desktop-zone-tray-height);
     row-gap: 0;
     column-gap: 0;
+    padding-bottom: var(--bj-desktop-bottom-padding);
     overflow: hidden;
   }
 
@@ -65,40 +68,69 @@
     grid-row: command;
     grid-column: 1;
     margin: 0;
-    padding: 0;
-    min-height: 0;
+    transform: translateY(1.5rem);
+    height: var(--bj-zone-command-height);
+    min-height: var(--bj-zone-command-height);
+    max-height: var(--bj-zone-command-height);
+    padding: var(--bj-dealer-command-gap) 0.35rem 0;
     align-self: stretch;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    overflow: visible;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--summary .bj-card-layout__command,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--summary .dealer-block__command {
+    max-height: 100%;
+    overflow: visible;
+    padding: 0.38rem 1.5rem;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
     grid-row: cards;
     grid-column: 1;
-    margin: 0;
-    padding: 0;
-    min-height: 0;
-    height: 100%;
-    max-height: none;
+    margin: calc(-1 * var(--bj-card-desktop-cards-pull-up)) 0 0;
+    padding: 0 0 var(--bj-desktop-zone-hero-value-height);
+    min-height: calc(
+      var(--bj-full-table-card-stack-zone-height) + var(--bj-desktop-zone-hero-value-height) +
+        var(--bj-full-desktop-stack-value-gap, 0.3125rem)
+    );
+    max-height: calc(
+      var(--bj-full-table-card-stack-zone-height) + var(--bj-desktop-zone-hero-value-height) +
+        var(--bj-full-desktop-stack-value-gap, 0.3125rem)
+    );
+    height: auto;
     flex: unset;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--hero-value {
+    grid-row: cards;
+    grid-column: 1;
+    margin: calc(-1 * var(--bj-desktop-zone-hero-value-height)) 0 0;
+    padding: 0;
+    min-height: var(--bj-desktop-zone-hero-value-height);
+    max-height: var(--bj-desktop-zone-hero-value-height);
+    height: var(--bj-desktop-zone-hero-value-height);
+    align-self: end;
+    justify-self: stretch;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: visible;
     position: relative;
+    z-index: 2;
+    pointer-events: none;
   }
 
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--hero-value {
-    grid-row: hero-value;
-    grid-column: 1;
-    margin: 0;
-    padding: 0.28rem 0 0;
-    min-height: var(--bj-desktop-zone-hero-value-height);
-    max-height: var(--bj-desktop-zone-hero-value-height);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--hero-value .bj-phone-view__hand-meta,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--hero-value .bj-card-view__hero-value {
+    pointer-events: auto;
   }
 
   .bj-view-card-desktop
@@ -144,7 +176,7 @@
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
     grid-row: actions;
     grid-column: 1;
-    margin: 0 0 -0.8125rem;
+    margin: var(--bj-cards-actions-gap) 0 0;
     padding: 0;
     min-height: var(--bj-desktop-zone-actions-height);
     max-height: var(--bj-desktop-zone-actions-height);
@@ -154,6 +186,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
+    align-self: end;
     overflow: hidden;
     position: relative;
     top: auto;
@@ -223,8 +256,8 @@
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
     grid-row: boxes;
     grid-column: 1;
-    margin: 0;
-    padding: 0;
+    margin: calc(var(--bj-card-desktop-actions-boxes-gap) - var(--bj-card-desktop-boxes-nudge)) 0 0;
+    padding: var(--bj-card-boxes-padding-bottom) 0 0;
     height: var(--bj-desktop-zone-boxes-height);
     min-height: var(--bj-desktop-zone-boxes-height);
     max-height: var(--bj-desktop-zone-boxes-height);
@@ -255,7 +288,7 @@
     grid-row: tray;
     grid-column: 1;
     margin: 0;
-    padding: 0;
+    padding: var(--bj-desktop-zone-boxes-tray-gap) 0 0;
     flex: unset;
     height: var(--bj-desktop-zone-tray-height);
     min-height: var(--bj-desktop-zone-tray-height);
@@ -282,13 +315,6 @@
   }
 
   /* Row 3 — hero cards only; fill band height and center the fan (no top anchor). */
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-stack,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__stage,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center {
     flex: 1 1 auto;
     min-height: 0;
@@ -298,8 +324,27 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    overflow: visible;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-stack,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__stage,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    overflow: hidden;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot,
@@ -307,11 +352,13 @@
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
     flex: 0 1 auto;
     min-height: 0;
-    max-height: 100%;
+    max-height: calc(
+      var(--bj-card-desktop-cards-band-height) - var(--bj-desktop-zone-hero-value-height) - 0.2rem
+    );
     width: 100%;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
-    overflow: visible;
+    overflow: hidden;
     padding: 0;
     margin: 0;
   }
@@ -344,12 +391,12 @@
     .bj-table-layout-shell
     .bj-table-zone--cards.bj-cards-area--hero
     .bj-phone-view__play-area {
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
   }
 

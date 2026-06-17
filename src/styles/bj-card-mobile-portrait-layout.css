@@ -1,5 +1,5 @@
 /**
- * Mobile Portrait Card View — hero card sizing only.
+ * Mobile Portrait Card View — hero card sizing + cards/value vertical pairing.
  * Shell zone placement matches Mobile Full Table via bj-table-shared.css.
  */
 
@@ -14,6 +14,57 @@
   .bj-view-card-mobile .bj-table-layout-shell::after {
     display: none;
     content: none;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot {
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
+    justify-content: center;
+    align-items: flex-end;
+    margin-bottom: 0.08rem;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta {
+    max-height: none;
+    min-height: var(--bj-cardview-hero-value-band-height);
+    padding: 0.12rem 0 0.1rem;
+  }
+
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-card-view__hero-value.bj-phone-view__total--hero {
+    line-height: 1.12;
+    min-height: calc(var(--bj-seat-total-size) * 1.35 + 0.18rem);
+    max-height: none;
+    padding: 0.1rem 0.38rem 0.08rem;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--hero-value .bj-phone-view__hand-meta {
+    min-height: var(--bj-cardview-hero-value-band-height);
+    max-height: none;
+    padding: 0.12rem 0 0.1rem;
+  }
+
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--hero-value
+    .bj-card-view__hero-value.bj-phone-view__total--hero {
+    line-height: 1.12;
+    min-height: calc(var(--bj-seat-total-size) * 1.35 + 0.18rem);
+    padding: 0.1rem 0.38rem 0.08rem;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--hero-value {
+    min-height: var(--bj-cardview-hero-value-band-height);
+    max-height: none;
+    height: auto;
+    overflow: visible;
   }
 
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.bj-phone-card--hero,

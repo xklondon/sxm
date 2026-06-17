@@ -69,6 +69,7 @@ async function main() {
     };
     const felt = document.querySelector('.bj-view-full-desktop .bj-casino__felt');
     const valueBands = [...document.querySelectorAll('.bj-view-full-desktop .bj-phone-view__box-value')].map((el) => rect(el));
+    const command = document.querySelector('.bj-view-full-desktop .bj-table-zone--summary');
     const slotRow = document.querySelector('.bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes');
     const slotRects = slotRow
       ? [...slotRow.children].map((el, i) => {
@@ -78,7 +79,7 @@ async function main() {
       : [];
     return {
       felt: rect(felt),
-      command: rect(q('command')),
+      command: rect(command),
       cardStacks: rect(document.querySelector('.bj-view-full-desktop .bj-table-slot-row.bj-arc--cards')),
       actionRow: rect(q('action-row')),
       playerBoxes: rect(q('player-boxes')),

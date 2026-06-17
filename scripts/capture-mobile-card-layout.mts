@@ -1,0 +1,148 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createServer } from 'vite';
+import { chromium } from 'playwright';
+import { createElement } from 'react';
+import { renderToString } from 'react-dom/server';
+import { playingCardDesktopState } from '../src/test/cardDesktopLayoutState';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const OUT_DIR = join(__dirname, '..', 'reference-ui', 'captures');
+const OUT_BEFORE = join(OUT_DIR, 'Mobile_Card_bounding_boxes_before.json');
+const OUT_AFTER = join(OUT_DIR, 'Mobile_Card_bounding_boxes.json');
+
+function installMobileWindow() {
+  (globalThis as { window?: Window }).window = {
+    innerWidth: 390,
+    innerHeight: 844,
+    matchMedia: (query: string) => {
+      const m = /max-width:\s*(\d+)/.exec(query);
+      const matches = m ? 390 <= Number(m[1]) : query.includes('portrait');
+      return {
+        matches,
+        media: query,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => false,
+      };
+    },
+  } as unknown as Window;
+}
+
+async function main() {
+  mkdirSync(OUT_DIR, { recursive: true });
+
+  if (existsSync(OUT_AFTER)) {
+    writeFileSync(OUT_BEFORE, readFileSync(OUT_AFTER, 'utf8'));
+  }
+
+  const server = await createServer({
+    configFile: join(__dirname, '..', 'vite.config.ts'),
+    server: { port: 5198, strictPort: true },
+  });
+  await server.listen();
+
+  installMobileWindow();
+  const { BlackjackPanel } = await server.ssrLoadModule('/src/components/BlackjackPanel.tsx');
+  const panelHtml = renderToString(
+    createElement(BlackjackPanel, {
+      gameState: playingCardDesktopState(),
+      onGameStateChange: () => undefined,
+    }),
+  );
+  delete (globalThis as { window?: Window }).window;
+
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+
+  await page.setContent(
+    `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="http://127.0.0.1:5198/src/index.css" />
+  <style>
+    html, body, #root { margin: 0; min-height: 100vh; background: #0a1a12; }
+    .bj-casino { max-width: 390px; margin: 0 auto; }
+    .bj-side-rail { display: none !important; }
+  </style>
+</head>
+<body>
+  <div id="root">${panelHtml}</div>
+</body>
+</html>`,
+    { waitUntil: 'networkidle' },
+  );
+
+  const hasMobileCard = await page.evaluate(
+    'document.querySelector(".bj-view-card-mobile") !== null',
+  );
+  if (!hasMobileCard) {
+    throw new Error('Capture is not Mobile Card View — missing .bj-view-card-mobile');
+  }
+
+  await page.waitForTimeout(500);
+
+  const boxes = await page.evaluate(`(() => {
+    const q = (band) => document.querySelector('[data-layout-band="' + band + '"]');
+    const rect = (el) => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height };
+    };
+    const heroValueEl = document.querySelector(
+      '.bj-view-card-mobile .bj-card-view__hero-value.bj-phone-view__total--hero',
+    );
+    return {
+      heroCards: rect(q('hero-cards')),
+      heroValue: rect(q('hero-value')),
+      heroValueText: rect(heroValueEl),
+      actionRow: rect(q('action-row')),
+      playerBoxes: rect(q('player-boxes')),
+    };
+  })()`);
+
+  writeFileSync(OUT_AFTER, JSON.stringify(boxes, null, 2));
+
+  await browser.close();
+  await server.close();
+
+  console.log('Mobile Card bounding boxes:', OUT_AFTER);
+  if (existsSync(OUT_BEFORE)) {
+    console.log('Mobile Card bounding boxes (before):', OUT_BEFORE);
+  }
+  console.log(JSON.stringify(boxes, null, 2));
+
+  const { heroCards, heroValue, heroValueText, actionRow, playerBoxes } = boxes as {
+    heroCards: { top: number; bottom: number } | null;
+    heroValue: { top: number; bottom: number; height: number } | null;
+    heroValueText: { top: number; bottom: number; height: number } | null;
+    actionRow: { top: number } | null;
+    playerBoxes: { top: number } | null;
+  };
+
+  if (!heroCards || !heroValue || !heroValueText || !actionRow || !playerBoxes) {
+    throw new Error('Missing mobile Card View layout bands');
+  }
+
+  const cardsToValueGap = heroValue.top - heroCards.bottom;
+  if (cardsToValueGap < -2 || cardsToValueGap > 6) {
+    throw new Error(`hero cards/value gap ${cardsToValueGap.toFixed(1)}px outside 0–6px target`);
+  }
+
+  if (heroValueText.height < 12) {
+    throw new Error(`hero value text too short (${heroValueText.height.toFixed(1)}px)`);
+  }
+
+  if (heroValue.height < heroValueText.height - 2) {
+    throw new Error(
+      `hero value frame too tight (band ${heroValue.height.toFixed(1)}px, text ${heroValueText.height.toFixed(1)}px)`,
+    );
+  }
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

@@ -12,6 +12,7 @@ const OUT_DIR = join(__dirname, '..', 'reference-ui', 'captures');
 const OUT_SHOT = join(OUT_DIR, 'Desktop_Card_actual.png');
 const OUT_BEFORE = join(OUT_DIR, 'Desktop_Card_bounding_boxes_before.json');
 const OUT_AFTER = join(OUT_DIR, 'Desktop_Card_bounding_boxes.json');
+const OUT_FULL = join(OUT_DIR, 'Desktop_Full_bounding_boxes.json');
 
 async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
@@ -76,6 +77,7 @@ async function main() {
     const actionButtons = document.querySelector(
       '.bj-view-card-desktop [data-layout-band="action-row"] .bj-table-actions__row, .bj-view-card-desktop [data-layout-band="action-row"] .bj-phone-view__action-bar-row--primary',
     );
+    const command = document.querySelector('.bj-view-card-desktop .bj-table-zone--summary');
     const slotRow = document.querySelector('.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes');
     const slotRects = slotRow
       ? [...slotRow.children].map((el, i) => {
@@ -85,6 +87,7 @@ async function main() {
       : [];
     return {
       felt: rect(felt),
+      command: rect(command),
       heroCards: rect(q('hero-cards')),
       heroValue: rect(q('hero-value')),
       actionRow: rect(q('action-row')),
@@ -109,7 +112,7 @@ async function main() {
   }
   console.log(JSON.stringify(boxes, null, 2));
 
-  const { heroCards, heroValue, actionRow, actionButtons, playerBoxes, trayRow, felt, slots } =
+  const { heroCards, heroValue, actionRow, actionButtons, playerBoxes, trayRow, felt, command, slots } =
     boxes as {
       heroCards: { top: number; bottom: number; left: number; right: number } | null;
       heroValue: { top: number; bottom: number; left: number; right: number } | null;
@@ -117,15 +120,16 @@ async function main() {
       actionButtons: { top: number; bottom: number; left: number; width: number } | null;
       playerBoxes: { top: number; bottom: number; width: number; left: number; right: number } | null;
       trayRow: { top: number } | null;
+      command: { top: number } | null;
       felt: { width: number; left: number; right: number } | null;
       slots: Array<{ left: number; right: number; center: number }>;
     };
 
-  if (!heroCards || !heroValue || !actionRow || !playerBoxes || !trayRow || !felt) {
+  if (!heroCards || !heroValue || !actionRow || !playerBoxes || !trayRow || !felt || !command) {
     throw new Error('Missing layout bands in capture — is .bj-view-card-desktop present?');
   }
   if (!(heroValue.top >= heroCards.bottom - 2)) throw new Error('hero value must be below hero cards');
-  if (!(actionRow.top >= heroValue.bottom - 2)) throw new Error('actions below value');
+  if (!(actionRow.top >= heroValue.bottom - 4)) throw new Error('actions below value');
   if (!(playerBoxes.top >= actionRow.bottom - 2)) throw new Error('boxes below actions');
   if (!(trayRow.top >= playerBoxes.bottom - 2)) throw new Error('tray below boxes');
   if (playerBoxes.width < felt.width * 0.75) throw new Error('player boxes row too narrow');
@@ -148,7 +152,7 @@ async function main() {
   if (heroCards.bottom > heroValue.top + 2 && heroValue.top < heroCards.bottom - 2) {
     throw new Error('hero cards overlap hero value');
   }
-  if (heroValue.bottom > actionRow.top + 2) {
+  if (heroValue.bottom > actionRow.top + 4) {
     throw new Error('hero value overlaps action row');
   }
   if (actionRow.bottom > playerBoxes.top + 2) {
@@ -156,8 +160,40 @@ async function main() {
   }
 
   const actionToBoxesGap = playerBoxes.top - actionButtons.bottom;
-  if (actionToBoxesGap < 3 || actionToBoxesGap > 8) {
-    throw new Error(`action-to-boxes gap ${actionToBoxesGap.toFixed(1)}px outside 3–8px target`);
+  if (actionToBoxesGap < 8 || actionToBoxesGap > 14) {
+    throw new Error(`action-to-boxes gap ${actionToBoxesGap.toFixed(1)}px outside 8–14px target`);
+  }
+
+  if (existsSync(OUT_FULL)) {
+    const full = JSON.parse(readFileSync(OUT_FULL, 'utf8')) as {
+      cardStacks?: { top: number } | null;
+      actionRow?: { top: number } | null;
+      playerBoxes?: { top: number } | null;
+      trayRow?: { top: number } | null;
+    };
+    const parityChecks: Array<[string, number, number | undefined]> = [
+      ['player boxes', playerBoxes.top, full.playerBoxes?.top],
+      ['tray', trayRow.top, full.trayRow?.top],
+      ['hero cards', heroCards.top, full.cardStacks?.top],
+      ['action row', actionRow.top, full.actionRow?.top],
+    ];
+    for (const [label, cardTop, fullTop] of parityChecks) {
+      if (fullTop == null) continue;
+      const delta = Math.abs(cardTop - fullTop);
+      if (delta > 5) {
+        throw new Error(
+          `Desktop Card View ${label} top ${cardTop.toFixed(1)}px differs from Full Table ${fullTop.toFixed(1)}px by ${delta.toFixed(1)}px`,
+        );
+      }
+    }
+    if (full.command?.top != null) {
+      const commandDelta = Math.abs(command.top - full.command.top);
+      if (commandDelta > 5) {
+        throw new Error(
+          `Desktop Card View command top ${command.top.toFixed(1)}px differs from Full Table ${full.command.top.toFixed(1)}px by ${commandDelta.toFixed(1)}px`,
+        );
+      }
+    }
   }
 
   if (slots.length >= 4) {

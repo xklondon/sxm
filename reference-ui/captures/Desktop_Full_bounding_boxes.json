@@ -7,7 +7,14 @@
     "width": 1030.390625,
     "height": 601.65625
   },
-  "command": null,
+  "command": {
+    "top": 293.53125,
+    "bottom": 357.53125,
+    "left": 27.984375,
+    "right": 1044,
+    "width": 1016.015625,
+    "height": 64
+  },
   "cardStacks": {
     "top": 208.1875,
     "bottom": 363.125,

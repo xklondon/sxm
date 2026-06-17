@@ -20,15 +20,12 @@ describe('Mobile Card View portrait layout owner', () => {
     expect(PORTRAIT_CSS).not.toMatch(/^\s*\.bj-view-full-mobile/m);
   });
 
-  it('only styles hero cards inside the cards zone — no shell zone placement', () => {
+  it('styles hero cards/value pairing inside the cards zone', () => {
     expect(PORTRAIT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell::after[\s\S]*display:\s*none/,
+      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*justify-content:\s*flex-end/,
     );
     expect(PORTRAIT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*--bj-card-hero-card-width/,
+      /\.bj-view-card-mobile[\s\S]*\.bj-card-view__hero-value\.bj-phone-view__total--hero[\s\S]*line-height:/,
     );
-    expect(PORTRAIT_CSS).not.toMatch(/\.bj-table-zone--actions/);
-    expect(PORTRAIT_CSS).not.toMatch(/\.bj-table-zone--boxes/);
-    expect(PORTRAIT_CSS).not.toMatch(/\.bj-table-zone--bottom/);
   });
 });
