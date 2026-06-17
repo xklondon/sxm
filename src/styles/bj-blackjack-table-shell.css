@@ -49,32 +49,17 @@
   }
 
   .bj-view-card-desktop {
-    --bj-card-desktop-shell-height: min(82vh, 52rem);
     --bj-card-desktop-box-spread: stretch;
     --bj-card-desktop-box-value-scale: 2.2;
     --bj-desktop-cardview-hero-value-scale: 1;
-    --bj-card-hero-card-width: min(16vw, 9.75rem);
-    --bj-card-hero-card-max-height: min(30vh, 12.5rem);
-    --bj-desktop-zone-actions-height: 2.85rem;
-    --bj-desktop-zone-boxes-height: 5.85rem;
-    --bj-desktop-zone-tray-height: 3.15rem;
-    --bj-desktop-zone-boxes-tray-gap: 0.38rem;
-    --bj-desktop-bottom-padding: 0.3rem;
-    --bj-card-boxes-padding-bottom: 0.12rem;
-    --bj-hero-cards-top-inset: 0;
+    --bj-card-hero-card-width: min(17vw, 10.25rem);
+    --bj-card-hero-card-max-height: min(32vh, 13.25rem);
+    --bj-desktop-zone-actions-height: 3.05rem;
+    --bj-hero-cards-top-inset: 0.28rem;
     --bj-command-cards-gap: 0;
     --bj-cards-actions-gap: 0;
-    --bj-player-box-height: 3.85rem;
+    --bj-player-box-height: 4.05rem;
     --bj-full-table-box-height: var(--bj-player-box-height);
-  }
-
-  .bj-view-card-desktop .bj-casino__table-header {
-    flex: 0 0 auto;
-  }
-
-  .bj-view-card-desktop .bj-casino__rail {
-    flex: 1 1 auto;
-    min-height: 0;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell,
@@ -172,15 +157,11 @@
   }
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
-    padding-top: 0;
-    min-height: 0;
-    height: 100%;
-    max-height: 100%;
-    align-self: stretch;
+    padding-top: var(--bj-hero-cards-top-inset);
     overflow: hidden;
     display: flex;
-    flex-direction: column;
-    justify-content: stretch;
+    align-items: stretch;
+    justify-content: center;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions,
@@ -325,10 +306,6 @@
     padding: 0;
   }
 
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--bottom {
-    overflow: visible;
-  }
-
   .bj-view-full-desktop .bj-tray-row,
   .bj-view-card-desktop .bj-tray-row {
     width: 100%;
@@ -342,11 +319,6 @@
     overflow: hidden;
   }
 
-  .bj-view-card-desktop .bj-tray-row {
-    overflow: visible;
-    padding-bottom: 0.04rem;
-  }
-
   .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap {
     width: auto;
@@ -354,12 +326,9 @@
     margin-inline: auto;
   }
 
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap {
-    overflow: visible;
-  }
-
   .bj-casino.bj-view-full-desktop,
-  .bj-view-full-desktop .bj-table-desktop-shell {
+  .bj-casino.bj-view-card-desktop,
+  .bj-casino .bj-table-desktop-shell {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -368,21 +337,6 @@
     max-width: var(--bj-shell-width);
     height: var(--bj-shell-height);
     max-height: var(--bj-shell-height);
-    margin-inline: auto;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
-
-  .bj-casino.bj-view-card-desktop,
-  .bj-view-card-desktop .bj-table-desktop-shell {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    flex: 0 0 auto;
-    width: 100%;
-    max-width: var(--bj-shell-width);
-    height: var(--bj-card-desktop-shell-height);
-    max-height: var(--bj-card-desktop-shell-height);
     margin-inline: auto;
     box-sizing: border-box;
     overflow: hidden;
