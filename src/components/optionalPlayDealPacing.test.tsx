@@ -175,6 +175,31 @@ describe('optional play overlay under command', () => {
     expect(PANEL_SRC).toContain('showSplit={false}');
   });
 
+  it('panel renders Double in command zone on mobile Card View for hard 11', () => {
+    let state = tableWithClaimedBox(1);
+    const box1 = boxPlayerId(state, 1)!;
+    const deck = state.deck!;
+    const handKey = blackjackHandKey(box1, 0);
+    state = {
+      ...state,
+      tableViewMode: 'card',
+      blackjackSettings: { ...state.blackjackSettings, allowDoubleDown: true, allowSplit: true },
+      tableMeta: { ...state.tableMeta, bettingLocked: true },
+      blackjack: {
+        ...actingRound(state, box1, [findCardId(deck, '5'), findCardId(deck, '6')], 25),
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: box1,
+        dealerCardIds: [findCardId(deck, '10'), findCardId(deck, '7')],
+        dealerHoleHidden: true,
+      },
+    };
+    simulatedWidth = 390;
+    const html = renderToStaticMarkup(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
+    const commandZone = html.split('bj-table-zone--summary')[1]?.split('bj-table-zone--cards')[0] ?? '';
+    expect(commandZone).toContain('>Double<');
+  });
+
   it('panel renders split offer under command zone on mobile Full Table when legal', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={splittableState()} onGameStateChange={noop} />,

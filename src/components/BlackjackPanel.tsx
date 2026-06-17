@@ -1429,7 +1429,7 @@ export function BlackjackPanel({
     if (insurance) {
       return insurance;
     }
-    if (!isFullTableDesktop && !isCardViewDesktop) {
+    if (!isFullTableDesktop) {
       const optionalPlay = renderOptionalPlayDecisionOverlay();
       if (optionalPlay) {
         return optionalPlay;
@@ -2539,19 +2539,15 @@ export function BlackjackPanel({
                   </div>
                 </>
               ) : (
-                <>
-                  {isCardViewDesktop && isOptionalPlayOverlayVisible() ? (
-                    <div className="bj-optional-play-overlay-anchor">
-                      {renderOptionalPlayDecisionOverlay()}
-                    </div>
-                  ) : null}
-                  <BlackjackCardView {...cardViewSharedProps} segment="cards" />
-                </>
+                <BlackjackCardView
+                  {...cardViewSharedProps}
+                  segment={isCardViewMobile ? 'all' : 'cards'}
+                />
               )
             }
             cardsAreaMode={viewMode === 'full' ? 'table' : 'hero'}
             heroValue={
-              viewMode === 'card' ? (
+              isCardViewDesktop ? (
                 <BlackjackCardView {...cardViewSharedProps} segment="value" />
               ) : undefined
             }

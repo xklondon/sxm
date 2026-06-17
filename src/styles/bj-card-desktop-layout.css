@@ -11,11 +11,11 @@
     --bj-card-desktop-box-value-scale: 2.2;
     --bj-desktop-cardview-hero-value-scale: 1;
     --bj-card-desktop-actions-boxes-gap: 0.3125rem;
-    --bj-desktop-zone-actions-height: 3.35rem;
+    --bj-desktop-zone-actions-height: var(--bj-full-desktop-zone-actions-height, 1.55rem);
     --bj-desktop-card-area-bottom-gap: 0;
     --bj-command-cards-gap: 0;
-    --bj-cards-actions-gap: 0;
-    --bj-dealer-command-gap: 0;
+    --bj-cards-actions-gap: var(--bj-full-desktop-cards-actions-gap, 0.125rem);
+    --bj-dealer-command-gap: var(--bj-full-desktop-dealer-command-gap, 0.1875rem);
     --bj-hero-cards-top-inset: 0;
     --bj-card-boxes-padding-bottom: 0;
     --bj-desktop-zone-boxes-tray-gap: 0;
@@ -65,10 +65,11 @@
     grid-row: command;
     grid-column: 1;
     margin: 0;
-    padding: 0;
+    padding-top: var(--bj-dealer-command-gap);
+    padding-bottom: 0;
     min-height: 0;
     align-self: stretch;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
   }
 
@@ -144,7 +145,7 @@
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
     grid-row: actions;
     grid-column: 1;
-    margin: 0 0 -0.8125rem;
+    margin: var(--bj-cards-actions-gap) 0 -0.8125rem;
     padding: 0;
     min-height: var(--bj-desktop-zone-actions-height);
     max-height: var(--bj-desktop-zone-actions-height);
@@ -572,32 +573,6 @@
   .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-7 {
     --bj-cardview-desktop-mini-hand-width: var(--bj-player-box-width);
     --bj-cardview-desktop-mini-hand-height: var(--bj-player-box-height);
-  }
-
-  .bj-view-card-desktop .dealer-block__grid {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    width: 100%;
-  }
-
-  .bj-view-card-desktop .dealer-block__commentary-col {
-    position: absolute;
-    left: 0;
-    top: 0.1rem;
-    width: 4.75rem;
-    z-index: 2;
-  }
-
-  .bj-view-card-desktop .dealer-block__center-col {
-    grid-area: unset;
-    width: 100%;
-    max-width: 20rem;
-    margin-inline: auto;
-    border: none;
-    background: transparent;
-    box-shadow: none;
   }
 
   .bj-view-card-desktop .bj-value-chips--with-label {

@@ -13,6 +13,7 @@ import { TABLE_UX } from './tableUxContract';
 import { BOX_BORDER_TURN } from './cardViewBox';
 
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
+const CARD_DESKTOP_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 
@@ -128,8 +129,8 @@ describe('Card View reuse fixes', () => {
     expect(PLAYER_ROW_CSS).not.toMatch(
       /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot[\s\S]*--bj-cardview-desktop-mini-hand-width/,
     );
-    expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot[\s\S]*--bj-full-table-box-width/,
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-arc--player-boxes[\s\S]*--bj-cardview-desktop-mini-hand-width:\s*var\(--bj-player-box-width\)/,
     );
   });
 
@@ -141,10 +142,10 @@ describe('Card View reuse fixes', () => {
     expect(PANEL_SRC).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
   });
 
-  it('desktop Card View routes optional play overlay through cards area anchor', () => {
-    expect(PANEL_SRC).toContain('isCardViewDesktop && isOptionalPlayOverlayVisible()');
-    expect(PANEL_SRC).toContain('bj-optional-play-overlay-anchor');
-    expect(PANEL_SRC).toContain('!isCardViewDesktop');
+  it('desktop Card View routes optional play overlay through command zone', () => {
+    expect(PANEL_SRC).toContain('renderOptionalPlayDecisionOverlay');
+    expect(PANEL_SRC).toContain('if (!isFullTableDesktop)');
+    expect(PANEL_SRC).not.toContain('isCardViewDesktop && isOptionalPlayOverlayVisible()');
   });
 
   it('desktop Card View reuses shell BlackjackActionPanel for Hit/Stay only', () => {

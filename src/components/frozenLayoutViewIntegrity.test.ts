@@ -20,7 +20,7 @@ const FROZEN_LAYOUT_FILE_SHA256: Record<string, string> = {
   'src/styles/bj-full-table-card-area.css':
     'e76e5a8ec4b1bd613e93a2531fc850c7c613825ce2f6cc4f840ba4716e861cae',
   'src/styles/bj-card-desktop-layout.css':
-    'b0805be82480f2b2af7b64ddcda461c6a926075353a32c24f2623a1b3cdf8b36',
+    '5d424c4734710e2638786253253c7a2a17df4db661babd8f12e6304d03f3167e',
 };
 
 describe('frozen layout view integrity', () => {

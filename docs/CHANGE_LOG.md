@@ -15,6 +15,14 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-13 — Card View shared-zone parity, mobile layout reuse, double overlay, New Game modal
+
+- **Desktop Card View:** command/dealer tokens aligned with Full Table; optional Double/Split in command zone (not unstyled cards anchor).
+- **Mobile Card View:** reuse Full Table shell zones; hero value inside cards area (`segment="all"`); stripped portrait layout owner to hero card sizing only.
+- **New Game modal:** wider `NewTableOverlay` panel, no horizontal scroll, mobile single-column embedded grid.
+
+---
+
 ## 2026-06-13 — Mobile portrait Card View, landscape Full Table, double-on-10
 
 - **Frozen (unchanged CSS):** Desktop Full Table, Desktop Card View, Mobile Portrait Full Table — guard tests in `frozenLayoutViewIntegrity.test.ts`.

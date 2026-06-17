@@ -93,6 +93,38 @@ describe('double eligibility — protocol', () => {
     expect(canDoubleBlackjackForState(state, handKey)).toBe(false);
   });
 
+  it('three-card hard 11 does NOT offer Double', () => {
+    let state = tableWithClaimedBox(1);
+    const boxId = boxPlayerId(state, 1)!;
+    const deck = state.deck!;
+    const handKey = blackjackHandKey(boxId, 0);
+    state = {
+      ...state,
+      tableMeta: { ...state.tableMeta, bettingLocked: true },
+      blackjack: {
+        ...actingRound(state, boxId, [findCardId(deck, '4'), findCardId(deck, '3'), findCardId(deck, '4')], 25),
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: boxId,
+      },
+    };
+    const cards = cardsFromIds(state.deck!, state.blackjack!.playerHands[handKey]!.cardIds);
+    expect(getBlackjackHandValue(cards).value).toBe(11);
+    expect(canDoubleBlackjackForState(state, handKey)).toBe(false);
+  });
+
+  it('command text lists Double for hard 11 when allowDoubleDown is true', () => {
+    const { state, handKey } = playerTurn(tableWithClaimedBox(1), ['5', '6']);
+    const optionsLine = formatPlayerTurnOptions(
+      true,
+      true,
+      state.blackjackSettings.allowDoubleDown &&
+        canDoubleBlackjackForState(state, handKey),
+      state.blackjackSettings.allowSplit && canSplitBlackjackForState(state, handKey),
+    );
+    expect(optionsLine).toMatch(/Double/i);
+  });
+
   it('after hit, Double is not offered', () => {
     const { state, handKey } = playerTurn(tableWithClaimedBox(1), ['6', '4']);
     const afterHit = hitBlackjackOnState(state, handKey);

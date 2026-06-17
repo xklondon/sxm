@@ -20,21 +20,15 @@ describe('Mobile Card View portrait layout owner', () => {
     expect(PORTRAIT_CSS).not.toMatch(/^\s*\.bj-view-full-mobile/m);
   });
 
-  it('hides stretched hero gameplay panel and bounds hero cards band', () => {
+  it('only styles hero cards inside the cards zone — no shell zone placement', () => {
     expect(PORTRAIT_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-layout-shell::after[\s\S]*display:\s*none/,
     );
     expect(PORTRAIT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*max-height:/,
+      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*--bj-card-hero-card-width/,
     );
-    expect(PORTRAIT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell > \.bj-table-zone--hero-value/,
-    );
-    expect(PORTRAIT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell > \.bj-table-zone--actions/,
-    );
-    expect(PORTRAIT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*margin-top:\s*0/,
-    );
+    expect(PORTRAIT_CSS).not.toMatch(/\.bj-table-zone--actions/);
+    expect(PORTRAIT_CSS).not.toMatch(/\.bj-table-zone--boxes/);
+    expect(PORTRAIT_CSS).not.toMatch(/\.bj-table-zone--bottom/);
   });
 });
