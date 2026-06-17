@@ -197,6 +197,16 @@ Before changes touching more than 5 files, 300 lines, architecture, routing, or 
 
 If a full test run exceeds 2 minutes, stop, identify targeted suites, and run only impacted suites. Do not repeatedly launch full test runs during iteration.
 
+**Layout audit-only passes** (target under 1–2 minutes):
+
+1. `npm run build`
+2. `npm run test:layout:ownership`
+3. Targeted changed-file tests only (`vitest run <path>`)
+
+Do **not** run `blackjackRenderedLayout.test.tsx` or other broad rendered-layout suites unless explicitly requested. Full visual/geometry validation is a separate step: `npm run test:layout:all-fast` (browser captures + ownership).
+
+If a layout test hangs, isolate with `.only`, report the specific stale assertion, and do not continue the full file run.
+
 ### Rule 9 — Gameplay has priority over cosmetics
 
 Priority order: (1) game rules → (2) settlement → (3) multiplayer → (4) membership → (5) persistence → (6) layouts → (7) visual polish. Never delay gameplay fixes for visual refactors.
@@ -213,6 +223,7 @@ Use: chips, ledger, table balance, friends, buy-in, settlement, round.
 For Blackjack layout work:
 Do not add new layout ownership tests unless an existing browser capture cannot protect the issue.
 Use BLACKJACK_LAYOUT_CONTRACTS.md + reference-ui/views as the source of truth.
-Use npm run test:layout:all-fast for layout verification.
-Do not run full npm test for layout-only work unless explicitly requested.
+Routine audit: `npm run test:layout:audit` (build + ownership). Add targeted `vitest run <changed-test>` only.
+Full geometry/screenshots: `npm run test:layout:all-fast` — explicit step only, not routine audits.
+Do not run `blackjackRenderedLayout.test.tsx` or full `npm test` for layout-only work unless explicitly requested.
 

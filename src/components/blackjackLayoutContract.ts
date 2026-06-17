@@ -124,25 +124,28 @@ export const CARD_VIEW_HERO_LAYERED_CARD_WRAP_CLASS = 'bj-phone-view__card-wrap-
 
 /** Card View shell vertical order (matches BlackjackTableLayoutShell). */
 export const CARD_VIEW_SHELL_VERTICAL_ORDER = [
+  'bj-table-info-bar--felt-row',
   'bj-table-zone--dealer',
   'bj-table-zone--summary',
   'bj-cards-area--hero',
-  'bj-table-zone--hero-value',
   'bj-table-zone--actions',
   'bj-table-zone--boxes',
   'bj-table-zone--bottom',
 ] as const;
 
-/** Desktop Card View fixed grid row names (CSS grid line labels). */
-export const CARD_VIEW_DESKTOP_GRID_ROWS = [
+/** Desktop shared shell grid row names (bank-info + play bands). */
+export const DESKTOP_SHELL_GRID_ROWS = [
+  'bank-info',
   'dealer',
   'command',
   'cards',
-  'hero-value',
   'actions',
   'boxes',
   'tray',
 ] as const;
+
+/** @deprecated Use DESKTOP_SHELL_GRID_ROWS — hero value lives inside cards area. */
+export const CARD_VIEW_DESKTOP_GRID_ROWS = DESKTOP_SHELL_GRID_ROWS;
 
 // ── Full Table layout markers ─────────────────────────────────────────────────
 
@@ -224,7 +227,12 @@ export const FULL_TABLE_MOBILE_LANDSCAPE_LAYOUT_OWNER_FILES = [
   'src/styles/bj-full-mobile-landscape-layout.css',
 ] as const;
 
-/** Card View layout owner — sole CSS file for Desktop Card View grid/flex/position rules. */
+/** Shared table shell — sole owner for structural zone layout (all views). */
+export const BLACKJACK_TABLE_SHELL_LAYOUT_OWNER_FILES = [
+  'src/styles/bj-blackjack-table-shell.css',
+] as const;
+
+/** Card View layout owner — Cards Area hero internals only (desktop). */
 export const CARD_VIEW_LAYOUT_OWNER_FILES = [
   'src/styles/bj-card-desktop-layout.css',
 ] as const;
@@ -239,6 +247,7 @@ export const LAYOUT_FREEZE_RECOMMENDED_ORDER = [
 
 /** Canonical shell zone order for Full Table (matches BlackjackTableLayoutShell DOM). */
 export const FULL_TABLE_SHELL_ZONE_ORDER = [
+  'bank-info',
   'dealer',
   'command',
   'cards',

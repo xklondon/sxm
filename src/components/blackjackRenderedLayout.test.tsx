@@ -1,4 +1,9 @@
 // @vitest-environment happy-dom
+/**
+ * Rendered layout band tests — heavy BlackjackPanel mounts.
+ * Do NOT run this full file for routine layout audits; use test:layout:audit + targeted cases.
+ * Full file only when explicitly requested or after geometry contract changes.
+ */
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -33,10 +38,12 @@ import { isMobileLayoutViewport, MOBILE_LAYOUT_MEDIA } from '../styles/mobileLay
 
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
+const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const CARD_DESKTOP_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
+const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const noop = () => {};
 
 let simulatedWidth = 1280;
@@ -163,10 +170,10 @@ describe('blackjack rendered layout bands', () => {
     expect(CARD_VIEW_SRC).toContain("segment?: 'cards' | 'value' | 'all'");
   });
 
-  it('Card View shell exposes hero value as its own zone between cards and actions', () => {
-    expect(PANEL_SRC).toContain('segment="cards"');
-    expect(PANEL_SRC).toContain('segment="value"');
-    expect(PANEL_SRC).toContain('heroValue=');
+  it('Card View uses segment=all so hero value renders inside cards area', () => {
+    expect(PANEL_SRC).toContain('segment="all"');
+    expect(PANEL_SRC).not.toContain('heroValue=');
+    expect(SHELL_SRC).not.toContain('BlackjackHeroValueZone');
   });
 });
 
@@ -222,7 +229,7 @@ describe('rendered position — card view hero stack', () => {
   it.each([
     { name: 'Desktop Card View', width: 1280, height: 800 },
     { name: 'Mobile Portrait Card View', width: 390, height: 844 },
-  ])('$name stacks shell zones cards → hero-value → actions → boxes → tray', ({ width, height }) => {
+  ])('$name stacks cards area (hero cards + value) → actions → boxes → tray', ({ width, height }) => {
     simulatedWidth = width;
     simulatedHeight = height;
     const { container } = renderPanelAt({
@@ -234,17 +241,16 @@ describe('rendered position — card view hero stack', () => {
         ? 'bj-view-card-mobile'
         : 'bj-view-card-desktop',
     });
-    const cardsZone = container.querySelector('.bj-table-zone--cards');
-    const heroValueZone = container.querySelector('.bj-table-zone--hero-value');
+    const cardsZone = container.querySelector('.bj-table-zone--cards.bj-cards-area--hero');
     const actionsZone = container.querySelector('.bj-table-zone--actions');
     const boxesZone = container.querySelector('.bj-table-zone--boxes');
     const trayZone = container.querySelector('.bj-table-zone--bottom');
-    expect(heroValueZone).toBeTruthy();
-    expect(cardsZone!.querySelector('.bj-table-zone--hero-value')).toBeNull();
+    expect(cardsZone).toBeTruthy();
+    expect(container.querySelector('.bj-table-layout-shell > .bj-table-zone--hero-value')).toBeNull();
+    expect(cardsZone!.querySelector('[data-layout-band="hero-value"]')).toBeTruthy();
     assertVerticalStack(
       [
         measureElement(cardsZone!),
-        measureElement(heroValueZone!),
         measureElement(actionsZone!),
         measureElement(boxesZone!),
         measureElement(trayZone!),
@@ -256,8 +262,21 @@ describe('rendered position — card view hero stack', () => {
 });
 
 describe('rendered position — full table card column', () => {
+  function bettingFullDesktopState(): GameState {
+    let state = tableAfterStartPlaying(500);
+    state = claimBoxSlot(state, 1);
+    const box1 = boxPlayerId(state, 1)!;
+    state = addChipToBoxStake(state, box1, 20);
+    return {
+      ...state,
+      tableViewMode: 'full',
+      blackjack: null,
+      tableMeta: { ...state.tableMeta, bettingLocked: false },
+    };
+  }
+
   it('keeps playing cards above column value in the active box', () => {
-    const { container } = renderPanelAt(VIEW_SCENARIOS[0]!);
+    const { container } = renderPanelAt(VIEW_SCENARIOS[0]!, bettingFullDesktopState());
     const column = container.querySelector('.bj-arc__slot--card-column .playing-card')?.closest(
       '.bj-arc__slot--card-column',
     );
@@ -315,11 +334,11 @@ describe('rendered position — desktop canonical tokens', () => {
     for (const token of DESKTOP_LAYOUT_TOKENS) {
       expect(SHARED_CSS).toContain(token);
     }
-    expect(SHARED_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-desktop-player-row-spread/,
     );
-    expect(SHARED_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-view-card-desktop[\s\S]*--bj-desktop-box-value-scale:\s*2/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop[\s\S]*--bj-card-desktop-box-value-scale:\s*2\.2/,
     );
     expect(SHARED_CSS).not.toMatch(
       /\.bj-view-full-mobile[^,{]*\{[^}]*--bj-desktop-box-value-scale\s*:/,
@@ -329,15 +348,15 @@ describe('rendered position — desktop canonical tokens', () => {
     );
   });
 
-  it('scopes Card View desktop 7-band grid under bj-view-card-desktop', () => {
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell[\s\S]*\[dealer\]/,
+  it('scopes shared desktop 7-band shell grid under both desktop view roots', () => {
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell[\s\S]*\[bank-info\][\s\S]*\[tray\]/,
     );
-    expect(CARD_DESKTOP_CSS).toMatch(/\[hero-value\]/);
-    expect(CARD_DESKTOP_CSS).toMatch(/\[tray\]/);
-    expect(CARD_DESKTOP_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*grid-row:\s*cards/,
     );
+    expect(SHELL_CSS).not.toMatch(/bj-table-zone--hero-value/);
+    expect(CARD_DESKTOP_CSS).not.toMatch(/grid-template-rows/);
     expect(CARD_DESKTOP_CSS).not.toMatch(/--bj-card-desktop-hero-lower-offset/);
     expect(CARD_LAYOUT_CSS).not.toMatch(
       /\.bj-view-full-desktop[\s\S]*--bj-card-desktop-box-spread/,
@@ -404,21 +423,19 @@ describe('rendered position — desktop card view reference layout', () => {
     expect(row!.querySelectorAll('.bj-arc__slot').length).toBe(DEFAULT_VISIBLE_TABLE_BOXES);
   });
 
-  it('defines Card View desktop 7-band grid with isolated shell rows', () => {
+  it('defines shared desktop shell grid with bank-info through tray rows', () => {
     for (const token of CARD_VIEW_DESKTOP_LAYOUT_TOKENS) {
-      expect(CARD_DESKTOP_CSS).toContain(token);
+      expect(SHELL_CSS).toContain(token);
     }
-    expect(CARD_DESKTOP_CSS).toMatch(/grid-template-rows:[\s\S]*\[dealer\][\s\S]*\[tray\]/);
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--hero-value[\s\S]*grid-row:\s*hero-value/,
-    );
+    expect(SHELL_CSS).toMatch(/grid-template-rows:[\s\S]*\[bank-info\][\s\S]*\[tray\]/);
+    expect(SHELL_CSS).not.toMatch(/bj-table-zone--hero-value/);
     expect(CARD_DESKTOP_CSS).not.toMatch(
       /--bj-card-desktop-hero-lower-offset|--bj-card-desktop-action-offset/,
     );
     expect(PLAYER_ROW_CSS).not.toMatch(
       /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes\s*\{[^}]*width:\s*max-content/,
     );
-    expect(CARD_DESKTOP_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*align-items:\s*stretch/,
     );
   });
@@ -439,22 +456,27 @@ describe('rendered position — desktop card view reference layout', () => {
 });
 
 describe('rendered position — desktop card view hero fit', () => {
-  it('Desktop Card View keeps hero cards inside cards zone without clipping value/actions', () => {
+  it('Desktop Card View keeps hero cards and value inside cards zone; actions sit below', () => {
     const { container } = renderPanelAt(VIEW_SCENARIOS[1]!);
     const cardsZone = container.querySelector('.bj-table-zone--cards.bj-cards-area--hero');
+    const actionsZone = container.querySelector('.bj-table-zone--actions');
     const heroCards = requireBand(container, 'hero-cards');
     const heroValue = requireBand(container, 'hero-value');
-    const actionRow = requireBand(container, 'action-row');
     const cardsRect = measureElement(cardsZone!);
     const heroCardsRect = measureElement(heroCards);
+    const heroValueRect = measureElement(heroValue);
     expect(heroCardsRect.bottom).toBeLessThanOrEqual(cardsRect.bottom + 1);
-    assertVerticalStack(
-      [heroCardsRect, measureElement(heroValue), measureElement(actionRow)],
-      { label: 'Desktop Card View hero stack', tolerancePx: 0 },
-    );
-    assertNoPairwiseOverlap(
-      [heroCardsRect, measureElement(heroValue), measureElement(actionRow)],
-      { label: 'Desktop Card View hero stack' },
-    );
+    expect(heroValueRect.bottom).toBeLessThanOrEqual(cardsRect.bottom + 1);
+    assertVerticalStack([heroCardsRect, heroValueRect], {
+      label: 'Desktop Card View hero inside cards',
+      tolerancePx: 0,
+    });
+    assertVerticalStack([cardsRect, measureElement(actionsZone!)], {
+      label: 'Desktop Card View cards then actions',
+      tolerancePx: 0,
+    });
+    assertNoPairwiseOverlap([heroCardsRect, heroValueRect], {
+      label: 'Desktop Card View hero inside cards',
+    });
   });
 });

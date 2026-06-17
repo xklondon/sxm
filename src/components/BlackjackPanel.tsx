@@ -2541,16 +2541,11 @@ export function BlackjackPanel({
               ) : (
                 <BlackjackCardView
                   {...cardViewSharedProps}
-                  segment={isCardViewMobile ? 'all' : 'cards'}
+                  segment="all"
                 />
               )
             }
             cardsAreaMode={viewMode === 'full' ? 'table' : 'hero'}
-            heroValue={
-              isCardViewDesktop ? (
-                <BlackjackCardView {...cardViewSharedProps} segment="value" />
-              ) : undefined
-            }
             playerBoxes={renderPlayerBoxesArc()}
             chipTray={renderTrayInner()}
           />

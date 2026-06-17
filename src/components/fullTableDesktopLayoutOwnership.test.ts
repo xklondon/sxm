@@ -4,15 +4,12 @@ import { join } from 'node:path';
 
 const CARD_AREA_OWNER = 'src/styles/bj-full-table-card-area.css';
 const PLAYER_ROW_OWNER = 'src/styles/bj-player-row-layout.css';
-/** Legacy shell flex/grid on zones — migrate to owners over time; see BLACKJACK_LAYOUT_CONTRACTS.md */
-const LEGACY_SHELL_FILE = 'src/styles/bj-table-shared.css';
+const SHELL_OWNER = 'src/styles/bj-blackjack-table-shell.css';
 /** Optional Double/Split overlay anchor — absolute positioning inside cards zone */
 const OPTIONAL_PLAY_OVERLAY_CSS = 'src/components/OptionalPlayDecisionOverlay.css';
 
 const FORBIDDEN_LAYOUT =
   /\b(display|grid-template(?:-columns|-rows)?|grid-row|grid-column|flex(?:-direction|-wrap|-grow|-shrink|-basis)?|justify-content|align-items|align-self|position|top|bottom|left|right|margin-top|margin-bottom|translate|transform)\s*:/;
-
-const ALLOWED_OWNERS = new Set([CARD_AREA_OWNER, PLAYER_ROW_OWNER]);
 
 function targetsFullTablePlayZones(selector: string): boolean {
   if (!selector.includes('bj-view-full-desktop')) return false;
@@ -25,8 +22,9 @@ function targetsFullTablePlayZones(selector: string): boolean {
 }
 
 function isAllowedLayoutSource(file: string, selector: string): boolean {
-  if (ALLOWED_OWNERS.has(file)) return true;
-  if (file === LEGACY_SHELL_FILE && targetsFullTablePlayZones(selector)) return true;
+  if (file === SHELL_OWNER && targetsFullTablePlayZones(selector)) return true;
+  if (file === CARD_AREA_OWNER && targetsFullTablePlayZones(selector)) return true;
+  if (file === PLAYER_ROW_OWNER && targetsFullTablePlayZones(selector)) return true;
   if (
     file === OPTIONAL_PLAY_OVERLAY_CSS &&
     targetsFullTablePlayZones(selector) &&
@@ -72,7 +70,7 @@ describe('Desktop Full Table layout ownership', () => {
     expect(PLAYER_ROW_OWNER).toBe('src/styles/bj-player-row-layout.css');
   });
 
-  it('only owner files and documented legacy shell may set forbidden layout on Full Table play zones', () => {
+  it('only owner files may set forbidden layout on Full Table play zones', () => {
     const root = process.cwd();
     const violations: string[] = [];
 
@@ -94,9 +92,13 @@ describe('Desktop Full Table layout ownership', () => {
     expect(violations).toEqual([]);
   });
 
-  it('card-area owner uses auto cards grid row and 1fr card column grid', () => {
+  it('shell owner uses auto cards grid row for Full Table desktop', () => {
+    const shell = readFileSync(join(process.cwd(), SHELL_OWNER), 'utf8');
+    expect(shell).toMatch(/\.bj-view-full-desktop[\s\S]*--bj-desktop-grid-row-cards:\s*auto/);
+  });
+
+  it('card-area owner uses 1fr card column grid', () => {
     const owner = readFileSync(join(process.cwd(), CARD_AREA_OWNER), 'utf8');
-    expect(owner).toMatch(/\.bj-view-full-desktop[\s\S]*--bj-desktop-grid-row-cards:\s*auto/);
     expect(owner).toMatch(
       /\.bj-view-full-desktop[\s\S]*\.bj-table-slot-row\.bj-arc--cards[\s\S]*grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*minmax\(0,\s*1fr\)\)/,
     );

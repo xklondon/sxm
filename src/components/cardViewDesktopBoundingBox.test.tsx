@@ -25,6 +25,7 @@ const CSS_BUNDLE = [
   'src/styles/bj-player-row-layout.css',
   'src/styles/bj-card-layout.css',
   'src/styles/bj-full-table-card-area.css',
+  'src/styles/bj-blackjack-table-shell.css',
   'src/styles/bj-felt-skins.css',
   'src/styles/bj-card-desktop-layout.css',
   'src/styles/design-system.css',

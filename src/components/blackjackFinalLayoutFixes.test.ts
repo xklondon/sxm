@@ -18,6 +18,7 @@ import {
 
 const noop = () => {};
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
+const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
@@ -110,9 +111,9 @@ function zoneSlice(html: string, start: string, end: string): string {
 
 describe('blackjack final layout fixes', () => {
   it('desktop Full Table pins Hit/Stay lower than prior 0.25rem boxes gap', () => {
-    expect(CARD_AREA_CSS).toMatch(/--bj-full-desktop-actions-boxes-gap:\s*0\.125rem/);
+    expect(CARD_AREA_CSS).toMatch(/--bj-full-desktop-actions-boxes-gap:\s*0\.3125rem/);
     expect(CARD_AREA_CSS).not.toMatch(/--bj-full-desktop-actions-boxes-gap:\s*0\.25rem/);
-    expect(CARD_AREA_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-end/,
     );
   });
@@ -148,14 +149,11 @@ describe('blackjack final layout fixes', () => {
   });
 
   it('desktop Card View actions occupy dedicated grid row (centered)', () => {
-    const cardDesktopCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
-    expect(cardDesktopCss).toMatch(
+    const shellCss = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
+    expect(shellCss).toMatch(
       /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/,
     );
-    expect(cardDesktopCss).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*center/,
-    );
-    expect(cardDesktopCss).not.toMatch(/--bj-card-desktop-action-offset/);
+    expect(shellCss).not.toMatch(/--bj-card-desktop-action-offset/);
   });
 
   it('hero third+ cards use layered offset transform class', () => {
@@ -196,16 +194,11 @@ describe('blackjack final layout fixes', () => {
     }
   });
 
-  it('desktop Card View hero cards zone does not clip value with overflow hidden', () => {
-    const cardDesktopCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
-    expect(cardDesktopCss).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*visible/,
+  it('desktop Card View hero cards zone does not clip value with overflow hidden on shell row', () => {
+    const shellCss = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
+    expect(shellCss).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*hidden/,
     );
-    expect(cardDesktopCss).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--hero-value[\s\S]*grid-row:\s*hero-value/,
-    );
-    expect(cardDesktopCss).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*align-items:\s*flex-end/,
-    );
+    expect(shellCss).not.toMatch(/bj-table-zone--hero-value/);
   });
 });

@@ -1,0 +1,439 @@
+/**
+ * BlackjackTableLayoutShell — sole structural layout owner (all views).
+ * Zones (fixed order): bank-info → dealer → command → cards → actions → boxes → tray.
+ * Cards-area content only differs: bj-cards-area--table vs bj-cards-area--hero.
+ * No transforms, negative-margin alignment, or overlay shell rows.
+ */
+
+/* ── Desktop shared shell (Full Table + Card View) ─────────────────────────── */
+@media (min-width: 721px) {
+  :root {
+    --bj-zone-dealer-height: var(--bj-desktop-zone-dealer-height);
+    --bj-zone-command-height: var(--bj-desktop-zone-command-height);
+    --bj-zone-command-max-height: var(--bj-desktop-zone-command-height);
+    --bj-zone-actions-height: var(--bj-desktop-zone-actions-height);
+    --bj-zone-cards-min-height: 0;
+    --bj-zone-boxes-height: var(--bj-desktop-zone-boxes-height);
+    --bj-zone-tray-height: var(--bj-desktop-zone-tray-height);
+    --bj-zone-boxes-tray-gap: var(--bj-desktop-zone-boxes-tray-gap);
+    --bj-zone-tray-padding-bottom: var(--bj-desktop-bottom-padding);
+  }
+
+  .bj-view-full-desktop {
+    --bj-desktop-player-row-spread: space-evenly;
+    --bj-desktop-box-value-scale: 2;
+    --bj-desktop-cardview-hero-value-scale: 0.7;
+    --bj-desktop-action-row-offset: 0.125rem;
+    --bj-desktop-card-area-bottom-gap: 0.35rem;
+    --bj-full-desktop-dealer-command-gap: 0.1875rem;
+    --bj-full-desktop-actions-boxes-gap: 0.3125rem;
+    --bj-full-desktop-zone-actions-height: 1.55rem;
+    --bj-full-desktop-cards-actions-gap: 0.125rem;
+    --bj-desktop-grid-row-cards: auto;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell {
+    --bj-desktop-zone-actions-height: var(--bj-full-desktop-zone-actions-height);
+    --bj-cards-actions-gap: var(--bj-full-desktop-cards-actions-gap);
+  }
+
+  .bj-view-card-desktop {
+    --bj-card-desktop-box-spread: stretch;
+    --bj-card-desktop-box-value-scale: 2.2;
+    --bj-desktop-cardview-hero-value-scale: 1;
+    --bj-card-hero-card-width: min(15vw, 9rem);
+    --bj-card-hero-card-max-height: min(26vh, 11.5rem);
+    --bj-desktop-zone-actions-height: 3.35rem;
+    --bj-command-cards-gap: 0;
+    --bj-cards-actions-gap: 0;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell,
+  .bj-view-card-desktop .bj-table-layout-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows:
+      [bank-info] minmax(0, auto)
+      [dealer] var(--bj-desktop-zone-dealer-height)
+      [command] var(--bj-desktop-zone-command-height)
+      [cards] var(--bj-desktop-grid-row-cards)
+      [actions] var(--bj-desktop-zone-actions-height)
+      [boxes] var(--bj-desktop-zone-boxes-height)
+      [tray] var(--bj-desktop-zone-tray-height);
+    row-gap: 0;
+    column-gap: 0;
+    padding-bottom: var(--bj-desktop-bottom-padding);
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-info-bar--felt-row,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-info-bar--felt-row {
+    grid-row: bank-info;
+    grid-column: 1;
+    margin: 0;
+    min-height: 0;
+    z-index: 1;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--dealer,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--dealer {
+    grid-row: dealer;
+    grid-column: 1;
+    z-index: 2;
+    margin: 0;
+    padding: 0;
+    min-height: 0;
+    isolation: isolate;
+    align-self: stretch;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--summary,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--summary {
+    grid-row: command;
+    grid-column: 1;
+    z-index: 3;
+    margin: 0;
+    min-height: 0;
+    height: var(--bj-zone-command-height);
+    min-height: var(--bj-zone-command-height);
+    max-height: var(--bj-zone-command-height);
+    isolation: isolate;
+    padding: var(--bj-dealer-command-gap) 0.35rem 0;
+    justify-content: flex-start;
+    align-items: center;
+    overflow: visible;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--summary {
+    padding-top: var(--bj-full-desktop-dealer-command-gap);
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--summary .bj-card-layout__command,
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--summary .dealer-block__command,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--summary .bj-card-layout__command,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--summary .dealer-block__command {
+    max-height: 100%;
+    overflow: visible;
+    padding: 0.38rem 1.5rem;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards {
+    grid-row: cards;
+    grid-column: 1;
+    z-index: 5;
+    margin: var(--bj-command-cards-gap) 0 0;
+    padding: 0;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+    flex: unset;
+    position: relative;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
+    padding-top: 0;
+    padding-bottom: 0;
+    min-height: 0;
+    align-self: stretch;
+    overflow: hidden;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
+    padding-top: var(--bj-hero-cards-top-inset);
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
+    grid-row: actions;
+    grid-column: 1;
+    z-index: 6;
+    margin: 0;
+    min-height: 0;
+    isolation: isolate;
+    padding-top: var(--bj-cards-actions-gap);
+    padding-bottom: 0;
+    align-items: flex-start;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions {
+    margin-top: var(--bj-full-desktop-cards-actions-gap);
+    padding-top: 0;
+    justify-content: flex-end;
+    align-items: center;
+    align-self: end;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
+    width: 100%;
+    max-width: 100%;
+    margin-top: var(--bj-full-desktop-actions-boxes-gap);
+    padding-top: 0;
+    padding-inline: 0;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-box-row,
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap {
+    flex: 1 1 auto;
+    align-self: stretch;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
+    grid-row: boxes;
+    grid-column: 1;
+    z-index: 7;
+    margin: 0;
+    min-height: 0;
+    padding-top: var(--bj-card-boxes-padding-bottom);
+    height: var(--bj-desktop-zone-boxes-height);
+    min-height: var(--bj-desktop-zone-boxes-height);
+    max-height: var(--bj-desktop-zone-boxes-height);
+    flex: unset;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--bottom,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--bottom {
+    grid-row: tray;
+    grid-column: 1;
+    z-index: 8;
+    margin: 0;
+    min-height: 0;
+    padding-top: var(--bj-desktop-zone-boxes-tray-gap);
+    height: var(--bj-desktop-zone-tray-height);
+    min-height: var(--bj-desktop-zone-tray-height);
+    max-height: var(--bj-desktop-zone-tray-height);
+    flex: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__bank-info--placeholder {
+    display: none;
+    min-height: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__stack,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__stack {
+    gap: 0.08rem;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block {
+    padding: 0.04rem 0.28rem 0;
+    max-height: 100%;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__center-col,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__center-col {
+    padding: 0.08rem 0.22rem 0.06rem;
+    gap: 0.06rem;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__cards-slot,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__cards-slot {
+    min-height: 1.85rem;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot {
+    min-height: 1.2rem;
+    flex: 0 0 auto;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command {
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--summary .dealer-block__status {
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap {
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  .bj-view-full-desktop .bj-player-box-row,
+  .bj-view-card-desktop .bj-player-box-row {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .bj-view-full-desktop .bj-tray-row,
+  .bj-view-card-desktop .bj-tray-row {
+    width: 100%;
+    max-width: min(100%, 32rem);
+    height: 100%;
+    min-height: 0;
+    margin-inline: auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap {
+    width: auto;
+    max-width: min(100%, 32rem);
+    margin-inline: auto;
+  }
+
+  .bj-casino.bj-view-full-desktop,
+  .bj-casino.bj-view-card-desktop,
+  .bj-casino .bj-table-desktop-shell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: var(--bj-shell-width);
+    height: var(--bj-shell-height);
+    max-height: var(--bj-shell-height);
+    margin-inline: auto;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-casino__rail-wrap,
+  .bj-view-card-desktop .bj-casino__rail-wrap {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-desktop .bj-casino__rail,
+  .bj-view-card-desktop .bj-casino__rail {
+    position: relative;
+    overflow: visible;
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    padding: var(--bj-desktop-rail-padding);
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-desktop .bj-casino__felt,
+  .bj-view-card-desktop .bj-casino__felt {
+    position: relative;
+    overflow: hidden;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.35rem 0.45rem 0;
+    box-sizing: border-box;
+    background: var(--bj-table-felt-bg);
+    border: none;
+    border-radius: inherit;
+  }
+
+  .bj-view-full-desktop .bj-casino__felt.bj-table-surface,
+  .bj-view-card-desktop .bj-casino__felt.bj-table-surface {
+    min-height: 0;
+  }
+
+  .bj-view-full-desktop .bj-casino__felt-main,
+  .bj-view-card-desktop .bj-casino__felt-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    max-width: none;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+    padding-top: 0;
+  }
+
+  .bj-view-full-desktop .bj-casino__tray-wrap,
+  .bj-view-card-desktop .bj-casino__tray-wrap {
+    flex: 0 0 auto;
+    margin-top: 0;
+    width: auto;
+    max-width: min(100%, 32rem);
+    margin-inline: auto;
+  }
+
+  .bj-casino.bj-view-full-desktop,
+  .bj-casino.bj-view-card-desktop {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .bj-view-card-desktop .dealer-block__grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 100%;
+  }
+
+  .bj-view-card-desktop .dealer-block__commentary-col {
+    position: absolute;
+    left: 0;
+    top: 0.1rem;
+    width: 4.75rem;
+    z-index: 2;
+  }
+
+  .bj-view-card-desktop .dealer-block__center-col {
+    grid-area: unset;
+    width: 100%;
+    max-width: 20rem;
+    margin-inline: auto;
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ) {
+    font-size: calc(0.58rem * var(--bj-desktop-box-value-scale, 2));
+    min-height: calc(0.95rem * var(--bj-desktop-box-value-scale, 2) * 0.55);
+    max-height: calc(1.05rem * var(--bj-desktop-box-value-scale, 2) * 0.55);
+    line-height: 1.05;
+  }
+
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ) {
+    font-size: calc(0.58rem * var(--bj-card-desktop-box-value-scale, 2.2));
+    min-height: calc(0.95rem * var(--bj-card-desktop-box-value-scale, 2.2) * 0.55);
+    max-height: calc(1.05rem * var(--bj-card-desktop-box-value-scale, 2.2) * 0.55);
+    line-height: 1.05;
+  }
+}

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const CARD_DESKTOP_CSS = readFileSync(
   join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
   'utf8',
@@ -43,19 +44,19 @@ describe('Card View layout guards', () => {
       /\.bj-view-card-mobile[\s\S]*--bj-command-cards-gap:\s*var\(--bj-cardview-command-cards-gap\)/,
     );
     /* Desktop Card View uses fixed grid bands — no inter-band margin gap token. */
-    expect(CARD_DESKTOP_CSS).toMatch(/--bj-command-cards-gap:\s*0/);
+    expect(SHELL_CSS).toMatch(/--bj-command-cards-gap:\s*0/);
   });
 
-  it('uses explicit zone heights in desktop Card View owner (no cards→actions margin gap)', () => {
+  it('uses explicit zone heights in desktop shared shell (no cards→actions margin gap)', () => {
     expect(LAYOUT_CSS).toContain('--bj-cardview-cards-actions-gap: 0.35rem');
     expect(gapRem(LAYOUT_CSS, '--bj-cardview-cards-actions-gap')).toBeLessThanOrEqual(0.5);
-    expect(CARD_DESKTOP_CSS).toMatch(/--bj-cards-actions-gap:\s*0/);
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--hero-value[\s\S]*grid-row:\s*hero-value/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop[\s\S]*--bj-cards-actions-gap:\s*0/,
     );
-    expect(CARD_DESKTOP_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/,
     );
+    expect(SHELL_CSS).not.toMatch(/bj-table-zone--hero-value/);
   });
 
   it('forbids negative margin-top and translateY on Card View hero fan/wrap', () => {
@@ -95,10 +96,10 @@ describe('Card View layout guards', () => {
     expect(cardsIdx).toBeLessThan(actionsIdx);
   });
 
-  it('uses Card View desktop zone height overrides in layout owner only', () => {
+  it('uses Card View desktop zone height overrides in shared shell only', () => {
     expect(SHARED_CSS).toContain('--bj-desktop-zone-command-height: 4rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-actions-height: 2.9rem');
-    expect(CARD_DESKTOP_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*3\.35rem/,
     );
     expect(SHARED_CSS).not.toMatch(

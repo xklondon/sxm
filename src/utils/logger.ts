@@ -1,3 +1,5 @@
+import { isTestRuntime } from './devFlags';
+
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const LEVEL_ORDER: Record<LogLevel, number> = {
@@ -8,6 +10,9 @@ const LEVEL_ORDER: Record<LogLevel, number> = {
 };
 
 function resolveMinLevel(): LogLevel {
+  if (isTestRuntime()) {
+    return 'warn';
+  }
   const configured = import.meta.env?.VITE_LOG_LEVEL as string | undefined;
   if (
     configured === 'debug' ||

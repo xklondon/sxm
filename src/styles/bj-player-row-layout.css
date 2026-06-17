@@ -63,12 +63,6 @@
     align-self: stretch;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
-    justify-content: center;
-    align-items: flex-end;
-    padding-inline: 0;
-  }
-
   /* Player-box column sizing — spread block below sets row width; slot width here. */
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
     width: var(--bj-full-table-box-width);
@@ -153,6 +147,40 @@
   .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes,
   .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards {
     grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes,
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    justify-content: var(--bj-desktop-player-row-spread, space-evenly);
+    justify-items: center;
+    column-gap: 0;
+    grid-template-columns: repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes,
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards {
+    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+    column-gap: var(--bj-table-slot-row-gap);
+    justify-content: stretch;
+    justify-items: center;
+  }
+
+  .bj-view-full-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--boxes
+    .bj-table-slot-row--with-add.bj-arc--player-boxes {
+    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, 1fr));
   }
 
   .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table .bj-table-slot-row.bj-arc--cards {

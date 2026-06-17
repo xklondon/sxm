@@ -126,15 +126,14 @@ function assertShellVerticalOrder(html: string): void {
 
 function assertHeroBeforeActions(html: string): void {
   const cardsZoneIdx = html.indexOf('bj-cards-area--hero');
-  const heroValueZoneIdx = html.indexOf('bj-table-zone--hero-value');
   const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
   const cardsSlotIdx = html.indexOf('bj-phone-view__cards-slot');
   const valueIdx = html.indexOf(CARD_VIEW_HERO_VALUE_CLASS);
   expect(cardsSlotIdx).toBeGreaterThan(-1);
   expect(cardsZoneIdx).toBeGreaterThan(-1);
-  expect(heroValueZoneIdx).toBeGreaterThan(cardsZoneIdx);
   expect(valueIdx).toBeGreaterThan(cardsSlotIdx);
-  expect(actionsIdx).toBeGreaterThan(heroValueZoneIdx);
+  expect(valueIdx).toBeLessThan(actionsIdx);
+  expect(html.indexOf('bj-table-zone--hero-value')).toBe(-1);
 }
 
 describe('Card View display regressions', () => {
@@ -161,25 +160,24 @@ describe('Card View display regressions', () => {
     );
   });
 
-  it('desktop Card View shell order: dealer → command → hero cards → hero value → actions → boxes → tray', () => {
+  it('desktop Card View shell order: bank-info → dealer → command → hero cards+value → actions → boxes → tray', () => {
     simulatedWidth = 1280;
     const html = renderPanel(playingState('card'));
     assertShellVerticalOrder(html);
     assertHeroBeforeActions(html);
-    const heroValueZone = zoneSlice(html, 'bj-table-zone--hero-value', TABLE_UX.tableZoneActions);
-    expect(heroValueZone).toContain('bj-player-hand-value--emphasis');
-    expect(heroValueZone).toMatch(/>13</);
-    const cardsOnlyZone = zoneSlice(html, 'bj-cards-area--hero', 'bj-table-zone--hero-value');
-    expect(cardsOnlyZone).not.toContain(CARD_VIEW_HERO_VALUE_CLASS);
+    const cardsZone = zoneSlice(html, 'bj-cards-area--hero', TABLE_UX.tableZoneActions);
+    expect(cardsZone).toContain('bj-player-hand-value--emphasis');
+    expect(cardsZone).toMatch(/>13</);
+    expect(cardsZone).toContain(CARD_VIEW_HERO_VALUE_CLASS);
   });
 
-  it('mobile Card View shell order: dealer → command → hero cards → hero value → actions → boxes → tray', () => {
+  it('mobile Card View shell order: bank-info → dealer → command → hero cards+value → actions → boxes → tray', () => {
     simulatedWidth = 390;
     const html = renderPanel(playingState('card'));
     assertShellVerticalOrder(html);
     assertHeroBeforeActions(html);
-    const heroValueZone = zoneSlice(html, 'bj-table-zone--hero-value', TABLE_UX.tableZoneActions);
-    expect(heroValueZone).toMatch(/>13</);
+    const cardsZone = zoneSlice(html, 'bj-cards-area--hero', TABLE_UX.tableZoneActions);
+    expect(cardsZone).toMatch(/>13</);
   });
 
   it('desktop Card View tray matches shared ValueAndChipsBar label-below-row layout', () => {

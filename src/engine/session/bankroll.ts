@@ -4,7 +4,7 @@ import type { TableMeta } from '../../types/table';
 import type { Player } from '../../types/player';
 import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 import { log } from '../../utils/logger';
-import { isVerboseDevLogging } from '../../utils/devFlags';
+import { isTestRuntime, isVerboseDevLogging } from '../../utils/devFlags';
 import {
   getInRoundBetExposureForPerson,
   getOpenStakeExposureForPerson,
@@ -65,7 +65,7 @@ export function resolveBankrollOwnerId(
 ): string {
   const slot = ctx.boxSlots.find((s) => s.playerId === boxPlayerId);
   if (slot?.bankrollOwnerId) {
-    if (isVerboseDevLogging()) {
+    if (isVerboseDevLogging() && !isTestRuntime()) {
       log.debug('bankrollOwnerResolved', {
         boxPlayerId,
         bankrollOwnerId: slot.bankrollOwnerId,
@@ -77,7 +77,7 @@ export function resolveBankrollOwnerId(
 
   const player = ctx.players[boxPlayerId];
   if (player?.bankrollOwnerId) {
-    if (isVerboseDevLogging()) {
+    if (isVerboseDevLogging() && !isTestRuntime()) {
       log.debug('bankrollOwnerResolved', {
         boxPlayerId,
         bankrollOwnerId: player.bankrollOwnerId,
@@ -87,7 +87,7 @@ export function resolveBankrollOwnerId(
     return player.bankrollOwnerId;
   }
 
-  if (isVerboseDevLogging()) {
+  if (isVerboseDevLogging() && !isTestRuntime()) {
     log.debug('bankrollOwnerResolved', {
       boxPlayerId,
       bankrollOwnerId: boxPlayerId,
