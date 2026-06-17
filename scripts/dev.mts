@@ -113,7 +113,25 @@ function run(command: string, args: string[]): ChildProcess {
   return child;
 }
 
-run('npx', ['tsx', 'watch', 'server/src/index.ts']);
+run('npx', [
+  'tsx',
+  'watch',
+  '--exclude',
+  'node_modules/**',
+  '--exclude',
+  'dist/**',
+  '--exclude',
+  'coverage/**',
+  '--exclude',
+  'playwright-report/**',
+  '--exclude',
+  'test-results/**',
+  '--exclude',
+  'src/engine/**/*.js',
+  '--exclude',
+  'reference-ui/**',
+  'server/src/index.ts',
+]);
 run('npx', ['vite', '--port', String(VITE_PORT), '--strictPort']);
 
 void runStartupSelfCheck();

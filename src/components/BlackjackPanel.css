@@ -1302,8 +1302,7 @@
   box-sizing: border-box;
 }
 
-.bj-view-full-desktop .bj-casino__rail-wrap,
-.bj-view-card-desktop .bj-casino__rail-wrap {
+.bj-view-full-desktop .bj-casino__rail-wrap {
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;

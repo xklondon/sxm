@@ -7,7 +7,7 @@
 
 @media (min-width: 721px) {
   .bj-view-card-desktop {
-    --bj-card-desktop-box-spread: space-evenly;
+    --bj-card-desktop-box-spread: space-between;
     --bj-card-desktop-box-value-scale: 2.2;
     --bj-desktop-cardview-hero-value-scale: 0.62;
     --bj-desktop-card-area-bottom-gap: 0;
@@ -18,6 +18,21 @@
     --bj-card-boxes-padding-bottom: 0;
     --bj-desktop-zone-boxes-tray-gap: 0;
     --bj-desktop-zone-actions-height: 3.35rem;
+    --bj-desktop-zone-tray-height: 5.85rem;
+    --bj-full-desktop-tray-padding-bottom: 0;
+    --bj-card-hero-card-width: min(15vw, 9rem);
+    --bj-card-hero-card-max-height: min(26vh, 11.5rem);
+  }
+
+  /* Shell extras — hide felt bank row so it does not steal the dealer grid band. */
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-info-bar--felt-row {
+    display: none;
+  }
+
+  .bj-view-card-desktop .bj-casino__rail-wrap {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell {
@@ -26,7 +41,7 @@
     grid-template-rows:
       [dealer] var(--bj-desktop-zone-dealer-height)
       [command] var(--bj-desktop-zone-command-height)
-      [cards] minmax(0, 1fr)
+      [cards] minmax(5.5rem, 1fr)
       [hero-value] var(--bj-desktop-zone-hero-value-height)
       [actions] var(--bj-desktop-zone-actions-height)
       [boxes] var(--bj-desktop-zone-boxes-height)
@@ -116,10 +131,76 @@
     padding: 0;
     min-height: var(--bj-desktop-zone-actions-height);
     max-height: var(--bj-desktop-zone-actions-height);
+    height: var(--bj-desktop-zone-actions-height);
+    flex: unset;
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     overflow: hidden;
+    position: relative;
+    top: auto;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-action-row {
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    align-self: center;
+    position: static;
+    top: auto;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-action-row,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-table-actions {
+    width: auto;
+    max-width: none;
+    margin-inline: auto;
+    align-self: center;
+    padding: 0;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-table-actions__row {
+    width: auto;
+    max-width: none;
+    justify-content: center;
+    margin-inline: auto;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-phone-view__action-bar--playing,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-phone-view__action-bar--wait {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    width: auto;
+    max-width: 100%;
+    min-height: 0;
+    max-height: 100%;
+    margin: 0;
+    padding: 0;
+    gap: 0.35rem;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-phone-view__action-bar-row--primary {
+    width: auto;
+    max-width: none;
+    flex: 0 0 auto;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .bj-phone-view__action-bar-row--secondary {
+    width: auto;
+    max-width: none;
+    flex: 0 0 auto;
+    justify-content: center;
+    gap: 0.2rem;
+    min-height: 0;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
@@ -127,7 +208,10 @@
     grid-column: 1;
     margin: 0;
     padding: 0;
-    min-height: 0;
+    height: var(--bj-desktop-zone-boxes-height);
+    min-height: var(--bj-desktop-zone-boxes-height);
+    max-height: var(--bj-desktop-zone-boxes-height);
+    flex: unset;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -135,13 +219,49 @@
     overflow: hidden;
   }
 
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap {
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  .bj-view-card-desktop .bj-player-box-row {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--bottom {
     grid-row: tray;
     grid-column: 1;
     margin: 0;
     padding: 0;
-    min-height: 0;
+    flex: unset;
+    height: var(--bj-desktop-zone-tray-height);
+    min-height: var(--bj-desktop-zone-tray-height);
+    max-height: var(--bj-desktop-zone-tray-height);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     align-self: stretch;
+    position: relative;
+    z-index: 2;
+  }
+
+  .bj-view-card-desktop .bj-tray-row {
+    width: 100%;
+    max-width: min(100%, 32rem);
+    height: 100%;
+    min-height: 0;
+    margin-inline: auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
   }
 
   /* Row 3 — hero cards only; fill band height and center the fan (no top anchor). */
@@ -182,6 +302,47 @@
   .bj-view-card-desktop
     .bj-table-layout-shell
     .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__hero-center,
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__axis,
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__play-stack,
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__stage,
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__hand,
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__hero-stage,
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__play-area {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta {
+    display: none;
+  }
+
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
     .bj-phone-view__card-wrap {
     align-self: center;
     transform-origin: center center;
@@ -199,8 +360,23 @@
     .bj-table-zone--cards.bj-cards-area--hero
     .bj-phone-view__cards
     .playing-card.ds-card--hero {
-    max-height: min(var(--bj-card-hero-card-max-height, min(26vh, 11.5rem)), 100%);
-    object-fit: contain;
+    width: min(var(--bj-card-hero-card-width), 9rem);
+    max-height: min(var(--bj-card-hero-card-max-height), 100%);
+    height: auto;
+    margin-left: 0;
+  }
+
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards
+    .playing-card.bj-phone-card--hero:not(:first-child),
+  .bj-view-card-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards
+    .playing-card.ds-card--hero:not(:first-child) {
+    margin-left: -1.35rem;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions .ds-btn--hit {
@@ -224,21 +400,27 @@
     border-radius: 0.38rem;
   }
 
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap {
-    width: 100%;
-    max-width: 100%;
-  }
-
   .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes {
+    display: grid;
     width: 100%;
     max-width: 100%;
     margin-inline: 0;
-    justify-content: var(--bj-card-desktop-box-spread, space-evenly);
+    flex: unset;
+    flex-wrap: nowrap;
+    justify-content: var(--bj-card-desktop-box-spread, space-between);
+    justify-items: center;
+    align-items: end;
     grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
   }
 
   .bj-view-card-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
     grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, 1fr));
+  }
+
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
+    width: 100%;
+    max-width: var(--bj-full-table-box-width);
+    justify-self: center;
   }
 
   .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
@@ -279,7 +461,7 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    padding: 0.35rem 0.45rem var(--bj-full-desktop-tray-padding-bottom);
+    padding: 0.35rem 0.45rem 0;
     box-sizing: border-box;
     background: var(--bj-table-felt-bg);
     border: none;
@@ -332,7 +514,9 @@
   }
 
   .bj-view-card-desktop .bj-arc__slot {
-    width: var(--bj-cardview-desktop-mini-hand-width, var(--bj-desktop-mini-hand-width));
+    width: 100%;
+    max-width: var(--bj-cardview-desktop-mini-hand-width, var(--bj-desktop-mini-hand-width));
+    justify-self: center;
     overflow: visible;
   }
 
@@ -395,8 +579,9 @@
     width: 100%;
     max-width: min(100%, 32rem);
     min-height: 0;
-    padding: 0.5rem 1.05rem 0.35rem;
-    gap: 0.28rem;
+    max-height: 100%;
+    padding: 0.38rem 0.9rem 0.2rem;
+    gap: 0.16rem;
     box-sizing: border-box;
   }
 

@@ -27,8 +27,16 @@ let stallTimer: ReturnType<typeof setTimeout> | null = null;
  * is reliably 'production' in host builds) rather than the DEV flag, which can
  * be odd in some host builds.
  */
-export function shouldRunDevChecks(env: { mode?: string; dev?: boolean }): boolean {
-  return Boolean(env.dev) && env.mode !== 'production';
+export function shouldRunDevChecks(env: {
+  mode?: string;
+  dev?: boolean;
+  /** Opt-in: expensive engine sanity suites at boot (VITE_DEV_SANITY_CHECKS=true). */
+  sanityChecks?: boolean;
+}): boolean {
+  if (!env.dev || env.mode === 'production') {
+    return false;
+  }
+  return env.sanityChecks === true;
 }
 
 export function recordBootStage(stage: string, list: string[] = stages): string[] {

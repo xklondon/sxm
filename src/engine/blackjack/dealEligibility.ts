@@ -302,10 +302,7 @@ export function logDealBlockedAudit(
 
   };
 
-  log.info('dealBlockedAudit', payload);
-
-  console.log('[SXMCards] dealBlockedAudit', payload);
-
+  log.debug('dealBlockedAudit', payload);
 }
 
 

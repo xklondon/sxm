@@ -1,0 +1,49 @@
+{
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/coverage/**": true,
+    "**/.git/**": true,
+    "**/.next/**": true,
+    "**/logs/**": true,
+    "**/tmp/**": true,
+    "**/playwright-report/**": true,
+    "**/test-results/**": true,
+    "**/public/generated/**": true,
+    "**/node_modules/.vite/**": true,
+    "**/node_modules/.tmp/**": true,
+    "**/reference-ui/**": true,
+    "**/src/engine/**/*.js": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/.next": true,
+    "**/logs": true,
+    "**/tmp": true,
+    "**/playwright-report": true,
+    "**/test-results": true,
+    "**/public/generated": true,
+    "**/reference-ui": true
+  },
+  "typescript.tsserver.watchOptions": {
+    "excludeDirectories": [
+      "**/node_modules",
+      "**/dist",
+      "**/build",
+      "**/coverage",
+      "**/.git",
+      "**/.next",
+      "**/logs",
+      "**/tmp",
+      "**/playwright-report",
+      "**/test-results",
+      "**/reference-ui"
+    ]
+  },
+  "eslint.run": "onSave",
+  "eslint.workingDirectories": [{ "mode": "auto" }]
+}

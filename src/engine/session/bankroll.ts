@@ -4,6 +4,7 @@ import type { TableMeta } from '../../types/table';
 import type { Player } from '../../types/player';
 import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 import { log } from '../../utils/logger';
+import { isVerboseDevLogging } from '../../utils/devFlags';
 import {
   getInRoundBetExposureForPerson,
   getOpenStakeExposureForPerson,
@@ -64,29 +65,35 @@ export function resolveBankrollOwnerId(
 ): string {
   const slot = ctx.boxSlots.find((s) => s.playerId === boxPlayerId);
   if (slot?.bankrollOwnerId) {
-    log.info('bankrollOwnerResolved', {
-      boxPlayerId,
-      bankrollOwnerId: slot.bankrollOwnerId,
-      slotNumber: slot.slotNumber,
-    });
+    if (isVerboseDevLogging()) {
+      log.debug('bankrollOwnerResolved', {
+        boxPlayerId,
+        bankrollOwnerId: slot.bankrollOwnerId,
+        slotNumber: slot.slotNumber,
+      });
+    }
     return slot.bankrollOwnerId;
   }
 
   const player = ctx.players[boxPlayerId];
   if (player?.bankrollOwnerId) {
-    log.info('bankrollOwnerResolved', {
-      boxPlayerId,
-      bankrollOwnerId: player.bankrollOwnerId,
-      slotNumber: ctx.boxSlotNumbers[boxPlayerId] ?? null,
-    });
+    if (isVerboseDevLogging()) {
+      log.debug('bankrollOwnerResolved', {
+        boxPlayerId,
+        bankrollOwnerId: player.bankrollOwnerId,
+        slotNumber: ctx.boxSlotNumbers[boxPlayerId] ?? null,
+      });
+    }
     return player.bankrollOwnerId;
   }
 
-  log.info('bankrollOwnerResolved', {
-    boxPlayerId,
-    bankrollOwnerId: boxPlayerId,
-    legacy: true,
-  });
+  if (isVerboseDevLogging()) {
+    log.debug('bankrollOwnerResolved', {
+      boxPlayerId,
+      bankrollOwnerId: boxPlayerId,
+      legacy: true,
+    });
+  }
   return boxPlayerId;
 }
 

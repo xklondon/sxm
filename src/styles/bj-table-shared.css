@@ -2326,11 +2326,13 @@
 
 /* Full Table card zone — fixed height in bj-full-table-card-area.css */
 
-.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
+.bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
   justify-content: flex-end;
 }
 
-.bj-table-layout-shell .bj-table-zone--boxes {
+.bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes,
+.bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes {
   flex: 0 0 auto;
   height: var(--bj-zone-boxes-height);
   min-height: var(--bj-zone-boxes-height);
@@ -2352,7 +2354,9 @@
   min-width: 0;
 }
 
-.bj-table-layout-shell .bj-table-zone--bottom {
+.bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--bottom,
+.bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--bottom,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--bottom {
   flex: 0 0 auto;
   height: var(--bj-zone-tray-height);
   min-height: var(--bj-zone-tray-height);
@@ -2368,11 +2372,11 @@
   margin-top: var(--bj-zone-boxes-tray-gap);
 }
 
-.bj-table-layout-shell .bj-table-zone--cards {
+.bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards {
   margin-top: var(--bj-command-cards-gap);
 }
 
-.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
+.bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
   padding-top: var(--bj-hero-cards-top-inset);
 }
 

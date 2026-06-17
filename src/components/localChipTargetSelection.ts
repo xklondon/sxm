@@ -8,6 +8,7 @@ import {
   type LocalChipSlotTarget,
   uiBettingFocusFromSlotTarget,
 } from './blackjackBoxPlacementContract';
+import { isVerboseDevLogging } from '../utils/devFlags';
 
 /** Canonical local-only chip tray target — slotNumber is the only stable anchor. */
 export interface LocalSelectedChipTarget {
@@ -100,10 +101,7 @@ export interface ChipBetDiagnostic {
 
 /** Dev/test diagnostic for rapid chip tap investigations. */
 export function logChipBetDiagnostic(detail: ChipBetDiagnostic): void {
-  const enabled =
-    typeof import.meta !== 'undefined' &&
-    (import.meta.env?.DEV === true || import.meta.env?.MODE === 'test');
-  if (!enabled) {
+  if (!isVerboseDevLogging()) {
     return;
   }
   console.debug('[SXMCards][chip-bet]', detail);
@@ -173,10 +171,7 @@ export function logChipTargetResolution(
     resolvedSlotNumber?: number | null;
   },
 ): void {
-  const enabled =
-    typeof import.meta !== 'undefined' &&
-    (import.meta.env?.DEV === true || import.meta.env?.MODE === 'test');
-  if (!enabled) {
+  if (!isVerboseDevLogging()) {
     return;
   }
   console.debug('[SXMCards][chip-target]', reason, details);

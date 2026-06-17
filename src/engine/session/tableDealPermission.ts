@@ -1,5 +1,6 @@
 import type { GameState } from '../../types';
 import { log } from '../../utils/logger';
+import { isVerboseDevLogging } from '../../utils/devFlags';
 
 /**
  * True when the current viewer is the table owner/host and may run deal controls.
@@ -11,8 +12,8 @@ export function canCurrentUserDealTable(
 ): boolean {
   const ownerPersonId = state.tableMeta.ownerPersonId;
   if (!ownerPersonId || !viewerPersonId) {
-    if (import.meta.env.DEV) {
-      log.info('dealTablePermission', {
+    if (isVerboseDevLogging()) {
+      log.debug('dealTablePermission', {
         ownerPersonId: ownerPersonId ?? null,
         viewerPersonId: viewerPersonId ?? null,
         canDeal: false,
@@ -22,8 +23,8 @@ export function canCurrentUserDealTable(
     return false;
   }
   const canDeal = viewerPersonId === ownerPersonId;
-  if (import.meta.env.DEV) {
-    log.info('dealTablePermission', {
+  if (isVerboseDevLogging()) {
+    log.debug('dealTablePermission', {
       ownerPersonId,
       viewerPersonId,
       canDeal,

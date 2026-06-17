@@ -30,8 +30,9 @@ describe('boot stage tracking', () => {
 });
 
 describe('dev sanity checks are gated out of host/production builds', () => {
-  it('runs only in non-production dev', () => {
-    expect(shouldRunDevChecks({ mode: 'development', dev: true })).toBe(true);
+  it('runs only when explicitly opted in during non-production dev', () => {
+    expect(shouldRunDevChecks({ mode: 'development', dev: true })).toBe(false);
+    expect(shouldRunDevChecks({ mode: 'development', dev: true, sanityChecks: true })).toBe(true);
     expect(shouldRunDevChecks({ mode: 'production', dev: false })).toBe(false);
   });
 

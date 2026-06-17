@@ -11,5 +11,14 @@
     "resolveJsonModule": true,
     "declaration": false
   },
-  "include": ["src/**/*", "../src/types/**/*", "../src/engine/**/*", "../src/lib/**/*"]
+  "include": ["src/**/*", "../src/types/**/*", "../src/engine/**/*", "../src/lib/**/*"],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "coverage",
+    "playwright-report",
+    "test-results",
+    "**/*.test.ts",
+    "**/*.test.js"
+  ]
 }

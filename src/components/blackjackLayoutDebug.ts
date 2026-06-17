@@ -1,6 +1,7 @@
 /** Dev-only layout zone overlay — enable with `?layoutDebug=1` in the URL. */
-export const BLACKJACK_LAYOUT_DEBUG_PARAM = 'layoutDebug';
+import { isVerboseDevLogging } from '../utils/devFlags';
 
+export const BLACKJACK_LAYOUT_DEBUG_PARAM = 'layoutDebug';
 /** Build marker — confirms production bundle includes this audit pass. */
 export const BLACKJACK_UI_FIX_VERSION = 'mobile-box-tray-final-2';
 
@@ -136,13 +137,15 @@ export function readLayoutDebugComputedSnapshot(root: HTMLElement | null): Layou
 }
 
 export function logLayoutDebugChipTarget(details: Record<string, unknown>): void {
-  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV === true) {
-    console.debug('[SXMCards][layout-debug][chip-target]', details);
+  if (!isVerboseDevLogging()) {
+    return;
   }
+  console.debug('[SXMCards][layout-debug][chip-target]', details);
 }
 
 export function logLayoutDebugSnapshot(snapshot: LayoutDebugComputedSnapshot): void {
-  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV === true) {
-    console.debug('[SXMCards][layout-debug][computed]', snapshot);
+  if (!isVerboseDevLogging()) {
+    return;
   }
+  console.debug('[SXMCards][layout-debug][computed]', snapshot);
 }

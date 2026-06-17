@@ -1,5 +1,13 @@
 node_modules/
 dist/
+build/
+coverage/
+.next/
+logs/
+tmp/
+playwright-report/
+test-results/
+public/generated/
 .env
 .env.local
 .env.local.generated

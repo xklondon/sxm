@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Card } from '../types/deck';
 import type { DealAnimationMode } from '../engine/deck/dealAnimation';
 import { getDealAnimationClass } from '../engine/deck/dealAnimation';
@@ -68,7 +69,7 @@ function CardFace({ card }: { card: Card }) {
   );
 }
 
-export function PlayingCard({
+export const PlayingCard = memo(function PlayingCard({
   card,
   compact = false,
   faceDown = false,
@@ -110,4 +111,4 @@ export function PlayingCard({
       <CardFace card={card} />
     </div>
   );
-}
+});

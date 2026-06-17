@@ -311,6 +311,15 @@ export function BlackjackPanel({
   const [shuffleAnimating, setShuffleAnimating] = useState(false);
   const shuffleAnimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (shuffleAnimTimerRef.current) {
+        clearTimeout(shuffleAnimTimerRef.current);
+        shuffleAnimTimerRef.current = null;
+      }
+    };
+  }, []);
+
   const profile = loadProfile();
   const controllerName = profile.name.trim() || tableMeta.controllerName;
   const viewerHints = buildViewerIdentityHints(gameState, onlineTableId, viewerAuth);

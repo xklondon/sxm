@@ -7,7 +7,21 @@ const LEVEL_ORDER: Record<LogLevel, number> = {
   error: 3,
 };
 
-let minLevel: LogLevel = import.meta.env?.DEV ? 'debug' : 'info';
+function resolveMinLevel(): LogLevel {
+  const configured = import.meta.env?.VITE_LOG_LEVEL as string | undefined;
+  if (
+    configured === 'debug' ||
+    configured === 'info' ||
+    configured === 'warn' ||
+    configured === 'error'
+  ) {
+    return configured;
+  }
+  // Quieter default in dev — use VITE_LOG_LEVEL=debug when investigating.
+  return import.meta.env?.DEV ? 'warn' : 'info';
+}
+
+let minLevel: LogLevel = resolveMinLevel();
 
 export function setLogLevel(level: LogLevel): void {
   minLevel = level;

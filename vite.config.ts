@@ -7,12 +7,33 @@ export default defineConfig(({ mode }) => {
   const apiPort = process.env.SXM_API_PORT || env.SXM_API_PORT || env.API_PORT || '3017';
   const apiTarget = `http://127.0.0.1:${apiPort}`;
 
+  const watchIgnored = [
+    '**/node_modules/**',
+    '**/dist/**',
+    '**/build/**',
+    '**/coverage/**',
+    '**/.git/**',
+    '**/.next/**',
+    '**/logs/**',
+    '**/tmp/**',
+    '**/playwright-report/**',
+    '**/test-results/**',
+    '**/.prisma/**',
+    '**/node_modules/.vite/**',
+    '**/node_modules/.tmp/**',
+    '**/reference-ui/**',
+    '**/src/engine/**/*.js',
+  ];
+
   return {
     plugins: [react()],
     server: {
       host: true,
       port: Number(env.VITE_PORT || 5173),
       strictPort: true,
+      watch: {
+        ignored: watchIgnored,
+      },
       proxy: {
         '/api': {
           target: apiTarget,

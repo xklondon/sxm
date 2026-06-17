@@ -1,0 +1,15 @@
+﻿node_modules/
+dist/
+build/
+coverage/
+.git/
+.next/
+logs/
+tmp/
+public/generated/
+playwright-report/
+test-results/
+node_modules/.vite/
+node_modules/.tmp/
+reference-ui/
+src/engine/**/*.js

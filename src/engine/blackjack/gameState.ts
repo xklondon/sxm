@@ -31,7 +31,6 @@ import { drawSingleBankCard, enterBankingIfComplete } from './bankTurn';
 import { activePlayerIdFromRound, getVirtualBlackjackAction, isVirtualPlayer } from './virtual';
 import { parseBlackjackHandKey, blackjackHandKey } from './handKeys';
 import { log } from '../../utils/logger';
-import { isDevEnv } from '../../utils/isDevEnv';
 import {
   syncConfirmedBetsToRound,
   getEligibleDealBoxes,
@@ -101,21 +100,13 @@ function applyHit(state: GameState, handKey: string): GameState {
   );
   const afterHitCards = [...(result.round.playerHands[handKey]?.cardIds ?? [])].filter(Boolean);
   const drawnCard = afterHitCards.length > beforeHitCards.length ? afterHitCards[afterHitCards.length - 1] : null;
-  log.info('Player action: hit', {
+  log.debug('Player action: hit', {
     handKey,
     activeHandKey: result.round.activeHandKey,
     beforeHitCards,
     drawnCard,
     afterHitCards,
   });
-  if (isDevEnv()) {
-    console.log('[SXMCards] hit', {
-      activeHandKey: handKey,
-      beforeHitCards,
-      drawnCard,
-      afterHitCards,
-    });
-  }
   let next = applyBlackjackToGameState(s, result);
   const bustedHand = next.blackjack?.playerHands[handKey];
   if (bustedHand?.actionStatus === 'busted') {
@@ -133,19 +124,12 @@ function applyStand(state: GameState, handKey: string): GameState {
   const result = standBlackjackPlayer(s.session, s.players, s.blackjack, handKey);
   const afterStayNextActiveHandKey = result.round.activeHandKey;
   const nextPhase = result.round.status;
-  log.info('Player action: stand', {
+  log.debug('Player action: stand', {
     handKey,
     beforeStayActiveHandKey,
     afterStayNextActiveHandKey,
     nextPhase,
   });
-  if (isDevEnv()) {
-    console.log('[SXMCards] stay', {
-      beforeStayActiveHandKey,
-      afterStayNextActiveHandKey,
-      nextPhase,
-    });
-  }
   return applyBlackjackToGameState(s, { ...result, deck: s.deck });
 }
 

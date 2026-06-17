@@ -3,6 +3,7 @@ import type { BoxStakeEntry } from '../../types/table';
 import { getBlackjackProtocolPhase } from '../blackjack/protocol';
 import { parseBlackjackHandKey } from '../blackjack/handKeys';
 import { log } from '../../utils/logger';
+import { isVerboseDevLogging } from '../../utils/devFlags';
 import {
   canControllerCallBox,
   getAssignedSlotForPerson,
@@ -130,8 +131,8 @@ export function getViewerCanActOnActiveHand(
   const { playerId: boxId } = parseBlackjackHandKey(handKey);
   const ownerId = getBoxDecisionOwner(state, boxId);
   if (ownerId !== viewerPersonId || !canControllerCallBox(state, boxId, viewerPersonId)) {
-    if (import.meta.env?.DEV) {
-      log.info('viewerCannotActOnActiveHand', {
+    if (isVerboseDevLogging()) {
+      log.debug('viewerCannotActOnActiveHand', {
         viewerPersonId,
         boxId,
         decisionOwnerId: ownerId,
@@ -141,8 +142,8 @@ export function getViewerCanActOnActiveHand(
     }
     return null;
   }
-  if (import.meta.env?.DEV) {
-    log.info('viewerCanActOnActiveHand', {
+  if (isVerboseDevLogging()) {
+    log.debug('viewerCanActOnActiveHand', {
       viewerPersonId,
       boxId,
       activeHandKey: handKey,
@@ -265,11 +266,11 @@ export function getCanonicalBoxAssignment(state: GameState): CanonicalBoxAssignm
 }
 
 export function logNativeBoxAssignments(state: GameState, context: string): void {
-  if (!import.meta.env?.DEV) {
+  if (!isVerboseDevLogging()) {
     return;
   }
   for (const { personId, nativeSlot } of getCanonicalBoxAssignment(state)) {
-    log.info('nativeBoxAssignment', { context, personId, nativeSlot });
+    log.debug('nativeBoxAssignment', { context, personId, nativeSlot });
   }
 }
 

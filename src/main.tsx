@@ -17,7 +17,11 @@ markBootStage(BOOT_STAGES.bundle);
 
 // Dev-only sanity suites: gated on MODE (never a host/production build) and
 // wrapped so an engine assertion can never crash app boot.
-if (shouldRunDevChecks({ mode: import.meta.env.MODE, dev: import.meta.env.DEV })) {
+if (shouldRunDevChecks({
+  mode: import.meta.env.MODE,
+  dev: import.meta.env.DEV,
+  sanityChecks: import.meta.env.VITE_DEV_SANITY_CHECKS === 'true',
+})) {
   try {
     const deckChecks = runDeckEngineChecks();
     if (!deckChecks.passed) {

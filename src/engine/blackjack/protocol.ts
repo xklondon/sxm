@@ -5,7 +5,6 @@ import type { BlackjackRound } from '../../types/blackjack';
 import { createBlackjackPlayerHand } from '../../types/blackjack';
 import { isBankerReady } from '../session/boxOps';
 import { log } from '../../utils/logger';
-import { isDevEnv } from '../../utils/isDevEnv';
 import { blackjackHandKey } from './handKeys';
 import { getBettingPlayerIds } from './helpers';
 import { getProtocolMessage } from './protocolMessages';
@@ -202,10 +201,7 @@ export function logDealSanity(
     dealResult: extra?.dealResult ?? null,
   };
 
-  log.info('dealSanity', payload);
-  if (isDevEnv()) {
-    console.log('[SXMCards] dealSanity', payload);
-  }
+  log.debug('dealSanity', payload);
 }
 
 /** @deprecated Use logDealSanity */
