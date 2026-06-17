@@ -1702,6 +1702,10 @@ export function BlackjackPanel({
           {cardAreaOutcomeStackBadgeText(marker)}
         </span>
       ) : null;
+    const suppressCardColumnStackValue =
+      isFullTableDesktop &&
+      !inBetting &&
+      Boolean(cardColumnValueLabel);
     return (
       <div
         key={`cards-${boxId}`}
@@ -1710,6 +1714,7 @@ export function BlackjackPanel({
           'bj-arc__slot--card-column',
           isSplit ? 'bj-arc__slot--card-split' : '',
           stackOutcomeBadgeMarker ? 'bj-arc__slot--card-column--stack-outcome' : '',
+          suppressCardColumnStackValue ? 'bj-arc__slot--card-column--stack-value-in-box' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
         data-box-slot={slotNumber}
@@ -1759,6 +1764,7 @@ export function BlackjackPanel({
             stackOutcomeBadge(outcomeMarker),
           )
         )}
+        {suppressCardColumnStackValue ? null : (
         <span
           data-layout-band="card-column-value"
           className={[
@@ -1774,6 +1780,7 @@ export function BlackjackPanel({
         >
           {cardColumnValueLabel || '\u00a0'}
         </span>
+        )}
       </div>
     );
   }

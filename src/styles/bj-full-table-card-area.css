@@ -436,10 +436,10 @@
 @media (min-width: 721px) {
   .bj-view-full-desktop {
     --bj-full-desktop-dealer-command-gap: 0.1875rem;
-    --bj-full-desktop-actions-boxes-gap: 0.125rem;
+    --bj-full-desktop-actions-boxes-gap: 0.0625rem;
     --bj-full-desktop-stack-value-gap: 0.3125rem;
     --bj-full-desktop-zone-actions-height: calc(1.55rem + var(--bj-full-desktop-actions-boxes-gap));
-    --bj-full-desktop-cards-actions-gap: 0.5rem;
+    --bj-full-desktop-cards-actions-gap: 0.125rem;
     --bj-desktop-grid-row-cards: auto;
     --bj-box-value-band-height: 1.05rem;
   }
@@ -456,15 +456,39 @@
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions {
-    padding-top: var(--bj-full-desktop-cards-actions-gap);
+    margin-top: var(--bj-full-desktop-cards-actions-gap);
+    padding-top: 0;
     padding-bottom: var(--bj-full-desktop-actions-boxes-gap);
     justify-content: flex-end;
     align-items: center;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
-    padding-bottom: var(--bj-full-desktop-cards-actions-gap);
+    padding-bottom: 0;
     overflow: hidden;
+  }
+
+  /* Play phase — hand total lives in player box only; shorter column stacks cards above box. */
+  .bj-view-full-desktop .bj-arc__slot--card-column--stack-value-in-box {
+    grid-template-rows:
+      var(--bj-full-table-card-outcome-zone-height)
+      var(--bj-full-table-card-stack-zone-height);
+    height: calc(
+      var(--bj-full-table-card-outcome-zone-height) + var(--bj-full-table-card-stack-zone-height)
+    );
+    min-height: calc(
+      var(--bj-full-table-card-outcome-zone-height) + var(--bj-full-table-card-stack-zone-height)
+    );
+    max-height: calc(
+      var(--bj-full-table-card-outcome-zone-height) + var(--bj-full-table-card-stack-zone-height)
+    );
+  }
+
+  .bj-view-full-desktop .bj-arc__slot--card-column--stack-value-in-box.bj-arc__slot--card-column--stack-outcome {
+    grid-template-rows: var(--bj-full-table-card-stack-zone-height);
+    height: var(--bj-full-table-card-stack-zone-height);
+    min-height: var(--bj-full-table-card-stack-zone-height);
+    max-height: var(--bj-full-table-card-stack-zone-height);
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
