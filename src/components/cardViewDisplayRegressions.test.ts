@@ -110,10 +110,6 @@ function zoneSlice(html: string, start: string, end: string): string {
   return endIdx > startIdx ? html.slice(startIdx, endIdx) : html.slice(startIdx);
 }
 
-function heroZone(html: string): string {
-  return zoneSlice(html, 'bj-cards-area--hero', TABLE_UX.tableZoneActions);
-}
-
 function boxesZone(html: string): string {
   return zoneSlice(html, TABLE_UX.tableZoneBoxes, 'bj-table-zone--bottom');
 }
