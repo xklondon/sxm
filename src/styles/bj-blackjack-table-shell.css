@@ -17,6 +17,16 @@
     --bj-zone-tray-height: var(--bj-desktop-zone-tray-height);
     --bj-zone-boxes-tray-gap: var(--bj-desktop-zone-boxes-tray-gap);
     --bj-zone-tray-padding-bottom: var(--bj-desktop-bottom-padding);
+    /* Desktop tuning — tighter fixed bands; cards row absorbs remainder. */
+    --bj-desktop-zone-dealer-height: 6.85rem;
+    --bj-desktop-zone-command-height: 3.35rem;
+    --bj-desktop-zone-boxes-height: 6.1rem;
+    --bj-desktop-zone-tray-height: 3.5rem;
+    --bj-desktop-zone-boxes-tray-gap: 0.5rem;
+    --bj-desktop-bottom-padding: 0.42rem;
+    --bj-card-boxes-padding-bottom: 0.16rem;
+    --bj-command-cards-gap: 0.12rem;
+    --bj-desktop-grid-row-cards: minmax(0, 1fr);
   }
 
   .bj-view-full-desktop {
@@ -25,11 +35,12 @@
     --bj-desktop-cardview-hero-value-scale: 0.7;
     --bj-desktop-action-row-offset: 0.125rem;
     --bj-desktop-card-area-bottom-gap: 0.35rem;
-    --bj-full-desktop-dealer-command-gap: 0.1875rem;
-    --bj-full-desktop-actions-boxes-gap: 0.3125rem;
+    --bj-full-desktop-dealer-command-gap: 0.08rem;
+    --bj-full-desktop-actions-boxes-gap: 0.14rem;
     --bj-full-desktop-zone-actions-height: 1.55rem;
-    --bj-full-desktop-cards-actions-gap: 0.125rem;
-    --bj-desktop-grid-row-cards: auto;
+    --bj-full-desktop-cards-actions-gap: 0.06rem;
+    --bj-player-box-height: 4.05rem;
+    --bj-full-table-box-height: var(--bj-player-box-height);
   }
 
   .bj-view-full-desktop .bj-table-layout-shell {
@@ -41,11 +52,14 @@
     --bj-card-desktop-box-spread: stretch;
     --bj-card-desktop-box-value-scale: 2.2;
     --bj-desktop-cardview-hero-value-scale: 1;
-    --bj-card-hero-card-width: min(15vw, 9rem);
-    --bj-card-hero-card-max-height: min(26vh, 11.5rem);
-    --bj-desktop-zone-actions-height: 3.35rem;
+    --bj-card-hero-card-width: min(17vw, 10.25rem);
+    --bj-card-hero-card-max-height: min(32vh, 13.25rem);
+    --bj-desktop-zone-actions-height: 3.05rem;
+    --bj-hero-cards-top-inset: 0.28rem;
     --bj-command-cards-gap: 0;
     --bj-cards-actions-gap: 0;
+    --bj-player-box-height: 4.05rem;
+    --bj-full-table-box-height: var(--bj-player-box-height);
   }
 
   .bj-view-full-desktop .bj-table-layout-shell,
@@ -114,7 +128,7 @@
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--summary .dealer-block__command {
     max-height: 100%;
     overflow: visible;
-    padding: 0.38rem 1.5rem;
+    padding: 0.3rem 1.35rem;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards,
@@ -137,6 +151,9 @@
     min-height: 0;
     align-self: stretch;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
@@ -144,7 +161,7 @@
     overflow: hidden;
     display: flex;
     align-items: stretch;
-    justify-content: flex-end;
+    justify-content: center;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions,
@@ -251,12 +268,12 @@
 
   .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__cards-slot,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__cards-slot {
-    min-height: 1.85rem;
+    min-height: 1.7rem;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot {
-    min-height: 1.2rem;
+    min-height: 1.05rem;
     flex: 0 0 auto;
   }
 
@@ -297,7 +314,7 @@
     min-height: 0;
     margin-inline: auto;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     overflow: hidden;
   }

@@ -100,7 +100,7 @@ describe('Card View layout guards', () => {
     expect(SHARED_CSS).toContain('--bj-desktop-zone-command-height: 4rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-actions-height: 2.9rem');
     expect(SHELL_CSS).toMatch(
-      /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*3\.35rem/,
+      /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*3\.05rem/,
     );
     expect(SHARED_CSS).not.toMatch(
       /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*2\.45rem/,

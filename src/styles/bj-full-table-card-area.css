@@ -423,8 +423,24 @@
 
 @media (min-width: 721px) {
   .bj-view-full-desktop {
-    --bj-full-desktop-stack-value-gap: 0.3125rem;
-    --bj-box-value-band-height: 1.05rem;
+    --bj-full-desktop-stack-value-gap: 0.28rem;
+    --bj-box-value-band-height: 1rem;
+    --bj-table-card-width: 2.95rem;
+    --bj-table-card-height: 3.95rem;
+    --bj-table-card-overlap-2: 1.38rem;
+    --bj-table-card-overlap-3: 1.9rem;
+    --bj-table-card-overlap-4plus: 2.3rem;
+    --bj-cloth-svg-width: min(84%, 36rem);
+    --bj-cloth-svg-max-height: 62%;
+  }
+
+  .bj-view-full-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--table
+    > .bj-felt-cloth-layer {
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 0.35rem;
   }
 
   /* Play phase — hand total lives in player box only; shorter column stacks cards above box. */
@@ -456,6 +472,8 @@
     .bj-full-table-card-area {
     transform: none;
     justify-content: stretch;
+    flex: 0 0 auto;
+    margin-top: auto;
   }
 
   /* Card columns — same 1fr grid as player boxes (slot-aligned). */
