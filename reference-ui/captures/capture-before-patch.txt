@@ -1,0 +1,288 @@
+﻿[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: '4e8cfeee-30c6-4fb6-bafe-81f35e299f25' }
+[SXMCards][INFO] setupValues {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] Table setup confirmed {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] tableMetaStartingChipsSaved {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'assignBankBot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: 'ca009ba0-08cf-4bff-a8a5-3afa6d52d555',
+  chips: 500,
+  reason: 'initial-bank',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Bank starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: null
+}
+[SXMCards][INFO] allocateBank {
+  bankId: 'ca009ba0-08cf-4bff-a8a5-3afa6d52d555',
+  chips: 500,
+  mode: 'bot'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'allocateBank-bot',
+  entryCount: 1,
+  entries: [
+    {
+      playerId: 'ca009ba0-08cf-4bff-a8a5-3afa6d52d555',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'allocateBank-bot',
+  bankPlayerId: 'ca009ba0-08cf-4bff-a8a5-3afa6d52d555',
+  bankBalance: 500,
+  boxSlots: [],
+  all: { 'ca009ba0-08cf-4bff-a8a5-3afa6d52d555': 500 }
+}
+[SXMCards][INFO] Banker assigned: Bank Bot
+[SXMCards][INFO] ownerBankrollCreated {
+  personId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  ownerName: 'Alice',
+  startingChipsEachSeat: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  chips: 500,
+  reason: 'initial-player',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Player starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: 'ca009ba0-08cf-4bff-a8a5-3afa6d52d555'
+}
+[SXMCards][INFO] ownerInitialAllocation {
+  personId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  ownerName: 'Alice',
+  chips: 500,
+  balanceAfter: 500
+}
+[SXMCards][INFO] thisTableRowsAfterSetup {
+  context: 'ensureTableOwnerPersonBankroll',
+  rows: [
+    {
+      personId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+      name: 'Alice',
+      status: 'owner',
+      available: 500,
+      betting: 0,
+      boxes: [],
+      kind: 'person'
+    }
+  ]
+}
+[SXMCards][INFO] nativeBoxPositionEnsured {
+  slotNumber: 1,
+  personId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  boxPlayerId: '68291934-8708-4bf1-b8cb-abd8103db40f'
+}
+[SXMCards][INFO] temporaryBoxOwnerSkippedNative {
+  boxPlayerId: '68291934-8708-4bf1-b8cb-abd8103db40f',
+  nativeOwner: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  bettorPersonId: '88880f3b-ae74-4068-bf67-0b286402ce52'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '68291934-8708-4bf1-b8cb-abd8103db40f',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  stakerPersonId: '88880f3b-ae74-4068-bf67-0b286402ce52'
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '68291934-8708-4bf1-b8cb-abd8103db40f',
+  bankrollOwnerId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '68291934-8708-4bf1-b8cb-abd8103db40f',
+  bankrollOwnerId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '68291934-8708-4bf1-b8cb-abd8103db40f',
+  bankrollOwnerId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '68291934-8708-4bf1-b8cb-abd8103db40f',
+  bankrollOwnerId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '68291934-8708-4bf1-b8cb-abd8103db40f',
+  bankrollOwnerId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '68291934-8708-4bf1-b8cb-abd8103db40f',
+  bankrollOwnerId: '88880f3b-ae74-4068-bf67-0b286402ce52',
+  slotNumber: 1
+}
+node.exe : [SXMCards][WARN] Failed to load settings {
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([SXMCards][WARN...load settings {:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1471:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2550:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+Screenshot: C:\dev\SXMCards\reference-ui\captures\Desktop_Card_actual.png
+Bounding boxes (after): C:\dev\SXMCards\reference-ui\captures\Desktop_Card_bounding_boxes.json
+Bounding boxes (before): C:\dev\SXMCards\reference-ui\captures\Desktop_Card_bounding_boxes_before.json
+{
+  "felt": {
+    "top": 95.15625,
+    "bottom": 696.8125,
+    "left": -83.203125,
+    "right": 1155.1875,
+    "width": 1238.390625,
+    "height": 601.65625
+  },
+  "command": {
+    "top": 279.125,
+    "bottom": 332.71875,
+    "left": -76.015625,
+    "right": 1148,
+    "width": 1224.015625,
+    "height": 53.59375
+  },
+  "heroCards": {
+    "top": 329.359375,
+    "bottom": 329.359375,
+    "left": -76.015625,
+    "right": 1148,
+    "width": 1224.015625,
+    "height": 0
+  },
+  "heroValue": {
+    "top": 333.828125,
+    "bottom": 345.015625,
+    "left": 511.453125,
+    "right": 560.53125,
+    "width": 49.078125,
+    "height": 11.1875
+  },
+  "actionRow": {
+    "top": 337.1875,
+    "bottom": 367.703125,
+    "left": -76.015625,
+    "right": 15.484375,
+    "width": 91.5,
+    "height": 30.515625
+  },
+  "actionButtons": {
+    "top": 339.09375,
+    "bottom": 365.171875,
+    "left": -69.625,
+    "right": 9.09375,
+    "width": 78.71875,
+    "height": 26.078125
+  },
+  "playerBoxes": {
+    "top": 141.875,
+    "bottom": 481.171875,
+    "left": -76.015625,
+    "right": 1148,
+    "width": 1224.015625,
+    "height": 339.296875
+  },
+  "trayRow": {
+    "top": 489.171875,
+    "bottom": 537.171875,
+    "left": 280,
+    "right": 792,
+    "width": 512,
+    "height": 48
+  },
+  "slotRow": {
+    "top": 141.875,
+    "bottom": 481.171875,
+    "left": -76.015625,
+    "right": 1148,
+    "width": 1224.015625,
+    "height": 339.296875
+  },
+  "slots": [
+    {
+      "i": 0,
+      "left": -76.015625,
+      "right": 1148,
+      "width": 1224.015625,
+      "center": 535.9921875
+    },
+    {
+      "i": 1,
+      "left": -76.015625,
+      "right": 1148,
+      "width": 1224.015625,
+      "center": 535.9921875
+    },
+    {
+      "i": 2,
+      "left": -76.015625,
+      "right": 1148,
+      "width": 1224.015625,
+      "center": 535.9921875
+    },
+    {
+      "i": 3,
+      "left": -76.015625,
+      "right": 1148,
+      "width": 1224.015625,
+      "center": 535.9921875
+    }
+  ]
+}
+Error: actions below value
+    at main (C:\dev\SXMCards\scripts\capture-card-desktop-layout.mts:132:55)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

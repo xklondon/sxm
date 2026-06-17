@@ -15,10 +15,21 @@
     align-items: center;
     justify-content: center;
     gap: 0.28rem;
+    padding-bottom: 0.28rem;
+    box-sizing: border-box;
     overflow: hidden;
   }
 
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+    height: 100%;
+    min-height: 0;
+    align-self: stretch;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero > .bj-phone-view__axis,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-stack,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__stage,
@@ -37,7 +48,17 @@
     overflow: hidden;
   }
 
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot {
+    flex: 1 1 auto;
+    max-height: 100%;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+  }
+
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
     flex: 1 1 auto;
@@ -117,5 +138,27 @@
   .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__svg {
     width: min(82%, 34rem);
     max-height: 58%;
+  }
+
+  /* Actions zone — center row under hero (shell sets flex-start; Card View override only). */
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--actions .bj-action-row {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar--playing {
+    width: 100%;
+    max-width: 14rem;
+    margin-inline: auto;
+    align-self: center;
   }
 }

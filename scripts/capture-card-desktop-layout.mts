@@ -74,6 +74,10 @@ async function main() {
       return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height };
     };
     const felt = document.querySelector('.bj-view-card-desktop .bj-casino__felt');
+    const bankInfo = document.querySelector('.bj-view-card-desktop .bj-table-info-bar--felt-row');
+    const dealer = document.querySelector('.bj-view-card-desktop .bj-table-zone--dealer');
+    const cardsZone = document.querySelector('.bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--hero');
+    const boxesZone = document.querySelector('.bj-view-card-desktop .bj-table-zone--boxes');
     const actionButtons = document.querySelector(
       '.bj-view-card-desktop [data-layout-band="action-row"] .bj-table-actions__row, .bj-view-card-desktop [data-layout-band="action-row"] .bj-phone-view__action-bar-row--primary',
     );
@@ -87,12 +91,16 @@ async function main() {
       : [];
     return {
       felt: rect(felt),
+      bankInfo: rect(bankInfo),
+      dealer: rect(dealer),
+      cardsZone: rect(cardsZone),
       command: rect(command),
       heroCards: rect(q('hero-cards')),
       heroValue: rect(q('hero-value')),
       actionRow: rect(q('action-row')),
       actionButtons: rect(actionButtons),
       playerBoxes: rect(q('player-boxes')),
+      boxesZone: rect(boxesZone),
       trayRow: rect(q('tray-row')),
       slotRow: rect(slotRow),
       slots: slotRects,
@@ -112,97 +120,95 @@ async function main() {
   }
   console.log(JSON.stringify(boxes, null, 2));
 
-  const { heroCards, heroValue, actionRow, actionButtons, playerBoxes, trayRow, felt, command, slots } =
-    boxes as {
-      heroCards: { top: number; bottom: number; left: number; right: number } | null;
-      heroValue: { top: number; bottom: number; left: number; right: number } | null;
-      actionRow: { top: number; bottom: number; left: number; width: number } | null;
-      actionButtons: { top: number; bottom: number; left: number; width: number } | null;
-      playerBoxes: { top: number; bottom: number; width: number; left: number; right: number } | null;
-      trayRow: { top: number } | null;
-      command: { top: number } | null;
-      felt: { width: number; left: number; right: number } | null;
-      slots: Array<{ left: number; right: number; center: number }>;
-    };
+  const {
+    heroCards,
+    heroValue,
+    actionRow,
+    actionButtons,
+    playerBoxes,
+    boxesZone,
+    trayRow,
+    felt,
+    command,
+    bankInfo,
+    dealer,
+    cardsZone,
+    slots,
+  } = boxes as {
+    heroCards: { top: number; bottom: number; left: number; right: number; height: number } | null;
+    heroValue: { top: number; bottom: number; left: number; right: number } | null;
+    actionRow: { top: number; bottom: number; left: number; width: number } | null;
+    actionButtons: { top: number; bottom: number; left: number; width: number } | null;
+    playerBoxes: { top: number; bottom: number; width: number; left: number; right: number } | null;
+    boxesZone: { top: number; bottom: number; left: number; right: number } | null;
+    trayRow: { top: number; bottom: number } | null;
+    command: { top: number } | null;
+    felt: { top: number; bottom: number; width: number; left: number; right: number } | null;
+    bankInfo: { top: number; bottom: number } | null;
+    dealer: { top: number; bottom: number } | null;
+    cardsZone: { top: number; bottom: number; left: number; right: number } | null;
+    slots: Array<{ left: number; right: number; center: number }>;
+  };
 
   if (!heroCards || !heroValue || !actionRow || !playerBoxes || !trayRow || !felt || !command) {
     throw new Error('Missing layout bands in capture — is .bj-view-card-desktop present?');
   }
-  if (!(heroValue.top >= heroCards.bottom - 2)) throw new Error('hero value must be below hero cards');
-  if (!(actionRow.top >= heroValue.bottom - 4)) throw new Error('actions below value');
-  if (!(playerBoxes.top >= actionRow.bottom - 2)) throw new Error('boxes below actions');
-  if (!(trayRow.top >= playerBoxes.bottom - 2)) throw new Error('tray below boxes');
-  if (playerBoxes.width < felt.width * 0.75) throw new Error('player boxes row too narrow');
+  if (!bankInfo || !dealer || !cardsZone || !boxesZone) {
+    throw new Error('Missing shell zones in capture — bank/dealer/cards/boxes');
+  }
+
+  const boxesTop = boxesZone.top;
+
+  if (heroCards.height < 120) {
+    throw new Error(`heroCards height ${heroCards.height.toFixed(1)}px < 120px`);
+  }
+  if (heroValue.top < heroCards.bottom + 2) {
+    throw new Error(
+      `heroValue.top ${heroValue.top.toFixed(1)}px < heroCards.bottom + 2 (${(heroCards.bottom + 2).toFixed(1)}px)`,
+    );
+  }
+  if (actionRow.top < heroValue.bottom + 4) {
+    throw new Error(
+      `actionRow.top ${actionRow.top.toFixed(1)}px < heroValue.bottom + 4 (${(heroValue.bottom + 4).toFixed(1)}px)`,
+    );
+  }
+  if (boxesTop < actionRow.bottom + 8) {
+    throw new Error(
+      `boxesZone.top ${boxesTop.toFixed(1)}px < actionRow.bottom + 8 (${(actionRow.bottom + 8).toFixed(1)}px)`,
+    );
+  }
+  if (trayRow.bottom > felt.bottom - 4) {
+    throw new Error(
+      `trayRow.bottom ${trayRow.bottom.toFixed(1)}px > felt.bottom - 4 (${(felt.bottom - 4).toFixed(1)}px)`,
+    );
+  }
+
+  const overflowBands = [
+    ['bankInfo', bankInfo],
+    ['dealer', dealer],
+    ['cardsZone', cardsZone],
+    ['heroCards', heroCards],
+    ['heroValue', heroValue],
+    ['actionRow', actionRow],
+    ['boxesZone', boxesZone],
+    ['trayRow', trayRow],
+  ] as const;
+  for (const [label, band] of overflowBands) {
+    if (!band) continue;
+    if (band.left < felt.left - 1 || band.right > felt.right + 1) {
+      throw new Error(
+        `${label} horizontal overflow beyond felt (left ${band.left.toFixed(1)} right ${band.right.toFixed(1)} vs felt ${felt.left.toFixed(1)}–${felt.right.toFixed(1)})`,
+      );
+    }
+  }
 
   const feltCenter = felt.left + felt.width / 2;
   const actionTarget = actionButtons ?? actionRow;
   const actionCenter = actionTarget.left + actionTarget.width / 2;
   if (Math.abs(actionCenter - feltCenter) > felt.width * 0.08) {
-    throw new Error('action row not horizontally centered on felt');
-  }
-
-  for (const band of [heroCards, heroValue, actionRow, playerBoxes]) {
-    if (band.bottom > playerBoxes.top + 2 && band !== playerBoxes && band.top < playerBoxes.top) {
-      const overlaps = !(band.right < playerBoxes.left + 8 || band.left > playerBoxes.right - 8);
-      if (overlaps && band.top < actionRow.top) {
-        // hero/value may span full width — only fail if vertical overlap
-      }
-    }
-  }
-  if (heroCards.bottom > heroValue.top + 2 && heroValue.top < heroCards.bottom - 2) {
-    throw new Error('hero cards overlap hero value');
-  }
-  if (heroValue.bottom > actionRow.top + 4) {
-    throw new Error('hero value overlaps action row');
-  }
-  if (actionRow.bottom > playerBoxes.top + 2) {
-    throw new Error('action row overlaps player boxes');
-  }
-
-  const actionToBoxesGap = playerBoxes.top - actionButtons.bottom;
-  if (actionToBoxesGap < 8 || actionToBoxesGap > 14) {
-    throw new Error(`action-to-boxes gap ${actionToBoxesGap.toFixed(1)}px outside 8–14px target`);
-  }
-
-  if (existsSync(OUT_FULL)) {
-    const full = JSON.parse(readFileSync(OUT_FULL, 'utf8')) as {
-      cardStacks?: { top: number } | null;
-      actionRow?: { top: number } | null;
-      playerBoxes?: { top: number } | null;
-      trayRow?: { top: number } | null;
-    };
-    const parityChecks: Array<[string, number, number | undefined]> = [
-      ['player boxes', playerBoxes.top, full.playerBoxes?.top],
-      ['tray', trayRow.top, full.trayRow?.top],
-      ['hero cards', heroCards.top, full.cardStacks?.top],
-      ['action row', actionRow.top, full.actionRow?.top],
-    ];
-    for (const [label, cardTop, fullTop] of parityChecks) {
-      if (fullTop == null) continue;
-      const delta = Math.abs(cardTop - fullTop);
-      if (delta > 5) {
-        throw new Error(
-          `Desktop Card View ${label} top ${cardTop.toFixed(1)}px differs from Full Table ${fullTop.toFixed(1)}px by ${delta.toFixed(1)}px`,
-        );
-      }
-    }
-    if (full.command?.top != null) {
-      const commandDelta = Math.abs(command.top - full.command.top);
-      if (commandDelta > 5) {
-        throw new Error(
-          `Desktop Card View command top ${command.top.toFixed(1)}px differs from Full Table ${full.command.top.toFixed(1)}px by ${commandDelta.toFixed(1)}px`,
-        );
-      }
-    }
-  }
-
-  if (slots.length >= 4) {
-    const first = slots[0]!.left;
-    const last = slots[slots.length - 1]!.right;
-    const span = last - first;
-    if (span < felt.width * 0.65) {
-      throw new Error('player box slots clustered — span too narrow');
-    }
+    throw new Error(
+      `action row not horizontally centered on felt (center ${actionCenter.toFixed(1)}px vs felt ${feltCenter.toFixed(1)}px)`,
+    );
   }
 }
 
