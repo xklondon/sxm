@@ -439,7 +439,9 @@
     --bj-full-desktop-actions-boxes-gap: 0.125rem;
     --bj-full-desktop-stack-value-gap: 0.3125rem;
     --bj-full-desktop-zone-actions-height: calc(1.55rem + var(--bj-full-desktop-actions-boxes-gap));
-    --bj-full-desktop-cards-actions-gap: 0.28rem;
+    --bj-full-desktop-cards-actions-gap: 0.5rem;
+    --bj-desktop-grid-row-cards: auto;
+    --bj-box-value-band-height: 1.05rem;
   }
 
   /* Command box — clear Deal/New Cards button by ~3px */
@@ -454,23 +456,58 @@
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--actions {
-    padding-top: 0;
+    padding-top: var(--bj-full-desktop-cards-actions-gap);
     padding-bottom: var(--bj-full-desktop-actions-boxes-gap);
     justify-content: flex-end;
     align-items: center;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
-    padding-top: 0;
-    margin-top: 0;
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
+    padding-bottom: var(--bj-full-desktop-cards-actions-gap);
+    overflow: hidden;
   }
 
-  /* Card stacks + values — lower toward boxes; ~5px gap stack bottom → value */
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
+    width: 100%;
+    max-width: 100%;
+    align-items: stretch;
+    justify-content: flex-end;
+    padding-top: 0;
+    margin-top: 0;
+    padding-inline: 0;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-box-row,
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap {
+    width: 100%;
+    max-width: 100%;
+    flex: 1 1 auto;
+    align-self: stretch;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+    column-gap: var(--bj-table-slot-row-gap);
+    justify-content: stretch;
+    justify-items: center;
+  }
+
+  .bj-view-full-desktop
+    .bj-table-layout-shell
+    .bj-table-zone--boxes
+    .bj-table-slot-row--with-add.bj-arc--player-boxes {
+    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, 1fr));
+  }
+
   .bj-view-full-desktop
     .bj-table-layout-shell
     .bj-table-zone--cards.bj-cards-area--table
     .bj-full-table-card-area {
-    transform: translateY(18px);
+    transform: none;
   }
 
   .bj-view-full-desktop
@@ -478,6 +515,18 @@
     .bj-arc__slot--card-column
     > .bj-phone-view__box-value--card-column-below {
     margin-top: var(--bj-full-desktop-stack-value-gap);
+    padding: 0.06rem 0.38rem;
+    min-width: 1.75rem;
+    font-size: calc(var(--bj-seat-total-size) * 1.08);
+    letter-spacing: 0.02em;
+    line-height: 1.15;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ) {
+    min-width: 0.85rem;
   }
 
   /* Desktop Full Table — stack-outcome column grid (spacing tokens frozen) */

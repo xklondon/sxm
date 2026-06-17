@@ -30,6 +30,7 @@
     "test:server": "vitest run server/tests",
     "test:watch": "vitest",
     "test:card-desktop-layout:browser": "tsx scripts/capture-card-desktop-layout.mts",
+    "test:full-table-desktop-layout:browser": "tsx scripts/capture-full-table-desktop-layout.mts",
     "preview": "vite preview"
   },
   "dependencies": {

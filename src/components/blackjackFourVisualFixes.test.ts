@@ -73,9 +73,13 @@ describe('blackjack four visual fixes', () => {
     expect(SHARED_CSS).toMatch(/\.bj-table-actions__btn[\s\S]*border-radius/);
   });
 
-  it('hides cloth in Card View desktop only; mobile Card View keeps classic cloth', () => {
-    expect(FELT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
+  it('shows classic cloth in Card View desktop and mobile', () => {
+    const CARD_DESKTOP_CSS = readFileSync(
+      join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
+      'utf8',
+    );
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
     expect(FELT_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,

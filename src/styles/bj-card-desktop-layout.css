@@ -9,7 +9,7 @@
   .bj-view-card-desktop {
     --bj-card-desktop-box-spread: space-between;
     --bj-card-desktop-box-value-scale: 2.2;
-    --bj-desktop-cardview-hero-value-scale: 0.62;
+    --bj-desktop-cardview-hero-value-scale: 1;
     --bj-desktop-card-area-bottom-gap: 0;
     --bj-command-cards-gap: 0;
     --bj-cards-actions-gap: 0;
@@ -97,7 +97,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .bj-view-card-desktop
@@ -432,8 +432,18 @@
     line-height: 1.05;
   }
 
+  /* Table cloth — behind hero cards (same layer model as Full Table / mobile Card View). */
   .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer {
-    display: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.92;
+    pointer-events: none;
+  }
+
+  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__svg {
+    width: min(88%, 38rem);
+    max-height: 72%;
   }
 
   .bj-casino.bj-view-card-desktop {

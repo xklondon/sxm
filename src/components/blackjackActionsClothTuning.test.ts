@@ -34,12 +34,16 @@ describe('blackjack actions + cloth tuning', () => {
     expect(SHARED_CSS).toContain('--bj-actions-panel-max-width: 20rem');
   });
 
-  it('hides the entire cloth layer in Card View desktop only', () => {
+  it('shows table cloth in Card View desktop (behind hero cards)', () => {
+    const CARD_DESKTOP_CSS = readFileSync(
+      join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
+      'utf8',
+    );
     expect(FELT_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
     );
-    expect(FELT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
   });
 

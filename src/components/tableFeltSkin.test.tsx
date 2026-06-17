@@ -248,11 +248,12 @@ describe('table felt cloth layer', () => {
     expect(css).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*var\(--bj-cloth-svg-width\)/);
     expect(css).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*align-items:\s*center/);
     expect(css).not.toMatch(/top:\s*calc\(/);
+    const cardDesktopCss = readSrc('src/styles/bj-card-desktop-layout.css');
     expect(css).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
-    expect(css).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
+    expect(cardDesktopCss).toMatch(
+      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
   });
 

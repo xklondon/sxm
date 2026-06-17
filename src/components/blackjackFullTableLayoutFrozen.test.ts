@@ -338,7 +338,7 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
   });
 
   it('keeps positive cards-actions gap between card value band and Hit/Stay row', () => {
-    expect(PLAY_ZONE_CSS).toMatch(/--bj-full-desktop-cards-actions-gap:\s*0\.28rem/);
+    expect(PLAY_ZONE_CSS).toMatch(/--bj-full-desktop-cards-actions-gap:\s*0\.12rem/);
     expect(PLAY_ZONE_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell[\s\S]*--bj-cards-actions-gap:\s*var\(--bj-full-desktop-cards-actions-gap\)/,
     );

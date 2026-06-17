@@ -210,14 +210,18 @@ describe('mobile Card View composition contract', () => {
     expect(full).toContain(TABLE_UX.tableZoneBottom);
   });
 
-  it('shows classic cloth decor in mobile Card View while desktop Card View hides it', () => {
+  it('shows classic cloth decor in Card View (desktop + mobile)', () => {
     const feltCss = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
+    const cardDesktopCss = readFileSync(
+      join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
+      'utf8',
+    );
     expect(feltCss).toContain('--bj-cloth-svg-width');
     expect(feltCss).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
-    expect(feltCss).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
+    expect(cardDesktopCss).toMatch(
+      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
     expect(feltCss).toMatch(
       /\.bj-view-full-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer__svg[\s\S]*width:\s*min\(96%, 100vw\)/,

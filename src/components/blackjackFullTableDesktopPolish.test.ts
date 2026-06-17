@@ -156,8 +156,11 @@ describe('desktop Full Table layout polish', () => {
     );
   });
 
-  it('nudges card stacks down with the lowered action area on desktop Full Table', () => {
+  it('does not translate card stacks into the actions band on desktop Full Table', () => {
     expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop[\s\S]*\.bj-full-table-card-area[\s\S]*transform:\s*none/,
+    );
+    expect(CARD_AREA_CSS).not.toMatch(
       /\.bj-view-full-desktop[\s\S]*\.bj-full-table-card-area[\s\S]*transform:\s*translateY\(18px\)/,
     );
   });

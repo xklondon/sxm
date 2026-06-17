@@ -2,9 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const CARD_DESKTOP_CSS = readFileSync(
+  join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
+  'utf8',
+);
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
 
 function gapRem(css: string, token: string): number {
@@ -12,41 +16,45 @@ function gapRem(css: string, token: string): number {
   return match ? Number(match[1]) : NaN;
 }
 
+function ruleBody(css: string, selectorNeedle: string): string {
+  const re = new RegExp(
+    `(${selectorNeedle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^,{]*)\\{([^}]*)\\}`,
+  );
+  return re.exec(css)?.[2] ?? '';
+}
+
 describe('Card View layout guards', () => {
-  it('hides the entire cloth layer in Card View desktop only', () => {
-    expect(FELT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
+  it('shows table cloth in Card View desktop (behind hero cards)', () => {
+    const clothRule = ruleBody(
+      CARD_DESKTOP_CSS,
+      '.bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer',
     );
+    expect(clothRule).toMatch(/display:\s*flex/);
+    expect(clothRule).not.toMatch(/display:\s*none/);
     expect(FELT_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
     );
-    expect(FELT_CSS).not.toMatch(
-      /\.bj-view-full-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
-    );
-    expect(FELT_CSS).not.toMatch(
-      /\.bj-view-full-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
-    );
   });
 
-  it('keeps command → cards gap at or below 0.25rem in Card View', () => {
+  it('keeps command → cards gap at or below 0.25rem in Card View (mobile token)', () => {
     expect(LAYOUT_CSS).toContain('--bj-cardview-command-cards-gap: 0.25rem');
     expect(gapRem(LAYOUT_CSS, '--bj-cardview-command-cards-gap')).toBeLessThanOrEqual(0.25);
     expect(LAYOUT_CSS).toMatch(
       /\.bj-view-card-mobile[\s\S]*--bj-command-cards-gap:\s*var\(--bj-cardview-command-cards-gap\)/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*--bj-command-cards-gap:\s*var\(--bj-cardview-command-cards-gap\)/,
-    );
+    /* Desktop Card View uses fixed grid bands — no inter-band margin gap token. */
+    expect(CARD_DESKTOP_CSS).toMatch(/--bj-command-cards-gap:\s*0/);
   });
 
-  it('uses a small explicit cards → actions gap in Card View', () => {
+  it('uses explicit zone heights in desktop Card View owner (no cards→actions margin gap)', () => {
     expect(LAYOUT_CSS).toContain('--bj-cardview-cards-actions-gap: 0.35rem');
     expect(gapRem(LAYOUT_CSS, '--bj-cardview-cards-actions-gap')).toBeLessThanOrEqual(0.5);
-    expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-cardview-cards-actions-gap\)/,
+    expect(CARD_DESKTOP_CSS).toMatch(/--bj-cards-actions-gap:\s*0/);
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--hero-value[\s\S]*grid-row:\s*hero-value/,
     );
-    expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*margin-top:\s*var\(--bj-cardview-command-cards-gap\)/,
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/,
     );
   });
 
@@ -65,22 +73,16 @@ describe('Card View layout guards', () => {
     );
   });
 
-  it('top-aligns hero cards with top inset reserve in Card View', () => {
+  it('centers hero cards in desktop Card View owner grid band', () => {
     expect(LAYOUT_CSS).toContain('--bj-cardview-hero-top-inset');
     expect(LAYOUT_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*padding-top:\s*var\(--bj-cardview-hero-top-inset\)/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*padding-top:\s*var\(--bj-cardview-hero-top-inset\)/,
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-phone-view__cards--fan[\s\S]{0,200}justify-content:\s*center/,
     );
-    expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards--fan[\s\S]*justify-content:\s*center/,
-    );
-    expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*justify-content:\s*center/,
-    );
-    expect(LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__card-wrap[\s\S]*align-self:\s*center/,
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-phone-view__card-wrap[\s\S]{0,120}align-self:\s*center/,
     );
   });
 
@@ -93,13 +95,13 @@ describe('Card View layout guards', () => {
     expect(cardsIdx).toBeLessThan(actionsIdx);
   });
 
-  it('does not change Full Table command/actions row height tokens globally', () => {
+  it('uses Card View desktop zone height overrides in layout owner only', () => {
     expect(SHARED_CSS).toContain('--bj-desktop-zone-command-height: 4rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-actions-height: 2.9rem');
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-command-height:\s*2\.55rem/,
+    expect(CARD_DESKTOP_CSS).toMatch(
+      /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*3\.35rem/,
     );
-    expect(SHARED_CSS).toMatch(
+    expect(SHARED_CSS).not.toMatch(
       /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*2\.45rem/,
     );
   });

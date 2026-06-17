@@ -284,15 +284,28 @@ describe('rendered position — full table card column', () => {
     expect(max - min).toBeLessThanOrEqual(4);
   });
 
-  it('Desktop Full Table + Card View player row CSS spreads boxes across felt width', () => {
+  it('Desktop Full Table player row does not fall back to max-content centering', () => {
     expect(PLAYER_ROW_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%/,
     );
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*100%/,
+    expect(PLAYER_ROW_CSS).not.toMatch(
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*width:\s*max-content/,
     );
+  });
+
+  it('Full Table desktop cards row uses auto height so actions sit near boxes', () => {
+    const FULL_TABLE_CSS = readFileSync(
+      join(process.cwd(), 'src/styles/bj-full-table-card-area.css'),
+      'utf8',
+    );
+    expect(FULL_TABLE_CSS).toMatch(
+      /\.bj-view-full-desktop[\s\S]*--bj-desktop-grid-row-cards:\s*auto/,
+    );
+  });
+
+  it('Card View desktop shows table cloth layer in cards zone', () => {
     expect(CARD_DESKTOP_CSS).toMatch(
-      /justify-content:\s*var\(--bj-card-desktop-box-spread/,
+      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
   });
 });

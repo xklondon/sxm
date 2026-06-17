@@ -57,20 +57,19 @@
     max-width: 100%;
   }
 
-  /* CONTRACT A/B — desktop compact max-content row (Full Table only; Card View uses spread block below). */
-  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes {
-    width: max-content;
+  .bj-view-full-desktop .bj-player-box-row {
+    width: 100%;
     max-width: 100%;
-    margin-inline: auto;
+    align-self: stretch;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
     justify-content: center;
-    justify-items: center;
-    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, max-content));
+    align-items: flex-end;
+    padding-inline: 0;
   }
 
-  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
-    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, max-content));
-  }
-
+  /* Player-box column sizing — spread block below sets row width; slot width here. */
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
     width: var(--bj-full-table-box-width);
     max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
@@ -170,8 +169,7 @@
   }
 }
 
-/* CONTRACT A/B/D default — compact player-box row (not 1fr stretch). Card View desktop: owner file. */
-.bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes,
+/* CONTRACT A/B/D default — compact player-box row (not 1fr stretch). Desktop Full/Card View spread: owner blocks above + bj-card-desktop-layout.css. */
 .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes,
 .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes {
   width: max-content;
@@ -182,13 +180,11 @@
   grid-template-columns: repeat(var(--slot-count, 4), minmax(0, max-content));
 }
 
-.bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes,
 .bj-view-full-mobile .bj-table-slot-row--with-add.bj-arc--player-boxes,
 .bj-view-card-mobile .bj-table-slot-row--with-add.bj-arc--player-boxes {
   grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, max-content));
 }
 
-.bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot,
 .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot,
 .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
   width: var(--bj-full-table-box-width);
