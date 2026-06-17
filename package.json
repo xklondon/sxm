@@ -35,6 +35,8 @@
     "test:layout:desktop-card": "npm run test:card-desktop-layout:browser",
     "test:layout:ownership": "vitest run src/components/fullTableDesktopLayoutOwnership.test.ts src/components/cardViewDesktopLayoutOwnership.test.ts",
     "test:layout:all-fast": "npm run test:layout:desktop-full && npm run test:layout:desktop-card && npm run test:layout:ownership",
+    "test:mobile-card-layout:browser": "vitest run src/components/cardViewMobileLayout.test.tsx src/components/mobileCardPortraitLayout.test.ts",
+    "test:mobile-landscape-full-layout:browser": "vitest run src/components/mobileLandscapeFullLayout.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -214,6 +214,16 @@ export const CARD_VIEW_DESKTOP_LAYOUT_TOKENS = [
   '--bj-card-desktop-box-value-scale',
 ] as const;
 
+/** Card View mobile portrait layout owner (portrait @media only). */
+export const CARD_VIEW_MOBILE_PORTRAIT_LAYOUT_OWNER_FILES = [
+  'src/styles/bj-card-mobile-portrait-layout.css',
+] as const;
+
+/** Full Table mobile landscape layout owner. */
+export const FULL_TABLE_MOBILE_LANDSCAPE_LAYOUT_OWNER_FILES = [
+  'src/styles/bj-full-mobile-landscape-layout.css',
+] as const;
+
 /** Card View layout owner — sole CSS file for Desktop Card View grid/flex/position rules. */
 export const CARD_VIEW_LAYOUT_OWNER_FILES = [
   'src/styles/bj-card-desktop-layout.css',

@@ -245,6 +245,7 @@ View root: still `bj-view-full-mobile` (device stays mobile when width > 720 on 
 
 | Role | Owner |
 |------|--------|
+| Landscape grid / zone bands | `src/styles/bj-full-mobile-landscape-layout.css` (landscape `@media` under `.bj-view-full-mobile` only) |
 | Landscape zone tokens | `src/styles/bj-table-shared.css` (landscape `@media` blocks) |
 | Landscape felt flex / tray pin | `bj-table-shared.css`, `BlackjackPanel.css` |
 | Box row Contract D | `bj-player-row-layout.css` |
@@ -330,7 +331,7 @@ View root: `CARD_VIEW_MOBILE_ROOT` (`bj-view-card-mobile`)
 
 **Structure:** Same shell action zone as Full Table — canonical `BlackjackActionPanel` for Hit/Stay in `bj-table-zone--actions` (no hero side-action path). Hero value below cards at dealer-value size. Player boxes match all-view in-play total contract.
 
-**Owner files:** Same as C1 + portrait box row (Contract C) in `bj-player-row-layout.css`.
+**Owner files:** `bj-card-mobile-portrait-layout.css` (portrait `@media` only under `.bj-view-card-mobile`).
 
 **Current risks (documented):**
 

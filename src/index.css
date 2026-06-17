@@ -5,6 +5,8 @@
 @import './styles/bj-full-table-card-area.css';
 @import './styles/bj-felt-skins.css';
 @import './styles/bj-card-desktop-layout.css';
+@import './styles/bj-card-mobile-portrait-layout.css';
+@import './styles/bj-full-mobile-landscape-layout.css';
 @import './styles/bj-layout-debug.css';
 @import './styles/design-system.css';
 @import './styles/sxm-stitch-visual.css';

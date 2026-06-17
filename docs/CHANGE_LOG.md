@@ -15,6 +15,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-13 — Mobile portrait Card View, landscape Full Table, double-on-10
+
+- **Frozen (unchanged CSS):** Desktop Full Table, Desktop Card View, Mobile Portrait Full Table — guard tests in `frozenLayoutViewIntegrity.test.ts`.
+- **Mobile Card View portrait:** `bj-card-mobile-portrait-layout.css` — desktop-like zone order, bounded hero band, visible value/actions/boxes/tray.
+- **Mobile Full Table landscape:** `bj-full-mobile-landscape-layout.css` — grid bands for dealer/command/cards/actions/boxes/tray under `.bj-view-full-mobile`.
+- **Gameplay:** `hardTotalAllowedForDouble` rejects soft hands on hard-total protocols; `canDoubleUnderProtocol` uses available chips only.
+- **Tests:** `doubleEligibility.test.ts`, mobile layout owner tests, `test:mobile-card-layout:browser`, `test:mobile-landscape-full-layout:browser`.
+
+---
+
 ## 2026-06-17 — Layout contract reconciliation (structural)
 
 - **Source of truth:** `docs/BLACKJACK_LAYOUT_CONTRACTS.md` — authority order (reference images → browser captures → doc → ownership tests); test categories A–D; per-view layout owners; shell placement exception.

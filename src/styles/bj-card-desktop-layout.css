@@ -7,10 +7,10 @@
 
 @media (min-width: 721px) {
   .bj-view-card-desktop {
-    --bj-card-desktop-box-spread: space-between;
+    --bj-card-desktop-box-spread: stretch;
     --bj-card-desktop-box-value-scale: 2.2;
     --bj-desktop-cardview-hero-value-scale: 1;
-    --bj-card-desktop-actions-boxes-gap: 0.0625rem;
+    --bj-card-desktop-actions-boxes-gap: 0.3125rem;
     --bj-desktop-zone-actions-height: 3.35rem;
     --bj-desktop-card-area-bottom-gap: 0;
     --bj-command-cards-gap: 0;
@@ -144,8 +144,8 @@
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
     grid-row: actions;
     grid-column: 1;
-    margin: 0 0 -0.3125rem;
-    padding: 0 0 var(--bj-card-desktop-actions-boxes-gap);
+    margin: 0 0 -0.8125rem;
+    padding: 0;
     min-height: var(--bj-desktop-zone-actions-height);
     max-height: var(--bj-desktop-zone-actions-height);
     height: var(--bj-desktop-zone-actions-height);
@@ -232,7 +232,7 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    justify-content: center;
+    justify-content: flex-end;
     overflow: hidden;
   }
 
@@ -424,9 +424,9 @@
     margin-inline: 0;
     flex: unset;
     flex-wrap: nowrap;
-    justify-content: var(--bj-card-desktop-box-spread, space-between);
+    justify-content: stretch;
     justify-items: center;
-    align-items: end;
+    align-items: flex-end;
     grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
   }
 
@@ -595,6 +595,9 @@
     width: 100%;
     max-width: 20rem;
     margin-inline: auto;
+    border: none;
+    background: transparent;
+    box-shadow: none;
   }
 
   .bj-view-card-desktop .bj-value-chips--with-label {

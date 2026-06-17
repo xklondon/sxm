@@ -103,6 +103,9 @@ function hardTotalAllowedForDouble(
   if (protocol.double.allowedHardTotals === 'any') {
     return !isSoft || value <= 21;
   }
+  if (isSoft) {
+    return false;
+  }
   return protocol.double.allowedHardTotals.includes(value);
 }
 
@@ -132,7 +135,7 @@ export function canDoubleUnderProtocol(
   if (!hardTotalAllowedForDouble(protocol, context.cards)) {
     return false;
   }
-  return context.availableChips >= hand.currentBet && context.ledgerBalance >= hand.currentBet;
+  return context.availableChips >= hand.currentBet;
 }
 
 export function canSplitUnderProtocol(

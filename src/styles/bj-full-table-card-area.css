@@ -436,9 +436,9 @@
 @media (min-width: 721px) {
   .bj-view-full-desktop {
     --bj-full-desktop-dealer-command-gap: 0.1875rem;
-    --bj-full-desktop-actions-boxes-gap: 0.0625rem;
+    --bj-full-desktop-actions-boxes-gap: 0.3125rem;
     --bj-full-desktop-stack-value-gap: 0.3125rem;
-    --bj-full-desktop-zone-actions-height: calc(1.55rem + var(--bj-full-desktop-actions-boxes-gap));
+    --bj-full-desktop-zone-actions-height: 1.55rem;
     --bj-full-desktop-cards-actions-gap: 0.125rem;
     --bj-desktop-grid-row-cards: auto;
     --bj-box-value-band-height: 1.05rem;
@@ -498,7 +498,7 @@
     align-items: stretch;
     justify-content: flex-end;
     padding-top: 0;
-    margin-top: 0;
+    margin-top: var(--bj-full-desktop-actions-boxes-gap);
     padding-inline: 0;
   }
 
