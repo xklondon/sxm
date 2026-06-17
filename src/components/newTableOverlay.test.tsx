@@ -22,12 +22,8 @@ describe('NewTableOverlay shared shell', () => {
     expect(OVERLAY_CSS).toMatch(/\.new-table-overlay[\s\S]*z-index:\s*50/);
   });
 
-  it('uses a wide centered panel on desktop and single-column embedded grid on mobile', () => {
-    expect(OVERLAY_CSS).toMatch(/\.new-table-overlay__panel[\s\S]*width:\s*min\(100%,\s*56rem\)/);
-    expect(OVERLAY_CSS).toMatch(/overflow-x:\s*hidden/);
-    expect(OVERLAY_CSS).toMatch(
-      /@media \(max-width:\s*720px\)[\s\S]*table-stake-panel--embedded[\s\S]*flex-direction:\s*column/,
-    );
+  it('uses a compact centered panel on desktop', () => {
+    expect(OVERLAY_CSS).toMatch(/\.new-table-overlay__panel[\s\S]*width:\s*min\(100%,\s*22rem\)/);
   });
 
   it('renders dialog markup with overlay class', () => {

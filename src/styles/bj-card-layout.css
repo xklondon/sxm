@@ -428,9 +428,34 @@
 }
 
 /*
- * Card View mobile — hero cards/value inside the shared cards zone only.
- * Shell zone placement matches Mobile Full Table via bj-table-shared.css.
+ * Card View layout guards — spacing + top-safe hero fan.
+ * Lives here (not bj-table-shared) to avoid unpaired mobile shell parity rules.
  */
+.bj-view-card-mobile {
+  --bj-cardview-command-cards-gap: 0.25rem;
+  --bj-cardview-cards-actions-gap: 0.35rem;
+  --bj-cardview-hero-top-inset: 0.42rem;
+  --bj-command-cards-gap: var(--bj-cardview-command-cards-gap);
+  --bj-cards-actions-gap: var(--bj-cardview-cards-actions-gap);
+  --bj-hero-cards-top-inset: var(--bj-cardview-hero-top-inset);
+  --bj-mobile-zone-command-height: 2.1rem;
+  --bj-mobile-zone-actions-height: 2.35rem;
+}
+
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--summary {
+  padding-bottom: 0;
+  justify-content: flex-start;
+}
+
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
+  justify-content: flex-start;
+  align-items: stretch;
+  overflow: hidden;
+  margin-top: var(--bj-cardview-command-cards-gap);
+  padding-top: var(--bj-cardview-hero-top-inset);
+  position: relative;
+}
+
 .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center {
   display: flex;
   flex-direction: column;
@@ -457,6 +482,31 @@
 .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards {
   max-height: 100%;
   overflow: hidden;
+}
+
+.bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--hero-value .bj-phone-view__hand-meta {
+  flex: 0 0 auto;
+  min-height: var(--bj-cardview-hero-value-band-height);
+  max-height: var(--bj-cardview-hero-value-band-height);
+  width: 100%;
+  margin: 0;
+  padding: 0.1rem 0 0;
+  overflow: visible;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.bj-view-card-mobile
+  .bj-table-layout-shell
+  > .bj-table-zone--hero-value
+  .bj-card-view__hero-value.bj-phone-view__total--hero {
+  font-size: calc(var(--bj-seat-total-size) * 1.35);
+  min-height: auto;
+  max-height: none;
+  line-height: 1.1;
 }
 
 .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area {

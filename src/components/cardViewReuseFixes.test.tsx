@@ -142,6 +142,41 @@ describe('Card View reuse fixes', () => {
     expect(PANEL_SRC).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
   });
 
+  it('desktop Full Table applies active-turn box border on player boxes during player turn', () => {
+    simulatedWidth = 1280;
+    const html = renderPanel(withView(playingCardViewState(), 'full'));
+    expect(html).toContain('bj-view-full-desktop');
+    expect(html).toContain(BOX_BORDER_TURN);
+  });
+
+  it('desktop Card View shows Double in command zone when legal', () => {
+    simulatedWidth = 1280;
+    let state = splitEligibleCardViewState();
+    const deck = state.deck!;
+    const box1 = boxPlayerId(state, 1)!;
+    const handKey = blackjackHandKey(box1, 0);
+    state = {
+      ...state,
+      blackjack: {
+        ...state.blackjack!,
+        playerHands: {
+          [handKey]: {
+            ...state.blackjack!.playerHands[handKey]!,
+            cardIds: [findCardId(deck, '5'), findCardId(deck, '6')],
+          },
+        },
+      },
+    };
+    const html = renderPanel(state);
+    const commandZone =
+      html.split(TABLE_UX.tableZoneSummary)[1]?.split(TABLE_UX.tableZoneActions)[0] ?? '';
+    expect(commandZone).toContain('>Double<');
+    const actionsZone =
+      html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
+    expect(actionsZone).toContain('ds-btn--hit');
+    expect(actionsZone).toContain('ds-btn--stand');
+  });
+
   it('desktop Card View routes optional play overlay through command zone', () => {
     expect(PANEL_SRC).toContain('renderOptionalPlayDecisionOverlay');
     expect(PANEL_SRC).toContain('if (!isFullTableDesktop)');

@@ -12,6 +12,7 @@ import {
   boxPlayerId,
   findCardId,
   tableAfterStartPlaying,
+  tableWithClaimedBox,
 } from '../engine/blackjack/sanity/fixtures';
 import { claimBoxSlot } from '../engine/session';
 import { blackjackHandKey, confirmBoxStake, addChipToBoxStake } from '../engine/blackjack';
