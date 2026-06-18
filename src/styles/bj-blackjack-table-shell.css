@@ -41,11 +41,20 @@
     --bj-card-hero-card-max-height: min(32vh, 13.25rem);
     --bj-cloth-svg-width: min(84%, 36rem);
     --bj-cloth-svg-max-height: 62%;
-    --bj-desktop-dealer-command-gap: 2.55rem;
+    --bj-desktop-dealer-command-gap: 1.35rem;
     --bj-desktop-zone-actions-height: 2.5rem;
     --bj-desktop-actions-zone-padding-top: 1.56rem;
     --bj-desktop-actions-boxes-gap: 0.14rem;
     --bj-command-cards-gap: 0.08rem;
+  }
+
+  /* Card View — reclaim cards-row height from dealer/actions bands (boxes/tray tokens unchanged). */
+  .bj-view-card-desktop {
+    --bj-desktop-zone-dealer-height: 6.05rem;
+    --bj-desktop-zone-actions-height: 2.15rem;
+    --bj-desktop-actions-zone-padding-top: 1.05rem;
+    --bj-card-hero-card-width: min(22vw, 7.25rem);
+    --bj-card-hero-card-max-height: min(42vh, 9.75rem);
   }
 
   /* data-bj-phase drives cloth/content only — not shell row geometry (see bj-full-table-card-area.css). */
@@ -102,10 +111,13 @@
     align-items: stretch;
   }
 
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-dealer-area {
+    align-items: center;
+  }
+
   .bj-view-full-desktop .bj-table-layout-shell > .bj-dealer-area > .dealer-block,
   .bj-view-card-desktop .bj-table-layout-shell > .bj-dealer-area > .dealer-block {
     flex: 1 1 auto;
-    width: 100%;
     height: auto;
     min-height: 0;
     max-height: 100%;
@@ -116,6 +128,17 @@
     flex-direction: column;
     justify-content: flex-end;
     align-items: stretch;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-dealer-area > .dealer-block {
+    width: 100%;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-dealer-area > .dealer-block {
+    align-self: center;
+    width: min(100%, var(--bj-table-center-column-max-width));
+    max-width: var(--bj-table-center-column-max-width);
+    margin-inline: auto;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--summary,

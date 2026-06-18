@@ -40,29 +40,23 @@ export function formatHandValuePhrase(value: number, isSoft: boolean): string {
   return isSoft ? `soft ${value}` : String(value);
 }
 
-/** Build comma-separated option list — only actions valid for the active hand (Stay is a button, not listed here). */
+/** Build comma-separated option list — only special actions (never Hit/Stay). */
 export function formatPlayerTurnOptions(
-  canHit: boolean,
-  canStand: boolean,
+  _canHit: boolean,
+  _canStand: boolean,
   canDouble: boolean,
   canSplit: boolean,
 ): string {
-  void canStand;
-  const options: string[] = [];
-  if (canHit) {
-    options.push('Hit');
-  }
+  void _canHit;
+  void _canStand;
+  const lines: string[] = [];
   if (canDouble) {
-    options.push('Double — one card');
+    lines.push('Double available.');
   }
   if (canSplit) {
-    options.push('Split');
+    lines.push('Split available.');
   }
-  if (options.length === 0) {
-    return '';
-  }
-  const prefix = options.length === 1 ? 'Option' : 'Options';
-  return `${prefix}: ${options.join(', ')}.`;
+  return lines.join('\n');
 }
 
 function formatBankHandPhrase(displayState: GameState): string {
@@ -112,6 +106,7 @@ export function formatPlayerTurnCommand(
   },
 ): CommandMessage {
   const boxLabel = `Box ${slotNum ?? '?'}`;
+  const playerLabel = _callerName?.trim() || 'player';
 
   if (
     options?.actionStatus === 'blackjack' ||
@@ -146,12 +141,16 @@ export function formatPlayerTurnCommand(
       allowSplit && canSplitBlackjackForState(options.gameState, options.handKey),
     );
     if (optionsLine) {
-      lines.push(optionsLine);
+      for (const line of optionsLine.split('\n')) {
+        if (line.trim()) {
+          lines.push(line);
+        }
+      }
     }
   }
 
   return {
-    commandMessage: `${boxLabel} — your turn.`,
+    commandMessage: `${boxLabel} — ${playerLabel} — your turn.`,
     commandLines: lines,
   };
 }
@@ -166,7 +165,7 @@ export function formatCallerTurnMessage(
   if (handValue) {
     return formatPlayerTurnCommand(slotNum, callerName, handValue, options).commandMessage ?? '';
   }
-  return `Box ${slotNum ?? '?'} — your turn.`;
+  return `Box ${slotNum ?? '?'} — ${callerName?.trim() || 'player'} — your turn.`;
 }
 
 /** Gold command-area hints (split/double) vs green generic turn lines. */
@@ -174,7 +173,7 @@ export function isTableInstructionMessage(message: string | null | undefined): b
   if (!message?.trim()) {
     return false;
   }
-  return /^Options:/i.test(message);
+  return /^Options:/i.test(message) || /^(Double|Split) available\./i.test(message);
 }
 
 /** @deprecated Options are inlined in formatPlayerTurnCommand. */
@@ -352,13 +351,15 @@ export function buildBlackjackCommandText(params: {
       };
     }
     const first = actions[0]!;
+    const caller = players[first.personId];
+    const displayName = caller?.controllerName?.trim() || caller?.displayName?.trim() || 'player';
     const boxLabel =
       first.slotNumbers.length > 1
         ? `Boxes ${first.slotNumbers.join(' & ')}`
         : `Box ${first.slotNumber ?? '?'}`;
     return {
-      commandMessage: `${boxLabel} — your insurance call.`,
-      commandLines: ['Insurance pays 2:1 when the dealer has blackjack.'],
+      commandMessage: `${boxLabel} — ${displayName} — your insurance call.`,
+      commandLines: ['Insurance pays 2:1 when the bank has blackjack.'],
     };
   }
 

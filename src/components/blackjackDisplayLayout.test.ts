@@ -10,6 +10,7 @@ const ACTION_PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/Blackj
 const DEALER_AREA_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackDealerArea.tsx'), 'utf8');
 const VIEW_ZONES_SRC = readFileSync(join(process.cwd(), 'src/components/blackjackViewZones.tsx'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const TABLE_UX_SRC = readFileSync(join(process.cwd(), 'src/components/tableUxContract.ts'), 'utf8');
@@ -150,11 +151,11 @@ describe('blackjack display layout contract', () => {
   it('Full Table action zone sits below cards and above player boxes', () => {
     expect(SHARED_CSS).toContain('--bj-command-cards-gap');
     expect(SHARED_CSS).toContain('--bj-cards-actions-gap');
-    expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*margin-top:\s*var\(--bj-command-cards-gap\)/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*margin:\s*var\(--bj-command-cards-gap\)/,
     );
-    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*z-index:\s*5/);
-    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
+    expect(SHELL_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*z-index:\s*5/);
+    expect(SHELL_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
     expect(SHARED_CSS).toMatch(/\.bj-view-full-mobile \.bj-table-zone--actions[\s\S]*z-index:\s*4/);
     expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end|\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
   });

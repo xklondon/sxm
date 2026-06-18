@@ -188,12 +188,10 @@ describe('blackjack UX fixes — command text', () => {
         allowDouble: true,
       },
     );
-    expect(msg.commandMessage).toBe('Box 2 — your turn.');
+    expect(msg.commandMessage).toBe('Box 2 — Alice — your turn.');
     expect(msg.commandLines.some((line) => /Bank has/.test(line))).toBe(true);
-    expect(msg.commandLines.some((line) => /^(Option|Options):/.test(line))).toBe(true);
-    expect(formatPlayerTurnOptions(true, true, true, false)).toBe(
-      'Options: Hit, Double — one card.',
-    );
+    expect(msg.commandLines.some((line) => /^(Option|Options):/.test(line))).toBe(false);
+    expect(formatPlayerTurnOptions(true, true, true, false)).toBe('Double available.');
   });
 
   it('shows Blackjack only for clean natural blackjack status', () => {

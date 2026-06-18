@@ -340,7 +340,7 @@
   .bj-view-card-desktop .dealer-block__center-col {
     grid-area: unset;
     width: 100%;
-    max-width: 20rem;
+    max-width: var(--bj-table-center-column-max-width);
     margin-inline: auto;
   }
 

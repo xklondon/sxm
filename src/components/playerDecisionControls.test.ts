@@ -44,12 +44,10 @@ describe('table command display', () => {
       controllerName: 'Alice',
       viewerPersonId: state.tableMeta.ownerPersonId,
     });
-    expect(result.commandMessage).toBe('Box 1 — your turn.');
-    expect(result.commandLines).toContain(
-      formatPlayerTurnOptions(true, true, true, false),
-    );
-    expect(result.commandLines.some((line) => line.startsWith('Options:'))).toBe(true);
-    expect(isTableInstructionMessage(result.commandLines.find((line) => line.startsWith('Options:')) ?? '')).toBe(true);
+    expect(result.commandMessage).toBe('Box 1 — Alice — your turn.');
+    expect(result.commandLines).toContain('Double available.');
+    expect(result.commandLines.some((line) => line.startsWith('Options:'))).toBe(false);
+    expect(isTableInstructionMessage('Double available.')).toBe(true);
   });
 });
 

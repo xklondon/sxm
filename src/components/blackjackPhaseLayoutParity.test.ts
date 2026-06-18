@@ -27,7 +27,7 @@ describe('blackjack phase layout parity (desktop shell)', () => {
       /\.bj-view-full-desktop,\s*\n\s*\.bj-view-card-desktop \{[\s\S]*--bj-desktop-zone-command-height:\s*5\.85rem/,
     );
     expect(SHELL_CSS).toMatch(
-      /\.bj-view-full-desktop,\s*\n\s*\.bj-view-card-desktop \{[\s\S]*--bj-desktop-dealer-command-gap:\s*2\.55rem/,
+      /\.bj-view-full-desktop,\s*\n\s*\.bj-view-card-desktop \{[\s\S]*--bj-desktop-dealer-command-gap:\s*1\.35rem/,
     );
     expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop,\s*\n\s*\.bj-view-card-desktop \{[\s\S]*--bj-desktop-zone-actions-height:\s*2\.5rem/,

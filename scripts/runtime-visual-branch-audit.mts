@@ -71,6 +71,7 @@ const AUDIT_JS = `(() => {
     return parts.join(' > ');
   };
 
+  const feltSurface = root.querySelector('.bj-casino__felt.bj-table-surface, .bj-casino__felt');
   const dealerZone = root.querySelector('.bj-dealer-area, .bj-table-zone--dealer');
   const dealerCards = root.querySelector('.dealer-block__cards-slot');
   const dealBtn = root.querySelector('.dealer-block__action-slot button, .dealer-block__action-slot .ds-btn');
@@ -118,6 +119,13 @@ const AUDIT_JS = `(() => {
     return matched.slice(-12);
   };
 
+  const centerX = (el) => {
+    const r = rect(el);
+    return r ? Math.round((r.left + r.width / 2) * 10) / 10 : null;
+  };
+
+  const feltCenterX = centerX(feltSurface);
+
   return {
     root: {
       className: root.className,
@@ -126,10 +134,31 @@ const AUDIT_JS = `(() => {
       dataViewMode: root.getAttribute('data-view-mode'),
       rect: rect(root),
     },
+    feltSurface: {
+      rect: rect(feltSurface),
+      centerX: feltCenterX,
+    },
     dealerZone: { rect: rect(dealerZone), domPath: domPath(dealerZone) },
-    dealerCards: { rect: rect(dealerCards), domPath: domPath(dealerCards) },
+    dealerCards: {
+      rect: rect(dealerCards),
+      centerX: centerX(dealerCards),
+      deltaFromFeltCenter: (() => {
+        const cx = centerX(dealerCards);
+        return feltCenterX != null && cx != null
+          ? Math.round((cx - feltCenterX) * 10) / 10
+          : null;
+      })(),
+      domPath: domPath(dealerCards),
+    },
     dealButton: {
       rect: rect(dealBtn),
+      centerX: centerX(dealBtn),
+      deltaFromFeltCenter: (() => {
+        const cx = centerX(dealBtn);
+        return feltCenterX != null && cx != null
+          ? Math.round((cx - feltCenterX) * 10) / 10
+          : null;
+      })(),
       domPath: domPath(dealBtn),
       text: dealBtn?.textContent?.trim().slice(0, 40) ?? null,
       styles: stylePick(dealBtn, ['display', 'visibility', 'position', 'left', 'marginLeft']),
@@ -216,9 +245,18 @@ const AUDIT_JS = `(() => {
 })()`;
 
 type AuditRow = {
-  dealButton?: { rect?: { top?: number; bottom?: number; left?: number } | null };
+  dealButton?: {
+    rect?: { top?: number; bottom?: number; left?: number } | null;
+    centerX?: number | null;
+    deltaFromFeltCenter?: number | null;
+  };
+  dealerCards?: {
+    centerX?: number | null;
+    deltaFromFeltCenter?: number | null;
+  };
   commandPill?: { rect?: { top?: number; bottom?: number } | null };
   commandPillToDealGap?: number | null;
+  dealToCommandZoneTopGap?: number | null;
   slots?: Array<{ rect?: { top?: number; height?: number } | null }>;
   heroCards?: {
     cardCount?: number;
@@ -259,15 +297,19 @@ function assertAudit(report: Record<string, AuditRow>) {
     }
   }
 
-  for (const [label, a, b] of [
-    ['card vs full deal left', cardBet?.dealButton?.rect, fullBet.dealButton.rect],
-    ['card vs full deal top', cardBet?.dealButton?.rect, fullBet.dealButton.rect],
+  for (const [label, row] of [
+    ['Card View betting dealer cards', cardBet],
+    ['Card View playing dealer cards', cardPlay],
   ] as const) {
-    if (!a || !b) throw new Error(`Missing rects for ${label}`);
-    const av = label.includes('left') ? a.left! : a.top!;
-    const bv = label.includes('left') ? b.left! : b.top!;
-    if (Math.abs(av - bv) > 5) {
-      throw new Error(`${label} delta ${Math.abs(av - bv)}px exceeds 5px`);
+    if (!row) throw new Error(`Missing audit row for ${label}`);
+    for (const [part, delta] of [
+      ['dealer cards', row.dealerCards?.deltaFromFeltCenter],
+      ['deal button', row.dealButton?.deltaFromFeltCenter],
+    ] as const) {
+      if (delta == null) throw new Error(`${label}: missing ${part} felt-center delta`);
+      if (Math.abs(delta) > 5) {
+        throw new Error(`${label}: ${part} off felt center by ${Math.abs(delta)}px (>5px)`);
+      }
     }
   }
 
@@ -292,8 +334,8 @@ function assertAudit(report: Record<string, AuditRow>) {
   }
   for (const [i, cr] of (hero.cardRects ?? []).entries()) {
     if (!cr) continue;
-    if (cr.width! <= 60 || cr.height! <= 90) {
-      throw new Error(`Hero card ${i} too small (${cr.width}x${cr.height})`);
+    if (cr.width! < 90 || cr.height! < 125) {
+      throw new Error(`Hero card ${i} too small (${cr.width}x${cr.height}, need >=90x125)`);
     }
     if (cardsZone && cr.top! < cardsZone.top! - 1) {
       throw new Error(`Hero card ${i} above cardsArea`);

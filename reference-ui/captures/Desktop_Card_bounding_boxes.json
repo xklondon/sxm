@@ -17,63 +17,63 @@
   },
   "dealer": {
     "top": 169.53125,
-    "bottom": 283.921875,
+    "bottom": 266.328125,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 114.390625
+    "height": 96.796875
   },
   "cardsZone": {
-    "top": 378.78125,
-    "bottom": 480.65625,
+    "top": 361.1875,
+    "bottom": 486.265625,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 101.875
+    "height": 125.078125
   },
   "command": {
-    "top": 283.921875,
-    "bottom": 377.515625,
+    "top": 266.328125,
+    "bottom": 359.921875,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
     "height": 93.59375
   },
   "commandPill": {
-    "top": 324.71875,
-    "bottom": 350.5,
+    "top": 287.921875,
+    "bottom": 332.90625,
     "left": 311.984375,
     "right": 759.984375,
     "width": 448,
-    "height": 25.78125
+    "height": 44.984375
   },
   "actionsZone": {
-    "top": 479.390625,
+    "top": 485,
     "bottom": 519.390625,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 40
+    "height": 34.390625
   },
   "heroCards": {
-    "top": 380.046875,
-    "bottom": 479.703125,
+    "top": 361.1875,
+    "bottom": 486.265625,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 99.65625
+    "height": 125.078125
   },
   "actionRow": {
-    "top": 504.34375,
-    "bottom": 533.59375,
+    "top": 501.796875,
+    "bottom": 531.046875,
     "left": 490.234375,
     "right": 581.734375,
     "width": 91.5,
     "height": 29.25
   },
   "actionButtons": {
-    "top": 506.25,
-    "bottom": 532.328125,
+    "top": 503.703125,
+    "bottom": 529.78125,
     "left": 496.625,
     "right": 575.34375,
     "width": 78.71875,

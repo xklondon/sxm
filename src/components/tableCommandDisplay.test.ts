@@ -75,9 +75,9 @@ describe('buildBlackjackCommandText', () => {
       roundSummaryLines: [],
       controllerName: 'Alice',
     });
-    expect(result.commandMessage).toBe('Box 2 — your turn.');
+    expect(result.commandMessage).toBe('Box 2 — Alice — your turn.');
     expect(result.commandLines.some((line) => /Bank has/.test(line))).toBe(true);
-    expect(result.commandLines.some((line) => /^(Option|Options):/.test(line))).toBe(true);
+    expect(result.commandLines.some((line) => /^(Option|Options):/.test(line))).toBe(false);
   });
 
   it('shows join notice during betting when tableNotice is set', () => {
@@ -106,11 +106,12 @@ describe('buildBlackjackCommandText', () => {
     expect(result.commandMessage).toBe('Kay joined the table on Box 3.');
   });
 
-  it('builds options line without Stay wording', () => {
+  it('builds options line for special actions only (never Hit/Stay)', () => {
     expect(formatPlayerTurnOptions(true, true, true, true)).toBe(
-      'Options: Hit, Double — one card, Split.',
+      'Double available.\nSplit available.',
     );
-    expect(formatPlayerTurnOptions(false, true, true, false)).toBe('Option: Double — one card.');
+    expect(formatPlayerTurnOptions(false, true, true, false)).toBe('Double available.');
+    expect(formatPlayerTurnOptions(true, true, false, false)).toBe('');
   });
 
   it('includes soft totals in bank-against line', () => {
@@ -124,7 +125,7 @@ describe('buildBlackjackCommandText', () => {
       allowSplit: false,
       allowDouble: false,
     });
-    expect(result.commandMessage).toBe('Box 3 — your turn.');
+    expect(result.commandMessage).toBe('Box 3 — Kji — your turn.');
     expect(result.commandLines.some((line) => /against your soft 17/.test(line))).toBe(true);
   });
 });
