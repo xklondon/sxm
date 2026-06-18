@@ -43,7 +43,14 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-18 — Desktop Card View polish + command text cleanup
+## 2026-06-13 — Desktop Full Table betting alignment + mobile layout polish
+
+- **Desktop Full Table betting:** `[data-bj-phase='betting']` centers dealer block on felt to match Card View betting (dealer cards, Deal button, command pill within 5px); playing dealer alignment unchanged.
+- **Mobile command slot:** Shared `--bj-zone-command-height` via `data-phase` (player/dealer/resolved) on `.bj-casino`; Full Table + Card View command zones match in betting and playing.
+- **Mobile boxes:** Player box row uses `1fr` grid spread across felt width; player-box hand value ~2× via `--bj-mobile-box-value-scale`.
+- **Mobile Card View hero:** Portrait container-fit hero cards inside cards area; hero hand total hidden under cards (player box values unchanged).
+
+---
 
 - **Card View dealer centering:** `.bj-dealer-area` centers `.dealer-block` on felt (Card View only); dealer cards/deal button within 5px of felt center at 1280×800.
 - **Hero cards:** Larger shell tokens + `@container bj-hero-cards` fit in `bj-card-desktop-hero-area.css` (≥90×125px target).

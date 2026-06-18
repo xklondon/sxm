@@ -129,10 +129,10 @@ describe('mobile layout cleanup', () => {
 
   it('mobile Full Table arc fits shell without inner horizontal scroll', () => {
     const playZoneCss = readCss('src/styles/bj-full-table-card-area.css');
+    const sharedCss = readCss('src/styles/bj-table-shared.css');
     expect(playZoneCss).toContain('Full Table play zone');
-    const playerRowCss = readCss('src/styles/bj-player-row-layout.css');
-    expect(playerRowCss).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell[\s\S]*overflow:\s*visible/,
+    expect(sharedCss).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell[\s\S]*overflow:\s*hidden/,
     );
     expect(panelCss).not.toMatch(/\.bj-view-full-mobile \.bj-arc[\s\S]*min-width:\s*calc\(100% \+ 2\.5rem\)/);
   });

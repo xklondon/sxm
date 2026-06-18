@@ -28,38 +28,38 @@
     "dealerZone": {
       "rect": {
         "top": 177.5,
-        "bottom": 291.9,
+        "bottom": 274.3,
         "left": 132,
         "right": 1148,
         "width": 1016,
-        "height": 114.4
+        "height": 96.8
       },
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
     },
     "dealerCards": {
       "rect": {
-        "top": 165.3,
-        "bottom": 218.9,
-        "left": 297.2,
-        "right": 414.7,
+        "top": 147.7,
+        "bottom": 201.3,
+        "left": 581.2,
+        "right": 698.7,
         "width": 117.5,
         "height": 53.6
       },
-      "centerX": 356,
-      "deltaFromFeltCenter": -284,
+      "centerX": 640,
+      "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
     "dealButton": {
       "rect": {
-        "top": 246.2,
-        "bottom": 291,
-        "left": 297.2,
-        "right": 414.7,
+        "top": 228.6,
+        "bottom": 273.4,
+        "left": 581.2,
+        "right": 698.7,
         "width": 117.5,
         "height": 44.8
       },
-      "centerX": 356,
-      "deltaFromFeltCenter": -284,
+      "centerX": 640,
+      "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
       "text": "Deal Cards",
       "styles": {
@@ -73,8 +73,8 @@
     },
     "commandZone": {
       "rect": {
-        "top": 291.9,
-        "bottom": 385.5,
+        "top": 274.3,
+        "bottom": 367.9,
         "left": 132,
         "right": 1148,
         "width": 1016,
@@ -91,13 +91,14 @@
     },
     "commandPill": {
       "rect": {
-        "top": 298.5,
-        "bottom": 358.5,
+        "top": 280.9,
+        "bottom": 340.9,
         "left": 416,
         "right": 864,
         "width": 448,
         "height": 60
       },
+      "centerX": 640,
       "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
       "innerText": "Place your bets, then shuffle to start the shoe.",
       "styles": {
@@ -109,8 +110,8 @@
     },
     "commandStatus": {
       "rect": {
-        "top": 321.2,
-        "bottom": 335.8,
+        "top": 303.6,
+        "bottom": 318.3,
         "left": 465,
         "right": 815,
         "width": 350,
@@ -122,12 +123,12 @@
     "dealToCommandZoneTopGap": 1,
     "cardsZone": {
       "rect": {
-        "top": 386.8,
+        "top": 369.2,
         "bottom": 488.7,
         "left": 132,
         "right": 1148,
         "width": 1016,
-        "height": 101.9
+        "height": 119.5
       },
       "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--table",
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
@@ -149,12 +150,12 @@
     },
     "clothLayer": {
       "rect": {
-        "top": 386.8,
+        "top": 369.2,
         "bottom": 488.7,
         "left": 132,
         "right": 1148,
         "width": 1016,
-        "height": 101.9
+        "height": 119.5
       },
       "styles": {
         "opacity": "0.92",
@@ -168,12 +169,12 @@
         "tag": "DIV",
         "className": "bj-felt-cloth-layer",
         "rect": {
-          "top": 386.8,
+          "top": 369.2,
           "bottom": 488.7,
           "left": 132,
           "right": 1148,
           "width": 1016,
-          "height": 101.9
+          "height": 119.5
         },
         "zIndex": "0"
       },
@@ -477,6 +478,7 @@
         "width": 448,
         "height": 60
       },
+      "centerX": 640,
       "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
       "innerText": "Box 4 — Alice — your turn.Bank has 8♥ against your 9.Double available.",
       "styles": {
@@ -884,6 +886,7 @@
         "width": 448,
         "height": 60
       },
+      "centerX": 640,
       "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
       "innerText": "Place your bets, then shuffle to start the shoe.",
       "styles": {
@@ -1167,38 +1170,38 @@
     "dealerZone": {
       "rect": {
         "top": 177.5,
-        "bottom": 291.9,
+        "bottom": 274.3,
         "left": 132,
         "right": 1148,
         "width": 1016,
-        "height": 114.4
+        "height": 96.8
       },
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
     },
     "dealerCards": {
       "rect": {
-        "top": 165.3,
-        "bottom": 218.9,
-        "left": 297.2,
-        "right": 414.7,
+        "top": 147.7,
+        "bottom": 201.3,
+        "left": 581.2,
+        "right": 698.7,
         "width": 117.5,
         "height": 53.6
       },
-      "centerX": 356,
-      "deltaFromFeltCenter": -284,
+      "centerX": 640,
+      "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
     "dealButton": {
       "rect": {
-        "top": 246.2,
-        "bottom": 291,
-        "left": 297.2,
-        "right": 414.7,
+        "top": 228.6,
+        "bottom": 273.4,
+        "left": 581.2,
+        "right": 698.7,
         "width": 117.5,
         "height": 44.8
       },
-      "centerX": 356,
-      "deltaFromFeltCenter": -284,
+      "centerX": 640,
+      "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
       "text": "Deal Cards",
       "styles": {
@@ -1212,8 +1215,8 @@
     },
     "commandZone": {
       "rect": {
-        "top": 291.9,
-        "bottom": 385.5,
+        "top": 274.3,
+        "bottom": 367.9,
         "left": 132,
         "right": 1148,
         "width": 1016,
@@ -1230,13 +1233,14 @@
     },
     "commandPill": {
       "rect": {
-        "top": 298.5,
-        "bottom": 358.5,
+        "top": 280.9,
+        "bottom": 340.9,
         "left": 416,
         "right": 864,
         "width": 448,
         "height": 60
       },
+      "centerX": 640,
       "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
       "innerText": "Place your bets, then shuffle to start the shoe.",
       "styles": {
@@ -1248,8 +1252,8 @@
     },
     "commandStatus": {
       "rect": {
-        "top": 321.2,
-        "bottom": 335.8,
+        "top": 303.6,
+        "bottom": 318.3,
         "left": 465,
         "right": 815,
         "width": 350,
@@ -1261,12 +1265,12 @@
     "dealToCommandZoneTopGap": 1,
     "cardsZone": {
       "rect": {
-        "top": 386.8,
+        "top": 369.2,
         "bottom": 488.7,
         "left": 132,
         "right": 1148,
         "width": 1016,
-        "height": 101.9
+        "height": 119.5
       },
       "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--table",
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
@@ -1288,12 +1292,12 @@
     },
     "clothLayer": {
       "rect": {
-        "top": 386.8,
+        "top": 369.2,
         "bottom": 488.7,
         "left": 132,
         "right": 1148,
         "width": 1016,
-        "height": 101.9
+        "height": 119.5
       },
       "styles": {
         "opacity": "0.92",
@@ -1307,12 +1311,12 @@
         "tag": "DIV",
         "className": "bj-felt-cloth-layer",
         "rect": {
-          "top": 386.8,
+          "top": 369.2,
           "bottom": 488.7,
           "left": 132,
           "right": 1148,
           "width": 1016,
-          "height": 101.9
+          "height": 119.5
         },
         "zIndex": "0"
       },
@@ -1616,6 +1620,7 @@
         "width": 448,
         "height": 60
       },
+      "centerX": 640,
       "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
       "innerText": "Box 1 — Alice — your turn.Bank has 7♥ against your 13.",
       "styles": {
@@ -2060,6 +2065,7 @@
         "width": 448,
         "height": 60
       },
+      "centerX": 640,
       "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
       "innerText": "Box 4 — Alice — your turn.Bank has 8♥ against your 9.Double available.",
       "styles": {
@@ -2467,6 +2473,7 @@
         "width": 448,
         "height": 60
       },
+      "centerX": 640,
       "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
       "innerText": "Box 1 — Alice — your turn.Bank has 7♥ against your 13.",
       "styles": {

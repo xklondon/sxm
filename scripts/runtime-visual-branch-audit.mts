@@ -172,6 +172,7 @@ const AUDIT_JS = `(() => {
     },
     commandPill: {
       rect: rect(commandPill),
+      centerX: centerX(commandPill),
       domPath: domPath(commandPill),
       innerText: commandPill?.textContent?.trim().slice(0, 120) ?? null,
       styles: stylePick(commandPill, ['minHeight', 'padding', 'justifyContent', 'alignItems']),
@@ -277,26 +278,37 @@ function assertAudit(report: Record<string, AuditRow>) {
   const cardBet = report.B_card_betting;
   const cardPlay = report.C_card_playing;
 
-  if (!fullBet?.dealButton?.rect || !fullBet?.commandPill?.rect) {
-    throw new Error('Missing full betting deal/command rects');
+  if (!fullBet?.dealButton?.rect || !fullBet?.commandPill?.rect || !cardBet?.dealButton?.rect || !cardBet?.commandPill?.rect) {
+    throw new Error('Missing full/card betting deal/command rects');
   }
-  if (fullBet.dealButton.rect.bottom! > fullBet.commandPill.rect.top!) {
+  const fullBetDealBottom = fullBet.dealButton?.rect?.bottom;
+  const fullBetCmdTop = fullBet.commandPill?.rect?.top;
+  const cardBetDealBottom = cardBet.dealButton?.rect?.bottom;
+  const cardBetCmdTop = cardBet.commandPill?.rect?.top;
+  if (fullBetDealBottom != null && fullBetCmdTop != null && fullBetDealBottom > fullBetCmdTop) {
     throw new Error(
-      `Full betting deal overlaps command pill (deal bottom ${fullBet.dealButton.rect.bottom} > pill top ${fullBet.commandPill.rect.top})`,
+      `Full betting deal overlaps command pill (deal bottom ${fullBetDealBottom} > pill top ${fullBetCmdTop})`,
     );
   }
-  for (const [label, a, b] of [
-    ['deal top', fullBet.dealButton.rect, fullPlay?.dealButton?.rect],
-    ['deal left', fullBet.dealButton.rect, fullPlay?.dealButton?.rect],
+  for (const [label, fullVal, cardVal] of [
+    ['betting dealer cards cx', fullBet.dealerCards?.centerX, cardBet.dealerCards?.centerX],
+    ['betting deal cx', fullBet.dealButton?.centerX, cardBet.dealButton?.centerX],
+    ['betting command top', fullBet.commandPill?.rect?.top, cardBet.commandPill?.rect?.top],
+    ['betting command cx', fullBet.commandPill?.centerX, cardBet.commandPill?.centerX],
   ] as const) {
-    if (!b) throw new Error(`Missing full playing deal rect for ${label}`);
-    const av = label === 'deal top' ? a.top! : a.left!;
-    const bv = label === 'deal top' ? b.top! : b.left!;
-    if (Math.abs(av - bv) > 5) {
-      throw new Error(`Full Table betting/playing ${label} delta ${Math.abs(av - bv)}px exceeds 5px`);
+    if (fullVal == null || cardVal == null) throw new Error(`Missing ${label} measurement`);
+    if (Math.abs(Number(fullVal) - Number(cardVal)) > 5) {
+      throw new Error(`Full vs Card betting ${label} delta ${Math.abs(Number(fullVal) - Number(cardVal))}px exceeds 5px`);
     }
   }
 
+  if (fullBetDealBottom != null && fullBetCmdTop != null && cardBetDealBottom != null && cardBetCmdTop != null) {
+    const fullGap = fullBetCmdTop - fullBetDealBottom;
+    const cardGap = cardBetCmdTop - cardBetDealBottom;
+    if (Math.abs(fullGap - cardGap) > 5) {
+      throw new Error(`Full vs Card betting deal→command gap delta ${Math.abs(fullGap - cardGap)}px exceeds 5px`);
+    }
+  }
   for (const [label, row] of [
     ['Card View betting dealer cards', cardBet],
     ['Card View playing dealer cards', cardPlay],

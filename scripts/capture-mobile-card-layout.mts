@@ -91,16 +91,19 @@ async function main() {
       const r = el.getBoundingClientRect();
       return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height };
     };
-    const heroValueEl = document.querySelector(
-      '.bj-view-card-mobile .bj-card-view__hero-value.bj-phone-view__total--hero',
-    );
-    return {
-      heroCards: rect(q('hero-cards')),
-      heroValue: rect(q('hero-value')),
-      heroValueText: rect(heroValueEl),
-      actionRow: rect(q('action-row')),
-      playerBoxes: rect(q('player-boxes')),
-    };
+  const heroValueEl = document.querySelector(
+    '.bj-view-card-mobile .bj-card-view__hero-value.bj-phone-view__total--hero',
+  );
+  const heroValueStyle = heroValueEl ? getComputedStyle(heroValueEl) : null;
+  return {
+    heroCards: rect(q('hero-cards')),
+    heroValue: rect(q('hero-value')),
+    heroValueText: rect(heroValueEl),
+    heroValueDisplay: heroValueStyle?.display ?? null,
+    heroValueVisibility: heroValueStyle?.visibility ?? null,
+    actionRow: rect(q('action-row')),
+    playerBoxes: rect(q('player-boxes')),
+  };
   })()`);
 
   writeFileSync(OUT_AFTER, JSON.stringify(boxes, null, 2));
@@ -114,31 +117,32 @@ async function main() {
   }
   console.log(JSON.stringify(boxes, null, 2));
 
-  const { heroCards, heroValue, heroValueText, actionRow, playerBoxes } = boxes as {
-    heroCards: { top: number; bottom: number } | null;
+  const { heroCards, heroValue, heroValueText, heroValueDisplay, actionRow, playerBoxes } = boxes as {
+    heroCards: { top: number; bottom: number; width: number; height: number } | null;
     heroValue: { top: number; bottom: number; height: number } | null;
     heroValueText: { top: number; bottom: number; height: number } | null;
+    heroValueDisplay: string | null;
+    heroValueVisibility: string | null;
     actionRow: { top: number } | null;
     playerBoxes: { top: number } | null;
   };
 
-  if (!heroCards || !heroValue || !heroValueText || !actionRow || !playerBoxes) {
+  if (!heroCards || !actionRow || !playerBoxes) {
     throw new Error('Missing mobile Card View layout bands');
   }
 
-  const cardsToValueGap = heroValue.top - heroCards.bottom;
-  if (cardsToValueGap < -2 || cardsToValueGap > 6) {
-    throw new Error(`hero cards/value gap ${cardsToValueGap.toFixed(1)}px outside 0–6px target`);
-  }
-
-  if (heroValueText.height < 12) {
-    throw new Error(`hero value text too short (${heroValueText.height.toFixed(1)}px)`);
-  }
-
-  if (heroValue.height < heroValueText.height - 2) {
+  if (heroValueDisplay !== 'none' && heroValueVisibility !== 'hidden') {
     throw new Error(
-      `hero value frame too tight (band ${heroValue.height.toFixed(1)}px, text ${heroValueText.height.toFixed(1)}px)`,
+      `hero value should be hidden in mobile Card View (display=${heroValueDisplay}, visibility=${heroValueVisibility})`,
     );
+  }
+
+  if (heroCards.height < 48) {
+    throw new Error(`hero cards band too short (${heroCards.height.toFixed(1)}px)`);
+  }
+
+  if (heroCards.bottom > actionRow.top - 4) {
+    throw new Error('hero cards overlap action row');
   }
 }
 

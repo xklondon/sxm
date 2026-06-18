@@ -225,24 +225,24 @@
 /* CONTRACT A/B/D default — compact player-box row (not 1fr stretch). Desktop Full/Card View spread: owner blocks above + bj-card-desktop-layout.css. */
 .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes,
 .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes {
-  width: max-content;
+  width: 100%;
   max-width: 100%;
-  margin-inline: auto;
-  justify-content: center;
-  justify-items: center;
-  grid-template-columns: repeat(var(--slot-count, 4), minmax(0, max-content));
+  margin-inline: 0;
+  justify-content: stretch;
+  justify-items: stretch;
+  grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
 }
 
 .bj-view-full-mobile .bj-table-slot-row--with-add.bj-arc--player-boxes,
 .bj-view-card-mobile .bj-table-slot-row--with-add.bj-arc--player-boxes {
-  grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, max-content));
+  grid-template-columns: repeat(calc(var(--slot-count, 4) + 1), minmax(0, 1fr));
 }
 
 .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot,
 .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot {
-  width: var(--bj-full-table-box-width);
+  width: 100%;
   min-width: 0;
-  max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+  max-width: none;
   min-height: 0;
   transform: none;
   overflow: visible;
@@ -436,6 +436,22 @@
     flex: 1 1 auto;
     aspect-ratio: 1.05 / 1;
     overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
+  .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder,
+  .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value,
+  .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value--placeholder {
+    font-size: calc(0.58rem * var(--bj-mobile-box-value-scale, 2));
+    min-height: calc(0.95rem * var(--bj-mobile-box-value-scale, 2) * 0.55);
+    max-height: calc(1.05rem * var(--bj-mobile-box-value-scale, 2) * 0.55);
+    line-height: 1.05;
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above {
+    font-size: calc(var(--bj-seat-total-size, 0.52rem) * var(--bj-mobile-box-value-scale, 2));
+    line-height: var(--bj-box-value-band-height);
   }
 }
 

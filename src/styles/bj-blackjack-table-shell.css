@@ -57,6 +57,22 @@
     --bj-card-hero-card-max-height: min(42vh, 9.75rem);
   }
 
+  /* Full Table betting — match Card View dealer/deal/command alignment (playing unchanged). */
+  .bj-view-full-desktop[data-bj-phase='betting'] {
+    --bj-desktop-zone-dealer-height: 6.05rem;
+  }
+
+  .bj-view-full-desktop[data-bj-phase='betting'] .bj-table-layout-shell > .bj-dealer-area {
+    align-items: center;
+  }
+
+  .bj-view-full-desktop[data-bj-phase='betting'] .bj-table-layout-shell > .bj-dealer-area > .dealer-block {
+    align-self: center;
+    width: min(100%, var(--bj-table-center-column-max-width));
+    max-width: var(--bj-table-center-column-max-width);
+    margin-inline: auto;
+  }
+
   /* data-bj-phase drives cloth/content only — not shell row geometry (see bj-full-table-card-area.css). */
 
   /* Resolved / round-complete — card view uses betting block above. */

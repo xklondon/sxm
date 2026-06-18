@@ -208,6 +208,7 @@
     --bj-mobile-tray-inner-reserve: 0.4rem;
     --bj-mobile-zone-dealer-height: 5.15rem;
     --bj-mobile-zone-command-height: 2.25rem;
+    --bj-mobile-zone-command-playing-height: 6.375rem;
     --bj-zone-command-max-height: 3.4rem;
     --bj-mobile-zone-actions-height: 2.45rem;
     --bj-mobile-zone-cards-min-height: 0;
@@ -259,6 +260,7 @@
     --bj-mobile-box-width: 6.25rem;
     --bj-mobile-box-height: 5.35rem;
     --bj-mobile-box-card-scale: 1.2;
+    --bj-mobile-box-value-scale: 2;
     --bj-mobile-box-gap: 0.03rem;
     --bj-mobile-add-button-width: 1.5rem;
     --bj-mobile-add-button-gap: 0.03rem;
@@ -276,6 +278,26 @@
     min-width: 0;
     box-sizing: border-box;
     overflow-x: hidden;
+  }
+
+  .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ),
+  .bj-view-full-mobile
+    .bj-table-slot-row.bj-arc--player-boxes
+    .bj-arc__slot--owned
+    .bj-phone-view__box-value--above,
+  .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ),
+  .bj-view-card-mobile
+    .bj-table-slot-row.bj-arc--player-boxes
+    .bj-arc__slot--owned
+    .bj-phone-view__box-value--above {
+    font-size: calc(0.58rem * var(--bj-mobile-box-value-scale, 2));
+    min-height: calc(0.95rem * var(--bj-mobile-box-value-scale, 2) * 0.55);
+    max-height: calc(1.05rem * var(--bj-mobile-box-value-scale, 2) * 0.55);
+    line-height: 1.05;
   }
 
   .bj-view-full-mobile .bj-casino__rail,
@@ -556,12 +578,13 @@
     width: var(--bj-mobile-layout-shell-width);
     max-width: var(--bj-mobile-layout-shell-width);
     min-width: 0;
-    height: auto;
-    max-height: var(--bj-mobile-table-canvas-height);
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
     align-self: stretch;
     box-sizing: border-box;
-    overflow-x: hidden;
-    overflow-y: visible;
+    overflow: hidden;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero,
@@ -811,11 +834,48 @@
     justify-content: flex-start;
     padding-top: var(--bj-mobile-zone-command-top-gap);
     padding-bottom: 0;
+    height: var(--bj-zone-command-height);
+    min-height: var(--bj-zone-command-height);
+    max-height: var(--bj-zone-command-height);
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  /* Mobile play phases — one shared command slot (data-phase on .bj-casino; data-bj-phase is desktop-only). */
+  .bj-view-full-mobile[data-phase='player'],
+  .bj-view-card-mobile[data-phase='player'],
+  .bj-view-full-mobile[data-phase='dealer'],
+  .bj-view-card-mobile[data-phase='dealer'],
+  .bj-view-full-mobile[data-phase='resolved'],
+  .bj-view-card-mobile[data-phase='resolved'] {
+    --bj-zone-command-height: var(--bj-mobile-zone-command-playing-height, 6.375rem);
+    --bj-zone-command-max-height: var(--bj-mobile-zone-command-playing-height, 6.375rem);
+    --bj-zone-dealer-height: 4.35rem;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command,
-  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command {
+  .bj-view-full-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
+  .bj-view-full-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action--reserved,
+  .bj-view-card-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
+  .bj-view-card-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action--reserved {
+    min-height: 0;
+    max-height: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--summary .dealer-block__command,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--summary .dealer-block__command {
     margin-inline: auto;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__cards-slot {
@@ -1467,7 +1527,7 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: stretch;
   overflow: hidden;
 }
 
@@ -2343,10 +2403,52 @@
   overflow-x: hidden;
   overflow-y: visible;
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
+  align-items: stretch;
+  justify-content: stretch;
   padding: 0.08rem var(--bj-card-boxes-padding-inline) var(--bj-card-boxes-padding-bottom);
   box-sizing: border-box;
+}
+
+.bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap {
+  width: 100%;
+  max-width: 100%;
+  align-self: stretch;
+}
+
+.bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+  justify-content: stretch;
+  justify-items: stretch;
+  grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+}
+
+.bj-view-full-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--boxes
+  .bj-table-slot-row--with-add.bj-arc--player-boxes,
+.bj-view-card-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--boxes
+  .bj-table-slot-row--with-add.bj-arc--player-boxes {
+  grid-template-columns: repeat(calc(var(--slot-count, 4) + 1), minmax(0, 1fr));
+}
+
+.bj-view-full-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--boxes
+  .bj-table-slot-row.bj-arc--player-boxes
+  > .bj-arc__slot,
+.bj-view-card-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--boxes
+  .bj-table-slot-row.bj-arc--player-boxes
+  > .bj-arc__slot {
+  width: 100%;
+  max-width: none;
 }
 
 .bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes {

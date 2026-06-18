@@ -433,7 +433,6 @@
   --bj-command-cards-gap: var(--bj-cardview-command-cards-gap);
   --bj-cards-actions-gap: var(--bj-cardview-cards-actions-gap);
   --bj-hero-cards-top-inset: var(--bj-cardview-hero-top-inset);
-  --bj-mobile-zone-command-height: 2.1rem;
   --bj-mobile-zone-actions-height: 2.35rem;
 }
 

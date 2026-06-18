@@ -30,11 +30,7 @@
 .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--summary {
   flex: 0 0 auto;
   min-height: 0;
-  max-height: var(--bj-zone-command-max-height);
-  overflow: visible;
   margin: 0;
-  padding-top: var(--bj-dealer-command-gap);
-  padding-bottom: 0;
   z-index: 3;
 }
 
