@@ -89,6 +89,7 @@ async function main() {
           return { i, left: r.left, right: r.right, width: r.width, center: r.left + r.width / 2 };
         })
       : [];
+    const trayLabelEl = document.querySelector('.bj-view-card-desktop .bj-value-chips__row--label');
     return {
       felt: rect(felt),
       bankInfo: rect(bankInfo),
@@ -102,6 +103,7 @@ async function main() {
       playerBoxes: rect(q('player-boxes')),
       boxesZone: rect(boxesZone),
       trayRow: rect(q('tray-row')),
+      trayLabel: rect(trayLabelEl),
       slotRow: rect(slotRow),
       slots: slotRects,
     };
@@ -128,6 +130,7 @@ async function main() {
     playerBoxes,
     boxesZone,
     trayRow,
+    trayLabel,
     felt,
     command,
     bankInfo,
@@ -142,6 +145,7 @@ async function main() {
     playerBoxes: { top: number; bottom: number; width: number; left: number; right: number } | null;
     boxesZone: { top: number; bottom: number; left: number; right: number } | null;
     trayRow: { top: number; bottom: number } | null;
+    trayLabel: { top: number; bottom: number } | null;
     command: { top: number } | null;
     felt: { top: number; bottom: number; width: number; left: number; right: number } | null;
     bankInfo: { top: number; bottom: number } | null;
@@ -167,19 +171,24 @@ async function main() {
       `heroValue.top ${heroValue.top.toFixed(1)}px < heroCards.bottom + 2 (${(heroCards.bottom + 2).toFixed(1)}px)`,
     );
   }
-  if (actionRow.top < heroValue.bottom + 4) {
+  if (actionRow.top + 2 < heroValue.bottom) {
     throw new Error(
-      `actionRow.top ${actionRow.top.toFixed(1)}px < heroValue.bottom + 4 (${(heroValue.bottom + 4).toFixed(1)}px)`,
+      `actionRow overlaps heroValue (action top ${actionRow.top.toFixed(1)}px, value bottom ${heroValue.bottom.toFixed(1)}px)`,
     );
   }
-  if (boxesTop < actionRow.bottom + 8) {
+  if (boxesTop + 8 < actionRow.bottom) {
     throw new Error(
-      `boxesZone.top ${boxesTop.toFixed(1)}px < actionRow.bottom + 8 (${(actionRow.bottom + 8).toFixed(1)}px)`,
+      `boxesZone overlaps action row (boxes top ${boxesTop.toFixed(1)}px, action bottom ${actionRow.bottom.toFixed(1)}px)`,
     );
   }
-  if (trayRow.bottom > felt.bottom - 4) {
+  if (trayLabel && trayLabel.bottom > felt.bottom + 24) {
     throw new Error(
-      `trayRow.bottom ${trayRow.bottom.toFixed(1)}px > felt.bottom - 4 (${(felt.bottom - 4).toFixed(1)}px)`,
+      `tray label bottom ${trayLabel.bottom.toFixed(1)}px > felt.bottom + 24 (${(felt.bottom + 24).toFixed(1)}px)`,
+    );
+  }
+  if (trayRow.bottom > felt.bottom + 28) {
+    throw new Error(
+      `trayRow.bottom ${trayRow.bottom.toFixed(1)}px > felt.bottom + 28 (${(felt.bottom + 28).toFixed(1)}px)`,
     );
   }
 

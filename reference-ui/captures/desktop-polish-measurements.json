@@ -1,0 +1,586 @@
+{
+  "full-betting": {
+    "felt": {
+      "top": 103,
+      "bottom": 705,
+      "left": 125,
+      "right": 1155,
+      "height": 602,
+      "width": 1030
+    },
+    "clothLayer": {
+      "top": 347,
+      "bottom": 504,
+      "left": 132,
+      "right": 1148,
+      "height": 157,
+      "width": 1016
+    },
+    "clothTitle": {
+      "top": 410,
+      "bottom": 434,
+      "left": 543,
+      "right": 738,
+      "height": 24,
+      "width": 195
+    },
+    "command": {
+      "top": 292,
+      "bottom": 346,
+      "left": 132,
+      "right": 1148,
+      "height": 54,
+      "width": 1016
+    },
+    "commandPill": {
+      "top": 299,
+      "bottom": 346,
+      "left": 416,
+      "right": 864,
+      "height": 47,
+      "width": 448
+    },
+    "dealer": {
+      "top": 178,
+      "bottom": 292,
+      "left": 132,
+      "right": 1148,
+      "height": 114,
+      "width": 1016
+    },
+    "dealButton": {
+      "top": 304,
+      "bottom": 349,
+      "left": 424,
+      "right": 541,
+      "height": 45,
+      "width": 118
+    },
+    "cardsZone": {
+      "top": 347,
+      "bottom": 504,
+      "left": 132,
+      "right": 1148,
+      "height": 157,
+      "width": 1016
+    },
+    "heroCards": null,
+    "heroValue": null,
+    "actionRow": null,
+    "actionButtons": null,
+    "boxesZone": {
+      "top": 531,
+      "bottom": 629,
+      "left": 132,
+      "right": 1148,
+      "height": 98,
+      "width": 1016
+    },
+    "trayRow": {
+      "top": 633,
+      "bottom": 693,
+      "left": 384,
+      "right": 896,
+      "height": 60,
+      "width": 512
+    },
+    "bottomZone": {
+      "top": 627,
+      "bottom": 693,
+      "left": 132,
+      "right": 1148,
+      "height": 66,
+      "width": 1016
+    },
+    "trayLabel": {
+      "top": 702,
+      "bottom": 726,
+      "left": 530,
+      "right": 750,
+      "height": 24,
+      "width": 220
+    },
+    "slots": [
+      {
+        "i": 0,
+        "left": 242,
+        "right": 320,
+        "width": 78,
+        "center": 281
+      },
+      {
+        "i": 1,
+        "left": 490,
+        "right": 568,
+        "width": 78,
+        "center": 529
+      },
+      {
+        "i": 2,
+        "left": 738,
+        "right": 816,
+        "width": 78,
+        "center": 777
+      },
+      {
+        "i": 3,
+        "left": 986,
+        "right": 1064,
+        "width": 78,
+        "center": 1025
+      }
+    ]
+  },
+  "full-playing": {
+    "felt": {
+      "top": 103,
+      "bottom": 705,
+      "left": 125,
+      "right": 1155,
+      "height": 602,
+      "width": 1030
+    },
+    "clothLayer": {
+      "top": 347,
+      "bottom": 504,
+      "left": 132,
+      "right": 1148,
+      "height": 157,
+      "width": 1016
+    },
+    "clothTitle": {
+      "top": 410,
+      "bottom": 434,
+      "left": 543,
+      "right": 738,
+      "height": 24,
+      "width": 195
+    },
+    "command": {
+      "top": 292,
+      "bottom": 346,
+      "left": 132,
+      "right": 1148,
+      "height": 54,
+      "width": 1016
+    },
+    "commandPill": {
+      "top": 299,
+      "bottom": 346,
+      "left": 416,
+      "right": 864,
+      "height": 47,
+      "width": 448
+    },
+    "dealer": {
+      "top": 178,
+      "bottom": 292,
+      "left": 132,
+      "right": 1148,
+      "height": 114,
+      "width": 1016
+    },
+    "dealButton": {
+      "top": 362,
+      "bottom": 407,
+      "left": 424,
+      "right": 541,
+      "height": 45,
+      "width": 118
+    },
+    "cardsZone": {
+      "top": 347,
+      "bottom": 504,
+      "left": 132,
+      "right": 1148,
+      "height": 157,
+      "width": 1016
+    },
+    "heroCards": null,
+    "heroValue": null,
+    "actionRow": {
+      "top": 497,
+      "bottom": 529,
+      "left": 590,
+      "right": 690,
+      "height": 32,
+      "width": 100
+    },
+    "actionButtons": {
+      "top": 499,
+      "bottom": 526,
+      "left": 596,
+      "right": 684,
+      "height": 27,
+      "width": 87
+    },
+    "boxesZone": {
+      "top": 531,
+      "bottom": 629,
+      "left": 132,
+      "right": 1148,
+      "height": 98,
+      "width": 1016
+    },
+    "trayRow": {
+      "top": 633,
+      "bottom": 693,
+      "left": 384,
+      "right": 896,
+      "height": 60,
+      "width": 512
+    },
+    "bottomZone": {
+      "top": 627,
+      "bottom": 693,
+      "left": 132,
+      "right": 1148,
+      "height": 66,
+      "width": 1016
+    },
+    "trayLabel": {
+      "top": 702,
+      "bottom": 726,
+      "left": 530,
+      "right": 750,
+      "height": 24,
+      "width": 220
+    },
+    "slots": [
+      {
+        "i": 0,
+        "left": 219,
+        "right": 297,
+        "width": 78,
+        "center": 258
+      },
+      {
+        "i": 1,
+        "left": 474,
+        "right": 552,
+        "width": 78,
+        "center": 513
+      },
+      {
+        "i": 2,
+        "left": 728,
+        "right": 806,
+        "width": 78,
+        "center": 767
+      },
+      {
+        "i": 3,
+        "left": 983,
+        "right": 1061,
+        "width": 78,
+        "center": 1022
+      }
+    ]
+  },
+  "card-betting": {
+    "felt": {
+      "top": 103,
+      "bottom": 705,
+      "left": 125,
+      "right": 1155,
+      "height": 602,
+      "width": 1030
+    },
+    "clothLayer": {
+      "top": 347,
+      "bottom": 505,
+      "left": 132,
+      "right": 1148,
+      "height": 159,
+      "width": 1016
+    },
+    "clothTitle": {
+      "top": 411,
+      "bottom": 435,
+      "left": 541,
+      "right": 739,
+      "height": 24,
+      "width": 198
+    },
+    "command": {
+      "top": 292,
+      "bottom": 346,
+      "left": 132,
+      "right": 1148,
+      "height": 54,
+      "width": 1016
+    },
+    "commandPill": {
+      "top": 299,
+      "bottom": 346,
+      "left": 416,
+      "right": 864,
+      "height": 47,
+      "width": 448
+    },
+    "dealer": {
+      "top": 178,
+      "bottom": 292,
+      "left": 132,
+      "right": 1148,
+      "height": 114,
+      "width": 1016
+    },
+    "dealButton": {
+      "top": 248,
+      "bottom": 293,
+      "left": 570,
+      "right": 687,
+      "height": 45,
+      "width": 118
+    },
+    "cardsZone": {
+      "top": 347,
+      "bottom": 505,
+      "left": 132,
+      "right": 1148,
+      "height": 159,
+      "width": 1016
+    },
+    "heroCards": {
+      "top": 352,
+      "bottom": 499,
+      "left": 132,
+      "right": 1148,
+      "height": 147,
+      "width": 1016
+    },
+    "heroValue": {
+      "top": 504,
+      "bottom": 504,
+      "left": 635,
+      "right": 645,
+      "height": 0,
+      "width": 10
+    },
+    "actionRow": null,
+    "actionButtons": null,
+    "boxesZone": {
+      "top": 530,
+      "bottom": 628,
+      "left": 132,
+      "right": 1148,
+      "height": 98,
+      "width": 1016
+    },
+    "trayRow": {
+      "top": 633,
+      "bottom": 693,
+      "left": 384,
+      "right": 896,
+      "height": 60,
+      "width": 512
+    },
+    "bottomZone": {
+      "top": 627,
+      "bottom": 693,
+      "left": 132,
+      "right": 1148,
+      "height": 66,
+      "width": 1016
+    },
+    "trayLabel": {
+      "top": 702,
+      "bottom": 726,
+      "left": 530,
+      "right": 750,
+      "height": 24,
+      "width": 220
+    },
+    "slots": [
+      {
+        "i": 0,
+        "left": 242,
+        "right": 320,
+        "width": 78,
+        "center": 281
+      },
+      {
+        "i": 1,
+        "left": 490,
+        "right": 568,
+        "width": 78,
+        "center": 529
+      },
+      {
+        "i": 2,
+        "left": 738,
+        "right": 816,
+        "width": 78,
+        "center": 777
+      },
+      {
+        "i": 3,
+        "left": 986,
+        "right": 1064,
+        "width": 78,
+        "center": 1025
+      }
+    ]
+  },
+  "card-playing": {
+    "felt": {
+      "top": 103,
+      "bottom": 705,
+      "left": 125,
+      "right": 1155,
+      "height": 602,
+      "width": 1030
+    },
+    "clothLayer": {
+      "top": 347,
+      "bottom": 505,
+      "left": 132,
+      "right": 1148,
+      "height": 159,
+      "width": 1016
+    },
+    "clothTitle": {
+      "top": 411,
+      "bottom": 435,
+      "left": 541,
+      "right": 739,
+      "height": 24,
+      "width": 198
+    },
+    "command": {
+      "top": 292,
+      "bottom": 354,
+      "left": 132,
+      "right": 1148,
+      "height": 62,
+      "width": 1016
+    },
+    "commandPill": {
+      "top": 354,
+      "bottom": 363,
+      "left": 416,
+      "right": 864,
+      "height": 10,
+      "width": 448
+    },
+    "dealer": {
+      "top": 178,
+      "bottom": 292,
+      "left": 132,
+      "right": 1148,
+      "height": 114,
+      "width": 1016
+    },
+    "dealButton": {
+      "top": 306,
+      "bottom": 351,
+      "left": 581,
+      "right": 699,
+      "height": 45,
+      "width": 118
+    },
+    "cardsZone": {
+      "top": 347,
+      "bottom": 505,
+      "left": 132,
+      "right": 1148,
+      "height": 159,
+      "width": 1016
+    },
+    "heroCards": {
+      "top": 352,
+      "bottom": 478,
+      "left": 132,
+      "right": 1148,
+      "height": 126,
+      "width": 1016
+    },
+    "heroValue": {
+      "top": 483,
+      "bottom": 504,
+      "left": 613,
+      "right": 667,
+      "height": 21,
+      "width": 53
+    },
+    "actionRow": {
+      "top": 504,
+      "bottom": 535,
+      "left": 132,
+      "right": 1148,
+      "height": 31,
+      "width": 1016
+    },
+    "actionButtons": {
+      "top": 506,
+      "bottom": 532,
+      "left": 534,
+      "right": 746,
+      "height": 26,
+      "width": 211
+    },
+    "boxesZone": {
+      "top": 530,
+      "bottom": 628,
+      "left": 132,
+      "right": 1148,
+      "height": 98,
+      "width": 1016
+    },
+    "trayRow": {
+      "top": 633,
+      "bottom": 693,
+      "left": 384,
+      "right": 896,
+      "height": 60,
+      "width": 512
+    },
+    "bottomZone": {
+      "top": 627,
+      "bottom": 693,
+      "left": 132,
+      "right": 1148,
+      "height": 66,
+      "width": 1016
+    },
+    "trayLabel": {
+      "top": 702,
+      "bottom": 726,
+      "left": 530,
+      "right": 750,
+      "height": 24,
+      "width": 220
+    },
+    "slots": [
+      {
+        "i": 0,
+        "left": 219,
+        "right": 297,
+        "width": 78,
+        "center": 258
+      },
+      {
+        "i": 1,
+        "left": 474,
+        "right": 552,
+        "width": 78,
+        "center": 513
+      },
+      {
+        "i": 2,
+        "left": 728,
+        "right": 806,
+        "width": 78,
+        "center": 767
+      },
+      {
+        "i": 3,
+        "left": 983,
+        "right": 1061,
+        "width": 78,
+        "center": 1022
+      }
+    ]
+  }
+}

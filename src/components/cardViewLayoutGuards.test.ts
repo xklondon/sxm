@@ -31,7 +31,7 @@ function ruleBody(css: string, selectorNeedle: string): string {
 describe('Card View layout guards', () => {
   it('shows table cloth in Card View desktop (behind hero cards)', () => {
     const clothRule = ruleBody(
-      CARD_DESKTOP_CSS,
+      HERO_AREA_CSS,
       '.bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer',
     );
     expect(clothRule).toMatch(/display:\s*flex/);
@@ -87,7 +87,7 @@ describe('Card View layout guards', () => {
       /\.bj-card-desktop-hero__fan[\s\S]{0,200}justify-content:\s*center/,
     );
     expect(HERO_AREA_CSS).toMatch(
-      /\.bj-card-desktop-hero__card-wrap[\s\S]{0,120}align-items:\s*center/,
+      /\.bj-card-desktop-hero__card-wrap[\s\S]{0,120}align-items:\s*flex-end/,
     );
   });
 
@@ -104,7 +104,7 @@ describe('Card View layout guards', () => {
     expect(SHARED_CSS).toContain('--bj-desktop-zone-command-height: 4rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-actions-height: 2.9rem');
     expect(SHELL_CSS).toMatch(
-      /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*3\.05rem/,
+      /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*1\.55rem/,
     );
     expect(SHARED_CSS).not.toMatch(
       /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*2\.45rem/,

@@ -5,6 +5,11 @@
  */
 
 @media (min-width: 721px) {
+  .bj-view-card-desktop {
+    --bj-cloth-svg-width: min(84%, 36rem);
+    --bj-cloth-svg-max-height: 62%;
+  }
+
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
     flex-direction: column;
     align-items: stretch;
@@ -19,13 +24,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 0.28rem;
+    justify-content: flex-end;
+    gap: 0.18rem;
     width: 100%;
     height: 100%;
     min-height: 0;
     max-height: 100%;
-    padding-bottom: 0.28rem;
+    padding-top: 0.2rem;
+    padding-bottom: 0.12rem;
     box-sizing: border-box;
     overflow: hidden;
     position: relative;
@@ -37,7 +43,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     width: 100%;
     min-height: 7.5rem;
     max-height: 100%;
@@ -48,7 +54,7 @@
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     width: 100%;
     max-width: 100%;
@@ -61,7 +67,7 @@
   .bj-view-card-desktop .bj-card-desktop-hero__card-wrap {
     flex: 0 0 auto;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
   }
 
@@ -94,23 +100,29 @@
     flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
-    gap: 0.25rem;
+    gap: 0.2rem;
     width: auto;
     max-width: 100%;
     min-height: 0;
+    margin-top: 0.12rem;
     overflow: visible;
     align-self: center;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__value:has(.bj-card-desktop-hero__value-placeholder) {
+    min-height: 0;
+    max-height: 1.1rem;
   }
 
   .bj-view-card-desktop .bj-card-desktop-hero__value-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    line-height: 1.1;
+    line-height: 1.05;
     min-height: 0;
-    padding-block: 0.08rem;
+    padding-block: 0.04rem;
     font-size: calc(
-      var(--bj-seat-total-size) * 1.35 * var(--bj-desktop-cardview-hero-value-scale, 1)
+      var(--bj-seat-total-size) * 1.15 * var(--bj-desktop-cardview-hero-value-scale, 0.72)
     );
   }
 
@@ -120,6 +132,9 @@
     border: none;
     background: transparent;
     opacity: 0;
+    min-height: 0;
+    height: 0;
+    padding: 0;
   }
 
   .bj-view-card-desktop .bj-card-desktop-hero__bust-label {
@@ -130,6 +145,11 @@
     color: var(--ds-color-danger, #e85d5d);
   }
 
+  .bj-view-card-desktop .bj-card-desktop-hero:has(.bj-card-desktop-hero__actions) .bj-card-desktop-hero__value {
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
   .bj-view-card-desktop .bj-card-desktop-hero__actions {
     flex: 0 0 auto;
     display: flex;
@@ -138,6 +158,7 @@
     justify-content: center;
     align-items: center;
     min-height: 0;
+    margin-top: 0.75rem;
     overflow: visible;
   }
 
@@ -175,14 +196,23 @@
 
   .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer {
     display: flex !important;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
+    padding-bottom: 0.35rem;
     opacity: 0.92;
     pointer-events: none;
   }
 
+  .bj-view-card-desktop .bj-cards-area--hero:has(.bj-card-desktop-hero__card) .bj-felt-cloth-layer {
+    opacity: 0.38;
+  }
+
+  .bj-view-card-desktop .bj-cards-area--hero:has(.bj-card-desktop-hero__cards-placeholder) .bj-felt-cloth-layer {
+    opacity: 0.92;
+  }
+
   .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__svg {
-    width: min(82%, 34rem);
-    max-height: 58%;
+    width: var(--bj-cloth-svg-width);
+    max-height: var(--bj-cloth-svg-max-height);
   }
 }

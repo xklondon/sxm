@@ -1,0 +1,1302 @@
+﻿[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: '95323c17-31ed-4838-afc1-2f903399bcb3' }
+[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: '4b969ae0-7db7-4759-87d4-ea4902ca1318' }
+[SXMCards][INFO] setupValues {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] Table setup confirmed {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] tableMetaStartingChipsSaved {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'assignBankBot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: 'd02c0279-9eb5-4feb-a099-4995db30f65d',
+  chips: 500,
+  reason: 'initial-bank',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Bank starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: null
+}
+[SXMCards][INFO] allocateBank {
+  bankId: 'd02c0279-9eb5-4feb-a099-4995db30f65d',
+  chips: 500,
+  mode: 'bot'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'allocateBank-bot',
+  entryCount: 1,
+  entries: [
+    {
+      playerId: 'd02c0279-9eb5-4feb-a099-4995db30f65d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'allocateBank-bot',
+  bankPlayerId: 'd02c0279-9eb5-4feb-a099-4995db30f65d',
+  bankBalance: 500,
+  boxSlots: [],
+  all: { 'd02c0279-9eb5-4feb-a099-4995db30f65d': 500 }
+}
+[SXMCards][INFO] Banker assigned: Bank Bot
+[SXMCards][INFO] ownerBankrollCreated {
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  ownerName: 'Alice',
+  startingChipsEachSeat: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  chips: 500,
+  reason: 'initial-player',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Player starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: 'd02c0279-9eb5-4feb-a099-4995db30f65d'
+}
+[SXMCards][INFO] ownerInitialAllocation {
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  ownerName: 'Alice',
+  chips: 500,
+  balanceAfter: 500
+}
+[SXMCards][INFO] thisTableRowsAfterSetup {
+  context: 'ensureTableOwnerPersonBankroll',
+  rows: [
+    {
+      personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+      name: 'Alice',
+      status: 'owner',
+      available: 500,
+      betting: 0,
+      boxes: [],
+      kind: 'person'
+    }
+  ]
+}
+[SXMCards][INFO] nativeBoxPositionEnsured {
+  slotNumber: 1,
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  boxPlayerId: '0e53e868-8e85-4635-b863-9718419b2dec'
+}
+[SXMCards][INFO] temporaryBoxOwnerSkippedNative {
+  boxPlayerId: '0e53e868-8e85-4635-b863-9718419b2dec',
+  nativeOwner: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  bettorPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '0e53e868-8e85-4635-b863-9718419b2dec',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  stakerPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'claimBoxSlot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] claimBoxBeforeAllocation {
+  slotNumber: 2,
+  chips: 500,
+  controller: 'Alice',
+  sessionPlayerIds: [
+    'd02c0279-9eb5-4feb-a099-4995db30f65d',
+    '8f403a05-e621-40e6-bd45-9c03ba770938',
+    '0e53e868-8e85-4635-b863-9718419b2dec'
+  ],
+  ledgerEntryCount: 2
+}
+[SXMCards][INFO] claimBoxResolvePerson { slotNumber: 2, controller: 'Alice' }
+[SXMCards][INFO] claimBoxExistingBankroll {
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  controller: 'Alice',
+  slotNumber: 2
+}
+[SXMCards][INFO] claimBoxLinkedToBankroll {
+  slotNumber: 2,
+  boxPlayerId: '49834bf9-60a8-4a4b-953e-2608c066cb90',
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  chipsAllocated: 0,
+  personBalanceAfter: 500
+}
+[SXMCards][INFO] boxLedgerBalanceAfterAllocation {
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  balanceAfter: 500,
+  slotNumber: 2,
+  boxPlayerId: '49834bf9-60a8-4a4b-953e-2608c066cb90'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'claimBoxSlot',
+  entryCount: 2,
+  entries: [
+    {
+      playerId: 'd02c0279-9eb5-4feb-a099-4995db30f65d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    },
+    {
+      playerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Player starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'claimBoxSlot',
+  bankPlayerId: 'd02c0279-9eb5-4feb-a099-4995db30f65d',
+  bankBalance: 500,
+  boxSlots: [
+    {
+      slotNumber: 1,
+      playerId: '0e53e868-8e85-4635-b863-9718419b2dec',
+      bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+    },
+    {
+      slotNumber: 2,
+      playerId: '49834bf9-60a8-4a4b-953e-2608c066cb90',
+      bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+    }
+  ],
+  all: {
+    'd02c0279-9eb5-4feb-a099-4995db30f65d': 500,
+    '8f403a05-e621-40e6-bd45-9c03ba770938': 500,
+    '0e53e868-8e85-4635-b863-9718419b2dec': 0,
+    '49834bf9-60a8-4a4b-953e-2608c066cb90': 0
+  }
+}
+[SXMCards][INFO] Box claimed {
+  slotNumber: 2,
+  controller: 'Alice',
+  boxPlayerId: '49834bf9-60a8-4a4b-953e-2608c066cb90',
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] temporaryBoxOwnerAssigned {
+  boxPlayerId: '49834bf9-60a8-4a4b-953e-2608c066cb90',
+  bettorPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '49834bf9-60a8-4a4b-953e-2608c066cb90',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  stakerPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'claimBoxSlot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] claimBoxBeforeAllocation {
+  slotNumber: 3,
+  chips: 500,
+  controller: 'Alice',
+  sessionPlayerIds: [
+    'd02c0279-9eb5-4feb-a099-4995db30f65d',
+    '8f403a05-e621-40e6-bd45-9c03ba770938',
+    '0e53e868-8e85-4635-b863-9718419b2dec',
+    '49834bf9-60a8-4a4b-953e-2608c066cb90'
+  ],
+  ledgerEntryCount: 2
+}
+[SXMCards][INFO] claimBoxResolvePerson { slotNumber: 3, controller: 'Alice' }
+[SXMCards][INFO] claimBoxExistingBankroll {
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  controller: 'Alice',
+  slotNumber: 3
+}
+[SXMCards][INFO] claimBoxLinkedToBankroll {
+  slotNumber: 3,
+  boxPlayerId: '5dc350f6-8c28-40c2-8dd9-e6da97fd6190',
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  chipsAllocated: 0,
+  personBalanceAfter: 500
+}
+[SXMCards][INFO] boxLedgerBalanceAfterAllocation {
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  balanceAfter: 500,
+  slotNumber: 3,
+  boxPlayerId: '5dc350f6-8c28-40c2-8dd9-e6da97fd6190'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'claimBoxSlot',
+  entryCount: 2,
+  entries: [
+    {
+      playerId: 'd02c0279-9eb5-4feb-a099-4995db30f65d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    },
+    {
+      playerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Player starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'claimBoxSlot',
+  bankPlayerId: 'd02c0279-9eb5-4feb-a099-4995db30f65d',
+  bankBalance: 500,
+  boxSlots: [
+    {
+      slotNumber: 1,
+      playerId: '0e53e868-8e85-4635-b863-9718419b2dec',
+      bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+    },
+    {
+      slotNumber: 2,
+      playerId: '49834bf9-60a8-4a4b-953e-2608c066cb90',
+      bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+    },
+    {
+      slotNumber: 3,
+      playerId: '5dc350f6-8c28-40c2-8dd9-e6da97fd6190',
+      bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+    }
+  ],
+  all: {
+    'd02c0279-9eb5-4feb-a099-4995db30f65d': 500,
+    '8f403a05-e621-40e6-bd45-9c03ba770938': 500,
+    '0e53e868-8e85-4635-b863-9718419b2dec': 0,
+    '49834bf9-60a8-4a4b-953e-2608c066cb90': 0,
+    '5dc350f6-8c28-40c2-8dd9-e6da97fd6190': 0
+  }
+}
+[SXMCards][INFO] Box claimed {
+  slotNumber: 3,
+  controller: 'Alice',
+  boxPlayerId: '5dc350f6-8c28-40c2-8dd9-e6da97fd6190',
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] temporaryBoxOwnerAssigned {
+  boxPlayerId: '5dc350f6-8c28-40c2-8dd9-e6da97fd6190',
+  bettorPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '5dc350f6-8c28-40c2-8dd9-e6da97fd6190',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  stakerPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'claimBoxSlot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] claimBoxBeforeAllocation {
+  slotNumber: 4,
+  chips: 500,
+  controller: 'Alice',
+  sessionPlayerIds: [
+    'd02c0279-9eb5-4feb-a099-4995db30f65d',
+    '8f403a05-e621-40e6-bd45-9c03ba770938',
+    '0e53e868-8e85-4635-b863-9718419b2dec',
+    '49834bf9-60a8-4a4b-953e-2608c066cb90',
+    '5dc350f6-8c28-40c2-8dd9-e6da97fd6190'
+  ],
+  ledgerEntryCount: 2
+}
+[SXMCards][INFO] claimBoxResolvePerson { slotNumber: 4, controller: 'Alice' }
+[SXMCards][INFO] claimBoxExistingBankroll {
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  controller: 'Alice',
+  slotNumber: 4
+}
+[SXMCards][INFO] claimBoxLinkedToBankroll {
+  slotNumber: 4,
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  chipsAllocated: 0,
+  personBalanceAfter: 500
+}
+[SXMCards][INFO] boxLedgerBalanceAfterAllocation {
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  balanceAfter: 500,
+  slotNumber: 4,
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'claimBoxSlot',
+  entryCount: 2,
+  entries: [
+    {
+      playerId: 'd02c0279-9eb5-4feb-a099-4995db30f65d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    },
+    {
+      playerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Player starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'claimBoxSlot',
+  bankPlayerId: 'd02c0279-9eb5-4feb-a099-4995db30f65d',
+  bankBalance: 500,
+  boxSlots: [
+    {
+      slotNumber: 1,
+      playerId: '0e53e868-8e85-4635-b863-9718419b2dec',
+      bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+    },
+    {
+      slotNumber: 2,
+      playerId: '49834bf9-60a8-4a4b-953e-2608c066cb90',
+      bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+    },
+    {
+      slotNumber: 3,
+      playerId: '5dc350f6-8c28-40c2-8dd9-e6da97fd6190',
+      bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+    },
+    {
+      slotNumber: 4,
+      playerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+      bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+    }
+  ],
+  all: {
+    'd02c0279-9eb5-4feb-a099-4995db30f65d': 500,
+    '8f403a05-e621-40e6-bd45-9c03ba770938': 500,
+    '0e53e868-8e85-4635-b863-9718419b2dec': 0,
+    '49834bf9-60a8-4a4b-953e-2608c066cb90': 0,
+    '5dc350f6-8c28-40c2-8dd9-e6da97fd6190': 0,
+    'c626c3e8-1ec7-4c12-bce0-ac7710460d54': 0
+  }
+}
+[SXMCards][INFO] Box claimed {
+  slotNumber: 4,
+  controller: 'Alice',
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  personId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] temporaryBoxOwnerAssigned {
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  bettorPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  chip: 50,
+  total: 50,
+  minBet: 5,
+  callerPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  stakerPersonId: '8f403a05-e621-40e6-bd45-9c03ba770938'
+}
+[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: '8787a01b-3a1a-4ee0-be6d-b9a21ac364c3' }
+[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: 'e340c981-730b-4ba6-916b-dc50e97b7ab4' }
+[SXMCards][INFO] setupValues {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] Table setup confirmed {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] tableMetaStartingChipsSaved {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'assignBankBot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: '8b609e5e-e970-4787-a8e0-bfb37edf6a1b',
+  chips: 500,
+  reason: 'initial-bank',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Bank starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: null
+}
+[SXMCards][INFO] allocateBank {
+  bankId: '8b609e5e-e970-4787-a8e0-bfb37edf6a1b',
+  chips: 500,
+  mode: 'bot'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'allocateBank-bot',
+  entryCount: 1,
+  entries: [
+    {
+      playerId: '8b609e5e-e970-4787-a8e0-bfb37edf6a1b',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'allocateBank-bot',
+  bankPlayerId: '8b609e5e-e970-4787-a8e0-bfb37edf6a1b',
+  bankBalance: 500,
+  boxSlots: [],
+  all: { '8b609e5e-e970-4787-a8e0-bfb37edf6a1b': 500 }
+}
+[SXMCards][INFO] Banker assigned: Bank Bot
+[SXMCards][INFO] ownerBankrollCreated {
+  personId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  ownerName: 'Alice',
+  startingChipsEachSeat: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  chips: 500,
+  reason: 'initial-player',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Player starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: '8b609e5e-e970-4787-a8e0-bfb37edf6a1b'
+}
+[SXMCards][INFO] ownerInitialAllocation {
+  personId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  ownerName: 'Alice',
+  chips: 500,
+  balanceAfter: 500
+}
+[SXMCards][INFO] thisTableRowsAfterSetup {
+  context: 'ensureTableOwnerPersonBankroll',
+  rows: [
+    {
+      personId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+      name: 'Alice',
+      status: 'owner',
+      available: 500,
+      betting: 0,
+      boxes: [],
+      kind: 'person'
+    }
+  ]
+}
+[SXMCards][INFO] nativeBoxPositionEnsured {
+  slotNumber: 1,
+  personId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  boxPlayerId: '7e9102ee-47b3-45b2-8d19-be79b2dd54c2'
+}
+[SXMCards][INFO] temporaryBoxOwnerSkippedNative {
+  boxPlayerId: '7e9102ee-47b3-45b2-8d19-be79b2dd54c2',
+  nativeOwner: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  bettorPersonId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '7e9102ee-47b3-45b2-8d19-be79b2dd54c2',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  stakerPersonId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4'
+}
+node.exe : [SXMCards][WARN] Failed to load settings {
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([SXMCards][WARN...load settings {:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1472:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2564:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c626c3e8-1ec7-4c12-bce0-ac7710460d54',
+  bankrollOwnerId: '8f403a05-e621-40e6-bd45-9c03ba770938',
+  slotNumber: 4
+}
+[SXMCards][WARN] Failed to load settings {
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1472:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2564:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+[SXMCards][WARN] Failed to load settings {
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1472:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2564:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '7e9102ee-47b3-45b2-8d19-be79b2dd54c2',
+  bankrollOwnerId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '7e9102ee-47b3-45b2-8d19-be79b2dd54c2',
+  bankrollOwnerId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '7e9102ee-47b3-45b2-8d19-be79b2dd54c2',
+  bankrollOwnerId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '7e9102ee-47b3-45b2-8d19-be79b2dd54c2',
+  bankrollOwnerId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '7e9102ee-47b3-45b2-8d19-be79b2dd54c2',
+  bankrollOwnerId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '7e9102ee-47b3-45b2-8d19-be79b2dd54c2',
+  bankrollOwnerId: '7ca4e1fe-3a4c-43fc-99e8-f08f636c5ab4',
+  slotNumber: 1
+}
+[SXMCards][WARN] Failed to load settings {
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1472:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2564:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+Wrote C:\dev\SXMCards\reference-ui\captures\desktop-polish-measurements.json
+{
+  "full-betting": {
+    "felt": {
+      "top": 103,
+      "bottom": 705,
+      "left": 125,
+      "right": 1155,
+      "height": 602,
+      "width": 1030
+    },
+    "clothLayer": {
+      "top": 343,
+      "bottom": 513,
+      "left": 132,
+      "right": 1148,
+      "height": 170,
+      "width": 1016
+    },
+    "clothTitle": {
+      "top": 411,
+      "bottom": 437,
+      "left": 534,
+      "right": 746,
+      "height": 26,
+      "width": 213
+    },
+    "command": {
+      "top": 287,
+      "bottom": 341,
+      "left": 132,
+      "right": 1148,
+      "height": 54,
+      "width": 1016
+    },
+    "commandPill": {
+      "top": 288,
+      "bottom": 341,
+      "left": 416,
+      "right": 864,
+      "height": 52,
+      "width": 448
+    },
+    "dealer": {
+      "top": 178,
+      "bottom": 287,
+      "left": 132,
+      "right": 1148,
+      "height": 110,
+      "width": 1016
+    },
+    "dealButton": {
+      "top": 304,
+      "bottom": 349,
+      "left": 424,
+      "right": 541,
+      "height": 45,
+      "width": 118
+    },
+    "cardsZone": {
+      "top": 343,
+      "bottom": 513,
+      "left": 132,
+      "right": 1148,
+      "height": 170,
+      "width": 1016
+    },
+    "heroCards": null,
+    "heroValue": null,
+    "actionRow": null,
+    "actionButtons": null,
+    "boxesZone": {
+      "top": 538,
+      "bottom": 635,
+      "left": 132,
+      "right": 1148,
+      "height": 98,
+      "width": 1016
+    },
+    "trayRow": {
+      "top": 643,
+      "bottom": 691,
+      "left": 384,
+      "right": 896,
+      "height": 48,
+      "width": 512
+    },
+    "bottomZone": {
+      "top": 635,
+      "bottom": 691,
+      "left": 132,
+      "right": 1148,
+      "height": 56,
+      "width": 1016
+    },
+    "trayLabel": {
+      "top": 706,
+      "bottom": 730,
+      "left": 530,
+      "right": 750,
+      "height": 24,
+      "width": 220
+    },
+    "slots": [
+      {
+        "i": 0,
+        "left": 242,
+        "right": 320,
+        "width": 78,
+        "center": 281
+      },
+      {
+        "i": 1,
+        "left": 490,
+        "right": 568,
+        "width": 78,
+        "center": 529
+      },
+      {
+        "i": 2,
+        "left": 738,
+        "right": 816,
+        "width": 78,
+        "center": 777
+      },
+      {
+        "i": 3,
+        "left": 986,
+        "right": 1064,
+        "width": 78,
+        "center": 1025
+      }
+    ]
+  },
+  "full-playing": {
+    "felt": {
+      "top": 103,
+      "bottom": 705,
+      "left": 125,
+      "right": 1155,
+      "height": 602,
+      "width": 1030
+    },
+    "clothLayer": {
+      "top": 343,
+      "bottom": 513,
+      "left": 132,
+      "right": 1148,
+      "height": 170,
+      "width": 1016
+    },
+    "clothTitle": {
+      "top": 411,
+      "bottom": 437,
+      "left": 534,
+      "right": 746,
+      "height": 26,
+      "width": 213
+    },
+    "command": {
+      "top": 287,
+      "bottom": 341,
+      "left": 132,
+      "right": 1148,
+      "height": 54,
+      "width": 1016
+    },
+    "commandPill": {
+      "top": 288,
+      "bottom": 341,
+      "left": 416,
+      "right": 864,
+      "height": 52,
+      "width": 448
+    },
+    "dealer": {
+      "top": 178,
+      "bottom": 287,
+      "left": 132,
+      "right": 1148,
+      "height": 110,
+      "width": 1016
+    },
+    "dealButton": {
+      "top": 362,
+      "bottom": 407,
+      "left": 424,
+      "right": 541,
+      "height": 45,
+      "width": 118
+    },
+    "cardsZone": {
+      "top": 343,
+      "bottom": 513,
+      "left": 132,
+      "right": 1148,
+      "height": 170,
+      "width": 1016
+    },
+    "heroCards": null,
+    "heroValue": null,
+    "actionRow": {
+      "top": 506,
+      "bottom": 538,
+      "left": 590,
+      "right": 690,
+      "height": 32,
+      "width": 100
+    },
+    "actionButtons": {
+      "top": 508,
+      "bottom": 535,
+      "left": 596,
+      "right": 684,
+      "height": 27,
+      "width": 87
+    },
+    "boxesZone": {
+      "top": 538,
+      "bottom": 635,
+      "left": 132,
+      "right": 1148,
+      "height": 98,
+      "width": 1016
+    },
+    "trayRow": {
+      "top": 643,
+      "bottom": 691,
+      "left": 384,
+      "right": 896,
+      "height": 48,
+      "width": 512
+    },
+    "bottomZone": {
+      "top": 635,
+      "bottom": 691,
+      "left": 132,
+      "right": 1148,
+      "height": 56,
+      "width": 1016
+    },
+    "trayLabel": {
+      "top": 706,
+      "bottom": 730,
+      "left": 530,
+      "right": 750,
+      "height": 24,
+      "width": 220
+    },
+    "slots": [
+      {
+        "i": 0,
+        "left": 219,
+        "right": 297,
+        "width": 78,
+        "center": 258
+      },
+      {
+        "i": 1,
+        "left": 474,
+        "right": 552,
+        "width": 78,
+        "center": 513
+      },
+      {
+        "i": 2,
+        "left": 728,
+        "right": 806,
+        "width": 78,
+        "center": 767
+      },
+      {
+        "i": 3,
+        "left": 983,
+        "right": 1061,
+        "width": 78,
+        "center": 1022
+      }
+    ]
+  },
+  "card-betting": {
+    "felt": {
+      "top": 103,
+      "bottom": 705,
+      "left": 125,
+      "right": 1155,
+      "height": 602,
+      "width": 1030
+    },
+    "clothLayer": {
+      "top": 341,
+      "bottom": 489,
+      "left": 132,
+      "right": 1148,
+      "height": 148,
+      "width": 1016
+    },
+    "clothTitle": {
+      "top": 376,
+      "bottom": 399,
+      "left": 551,
+      "right": 730,
+      "height": 23,
+      "width": 179
+    },
+    "command": {
+      "top": 287,
+      "bottom": 341,
+      "left": 132,
+      "right": 1148,
+      "height": 54,
+      "width": 1016
+    },
+    "commandPill": {
+      "top": 288,
+      "bottom": 341,
+      "left": 416,
+      "right": 864,
+      "height": 52,
+      "width": 448
+    },
+    "dealer": {
+      "top": 178,
+      "bottom": 287,
+      "left": 132,
+      "right": 1148,
+      "height": 110,
+      "width": 1016
+    },
+    "dealButton": {
+      "top": 248,
+      "bottom": 293,
+      "left": 570,
+      "right": 687,
+      "height": 45,
+      "width": 118
+    },
+    "cardsZone": {
+      "top": 341,
+      "bottom": 489,
+      "left": 132,
+      "right": 1148,
+      "height": 148,
+      "width": 1016
+    },
+    "heroCards": {
+      "top": 337,
+      "bottom": 457,
+      "left": 132,
+      "right": 1148,
+      "height": 120,
+      "width": 1016
+    },
+    "heroValue": {
+      "top": 461,
+      "bottom": 493,
+      "left": 616,
+      "right": 664,
+      "height": 32,
+      "width": 48
+    },
+    "actionRow": null,
+    "actionButtons": null,
+    "boxesZone": {
+      "top": 538,
+      "bottom": 635,
+      "left": 132,
+      "right": 1148,
+      "height": 98,
+      "width": 1016
+    },
+    "trayRow": {
+      "top": 643,
+      "bottom": 691,
+      "left": 384,
+      "right": 896,
+      "height": 48,
+      "width": 512
+    },
+    "bottomZone": {
+      "top": 635,
+      "bottom": 691,
+      "left": 132,
+      "right": 1148,
+      "height": 56,
+      "width": 1016
+    },
+    "trayLabel": {
+      "top": 706,
+      "bottom": 730,
+      "left": 530,
+      "right": 750,
+      "height": 24,
+      "width": 220
+    },
+    "slots": [
+      {
+        "i": 0,
+        "left": 242,
+        "right": 320,
+        "width": 78,
+        "center": 281
+      },
+      {
+        "i": 1,
+        "left": 490,
+        "right": 568,
+        "width": 78,
+        "center": 529
+      },
+      {
+        "i": 2,
+        "left": 738,
+        "right": 816,
+        "width": 78,
+        "center": 777
+      },
+      {
+        "i": 3,
+        "left": 986,
+        "right": 1064,
+        "width": 78,
+        "center": 1025
+      }
+    ]
+  },
+  "card-playing": {
+    "felt": {
+      "top": 103,
+      "bottom": 705,
+      "left": 125,
+      "right": 1155,
+      "height": 602,
+      "width": 1030
+    },
+    "clothLayer": {
+      "top": 341,
+      "bottom": 489,
+      "left": 132,
+      "right": 1148,
+      "height": 148,
+      "width": 1016
+    },
+    "clothTitle": {
+      "top": 376,
+      "bottom": 399,
+      "left": 551,
+      "right": 730,
+      "height": 23,
+      "width": 179
+    },
+    "command": {
+      "top": 287,
+      "bottom": 341,
+      "left": 132,
+      "right": 1148,
+      "height": 54,
+      "width": 1016
+    },
+    "commandPill": {
+      "top": 288,
+      "bottom": 341,
+      "left": 416,
+      "right": 864,
+      "height": 52,
+      "width": 448
+    },
+    "dealer": {
+      "top": 178,
+      "bottom": 287,
+      "left": 132,
+      "right": 1148,
+      "height": 110,
+      "width": 1016
+    },
+    "dealButton": {
+      "top": 306,
+      "bottom": 351,
+      "left": 581,
+      "right": 699,
+      "height": 45,
+      "width": 118
+    },
+    "cardsZone": {
+      "top": 341,
+      "bottom": 489,
+      "left": 132,
+      "right": 1148,
+      "height": 148,
+      "width": 1016
+    },
+    "heroCards": {
+      "top": 336,
+      "bottom": 456,
+      "left": 132,
+      "right": 1148,
+      "height": 120,
+      "width": 1016
+    },
+    "heroValue": {
+      "top": 460,
+      "bottom": 494,
+      "left": 607,
+      "right": 673,
+      "height": 34,
+      "width": 66
+    },
+    "actionRow": {
+      "top": 489,
+      "bottom": 520,
+      "left": 132,
+      "right": 1148,
+      "height": 31,
+      "width": 1016
+    },
+    "actionButtons": {
+      "top": 491,
+      "bottom": 517,
+      "left": 534,
+      "right": 746,
+      "height": 26,
+      "width": 211
+    },
+    "boxesZone": {
+      "top": 538,
+      "bottom": 635,
+      "left": 132,
+      "right": 1148,
+      "height": 98,
+      "width": 1016
+    },
+    "trayRow": {
+      "top": 643,
+      "bottom": 691,
+      "left": 384,
+      "right": 896,
+      "height": 48,
+      "width": 512
+    },
+    "bottomZone": {
+      "top": 635,
+      "bottom": 691,
+      "left": 132,
+      "right": 1148,
+      "height": 56,
+      "width": 1016
+    },
+    "trayLabel": {
+      "top": 706,
+      "bottom": 730,
+      "left": 530,
+      "right": 750,
+      "height": 24,
+      "width": 220
+    },
+    "slots": [
+      {
+        "i": 0,
+        "left": 219,
+        "right": 297,
+        "width": 78,
+        "center": 258
+      },
+      {
+        "i": 1,
+        "left": 474,
+        "right": 552,
+        "width": 78,
+        "center": 513
+      },
+      {
+        "i": 2,
+        "left": 728,
+        "right": 806,
+        "width": 78,
+        "center": 767
+      },
+      {
+        "i": 3,
+        "left": 983,
+        "right": 1061,
+        "width": 78,
+        "center": 1022
+      }
+    ]
+  }
+}
