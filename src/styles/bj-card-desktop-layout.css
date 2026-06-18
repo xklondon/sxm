@@ -2,28 +2,5 @@
  * Desktop Card View — shell-adjacent overrides outside hero internals.
  * Hero cards area: bj-card-desktop-hero-area.css
  * Shell zones: bj-blackjack-table-shell.css
+ * Actions/boxes/command/tray bands: shared shell only (no per-view overrides).
  */
-
-@media (min-width: 721px) {
-  /* Actions zone — center row under hero when actions render in shell grid band. */
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--actions .bj-action-row {
-    width: 100%;
-    max-width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions {
-    width: 100%;
-    max-width: 14rem;
-    margin-inline: auto;
-    align-self: center;
-  }
-}

@@ -1428,8 +1428,17 @@
 @media (min-width: 721px) {
   .bj-view-full-desktop.bj-casino .bj-table-desktop-shell > .bj-casino__table-header .bj-casino__toolbar,
   .bj-view-card-desktop.bj-casino .bj-table-desktop-shell > .bj-casino__table-header .bj-casino__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem;
     padding-inline: calc(0.5rem + 0.45rem);
     box-sizing: border-box;
   }
 
+  .bj-view-full-desktop.bj-casino .bj-table-desktop-shell > .bj-casino__table-header .bj-casino__table-nav,
+  .bj-view-card-desktop.bj-casino .bj-table-desktop-shell > .bj-casino__table-header .bj-casino__table-nav {
+    margin-left: auto;
+    justify-self: auto;
+  }
 }

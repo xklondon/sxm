@@ -1585,7 +1585,7 @@ export function BlackjackPanel({
 
     return (
       <BlackjackActionRow
-        scale={isCardViewDesktop || isCardViewMobile ? 'card-view' : 'full-table'}
+        scale={isCardViewMobile ? 'card-view' : 'full-table'}
         variant="table"
         actionsEnabled={playerDecisionActionsEnabled}
         canHit={canHit}

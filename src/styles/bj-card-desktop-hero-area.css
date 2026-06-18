@@ -159,8 +159,42 @@
     margin: 0;
   }
 
-  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__svg {
-    width: var(--bj-cloth-svg-width);
-    max-height: var(--bj-cloth-svg-max-height);
+  .bj-view-card-desktop.bj-casino[data-bj-phase='betting'] .bj-card-desktop-hero,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='resolved'] .bj-card-desktop-hero {
+    flex: 0 0 auto;
+    min-height: 0;
+    justify-content: flex-end;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .bj-view-card-desktop.bj-casino[data-bj-phase='betting'] .bj-card-desktop-hero__cards,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='resolved'] .bj-card-desktop-hero__cards {
+    flex: 0 0 auto;
+    min-height: 0;
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-card-desktop-hero,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-card-desktop-hero {
+    overflow: visible;
+  }
+
+  .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-card-desktop-hero__cards,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-card-desktop-hero__cards {
+    overflow: visible;
+    min-height: 7.75rem;
+  }
+
+  .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-card-desktop-hero__fan,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-card-desktop-hero__fan {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
+    overflow: visible;
   }
 }

@@ -28,26 +28,26 @@
     },
     "command": {
       "top": 292,
-      "bottom": 356,
+      "bottom": 346,
       "left": 132,
       "right": 1148,
-      "height": 64,
+      "height": 54,
       "width": 1016
     },
     "commandPill": {
       "top": 299,
-      "bottom": 356,
+      "bottom": 361,
       "left": 416,
       "right": 864,
-      "height": 57,
+      "height": 63,
       "width": 448
     },
     "dealer": {
       "top": 178,
-      "bottom": 302,
+      "bottom": 292,
       "left": 132,
       "right": 1148,
-      "height": 124,
+      "height": 114,
       "width": 1016
     },
     "dealButton": {
@@ -153,43 +153,43 @@
       "width": 1030
     },
     "clothLayer": {
-      "top": 387,
+      "top": 408,
       "bottom": 487,
       "left": 132,
       "right": 1148,
-      "height": 101,
+      "height": 80,
       "width": 1016
     },
     "clothTitle": {
-      "top": 426,
-      "bottom": 442,
-      "left": 579,
-      "right": 702,
-      "height": 16,
-      "width": 124
+      "top": 439,
+      "bottom": 450,
+      "left": 592,
+      "right": 689,
+      "height": 12,
+      "width": 97
     },
     "command": {
       "top": 292,
-      "bottom": 356,
+      "bottom": 406,
       "left": 132,
       "right": 1148,
-      "height": 64,
+      "height": 114,
       "width": 1016
     },
     "commandPill": {
       "top": 354,
-      "bottom": 363,
+      "bottom": 398,
       "left": 416,
       "right": 864,
-      "height": 10,
+      "height": 44,
       "width": 448
     },
     "dealer": {
       "top": 178,
-      "bottom": 302,
+      "bottom": 292,
       "left": 132,
       "right": 1148,
-      "height": 124,
+      "height": 114,
       "width": 1016
     },
     "dealButton": {
@@ -201,18 +201,18 @@
       "width": 118
     },
     "cardsZone": {
-      "top": 387,
+      "top": 408,
       "bottom": 487,
       "left": 132,
       "right": 1148,
-      "height": 101,
+      "height": 80,
       "width": 1016
     },
     "heroCards": null,
     "heroValue": null,
     "actionRow": {
-      "top": 499,
-      "bottom": 531,
+      "top": 512,
+      "bottom": 544,
       "left": 590,
       "right": 690,
       "height": 32,
@@ -227,8 +227,8 @@
       "width": 1016
     },
     "actionButtons": {
-      "top": 501,
-      "bottom": 528,
+      "top": 514,
+      "bottom": 542,
       "left": 596,
       "right": 684,
       "height": 27,
@@ -326,26 +326,26 @@
     },
     "command": {
       "top": 292,
-      "bottom": 356,
+      "bottom": 346,
       "left": 132,
       "right": 1148,
-      "height": 64,
+      "height": 54,
       "width": 1016
     },
     "commandPill": {
       "top": 299,
-      "bottom": 356,
+      "bottom": 361,
       "left": 416,
       "right": 864,
-      "height": 57,
+      "height": 63,
       "width": 448
     },
     "dealer": {
       "top": 178,
-      "bottom": 302,
+      "bottom": 292,
       "left": 132,
       "right": 1148,
-      "height": 124,
+      "height": 114,
       "width": 1016
     },
     "dealButton": {
@@ -365,16 +365,16 @@
       "width": 1016
     },
     "heroCards": {
-      "top": 353,
-      "bottom": 498,
+      "top": 500,
+      "bottom": 500,
       "left": 132,
       "right": 1148,
-      "height": 145,
+      "height": 0,
       "width": 1016
     },
     "heroValue": {
-      "top": 503,
-      "bottom": 503,
+      "top": 505,
+      "bottom": 505,
       "left": 635,
       "right": 645,
       "height": 0,
@@ -465,43 +465,43 @@
       "width": 1030
     },
     "clothLayer": {
-      "top": 387,
+      "top": 408,
       "bottom": 489,
       "left": 132,
       "right": 1148,
-      "height": 102,
+      "height": 81,
       "width": 1016
     },
     "clothTitle": {
-      "top": 429,
-      "bottom": 446,
-      "left": 574,
-      "right": 706,
-      "height": 17,
-      "width": 132
+      "top": 441,
+      "bottom": 454,
+      "left": 588,
+      "right": 693,
+      "height": 13,
+      "width": 105
     },
     "command": {
       "top": 292,
-      "bottom": 356,
+      "bottom": 406,
       "left": 132,
       "right": 1148,
-      "height": 64,
+      "height": 114,
       "width": 1016
     },
     "commandPill": {
       "top": 354,
-      "bottom": 363,
+      "bottom": 398,
       "left": 416,
       "right": 864,
-      "height": 10,
+      "height": 44,
       "width": 448
     },
     "dealer": {
       "top": 178,
-      "bottom": 302,
+      "bottom": 292,
       "left": 132,
       "right": 1148,
-      "height": 124,
+      "height": 114,
       "width": 1016
     },
     "dealButton": {
@@ -513,19 +513,19 @@
       "width": 118
     },
     "cardsZone": {
-      "top": 387,
+      "top": 408,
       "bottom": 489,
       "left": 132,
       "right": 1148,
-      "height": 102,
+      "height": 81,
       "width": 1016
     },
     "heroCards": {
-      "top": 341,
+      "top": 337,
       "bottom": 461,
       "left": 132,
       "right": 1148,
-      "height": 120,
+      "height": 124,
       "width": 1016
     },
     "heroValue": {
@@ -537,12 +537,12 @@
       "width": 53
     },
     "actionRow": {
-      "top": 502,
-      "bottom": 533,
-      "left": 132,
-      "right": 1148,
+      "top": 512,
+      "bottom": 543,
+      "left": 594,
+      "right": 686,
       "height": 31,
-      "width": 1016
+      "width": 92
     },
     "actionZone": {
       "top": 487,
@@ -553,12 +553,12 @@
       "width": 1016
     },
     "actionButtons": {
-      "top": 504,
-      "bottom": 530,
-      "left": 534,
-      "right": 746,
+      "top": 514,
+      "bottom": 540,
+      "left": 601,
+      "right": 679,
       "height": 26,
-      "width": 211
+      "width": 79
     },
     "boxesZone": {
       "top": 530,

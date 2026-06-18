@@ -82,7 +82,9 @@ export function CardViewDesktopHeroArea({
   const visualHand =
     heroHandKey && round?.playerHands[heroHandKey] ? round.playerHands[heroHandKey] : undefined;
 
-  const heroCardIds = (visualHand?.cardIds ?? []).filter((id) => id.length > 0);
+  const logicalCardIds = (logicalHand?.cardIds ?? []).filter((id) => id.length > 0);
+  const visualCardIds = (visualHand?.cardIds ?? []).filter((id) => id.length > 0);
+  const heroCardIds = visualCardIds.length > 0 ? visualCardIds : logicalCardIds;
   const heroDisplayValue =
     heroHandKey !== null ? getDisplayedHandValue(deck, round, heroHandKey) : null;
 
