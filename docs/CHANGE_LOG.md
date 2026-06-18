@@ -43,7 +43,15 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-16 — Canonical desktop layout tokens (Full Table + Card View)
+## 2026-06-18 — Desktop Card View route cleanup + split presentation
+
+- **Card View dead routes removed:** `BlackjackCardView.css` desktop `.bj-phone-view__*` hero rules; card-only dealer grid/commentary CSS in `bj-blackjack-table-shell.css`; duplicate cloth/hero-value rules in `bj-card-desktop-hero-area.css`.
+- **Desktop Card View hero:** cards only (no value badge); outcome marker floats on cards band; shared `BlackjackActionRow` (`full-table` scale) unchanged.
+- **Command (playing/dealing):** both desktop views — command zone height `5.85rem`, dealer→command gap `2.55rem` (pill closer to dealer; more cards-row headroom). Card View betting command gap aligned with Full Table (`3.875rem`).
+- **Split:** engine unchanged (`splitBlackjackOnState` — `boxId:handIndex` hands, equal wager). Desktop Card View adds split-companion box tiles left of parent slot (`bj-arc__slot--split-companion`); hero follows `activeHandKey` only. Tests: `cardViewDesktopSplit.test.tsx`.
+
+---
+
 
 - **Desktop layout:** Token-based vertical zone model for `.bj-view-full-desktop` and `.bj-view-card-desktop` — player row spread (`--bj-desktop-player-row-spread`), in-box value 2× scale, Card View hero value −30%, action row offset, hero card area bottom gap.
 - **Card View desktop:** Player boxes now full-width `space-evenly` (was compact centered cluster); hero cards stretch lower without clipping; hero value in dedicated shell zone.

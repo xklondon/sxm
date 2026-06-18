@@ -192,6 +192,7 @@ import type { AuthUser } from '../api/client';
 import { MAX_TABLE_BOXES } from '../types/table';
 import {
   arcSlotRotation,
+  arcSplitCompanionRotation,
   DEFAULT_VISIBLE_TABLE_BOXES,
   filterVisibleBoxSlots,
   resolveEffectiveVisibleBoxCount,
@@ -1815,7 +1816,11 @@ export function BlackjackPanel({
     );
   }
 
-  function renderArcSlot(slotNumber: number) {
+  function renderArcSlot(
+    slotNumber: number,
+    slotOpts?: { splitHandKey?: string; splitCompanion?: boolean },
+  ) {
+    const isSplitCompanion = Boolean(slotOpts?.splitCompanion && slotOpts.splitHandKey);
     const slot = tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
     const boxId = slot?.playerId ?? null;
     const isEmpty = !boxId;
@@ -1847,24 +1852,32 @@ export function BlackjackPanel({
       }
     }
     const primaryHandKey = handKeys[0];
+    const displayHandKey = slotOpts?.splitHandKey ?? primaryHandKey;
     const primaryHand = primaryHandKey ? visualRound?.playerHands[primaryHandKey] : null;
-    const visibleCardIds = primaryHandKey
-      ? getVisibleHandCardIds(visualRound, primaryHandKey)
+    const displayHand = displayHandKey ? visualRound?.playerHands[displayHandKey] : primaryHand;
+    const visibleCardIds = displayHandKey
+      ? getVisibleHandCardIds(visualRound, displayHandKey)
       : [];
-    const isBusted = primaryHand?.actionStatus === 'busted';
-    const wager = inBetting ? openStake || pendingStakeTotal : (primaryHand?.currentBet ?? openStake);
-    const betAmount = resolveBoxBetAmountDuringPlay(
-      inBetting,
-      openStake || pendingStakeTotal,
-      primaryHand?.currentBet,
-    );
+    const isBusted = displayHand?.actionStatus === 'busted';
+    const wager = inBetting ? openStake || pendingStakeTotal : (displayHand?.currentBet ?? openStake);
+    const betAmount = isSplitCompanion
+      ? (displayHand?.currentBet ?? 0)
+      : resolveBoxBetAmountDuringPlay(
+          inBetting,
+          openStake || pendingStakeTotal,
+          displayHand?.currentBet,
+        );
     const boxParticipated =
-      Boolean(visualRound) && boxId != null && boxHadActiveHandInRound(visualRound!, handKeys);
+      Boolean(visualRound) &&
+      boxId != null &&
+      (isSplitCompanion
+        ? Boolean(displayHand && (displayHand.currentBet > 0 || displayHand.cardIds.some(Boolean)))
+        : boxHadActiveHandInRound(visualRound!, handKeys));
     const boxNetChips =
       showBoxHandResultMarkers && visualRound && boxParticipated
         ? resolveBoxNetChipsForHands(
             visualRound,
-            handKeys,
+            isSplitCompanion && displayHandKey ? [displayHandKey] : handKeys,
             gameState.blackjackSettings.blackjackPayout,
           )
         : null;
@@ -1882,37 +1895,62 @@ export function BlackjackPanel({
     const stakeChips = mergeStakeChipsForSlotDisplay(gameState, slotNumber, boxId, pendingChips);
     const showBettingChips = inBetting && (openStake > 0 || pendingChips.length > 0) && stakeChips.length > 0;
     const inBoxPlayPhase =
-      !inBetting && !showBoxHandResultMarkers && Boolean(primaryHandKey);
+      !inBetting && !showBoxHandResultMarkers && Boolean(displayHandKey);
     const inBoxHandValueLabel = inBoxPlayPhase
-      ? resolvePrimaryHandValueLabel(visualDeck, visualRound, primaryHandKey, primaryHand)
+      ? resolvePrimaryHandValueLabel(visualDeck, visualRound, displayHandKey, displayHand)
       : '';
-    const displayChips = showBettingChips ? stakeChips : [];
-    const showStakeContent = displayChips.length > 0 || inBoxPlayPhase;
+    const displayChips = showBettingChips && !isSplitCompanion ? stakeChips : [];
+    const showStakeContent = isSplitCompanion
+      ? false
+      : displayChips.length > 0 || inBoxPlayPhase;
     const dropKey = chipDropKey({ slotNumber, boxId });
     const rotation =
       deviceView === 'mobile'
         ? 0
-        : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
-    const isSelected = inBetting && selectedBettingSlotNumber === slotNumber;
-    const isDrop = dropTargetId === dropKey || dropTargetId === `slot-${slotNumber}`;
+        : isSplitCompanion
+          ? arcSplitCompanionRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false })
+          : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
+    const isSelected = inBetting && !isSplitCompanion && selectedBettingSlotNumber === slotNumber;
+    const isDrop = !isSplitCompanion && (dropTargetId === dropKey || dropTargetId === `slot-${slotNumber}`);
     const onSelect = () => (boxId ? selectBox(boxId) : handleClaimOrSelectSlot(slotNumber));
+    const useHandLevelTurn = isCardViewDesktop && (isSplitCompanion || handKeys.length > 1);
+    const isHandTurn =
+      useHandLevelTurn &&
+      isPlayerTurnPhase(protocolPhase) &&
+      !inBetting &&
+      Boolean(displayHandKey) &&
+      visualRound?.activeHandKey === displayHandKey;
+    const turnBorderClass = useHandLevelTurn
+      ? isHandTurn
+        ? BOX_BORDER_TURN
+        : ''
+      : borderState.isTurn
+        ? BOX_BORDER_TURN
+        : '';
 
     return (
       <div
-        key={slotArcReactKey(slotNumber)}
+        key={
+          isSplitCompanion
+            ? `split-companion-${slotNumber}-${slotOpts!.splitHandKey}`
+            : slotArcReactKey(slotNumber)
+        }
         className={[
           'bj-arc__slot',
-          isEmpty ? 'bj-arc__slot--empty' : 'bj-arc__slot--owned',
-          TABLE_UX.boxHitZone,
-          isJoinAssigned ? 'bj-arc__slot--join-highlight' : '',
+          isEmpty && !isSplitCompanion ? 'bj-arc__slot--empty' : 'bj-arc__slot--owned',
+          isSplitCompanion ? 'bj-arc__slot--split-companion' : TABLE_UX.boxHitZone,
+          isJoinAssigned && !isSplitCompanion ? 'bj-arc__slot--join-highlight' : '',
           isDrop ? 'bj-arc__slot--drop' : '',
         ].filter(Boolean).join(' ')}
         style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
-        {...{
-          [CHIP_DROP_SLOT_ATTR]: slotNumber,
-          [CHIP_DROP_BOX_ATTR]: boxId ?? '',
-        }}
+        {...(isSplitCompanion
+          ? { 'data-split-hand-key': slotOpts!.splitHandKey }
+          : {
+              [CHIP_DROP_SLOT_ATTR]: slotNumber,
+              [CHIP_DROP_BOX_ATTR]: boxId ?? '',
+            })}
       >
+        {isSplitCompanion ? null : (
         <button
           type="button"
           className={TABLE_UX.boxHitArea}
@@ -1942,6 +1980,7 @@ export function BlackjackPanel({
           }
           onDrop={inBetting ? (e) => handleSlotChipDrop(slotNumber, e) : undefined}
         />
+        )}
         <span
           className={boxStakeLabelClassName(Boolean(boxValueLabel), isBusted, boxNetTone)}
           aria-hidden={boxValueLabel ? undefined : 'true'}
@@ -1954,17 +1993,17 @@ export function BlackjackPanel({
             getBoxCardVisualClasses(borderState),
             TABLE_UX.fullArcBox,
             'bj-player-box-mobile',
-            borderState.isTurn ? BOX_BORDER_TURN : '',
-            isEmpty ? 'bj-phone-view__mini-hand--empty' : '',
+            turnBorderClass,
+            isEmpty && !isSplitCompanion ? 'bj-phone-view__mini-hand--empty' : '',
             isSelected ? 'bj-box--selected' : '',
             isSelected ? BET_BOX_PULSE : '',
             isDrop ? 'bj-bet-zone--drop' : '',
-            getBoxActivePulseClassName(borderState),
+            useHandLevelTurn ? getBoxActivePulseClassName({ ...borderState, isTurn: isHandTurn }) : getBoxActivePulseClassName(borderState),
           )}
         >
           {boxInfo ? (
             <BlackjackPlayerBoxHead
-              boxLabel={boxInfo.boxLabel}
+              boxLabel={isSplitCompanion ? `${boxInfo.boxLabel} split` : boxInfo.boxLabel}
               callerDisplayName={boxInfo.callerDisplayName}
             />
           ) : (
@@ -2005,7 +2044,8 @@ export function BlackjackPanel({
                 cardColumnHandValueClassName(
                   true,
                   isBusted,
-                  borderState.isTurn && isPlayerTurnPhase(protocolPhase),
+                  (useHandLevelTurn ? isHandTurn : borderState.isTurn) &&
+                    isPlayerTurnPhase(protocolPhase),
                 ),
               ]
                 .filter(Boolean)
@@ -2076,7 +2116,20 @@ export function BlackjackPanel({
               +
             </button>
           ) : null}
-          {displaySlots.map((slot) => renderArcSlot(slot.slotNumber))}
+          {displaySlots.flatMap((slot) => {
+            if (!isCardViewDesktop) {
+              return [renderArcSlot(slot.slotNumber)];
+            }
+            const boxId =
+              tableMeta.boxSlots.find((s) => s.slotNumber === slot.slotNumber)?.playerId ?? null;
+            const splitCompanions = boxId ? (handKeysByBox.get(boxId) ?? []).slice(1) : [];
+            return [
+              ...splitCompanions.map((handKey) =>
+                renderArcSlot(slot.slotNumber, { splitHandKey: handKey, splitCompanion: true }),
+              ),
+              renderArcSlot(slot.slotNumber),
+            ];
+          })}
           </div>
         </div>
       </BlackjackPlayerBoxRow>

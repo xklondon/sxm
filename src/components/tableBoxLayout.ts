@@ -40,6 +40,21 @@ export function arcSlotRotation(
   return rotations[idx] ?? 0;
 }
 
+/** Split companion tile — visually between parent box and the next seat to the left. */
+export function arcSplitCompanionRotation(
+  parentSlotNumber: number,
+  visibleCount: number,
+  options?: { mobile?: boolean },
+): number {
+  const parentRot = arcSlotRotation(parentSlotNumber, visibleCount, options);
+  const leftNeighborSlot = parentSlotNumber + 1;
+  if (leftNeighborSlot > visibleCount) {
+    return parentRot + (options?.mobile ? 5 : 7);
+  }
+  const neighborRot = arcSlotRotation(leftNeighborSlot, visibleCount, options);
+  return (parentRot + neighborRot) / 2;
+}
+
 /** User-expanded count only — occupancy must not auto-expand the visible row. */
 export function resolveEffectiveVisibleBoxCount(
   _boxSlots: readonly BoxSlotState[],

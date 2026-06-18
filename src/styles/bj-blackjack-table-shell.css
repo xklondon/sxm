@@ -37,7 +37,6 @@
     --bj-player-box-height: 4.05rem;
     --bj-full-table-box-height: var(--bj-player-box-height);
     --bj-desktop-box-value-scale: 2;
-    --bj-desktop-cardview-hero-value-scale: 0.72;
     --bj-card-hero-card-width: min(17vw, 10.25rem);
     --bj-card-hero-card-max-height: min(32vh, 13.25rem);
     --bj-hero-cards-top-inset: 0.12rem;
@@ -62,7 +61,14 @@
     --bj-command-cards-gap: 0.12rem;
   }
 
-  .bj-view-card-desktop.bj-casino[data-bj-phase='betting'],
+  .bj-view-card-desktop.bj-casino[data-bj-phase='betting'] {
+    --bj-desktop-dealer-command-gap: 3.875rem;
+    --bj-desktop-zone-actions-height: 1.55rem;
+    --bj-desktop-actions-zone-padding-top: 0;
+    --bj-desktop-actions-boxes-gap: 0.14rem;
+    --bj-command-cards-gap: 0.12rem;
+  }
+
   .bj-view-card-desktop.bj-casino[data-bj-phase='resolved'] {
     --bj-desktop-dealer-command-gap: 0.42rem;
     --bj-desktop-zone-actions-height: 1.55rem;
@@ -71,13 +77,13 @@
     --bj-command-cards-gap: 0.12rem;
   }
 
-  /* Dealing + playing — clear dealer controls; actions band with extra headroom. */
+  /* Dealing + playing — command band tightened; pill closer to dealer for card headroom. */
   .bj-view-full-desktop.bj-casino[data-bj-phase='dealing'],
   .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'],
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing'],
   .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] {
-    --bj-desktop-zone-command-height: 7.15rem;
-    --bj-desktop-dealer-command-gap: 3.85rem;
+    --bj-desktop-zone-command-height: 5.85rem;
+    --bj-desktop-dealer-command-gap: 2.55rem;
     --bj-desktop-zone-actions-height: 2.5rem;
     --bj-desktop-actions-zone-padding-top: 1.56rem;
     --bj-desktop-actions-boxes-gap: 0.14rem;
@@ -388,29 +394,5 @@
     min-height: calc(0.95rem * var(--bj-desktop-box-value-scale, 2) * 0.55);
     max-height: calc(1.05rem * var(--bj-desktop-box-value-scale, 2) * 0.55);
     line-height: 1.05;
-  }
-
-  /* Card View dealer commentary column — cosmetic only; shell rows unchanged. */
-  .bj-view-card-desktop .dealer-block__grid {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    width: 100%;
-  }
-
-  .bj-view-card-desktop .dealer-block__commentary-col {
-    position: absolute;
-    left: 0;
-    top: 0.1rem;
-    width: 4.75rem;
-    z-index: 2;
-  }
-
-  .bj-view-card-desktop .dealer-block__center-col {
-    grid-area: unset;
-    width: 100%;
-    max-width: 20rem;
-    margin-inline: auto;
   }
 }

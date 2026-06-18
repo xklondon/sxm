@@ -89,7 +89,7 @@ function requireBand(root: ParentNode, band: string): Element {
 }
 
 describe('Desktop Card View bounding bands (1280×800)', () => {
-  it('orders hero cards → hero value → actions → player boxes → tray top-to-bottom without overlap', () => {
+  it('orders hero cards → actions → player boxes → tray top-to-bottom without overlap', () => {
     simulatedWidth = 1280;
     simulatedHeight = 800;
     const { container } = render(
@@ -101,18 +101,18 @@ describe('Desktop Card View bounding bands (1280×800)', () => {
 
     const root = container.querySelector('.bj-view-card-desktop');
     expect(root).toBeTruthy();
+    expect(root!.querySelector('[data-layout-band="hero-value"]')).toBeNull();
 
     const heroCards = measureElement(requireBand(root!, 'hero-cards'));
-    const heroValue = measureElement(requireBand(root!, 'hero-value'));
     const actionRow = measureElement(requireBand(root!, 'action-row'));
     const playerBoxes = measureElement(requireBand(root!, 'player-boxes'));
     const trayRow = measureElement(requireBand(root!, 'tray-row'));
 
-    assertVerticalStack([heroCards, heroValue, actionRow, playerBoxes, trayRow], {
+    assertVerticalStack([heroCards, actionRow, playerBoxes, trayRow], {
       label: 'Desktop Card View bands',
       tolerancePx: 2,
     });
-    assertNoPairwiseOverlap([heroCards, heroValue, actionRow, playerBoxes], {
+    assertNoPairwiseOverlap([heroCards, actionRow, playerBoxes], {
       label: 'Desktop Card View hero/actions/boxes',
       tolerancePx: 2,
     });

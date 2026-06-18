@@ -4,14 +4,11 @@ import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { parseBlackjackHandKey } from '../engine/blackjack';
 import { getCardById } from '../engine/deck';
 import { getPlayerInitials } from '../storage/profileStorage';
-import { resolveViewerPersonIdForTable } from './viewerIdentity';
 import type { AuthUser } from '../api/client';
-import { resolveViewerActionPermission } from './blackjackActionContract';
 import {
   getCardViewHeroBoxId,
   getCardViewHeroHandKey,
   showHeroPlayerCards,
-  isPlayerTurnPhase,
 } from './blackjackViewPhase';
 import { shouldShowBoxHandResultMarkers } from './boxHandStatusDisplay';
 import {
@@ -38,7 +35,7 @@ export interface CardViewDesktopHeroAreaProps {
 }
 
 /**
- * Desktop Card View hero column — cards + value inside cards area only.
+ * Desktop Card View hero column — active hand cards only inside cards area.
  * Hit/Stay render in shared shell BlackjackActionsZone (same as Full Table).
  */
 export function CardViewDesktopHeroArea({
@@ -49,14 +46,13 @@ export function CardViewDesktopHeroArea({
   heroHandKeyOverride = null,
   protocolPhase,
   gameEnded,
-  viewerPersonId: viewerPersonIdProp,
-  onlineTableId = null,
-  viewerAuth = null,
+  viewerPersonId: _viewerPersonIdProp,
+  onlineTableId: _onlineTableId = null,
+  viewerAuth: _viewerAuth = null,
 }: CardViewDesktopHeroAreaProps) {
   const logicalGameState = logicalGameStateProp ?? gameState;
   const { players, deck, blackjack: round } = gameState;
   const logicalRound = logicalGameState.blackjack;
-  const isPlayerPhase = isPlayerTurnPhase(protocolPhase);
 
   const heroBoxId = getCardViewHeroBoxId(protocolPhase, activeBoxId, null, focusBoxId ?? null);
   const heroHandKey = getCardViewHeroHandKey(
@@ -65,15 +61,6 @@ export function CardViewDesktopHeroArea({
     heroBoxId,
     heroHandKeyOverride,
   );
-
-  const viewerPersonId =
-    viewerPersonIdProp ??
-    resolveViewerPersonIdForTable(logicalGameState, onlineTableId, viewerAuth);
-
-  const actionPermission = resolveViewerActionPermission(logicalGameState, viewerPersonId, {
-    cardViewHeroBoxId: heroBoxId,
-  });
-  const isActiveTurn = actionPermission.canAct;
 
   const logicalHand =
     heroHandKey && logicalRound?.playerHands[heroHandKey]
@@ -183,16 +170,6 @@ export function CardViewDesktopHeroArea({
             aria-hidden="true"
           />
         )}
-      </div>
-    );
-  }
-
-  function renderHeroValueBand() {
-    const heroBusted = logicalHand?.actionStatus === 'busted';
-    const heroNatural = logicalHand?.actionStatus === 'blackjack';
-
-    return (
-      <div className="bj-card-desktop-hero__value" data-layout-band="hero-value">
         {heroOutcomeMarker ? (
           <span
             className={[
@@ -202,35 +179,6 @@ export function CardViewDesktopHeroArea({
             aria-hidden="true"
           >
             {cardAreaOutcomeMarkerText(heroOutcomeMarker)}
-          </span>
-        ) : heroDisplayValue !== null ? (
-          <div
-            {...sxmSectionProps(
-              SXM_LAYOUT.handTotal,
-              'ds-badge ds-badge--total bj-card-view__hero-value bj-card-desktop-hero__value-badge',
-              'bj-player-hand-value--emphasis',
-              heroNatural ? 'bj-card-desktop-hero__value-badge--blackjack' : '',
-              isActiveTurn && isPlayerPhase && !showCardAreaResults
-                ? 'bj-card-desktop-hero__value-badge--active-turn'
-                : '',
-            )}
-          >
-            {heroNatural ? 'Blackjack' : String(heroDisplayValue)}
-          </div>
-        ) : (
-          <div
-            {...sxmSectionProps(
-              SXM_LAYOUT.handTotal,
-              'ds-badge ds-badge--total bj-card-desktop-hero__value-badge bj-card-desktop-hero__value-placeholder',
-            )}
-            aria-hidden="true"
-          >
-            &nbsp;
-          </div>
-        )}
-        {heroBusted ? (
-          <span className="bj-card-desktop-hero__bust-label" aria-label="Busted">
-            BUST
           </span>
         ) : null}
       </div>
@@ -242,31 +190,21 @@ export function CardViewDesktopHeroArea({
     return null;
   }
 
-  function renderHeroBody() {
-    if (protocolPhase === 'banking' || gameEnded) {
-      return renderSettleResults();
-    }
+  if (protocolPhase === 'banking' || gameEnded) {
+    return <div className="bj-card-desktop-hero">{renderSettleResults()}</div>;
+  }
 
-    if (!heroCardsVisible) {
-      return (
-        <>
-          {renderHeroCardsBand()}
-          {renderHeroValueBand()}
-        </>
-      );
-    }
-
+  if (!heroCardsVisible) {
     return (
-      <>
+      <div className="bj-card-desktop-hero">
         {renderHeroCardsBand()}
-        {renderHeroValueBand()}
-      </>
+      </div>
     );
   }
 
   return (
     <div className="bj-card-desktop-hero">
-      {renderHeroBody()}
+      {renderHeroCardsBand()}
     </div>
   );
 }

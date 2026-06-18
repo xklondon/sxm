@@ -1008,19 +1008,6 @@
   justify-content: flex-start;
 }
 
-@media (min-width: 721px) {
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot {
-    justify-content: center;
-  }
-
-  .bj-view-card-desktop .bj-phone-view__hero-stage {
-    min-height: 0;
-  }
-}
-
 .bj-phone-view__total--placeholder {
   visibility: hidden;
   pointer-events: none;

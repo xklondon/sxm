@@ -95,7 +95,6 @@ async function main() {
       '.bj-view-card-desktop .bj-card-layout__command, .bj-view-card-desktop .dealer-block__command',
     );
     const heroCards = document.querySelector('.bj-view-card-desktop [data-layout-band="hero-cards"]');
-    const heroValue = document.querySelector('.bj-view-card-desktop [data-layout-band="hero-value"]');
     const slotRow = document.querySelector('.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes');
     const slotRects = slotRow
       ? [...slotRow.children].map((el, i) => {
@@ -114,7 +113,6 @@ async function main() {
       commandPill: rect(commandPill),
       actionsZone: rect(actionsZone),
       heroCards: rect(heroCards),
-      heroValue: rect(heroValue),
       actionRow: rect(actionRow),
       actionButtons: rect(actionButtons),
       boxesZone: rect(boxesZone),
@@ -164,7 +162,6 @@ async function main() {
 
   const {
     heroCards,
-    heroValue,
     actionRow,
     actionButtons,
     actionsZone,
@@ -180,7 +177,6 @@ async function main() {
     slots,
   } = boxes as {
     heroCards: { top: number; bottom: number; left: number; right: number; height: number } | null;
-    heroValue: { top: number; bottom: number; left: number; right: number } | null;
     actionRow: { top: number; bottom: number; left: number; width: number } | null;
     actionButtons: { top: number; bottom: number; left: number; width: number } | null;
     actionsZone: { top: number; bottom: number } | null;
@@ -196,7 +192,7 @@ async function main() {
     slots: Array<{ left: number; right: number; center: number }>;
   };
 
-  if (!heroCards || !heroValue || !actionRow || !trayRow || !felt || !command || !commandPill || !actionsZone) {
+  if (!heroCards || !actionRow || !trayRow || !felt || !command || !commandPill || !actionsZone) {
     throw new Error('Missing layout bands in capture — is .bj-view-card-desktop present?');
   }
   if (!bankInfo || !dealer || !cardsZone || !boxesZone) {
@@ -213,11 +209,6 @@ async function main() {
   if (heroCards.bottom > cardsZone.bottom + 1) {
     throw new Error(
       `heroCards escapes below cards zone (hero bottom ${heroCards.bottom.toFixed(1)}px, cards bottom ${cardsZone.bottom.toFixed(1)}px)`,
-    );
-  }
-  if (heroValue.top < heroCards.bottom + 4) {
-    throw new Error(
-      `heroValue.top ${heroValue.top.toFixed(1)}px < heroCards.bottom + 4 (${(heroCards.bottom + 4).toFixed(1)}px)`,
     );
   }
   if (commandPill.bottom > cardsZone.top + 6) {
@@ -251,7 +242,6 @@ async function main() {
     ['dealer', dealer],
     ['cardsZone', cardsZone],
     ['heroCards', heroCards],
-    ['heroValue', heroValue],
     ['actionRow', actionRow],
     ['boxesZone', boxesZone],
     ['trayRow', trayRow],

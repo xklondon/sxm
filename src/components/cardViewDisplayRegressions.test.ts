@@ -124,15 +124,19 @@ function assertShellVerticalOrder(html: string): void {
   }
 }
 
-function assertHeroBeforeActions(html: string): void {
-  const cardsZoneIdx = html.indexOf('bj-cards-area--hero');
-  const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
+function assertHeroBeforeActions(html: string, expectHeroValue: boolean): void {
   const cardsBandIdx = html.indexOf('data-layout-band="hero-cards"');
-  const valueIdx = html.indexOf(CARD_VIEW_HERO_VALUE_CLASS);
+  const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
   expect(cardsBandIdx).toBeGreaterThan(-1);
-  expect(cardsZoneIdx).toBeGreaterThan(-1);
-  expect(valueIdx).toBeGreaterThan(cardsBandIdx);
-  expect(valueIdx).toBeLessThan(actionsIdx);
+  expect(cardsBandIdx).toBeLessThan(actionsIdx);
+  if (expectHeroValue) {
+    const valueIdx = html.indexOf(CARD_VIEW_HERO_VALUE_CLASS);
+    expect(valueIdx).toBeGreaterThan(cardsBandIdx);
+    expect(valueIdx).toBeLessThan(actionsIdx);
+  } else {
+    expect(html.indexOf('data-layout-band="hero-value"')).toBe(-1);
+    expect(html.indexOf('bj-card-desktop-hero__value-badge')).toBe(-1);
+  }
   expect(html.indexOf('bj-table-zone--hero-value')).toBe(-1);
 }
 
@@ -161,24 +165,24 @@ describe('Card View display regressions', () => {
     );
   });
 
-  it('desktop Card View shell order: bank-info → dealer → command → hero cards+value → actions → boxes → tray', () => {
+  it('desktop Card View shell order: bank-info → dealer → command → hero cards → actions → boxes → tray', () => {
     simulatedWidth = 1280;
     const html = renderPanel(playingState('card'));
     assertShellVerticalOrder(html);
-    assertHeroBeforeActions(html);
+    assertHeroBeforeActions(html, false);
     const cardsZone = zoneSlice(html, 'bj-cards-area--hero', TABLE_UX.tableZoneActions);
     expect(cardsZone).toContain('bj-card-desktop-hero');
     expect(cardsZone).not.toContain('bj-phone-view__axis');
-    expect(cardsZone).toContain('bj-player-hand-value--emphasis');
-    expect(cardsZone).toMatch(/>13</);
-    expect(cardsZone).toContain(CARD_VIEW_HERO_VALUE_CLASS);
+    expect(cardsZone).not.toContain('bj-player-hand-value--emphasis');
+    expect(cardsZone).not.toContain(CARD_VIEW_HERO_VALUE_CLASS);
+    expect(cardsZone).not.toContain('data-layout-band="hero-value"');
   });
 
   it('mobile Card View shell order: bank-info → dealer → command → hero cards+value → actions → boxes → tray', () => {
     simulatedWidth = 390;
     const html = renderPanel(playingState('card'));
     assertShellVerticalOrder(html);
-    assertHeroBeforeActions(html);
+    assertHeroBeforeActions(html, true);
     const cardsZone = zoneSlice(html, 'bj-cards-area--hero', TABLE_UX.tableZoneActions);
     expect(cardsZone).toMatch(/>13</);
   });

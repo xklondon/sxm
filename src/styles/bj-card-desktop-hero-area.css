@@ -1,20 +1,11 @@
 /**
- * Desktop Card View — cards-area internals only.
- * Scope: .bj-view-card-desktop .bj-cards-area--hero (and descendants).
- * Shell zone rows: bj-blackjack-table-shell.css — not modified here.
+ * Desktop Card View — cards-area internals only (cards band; no hero value badge).
+ * Cloth/title phase bands: bj-full-table-card-area.css (paired with Full Table).
+ * Shell zone rows: bj-blackjack-table-shell.css.
  */
 
 @media (min-width: 721px) {
-  /* ── Betting / resolved — cloth/title only (hero not mounted) ───────────── */
-  .bj-view-card-desktop.bj-casino[data-bj-phase='betting'] .bj-cards-area--hero > .bj-felt-cloth-layer,
-  .bj-view-card-desktop.bj-casino[data-bj-phase='resolved'] .bj-cards-area--hero > .bj-felt-cloth-layer {
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: 0.35rem;
-    opacity: 0.92;
-  }
-
-  /* ── Playing / dealing — contain hero stack inside cards zone ───────────── */
+  /* Playing / dealing — contain hero cards inside cards zone */
   .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero,
   .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
     overflow: hidden;
@@ -23,26 +14,13 @@
     align-items: stretch;
   }
 
-  .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-cards-area--hero > .bj-felt-cloth-layer,
-  .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-cards-area--hero > .bj-felt-cloth-layer {
-    opacity: 0.12;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-cards-area--hero > .bj-felt-cloth-layer__svg,
-  .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-cards-area--hero > .bj-felt-cloth-layer__svg {
-    opacity: 0.85;
-  }
-
   .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-card-desktop-hero,
   .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-card-desktop-hero {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    gap: 0.28rem;
+    justify-content: center;
     width: 100%;
     height: 100%;
     min-height: 0;
@@ -113,43 +91,12 @@
     margin-left: -1.15rem;
   }
 
-  .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-card-desktop-hero__value,
-  .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-card-desktop-hero__value {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: center;
-    gap: 0.2rem;
-    width: auto;
-    max-width: 100%;
-    min-height: 0;
-    margin-top: 0.06rem;
-    overflow: hidden;
-    align-self: center;
-  }
-
-  .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-card-desktop-hero__value-badge,
-  .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-card-desktop-hero__value-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1.05;
-    min-height: 0;
-    padding-block: 0.04rem;
-    font-size: calc(
-      var(--bj-seat-total-size) * 1.15 * var(--bj-desktop-cardview-hero-value-scale, 0.72)
-    );
-  }
-
-  .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] .bj-card-desktop-hero__bust-label,
-  .bj-view-card-desktop.bj-casino[data-bj-phase='dealing'] .bj-card-desktop-hero__bust-label {
-    font-size: 0.55rem;
-    font-weight: var(--ds-weight-bold);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ds-color-danger, #e85d5d);
+  .bj-view-card-desktop .bj-card-desktop-hero__outcome {
+    position: absolute;
+    bottom: 0.12rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
   }
 
   /* Banking / settle results */

@@ -78,6 +78,12 @@
     align-self: center;
   }
 
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes > .bj-arc__slot--split-companion {
+    width: calc(var(--bj-full-table-box-width) * 0.92);
+    max-width: calc(var(--bj-full-table-box-width) * 0.95);
+    pointer-events: none;
+  }
+
   .bj-view-full-desktop .bj-table-slot-row__add,
   .bj-view-full-desktop .bj-player-boxes-wrap__add,
   .bj-view-card-desktop .bj-table-slot-row__add,

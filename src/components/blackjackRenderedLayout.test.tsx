@@ -229,9 +229,10 @@ describe('rendered position — card view hero stack', () => {
   it.each([
     { name: 'Desktop Card View', width: 1280, height: 800 },
     { name: 'Mobile Portrait Card View', width: 390, height: 844 },
-  ])('$name stacks cards area (hero cards + value) → actions → boxes → tray', ({ width, height }) => {
+  ])('$name stacks cards area → actions → boxes → tray', ({ width, height }) => {
     simulatedWidth = width;
     simulatedHeight = height;
+    const isDesktopCard = width === 1280;
     const { container } = renderPanelAt({
       name: 'card',
       width,
@@ -247,7 +248,13 @@ describe('rendered position — card view hero stack', () => {
     const trayZone = container.querySelector('.bj-table-zone--bottom');
     expect(cardsZone).toBeTruthy();
     expect(container.querySelector('.bj-table-layout-shell > .bj-table-zone--hero-value')).toBeNull();
-    expect(cardsZone!.querySelector('[data-layout-band="hero-value"]')).toBeTruthy();
+    if (isDesktopCard) {
+      expect(cardsZone!.querySelector('[data-layout-band="hero-value"]')).toBeNull();
+      assertBandStack(container, ['hero-cards', 'action-row'], `card-view-${width}`);
+    } else {
+      expect(cardsZone!.querySelector('[data-layout-band="hero-value"]')).toBeTruthy();
+      assertBandStack(container, ['hero-cards', 'hero-value', 'action-row'], `card-view-${width}`);
+    }
     assertVerticalStack(
       [
         measureElement(cardsZone!),
@@ -257,7 +264,6 @@ describe('rendered position — card view hero stack', () => {
       ],
       { label: `card-view-shell-${width}`, tolerancePx: 0 },
     );
-    assertBandStack(container, ['hero-cards', 'hero-value', 'action-row'], `card-view-${width}`);
   });
 });
 
@@ -456,27 +462,18 @@ describe('rendered position — desktop card view reference layout', () => {
 });
 
 describe('rendered position — desktop card view hero fit', () => {
-  it('Desktop Card View keeps hero cards and value inside cards zone; actions sit below', () => {
+  it('Desktop Card View keeps hero cards inside cards zone; actions sit below', () => {
     const { container } = renderPanelAt(VIEW_SCENARIOS[1]!);
     const cardsZone = container.querySelector('.bj-table-zone--cards.bj-cards-area--hero');
     const actionsZone = container.querySelector('.bj-table-zone--actions');
     const heroCards = requireBand(container, 'hero-cards');
-    const heroValue = requireBand(container, 'hero-value');
     const cardsRect = measureElement(cardsZone!);
     const heroCardsRect = measureElement(heroCards);
-    const heroValueRect = measureElement(heroValue);
     expect(heroCardsRect.bottom).toBeLessThanOrEqual(cardsRect.bottom + 1);
-    expect(heroValueRect.bottom).toBeLessThanOrEqual(cardsRect.bottom + 1);
-    assertVerticalStack([heroCardsRect, heroValueRect], {
-      label: 'Desktop Card View hero inside cards',
-      tolerancePx: 0,
-    });
     assertVerticalStack([cardsRect, measureElement(actionsZone!)], {
       label: 'Desktop Card View cards then actions',
       tolerancePx: 0,
     });
-    assertNoPairwiseOverlap([heroCardsRect, heroValueRect], {
-      label: 'Desktop Card View hero inside cards',
-    });
+    expect(container.querySelector('[data-layout-band="hero-value"]')).toBeNull();
   });
 });
