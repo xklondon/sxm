@@ -3,7 +3,8 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SHELL_OWNER = 'src/styles/bj-blackjack-table-shell.css';
-const CARDS_OWNER = 'src/styles/bj-card-desktop-layout.css';
+const CARDS_OWNER = 'src/styles/bj-card-desktop-hero-area.css';
+const CARDS_SHELL_ADJ = 'src/styles/bj-card-desktop-layout.css';
 
 const SHELL_GRID_RE =
   /\b(grid-template-rows|grid-row|grid-column|grid-template-columns)\s*:/;
@@ -63,7 +64,8 @@ function isShellGridPlacementSelector(selector: string): boolean {
 describe('Desktop Card View layout ownership', () => {
   it('defines shared shell and cards-area owner CSS files', () => {
     expect(SHELL_OWNER).toBe('src/styles/bj-blackjack-table-shell.css');
-    expect(CARDS_OWNER).toBe('src/styles/bj-card-desktop-layout.css');
+    expect(CARDS_OWNER).toBe('src/styles/bj-card-desktop-hero-area.css');
+    expect(CARDS_SHELL_ADJ).toBe('src/styles/bj-card-desktop-layout.css');
   });
 
   it('only the shell owner may set desktop shell grid placement', () => {

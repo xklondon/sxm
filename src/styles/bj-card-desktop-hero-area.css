@@ -1,0 +1,188 @@
+/**
+ * Desktop Card View — hero cards area internals only.
+ * Scope: .bj-view-card-desktop .bj-cards-area--hero .bj-card-desktop-hero
+ * Shell zones: bj-blackjack-table-shell.css
+ */
+
+@media (min-width: 721px) {
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: stretch;
+    height: 100%;
+    min-height: 0;
+    align-self: stretch;
+  }
+
+  .bj-view-card-desktop .bj-cards-area--hero .bj-card-desktop-hero {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28rem;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    padding-bottom: 0.28rem;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__cards {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 7.5rem;
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__fan {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+    gap: 0;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__card-wrap {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__card-wrap--layered {
+    z-index: calc(1 + var(--card-i, 0));
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__card.ds-card--hero {
+    width: min(var(--bj-card-hero-card-width), 9rem);
+    max-height: min(var(--bj-card-hero-card-max-height), 12rem);
+    height: auto;
+    flex: 0 0 auto;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__card-wrap:not(:first-child) .bj-card-desktop-hero__card {
+    margin-left: -1.55rem;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__cards-placeholder {
+    width: 2.35rem;
+    height: 3.25rem;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__value {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    width: auto;
+    max-width: 100%;
+    min-height: 0;
+    overflow: visible;
+    align-self: center;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__value-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.1;
+    min-height: 0;
+    padding-block: 0.08rem;
+    font-size: calc(
+      var(--bj-seat-total-size) * 1.35 * var(--bj-desktop-cardview-hero-value-scale, 1)
+    );
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__value-placeholder {
+    visibility: hidden;
+    pointer-events: none;
+    border: none;
+    background: transparent;
+    opacity: 0;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__bust-label {
+    font-size: 0.55rem;
+    font-weight: var(--ds-weight-bold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ds-color-danger, #e85d5d);
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__actions {
+    flex: 0 0 auto;
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    align-items: center;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__actions .bj-action-row {
+    width: 100%;
+    max-width: 14rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__actions .bj-table-actions {
+    width: 100%;
+    max-width: 14rem;
+    margin-inline: auto;
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    width: 100%;
+    max-width: 18rem;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.62rem;
+    text-align: center;
+    color: var(--ds-color-text-muted);
+  }
+
+  .bj-view-card-desktop .bj-card-desktop-hero__result-line {
+    margin: 0;
+  }
+
+  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.92;
+    pointer-events: none;
+  }
+
+  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__svg {
+    width: min(82%, 34rem);
+    max-height: 58%;
+  }
+}

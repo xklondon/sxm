@@ -127,11 +127,11 @@ function assertShellVerticalOrder(html: string): void {
 function assertHeroBeforeActions(html: string): void {
   const cardsZoneIdx = html.indexOf('bj-cards-area--hero');
   const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
-  const cardsSlotIdx = html.indexOf('bj-phone-view__cards-slot');
+  const cardsBandIdx = html.indexOf('data-layout-band="hero-cards"');
   const valueIdx = html.indexOf(CARD_VIEW_HERO_VALUE_CLASS);
-  expect(cardsSlotIdx).toBeGreaterThan(-1);
+  expect(cardsBandIdx).toBeGreaterThan(-1);
   expect(cardsZoneIdx).toBeGreaterThan(-1);
-  expect(valueIdx).toBeGreaterThan(cardsSlotIdx);
+  expect(valueIdx).toBeGreaterThan(cardsBandIdx);
   expect(valueIdx).toBeLessThan(actionsIdx);
   expect(html.indexOf('bj-table-zone--hero-value')).toBe(-1);
 }
@@ -143,6 +143,7 @@ describe('Card View display regressions', () => {
     expect(PANEL_SRC).toContain('BlackjackActionRow');
     expect(PANEL_SRC).toContain('renderPlayerBoxesArc');
     expect(PANEL_SRC).toContain('BlackjackTrayRow');
+    expect(PANEL_SRC).toContain('CardViewDesktopHeroArea');
     expect((PANEL_SRC.match(/<BlackjackActionRow/g) ?? []).length).toBe(1);
     expect(CARD_VIEW_SRC).not.toContain('BlackjackActionPanel');
     expect(CARD_VIEW_SRC).not.toContain('renderPlayerBoxesArc');
@@ -150,10 +151,10 @@ describe('Card View display regressions', () => {
     expect(CARD_VIEW_SRC).not.toContain('bj-phone-view__side-action--hit');
   });
 
-  it('reserves hero value band and clips cards (cards-slot overflow hidden in Card View)', () => {
+  it('reserves hero value band and clips cards in mobile Card View', () => {
     expect(CARD_LAYOUT_CSS).toContain('--bj-cardview-hero-value-band-height');
     expect(CARD_LAYOUT_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*?\.bj-phone-view__cards-slot\s*\{[\s\S]*?overflow:\s*hidden/,
+      /\.bj-view-card-mobile[\s\S]*?\.bj-phone-view__cards-slot\s*\{[\s\S]*?overflow:\s*hidden/,
     );
     expect(CARD_VIEW_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__hero-stage[\s\S]*min-height:\s*0/,
@@ -166,6 +167,8 @@ describe('Card View display regressions', () => {
     assertShellVerticalOrder(html);
     assertHeroBeforeActions(html);
     const cardsZone = zoneSlice(html, 'bj-cards-area--hero', TABLE_UX.tableZoneActions);
+    expect(cardsZone).toContain('bj-card-desktop-hero');
+    expect(cardsZone).not.toContain('bj-phone-view__axis');
     expect(cardsZone).toContain('bj-player-hand-value--emphasis');
     expect(cardsZone).toMatch(/>13</);
     expect(cardsZone).toContain(CARD_VIEW_HERO_VALUE_CLASS);

@@ -105,12 +105,16 @@ describe('TABLE_UX class contract', () => {
 
   it('BlackjackCardView renders hero-only axis content without layout shell', () => {
     const cardSrc = readSrc('src/components/BlackjackCardView.tsx');
+    const heroSrc = readSrc('src/components/CardViewDesktopHeroArea.tsx');
     const panelSrc = readSrc('src/components/BlackjackPanel.tsx');
     const actionPanelSrc = readSrc('src/components/BlackjackActionPanel.tsx');
     expect(cardSrc).toContain('bj-phone-view__axis');
+    expect(heroSrc).toContain('bj-card-desktop-hero');
+    expect(heroSrc).not.toContain('bj-phone-view__axis');
     expect(cardSrc).not.toContain('BlackjackActionPanel');
     expect(cardSrc).not.toContain('BlackjackTableLayoutShell');
     expect(cardSrc).not.toContain('renderPlayerBoxesArc');
+    expect(panelSrc).toContain('CardViewDesktopHeroArea');
     expect(panelSrc).toContain('BlackjackTableLayoutShell');
     expect(panelSrc).toContain('renderActionsContent');
     expect(actionPanelSrc).toContain('bj-table-actions');

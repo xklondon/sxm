@@ -19,8 +19,10 @@ function sha256(path: string): string {
 const FROZEN_LAYOUT_FILE_SHA256: Record<string, string> = {
   'src/styles/bj-full-table-card-area.css':
     'edf6bddd8256c4dc4b7ee61a36911af1566d5da9f8c8b8364d5a71d2509bb9e2',
+  'src/styles/bj-card-desktop-hero-area.css':
+    '93e051fbbbaa26a7acf642883fd327732506231b6fbc3c4a9bcd1cb273e6e596',
   'src/styles/bj-card-desktop-layout.css':
-    'c011bf0eec3f0167b37457344c6d86989852611113d12a9576e2e2b77f570c72',
+    '833bb027c344028e1f01e2ff6844c25698c614b88d271440c49c53c08c13bfaf',
 };
 
 describe('frozen layout view integrity', () => {
@@ -38,6 +40,7 @@ describe('frozen layout view integrity', () => {
 
   it('lists frozen Full Table desktop owner paths', () => {
     expect(FULL_TABLE_LAYOUT_OWNER_FILES).toContain(FULL_TABLE_PLAY_ZONE_CSS);
+    expect(CARD_VIEW_LAYOUT_OWNER_FILES).toContain('src/styles/bj-card-desktop-hero-area.css');
     expect(CARD_VIEW_LAYOUT_OWNER_FILES).toContain('src/styles/bj-card-desktop-layout.css');
   });
 });

@@ -44,6 +44,7 @@ import { formatBoxCardRanksLabel } from './cardDisplay';
 import { useBlackjackTableFlow } from './useBlackjackTableFlow';
 import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
 import { BlackjackCardView } from './BlackjackCardView';
+import { CardViewDesktopHeroArea } from './CardViewDesktopHeroArea';
 import { BankerSetupPanel } from './BankerSetupPanel';
 import { dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
 import { BlackjackActionRow } from './BlackjackActionRow';
@@ -2538,6 +2539,19 @@ export function BlackjackPanel({
                     )}
                   </div>
                 </>
+              ) : isCardViewDesktop ? (
+                <CardViewDesktopHeroArea
+                  gameState={tableVisualState}
+                  logicalGameState={gameState}
+                  viewerPersonId={viewerPersonId}
+                  onlineTableId={onlineTableId}
+                  viewerAuth={viewerAuth}
+                  focusBoxId={focusBoxId ?? undefined}
+                  activeBoxId={uiActiveBoxId}
+                  heroHandKeyOverride={handTransitionHold.holdActiveHandKey}
+                  protocolPhase={protocolPhase}
+                  gameEnded={gameEnded}
+                />
               ) : (
                 <BlackjackCardView
                   {...cardViewSharedProps}

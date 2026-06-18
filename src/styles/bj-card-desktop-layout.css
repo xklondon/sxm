@@ -1,146 +1,11 @@
 /**
- * Desktop Card View — Cards Area only (bj-cards-area--hero).
+ * Desktop Card View — shell-adjacent overrides outside hero internals.
+ * Hero cards area: bj-card-desktop-hero-area.css
  * Shell zones: bj-blackjack-table-shell.css
  */
 
 @media (min-width: 721px) {
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-center {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
-    max-height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.28rem;
-    padding-bottom: 0.28rem;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: stretch;
-    height: 100%;
-    min-height: 0;
-    align-self: stretch;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero > .bj-phone-view__axis,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__axis,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-stack,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__stage,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hero-stage,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
-    max-height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards-slot {
-    flex: 1 1 auto;
-    max-height: 100%;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    padding: 0;
-    margin: 0;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: 100%;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    padding: 0;
-    margin: 0;
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards--fan {
-    align-items: center;
-    justify-content: center;
-  }
-
-  .bj-view-card-desktop
-    .bj-table-layout-shell
-    .bj-table-zone--cards.bj-cards-area--hero
-    .bj-phone-view__card-wrap {
-    align-self: center;
-    margin: 0;
-  }
-
-  .bj-view-card-desktop
-    .bj-table-layout-shell
-    .bj-table-zone--cards.bj-cards-area--hero
-    .bj-phone-view__cards
-    .playing-card.bj-phone-card--hero,
-  .bj-view-card-desktop
-    .bj-table-layout-shell
-    .bj-table-zone--cards.bj-cards-area--hero
-    .bj-phone-view__cards
-    .playing-card.ds-card--hero {
-    width: min(var(--bj-card-hero-card-width), 9rem);
-    max-height: min(var(--bj-card-hero-card-max-height), 100%);
-    height: auto;
-    margin-left: 0;
-  }
-
-  .bj-view-card-desktop
-    .bj-table-layout-shell
-    .bj-table-zone--cards.bj-cards-area--hero
-    .bj-phone-view__cards
-    .playing-card.bj-phone-card--hero:not(:first-child),
-  .bj-view-card-desktop
-    .bj-table-layout-shell
-    .bj-table-zone--cards.bj-cards-area--hero
-    .bj-phone-view__cards
-    .playing-card.ds-card--hero:not(:first-child) {
-    margin-left: -1.55rem;
-  }
-
-  .bj-view-card-desktop
-    .bj-table-layout-shell
-    .bj-table-zone--cards.bj-cards-area--hero
-    .bj-card-view__hero-value.bj-phone-view__total--hero {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    visibility: visible;
-    font-size: calc(
-      var(--bj-seat-total-size) * 1.35 * var(--bj-desktop-cardview-hero-value-scale, 1)
-    );
-  }
-
-  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.92;
-    pointer-events: none;
-  }
-
-  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__svg {
-    width: min(82%, 34rem);
-    max-height: 58%;
-  }
-
-  /* Actions zone — center row under hero (shell sets flex-start; Card View override only). */
+  /* Actions zone — center row under hero when actions render in shell grid band. */
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--actions {
     align-items: center;
     justify-content: flex-start;
@@ -155,7 +20,7 @@
     box-sizing: border-box;
   }
 
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar--playing {
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions {
     width: 100%;
     max-width: 14rem;
     margin-inline: auto;

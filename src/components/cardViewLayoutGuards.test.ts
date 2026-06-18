@@ -3,6 +3,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
+const HERO_AREA_CSS = readFileSync(
+  join(process.cwd(), 'src/styles/bj-card-desktop-hero-area.css'),
+  'utf8',
+);
 const CARD_DESKTOP_CSS = readFileSync(
   join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
   'utf8',
@@ -79,11 +83,11 @@ describe('Card View layout guards', () => {
     expect(LAYOUT_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*padding-top:\s*var\(--bj-cardview-hero-top-inset\)/,
     );
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-phone-view__cards--fan[\s\S]{0,200}justify-content:\s*center/,
+    expect(HERO_AREA_CSS).toMatch(
+      /\.bj-card-desktop-hero__fan[\s\S]{0,200}justify-content:\s*center/,
     );
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-phone-view__card-wrap[\s\S]{0,120}align-self:\s*center/,
+    expect(HERO_AREA_CSS).toMatch(
+      /\.bj-card-desktop-hero__card-wrap[\s\S]{0,120}align-items:\s*center/,
     );
   });
 

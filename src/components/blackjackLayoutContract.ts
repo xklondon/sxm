@@ -234,6 +234,7 @@ export const BLACKJACK_TABLE_SHELL_LAYOUT_OWNER_FILES = [
 
 /** Card View layout owner — Cards Area hero internals only (desktop). */
 export const CARD_VIEW_LAYOUT_OWNER_FILES = [
+  'src/styles/bj-card-desktop-hero-area.css',
   'src/styles/bj-card-desktop-layout.css',
 ] as const;
 

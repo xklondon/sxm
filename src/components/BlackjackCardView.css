@@ -1019,18 +1019,6 @@
   .bj-view-card-desktop .bj-phone-view__hero-stage {
     min-height: 0;
   }
-
-  .bj-view-card-desktop .bj-phone-view__action-bar-row {
-    max-width: 100%;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .bj-view-card-desktop .bj-phone-view__action-bar-btn--stand,
-  .bj-view-card-desktop .bj-phone-view__action-bar-btn--hit {
-    margin-left: 0;
-    margin-right: 0;
-  }
 }
 
 .bj-phone-view__total--placeholder {
