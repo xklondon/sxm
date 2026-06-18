@@ -46,8 +46,24 @@
   }
 
   /* Betting — cloth/title band, reserved actions row, even box spread. */
-  .bj-view-full-desktop.bj-casino[data-bj-phase='betting'],
-  .bj-view-card-desktop.bj-casino[data-bj-phase='betting'] {
+  .bj-view-full-desktop.bj-casino[data-bj-phase='betting'] {
+    --bj-desktop-dealer-command-gap: 3.875rem;
+    --bj-desktop-zone-actions-height: 1.55rem;
+    --bj-desktop-actions-zone-padding-top: 0;
+    --bj-desktop-actions-boxes-gap: 0.14rem;
+    --bj-command-cards-gap: 0.12rem;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved'] {
+    --bj-desktop-dealer-command-gap: 0.42rem;
+    --bj-desktop-zone-actions-height: 1.55rem;
+    --bj-desktop-actions-zone-padding-top: 0;
+    --bj-desktop-actions-boxes-gap: 0.14rem;
+    --bj-command-cards-gap: 0.12rem;
+  }
+
+  .bj-view-card-desktop.bj-casino[data-bj-phase='betting'],
+  .bj-view-card-desktop.bj-casino[data-bj-phase='resolved'] {
     --bj-desktop-dealer-command-gap: 0.42rem;
     --bj-desktop-zone-actions-height: 1.55rem;
     --bj-desktop-actions-zone-padding-top: 0;
@@ -68,16 +84,7 @@
     --bj-command-cards-gap: 0.08rem;
   }
 
-  /* Resolved / round-complete — betting-like shell spacing. */
-  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved'],
-  .bj-view-card-desktop.bj-casino[data-bj-phase='resolved'] {
-    --bj-desktop-dealer-command-gap: 0.42rem;
-    --bj-desktop-zone-actions-height: 1.55rem;
-    --bj-desktop-actions-zone-padding-top: 0;
-    --bj-desktop-actions-boxes-gap: 0.14rem;
-    --bj-command-cards-gap: 0.12rem;
-  }
-
+  /* Resolved / round-complete — card view uses betting block above. */
   .bj-view-full-desktop .bj-table-layout-shell,
   .bj-view-card-desktop .bj-table-layout-shell {
     display: grid;

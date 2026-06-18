@@ -138,12 +138,12 @@
   }
 
   /*
-   * Full Table desktop — spread fixed-width box/card columns across felt width.
-   * Card View desktop spread — bj-card-desktop-layout.css
+   * Full Table + Card View desktop — spread fixed-width box columns across felt width.
    * Card row geometry — bj-full-table-card-area.css
    */
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes,
-  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards {
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards,
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes {
     width: 100%;
     max-width: 100%;
     margin-inline: 0;
@@ -154,12 +154,14 @@
   }
 
   .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes,
-  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards {
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards,
+  .bj-view-card-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
     grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
   }
 
   .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes,
-  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards {
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--cards,
+  .bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes {
     width: 100%;
     max-width: 100%;
     margin-inline: 0;
@@ -170,11 +172,13 @@
   }
 
   .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes,
-  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards {
+  .bj-view-full-desktop .bj-table-slot-row--with-add.bj-arc--cards,
+  .bj-view-card-desktop .bj-table-slot-row--with-add.bj-arc--player-boxes {
     grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), var(--bj-full-table-box-width));
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes {
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes {
     width: 100%;
     max-width: 100%;
     margin-inline: 0;
@@ -188,21 +192,7 @@
   .bj-view-full-desktop
     .bj-table-layout-shell
     .bj-table-zone--boxes
-    .bj-table-slot-row--with-add.bj-arc--player-boxes {
-    grid-template-columns: var(--bj-table-slot-add-size) repeat(var(--slot-count, 4), minmax(0, 1fr));
-  }
-
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes {
-    width: 100%;
-    max-width: 100%;
-    margin-inline: 0;
-    display: grid;
-    grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
-    column-gap: var(--bj-table-slot-row-gap);
-    justify-content: stretch;
-    justify-items: center;
-  }
-
+    .bj-table-slot-row--with-add.bj-arc--player-boxes,
   .bj-view-card-desktop
     .bj-table-layout-shell
     .bj-table-zone--boxes

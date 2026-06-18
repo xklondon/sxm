@@ -125,6 +125,30 @@ async function main() {
     };
   })()`);
 
+  if (!layoutMeta.layoutPhase) {
+    throw new Error('Missing data-bj-phase on .bj-view-card-desktop.bj-casino');
+  }
+  if (layoutMeta.bjView !== 'card') {
+    throw new Error(`Expected data-bj-view="card", got ${layoutMeta.bjView}`);
+  }
+  if (layoutMeta.layoutPhase !== 'playing') {
+    throw new Error(`Expected data-bj-phase="playing" for capture state, got ${layoutMeta.layoutPhase}`);
+  }
+
+  const phoneViewInCards = await page.evaluate(
+    'document.querySelector(".bj-view-card-desktop .bj-cards-area--hero .bj-phone-view") !== null',
+  );
+  if (phoneViewInCards) {
+    throw new Error('Desktop Card View cards area must not render .bj-phone-view');
+  }
+
+  const actionRowScale = await page.evaluate(
+    'document.querySelector(".bj-view-card-desktop .bj-table-zone--actions [data-layout-band=\\"action-row\\"]")?.getAttribute("data-action-row-scale") ?? null',
+  );
+  if (actionRowScale !== 'full-table') {
+    throw new Error(`Expected action row scale full-table, got ${actionRowScale}`);
+  }
+
   writeFileSync(OUT_AFTER, JSON.stringify(boxes, null, 2));
   await page.screenshot({ path: OUT_SHOT, fullPage: false });
 
@@ -171,16 +195,6 @@ async function main() {
     cardsZone: { top: number; bottom: number; left: number; right: number } | null;
     slots: Array<{ left: number; right: number; center: number }>;
   };
-
-  if (!layoutMeta.layoutPhase) {
-    throw new Error('Missing data-bj-phase on .bj-view-card-desktop.bj-casino');
-  }
-  if (layoutMeta.bjView !== 'card') {
-    throw new Error(`Expected data-bj-view="card", got ${layoutMeta.bjView}`);
-  }
-  if (layoutMeta.layoutPhase !== 'playing') {
-    throw new Error(`Expected data-bj-phase="playing" for capture state, got ${layoutMeta.layoutPhase}`);
-  }
 
   if (!heroCards || !heroValue || !actionRow || !trayRow || !felt || !command || !commandPill || !actionsZone) {
     throw new Error('Missing layout bands in capture — is .bj-view-card-desktop present?');

@@ -28,15 +28,15 @@
     },
     "command": {
       "top": 292,
-      "bottom": 346,
+      "bottom": 354,
       "left": 132,
       "right": 1148,
-      "height": 54,
+      "height": 62,
       "width": 1016
     },
     "commandPill": {
-      "top": 299,
-      "bottom": 361,
+      "top": 354,
+      "bottom": 417,
       "left": 416,
       "right": 864,
       "height": 63,

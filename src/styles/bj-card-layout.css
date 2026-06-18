@@ -155,8 +155,7 @@
 
 .bj-view-full-desktop .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta,
 .bj-view-full-mobile .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta,
-.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta,
-.bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta {
+.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta {
   flex: 0 0 auto;
   max-height: var(--bj-card-total-min-height);
   padding: 0;
@@ -190,8 +189,6 @@
 .bj-view-full-mobile .bj-table-zone--cards.bj-cards-area--hero
   .bj-card-view__hero-value.bj-phone-view__total--hero:not(.bj-phone-view__total--blackjack),
 .bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero
-  .bj-card-view__hero-value.bj-phone-view__total--hero:not(.bj-phone-view__total--blackjack),
-.bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--hero
   .bj-card-view__hero-value.bj-phone-view__total--hero:not(.bj-phone-view__total--blackjack) {
   font-size: calc(var(--bj-seat-total-size) * 1.35);
   min-height: auto;
@@ -280,11 +277,6 @@
 }
 
 @media (min-width: 721px) {
-  .bj-view-card-desktop {
-    --bj-card-hero-card-width: min(15vw, 9rem);
-    --bj-card-hero-card-max-height: min(26vh, 11.5rem);
-  }
-
   :root {
     --bj-card-hero-card-width: min(14vw, 8.5rem);
     --bj-card-hero-card-max-height: min(22vh, 9.5rem);

@@ -111,6 +111,9 @@ for (const [fullKey, cardKey] of [
   const full = out[fullKey] as Record<string, { top?: number; bottom?: number; height?: number } | null>;
   const card = out[cardKey] as Record<string, { top?: number; bottom?: number; height?: number } | null>;
   for (const band of ['commandPill', 'boxesZone', 'trayRow', 'actionZone'] as const) {
+    if (fullKey === 'full-betting' && band === 'commandPill') {
+      continue;
+    }
     const ft = full[band]?.top;
     const ct = card[band]?.top;
     if (ft == null || ct == null) continue;
