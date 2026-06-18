@@ -49,7 +49,7 @@ async function measure(page: import('playwright').Page, rootSel: string) {
       clothTitle: rect(clothTitle),
       command: rect(root.querySelector('.bj-table-zone--summary')),
       commandPill: rect(root.querySelector('.bj-card-layout__command, .dealer-block__command')),
-      dealer: rect(root.querySelector('.bj-table-zone--dealer')),
+      dealer: rect(root.querySelector('.bj-dealer-area, .bj-table-zone--dealer')),
       dealButton: rect(dealBtn),
       cardsZone: rect(root.querySelector('.bj-table-zone--cards')),
       heroCards: rect(q('hero-cards')),

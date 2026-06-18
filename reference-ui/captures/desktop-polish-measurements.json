@@ -42,19 +42,12 @@
       "height": 26,
       "width": 448
     },
-    "dealer": {
-      "top": 178,
-      "bottom": 292,
-      "left": 132,
-      "right": 1148,
-      "height": 114,
-      "width": 1016
-    },
+    "dealer": null,
     "dealButton": {
-      "top": 304,
-      "bottom": 349,
-      "left": 424,
-      "right": 541,
+      "top": 246,
+      "bottom": 291,
+      "left": 297,
+      "right": 415,
       "height": 45,
       "width": 118
     },
@@ -191,19 +184,12 @@
       "height": 26,
       "width": 448
     },
-    "dealer": {
-      "top": 178,
-      "bottom": 292,
-      "left": 132,
-      "right": 1148,
-      "height": 114,
-      "width": 1016
-    },
+    "dealer": null,
     "dealButton": {
-      "top": 362,
-      "bottom": 407,
-      "left": 424,
-      "right": 541,
+      "top": 246,
+      "bottom": 291,
+      "left": 297,
+      "right": 415,
       "height": 45,
       "width": 118
     },
@@ -219,10 +205,10 @@
     "heroValue": null,
     "actionRow": {
       "top": 512,
-      "bottom": 544,
+      "bottom": 543,
       "left": 590,
       "right": 690,
-      "height": 32,
+      "height": 31,
       "width": 100
     },
     "actionZone": {
@@ -347,19 +333,12 @@
       "height": 26,
       "width": 448
     },
-    "dealer": {
-      "top": 178,
-      "bottom": 292,
-      "left": 132,
-      "right": 1148,
-      "height": 114,
-      "width": 1016
-    },
+    "dealer": null,
     "dealButton": {
-      "top": 304,
-      "bottom": 349,
-      "left": 570,
-      "right": 687,
+      "top": 246,
+      "bottom": 291,
+      "left": 297,
+      "right": 415,
       "height": 45,
       "width": 118
     },
@@ -496,19 +475,12 @@
       "height": 26,
       "width": 448
     },
-    "dealer": {
-      "top": 178,
-      "bottom": 292,
-      "left": 132,
-      "right": 1148,
-      "height": 114,
-      "width": 1016
-    },
+    "dealer": null,
     "dealButton": {
-      "top": 362,
-      "bottom": 407,
-      "left": 581,
-      "right": 699,
+      "top": 246,
+      "bottom": 291,
+      "left": 297,
+      "right": 415,
       "height": 45,
       "width": 118
     },
@@ -531,10 +503,10 @@
     "heroValue": null,
     "actionRow": {
       "top": 512,
-      "bottom": 543,
+      "bottom": 542,
       "left": 594,
       "right": 686,
-      "height": 31,
+      "height": 29,
       "width": 92
     },
     "actionZone": {

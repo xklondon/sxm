@@ -43,6 +43,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-18 — Runtime visual branch fixes (dealer/boxes/actions/hero)
+
+- **Dealer parity:** Card View desktop now shares Full Table `dealer-block` max-width + centered grid (`bj-table-shared.css`, `DealerBlock.css`); shell dealer rules target `.bj-dealer-area` (was `.bj-table-zone--dealer`); fixed 3.35rem cards-slot + 1.55rem bank-hand band + hidden dealer hint stabilize deal button across betting/playing.
+- **Boxes parity:** Card View desktop included in full-arc box height lock (`bj-player-row-layout.css`).
+- **Hit/Stay:** Desktop table variant no longer renders empty secondary row with `bj-phone-view__action-bar-*` placeholders (`BlackjackActionPanel.tsx`).
+- **Hero cards:** Shell token sizing + min size + z-index 2 (`bj-card-desktop-hero-area.css`).
+- **Audit script:** `scripts/runtime-visual-branch-audit.mts` (1280×800 DOM/rect/CSS proof).
+
+---
+
 ## 2026-06-18 — Desktop betting cloth alignment + Card View hero card visibility
 
 - **Betting cloth:** Shared `align-items: center` for Full Table + Card View in `bj-full-table-card-area.css`; removed Full Table–only `bj-cards-area--table` cloth flex-end override. Cloth/title now centered inside cardsArea (0px title delta between views).

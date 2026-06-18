@@ -1,0 +1,2710 @@
+{
+  "A_full_betting": {
+    "root": {
+      "className": "sxm-layout-root bj-casino bj-view-full-desktop",
+      "dataBjPhase": "betting",
+      "dataBjView": "full",
+      "dataViewMode": "full",
+      "rect": {
+        "top": 8,
+        "bottom": 712,
+        "left": 8,
+        "right": 1272,
+        "width": 1264,
+        "height": 704
+      }
+    },
+    "dealerZone": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 291.9,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 114.4
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
+    },
+    "dealerCards": {
+      "rect": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+    },
+    "dealButton": {
+      "rect": {
+        "top": 246.2,
+        "bottom": 291,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 44.8
+      },
+      "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+      "text": "Deal Cards",
+      "styles": {
+        "display": "inline-block",
+        "visibility": "visible",
+        "position": "static",
+        "left": "auto",
+        "marginLeft": "0px"
+      },
+      "matchedRules": []
+    },
+    "commandZone": {
+      "rect": {
+        "top": 291.9,
+        "bottom": 385.5,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 93.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+      "styles": {
+        "height": "93.5938px",
+        "paddingTop": "40.8px",
+        "paddingBottom": "0px",
+        "justifyContent": "flex-start"
+      },
+      "matchedRules": []
+    },
+    "commandPill": {
+      "rect": {
+        "top": 332.7,
+        "bottom": 358.5,
+        "left": 416,
+        "right": 864,
+        "width": 448,
+        "height": 25.8
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+      "innerText": "Place your bets, then shuffle to start the shoe.",
+      "styles": {
+        "minHeight": "0px",
+        "padding": "6.08px 24px",
+        "justifyContent": "center",
+        "alignItems": "center"
+      }
+    },
+    "commandStatus": {
+      "rect": {
+        "top": 338.3,
+        "bottom": 352.9,
+        "left": 465,
+        "right": 815,
+        "width": 350,
+        "height": 14.7
+      },
+      "text": "Place your bets, then shuffle to start the shoe."
+    },
+    "commandPillToDealGap": 41.8,
+    "dealToCommandZoneTopGap": 1,
+    "cardsZone": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--table",
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+    },
+    "heroArea": {
+      "present": false,
+      "rect": null,
+      "domPath": null,
+      "innerHTMLSnippet": null,
+      "styles": null
+    },
+    "heroCards": {
+      "rect": null,
+      "cardCount": 0,
+      "playingCardCount": 0,
+      "cardRects": [],
+      "cardStyles": [],
+      "playingCardStyles": []
+    },
+    "clothLayer": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "styles": {
+        "opacity": "0.92",
+        "zIndex": "0",
+        "alignItems": "center",
+        "pointerEvents": "none"
+      }
+    },
+    "cardsZoneChildren": [
+      {
+        "tag": "DIV",
+        "className": "bj-felt-cloth-layer",
+        "rect": {
+          "top": 386.8,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 101.9
+        },
+        "zIndex": "0"
+      },
+      {
+        "tag": "DIV",
+        "className": "bj-optional-play-overlay-anchor",
+        "rect": {
+          "top": 317.7,
+          "bottom": 317.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 0
+        },
+        "zIndex": "1"
+      },
+      {
+        "tag": "DIV",
+        "className": "bj-table-slot-row bj-arc bj-arc--cards bj-full-table-card-area bj-arc--visible-4 bj-table-slot-row--with-add",
+        "rect": {
+          "top": 317.7,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 170.9
+        },
+        "zIndex": "1"
+      }
+    ],
+    "actionsZone": {
+      "rect": {
+        "top": 487.4,
+        "bottom": 527.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 40
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+    },
+    "actionRow": {
+      "rect": {
+        "top": 512.3,
+        "bottom": 538.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 26.4
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row.bj-action-row--slot-reserved",
+      "className": "bj-action-row bj-action-row--slot-reserved",
+      "dataActionRowScale": "full-table",
+      "innerHTMLSnippet": "",
+      "styles": {
+        "display": "block",
+        "visibility": "hidden",
+        "minHeight": "26.4px",
+        "height": "26.3906px"
+      },
+      "matchedRules": []
+    },
+    "hitStay": {
+      "hitRect": null,
+      "hitDomPath": null,
+      "hitClass": null,
+      "actionButtonsRow": null
+    },
+    "boxesZone": {
+      "rect": {
+        "top": 529.6,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 97.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+    },
+    "slotRow": {
+      "rect": {
+        "top": 532.2,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 95
+      },
+      "className": "bj-player-box-row"
+    },
+    "slots": [
+      {
+        "i": 0,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 242.1,
+          "right": 319.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 1,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 490.1,
+          "right": 567.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 2,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 738.1,
+          "right": 815.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 3,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 986.1,
+          "right": 1063.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      }
+    ],
+    "plusButton": {
+      "rect": {
+        "top": 542.2,
+        "bottom": 607,
+        "left": 132,
+        "right": 156,
+        "width": 24,
+        "height": 64.8
+      },
+      "domPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes > div.bj-player-box-row > div.bj-player-boxes-wrap > div.bj-table-slot-row.bj-arc.bj-arc--player-boxes > button.bj-table-slot-row__add.bj-player-boxes-wrap__add"
+    },
+    "trayRow": {
+      "rect": {
+        "top": 631.7,
+        "bottom": 691.4,
+        "left": 384,
+        "right": 896,
+        "width": 512,
+        "height": 59.7
+      }
+    },
+    "bottomZone": {
+      "rect": {
+        "top": 625,
+        "bottom": 691.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 66.4
+      }
+    }
+  },
+  "A_full_playing": {
+    "root": {
+      "className": "sxm-layout-root bj-casino bj-view-full-desktop",
+      "dataBjPhase": "playing",
+      "dataBjView": "full",
+      "dataViewMode": "full",
+      "rect": {
+        "top": 8,
+        "bottom": 712,
+        "left": 8,
+        "right": 1272,
+        "width": 1264,
+        "height": 704
+      }
+    },
+    "dealerZone": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 291.9,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 114.4
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
+    },
+    "dealerCards": {
+      "rect": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+    },
+    "dealButton": {
+      "rect": {
+        "top": 246.2,
+        "bottom": 291,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 44.8
+      },
+      "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+      "text": "Deal Cards",
+      "styles": {
+        "display": "inline-block",
+        "visibility": "visible",
+        "position": "static",
+        "left": "auto",
+        "marginLeft": "0px"
+      },
+      "matchedRules": []
+    },
+    "commandZone": {
+      "rect": {
+        "top": 291.9,
+        "bottom": 385.5,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 93.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+      "styles": {
+        "height": "93.5938px",
+        "paddingTop": "40.8px",
+        "paddingBottom": "0px",
+        "justifyContent": "flex-start"
+      },
+      "matchedRules": []
+    },
+    "commandPill": {
+      "rect": {
+        "top": 332.7,
+        "bottom": 358.5,
+        "left": 416,
+        "right": 864,
+        "width": 448,
+        "height": 25.8
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+      "innerText": "Box 4 — your turn.Bank has 8♥ against your 9.Options: Hit, Double — one card.",
+      "styles": {
+        "minHeight": "0px",
+        "padding": "6.08px 24px",
+        "justifyContent": "center",
+        "alignItems": "center"
+      }
+    },
+    "commandStatus": {
+      "rect": {
+        "top": 321.4,
+        "bottom": 336,
+        "left": 465,
+        "right": 815,
+        "width": 350,
+        "height": 14.7
+      },
+      "text": "Box 4 — your turn."
+    },
+    "commandPillToDealGap": 41.8,
+    "dealToCommandZoneTopGap": 1,
+    "cardsZone": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--table",
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+    },
+    "heroArea": {
+      "present": false,
+      "rect": null,
+      "domPath": null,
+      "innerHTMLSnippet": null,
+      "styles": null
+    },
+    "heroCards": {
+      "rect": null,
+      "cardCount": 0,
+      "playingCardCount": 8,
+      "cardRects": [],
+      "cardStyles": [],
+      "playingCardStyles": [
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "47.1875px",
+          "height": "63.1875px",
+          "maxHeight": "63.2px",
+          "zIndex": "1"
+        },
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "47.1875px",
+          "height": "63.1875px",
+          "maxHeight": "63.2px",
+          "zIndex": "2"
+        },
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "47.1875px",
+          "height": "63.1875px",
+          "maxHeight": "63.2px",
+          "zIndex": "1"
+        }
+      ]
+    },
+    "clothLayer": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "styles": {
+        "opacity": "0.38",
+        "zIndex": "0",
+        "alignItems": "flex-end",
+        "pointerEvents": "none"
+      }
+    },
+    "cardsZoneChildren": [
+      {
+        "tag": "DIV",
+        "className": "bj-felt-cloth-layer",
+        "rect": {
+          "top": 386.8,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 101.9
+        },
+        "zIndex": "0"
+      },
+      {
+        "tag": "DIV",
+        "className": "bj-optional-play-overlay-anchor",
+        "rect": {
+          "top": 288.9,
+          "bottom": 333.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 44.8
+        },
+        "zIndex": "1"
+      },
+      {
+        "tag": "DIV",
+        "className": "bj-table-slot-row bj-arc bj-arc--cards bj-full-table-card-area bj-arc--visible-4",
+        "rect": {
+          "top": 333.7,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 154.9
+        },
+        "zIndex": "1"
+      }
+    ],
+    "actionsZone": {
+      "rect": {
+        "top": 487.4,
+        "bottom": 527.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 40
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+    },
+    "actionRow": {
+      "rect": {
+        "top": 512.3,
+        "bottom": 542.8,
+        "left": 590,
+        "right": 690,
+        "width": 99.9,
+        "height": 30.5
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row",
+      "className": "bj-action-row",
+      "dataActionRowScale": "full-table",
+      "innerHTMLSnippet": "<div class=\"bj-player-actions bj-table-actions\" aria-label=\"Player actions\" aria-live=\"polite\"><div class=\"sxm-primary-actions bj-table-actions__row\" data-sxm-section=\"sxm-primary-actions\"><button type=\"button\" class=\"ds-btn ds-btn--stand bj-table-actions__btn\">Stay</button><button type=\"button\" class=\"ds-btn ds-btn--hit bj-table-actions__btn\">Hit</button></div></div>",
+      "styles": {
+        "display": "block",
+        "visibility": "visible",
+        "minHeight": "auto",
+        "height": "30.5px"
+      },
+      "matchedRules": []
+    },
+    "hitStay": {
+      "hitRect": {
+        "top": 516.8,
+        "bottom": 541.6,
+        "left": 643.8,
+        "right": 683.6,
+        "width": 39.8,
+        "height": 24.8
+      },
+      "hitDomPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row > div.bj-player-actions.bj-table-actions > div.sxm-primary-actions.bj-table-actions__row > button.ds-btn.ds-btn--hit.bj-table-actions__btn",
+      "hitClass": "ds-btn ds-btn--hit bj-table-actions__btn",
+      "actionButtonsRow": "sxm-primary-actions bj-table-actions__row"
+    },
+    "boxesZone": {
+      "rect": {
+        "top": 529.6,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 97.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+    },
+    "slotRow": {
+      "rect": {
+        "top": 532.2,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 95
+      },
+      "className": "bj-player-box-row"
+    },
+    "slots": [
+      {
+        "i": 0,
+        "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 613,
+          "left": 219.5,
+          "right": 297.1,
+          "width": 77.6,
+          "height": 80.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "80.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 1,
+        "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 613,
+          "left": 473.9,
+          "right": 551.5,
+          "width": 77.6,
+          "height": 80.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "80.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 2,
+        "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 613,
+          "left": 728.4,
+          "right": 806,
+          "width": 77.6,
+          "height": 80.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "80.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 3,
+        "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 613,
+          "left": 982.9,
+          "right": 1060.5,
+          "width": 77.6,
+          "height": 80.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "80.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      }
+    ],
+    "plusButton": {
+      "rect": null,
+      "domPath": null
+    },
+    "trayRow": {
+      "rect": {
+        "top": 631.7,
+        "bottom": 691.4,
+        "left": 384,
+        "right": 896,
+        "width": 512,
+        "height": 59.7
+      }
+    },
+    "bottomZone": {
+      "rect": {
+        "top": 625,
+        "bottom": 691.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 66.4
+      }
+    }
+  },
+  "B_card_betting": {
+    "root": {
+      "className": "sxm-layout-root bj-casino bj-view-card-desktop",
+      "dataBjPhase": "betting",
+      "dataBjView": "card",
+      "dataViewMode": "card",
+      "rect": {
+        "top": 8,
+        "bottom": 712,
+        "left": 8,
+        "right": 1272,
+        "width": 1264,
+        "height": 704
+      }
+    },
+    "dealerZone": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 291.9,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 114.4
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
+    },
+    "dealerCards": {
+      "rect": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "domPath": "div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+    },
+    "dealButton": {
+      "rect": {
+        "top": 246.2,
+        "bottom": 291,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 44.8
+      },
+      "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+      "text": "Deal Cards",
+      "styles": {
+        "display": "inline-block",
+        "visibility": "visible",
+        "position": "static",
+        "left": "auto",
+        "marginLeft": "0px"
+      },
+      "matchedRules": []
+    },
+    "commandZone": {
+      "rect": {
+        "top": 291.9,
+        "bottom": 385.5,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 93.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+      "styles": {
+        "height": "93.5938px",
+        "paddingTop": "40.8px",
+        "paddingBottom": "0px",
+        "justifyContent": "flex-start"
+      },
+      "matchedRules": []
+    },
+    "commandPill": {
+      "rect": {
+        "top": 332.7,
+        "bottom": 358.5,
+        "left": 416,
+        "right": 864,
+        "width": 448,
+        "height": 25.8
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+      "innerText": "Place your bets, then shuffle to start the shoe.",
+      "styles": {
+        "minHeight": "0px",
+        "padding": "6.08px 24px",
+        "justifyContent": "center",
+        "alignItems": "center"
+      }
+    },
+    "commandStatus": {
+      "rect": {
+        "top": 338.3,
+        "bottom": 352.9,
+        "left": 465,
+        "right": 815,
+        "width": 350,
+        "height": 14.7
+      },
+      "text": "Place your bets, then shuffle to start the shoe."
+    },
+    "commandPillToDealGap": 41.8,
+    "dealToCommandZoneTopGap": 1,
+    "cardsZone": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--hero",
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+    },
+    "heroArea": {
+      "present": false,
+      "rect": null,
+      "domPath": null,
+      "innerHTMLSnippet": null,
+      "styles": null
+    },
+    "heroCards": {
+      "rect": null,
+      "cardCount": 0,
+      "playingCardCount": 0,
+      "cardRects": [],
+      "cardStyles": [],
+      "playingCardStyles": []
+    },
+    "clothLayer": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "styles": {
+        "opacity": "0.92",
+        "zIndex": "0",
+        "alignItems": "center",
+        "pointerEvents": "none"
+      }
+    },
+    "cardsZoneChildren": [
+      {
+        "tag": "DIV",
+        "className": "bj-felt-cloth-layer",
+        "rect": {
+          "top": 386.8,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 101.9
+        },
+        "zIndex": "0"
+      }
+    ],
+    "actionsZone": {
+      "rect": {
+        "top": 487.4,
+        "bottom": 527.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 40
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+    },
+    "actionRow": {
+      "rect": {
+        "top": 512.3,
+        "bottom": 538.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 26.4
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row.bj-action-row--slot-reserved",
+      "className": "bj-action-row bj-action-row--slot-reserved",
+      "dataActionRowScale": "full-table",
+      "innerHTMLSnippet": "",
+      "styles": {
+        "display": "block",
+        "visibility": "hidden",
+        "minHeight": "26.4px",
+        "height": "26.3906px"
+      },
+      "matchedRules": []
+    },
+    "hitStay": {
+      "hitRect": null,
+      "hitDomPath": null,
+      "hitClass": null,
+      "actionButtonsRow": null
+    },
+    "boxesZone": {
+      "rect": {
+        "top": 529.6,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 97.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+    },
+    "slotRow": {
+      "rect": {
+        "top": 532.2,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 95
+      },
+      "className": "bj-player-box-row"
+    },
+    "slots": [
+      {
+        "i": 0,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 242.1,
+          "right": 319.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 1,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 490.1,
+          "right": 567.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 2,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 738.1,
+          "right": 815.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 3,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 986.1,
+          "right": 1063.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      }
+    ],
+    "plusButton": {
+      "rect": {
+        "top": 542.2,
+        "bottom": 607,
+        "left": 132,
+        "right": 156,
+        "width": 24,
+        "height": 64.8
+      },
+      "domPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes > div.bj-player-box-row > div.bj-player-boxes-wrap > div.bj-table-slot-row.bj-arc.bj-arc--player-boxes > button.bj-table-slot-row__add.bj-player-boxes-wrap__add"
+    },
+    "trayRow": {
+      "rect": {
+        "top": 631.7,
+        "bottom": 691.4,
+        "left": 384,
+        "right": 896,
+        "width": 512,
+        "height": 59.7
+      }
+    },
+    "bottomZone": {
+      "rect": {
+        "top": 625,
+        "bottom": 691.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 66.4
+      }
+    }
+  },
+  "B_full_betting_ref": {
+    "root": {
+      "className": "sxm-layout-root bj-casino bj-view-full-desktop",
+      "dataBjPhase": "betting",
+      "dataBjView": "full",
+      "dataViewMode": "full",
+      "rect": {
+        "top": 8,
+        "bottom": 712,
+        "left": 8,
+        "right": 1272,
+        "width": 1264,
+        "height": 704
+      }
+    },
+    "dealerZone": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 291.9,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 114.4
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
+    },
+    "dealerCards": {
+      "rect": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+    },
+    "dealButton": {
+      "rect": {
+        "top": 246.2,
+        "bottom": 291,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 44.8
+      },
+      "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+      "text": "Deal Cards",
+      "styles": {
+        "display": "inline-block",
+        "visibility": "visible",
+        "position": "static",
+        "left": "auto",
+        "marginLeft": "0px"
+      },
+      "matchedRules": []
+    },
+    "commandZone": {
+      "rect": {
+        "top": 291.9,
+        "bottom": 385.5,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 93.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+      "styles": {
+        "height": "93.5938px",
+        "paddingTop": "40.8px",
+        "paddingBottom": "0px",
+        "justifyContent": "flex-start"
+      },
+      "matchedRules": []
+    },
+    "commandPill": {
+      "rect": {
+        "top": 332.7,
+        "bottom": 358.5,
+        "left": 416,
+        "right": 864,
+        "width": 448,
+        "height": 25.8
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+      "innerText": "Place your bets, then shuffle to start the shoe.",
+      "styles": {
+        "minHeight": "0px",
+        "padding": "6.08px 24px",
+        "justifyContent": "center",
+        "alignItems": "center"
+      }
+    },
+    "commandStatus": {
+      "rect": {
+        "top": 338.3,
+        "bottom": 352.9,
+        "left": 465,
+        "right": 815,
+        "width": 350,
+        "height": 14.7
+      },
+      "text": "Place your bets, then shuffle to start the shoe."
+    },
+    "commandPillToDealGap": 41.8,
+    "dealToCommandZoneTopGap": 1,
+    "cardsZone": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--table",
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+    },
+    "heroArea": {
+      "present": false,
+      "rect": null,
+      "domPath": null,
+      "innerHTMLSnippet": null,
+      "styles": null
+    },
+    "heroCards": {
+      "rect": null,
+      "cardCount": 0,
+      "playingCardCount": 0,
+      "cardRects": [],
+      "cardStyles": [],
+      "playingCardStyles": []
+    },
+    "clothLayer": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "styles": {
+        "opacity": "0.92",
+        "zIndex": "0",
+        "alignItems": "center",
+        "pointerEvents": "none"
+      }
+    },
+    "cardsZoneChildren": [
+      {
+        "tag": "DIV",
+        "className": "bj-felt-cloth-layer",
+        "rect": {
+          "top": 386.8,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 101.9
+        },
+        "zIndex": "0"
+      },
+      {
+        "tag": "DIV",
+        "className": "bj-optional-play-overlay-anchor",
+        "rect": {
+          "top": 317.7,
+          "bottom": 317.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 0
+        },
+        "zIndex": "1"
+      },
+      {
+        "tag": "DIV",
+        "className": "bj-table-slot-row bj-arc bj-arc--cards bj-full-table-card-area bj-arc--visible-4 bj-table-slot-row--with-add",
+        "rect": {
+          "top": 317.7,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 170.9
+        },
+        "zIndex": "1"
+      }
+    ],
+    "actionsZone": {
+      "rect": {
+        "top": 487.4,
+        "bottom": 527.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 40
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+    },
+    "actionRow": {
+      "rect": {
+        "top": 512.3,
+        "bottom": 538.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 26.4
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row.bj-action-row--slot-reserved",
+      "className": "bj-action-row bj-action-row--slot-reserved",
+      "dataActionRowScale": "full-table",
+      "innerHTMLSnippet": "",
+      "styles": {
+        "display": "block",
+        "visibility": "hidden",
+        "minHeight": "26.4px",
+        "height": "26.3906px"
+      },
+      "matchedRules": []
+    },
+    "hitStay": {
+      "hitRect": null,
+      "hitDomPath": null,
+      "hitClass": null,
+      "actionButtonsRow": null
+    },
+    "boxesZone": {
+      "rect": {
+        "top": 529.6,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 97.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+    },
+    "slotRow": {
+      "rect": {
+        "top": 532.2,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 95
+      },
+      "className": "bj-player-box-row"
+    },
+    "slots": [
+      {
+        "i": 0,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 242.1,
+          "right": 319.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 1,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 490.1,
+          "right": 567.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 2,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 738.1,
+          "right": 815.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 3,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 986.1,
+          "right": 1063.7,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      }
+    ],
+    "plusButton": {
+      "rect": {
+        "top": 542.2,
+        "bottom": 607,
+        "left": 132,
+        "right": 156,
+        "width": 24,
+        "height": 64.8
+      },
+      "domPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes > div.bj-player-box-row > div.bj-player-boxes-wrap > div.bj-table-slot-row.bj-arc.bj-arc--player-boxes > button.bj-table-slot-row__add.bj-player-boxes-wrap__add"
+    },
+    "trayRow": {
+      "rect": {
+        "top": 631.7,
+        "bottom": 691.4,
+        "left": 384,
+        "right": 896,
+        "width": 512,
+        "height": 59.7
+      }
+    },
+    "bottomZone": {
+      "rect": {
+        "top": 625,
+        "bottom": 691.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 66.4
+      }
+    }
+  },
+  "C_card_playing": {
+    "root": {
+      "className": "sxm-layout-root bj-casino bj-view-card-desktop",
+      "dataBjPhase": "playing",
+      "dataBjView": "card",
+      "dataViewMode": "card",
+      "rect": {
+        "top": 8,
+        "bottom": 712,
+        "left": 8,
+        "right": 1272,
+        "width": 1264,
+        "height": 704
+      }
+    },
+    "dealerZone": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 291.9,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 114.4
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
+    },
+    "dealerCards": {
+      "rect": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "domPath": "div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+    },
+    "dealButton": {
+      "rect": {
+        "top": 246.2,
+        "bottom": 291,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 44.8
+      },
+      "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+      "text": "Deal Cards",
+      "styles": {
+        "display": "inline-block",
+        "visibility": "visible",
+        "position": "static",
+        "left": "auto",
+        "marginLeft": "0px"
+      },
+      "matchedRules": []
+    },
+    "commandZone": {
+      "rect": {
+        "top": 291.9,
+        "bottom": 385.5,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 93.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+      "styles": {
+        "height": "93.5938px",
+        "paddingTop": "40.8px",
+        "paddingBottom": "0px",
+        "justifyContent": "flex-start"
+      },
+      "matchedRules": []
+    },
+    "commandPill": {
+      "rect": {
+        "top": 332.7,
+        "bottom": 358.5,
+        "left": 416,
+        "right": 864,
+        "width": 448,
+        "height": 25.8
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+      "innerText": "Box 1 — your turn.Bank has 7♥ against your 13.Option: Hit.",
+      "styles": {
+        "minHeight": "0px",
+        "padding": "6.08px 24px",
+        "justifyContent": "center",
+        "alignItems": "center"
+      }
+    },
+    "commandStatus": {
+      "rect": {
+        "top": 321.4,
+        "bottom": 336,
+        "left": 465,
+        "right": 815,
+        "width": 350,
+        "height": 14.7
+      },
+      "text": "Box 1 — your turn."
+    },
+    "commandPillToDealGap": 41.8,
+    "dealToCommandZoneTopGap": 1,
+    "cardsZone": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--hero",
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+    },
+    "heroArea": {
+      "present": true,
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards > div.bj-card-desktop-hero",
+      "innerHTMLSnippet": "<div class=\"bj-card-desktop-hero__cards\" data-layout-band=\"hero-cards\"><div class=\"sxm-hero-cards bj-card-desktop-hero__fan\" data-sxm-section=\"sxm-hero-cards\"><div class=\"bj-card-desktop-hero__card-wrap\" style=\"--card-i:0\"><div class=\"playing-card playing-card--red deal-anim--slide ds-card ds-card--hero bj-card-desktop-hero__card\" aria-label=\"6 of hearts\"><div class=\"playing-card__corner playing-c",
+      "styles": {
+        "display": "flex",
+        "visibility": "visible",
+        "opacity": "1",
+        "overflow": "hidden",
+        "zIndex": "1",
+        "height": "101.875px"
+      }
+    },
+    "heroCards": {
+      "rect": {
+        "top": 388,
+        "bottom": 487.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 99.7
+      },
+      "cardCount": 2,
+      "playingCardCount": 2,
+      "cardRects": [
+        {
+          "top": 388.9,
+          "bottom": 486.8,
+          "left": 579.3,
+          "right": 649.2,
+          "width": 69.9,
+          "height": 97.9
+        },
+        {
+          "top": 388.9,
+          "bottom": 486.8,
+          "left": 630.8,
+          "right": 700.7,
+          "width": 69.9,
+          "height": 97.9
+        }
+      ],
+      "cardStyles": [
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "69.9062px",
+          "height": "97.8594px",
+          "maxHeight": "97.875px",
+          "zIndex": "2",
+          "overflow": "visible"
+        },
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "69.9062px",
+          "height": "97.8594px",
+          "maxHeight": "97.875px",
+          "zIndex": "2",
+          "overflow": "visible"
+        }
+      ],
+      "playingCardStyles": [
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "69.9062px",
+          "height": "97.8594px",
+          "maxHeight": "97.875px",
+          "zIndex": "2"
+        },
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "69.9062px",
+          "height": "97.8594px",
+          "maxHeight": "97.875px",
+          "zIndex": "2"
+        }
+      ]
+    },
+    "clothLayer": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "styles": {
+        "opacity": "0.38",
+        "zIndex": "0",
+        "alignItems": "flex-end",
+        "pointerEvents": "none"
+      }
+    },
+    "cardsZoneChildren": [
+      {
+        "tag": "DIV",
+        "className": "bj-felt-cloth-layer",
+        "rect": {
+          "top": 386.8,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 101.9
+        },
+        "zIndex": "0"
+      },
+      {
+        "tag": "DIV",
+        "className": "bj-card-desktop-hero",
+        "rect": {
+          "top": 386.8,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 101.9
+        },
+        "zIndex": "1"
+      }
+    ],
+    "actionsZone": {
+      "rect": {
+        "top": 487.4,
+        "bottom": 527.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 40
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+    },
+    "actionRow": {
+      "rect": {
+        "top": 512.3,
+        "bottom": 541.6,
+        "left": 594.2,
+        "right": 685.7,
+        "width": 91.5,
+        "height": 29.3
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row",
+      "className": "bj-action-row",
+      "dataActionRowScale": "full-table",
+      "innerHTMLSnippet": "<div class=\"bj-player-actions bj-table-actions\" aria-label=\"Player actions\" aria-live=\"polite\"><div class=\"sxm-primary-actions bj-table-actions__row\" data-sxm-section=\"sxm-primary-actions\"><button type=\"button\" class=\"ds-btn ds-btn--stand bj-table-actions__btn\">Stay</button><button type=\"button\" class=\"ds-btn ds-btn--hit bj-table-actions__btn\">Hit</button></div></div>",
+      "styles": {
+        "display": "block",
+        "visibility": "visible",
+        "minHeight": "auto",
+        "height": "29.25px"
+      },
+      "matchedRules": []
+    },
+    "hitStay": {
+      "hitRect": {
+        "top": 519,
+        "bottom": 539.3,
+        "left": 644.8,
+        "right": 679.3,
+        "width": 34.5,
+        "height": 20.3
+      },
+      "hitDomPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row > div.bj-player-actions.bj-table-actions > div.sxm-primary-actions.bj-table-actions__row > button.ds-btn.ds-btn--hit.bj-table-actions__btn",
+      "hitClass": "ds-btn ds-btn--hit bj-table-actions__btn",
+      "actionButtonsRow": "sxm-primary-actions bj-table-actions__row"
+    },
+    "boxesZone": {
+      "rect": {
+        "top": 529.6,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 97.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+    },
+    "slotRow": {
+      "rect": {
+        "top": 532.2,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 95
+      },
+      "className": "bj-player-box-row"
+    },
+    "slots": [
+      {
+        "i": 0,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 219.5,
+          "right": 297.1,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 1,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 473.9,
+          "right": 551.5,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 2,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 728.4,
+          "right": 806,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 3,
+        "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+        "rect": {
+          "top": 535,
+          "bottom": 614.2,
+          "left": 982.9,
+          "right": 1060.5,
+          "width": 77.6,
+          "height": 79.2
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "79.1875px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      }
+    ],
+    "plusButton": {
+      "rect": null,
+      "domPath": null
+    },
+    "trayRow": {
+      "rect": {
+        "top": 631.7,
+        "bottom": 691.4,
+        "left": 384,
+        "right": 896,
+        "width": 512,
+        "height": 59.7
+      }
+    },
+    "bottomZone": {
+      "rect": {
+        "top": 625,
+        "bottom": 691.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 66.4
+      }
+    }
+  },
+  "D_full_playing_actions": {
+    "root": {
+      "className": "sxm-layout-root bj-casino bj-view-full-desktop",
+      "dataBjPhase": "playing",
+      "dataBjView": "full",
+      "dataViewMode": "full",
+      "rect": {
+        "top": 8,
+        "bottom": 712,
+        "left": 8,
+        "right": 1272,
+        "width": 1264,
+        "height": 704
+      }
+    },
+    "dealerZone": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 291.9,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 114.4
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
+    },
+    "dealerCards": {
+      "rect": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+    },
+    "dealButton": {
+      "rect": {
+        "top": 246.2,
+        "bottom": 291,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 44.8
+      },
+      "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+      "text": "Deal Cards",
+      "styles": {
+        "display": "inline-block",
+        "visibility": "visible",
+        "position": "static",
+        "left": "auto",
+        "marginLeft": "0px"
+      },
+      "matchedRules": []
+    },
+    "commandZone": {
+      "rect": {
+        "top": 291.9,
+        "bottom": 385.5,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 93.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+      "styles": {
+        "height": "93.5938px",
+        "paddingTop": "40.8px",
+        "paddingBottom": "0px",
+        "justifyContent": "flex-start"
+      },
+      "matchedRules": []
+    },
+    "commandPill": {
+      "rect": {
+        "top": 332.7,
+        "bottom": 358.5,
+        "left": 416,
+        "right": 864,
+        "width": 448,
+        "height": 25.8
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+      "innerText": "Box 4 — your turn.Bank has 8♥ against your 9.Options: Hit, Double — one card.",
+      "styles": {
+        "minHeight": "0px",
+        "padding": "6.08px 24px",
+        "justifyContent": "center",
+        "alignItems": "center"
+      }
+    },
+    "commandStatus": {
+      "rect": {
+        "top": 321.4,
+        "bottom": 336,
+        "left": 465,
+        "right": 815,
+        "width": 350,
+        "height": 14.7
+      },
+      "text": "Box 4 — your turn."
+    },
+    "commandPillToDealGap": 41.8,
+    "dealToCommandZoneTopGap": 1,
+    "cardsZone": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--table",
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+    },
+    "heroArea": {
+      "present": false,
+      "rect": null,
+      "domPath": null,
+      "innerHTMLSnippet": null,
+      "styles": null
+    },
+    "heroCards": {
+      "rect": null,
+      "cardCount": 0,
+      "playingCardCount": 8,
+      "cardRects": [],
+      "cardStyles": [],
+      "playingCardStyles": [
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "47.1875px",
+          "height": "63.1875px",
+          "maxHeight": "63.2px",
+          "zIndex": "1"
+        },
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "47.1875px",
+          "height": "63.1875px",
+          "maxHeight": "63.2px",
+          "zIndex": "2"
+        },
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "47.1875px",
+          "height": "63.1875px",
+          "maxHeight": "63.2px",
+          "zIndex": "1"
+        }
+      ]
+    },
+    "clothLayer": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "styles": {
+        "opacity": "0.38",
+        "zIndex": "0",
+        "alignItems": "flex-end",
+        "pointerEvents": "none"
+      }
+    },
+    "cardsZoneChildren": [
+      {
+        "tag": "DIV",
+        "className": "bj-felt-cloth-layer",
+        "rect": {
+          "top": 386.8,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 101.9
+        },
+        "zIndex": "0"
+      },
+      {
+        "tag": "DIV",
+        "className": "bj-optional-play-overlay-anchor",
+        "rect": {
+          "top": 288.9,
+          "bottom": 333.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 44.8
+        },
+        "zIndex": "1"
+      },
+      {
+        "tag": "DIV",
+        "className": "bj-table-slot-row bj-arc bj-arc--cards bj-full-table-card-area bj-arc--visible-4",
+        "rect": {
+          "top": 333.7,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 154.9
+        },
+        "zIndex": "1"
+      }
+    ],
+    "actionsZone": {
+      "rect": {
+        "top": 487.4,
+        "bottom": 527.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 40
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+    },
+    "actionRow": {
+      "rect": {
+        "top": 512.3,
+        "bottom": 542.8,
+        "left": 590,
+        "right": 690,
+        "width": 99.9,
+        "height": 30.5
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row",
+      "className": "bj-action-row",
+      "dataActionRowScale": "full-table",
+      "innerHTMLSnippet": "<div class=\"bj-player-actions bj-table-actions\" aria-label=\"Player actions\" aria-live=\"polite\"><div class=\"sxm-primary-actions bj-table-actions__row\" data-sxm-section=\"sxm-primary-actions\"><button type=\"button\" class=\"ds-btn ds-btn--stand bj-table-actions__btn\">Stay</button><button type=\"button\" class=\"ds-btn ds-btn--hit bj-table-actions__btn\">Hit</button></div></div>",
+      "styles": {
+        "display": "block",
+        "visibility": "visible",
+        "minHeight": "auto",
+        "height": "30.5px"
+      },
+      "matchedRules": []
+    },
+    "hitStay": {
+      "hitRect": {
+        "top": 516.8,
+        "bottom": 541.6,
+        "left": 643.8,
+        "right": 683.6,
+        "width": 39.8,
+        "height": 24.8
+      },
+      "hitDomPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row > div.bj-player-actions.bj-table-actions > div.sxm-primary-actions.bj-table-actions__row > button.ds-btn.ds-btn--hit.bj-table-actions__btn",
+      "hitClass": "ds-btn ds-btn--hit bj-table-actions__btn",
+      "actionButtonsRow": "sxm-primary-actions bj-table-actions__row"
+    },
+    "boxesZone": {
+      "rect": {
+        "top": 529.6,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 97.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+    },
+    "slotRow": {
+      "rect": {
+        "top": 532.2,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 95
+      },
+      "className": "bj-player-box-row"
+    },
+    "slots": [
+      {
+        "i": 0,
+        "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 613,
+          "left": 219.5,
+          "right": 297.1,
+          "width": 77.6,
+          "height": 80.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "80.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 1,
+        "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 613,
+          "left": 473.9,
+          "right": 551.5,
+          "width": 77.6,
+          "height": 80.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "80.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 2,
+        "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 613,
+          "left": 728.4,
+          "right": 806,
+          "width": 77.6,
+          "height": 80.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "80.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 3,
+        "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 613,
+          "left": 982.9,
+          "right": 1060.5,
+          "width": 77.6,
+          "height": 80.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "80.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      }
+    ],
+    "plusButton": {
+      "rect": null,
+      "domPath": null
+    },
+    "trayRow": {
+      "rect": {
+        "top": 631.7,
+        "bottom": 691.4,
+        "left": 384,
+        "right": 896,
+        "width": 512,
+        "height": 59.7
+      }
+    },
+    "bottomZone": {
+      "rect": {
+        "top": 625,
+        "bottom": 691.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 66.4
+      }
+    }
+  },
+  "D_card_playing_actions": {
+    "root": {
+      "className": "sxm-layout-root bj-casino bj-view-card-desktop",
+      "dataBjPhase": "playing",
+      "dataBjView": "card",
+      "dataViewMode": "card",
+      "rect": {
+        "top": 8,
+        "bottom": 712,
+        "left": 8,
+        "right": 1272,
+        "width": 1264,
+        "height": 704
+      }
+    },
+    "dealerZone": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 291.9,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 114.4
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
+    },
+    "dealerCards": {
+      "rect": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "domPath": "div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+    },
+    "dealButton": {
+      "rect": {
+        "top": 246.2,
+        "bottom": 291,
+        "left": 297.2,
+        "right": 414.7,
+        "width": 117.5,
+        "height": 44.8
+      },
+      "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+      "text": "Deal Cards",
+      "styles": {
+        "display": "inline-block",
+        "visibility": "visible",
+        "position": "static",
+        "left": "auto",
+        "marginLeft": "0px"
+      },
+      "matchedRules": []
+    },
+    "commandZone": {
+      "rect": {
+        "top": 291.9,
+        "bottom": 385.5,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 93.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+      "styles": {
+        "height": "93.5938px",
+        "paddingTop": "40.8px",
+        "paddingBottom": "0px",
+        "justifyContent": "flex-start"
+      },
+      "matchedRules": []
+    },
+    "commandPill": {
+      "rect": {
+        "top": 332.7,
+        "bottom": 358.5,
+        "left": 416,
+        "right": 864,
+        "width": 448,
+        "height": 25.8
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+      "innerText": "Box 1 — your turn.Bank has 7♥ against your 13.Option: Hit.",
+      "styles": {
+        "minHeight": "0px",
+        "padding": "6.08px 24px",
+        "justifyContent": "center",
+        "alignItems": "center"
+      }
+    },
+    "commandStatus": {
+      "rect": {
+        "top": 321.4,
+        "bottom": 336,
+        "left": 465,
+        "right": 815,
+        "width": 350,
+        "height": 14.7
+      },
+      "text": "Box 1 — your turn."
+    },
+    "commandPillToDealGap": 41.8,
+    "dealToCommandZoneTopGap": 1,
+    "cardsZone": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--hero",
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+    },
+    "heroArea": {
+      "present": true,
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards > div.bj-card-desktop-hero",
+      "innerHTMLSnippet": "<div class=\"bj-card-desktop-hero__cards\" data-layout-band=\"hero-cards\"><div class=\"sxm-hero-cards bj-card-desktop-hero__fan\" data-sxm-section=\"sxm-hero-cards\"><div class=\"bj-card-desktop-hero__card-wrap\" style=\"--card-i:0\"><div class=\"playing-card playing-card--red deal-anim--slide ds-card ds-card--hero bj-card-desktop-hero__card\" aria-label=\"6 of hearts\"><div class=\"playing-card__corner playing-c",
+      "styles": {
+        "display": "flex",
+        "visibility": "visible",
+        "opacity": "1",
+        "overflow": "hidden",
+        "zIndex": "1",
+        "height": "101.875px"
+      }
+    },
+    "heroCards": {
+      "rect": {
+        "top": 388,
+        "bottom": 487.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 99.7
+      },
+      "cardCount": 2,
+      "playingCardCount": 2,
+      "cardRects": [
+        {
+          "top": 388.9,
+          "bottom": 486.8,
+          "left": 579.3,
+          "right": 649.2,
+          "width": 69.9,
+          "height": 97.9
+        },
+        {
+          "top": 388.9,
+          "bottom": 486.8,
+          "left": 630.8,
+          "right": 700.7,
+          "width": 69.9,
+          "height": 97.9
+        }
+      ],
+      "cardStyles": [
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "69.9062px",
+          "height": "97.8594px",
+          "maxHeight": "97.875px",
+          "zIndex": "2",
+          "overflow": "visible"
+        },
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "69.9062px",
+          "height": "97.8594px",
+          "maxHeight": "97.875px",
+          "zIndex": "2",
+          "overflow": "visible"
+        }
+      ],
+      "playingCardStyles": [
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "69.9062px",
+          "height": "97.8594px",
+          "maxHeight": "97.875px",
+          "zIndex": "2"
+        },
+        {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "width": "69.9062px",
+          "height": "97.8594px",
+          "maxHeight": "97.875px",
+          "zIndex": "2"
+        }
+      ]
+    },
+    "clothLayer": {
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "styles": {
+        "opacity": "0.38",
+        "zIndex": "0",
+        "alignItems": "flex-end",
+        "pointerEvents": "none"
+      }
+    },
+    "cardsZoneChildren": [
+      {
+        "tag": "DIV",
+        "className": "bj-felt-cloth-layer",
+        "rect": {
+          "top": 386.8,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 101.9
+        },
+        "zIndex": "0"
+      },
+      {
+        "tag": "DIV",
+        "className": "bj-card-desktop-hero",
+        "rect": {
+          "top": 386.8,
+          "bottom": 488.7,
+          "left": 132,
+          "right": 1148,
+          "width": 1016,
+          "height": 101.9
+        },
+        "zIndex": "1"
+      }
+    ],
+    "actionsZone": {
+      "rect": {
+        "top": 487.4,
+        "bottom": 527.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 40
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+    },
+    "actionRow": {
+      "rect": {
+        "top": 512.3,
+        "bottom": 541.6,
+        "left": 594.2,
+        "right": 685.7,
+        "width": 91.5,
+        "height": 29.3
+      },
+      "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row",
+      "className": "bj-action-row",
+      "dataActionRowScale": "full-table",
+      "innerHTMLSnippet": "<div class=\"bj-player-actions bj-table-actions\" aria-label=\"Player actions\" aria-live=\"polite\"><div class=\"sxm-primary-actions bj-table-actions__row\" data-sxm-section=\"sxm-primary-actions\"><button type=\"button\" class=\"ds-btn ds-btn--stand bj-table-actions__btn\">Stay</button><button type=\"button\" class=\"ds-btn ds-btn--hit bj-table-actions__btn\">Hit</button></div></div>",
+      "styles": {
+        "display": "block",
+        "visibility": "visible",
+        "minHeight": "auto",
+        "height": "29.25px"
+      },
+      "matchedRules": []
+    },
+    "hitStay": {
+      "hitRect": {
+        "top": 519,
+        "bottom": 539.3,
+        "left": 644.8,
+        "right": 679.3,
+        "width": 34.5,
+        "height": 20.3
+      },
+      "hitDomPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row > div.bj-player-actions.bj-table-actions > div.sxm-primary-actions.bj-table-actions__row > button.ds-btn.ds-btn--hit.bj-table-actions__btn",
+      "hitClass": "ds-btn ds-btn--hit bj-table-actions__btn",
+      "actionButtonsRow": "sxm-primary-actions bj-table-actions__row"
+    },
+    "boxesZone": {
+      "rect": {
+        "top": 529.6,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 97.6
+      },
+      "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+    },
+    "slotRow": {
+      "rect": {
+        "top": 532.2,
+        "bottom": 627.2,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 95
+      },
+      "className": "bj-player-box-row"
+    },
+    "slots": [
+      {
+        "i": 0,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 219.5,
+          "right": 297.1,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 1,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 473.9,
+          "right": 551.5,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 2,
+        "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+        "rect": {
+          "top": 532.2,
+          "bottom": 617,
+          "left": 728.4,
+          "right": 806,
+          "width": 77.6,
+          "height": 84.8
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "84.7969px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      },
+      {
+        "i": 3,
+        "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+        "rect": {
+          "top": 535,
+          "bottom": 614.2,
+          "left": 982.9,
+          "right": 1060.5,
+          "width": 77.6,
+          "height": 79.2
+        },
+        "styles": {
+          "width": "77.5938px",
+          "height": "79.1875px",
+          "flex": "0 1 auto",
+          "transform": "none",
+          "marginLeft": "0px",
+          "marginTop": "0px"
+        }
+      }
+    ],
+    "plusButton": {
+      "rect": null,
+      "domPath": null
+    },
+    "trayRow": {
+      "rect": {
+        "top": 631.7,
+        "bottom": 691.4,
+        "left": 384,
+        "right": 896,
+        "width": 512,
+        "height": 59.7
+      }
+    },
+    "bottomZone": {
+      "rect": {
+        "top": 625,
+        "bottom": 691.4,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 66.4
+      }
+    }
+  }
+}

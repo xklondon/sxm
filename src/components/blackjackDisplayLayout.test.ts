@@ -38,7 +38,7 @@ describe('blackjack display layout contract', () => {
     expect(SHELL_SRC).toContain('BlackjackPlayerBoxesZone');
     expect(SHELL_SRC).toContain('BlackjackCardsAreaZone');
     expect(PANEL_SRC).toMatch(/BlackjackTableLayoutShell[\s\S]*BlackjackDealerArea/);
-    expect(DEALER_AREA_SRC).toContain('TABLE_UX.tableZoneDealer');
+    expect(DEALER_AREA_SRC).toContain('bj-dealer-area');
     expect(VIEW_ZONES_SRC).toContain('BlackjackCommandZone');
     expect(VIEW_ZONES_SRC).toContain('BlackjackActionsZone');
     expect(VIEW_ZONES_SRC).toContain('BlackjackPlayerBoxesZone');

@@ -1357,7 +1357,10 @@
   align-items: center;
 }
 
+.bj-view-full-desktop .bj-dealer-area .dealer-block,
+.bj-view-card-desktop .bj-dealer-area .dealer-block,
 .bj-view-full-desktop .bj-table-zone--dealer .dealer-block,
+.bj-view-card-desktop .bj-table-zone--dealer .dealer-block,
 .bj-view-full-mobile .bj-table-zone--dealer .dealer-block,
 .bj-view-card-mobile .bj-table-zone--dealer .dealer-block {
   width: 100%;
@@ -1682,6 +1685,7 @@
 }
 
 .bj-view-full-desktop .bj-arc__slot--owned,
+.bj-view-card-desktop .bj-arc__slot--owned,
 .bj-view-full-mobile .bj-arc__slot--owned,
 .bj-view-card-mobile .bj-arc__slot--owned {
   display: flex;
@@ -2576,7 +2580,8 @@
     overflow: visible;
   }
 
-  .bj-view-full-desktop .dealer-block__center-col{
+  .bj-view-full-desktop .dealer-block__center-col,
+  .bj-view-card-desktop .dealer-block__center-col {
     border: none;
     background: transparent;
     padding: 0.12rem 0.25rem 0.1rem;
@@ -2785,7 +2790,11 @@
   .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-4,
   .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-5,
   .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-6,
-  .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-7 {
+  .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-7,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-4,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-5,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-6,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-7 {
     --bj-full-table-box-width: var(--bj-player-box-width);
     --bj-full-table-box-height: var(--bj-player-box-height);
   }

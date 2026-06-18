@@ -64,21 +64,23 @@
   .bj-view-card-desktop .bj-card-desktop-hero__card.ds-card--hero {
     width: auto;
     max-width: min(var(--bj-card-hero-card-width), 100%);
-    max-height: min(var(--bj-card-hero-card-max-height), 100%);
+    max-height: min(var(--bj-card-hero-card-max-height), calc(100% - 0.25rem));
+    min-width: 3.75rem;
+    min-height: 0;
     height: auto;
     aspect-ratio: var(--bj-card-hero-card-aspect-ratio, 5 / 7);
     flex: 0 0 auto;
     box-sizing: border-box;
+    position: relative;
+    z-index: 2;
   }
 
   @container bj-hero-cards (min-height: 1px) {
     .bj-view-card-desktop .bj-card-desktop-hero__card.ds-card--hero {
-      max-width: min(var(--bj-card-hero-card-width), 52cqw);
-      max-height: min(
-        var(--bj-card-hero-card-max-height),
-        54cqh,
-        calc(100% - 0.85rem)
-      );
+      max-width: min(var(--bj-card-hero-card-width), 46cqw);
+      max-height: min(var(--bj-card-hero-card-max-height), calc(100cqb - 0.25rem));
+      min-width: min(3.75rem, 46cqw);
+      min-height: 0;
       width: auto;
       height: auto;
     }

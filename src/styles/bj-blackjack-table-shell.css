@@ -82,17 +82,40 @@
     overflow: hidden;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--dealer,
-  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--dealer {
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-dealer-area,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-dealer-area {
     grid-row: dealer;
     grid-column: 1;
     z-index: 2;
     margin: 0;
     padding: 0;
     min-height: 0;
+    height: var(--bj-desktop-zone-dealer-height);
+    min-height: var(--bj-desktop-zone-dealer-height);
+    max-height: var(--bj-desktop-zone-dealer-height);
     isolation: isolate;
     align-self: stretch;
-    overflow: visible;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-dealer-area > .dealer-block,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-dealer-area > .dealer-block {
+    flex: 1 1 auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--summary,
@@ -224,7 +247,9 @@
   }
 
   .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-box-row,
-  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap {
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-box-row,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap {
     flex: 1 1 auto;
     align-self: stretch;
   }
@@ -247,41 +272,96 @@
     overflow: visible;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__bank-info--placeholder {
-    display: none;
-    min-height: 0;
-    height: 0;
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__bank-info--placeholder,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__bank-info--placeholder {
+    visibility: hidden;
+    min-height: var(--bj-dealer-bank-info-band-height, 1.55rem);
+    max-height: var(--bj-dealer-bank-info-band-height, 1.55rem);
+    height: var(--bj-dealer-bank-info-band-height, 1.55rem);
     padding: 0;
     margin: 0;
+    overflow: hidden;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__stack,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__stack {
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__stack,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__stack {
+    display: grid;
+    grid-template-rows:
+      var(--bj-dealer-cards-slot-min-height, 3.35rem)
+      var(--bj-dealer-bank-info-band-height, 1.55rem)
+      auto;
     gap: 0.08rem;
+    flex: unset;
+    min-height: 0;
+    max-height: 100%;
+    align-content: end;
+    justify-content: center;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block {
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block {
     padding: 0.04rem 0.28rem 0;
     max-height: 100%;
+    overflow: hidden;
+    min-height: 0;
+    width: 100%;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__center-col,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__center-col {
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__center-col,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__center-col {
     padding: 0.08rem 0.22rem 0.06rem;
     gap: 0.06rem;
     border: none;
     background: transparent;
     box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__cards-slot,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__cards-slot {
-    min-height: 1.7rem;
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__hint,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__hint {
+    display: none;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
-  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot {
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot {
+    grid-row: 1;
+    min-height: var(--bj-dealer-cards-slot-min-height, 3.35rem);
+    height: var(--bj-dealer-cards-slot-min-height, 3.35rem);
+    max-height: var(--bj-dealer-cards-slot-min-height, 3.35rem);
+    flex: unset;
+    align-items: center;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot .dealer-block__cards,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot .dealer-block__cards,
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot .dealer-block__card-placeholder,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot .dealer-block__card-placeholder {
+    min-height: 0;
+    max-height: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__bank-info,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__bank-info,
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__stack > .bj-table-info-bar--dealer-hand,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__stack > .bj-table-info-bar--dealer-hand {
+    grid-row: 2;
+    min-height: var(--bj-dealer-bank-info-band-height, 1.55rem);
+    max-height: var(--bj-dealer-bank-info-band-height, 1.55rem);
+    overflow: hidden;
+    flex: unset;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__action-slot,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__action-slot {
+    grid-row: 3;
     min-height: 1.05rem;
     flex: 0 0 auto;
   }

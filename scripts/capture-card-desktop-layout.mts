@@ -82,7 +82,7 @@ async function main() {
     };
     const felt = document.querySelector('.bj-view-card-desktop .bj-casino__felt');
     const bankInfo = document.querySelector('.bj-view-card-desktop .bj-table-info-bar--felt-row');
-    const dealer = document.querySelector('.bj-view-card-desktop .bj-table-zone--dealer');
+    const dealer = document.querySelector('.bj-view-card-desktop .bj-dealer-area, .bj-view-card-desktop .bj-table-zone--dealer');
     const cardsZone = document.querySelector('.bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--hero');
     const boxesZone = document.querySelector('.bj-view-card-desktop .bj-table-zone--boxes');
     const actionsZone = document.querySelector('.bj-view-card-desktop .bj-table-zone--actions');

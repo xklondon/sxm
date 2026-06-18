@@ -52,12 +52,14 @@
 }
 
 @media (min-width: 721px) {
-  .bj-view-full-desktop .bj-player-boxes-wrap{
+  .bj-view-full-desktop .bj-player-boxes-wrap,
+  .bj-view-card-desktop .bj-player-boxes-wrap {
     width: 100%;
     max-width: 100%;
   }
 
-  .bj-view-full-desktop .bj-player-box-row {
+  .bj-view-full-desktop .bj-player-box-row,
+  .bj-view-card-desktop .bj-player-box-row {
     width: 100%;
     max-width: 100%;
     align-self: stretch;
@@ -304,6 +306,9 @@
 .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
 .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-player-box-mobile,
 .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-bet-zone,
+.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
+.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-player-box-mobile,
+.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-bet-zone,
 .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
 .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-player-box-mobile,
 .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-bet-zone,

@@ -58,7 +58,7 @@ describe('Desktop Card View hero card clipping guards', () => {
       /\.bj-view-card-desktop \.bj-card-desktop-hero__fan[\s\S]*align-items:\s*center/,
     );
     expect(HERO_AREA_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-card-desktop-hero__card\.ds-card--hero[\s\S]*max-height:\s*min\(var\(--bj-card-hero-card-max-height\), 100%\)/,
+      /\.bj-view-card-desktop \.bj-card-desktop-hero__card\.ds-card--hero[\s\S]*max-height:\s*min\(var\(--bj-card-hero-card-max-height\), calc\(100% - 0\.25rem\)\)/,
     );
     expect(HERO_AREA_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-card-desktop-hero__card\.ds-card--hero[\s\S]*aspect-ratio:\s*var\(--bj-card-hero-card-aspect-ratio/,

@@ -1,0 +1,4131 @@
+﻿[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: '2b6a76e5-4316-4884-9424-5399b7cfa368' }
+[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: '159285d7-7f93-4afe-9b81-2cbc27be09b7' }
+[SXMCards][INFO] setupValues {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] Table setup confirmed {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] tableMetaStartingChipsSaved {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'assignBankBot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: 'd6876ec1-5eca-4906-a5a2-aefda35be195',
+  chips: 500,
+  reason: 'initial-bank',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Bank starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: null
+}
+[SXMCards][INFO] allocateBank {
+  bankId: 'd6876ec1-5eca-4906-a5a2-aefda35be195',
+  chips: 500,
+  mode: 'bot'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'allocateBank-bot',
+  entryCount: 1,
+  entries: [
+    {
+      playerId: 'd6876ec1-5eca-4906-a5a2-aefda35be195',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'allocateBank-bot',
+  bankPlayerId: 'd6876ec1-5eca-4906-a5a2-aefda35be195',
+  bankBalance: 500,
+  boxSlots: [],
+  all: { 'd6876ec1-5eca-4906-a5a2-aefda35be195': 500 }
+}
+[SXMCards][INFO] Banker assigned: Bank Bot
+[SXMCards][INFO] ownerBankrollCreated {
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  ownerName: 'Alice',
+  startingChipsEachSeat: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  chips: 500,
+  reason: 'initial-player',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Player starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: 'd6876ec1-5eca-4906-a5a2-aefda35be195'
+}
+[SXMCards][INFO] ownerInitialAllocation {
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  ownerName: 'Alice',
+  chips: 500,
+  balanceAfter: 500
+}
+[SXMCards][INFO] thisTableRowsAfterSetup {
+  context: 'ensureTableOwnerPersonBankroll',
+  rows: [
+    {
+      personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+      name: 'Alice',
+      status: 'owner',
+      available: 500,
+      betting: 0,
+      boxes: [],
+      kind: 'person'
+    }
+  ]
+}
+[SXMCards][INFO] nativeBoxPositionEnsured {
+  slotNumber: 1,
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  boxPlayerId: '4dc5427e-c65f-4eb0-bc14-ddeb0218709c'
+}
+[SXMCards][INFO] temporaryBoxOwnerSkippedNative {
+  boxPlayerId: '4dc5427e-c65f-4eb0-bc14-ddeb0218709c',
+  nativeOwner: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  bettorPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '4dc5427e-c65f-4eb0-bc14-ddeb0218709c',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  stakerPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'claimBoxSlot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] claimBoxBeforeAllocation {
+  slotNumber: 2,
+  chips: 500,
+  controller: 'Alice',
+  sessionPlayerIds: [
+    'd6876ec1-5eca-4906-a5a2-aefda35be195',
+    'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+    '4dc5427e-c65f-4eb0-bc14-ddeb0218709c'
+  ],
+  ledgerEntryCount: 2
+}
+[SXMCards][INFO] claimBoxResolvePerson { slotNumber: 2, controller: 'Alice' }
+[SXMCards][INFO] claimBoxExistingBankroll {
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  controller: 'Alice',
+  slotNumber: 2
+}
+[SXMCards][INFO] claimBoxLinkedToBankroll {
+  slotNumber: 2,
+  boxPlayerId: '389fe96d-9abe-483c-b1d0-64fc440b98b5',
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  chipsAllocated: 0,
+  personBalanceAfter: 500
+}
+[SXMCards][INFO] boxLedgerBalanceAfterAllocation {
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  balanceAfter: 500,
+  slotNumber: 2,
+  boxPlayerId: '389fe96d-9abe-483c-b1d0-64fc440b98b5'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'claimBoxSlot',
+  entryCount: 2,
+  entries: [
+    {
+      playerId: 'd6876ec1-5eca-4906-a5a2-aefda35be195',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    },
+    {
+      playerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Player starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'claimBoxSlot',
+  bankPlayerId: 'd6876ec1-5eca-4906-a5a2-aefda35be195',
+  bankBalance: 500,
+  boxSlots: [
+    {
+      slotNumber: 1,
+      playerId: '4dc5427e-c65f-4eb0-bc14-ddeb0218709c',
+      bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+    },
+    {
+      slotNumber: 2,
+      playerId: '389fe96d-9abe-483c-b1d0-64fc440b98b5',
+      bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+    }
+  ],
+  all: {
+    'd6876ec1-5eca-4906-a5a2-aefda35be195': 500,
+    'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d': 500,
+    '4dc5427e-c65f-4eb0-bc14-ddeb0218709c': 0,
+    '389fe96d-9abe-483c-b1d0-64fc440b98b5': 0
+  }
+}
+[SXMCards][INFO] Box claimed {
+  slotNumber: 2,
+  controller: 'Alice',
+  boxPlayerId: '389fe96d-9abe-483c-b1d0-64fc440b98b5',
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] temporaryBoxOwnerAssigned {
+  boxPlayerId: '389fe96d-9abe-483c-b1d0-64fc440b98b5',
+  bettorPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '389fe96d-9abe-483c-b1d0-64fc440b98b5',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  stakerPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'claimBoxSlot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] claimBoxBeforeAllocation {
+  slotNumber: 3,
+  chips: 500,
+  controller: 'Alice',
+  sessionPlayerIds: [
+    'd6876ec1-5eca-4906-a5a2-aefda35be195',
+    'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+    '4dc5427e-c65f-4eb0-bc14-ddeb0218709c',
+    '389fe96d-9abe-483c-b1d0-64fc440b98b5'
+  ],
+  ledgerEntryCount: 2
+}
+[SXMCards][INFO] claimBoxResolvePerson { slotNumber: 3, controller: 'Alice' }
+[SXMCards][INFO] claimBoxExistingBankroll {
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  controller: 'Alice',
+  slotNumber: 3
+}
+[SXMCards][INFO] claimBoxLinkedToBankroll {
+  slotNumber: 3,
+  boxPlayerId: '7ee208ab-8ca5-43e8-9c40-82669f011868',
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  chipsAllocated: 0,
+  personBalanceAfter: 500
+}
+[SXMCards][INFO] boxLedgerBalanceAfterAllocation {
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  balanceAfter: 500,
+  slotNumber: 3,
+  boxPlayerId: '7ee208ab-8ca5-43e8-9c40-82669f011868'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'claimBoxSlot',
+  entryCount: 2,
+  entries: [
+    {
+      playerId: 'd6876ec1-5eca-4906-a5a2-aefda35be195',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    },
+    {
+      playerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Player starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'claimBoxSlot',
+  bankPlayerId: 'd6876ec1-5eca-4906-a5a2-aefda35be195',
+  bankBalance: 500,
+  boxSlots: [
+    {
+      slotNumber: 1,
+      playerId: '4dc5427e-c65f-4eb0-bc14-ddeb0218709c',
+      bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+    },
+    {
+      slotNumber: 2,
+      playerId: '389fe96d-9abe-483c-b1d0-64fc440b98b5',
+      bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+    },
+    {
+      slotNumber: 3,
+      playerId: '7ee208ab-8ca5-43e8-9c40-82669f011868',
+      bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+    }
+  ],
+  all: {
+    'd6876ec1-5eca-4906-a5a2-aefda35be195': 500,
+    'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d': 500,
+    '4dc5427e-c65f-4eb0-bc14-ddeb0218709c': 0,
+    '389fe96d-9abe-483c-b1d0-64fc440b98b5': 0,
+    '7ee208ab-8ca5-43e8-9c40-82669f011868': 0
+  }
+}
+[SXMCards][INFO] Box claimed {
+  slotNumber: 3,
+  controller: 'Alice',
+  boxPlayerId: '7ee208ab-8ca5-43e8-9c40-82669f011868',
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] temporaryBoxOwnerAssigned {
+  boxPlayerId: '7ee208ab-8ca5-43e8-9c40-82669f011868',
+  bettorPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '7ee208ab-8ca5-43e8-9c40-82669f011868',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  stakerPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'claimBoxSlot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] claimBoxBeforeAllocation {
+  slotNumber: 4,
+  chips: 500,
+  controller: 'Alice',
+  sessionPlayerIds: [
+    'd6876ec1-5eca-4906-a5a2-aefda35be195',
+    'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+    '4dc5427e-c65f-4eb0-bc14-ddeb0218709c',
+    '389fe96d-9abe-483c-b1d0-64fc440b98b5',
+    '7ee208ab-8ca5-43e8-9c40-82669f011868'
+  ],
+  ledgerEntryCount: 2
+}
+[SXMCards][INFO] claimBoxResolvePerson { slotNumber: 4, controller: 'Alice' }
+[SXMCards][INFO] claimBoxExistingBankroll {
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  controller: 'Alice',
+  slotNumber: 4
+}
+[SXMCards][INFO] claimBoxLinkedToBankroll {
+  slotNumber: 4,
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  chipsAllocated: 0,
+  personBalanceAfter: 500
+}
+[SXMCards][INFO] boxLedgerBalanceAfterAllocation {
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  balanceAfter: 500,
+  slotNumber: 4,
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'claimBoxSlot',
+  entryCount: 2,
+  entries: [
+    {
+      playerId: 'd6876ec1-5eca-4906-a5a2-aefda35be195',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    },
+    {
+      playerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Player starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'claimBoxSlot',
+  bankPlayerId: 'd6876ec1-5eca-4906-a5a2-aefda35be195',
+  bankBalance: 500,
+  boxSlots: [
+    {
+      slotNumber: 1,
+      playerId: '4dc5427e-c65f-4eb0-bc14-ddeb0218709c',
+      bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+    },
+    {
+      slotNumber: 2,
+      playerId: '389fe96d-9abe-483c-b1d0-64fc440b98b5',
+      bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+    },
+    {
+      slotNumber: 3,
+      playerId: '7ee208ab-8ca5-43e8-9c40-82669f011868',
+      bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+    },
+    {
+      slotNumber: 4,
+      playerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+      bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+    }
+  ],
+  all: {
+    'd6876ec1-5eca-4906-a5a2-aefda35be195': 500,
+    'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d': 500,
+    '4dc5427e-c65f-4eb0-bc14-ddeb0218709c': 0,
+    '389fe96d-9abe-483c-b1d0-64fc440b98b5': 0,
+    '7ee208ab-8ca5-43e8-9c40-82669f011868': 0,
+    '0e6d4066-9f22-4864-a329-e9f094f2af99': 0
+  }
+}
+[SXMCards][INFO] Box claimed {
+  slotNumber: 4,
+  controller: 'Alice',
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  personId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] temporaryBoxOwnerAssigned {
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  bettorPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  chip: 50,
+  total: 50,
+  minBet: 5,
+  callerPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  stakerPersonId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d'
+}
+[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: '7d784879-f485-42e3-853e-9df0a56e8946' }
+[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: '066aa9ea-8b4c-4617-838b-b2744855602c' }
+[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: '8265cfd0-edf9-4950-b0ea-7683b488a403' }
+[SXMCards][INFO] setupValues {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] Table setup confirmed {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] tableMetaStartingChipsSaved {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'assignBankBot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: '19bceff1-e7c9-41ae-b529-82c6fcaebe96',
+  chips: 500,
+  reason: 'initial-bank',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Bank starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: null
+}
+[SXMCards][INFO] allocateBank {
+  bankId: '19bceff1-e7c9-41ae-b529-82c6fcaebe96',
+  chips: 500,
+  mode: 'bot'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'allocateBank-bot',
+  entryCount: 1,
+  entries: [
+    {
+      playerId: '19bceff1-e7c9-41ae-b529-82c6fcaebe96',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'allocateBank-bot',
+  bankPlayerId: '19bceff1-e7c9-41ae-b529-82c6fcaebe96',
+  bankBalance: 500,
+  boxSlots: [],
+  all: { '19bceff1-e7c9-41ae-b529-82c6fcaebe96': 500 }
+}
+[SXMCards][INFO] Banker assigned: Bank Bot
+[SXMCards][INFO] ownerBankrollCreated {
+  personId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  ownerName: 'Alice',
+  startingChipsEachSeat: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  chips: 500,
+  reason: 'initial-player',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Player starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: '19bceff1-e7c9-41ae-b529-82c6fcaebe96'
+}
+[SXMCards][INFO] ownerInitialAllocation {
+  personId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  ownerName: 'Alice',
+  chips: 500,
+  balanceAfter: 500
+}
+[SXMCards][INFO] thisTableRowsAfterSetup {
+  context: 'ensureTableOwnerPersonBankroll',
+  rows: [
+    {
+      personId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+      name: 'Alice',
+      status: 'owner',
+      available: 500,
+      betting: 0,
+      boxes: [],
+      kind: 'person'
+    }
+  ]
+}
+[SXMCards][INFO] nativeBoxPositionEnsured {
+  slotNumber: 1,
+  personId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  boxPlayerId: '2f00e13f-d341-406d-a527-2f2a21095f09'
+}
+[SXMCards][INFO] temporaryBoxOwnerSkippedNative {
+  boxPlayerId: '2f00e13f-d341-406d-a527-2f2a21095f09',
+  nativeOwner: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  bettorPersonId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '2f00e13f-d341-406d-a527-2f2a21095f09',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  stakerPersonId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375'
+}
+[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: 'fe93dacc-0f77-4080-a014-a6868ea13d5b' }
+[SXMCards][INFO] setupValues {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] Table setup confirmed {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] tableMetaStartingChipsSaved {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'assignBankBot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: 'c902c1e3-b30d-462e-948b-60391df4b99d',
+  chips: 500,
+  reason: 'initial-bank',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Bank starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: null
+}
+[SXMCards][INFO] allocateBank {
+  bankId: 'c902c1e3-b30d-462e-948b-60391df4b99d',
+  chips: 500,
+  mode: 'bot'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'allocateBank-bot',
+  entryCount: 1,
+  entries: [
+    {
+      playerId: 'c902c1e3-b30d-462e-948b-60391df4b99d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'allocateBank-bot',
+  bankPlayerId: 'c902c1e3-b30d-462e-948b-60391df4b99d',
+  bankBalance: 500,
+  boxSlots: [],
+  all: { 'c902c1e3-b30d-462e-948b-60391df4b99d': 500 }
+}
+[SXMCards][INFO] Banker assigned: Bank Bot
+[SXMCards][INFO] ownerBankrollCreated {
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  ownerName: 'Alice',
+  startingChipsEachSeat: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  chips: 500,
+  reason: 'initial-player',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Player starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: 'c902c1e3-b30d-462e-948b-60391df4b99d'
+}
+[SXMCards][INFO] ownerInitialAllocation {
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  ownerName: 'Alice',
+  chips: 500,
+  balanceAfter: 500
+}
+[SXMCards][INFO] thisTableRowsAfterSetup {
+  context: 'ensureTableOwnerPersonBankroll',
+  rows: [
+    {
+      personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+      name: 'Alice',
+      status: 'owner',
+      available: 500,
+      betting: 0,
+      boxes: [],
+      kind: 'person'
+    }
+  ]
+}
+[SXMCards][INFO] nativeBoxPositionEnsured {
+  slotNumber: 1,
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  boxPlayerId: '649f6799-e30d-4f3f-a8c5-0e14d5506188'
+}
+[SXMCards][INFO] temporaryBoxOwnerSkippedNative {
+  boxPlayerId: '649f6799-e30d-4f3f-a8c5-0e14d5506188',
+  nativeOwner: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  bettorPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '649f6799-e30d-4f3f-a8c5-0e14d5506188',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  stakerPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'claimBoxSlot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] claimBoxBeforeAllocation {
+  slotNumber: 2,
+  chips: 500,
+  controller: 'Alice',
+  sessionPlayerIds: [
+    'c902c1e3-b30d-462e-948b-60391df4b99d',
+    '36795352-c42c-48aa-8006-df7e27e6bdc4',
+    '649f6799-e30d-4f3f-a8c5-0e14d5506188'
+  ],
+  ledgerEntryCount: 2
+}
+[SXMCards][INFO] claimBoxResolvePerson { slotNumber: 2, controller: 'Alice' }
+[SXMCards][INFO] claimBoxExistingBankroll {
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  controller: 'Alice',
+  slotNumber: 2
+}
+[SXMCards][INFO] claimBoxLinkedToBankroll {
+  slotNumber: 2,
+  boxPlayerId: 'e345404f-a55c-489f-8ce0-0561f7b22b9f',
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  chipsAllocated: 0,
+  personBalanceAfter: 500
+}
+[SXMCards][INFO] boxLedgerBalanceAfterAllocation {
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  balanceAfter: 500,
+  slotNumber: 2,
+  boxPlayerId: 'e345404f-a55c-489f-8ce0-0561f7b22b9f'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'claimBoxSlot',
+  entryCount: 2,
+  entries: [
+    {
+      playerId: 'c902c1e3-b30d-462e-948b-60391df4b99d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    },
+    {
+      playerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Player starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'claimBoxSlot',
+  bankPlayerId: 'c902c1e3-b30d-462e-948b-60391df4b99d',
+  bankBalance: 500,
+  boxSlots: [
+    {
+      slotNumber: 1,
+      playerId: '649f6799-e30d-4f3f-a8c5-0e14d5506188',
+      bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+    },
+    {
+      slotNumber: 2,
+      playerId: 'e345404f-a55c-489f-8ce0-0561f7b22b9f',
+      bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+    }
+  ],
+  all: {
+    'c902c1e3-b30d-462e-948b-60391df4b99d': 500,
+    '36795352-c42c-48aa-8006-df7e27e6bdc4': 500,
+    '649f6799-e30d-4f3f-a8c5-0e14d5506188': 0,
+    'e345404f-a55c-489f-8ce0-0561f7b22b9f': 0
+  }
+}
+[SXMCards][INFO] Box claimed {
+  slotNumber: 2,
+  controller: 'Alice',
+  boxPlayerId: 'e345404f-a55c-489f-8ce0-0561f7b22b9f',
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] temporaryBoxOwnerAssigned {
+  boxPlayerId: 'e345404f-a55c-489f-8ce0-0561f7b22b9f',
+  bettorPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: 'e345404f-a55c-489f-8ce0-0561f7b22b9f',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  stakerPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'claimBoxSlot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] claimBoxBeforeAllocation {
+  slotNumber: 3,
+  chips: 500,
+  controller: 'Alice',
+  sessionPlayerIds: [
+    'c902c1e3-b30d-462e-948b-60391df4b99d',
+    '36795352-c42c-48aa-8006-df7e27e6bdc4',
+    '649f6799-e30d-4f3f-a8c5-0e14d5506188',
+    'e345404f-a55c-489f-8ce0-0561f7b22b9f'
+  ],
+  ledgerEntryCount: 2
+}
+[SXMCards][INFO] claimBoxResolvePerson { slotNumber: 3, controller: 'Alice' }
+[SXMCards][INFO] claimBoxExistingBankroll {
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  controller: 'Alice',
+  slotNumber: 3
+}
+[SXMCards][INFO] claimBoxLinkedToBankroll {
+  slotNumber: 3,
+  boxPlayerId: '7b7bf629-2a7a-45d5-9c7d-18f1534a4780',
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  chipsAllocated: 0,
+  personBalanceAfter: 500
+}
+[SXMCards][INFO] boxLedgerBalanceAfterAllocation {
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  balanceAfter: 500,
+  slotNumber: 3,
+  boxPlayerId: '7b7bf629-2a7a-45d5-9c7d-18f1534a4780'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'claimBoxSlot',
+  entryCount: 2,
+  entries: [
+    {
+      playerId: 'c902c1e3-b30d-462e-948b-60391df4b99d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    },
+    {
+      playerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Player starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'claimBoxSlot',
+  bankPlayerId: 'c902c1e3-b30d-462e-948b-60391df4b99d',
+  bankBalance: 500,
+  boxSlots: [
+    {
+      slotNumber: 1,
+      playerId: '649f6799-e30d-4f3f-a8c5-0e14d5506188',
+      bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+    },
+    {
+      slotNumber: 2,
+      playerId: 'e345404f-a55c-489f-8ce0-0561f7b22b9f',
+      bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+    },
+    {
+      slotNumber: 3,
+      playerId: '7b7bf629-2a7a-45d5-9c7d-18f1534a4780',
+      bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+    }
+  ],
+  all: {
+    'c902c1e3-b30d-462e-948b-60391df4b99d': 500,
+    '36795352-c42c-48aa-8006-df7e27e6bdc4': 500,
+    '649f6799-e30d-4f3f-a8c5-0e14d5506188': 0,
+    'e345404f-a55c-489f-8ce0-0561f7b22b9f': 0,
+    '7b7bf629-2a7a-45d5-9c7d-18f1534a4780': 0
+  }
+}
+[SXMCards][INFO] Box claimed {
+  slotNumber: 3,
+  controller: 'Alice',
+  boxPlayerId: '7b7bf629-2a7a-45d5-9c7d-18f1534a4780',
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] temporaryBoxOwnerAssigned {
+  boxPlayerId: '7b7bf629-2a7a-45d5-9c7d-18f1534a4780',
+  bettorPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: '7b7bf629-2a7a-45d5-9c7d-18f1534a4780',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  stakerPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'claimBoxSlot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] claimBoxBeforeAllocation {
+  slotNumber: 4,
+  chips: 500,
+  controller: 'Alice',
+  sessionPlayerIds: [
+    'c902c1e3-b30d-462e-948b-60391df4b99d',
+    '36795352-c42c-48aa-8006-df7e27e6bdc4',
+    '649f6799-e30d-4f3f-a8c5-0e14d5506188',
+    'e345404f-a55c-489f-8ce0-0561f7b22b9f',
+    '7b7bf629-2a7a-45d5-9c7d-18f1534a4780'
+  ],
+  ledgerEntryCount: 2
+}
+[SXMCards][INFO] claimBoxResolvePerson { slotNumber: 4, controller: 'Alice' }
+[SXMCards][INFO] claimBoxExistingBankroll {
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  controller: 'Alice',
+  slotNumber: 4
+}
+[SXMCards][INFO] claimBoxLinkedToBankroll {
+  slotNumber: 4,
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  chipsAllocated: 0,
+  personBalanceAfter: 500
+}
+[SXMCards][INFO] boxLedgerBalanceAfterAllocation {
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  balanceAfter: 500,
+  slotNumber: 4,
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'claimBoxSlot',
+  entryCount: 2,
+  entries: [
+    {
+      playerId: 'c902c1e3-b30d-462e-948b-60391df4b99d',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    },
+    {
+      playerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Player starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'claimBoxSlot',
+  bankPlayerId: 'c902c1e3-b30d-462e-948b-60391df4b99d',
+  bankBalance: 500,
+  boxSlots: [
+    {
+      slotNumber: 1,
+      playerId: '649f6799-e30d-4f3f-a8c5-0e14d5506188',
+      bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+    },
+    {
+      slotNumber: 2,
+      playerId: 'e345404f-a55c-489f-8ce0-0561f7b22b9f',
+      bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+    },
+    {
+      slotNumber: 3,
+      playerId: '7b7bf629-2a7a-45d5-9c7d-18f1534a4780',
+      bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+    },
+    {
+      slotNumber: 4,
+      playerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+      bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+    }
+  ],
+  all: {
+    'c902c1e3-b30d-462e-948b-60391df4b99d': 500,
+    '36795352-c42c-48aa-8006-df7e27e6bdc4': 500,
+    '649f6799-e30d-4f3f-a8c5-0e14d5506188': 0,
+    'e345404f-a55c-489f-8ce0-0561f7b22b9f': 0,
+    '7b7bf629-2a7a-45d5-9c7d-18f1534a4780': 0,
+    'c30bb3f9-ec10-4b9d-a589-79b7d4335ede': 0
+  }
+}
+[SXMCards][INFO] Box claimed {
+  slotNumber: 4,
+  controller: 'Alice',
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  personId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] temporaryBoxOwnerAssigned {
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  bettorPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  chip: 50,
+  total: 50,
+  minBet: 5,
+  callerPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  stakerPersonId: '36795352-c42c-48aa-8006-df7e27e6bdc4'
+}
+[SXMCards][INFO] Blackjack table created (empty boxes) { sessionId: '64c4b726-963d-44b1-bb88-60161fc7439d' }
+[SXMCards][INFO] setupValues {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] Table setup confirmed {
+  stakeDescription: 'QA test',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500
+}
+[SXMCards][INFO] tableMetaStartingChipsSaved {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'confirmTableAgreement',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] tableMetaStartingChips {
+  context: 'assignBankBot',
+  startingChipsEachSeat: 500,
+  startingChipsBank: 500,
+  resolvedSeat: 500,
+  resolvedBank: 500,
+  agreementDefault: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: '23f1a95c-7766-46eb-9f54-a31447ef30b6',
+  chips: 500,
+  reason: 'initial-bank',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Bank starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: null
+}
+[SXMCards][INFO] allocateBank {
+  bankId: '23f1a95c-7766-46eb-9f54-a31447ef30b6',
+  chips: 500,
+  mode: 'bot'
+}
+[SXMCards][INFO] ledgerAfterAllocation {
+  context: 'allocateBank-bot',
+  entryCount: 1,
+  entries: [
+    {
+      playerId: '23f1a95c-7766-46eb-9f54-a31447ef30b6',
+      type: 'buy-in',
+      amount: 500,
+      balanceAfter: 500,
+      description: 'Bank starting allocation: 500 chips'
+    }
+  ]
+}
+[SXMCards][INFO] derivedBalances {
+  context: 'allocateBank-bot',
+  bankPlayerId: '23f1a95c-7766-46eb-9f54-a31447ef30b6',
+  bankBalance: 500,
+  boxSlots: [],
+  all: { '23f1a95c-7766-46eb-9f54-a31447ef30b6': 500 }
+}
+[SXMCards][INFO] Banker assigned: Bank Bot
+[SXMCards][INFO] ownerBankrollCreated {
+  personId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  ownerName: 'Alice',
+  startingChipsEachSeat: 500
+}
+[SXMCards][INFO] allocateChipsCanonical {
+  bankrollOwnerId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  chips: 500,
+  reason: 'initial-player',
+  source: 'setup',
+  actorId: null,
+  boxId: null,
+  description: 'Player starting allocation: 500 chips',
+  balanceBefore: 0,
+  balanceAfter: 500,
+  bankPlayerId: '23f1a95c-7766-46eb-9f54-a31447ef30b6'
+}
+[SXMCards][INFO] ownerInitialAllocation {
+  personId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  ownerName: 'Alice',
+  chips: 500,
+  balanceAfter: 500
+}
+[SXMCards][INFO] thisTableRowsAfterSetup {
+  context: 'ensureTableOwnerPersonBankroll',
+  rows: [
+    {
+      personId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+      name: 'Alice',
+      status: 'owner',
+      available: 500,
+      betting: 0,
+      boxes: [],
+      kind: 'person'
+    }
+  ]
+}
+[SXMCards][INFO] nativeBoxPositionEnsured {
+  slotNumber: 1,
+  personId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  boxPlayerId: 'f1631ac1-19bb-4fb3-ab46-c0e36c6845ac'
+}
+[SXMCards][INFO] temporaryBoxOwnerSkippedNative {
+  boxPlayerId: 'f1631ac1-19bb-4fb3-ab46-c0e36c6845ac',
+  nativeOwner: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  bettorPersonId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df'
+}
+[SXMCards][INFO] Stake chip added {
+  boxId: 'f1631ac1-19bb-4fb3-ab46-c0e36c6845ac',
+  chip: 20,
+  total: 20,
+  minBet: 5,
+  callerPersonId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  stakerPersonId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df'
+}
+node.exe : [SXMCards][WARN] Failed to load settings {
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([SXMCards][WARN...load settings {:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1465:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2611:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+
+======== A_full_betting ========
+{
+  "root": {
+    "className": "sxm-layout-root bj-casino bj-view-full-desktop",
+    "dataBjPhase": "betting",
+    "dataBjView": "full",
+    "dataViewMode": "full",
+    "rect": {
+      "top": 8,
+      "bottom": 712,
+      "left": 8,
+      "right": 1272,
+      "width": 1264,
+      "height": 704
+    }
+  },
+  "dealerZone": {
+    "rect": {
+      "top": 177.5,
+      "bottom": 291.9,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 114.4
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer"
+  },
+  "dealerCards": {
+    "rect": {
+      "top": 235.4,
+      "bottom": 278.6,
+      "left": 424,
+      "right": 856,
+      "width": 432,
+      "height": 43.2
+    },
+    "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+  },
+  "dealButton": {
+    "rect": {
+      "top": 304.2,
+      "bottom": 349,
+      "left": 424,
+      "right": 541.5,
+      "width": 117.5,
+      "height": 44.8
+    },
+    "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+    "text": "Deal Cards",
+    "styles": {
+      "display": "inline-block",
+      "visibility": "visible",
+      "position": "static",
+      "left": "auto",
+      "marginLeft": "0px"
+    },
+    "matchedRules": []
+  },
+  "commandZone": {
+    "rect": {
+      "top": 291.9,
+      "bottom": 385.5,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 93.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+    "styles": {
+      "height": "93.5938px",
+      "paddingTop": "40.8px",
+      "paddingBottom": "0px",
+      "justifyContent": "flex-start"
+    },
+    "matchedRules": []
+  },
+  "commandPill": {
+    "rect": {
+      "top": 332.7,
+      "bottom": 358.5,
+      "left": 416,
+      "right": 864,
+      "width": 448,
+      "height": 25.8
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+    "innerText": "Place your bets, then shuffle to start the shoe.",
+    "styles": {
+      "minHeight": "0px",
+      "padding": "6.08px 24px",
+      "justifyContent": "center",
+      "alignItems": "center"
+    }
+  },
+  "commandStatus": {
+    "rect": {
+      "top": 338.3,
+      "bottom": 352.9,
+      "left": 465,
+      "right": 815,
+      "width": 350,
+      "height": 14.7
+    },
+    "text": "Place your bets, then shuffle to start the shoe."
+  },
+  "commandPillToDealGap": -16.2,
+  "dealToCommandZoneTopGap": -57,
+  "cardsZone": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--table",
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+  },
+  "heroArea": {
+    "present": false,
+    "rect": null,
+    "domPath": null,
+    "innerHTMLSnippet": null,
+    "styles": null
+  },
+  "heroCards": {
+    "rect": null,
+    "cardCount": 0,
+    "playingCardCount": 0,
+    "cardRects": [],
+    "cardStyles": [],
+    "playingCardStyles": []
+  },
+  "clothLayer": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "styles": {
+      "opacity": "0.92",
+      "zIndex": "0",
+      "alignItems": "center",
+      "pointerEvents": "none"
+    }
+  },
+  "cardsZoneChildren": [
+    {
+      "tag": "DIV",
+      "className": "bj-felt-cloth-layer",
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "zIndex": "0"
+    },
+    {
+      "tag": "DIV",
+      "className": "bj-optional-play-overlay-anchor",
+      "rect": {
+        "top": 317.7,
+        "bottom": 317.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 0
+      },
+      "zIndex": "1"
+    },
+    {
+      "tag": "DIV",
+      "className": "bj-table-slot-row bj-arc bj-arc--cards bj-full-table-card-area bj-arc--visible-4 bj-table-slot-row--with-add",
+      "rect": {
+        "top": 317.7,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 170.9
+      },
+      "zIndex": "1"
+    }
+  ],
+  "actionsZone": {
+    "rect": {
+      "top": 487.4,
+      "bottom": 527.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 40
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+  },
+  "actionRow": {
+    "rect": {
+      "top": 512.3,
+      "bottom": 538.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 26.4
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row.bj-action-row--slot-reserved",
+    "className": "bj-action-row bj-action-row--slot-reserved",
+    "dataActionRowScale": "full-table",
+    "innerHTMLSnippet": "",
+    "styles": {
+      "display": "block",
+      "visibility": "hidden",
+      "minHeight": "26.4px",
+      "height": "26.3906px"
+    },
+    "matchedRules": []
+  },
+  "hitStay": {
+    "hitRect": null,
+    "hitDomPath": null,
+    "hitClass": null,
+    "actionButtonsRow": null
+  },
+  "boxesZone": {
+    "rect": {
+      "top": 529.6,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 97.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+  },
+  "slotRow": {
+    "rect": {
+      "top": 532.2,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 95
+    },
+    "className": "bj-player-box-row"
+  },
+  "slots": [
+    {
+      "i": 0,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 617,
+        "left": 242.1,
+        "right": 319.7,
+        "width": 77.6,
+        "height": 84.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "84.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 1,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 617,
+        "left": 490.1,
+        "right": 567.7,
+        "width": 77.6,
+        "height": 84.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "84.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 2,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 617,
+        "left": 738.1,
+        "right": 815.7,
+        "width": 77.6,
+        "height": 84.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "84.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 3,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 617,
+        "left": 986.1,
+        "right": 1063.7,
+        "width": 77.6,
+        "height": 84.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "84.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    }
+  ],
+  "plusButton": {
+    "rect": {
+      "top": 542.2,
+      "bottom": 607,
+      "left": 132,
+      "right": 156,
+      "width": 24,
+      "height": 64.8
+    },
+    "domPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes > div.bj-player-box-row > div.bj-player-boxes-wrap > div.bj-table-slot-row.bj-arc.bj-arc--player-boxes > button.bj-table-slot-row__add.bj-player-boxes-wrap__add"
+  },
+  "trayRow": {
+    "rect": {
+      "top": 631.7,
+      "bottom": 691.4,
+      "left": 384,
+      "right": 896,
+      "width": 512,
+      "height": 59.7
+    }
+  },
+  "bottomZone": {
+    "rect": {
+      "top": 625,
+      "bottom": 691.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 66.4
+    }
+  }
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '0e6d4066-9f22-4864-a329-e9f094f2af99',
+  bankrollOwnerId: 'e34a97be-925e-4c28-a3ca-6ebe2cb46d8d',
+  slotNumber: 4
+}
+[SXMCards][WARN] Failed to load settings {
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1465:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2611:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+
+======== A_full_playing ========
+{
+  "root": {
+    "className": "sxm-layout-root bj-casino bj-view-full-desktop",
+    "dataBjPhase": "playing",
+    "dataBjView": "full",
+    "dataViewMode": "full",
+    "rect": {
+      "top": 8,
+      "bottom": 712,
+      "left": 8,
+      "right": 1272,
+      "width": 1264,
+      "height": 704
+    }
+  },
+  "dealerZone": {
+    "rect": {
+      "top": 177.5,
+      "bottom": 291.9,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 114.4
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer"
+  },
+  "dealerCards": {
+    "rect": {
+      "top": 235.4,
+      "bottom": 331.4,
+      "left": 424,
+      "right": 856,
+      "width": 432,
+      "height": 96
+    },
+    "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+  },
+  "dealButton": {
+    "rect": {
+      "top": 362,
+      "bottom": 406.8,
+      "left": 424,
+      "right": 541.5,
+      "width": 117.5,
+      "height": 44.8
+    },
+    "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+    "text": "Deal Cards",
+    "styles": {
+      "display": "inline-block",
+      "visibility": "visible",
+      "position": "static",
+      "left": "auto",
+      "marginLeft": "0px"
+    },
+    "matchedRules": []
+  },
+  "commandZone": {
+    "rect": {
+      "top": 291.9,
+      "bottom": 385.5,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 93.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+    "styles": {
+      "height": "93.5938px",
+      "paddingTop": "40.8px",
+      "paddingBottom": "0px",
+      "justifyContent": "flex-start"
+    },
+    "matchedRules": []
+  },
+  "commandPill": {
+    "rect": {
+      "top": 332.7,
+      "bottom": 358.5,
+      "left": 416,
+      "right": 864,
+      "width": 448,
+      "height": 25.8
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+    "innerText": "Box 4 ÔÇö your turn.Bank has 8ÔÖÑ against your 9.Options: Hit, Double ÔÇö one card.",
+    "styles": {
+      "minHeight": "0px",
+      "padding": "6.08px 24px",
+      "justifyContent": "center",
+      "alignItems": "center"
+    }
+  },
+  "commandStatus": {
+    "rect": {
+      "top": 321.4,
+      "bottom": 336,
+      "left": 465,
+      "right": 815,
+      "width": 350,
+      "height": 14.7
+    },
+    "text": "Box 4 ÔÇö your turn."
+  },
+  "commandPillToDealGap": -74.1,
+  "dealToCommandZoneTopGap": -114.9,
+  "cardsZone": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--table",
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+  },
+  "heroArea": {
+    "present": false,
+    "rect": null,
+    "domPath": null,
+    "innerHTMLSnippet": null,
+    "styles": null
+  },
+  "heroCards": {
+    "rect": null,
+    "cardCount": 0,
+    "playingCardCount": 8,
+    "cardRects": [],
+    "cardStyles": [],
+    "playingCardStyles": [
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "47.1875px",
+        "height": "63.1875px",
+        "maxHeight": "63.2px",
+        "zIndex": "1"
+      },
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "47.1875px",
+        "height": "63.1875px",
+        "maxHeight": "63.2px",
+        "zIndex": "2"
+      },
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "47.1875px",
+        "height": "63.1875px",
+        "maxHeight": "63.2px",
+        "zIndex": "1"
+      }
+    ]
+  },
+  "clothLayer": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "styles": {
+      "opacity": "0.38",
+      "zIndex": "0",
+      "alignItems": "flex-end",
+      "pointerEvents": "none"
+    }
+  },
+  "cardsZoneChildren": [
+    {
+      "tag": "DIV",
+      "className": "bj-felt-cloth-layer",
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "zIndex": "0"
+    },
+    {
+      "tag": "DIV",
+      "className": "bj-optional-play-overlay-anchor",
+      "rect": {
+        "top": 288.9,
+        "bottom": 333.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 44.8
+      },
+      "zIndex": "1"
+    },
+    {
+      "tag": "DIV",
+      "className": "bj-table-slot-row bj-arc bj-arc--cards bj-full-table-card-area bj-arc--visible-4",
+      "rect": {
+        "top": 333.7,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 154.9
+      },
+      "zIndex": "1"
+    }
+  ],
+  "actionsZone": {
+    "rect": {
+      "top": 487.4,
+      "bottom": 527.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 40
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+  },
+  "actionRow": {
+    "rect": {
+      "top": 512.3,
+      "bottom": 544.1,
+      "left": 590,
+      "right": 690,
+      "width": 99.9,
+      "height": 31.8
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row",
+    "className": "bj-action-row",
+    "dataActionRowScale": "full-table",
+    "innerHTMLSnippet": "<div class=\"bj-player-actions bj-table-actions\" aria-label=\"Player actions\" aria-live=\"polite\"><div class=\"sxm-primary-actions bj-table-actions__row\" data-sxm-section=\"sxm-primary-actions\"><button type=\"button\" class=\"ds-btn ds-btn--stand bj-table-actions__btn\">Stay</button><button type=\"button\" class=\"ds-btn ds-btn--hit bj-table-actions__btn\">Hit</button></div><div class=\"sxm-secondary-actions bj-table-actions__row\" data-sxm-section=\"sxm-secondary-actions\"><span class=\"bj-phone-view__action-bar",
+    "styles": {
+      "display": "block",
+      "visibility": "visible",
+      "minHeight": "auto",
+      "height": "31.7656px"
+    },
+    "matchedRules": []
+  },
+  "hitStay": {
+    "hitRect": {
+      "top": 516.8,
+      "bottom": 541.6,
+      "left": 643.8,
+      "right": 683.6,
+      "width": 39.8,
+      "height": 24.8
+    },
+    "hitDomPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row > div.bj-player-actions.bj-table-actions > div.sxm-primary-actions.bj-table-actions__row > button.ds-btn.ds-btn--hit.bj-table-actions__btn",
+    "hitClass": "ds-btn ds-btn--hit bj-table-actions__btn",
+    "actionButtonsRow": "sxm-primary-actions bj-table-actions__row"
+  },
+  "boxesZone": {
+    "rect": {
+      "top": 529.6,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 97.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+  },
+  "slotRow": {
+    "rect": {
+      "top": 532.2,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 95
+    },
+    "className": "bj-player-box-row"
+  },
+  "slots": [
+    {
+      "i": 0,
+      "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 613,
+        "left": 219.5,
+        "right": 297.1,
+        "width": 77.6,
+        "height": 80.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "80.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 1,
+      "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 613,
+        "left": 473.9,
+        "right": 551.5,
+        "width": 77.6,
+        "height": 80.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "80.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 2,
+      "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 613,
+        "left": 728.4,
+        "right": 806,
+        "width": 77.6,
+        "height": 80.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "80.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 3,
+      "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 613,
+        "left": 982.9,
+        "right": 1060.5,
+        "width": 77.6,
+        "height": 80.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "80.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    }
+  ],
+  "plusButton": {
+    "rect": null,
+    "domPath": null
+  },
+  "trayRow": {
+    "rect": {
+      "top": 631.7,
+      "bottom": 691.4,
+      "left": 384,
+      "right": 896,
+      "width": 512,
+      "height": 59.7
+    }
+  },
+  "bottomZone": {
+    "rect": {
+      "top": 625,
+      "bottom": 691.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+[SXMCards][WARN] Failed to load settings {
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1465:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2611:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+      "height": 66.4
+    }
+  }
+}
+
+======== B_card_betting ========
+{
+  "root": {
+    "className": "sxm-layout-root bj-casino bj-view-card-desktop",
+    "dataBjPhase": "betting",
+    "dataBjView": "card",
+    "dataViewMode": "card",
+    "rect": {
+      "top": 8,
+      "bottom": 712,
+      "left": 8,
+      "right": 1272,
+      "width": 1264,
+      "height": 704
+    }
+  },
+  "dealerZone": {
+    "rect": {
+      "top": 177.5,
+      "bottom": 291.9,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 114.4
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer"
+  },
+  "dealerCards": {
+    "rect": {
+      "top": 235.4,
+      "bottom": 278.6,
+      "left": 569.9,
+      "right": 710.1,
+      "width": 140.3,
+      "height": 43.2
+    },
+    "domPath": "div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+  },
+  "dealButton": {
+    "rect": {
+      "top": 304.2,
+      "bottom": 349,
+      "left": 569.9,
+      "right": 687.4,
+      "width": 117.5,
+      "height": 44.8
+    },
+    "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+    "text": "Deal Cards",
+    "styles": {
+      "display": "inline-block",
+      "visibility": "visible",
+      "position": "static",
+      "left": "auto",
+      "marginLeft": "0px"
+    },
+    "matchedRules": []
+  },
+  "commandZone": {
+    "rect": {
+      "top": 291.9,
+      "bottom": 385.5,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 93.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+    "styles": {
+      "height": "93.5938px",
+      "paddingTop": "40.8px",
+      "paddingBottom": "0px",
+      "justifyContent": "flex-start"
+    },
+    "matchedRules": []
+  },
+  "commandPill": {
+    "rect": {
+      "top": 332.7,
+      "bottom": 358.5,
+      "left": 416,
+      "right": 864,
+      "width": 448,
+      "height": 25.8
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+    "innerText": "Place your bets, then shuffle to start the shoe.",
+    "styles": {
+      "minHeight": "0px",
+      "padding": "6.08px 24px",
+      "justifyContent": "center",
+      "alignItems": "center"
+    }
+  },
+  "commandStatus": {
+    "rect": {
+      "top": 338.3,
+      "bottom": 352.9,
+      "left": 465,
+      "right": 815,
+      "width": 350,
+      "height": 14.7
+    },
+    "text": "Place your bets, then shuffle to start the shoe."
+  },
+  "commandPillToDealGap": -16.2,
+  "dealToCommandZoneTopGap": -57,
+  "cardsZone": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--hero",
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+  },
+  "heroArea": {
+    "present": false,
+    "rect": null,
+    "domPath": null,
+    "innerHTMLSnippet": null,
+    "styles": null
+  },
+  "heroCards": {
+    "rect": null,
+    "cardCount": 0,
+    "playingCardCount": 0,
+    "cardRects": [],
+    "cardStyles": [],
+    "playingCardStyles": []
+  },
+  "clothLayer": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "styles": {
+      "opacity": "0.92",
+      "zIndex": "0",
+      "alignItems": "center",
+      "pointerEvents": "none"
+    }
+  },
+  "cardsZoneChildren": [
+    {
+      "tag": "DIV",
+      "className": "bj-felt-cloth-layer",
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "zIndex": "0"
+    }
+  ],
+  "actionsZone": {
+    "rect": {
+      "top": 487.4,
+      "bottom": 527.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 40
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+  },
+  "actionRow": {
+    "rect": {
+      "top": 512.3,
+      "bottom": 538.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 26.4
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row.bj-action-row--slot-reserved",
+    "className": "bj-action-row bj-action-row--slot-reserved",
+    "dataActionRowScale": "full-table",
+    "innerHTMLSnippet": "",
+    "styles": {
+      "display": "block",
+      "visibility": "hidden",
+      "minHeight": "26.4px",
+      "height": "26.3906px"
+    },
+    "matchedRules": []
+  },
+  "hitStay": {
+    "hitRect": null,
+    "hitDomPath": null,
+    "hitClass": null,
+    "actionButtonsRow": null
+  },
+  "boxesZone": {
+    "rect": {
+      "top": 529.6,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 97.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+  },
+  "slotRow": {
+    "rect": {
+      "top": 537.6,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 89.6
+    },
+    "className": "bj-player-box-row"
+  },
+  "slots": [
+    {
+      "i": 0,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 537.6,
+        "bottom": 627.2,
+        "left": 242.1,
+        "right": 319.7,
+        "width": 77.6,
+        "height": 89.6
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "89.5938px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 1,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 537.6,
+        "bottom": 627.2,
+        "left": 490.1,
+        "right": 567.7,
+        "width": 77.6,
+        "height": 89.6
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "89.5938px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 2,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 537.6,
+        "bottom": 627.2,
+        "left": 738.1,
+        "right": 815.7,
+        "width": 77.6,
+        "height": 89.6
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "89.5938px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 3,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 537.6,
+        "bottom": 627.2,
+        "left": 986.1,
+        "right": 1063.7,
+        "width": 77.6,
+        "height": 89.6
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "89.5938px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    }
+  ],
+  "plusButton": {
+    "rect": {
+      "top": 550,
+      "bottom": 614.8,
+      "left": 132,
+      "right": 156,
+      "width": 24,
+      "height": 64.8
+    },
+    "domPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes > div.bj-player-box-row > div.bj-player-boxes-wrap > div.bj-table-slot-row.bj-arc.bj-arc--player-boxes > button.bj-table-slot-row__add.bj-player-boxes-wrap__add"
+  },
+  "trayRow": {
+    "rect": {
+      "top": 631.7,
+      "bottom": 691.4,
+      "left": 384,
+      "right": 896,
+      "width": 512,
+      "height": 59.7
+    }
+  },
+  "bottomZone": {
+    "rect": {
+      "top": 625,
+      "bottom": 691.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 66.4
+    }
+  }
+}
+[SXMCards][WARN] Failed to load settings {
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1465:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2611:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+
+======== B_full_betting_ref ========
+{
+  "root": {
+    "className": "sxm-layout-root bj-casino bj-view-full-desktop",
+    "dataBjPhase": "betting",
+    "dataBjView": "full",
+    "dataViewMode": "full",
+    "rect": {
+      "top": 8,
+      "bottom": 712,
+      "left": 8,
+      "right": 1272,
+      "width": 1264,
+      "height": 704
+    }
+  },
+  "dealerZone": {
+    "rect": {
+      "top": 177.5,
+      "bottom": 291.9,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 114.4
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer"
+  },
+  "dealerCards": {
+    "rect": {
+      "top": 235.4,
+      "bottom": 278.6,
+      "left": 424,
+      "right": 856,
+      "width": 432,
+      "height": 43.2
+    },
+    "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+  },
+  "dealButton": {
+    "rect": {
+      "top": 304.2,
+      "bottom": 349,
+      "left": 424,
+      "right": 541.5,
+      "width": 117.5,
+      "height": 44.8
+    },
+    "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+    "text": "Deal Cards",
+    "styles": {
+      "display": "inline-block",
+      "visibility": "visible",
+      "position": "static",
+      "left": "auto",
+      "marginLeft": "0px"
+    },
+    "matchedRules": []
+  },
+  "commandZone": {
+    "rect": {
+      "top": 291.9,
+      "bottom": 385.5,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 93.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+    "styles": {
+      "height": "93.5938px",
+      "paddingTop": "40.8px",
+      "paddingBottom": "0px",
+      "justifyContent": "flex-start"
+    },
+    "matchedRules": []
+  },
+  "commandPill": {
+    "rect": {
+      "top": 332.7,
+      "bottom": 358.5,
+      "left": 416,
+      "right": 864,
+      "width": 448,
+      "height": 25.8
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+    "innerText": "Place your bets, then shuffle to start the shoe.",
+    "styles": {
+      "minHeight": "0px",
+      "padding": "6.08px 24px",
+      "justifyContent": "center",
+      "alignItems": "center"
+    }
+  },
+  "commandStatus": {
+    "rect": {
+      "top": 338.3,
+      "bottom": 352.9,
+      "left": 465,
+      "right": 815,
+      "width": 350,
+      "height": 14.7
+    },
+    "text": "Place your bets, then shuffle to start the shoe."
+  },
+  "commandPillToDealGap": -16.2,
+  "dealToCommandZoneTopGap": -57,
+  "cardsZone": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--table",
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+  },
+  "heroArea": {
+    "present": false,
+    "rect": null,
+    "domPath": null,
+    "innerHTMLSnippet": null,
+    "styles": null
+  },
+  "heroCards": {
+    "rect": null,
+    "cardCount": 0,
+    "playingCardCount": 0,
+    "cardRects": [],
+    "cardStyles": [],
+    "playingCardStyles": []
+  },
+  "clothLayer": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "styles": {
+      "opacity": "0.92",
+      "zIndex": "0",
+      "alignItems": "center",
+      "pointerEvents": "none"
+    }
+  },
+  "cardsZoneChildren": [
+    {
+      "tag": "DIV",
+      "className": "bj-felt-cloth-layer",
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "zIndex": "0"
+    },
+    {
+      "tag": "DIV",
+      "className": "bj-optional-play-overlay-anchor",
+      "rect": {
+        "top": 317.7,
+        "bottom": 317.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 0
+      },
+      "zIndex": "1"
+    },
+    {
+      "tag": "DIV",
+      "className": "bj-table-slot-row bj-arc bj-arc--cards bj-full-table-card-area bj-arc--visible-4 bj-table-slot-row--with-add",
+      "rect": {
+        "top": 317.7,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 170.9
+      },
+      "zIndex": "1"
+    }
+  ],
+  "actionsZone": {
+    "rect": {
+      "top": 487.4,
+      "bottom": 527.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 40
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+  },
+  "actionRow": {
+    "rect": {
+      "top": 512.3,
+      "bottom": 538.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 26.4
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row.bj-action-row--slot-reserved",
+    "className": "bj-action-row bj-action-row--slot-reserved",
+    "dataActionRowScale": "full-table",
+    "innerHTMLSnippet": "",
+    "styles": {
+      "display": "block",
+      "visibility": "hidden",
+      "minHeight": "26.4px",
+      "height": "26.3906px"
+    },
+    "matchedRules": []
+  },
+  "hitStay": {
+    "hitRect": null,
+    "hitDomPath": null,
+    "hitClass": null,
+    "actionButtonsRow": null
+  },
+  "boxesZone": {
+    "rect": {
+      "top": 529.6,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 97.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+  },
+  "slotRow": {
+    "rect": {
+      "top": 532.2,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 95
+    },
+    "className": "bj-player-box-row"
+  },
+  "slots": [
+    {
+      "i": 0,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 617,
+        "left": 242.1,
+        "right": 319.7,
+        "width": 77.6,
+        "height": 84.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "84.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 1,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 617,
+        "left": 490.1,
+        "right": 567.7,
+        "width": 77.6,
+        "height": 84.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "84.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 2,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 617,
+        "left": 738.1,
+        "right": 815.7,
+        "width": 77.6,
+        "height": 84.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "84.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 3,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 617,
+        "left": 986.1,
+        "right": 1063.7,
+        "width": 77.6,
+        "height": 84.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "84.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    }
+  ],
+  "plusButton": {
+    "rect": {
+      "top": 542.2,
+      "bottom": 607,
+      "left": 132,
+      "right": 156,
+      "width": 24,
+      "height": 64.8
+    },
+    "domPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes > div.bj-player-box-row > div.bj-player-boxes-wrap > div.bj-table-slot-row.bj-arc.bj-arc--player-boxes > button.bj-table-slot-row__add.bj-player-boxes-wrap__add"
+  },
+  "trayRow": {
+    "rect": {
+      "top": 631.7,
+      "bottom": 691.4,
+      "left": 384,
+      "right": 896,
+      "width": 512,
+      "height": 59.7
+    }
+  },
+  "bottomZone": {
+    "rect": {
+      "top": 625,
+      "bottom": 691.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 66.4
+    }
+  }
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '2f00e13f-d341-406d-a527-2f2a21095f09',
+  bankrollOwnerId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '2f00e13f-d341-406d-a527-2f2a21095f09',
+  bankrollOwnerId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '2f00e13f-d341-406d-a527-2f2a21095f09',
+  bankrollOwnerId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '2f00e13f-d341-406d-a527-2f2a21095f09',
+  bankrollOwnerId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '2f00e13f-d341-406d-a527-2f2a21095f09',
+  bankrollOwnerId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: '2f00e13f-d341-406d-a527-2f2a21095f09',
+  bankrollOwnerId: '388110e3-be1e-4b26-8a0c-41bf8e0d0375',
+  slotNumber: 1
+}
+[SXMCards][WARN] Failed to load settings {
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1465:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2611:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+
+======== C_card_playing ========
+{
+  "root": {
+    "className": "sxm-layout-root bj-casino bj-view-card-desktop",
+    "dataBjPhase": "playing",
+    "dataBjView": "card",
+    "dataViewMode": "card",
+    "rect": {
+      "top": 8,
+      "bottom": 712,
+      "left": 8,
+      "right": 1272,
+      "width": 1264,
+      "height": 704
+    }
+  },
+  "dealerZone": {
+    "rect": {
+      "top": 177.5,
+      "bottom": 291.9,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 114.4
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer"
+  },
+  "dealerCards": {
+    "rect": {
+      "top": 235.4,
+      "bottom": 331.4,
+      "left": 581.2,
+      "right": 698.8,
+      "width": 117.5,
+      "height": 96
+    },
+    "domPath": "div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+  },
+  "dealButton": {
+    "rect": {
+      "top": 362,
+      "bottom": 406.8,
+      "left": 581.2,
+      "right": 698.8,
+      "width": 117.5,
+      "height": 44.8
+    },
+    "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+    "text": "Deal Cards",
+    "styles": {
+      "display": "inline-block",
+      "visibility": "visible",
+      "position": "static",
+      "left": "auto",
+      "marginLeft": "0px"
+    },
+    "matchedRules": []
+  },
+  "commandZone": {
+    "rect": {
+      "top": 291.9,
+      "bottom": 385.5,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 93.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+    "styles": {
+      "height": "93.5938px",
+      "paddingTop": "40.8px",
+      "paddingBottom": "0px",
+      "justifyContent": "flex-start"
+    },
+    "matchedRules": []
+  },
+  "commandPill": {
+    "rect": {
+      "top": 332.7,
+      "bottom": 358.5,
+      "left": 416,
+      "right": 864,
+      "width": 448,
+      "height": 25.8
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+    "innerText": "Box 1 ÔÇö your turn.Bank has 7ÔÖÑ against your 13.Option: Hit.",
+    "styles": {
+      "minHeight": "0px",
+      "padding": "6.08px 24px",
+      "justifyContent": "center",
+      "alignItems": "center"
+    }
+  },
+  "commandStatus": {
+    "rect": {
+      "top": 321.4,
+      "bottom": 336,
+      "left": 465,
+      "right": 815,
+      "width": 350,
+      "height": 14.7
+    },
+    "text": "Box 1 ÔÇö your turn."
+  },
+  "commandPillToDealGap": -74.1,
+  "dealToCommandZoneTopGap": -114.9,
+  "cardsZone": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--hero",
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+  },
+  "heroArea": {
+    "present": true,
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards > div.bj-card-desktop-hero",
+    "innerHTMLSnippet": "<div class=\"bj-card-desktop-hero__cards\" data-layout-band=\"hero-cards\"><div class=\"sxm-hero-cards bj-card-desktop-hero__fan\" data-sxm-section=\"sxm-hero-cards\"><div class=\"bj-card-desktop-hero__card-wrap\" style=\"--card-i:0\"><div class=\"playing-card playing-card--red deal-anim--slide ds-card ds-card--hero bj-card-desktop-hero__card\" aria-label=\"6 of hearts\"><div class=\"playing-card__corner playing-c",
+    "styles": {
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "hidden",
+      "zIndex": "1",
+      "height": "101.875px"
+    }
+  },
+  "heroCards": {
+    "rect": {
+      "top": 388,
+      "bottom": 487.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 99.7
+    },
+    "cardCount": 2,
+    "playingCardCount": 2,
+    "cardRects": [
+      {
+        "top": 385.3,
+        "bottom": 490.5,
+        "left": 573.3,
+        "right": 648.4,
+        "width": 75.1,
+        "height": 105.1
+      },
+      {
+        "top": 384.2,
+        "bottom": 491.5,
+        "left": 630,
+        "right": 706.7,
+        "width": 76.7,
+        "height": 107.3
+      }
+    ],
+    "cardStyles": [
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "75.1094px",
+        "height": "105.141px",
+        "maxHeight": "min(212px, 55.0125px, 100% - 13.6px)",
+        "zIndex": "auto",
+        "overflow": "visible"
+      },
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "76.6719px",
+        "height": "107.328px",
+        "maxHeight": "min(212px, 55.0125px, 100% - 13.6px)",
+        "zIndex": "auto",
+        "overflow": "visible"
+      }
+    ],
+    "playingCardStyles": [
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "75.1094px",
+        "height": "105.141px",
+        "maxHeight": "min(212px, 55.0125px, 100% - 13.6px)",
+        "zIndex": "auto"
+      },
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "76.6719px",
+        "height": "107.328px",
+        "maxHeight": "min(212px, 55.0125px, 100% - 13.6px)",
+        "zIndex": "auto"
+      }
+    ]
+  },
+  "clothLayer": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "styles": {
+      "opacity": "0.38",
+      "zIndex": "0",
+      "alignItems": "flex-end",
+      "pointerEvents": "none"
+    }
+  },
+  "cardsZoneChildren": [
+    {
+      "tag": "DIV",
+      "className": "bj-felt-cloth-layer",
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "zIndex": "0"
+    },
+    {
+      "tag": "DIV",
+      "className": "bj-card-desktop-hero",
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "zIndex": "1"
+    }
+  ],
+  "actionsZone": {
+    "rect": {
+      "top": 487.4,
+      "bottom": 527.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 40
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+  },
+  "actionRow": {
+    "rect": {
+      "top": 512.3,
+      "bottom": 542.9,
+      "left": 594.2,
+      "right": 685.7,
+      "width": 91.5,
+      "height": 30.5
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row",
+    "className": "bj-action-row",
+    "dataActionRowScale": "full-table",
+    "innerHTMLSnippet": "<div class=\"bj-player-actions bj-table-actions\" aria-label=\"Player actions\" aria-live=\"polite\"><div class=\"sxm-primary-actions bj-table-actions__row\" data-sxm-section=\"sxm-primary-actions\"><button type=\"button\" class=\"ds-btn ds-btn--stand bj-table-actions__btn\">Stay</button><button type=\"button\" class=\"ds-btn ds-btn--hit bj-table-actions__btn\">Hit</button></div><div class=\"sxm-secondary-actions bj-table-actions__row\" data-sxm-section=\"sxm-secondary-actions\"><span class=\"bj-phone-view__action-bar",
+    "styles": {
+      "display": "block",
+      "visibility": "visible",
+      "minHeight": "auto",
+      "height": "30.5156px"
+    },
+    "matchedRules": []
+  },
+  "hitStay": {
+    "hitRect": {
+      "top": 519,
+      "bottom": 539.3,
+      "left": 644.8,
+      "right": 679.3,
+      "width": 34.5,
+      "height": 20.3
+    },
+    "hitDomPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row > div.bj-player-actions.bj-table-actions > div.sxm-primary-actions.bj-table-actions__row > button.ds-btn.ds-btn--hit.bj-table-actions__btn",
+    "hitClass": "ds-btn ds-btn--hit bj-table-actions__btn",
+    "actionButtonsRow": "sxm-primary-actions bj-table-actions__row"
+  },
+  "boxesZone": {
+    "rect": {
+      "top": 529.6,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 97.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+  },
+  "slotRow": {
+    "rect": {
+      "top": 537.6,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 89.6
+    },
+    "className": "bj-player-box-row"
+  },
+  "slots": [
+    {
+      "i": 0,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 537.6,
+        "bottom": 627.2,
+        "left": 219.5,
+        "right": 297.1,
+        "width": 77.6,
+        "height": 89.6
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "89.5938px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 1,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 537.6,
+        "bottom": 627.2,
+        "left": 473.9,
+        "right": 551.5,
+        "width": 77.6,
+        "height": 89.6
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "89.5938px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 2,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 537.6,
+        "bottom": 627.2,
+        "left": 728.4,
+        "right": 806,
+        "width": 77.6,
+        "height": 89.6
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "89.5938px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 3,
+      "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+      "rect": {
+        "top": 540.4,
+        "bottom": 624.4,
+        "left": 982.9,
+        "right": 1060.5,
+        "width": 77.6,
+        "height": 84
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "83.9844px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    }
+  ],
+  "plusButton": {
+    "rect": null,
+    "domPath": null
+  },
+  "trayRow": {
+    "rect": {
+      "top": 631.7,
+      "bottom": 691.4,
+      "left": 384,
+      "right": 896,
+      "width": 512,
+      "height": 59.7
+    }
+  },
+  "bottomZone": {
+    "rect": {
+      "top": 625,
+      "bottom": 691.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 66.4
+    }
+  }
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  slotNumber: 4
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'c30bb3f9-ec10-4b9d-a589-79b7d4335ede',
+  bankrollOwnerId: '36795352-c42c-48aa-8006-df7e27e6bdc4',
+  slotNumber: 4
+}
+[SXMCards][WARN] Failed to load settings {
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1465:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2611:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+
+======== D_full_playing_actions ========
+{
+  "root": {
+    "className": "sxm-layout-root bj-casino bj-view-full-desktop",
+    "dataBjPhase": "playing",
+    "dataBjView": "full",
+    "dataViewMode": "full",
+    "rect": {
+      "top": 8,
+      "bottom": 712,
+      "left": 8,
+      "right": 1272,
+      "width": 1264,
+      "height": 704
+    }
+  },
+  "dealerZone": {
+    "rect": {
+      "top": 177.5,
+      "bottom": 291.9,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 114.4
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer"
+  },
+  "dealerCards": {
+    "rect": {
+      "top": 235.4,
+      "bottom": 331.4,
+      "left": 424,
+      "right": 856,
+      "width": 432,
+      "height": 96
+    },
+    "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+  },
+  "dealButton": {
+    "rect": {
+      "top": 362,
+      "bottom": 406.8,
+      "left": 424,
+      "right": 541.5,
+      "width": 117.5,
+      "height": 44.8
+    },
+    "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+    "text": "Deal Cards",
+    "styles": {
+      "display": "inline-block",
+      "visibility": "visible",
+      "position": "static",
+      "left": "auto",
+      "marginLeft": "0px"
+    },
+    "matchedRules": []
+  },
+  "commandZone": {
+    "rect": {
+      "top": 291.9,
+      "bottom": 385.5,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 93.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+    "styles": {
+      "height": "93.5938px",
+      "paddingTop": "40.8px",
+      "paddingBottom": "0px",
+      "justifyContent": "flex-start"
+    },
+    "matchedRules": []
+  },
+  "commandPill": {
+    "rect": {
+      "top": 332.7,
+      "bottom": 358.5,
+      "left": 416,
+      "right": 864,
+      "width": 448,
+      "height": 25.8
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+    "innerText": "Box 4 ÔÇö your turn.Bank has 8ÔÖÑ against your 9.Options: Hit, Double ÔÇö one card.",
+    "styles": {
+      "minHeight": "0px",
+      "padding": "6.08px 24px",
+      "justifyContent": "center",
+      "alignItems": "center"
+    }
+  },
+  "commandStatus": {
+    "rect": {
+      "top": 321.4,
+      "bottom": 336,
+      "left": 465,
+      "right": 815,
+      "width": 350,
+      "height": 14.7
+    },
+    "text": "Box 4 ÔÇö your turn."
+  },
+  "commandPillToDealGap": -74.1,
+  "dealToCommandZoneTopGap": -114.9,
+  "cardsZone": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--table",
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+  },
+  "heroArea": {
+    "present": false,
+    "rect": null,
+    "domPath": null,
+    "innerHTMLSnippet": null,
+    "styles": null
+  },
+  "heroCards": {
+    "rect": null,
+    "cardCount": 0,
+    "playingCardCount": 8,
+    "cardRects": [],
+    "cardStyles": [],
+    "playingCardStyles": [
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "47.1875px",
+        "height": "63.1875px",
+        "maxHeight": "63.2px",
+        "zIndex": "1"
+      },
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "47.1875px",
+        "height": "63.1875px",
+        "maxHeight": "63.2px",
+        "zIndex": "2"
+      },
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "47.1875px",
+        "height": "63.1875px",
+        "maxHeight": "63.2px",
+        "zIndex": "1"
+      }
+    ]
+  },
+  "clothLayer": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "styles": {
+      "opacity": "0.38",
+      "zIndex": "0",
+      "alignItems": "flex-end",
+      "pointerEvents": "none"
+    }
+  },
+  "cardsZoneChildren": [
+    {
+      "tag": "DIV",
+      "className": "bj-felt-cloth-layer",
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "zIndex": "0"
+    },
+    {
+      "tag": "DIV",
+      "className": "bj-optional-play-overlay-anchor",
+      "rect": {
+        "top": 288.9,
+        "bottom": 333.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 44.8
+      },
+      "zIndex": "1"
+    },
+    {
+      "tag": "DIV",
+      "className": "bj-table-slot-row bj-arc bj-arc--cards bj-full-table-card-area bj-arc--visible-4",
+      "rect": {
+        "top": 333.7,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 154.9
+      },
+      "zIndex": "1"
+    }
+  ],
+  "actionsZone": {
+    "rect": {
+      "top": 487.4,
+      "bottom": 527.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 40
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+  },
+  "actionRow": {
+    "rect": {
+      "top": 512.3,
+      "bottom": 544.1,
+      "left": 590,
+      "right": 690,
+      "width": 99.9,
+      "height": 31.8
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row",
+    "className": "bj-action-row",
+    "dataActionRowScale": "full-table",
+    "innerHTMLSnippet": "<div class=\"bj-player-actions bj-table-actions\" aria-label=\"Player actions\" aria-live=\"polite\"><div class=\"sxm-primary-actions bj-table-actions__row\" data-sxm-section=\"sxm-primary-actions\"><button type=\"button\" class=\"ds-btn ds-btn--stand bj-table-actions__btn\">Stay</button><button type=\"button\" class=\"ds-btn ds-btn--hit bj-table-actions__btn\">Hit</button></div><div class=\"sxm-secondary-actions bj-table-actions__row\" data-sxm-section=\"sxm-secondary-actions\"><span class=\"bj-phone-view__action-bar",
+    "styles": {
+      "display": "block",
+      "visibility": "visible",
+      "minHeight": "auto",
+      "height": "31.7656px"
+    },
+    "matchedRules": []
+  },
+  "hitStay": {
+    "hitRect": {
+      "top": 516.8,
+      "bottom": 541.6,
+      "left": 643.8,
+      "right": 683.6,
+      "width": 39.8,
+      "height": 24.8
+    },
+    "hitDomPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row > div.bj-player-actions.bj-table-actions > div.sxm-primary-actions.bj-table-actions__row > button.ds-btn.ds-btn--hit.bj-table-actions__btn",
+    "hitClass": "ds-btn ds-btn--hit bj-table-actions__btn",
+    "actionButtonsRow": "sxm-primary-actions bj-table-actions__row"
+  },
+  "boxesZone": {
+    "rect": {
+      "top": 529.6,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 97.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+  },
+  "slotRow": {
+    "rect": {
+      "top": 532.2,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 95
+    },
+    "className": "bj-player-box-row"
+  },
+  "slots": [
+    {
+      "i": 0,
+      "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 613,
+        "left": 219.5,
+        "right": 297.1,
+        "width": 77.6,
+        "height": 80.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "80.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 1,
+      "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 613,
+        "left": 473.9,
+        "right": 551.5,
+        "width": 77.6,
+        "height": 80.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "80.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 2,
+      "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 613,
+        "left": 728.4,
+        "right": 806,
+        "width": 77.6,
+        "height": 80.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "80.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 3,
+      "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+      "rect": {
+        "top": 532.2,
+        "bottom": 613,
+        "left": 982.9,
+        "right": 1060.5,
+        "width": 77.6,
+        "height": 80.8
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "80.7969px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    }
+  ],
+  "plusButton": {
+    "rect": null,
+    "domPath": null
+  },
+  "trayRow": {
+    "rect": {
+      "top": 631.7,
+      "bottom": 691.4,
+      "left": 384,
+      "right": 896,
+      "width": 512,
+      "height": 59.7
+    }
+  },
+  "bottomZone": {
+    "rect": {
+      "top": 625,
+      "bottom": 691.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 66.4
+    }
+  }
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'f1631ac1-19bb-4fb3-ab46-c0e36c6845ac',
+  bankrollOwnerId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'f1631ac1-19bb-4fb3-ab46-c0e36c6845ac',
+  bankrollOwnerId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'f1631ac1-19bb-4fb3-ab46-c0e36c6845ac',
+  bankrollOwnerId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'f1631ac1-19bb-4fb3-ab46-c0e36c6845ac',
+  bankrollOwnerId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'f1631ac1-19bb-4fb3-ab46-c0e36c6845ac',
+  bankrollOwnerId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  slotNumber: 1
+}
+[SXMCards][INFO] bankrollOwnerResolved {
+  boxPlayerId: 'f1631ac1-19bb-4fb3-ab46-c0e36c6845ac',
+  bankrollOwnerId: '2c027f82-8553-4429-96fc-ff7f1e8ba4df',
+  slotNumber: 1
+}
+[SXMCards][WARN] Failed to load settings {
+  err: ReferenceError: localStorage is not defined
+      at loadSettings (C:\dev\SXMCards\src\storage\settingsStorage.ts:192:17)
+      at renderTrayInner (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:1465:56)
+      at BlackjackPanel (C:\dev\SXMCards\src\components\BlackjackPanel.tsx:2611:23)
+      at Object.react_stack_bottom_frame 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:9808:18)
+      at renderWithHooks 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5062:19)
+      at renderElement (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:5497:23)
+      at retryNode (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:6417:31)
+      at performWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:7435:17)
+      at startWork (C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8270:7)
+      at renderToStringImpl 
+(C:\dev\SXMCards\node_modules\react-dom\cjs\react-dom-server-legacy.node.development.js:8380:7)
+}
+
+======== D_card_playing_actions ========
+{
+  "root": {
+    "className": "sxm-layout-root bj-casino bj-view-card-desktop",
+    "dataBjPhase": "playing",
+    "dataBjView": "card",
+    "dataViewMode": "card",
+    "rect": {
+      "top": 8,
+      "bottom": 712,
+      "left": 8,
+      "right": 1272,
+      "width": 1264,
+      "height": 704
+    }
+  },
+  "dealerZone": {
+    "rect": {
+      "top": 177.5,
+      "bottom": 291.9,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 114.4
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer"
+  },
+  "dealerCards": {
+    "rect": {
+      "top": 235.4,
+      "bottom": 331.4,
+      "left": 581.2,
+      "right": 698.8,
+      "width": 117.5,
+      "height": 96
+    },
+    "domPath": "div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
+  },
+  "dealButton": {
+    "rect": {
+      "top": 362,
+      "bottom": 406.8,
+      "left": 581.2,
+      "right": 698.8,
+      "width": 117.5,
+      "height": 44.8
+    },
+    "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-table-zone.bj-table-zone--dealer > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
+    "text": "Deal Cards",
+    "styles": {
+      "display": "inline-block",
+      "visibility": "visible",
+      "position": "static",
+      "left": "auto",
+      "marginLeft": "0px"
+    },
+    "matchedRules": []
+  },
+  "commandZone": {
+    "rect": {
+      "top": 291.9,
+      "bottom": 385.5,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 93.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary",
+    "styles": {
+      "height": "93.5938px",
+      "paddingTop": "40.8px",
+      "paddingBottom": "0px",
+      "justifyContent": "flex-start"
+    },
+    "matchedRules": []
+  },
+  "commandPill": {
+    "rect": {
+      "top": 332.7,
+      "bottom": 358.5,
+      "left": 416,
+      "right": 864,
+      "width": 448,
+      "height": 25.8
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-status-zone.bj-table-zone.bj-table-zone--summary > div.bj-card-layout__command",
+    "innerText": "Box 1 ÔÇö your turn.Bank has 7ÔÖÑ against your 13.Option: Hit.",
+    "styles": {
+      "minHeight": "0px",
+      "padding": "6.08px 24px",
+      "justifyContent": "center",
+      "alignItems": "center"
+    }
+  },
+  "commandStatus": {
+    "rect": {
+      "top": 321.4,
+      "bottom": 336,
+      "left": 465,
+      "right": 815,
+      "width": 350,
+      "height": 14.7
+    },
+    "text": "Box 1 ÔÇö your turn."
+  },
+  "commandPillToDealGap": -74.1,
+  "dealToCommandZoneTopGap": -114.9,
+  "cardsZone": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "className": "sxm-hero-zone bj-table-zone bj-table-zone--cards bj-cards-area--hero",
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards"
+  },
+  "heroArea": {
+    "present": true,
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-hero-zone.bj-table-zone.bj-table-zone--cards > div.bj-card-desktop-hero",
+    "innerHTMLSnippet": "<div class=\"bj-card-desktop-hero__cards\" data-layout-band=\"hero-cards\"><div class=\"sxm-hero-cards bj-card-desktop-hero__fan\" data-sxm-section=\"sxm-hero-cards\"><div class=\"bj-card-desktop-hero__card-wrap\" style=\"--card-i:0\"><div class=\"playing-card playing-card--red deal-anim--slide ds-card ds-card--hero bj-card-desktop-hero__card\" aria-label=\"6 of hearts\"><div class=\"playing-card__corner playing-c",
+    "styles": {
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "hidden",
+      "zIndex": "1",
+      "height": "101.875px"
+    }
+  },
+  "heroCards": {
+    "rect": {
+      "top": 388,
+      "bottom": 487.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 99.7
+    },
+    "cardCount": 2,
+    "playingCardCount": 2,
+    "cardRects": [
+      {
+        "top": 385.3,
+        "bottom": 490.5,
+        "left": 573.3,
+        "right": 648.4,
+        "width": 75.1,
+        "height": 105.1
+      },
+      {
+        "top": 384.2,
+        "bottom": 491.5,
+        "left": 630,
+        "right": 706.7,
+        "width": 76.7,
+        "height": 107.3
+      }
+    ],
+    "cardStyles": [
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "75.1094px",
+        "height": "105.141px",
+        "maxHeight": "min(212px, 55.0125px, 100% - 13.6px)",
+        "zIndex": "auto",
+        "overflow": "visible"
+      },
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "76.6719px",
+        "height": "107.328px",
+        "maxHeight": "min(212px, 55.0125px, 100% - 13.6px)",
+        "zIndex": "auto",
+        "overflow": "visible"
+      }
+    ],
+    "playingCardStyles": [
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "75.1094px",
+        "height": "105.141px",
+        "maxHeight": "min(212px, 55.0125px, 100% - 13.6px)",
+        "zIndex": "auto"
+      },
+      {
+        "display": "block",
+        "visibility": "visible",
+        "opacity": "1",
+        "width": "76.6719px",
+        "height": "107.328px",
+        "maxHeight": "min(212px, 55.0125px, 100% - 13.6px)",
+        "zIndex": "auto"
+      }
+    ]
+  },
+  "clothLayer": {
+    "rect": {
+      "top": 386.8,
+      "bottom": 488.7,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 101.9
+    },
+    "styles": {
+      "opacity": "0.38",
+      "zIndex": "0",
+      "alignItems": "flex-end",
+      "pointerEvents": "none"
+    }
+  },
+  "cardsZoneChildren": [
+    {
+      "tag": "DIV",
+      "className": "bj-felt-cloth-layer",
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "zIndex": "0"
+    },
+    {
+      "tag": "DIV",
+      "className": "bj-card-desktop-hero",
+      "rect": {
+        "top": 386.8,
+        "bottom": 488.7,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 101.9
+      },
+      "zIndex": "1"
+    }
+  ],
+  "actionsZone": {
+    "rect": {
+      "top": 487.4,
+      "bottom": 527.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 40
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions"
+  },
+  "actionRow": {
+    "rect": {
+      "top": 512.3,
+      "bottom": 542.9,
+      "left": 594.2,
+      "right": 685.7,
+      "width": 91.5,
+      "height": 30.5
+    },
+    "domPath": "div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row",
+    "className": "bj-action-row",
+    "dataActionRowScale": "full-table",
+    "innerHTMLSnippet": "<div class=\"bj-player-actions bj-table-actions\" aria-label=\"Player actions\" aria-live=\"polite\"><div class=\"sxm-primary-actions bj-table-actions__row\" data-sxm-section=\"sxm-primary-actions\"><button type=\"button\" class=\"ds-btn ds-btn--stand bj-table-actions__btn\">Stay</button><button type=\"button\" class=\"ds-btn ds-btn--hit bj-table-actions__btn\">Hit</button></div><div class=\"sxm-secondary-actions bj-table-actions__row\" data-sxm-section=\"sxm-secondary-actions\"><span class=\"bj-phone-view__action-bar",
+    "styles": {
+      "display": "block",
+      "visibility": "visible",
+      "minHeight": "auto",
+      "height": "30.5156px"
+    },
+    "matchedRules": []
+  },
+  "hitStay": {
+    "hitRect": {
+      "top": 519,
+      "bottom": 539.3,
+      "left": 644.8,
+      "right": 679.3,
+      "width": 34.5,
+      "height": 20.3
+    },
+    "hitDomPath": "div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-action-zone.bj-table-zone.bj-table-zone--actions > div.bj-action-row > div.bj-player-actions.bj-table-actions > div.sxm-primary-actions.bj-table-actions__row > button.ds-btn.ds-btn--hit.bj-table-actions__btn",
+    "hitClass": "ds-btn ds-btn--hit bj-table-actions__btn",
+    "actionButtonsRow": "sxm-primary-actions bj-table-actions__row"
+  },
+  "boxesZone": {
+    "rect": {
+      "top": 529.6,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 97.6
+    },
+    "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.sxm-player-boxes-zone.bj-table-zone.bj-table-zone--boxes"
+  },
+  "slotRow": {
+    "rect": {
+      "top": 537.6,
+      "bottom": 627.2,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 89.6
+    },
+    "className": "bj-player-box-row"
+  },
+  "slots": [
+    {
+      "i": 0,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 537.6,
+        "bottom": 627.2,
+        "left": 219.5,
+        "right": 297.1,
+        "width": 77.6,
+        "height": 89.6
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "89.5938px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 1,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 537.6,
+        "bottom": 627.2,
+        "left": 473.9,
+        "right": 551.5,
+        "width": 77.6,
+        "height": 89.6
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "89.5938px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 2,
+      "className": "bj-arc__slot bj-arc__slot--empty bj-box-hit-zone",
+      "rect": {
+        "top": 537.6,
+        "bottom": 627.2,
+        "left": 728.4,
+        "right": 806,
+        "width": 77.6,
+        "height": 89.6
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "89.5938px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    },
+    {
+      "i": 3,
+      "className": "bj-arc__slot bj-arc__slot--owned bj-box-hit-zone",
+      "rect": {
+        "top": 540.4,
+        "bottom": 624.4,
+        "left": 982.9,
+        "right": 1060.5,
+        "width": 77.6,
+        "height": 84
+      },
+      "styles": {
+        "width": "77.5938px",
+        "height": "83.9844px",
+        "flex": "0 1 auto",
+        "transform": "none",
+        "marginLeft": "0px",
+        "marginTop": "0px"
+      }
+    }
+  ],
+  "plusButton": {
+    "rect": null,
+    "domPath": null
+  },
+  "trayRow": {
+    "rect": {
+      "top": 631.7,
+      "bottom": 691.4,
+      "left": 384,
+      "right": 896,
+      "width": 512,
+      "height": 59.7
+    }
+  },
+  "bottomZone": {
+    "rect": {
+      "top": 625,
+      "bottom": 691.4,
+      "left": 132,
+      "right": 1148,
+      "width": 1016,
+      "height": 66.4
+    }
+  }
+}
+
+Wrote C:\dev\SXMCards\reference-ui\captures\runtime-visual-branch-audit.json

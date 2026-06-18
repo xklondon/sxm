@@ -82,7 +82,9 @@ export function BlackjackActionPanel({
       : `bj-phone-view__action-bar-extra ${TABLE_UX.cardViewActionCompact} bj-phone-view__action-btn--tappable bj-phone-view__action-bar-extra--aid`;
 
   const showSecondaryRow =
-    variant !== 'table' || !aidInlineWithHit || showDouble || showSplit;
+    variant === 'table'
+      ? showDouble || showSplit || (showAid && !aidInlineWithHit)
+      : showDouble || showSplit || showAid || !aidInlineWithHit;
 
   const standBtnClass =
     variant === 'table'
@@ -159,6 +161,40 @@ export function BlackjackActionPanel({
         ) : null}
       </div>
       {showSecondaryRow ? (
+        variant === 'table' ? (
+          <div {...sxmSectionProps(SXM_LAYOUT.secondaryActions, secondaryRowClass)}>
+            {showDouble ? (
+              <button
+                type="button"
+                className={extraBtnClass(canDouble)}
+                disabled={!canDouble}
+                onClick={onDouble}
+              >
+                2×
+              </button>
+            ) : null}
+            {showSplit ? (
+              <button
+                type="button"
+                className={extraBtnClass(canSplit)}
+                disabled={!canSplit}
+                onClick={onSplit}
+              >
+                Split
+              </button>
+            ) : null}
+            {showAid && !aidInlineWithHit ? (
+              <button
+                type="button"
+                className={aidBtnClass}
+                disabled={!actionsEnabled}
+                onClick={onAid}
+              >
+                AID
+              </button>
+            ) : null}
+          </div>
+        ) : (
       <div {...sxmSectionProps(SXM_LAYOUT.secondaryActions, secondaryRowClass)}>
         {showDouble ? (
           <button
@@ -206,6 +242,7 @@ export function BlackjackActionPanel({
           />
         )}
       </div>
+        )
       ) : null}
     </div>
   );

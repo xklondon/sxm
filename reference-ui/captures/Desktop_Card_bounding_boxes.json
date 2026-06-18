@@ -65,11 +65,11 @@
   },
   "actionRow": {
     "top": 504.34375,
-    "bottom": 534.859375,
+    "bottom": 533.59375,
     "left": 490.234375,
     "right": 581.734375,
     "width": 91.5,
-    "height": 30.515625
+    "height": 29.25
   },
   "actionButtons": {
     "top": 506.25,
@@ -104,12 +104,12 @@
     "height": 24
   },
   "slotRow": {
-    "top": 529.625,
-    "bottom": 619.21875,
+    "top": 524.171875,
+    "bottom": 608.96875,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 89.59375
+    "height": 84.796875
   },
   "slots": [
     {
