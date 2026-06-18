@@ -19,12 +19,12 @@
       "width": 1016
     },
     "clothTitle": {
-      "top": 427,
-      "bottom": 443,
-      "left": 578,
-      "right": 703,
-      "height": 16,
-      "width": 125
+      "top": 409,
+      "bottom": 426,
+      "left": 574,
+      "right": 706,
+      "height": 17,
+      "width": 132
     },
     "command": {
       "top": 292,
@@ -168,12 +168,12 @@
       "width": 1016
     },
     "clothTitle": {
-      "top": 427,
-      "bottom": 443,
-      "left": 578,
-      "right": 703,
-      "height": 16,
-      "width": 125
+      "top": 429,
+      "bottom": 446,
+      "left": 574,
+      "right": 706,
+      "height": 17,
+      "width": 132
     },
     "command": {
       "top": 292,
@@ -324,8 +324,8 @@
       "width": 1016
     },
     "clothTitle": {
-      "top": 429,
-      "bottom": 446,
+      "top": 409,
+      "bottom": 426,
       "left": 574,
       "right": 706,
       "height": 17,

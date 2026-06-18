@@ -43,6 +43,13 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-18 — Desktop betting cloth alignment + Card View hero card visibility
+
+- **Betting cloth:** Shared `align-items: center` for Full Table + Card View in `bj-full-table-card-area.css`; removed Full Table–only `bj-cards-area--table` cloth flex-end override. Cloth/title now centered inside cardsArea (0px title delta between views).
+- **Card View playing cards:** Replaced `max-height: 3.2rem` clip in `bj-card-desktop-hero-area.css` with shell `--bj-card-hero-card-*` tokens + `@container bj-hero-cards` fit; hero z-index 1 above cloth.
+
+---
+
 ## 2026-06-18 — Desktop shell slot unification (betting = playing geometry)
 
 - **Single shell grid:** All desktop phases share play-phase row tokens; bank-info row reserved at `1.5rem`; cards zone stretch identical for `--table` and `--hero`.

@@ -434,15 +434,6 @@
     --bj-cloth-svg-max-height: 62%;
   }
 
-  .bj-view-full-desktop
-    .bj-table-layout-shell
-    .bj-table-zone--cards.bj-cards-area--table
-    > .bj-felt-cloth-layer {
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: 0.35rem;
-  }
-
   /* Shared cloth band — Full Table + Card View; phase from data-bj-phase on .bj-casino. */
   .bj-view-full-desktop.bj-casino[data-bj-phase='betting']
     .bj-table-layout-shell
@@ -461,7 +452,7 @@
     .bj-table-zone--cards
     .bj-felt-cloth-layer {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     opacity: 0.92;
     pointer-events: none;

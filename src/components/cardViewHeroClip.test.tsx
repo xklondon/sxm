@@ -57,6 +57,12 @@ describe('Desktop Card View hero card clipping guards', () => {
     expect(HERO_AREA_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-card-desktop-hero__fan[\s\S]*align-items:\s*center/,
     );
+    expect(HERO_AREA_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-card-desktop-hero__card\.ds-card--hero[\s\S]*max-height:\s*min\(var\(--bj-card-hero-card-max-height\), 100%\)/,
+    );
+    expect(HERO_AREA_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-card-desktop-hero__card\.ds-card--hero[\s\S]*aspect-ratio:\s*var\(--bj-card-hero-card-aspect-ratio/,
+    );
     expect(LAYOUT_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*align-items:\s*flex-start/,
     );
@@ -64,7 +70,7 @@ describe('Desktop Card View hero card clipping guards', () => {
       /\.bj-view-card-desktop[\s\S]*\.bj-card-desktop-hero__card-wrap[\s\S]*align-items:\s*center/,
     );
     expect(HERO_AREA_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*height:\s*100%/,
+      /\.bj-view-card-desktop \.bj-card-desktop-hero[\s\S]*height:\s*100%/,
     );
   });
 });

@@ -25,11 +25,11 @@
   },
   "cardsZone": {
     "top": 378.78125,
-    "bottom": 479.390625,
+    "bottom": 480.65625,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 100.609375
+    "height": 101.875
   },
   "command": {
     "top": 283.921875,
@@ -41,11 +41,11 @@
   },
   "commandPill": {
     "top": 324.71875,
-    "bottom": 368.71875,
+    "bottom": 350.5,
     "left": 311.984375,
     "right": 759.984375,
     "width": 448,
-    "height": 44
+    "height": 25.78125
   },
   "actionsZone": {
     "top": 479.390625,
@@ -57,11 +57,11 @@
   },
   "heroCards": {
     "top": 380.046875,
-    "bottom": 478.4375,
+    "bottom": 479.703125,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 98.390625
+    "height": 99.65625
   },
   "actionRow": {
     "top": 504.34375,

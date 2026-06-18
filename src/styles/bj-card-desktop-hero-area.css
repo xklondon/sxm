@@ -2,6 +2,7 @@
  * Desktop Card View — cards-area hero internals only (.bj-card-desktop-hero*).
  * Shell cards-zone geometry: bj-blackjack-table-shell.css (all phases identical).
  * Cloth/title opacity: bj-full-table-card-area.css (content only).
+ * Hero card sizing: shell tokens (--bj-card-hero-card-*) + container fit.
  */
 
 @media (min-width: 721px) {
@@ -39,7 +40,7 @@
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     width: 100%;
     max-width: 100%;
@@ -52,7 +53,7 @@
   .bj-view-card-desktop .bj-card-desktop-hero__card-wrap {
     flex: 0 0 auto;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
   }
 
@@ -61,10 +62,26 @@
   }
 
   .bj-view-card-desktop .bj-card-desktop-hero__card.ds-card--hero {
-    width: min(5.25rem, 42vw);
-    max-height: 3.2rem;
+    width: auto;
+    max-width: min(var(--bj-card-hero-card-width), 100%);
+    max-height: min(var(--bj-card-hero-card-max-height), 100%);
     height: auto;
+    aspect-ratio: var(--bj-card-hero-card-aspect-ratio, 5 / 7);
     flex: 0 0 auto;
+    box-sizing: border-box;
+  }
+
+  @container bj-hero-cards (min-height: 1px) {
+    .bj-view-card-desktop .bj-card-desktop-hero__card.ds-card--hero {
+      max-width: min(var(--bj-card-hero-card-width), 52cqw);
+      max-height: min(
+        var(--bj-card-hero-card-max-height),
+        54cqh,
+        calc(100% - 0.85rem)
+      );
+      width: auto;
+      height: auto;
+    }
   }
 
   .bj-view-card-desktop
