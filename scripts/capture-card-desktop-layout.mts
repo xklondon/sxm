@@ -191,12 +191,19 @@ async function main() {
 
   const boxesTop = boxesZone.top;
 
-  if (heroCards.height < 120) {
-    throw new Error(`heroCards height ${heroCards.height.toFixed(1)}px < 120px`);
-  }
-  if (heroValue.top < heroCards.bottom + 2) {
+  if (heroCards.top < cardsZone.top - 1) {
     throw new Error(
-      `heroValue.top ${heroValue.top.toFixed(1)}px < heroCards.bottom + 2 (${(heroCards.bottom + 2).toFixed(1)}px)`,
+      `heroCards escapes above cards zone (hero top ${heroCards.top.toFixed(1)}px, cards top ${cardsZone.top.toFixed(1)}px)`,
+    );
+  }
+  if (heroCards.bottom > cardsZone.bottom + 1) {
+    throw new Error(
+      `heroCards escapes below cards zone (hero bottom ${heroCards.bottom.toFixed(1)}px, cards bottom ${cardsZone.bottom.toFixed(1)}px)`,
+    );
+  }
+  if (heroValue.top < heroCards.bottom + 4) {
+    throw new Error(
+      `heroValue.top ${heroValue.top.toFixed(1)}px < heroCards.bottom + 4 (${(heroCards.bottom + 4).toFixed(1)}px)`,
     );
   }
   if (commandPill.bottom > cardsZone.top + 6) {

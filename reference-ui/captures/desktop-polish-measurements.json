@@ -310,19 +310,19 @@
     },
     "clothLayer": {
       "top": 347,
-      "bottom": 505,
+      "bottom": 503,
       "left": 132,
       "right": 1148,
-      "height": 157,
+      "height": 155,
       "width": 1016
     },
     "clothTitle": {
-      "top": 412,
-      "bottom": 438,
-      "left": 539,
-      "right": 741,
-      "height": 25,
-      "width": 203
+      "top": 409,
+      "bottom": 434,
+      "left": 544,
+      "right": 737,
+      "height": 24,
+      "width": 193
     },
     "command": {
       "top": 292,
@@ -358,28 +358,14 @@
     },
     "cardsZone": {
       "top": 347,
-      "bottom": 505,
+      "bottom": 503,
       "left": 132,
       "right": 1148,
-      "height": 157,
+      "height": 155,
       "width": 1016
     },
-    "heroCards": {
-      "top": 500,
-      "bottom": 500,
-      "left": 132,
-      "right": 1148,
-      "height": 0,
-      "width": 1016
-    },
-    "heroValue": {
-      "top": 505,
-      "bottom": 505,
-      "left": 635,
-      "right": 645,
-      "height": 0,
-      "width": 10
-    },
+    "heroCards": null,
+    "heroValue": null,
     "actionRow": null,
     "actionZone": {
       "top": 503,
@@ -466,19 +452,19 @@
     },
     "clothLayer": {
       "top": 408,
-      "bottom": 489,
+      "bottom": 487,
       "left": 132,
       "right": 1148,
-      "height": 81,
+      "height": 80,
       "width": 1016
     },
     "clothTitle": {
       "top": 441,
-      "bottom": 454,
-      "left": 588,
-      "right": 693,
+      "bottom": 453,
+      "left": 589,
+      "right": 692,
       "height": 13,
-      "width": 105
+      "width": 103
     },
     "command": {
       "top": 292,
@@ -514,23 +500,23 @@
     },
     "cardsZone": {
       "top": 408,
-      "bottom": 489,
+      "bottom": 487,
       "left": 132,
       "right": 1148,
-      "height": 81,
+      "height": 80,
       "width": 1016
     },
     "heroCards": {
-      "top": 337,
-      "bottom": 461,
+      "top": 409,
+      "bottom": 460,
       "left": 132,
       "right": 1148,
-      "height": 124,
+      "height": 52,
       "width": 1016
     },
     "heroValue": {
       "top": 466,
-      "bottom": 487,
+      "bottom": 486,
       "left": 613,
       "right": 667,
       "height": 21,

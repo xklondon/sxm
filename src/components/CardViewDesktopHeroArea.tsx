@@ -237,6 +237,11 @@ export function CardViewDesktopHeroArea({
     );
   }
 
+  /* Betting / round-complete — cloth/title only; no hero bands in cards area. */
+  if (protocolPhase === 'betting' || protocolPhase === 'round-complete') {
+    return null;
+  }
+
   function renderHeroBody() {
     if (protocolPhase === 'banking' || gameEnded) {
       return renderSettleResults();
