@@ -40,12 +40,12 @@
     "height": 93.59375
   },
   "commandPill": {
-    "top": 287.921875,
+    "top": 272.921875,
     "bottom": 332.90625,
     "left": 311.984375,
     "right": 759.984375,
     "width": 448,
-    "height": 44.984375
+    "height": 59.984375
   },
   "actionsZone": {
     "top": 485,
@@ -65,19 +65,19 @@
   },
   "actionRow": {
     "top": 501.796875,
-    "bottom": 531.046875,
-    "left": 490.234375,
-    "right": 581.734375,
-    "width": 91.5,
-    "height": 29.25
+    "bottom": 532.296875,
+    "left": 486.015625,
+    "right": 585.953125,
+    "width": 99.9375,
+    "height": 30.5
   },
   "actionButtons": {
     "top": 503.703125,
-    "bottom": 529.78125,
-    "left": 496.625,
-    "right": 575.34375,
-    "width": 78.71875,
-    "height": 26.078125
+    "bottom": 531.03125,
+    "left": 492.40625,
+    "right": 579.5625,
+    "width": 87.15625,
+    "height": 27.328125
   },
   "boxesZone": {
     "top": 521.625,

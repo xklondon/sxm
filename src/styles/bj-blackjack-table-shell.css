@@ -41,7 +41,7 @@
     --bj-card-hero-card-max-height: min(32vh, 13.25rem);
     --bj-cloth-svg-width: min(84%, 36rem);
     --bj-cloth-svg-max-height: 62%;
-    --bj-desktop-dealer-command-gap: 1.35rem;
+    --bj-desktop-dealer-command-gap: 0.4125rem;
     --bj-desktop-zone-actions-height: 2.5rem;
     --bj-desktop-actions-zone-padding-top: 1.56rem;
     --bj-desktop-actions-boxes-gap: 0.14rem;

@@ -112,7 +112,7 @@ describe('Card View layout guards', () => {
     expect(SHARED_CSS).toContain('--bj-desktop-zone-command-height: 4rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-actions-height: 2.9rem');
     expect(SHELL_CSS).toMatch(/--bj-desktop-zone-actions-height:\s*2\.5rem/);
-    expect(SHELL_CSS).toMatch(/--bj-desktop-dealer-command-gap:\s*1\.35rem/);
+    expect(SHELL_CSS).toMatch(/--bj-desktop-dealer-command-gap:\s*0\.4125rem/);
     expect(SHELL_CSS).not.toMatch(
       /\[data-bj-phase='betting'\][\s\S]*--bj-desktop-zone-actions-height:\s*1\.55rem/,
     );

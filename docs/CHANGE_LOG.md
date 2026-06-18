@@ -47,7 +47,7 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 - **Card View dealer centering:** `.bj-dealer-area` centers `.dealer-block` on felt (Card View only); dealer cards/deal button within 5px of felt center at 1280×800.
 - **Hero cards:** Larger shell tokens + `@container bj-hero-cards` fit in `bj-card-desktop-hero-area.css` (≥90×125px target).
-- **Command gap:** Shared `--bj-desktop-dealer-command-gap: 1.35rem` (was 2.55rem) moves command closer to dealer/deal area.
+- **Command gap:** Shared `--bj-desktop-dealer-command-gap: 0.4125rem` (~15px closer to deal vs 1.35rem); Card View actions share Full Table Hit/Stay styles via `bj-full-table-card-area.css`.
 - **Command copy:** Turn line includes box + player name (`Box N — name — your turn.`); removed Hit/Stay option lines; only `Double available.` / `Split available.` / insurance copy when applicable.
 
 ---
