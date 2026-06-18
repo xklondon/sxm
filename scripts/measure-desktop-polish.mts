@@ -103,17 +103,16 @@ mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(out, null, 2));
 console.log('Wrote', OUT);
 
-const PARITY_TOL = 4;
+const PARITY_TOL = 1;
+const PHASE_PARITY_BANDS = ['cardsZone', 'actionZone', 'boxesZone', 'trayRow', 'commandPill', 'dealer'] as const;
+
 for (const [fullKey, cardKey] of [
   ['full-betting', 'card-betting'],
   ['full-playing', 'card-playing'],
 ] as const) {
   const full = out[fullKey] as Record<string, { top?: number; bottom?: number; height?: number } | null>;
   const card = out[cardKey] as Record<string, { top?: number; bottom?: number; height?: number } | null>;
-  for (const band of ['commandPill', 'boxesZone', 'trayRow', 'actionZone'] as const) {
-    if (fullKey === 'full-betting' && band === 'commandPill') {
-      continue;
-    }
+  for (const band of PHASE_PARITY_BANDS) {
     const ft = full[band]?.top;
     const ct = card[band]?.top;
     if (ft == null || ct == null) continue;
@@ -133,6 +132,55 @@ for (const [fullKey, cardKey] of [
         );
       }
     }
+  }
+}
+
+for (const view of ['full', 'card'] as const) {
+  const betting = out[`${view}-betting`] as Record<string, { top?: number; bottom?: number; height?: number } | null>;
+  const playing = out[`${view}-playing`] as Record<string, { top?: number; bottom?: number; height?: number } | null>;
+  for (const band of PHASE_PARITY_BANDS) {
+    const bt = betting[band]?.top;
+    const pt = playing[band]?.top;
+    const bb = betting[band]?.bottom;
+    const pb = playing[band]?.bottom;
+    const bh = betting[band]?.height;
+    const ph = playing[band]?.height;
+    if (bt == null || pt == null) continue;
+    if (Math.abs(bt - pt) > PARITY_TOL) {
+      throw new Error(
+        `Phase parity ${view}: ${band}.top betting=${bt} vs playing=${pt} (tol ${PARITY_TOL}px)`,
+      );
+    }
+    if (bb != null && pb != null && Math.abs(bb - pb) > PARITY_TOL) {
+      throw new Error(
+        `Phase parity ${view}: ${band}.bottom betting=${bb} vs playing=${pb} (tol ${PARITY_TOL}px)`,
+      );
+    }
+    if (bh != null && ph != null && Math.abs(bh - ph) > PARITY_TOL) {
+      throw new Error(
+        `Phase parity ${view}: ${band}.height betting=${bh} vs playing=${ph} (tol ${PARITY_TOL}px)`,
+      );
+    }
+  }
+}
+
+const ALL_KEYS = ['full-betting', 'full-playing', 'card-betting', 'card-playing'] as const;
+for (const band of ['boxesZone', 'trayRow', 'cardsZone', 'actionZone'] as const) {
+  const tops = ALL_KEYS.map(
+    (k) => (out[k] as Record<string, { top?: number } | null>)?.[band]?.top,
+  ).filter((v): v is number => v != null);
+  const bottoms = ALL_KEYS.map(
+    (k) => (out[k] as Record<string, { bottom?: number } | null>)?.[band]?.bottom,
+  ).filter((v): v is number => v != null);
+  if (tops.length === ALL_KEYS.length && Math.max(...tops) - Math.min(...tops) > PARITY_TOL) {
+    throw new Error(
+      `Cross-view ${band}.top spread ${Math.max(...tops) - Math.min(...tops)}px exceeds ${PARITY_TOL}px`,
+    );
+  }
+  if (bottoms.length === ALL_KEYS.length && Math.max(...bottoms) - Math.min(...bottoms) > PARITY_TOL) {
+    throw new Error(
+      `Cross-view ${band}.bottom spread ${Math.max(...bottoms) - Math.min(...bottoms)}px exceeds ${PARITY_TOL}px`,
+    );
   }
 }
 

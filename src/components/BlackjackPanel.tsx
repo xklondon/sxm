@@ -1446,27 +1446,16 @@ export function BlackjackPanel({
 
   function renderActionsContent() {
     const playerActions = renderTablePlayerActions();
-    const content = playerActions;
-    const hasPrimarySecondary = Boolean(playerActions);
-    if (content) {
-      return content;
+    if (playerActions) {
+      return playerActions;
     }
     return (
-      <>
-        <div className={TABLE_UX.actionsPlaceholder} aria-hidden="true" />
-        {!hasPrimarySecondary && (
-          <>
-            <div
-              {...sxmSectionProps(SXM_LAYOUT.primaryActions, TABLE_UX.actionsPlaceholder)}
-              aria-hidden="true"
-            />
-            <div
-              {...sxmSectionProps(SXM_LAYOUT.secondaryActions, TABLE_UX.actionsPlaceholder)}
-              aria-hidden="true"
-            />
-          </>
-        )}
-      </>
+      <div
+        className="bj-action-row bj-action-row--slot-reserved"
+        data-layout-band="action-row"
+        data-action-row-scale={isCardViewMobile ? 'card-view' : 'full-table'}
+        aria-hidden="true"
+      />
     );
   }
 

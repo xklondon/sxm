@@ -168,7 +168,8 @@ describe('Card View central layout', () => {
       expect(html).not.toContain('bj-phone-view__slot--boxes-placeholder');
     }
     expect(betting).toContain('bj-value-chips');
-    expect(betting).toContain(TABLE_UX.actionsPlaceholder);
+    expect(betting).toContain('bj-action-row--slot-reserved');
+    expect(betting).toContain('data-layout-band="action-row"');
     expect(boxSlotIndex(betting)).toBeGreaterThan(-1);
     expect(boxSlotIndex(playing)).toBeGreaterThan(-1);
     expect(betting.indexOf(TABLE_UX.cardsAreaHero)).toBeLessThan(betting.indexOf(TABLE_UX.tableZoneActions));

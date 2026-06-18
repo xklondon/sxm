@@ -425,15 +425,19 @@ Shake-to-roll optional. Primary action label: **Dice** (roll).
 
 **Active turn highlight:** Card-column / hero hand totals use circular `bj-phone-view__box-value--active-turn` only — one circled numeric value, no box border or rectangle frame. Stake labels above boxes do not use hand-total emphasis. Betting selection uses `bj-box--selected` + `bj-phone-view__bet-chip--pulse` only.
 
-**Card View layout (canonical shell order):**
+**Desktop shell (Full Table + Card View — play phase is canonical):**
 
-1. Hero cards (`bj-cards-area--hero`)
-2. Hero hand value (reserved band below cards; dealer-value size token; active-turn frame on value only)
-3. Hit/Stay (`bj-table-zone--actions` — shared `BlackjackActionPanel`, same component as Full Table)
-4. Player boxes (shared `renderPlayerBoxesArc` / `renderArcSlot`)
-5. Shared tray (`ValueAndChipsBar` — desktop includes “SxM Casino Challenge” label row)
+Fixed 7-row grid in `bj-blackjack-table-shell.css`; **identical slot geometry in betting and playing** (≤1px measured parity). `data-bj-phase` affects cards-area **content** only (cloth/title vs cards), not row heights or box/tray position.
 
-Hero card size uses responsive `clamp()` tokens (`--bj-card-hero-card-width`, `--bj-card-hero-card-max-height`). Cards clip inside `bj-phone-view__cards-slot`; value and actions never overlay the fan. Clean natural blackjack shows **Blackjack** label with `bj-hero-blackjack-pulse` — not used for even-money (1:1) offers.
+1. Bank hand info (`bj-table-info-bar--felt-row`)
+2. Dealer cards + bank hand value (`bj-table-zone--dealer`)
+3. Command (`bj-table-zone--summary` — same component; copy only changes)
+4. Cards area (`bj-table-zone--cards` — `bj-cards-area--table` or `bj-cards-area--hero`; betting = cloth/title/rules; play = cards)
+5. Actions (`bj-table-zone--actions` — `BlackjackActionRow` in play; invisible `bj-action-row--slot-reserved` placeholder in betting)
+6. Player boxes (shared `renderPlayerBoxesArc` / `renderArcSlot`)
+7. Tray (`ValueAndChipsBar` — desktop includes “SxM Casino Challenge” label row)
+
+Hero card size uses responsive `clamp()` tokens (`--bj-card-hero-card-width`, `--bj-card-hero-card-max-height`). Cards clip inside `bj-phone-view__cards-slot`. Clean natural blackjack shows **Blackjack** label with `bj-hero-blackjack-pulse` — not used for even-money (1:1) offers.
 
 **Player box in-play display (all views):** During play, boxes show owner, card ranks, and in-box hand total (`bj-phone-view__mini-hand-value`); chip tokens hidden inside the box. Betting phase still shows chips inside the box. Bet amount stays in the label above the box in all views. Full Table card-column value band above boxes is unchanged (frozen layout).
 
@@ -483,6 +487,7 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 ## 14. Desktop UX Rules
 
 - Desktop Full Table is the layout reference — Card View CSS must not affect it
+- Desktop betting and playing share the same shell slots; no phase-specific box/tray offsets, transforms, or negative-margin alignment
 - Desktop Card View: ordered box row in betting; active hero in play
 - Entry lobby: Join/Load use `EntryLobbySlideOut` (right drawer ≥721px); **New Table uses `NewTableOverlay`** (fixed over page — does not push lobby content)
 - New Table overlay: `NewTableOverlay` centered modal desktop; bottom sheet mobile (`NewTableOverlay.css` + `mobile-modals.css`)
@@ -512,7 +517,7 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 
 ### Blackjack shell zones (canonical)
 
-`BlackjackTableLayoutShell`: dealer → command → cards → actions → player boxes → chip tray.
+`BlackjackTableLayoutShell`: bank-info → dealer → command → cards → actions → player boxes → chip tray. Desktop geometry owned solely by `bj-blackjack-table-shell.css` (Full Table + Card View).
 
 **Mobile chip tray (`ValueAndChipsBar`):**
 

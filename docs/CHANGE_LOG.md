@@ -43,6 +43,23 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-18 — Desktop shell slot unification (betting = playing geometry)
+
+- **Single shell grid:** All desktop phases share play-phase row tokens; bank-info row reserved at `1.5rem`; cards zone stretch identical for `--table` and `--hero`.
+- **Actions slot:** Betting renders `bj-action-row--slot-reserved` (same band as Hit/Stay) instead of legacy placeholders.
+- **Hero CSS:** Removed all `[data-bj-phase]` rules from `bj-card-desktop-hero-area.css` — internals only.
+- **Verification:** `measure-desktop-polish.mts` enforces ≤1px parity across all four desktop states.
+
+---
+
+## 2026-06-18 — Betting/play phase shell parity (desktop Full Table + Card View)
+
+- **Shell geometry:** Removed betting/resolved-specific zone token overrides in `bj-blackjack-table-shell.css`. All `data-bj-phase` bands now share play-phase slot heights (command `5.85rem`, actions `2.5rem`, dealer→command gap `2.55rem`). Only cards-area cloth/content differs by phase.
+- **Command pill:** Same flex/min-height rules for betting and playing (no phase-only command CSS).
+- **Tests/measure:** `blackjackPhaseLayoutParity.test.ts`; `measure-desktop-polish.mts` enforces betting↔playing band parity.
+
+---
+
 ## 2026-06-18 — Desktop Card View route cleanup + split presentation
 
 - **Card View dead routes removed:** `BlackjackCardView.css` desktop `.bj-phone-view__*` hero rules; card-only dealer grid/commentary CSS in `bj-blackjack-table-shell.css`; duplicate cloth/hero-value rules in `bj-card-desktop-hero-area.css`.

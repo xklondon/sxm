@@ -180,7 +180,7 @@ describe('table layout stabilization contract', () => {
         onGameStateChange={noop}
       />,
     );
-    expect(betting).toContain(TABLE_UX.actionsPlaceholder);
+    expect(betting).toContain('bj-action-row--slot-reserved');
   });
 
   it('bank visible value excludes hidden hole card in markup', () => {
