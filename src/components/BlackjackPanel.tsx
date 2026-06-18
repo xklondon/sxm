@@ -212,6 +212,7 @@ import {
   getViewRootClass,
   resolveInitialViewMode,
 } from './tableViewContract';
+import { getBlackjackDesktopLayoutPhase } from './blackjackDesktopLayoutPhase';
 import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
 import { applyBlackjackTableTheme } from '../design/blackjackTableTheme';
 import { FULL_TABLE_CARD_AREA_CLASS } from './blackjackLayoutContract';
@@ -420,6 +421,8 @@ export function BlackjackPanel({
   const isCardViewDesktop = deviceView === 'desktop' && viewMode === 'card';
   const isCardViewMobile = deviceView === 'mobile' && viewMode === 'card';
   const viewRootClass = getViewRootClass(deviceView, viewMode);
+  const desktopLayoutPhase =
+    deviceView === 'desktop' ? getBlackjackDesktopLayoutPhase(protocolPhase, gameEnded) : undefined;
   const { selectedBettingBoxId: selectedBettingBoxIdForUi, selectedBettingSlotNumber } =
     uiFromLocalChipTarget(localChipSelection.target, gameState);
   const focusFallbackBoxId = defaultBlackjackSeatId(gameState);
@@ -2338,6 +2341,8 @@ export function BlackjackPanel({
       data-view-mode={viewMode}
       data-device-view={deviceView}
       data-phase={protocolPhase}
+      data-bj-view={deviceView === 'desktop' ? viewMode : undefined}
+      data-bj-phase={desktopLayoutPhase}
       data-game-ended={gameEnded ? 'true' : 'false'}
       data-game-over-ui={showGameOverActions ? 'true' : 'false'}
     >

@@ -12,6 +12,10 @@ const CARD_DESKTOP_CSS = readFileSync(
   'utf8',
 );
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
+const FULL_TABLE_CARD_CSS = readFileSync(
+  join(process.cwd(), 'src/styles/bj-full-table-card-area.css'),
+  'utf8',
+);
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
@@ -32,10 +36,10 @@ describe('Card View layout guards', () => {
   it('shows table cloth in Card View desktop (behind hero cards)', () => {
     const clothRule = ruleBody(
       HERO_AREA_CSS,
-      '.bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer',
+      '.bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__svg',
     );
-    expect(clothRule).toMatch(/display:\s*flex/);
-    expect(clothRule).not.toMatch(/display:\s*none/);
+    expect(clothRule).toMatch(/width:\s*var\(--bj-cloth-svg-width\)/);
+    expect(FULL_TABLE_CARD_CSS).toMatch(/data-bj-phase='betting'/);
     expect(FELT_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
     );
@@ -51,16 +55,17 @@ describe('Card View layout guards', () => {
     expect(SHELL_CSS).toMatch(/--bj-command-cards-gap:\s*0/);
   });
 
-  it('uses explicit zone heights in desktop shared shell (no cards→actions margin gap)', () => {
+  it('uses explicit zone heights in desktop shared shell (phase tokens, no cards→actions margin gap)', () => {
     expect(LAYOUT_CSS).toContain('--bj-cardview-cards-actions-gap: 0.35rem');
     expect(gapRem(LAYOUT_CSS, '--bj-cardview-cards-actions-gap')).toBeLessThanOrEqual(0.5);
-    expect(SHELL_CSS).toMatch(
-      /\.bj-view-card-desktop[\s\S]*--bj-cards-actions-gap:\s*0/,
-    );
+    expect(SHELL_CSS).toMatch(/data-bj-phase='betting'/);
+    expect(SHELL_CSS).toMatch(/data-bj-phase='playing'/);
     expect(SHELL_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/,
     );
     expect(SHELL_CSS).not.toMatch(/bj-table-zone--hero-value/);
+    expect(SHELL_CSS.replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/:has\(/);
+    expect(HERO_AREA_CSS.replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/:has\(/);
   });
 
   it('forbids negative margin-top and translateY on Card View hero fan/wrap', () => {
@@ -103,8 +108,9 @@ describe('Card View layout guards', () => {
   it('uses Card View desktop zone height overrides in shared shell only', () => {
     expect(SHARED_CSS).toContain('--bj-desktop-zone-command-height: 4rem');
     expect(SHARED_CSS).toContain('--bj-desktop-zone-actions-height: 2.9rem');
+    expect(SHELL_CSS).toMatch(/data-bj-phase='betting'/);
     expect(SHELL_CSS).toMatch(
-      /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*1\.55rem/,
+      /\[data-bj-phase='betting'\][\s\S]*--bj-desktop-zone-actions-height: 1\.55rem/,
     );
     expect(SHARED_CSS).not.toMatch(
       /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-actions-height:\s*2\.45rem/,

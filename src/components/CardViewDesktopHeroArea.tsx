@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties } from 'react';
 import type { GameState } from '../types';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import { parseBlackjackHandKey } from '../engine/blackjack';
@@ -35,13 +35,11 @@ export interface CardViewDesktopHeroAreaProps {
   viewerPersonId?: string | null;
   onlineTableId?: string | null;
   viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
-  /** Hit/Stay row — rendered in hero column; shell actions zone holds spacer on desktop Card View. */
-  actions?: ReactNode;
 }
 
 /**
- * Desktop Card View hero column — cards area only (no phone-view DOM).
- * Shell zones below: actions (when not passed here), boxes, tray.
+ * Desktop Card View hero column — cards + value inside cards area only.
+ * Hit/Stay render in shared shell BlackjackActionsZone (same as Full Table).
  */
 export function CardViewDesktopHeroArea({
   gameState,
@@ -54,7 +52,6 @@ export function CardViewDesktopHeroArea({
   viewerPersonId: viewerPersonIdProp,
   onlineTableId = null,
   viewerAuth = null,
-  actions = null,
 }: CardViewDesktopHeroAreaProps) {
   const logicalGameState = logicalGameStateProp ?? gameState;
   const { players, deck, blackjack: round } = gameState;
@@ -263,11 +260,6 @@ export function CardViewDesktopHeroArea({
   return (
     <div className="bj-card-desktop-hero">
       {renderHeroBody()}
-      {actions ? (
-        <div className="bj-card-desktop-hero__actions" data-layout-band="action-row">
-          {actions}
-        </div>
-      ) : null}
     </div>
   );
 }

@@ -17,95 +17,103 @@
   },
   "dealer": {
     "top": 169.53125,
-    "bottom": 283.921875,
+    "bottom": 293.53125,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 114.390625
+    "height": 124
   },
   "cardsZone": {
     "top": 338.78125,
-    "bottom": 497.46875,
+    "bottom": 480.65625,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 158.6875
+    "height": 141.875
   },
   "command": {
     "top": 283.921875,
-    "bottom": 345.515625,
+    "bottom": 347.921875,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 61.59375
+    "height": 64
+  },
+  "commandPill": {
+    "top": 345.515625,
+    "bottom": 355.109375,
+    "left": 311.984375,
+    "right": 759.984375,
+    "width": 448,
+    "height": 9.59375
+  },
+  "actionsZone": {
+    "top": 479.390625,
+    "bottom": 519.390625,
+    "left": 27.984375,
+    "right": 1044,
+    "width": 1016.015625,
+    "height": 40
   },
   "heroCards": {
-    "top": 343.875,
-    "bottom": 470.140625,
+    "top": 333.328125,
+    "bottom": 453.328125,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 126.265625
+    "height": 120
   },
   "heroValue": {
-    "top": 474.921875,
-    "bottom": 495.5625,
+    "top": 458.109375,
+    "bottom": 478.75,
     "left": 509.28125,
     "right": 562.6875,
     "width": 53.40625,
     "height": 20.640625
   },
   "actionRow": {
-    "top": 496.203125,
-    "bottom": 526.71875,
+    "top": 494.421875,
+    "bottom": 524.9375,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
     "height": 30.515625
   },
   "actionButtons": {
-    "top": 498.109375,
-    "bottom": 524.1875,
+    "top": 496.328125,
+    "bottom": 522.40625,
     "left": 430.390625,
     "right": 641.609375,
     "width": 211.21875,
     "height": 26.078125
   },
-  "playerBoxes": {
-    "top": 530.265625,
-    "bottom": 619.859375,
-    "left": 27.984375,
-    "right": 1044,
-    "width": 1016.015625,
-    "height": 89.59375
-  },
   "boxesZone": {
-    "top": 522.265625,
-    "bottom": 619.859375,
+    "top": 521.625,
+    "bottom": 619.21875,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
     "height": 97.59375
   },
   "trayRow": {
-    "top": 576.765625,
-    "bottom": 733.546875,
+    "top": 623.703125,
+    "bottom": 683.375,
     "left": 280,
     "right": 792,
     "width": 512,
-    "height": 156.78125
+    "height": 59.671875
   },
   "trayLabel": {
-    "top": 693.546875,
-    "bottom": 717.546875,
+    "top": 691.9375,
+    "bottom": 715.9375,
     "left": 426.125,
     "right": 645.875,
     "width": 219.75,
     "height": 24
   },
   "slotRow": {
-    "top": 530.265625,
-    "bottom": 619.859375,
+    "top": 529.625,
+    "bottom": 619.21875,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,

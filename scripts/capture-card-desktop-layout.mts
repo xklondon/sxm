@@ -66,8 +66,15 @@ async function main() {
 
   await page.waitForTimeout(800);
 
+  const layoutMeta = await page.evaluate(`(() => {
+    const root = document.querySelector('.bj-view-card-desktop.bj-casino');
+    return {
+      layoutPhase: root?.getAttribute('data-bj-phase') ?? null,
+      bjView: root?.getAttribute('data-bj-view') ?? null,
+    };
+  })()`);
+
   const boxes = await page.evaluate(`(() => {
-    const q = (band) => document.querySelector('[data-layout-band="' + band + '"]');
     const rect = (el) => {
       if (!el) return null;
       const r = el.getBoundingClientRect();
@@ -78,10 +85,17 @@ async function main() {
     const dealer = document.querySelector('.bj-view-card-desktop .bj-table-zone--dealer');
     const cardsZone = document.querySelector('.bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--hero');
     const boxesZone = document.querySelector('.bj-view-card-desktop .bj-table-zone--boxes');
+    const actionsZone = document.querySelector('.bj-view-card-desktop .bj-table-zone--actions');
+    const actionRow = document.querySelector('.bj-view-card-desktop .bj-table-zone--actions [data-layout-band="action-row"]');
     const actionButtons = document.querySelector(
-      '.bj-view-card-desktop [data-layout-band="action-row"] .bj-table-actions__row, .bj-view-card-desktop [data-layout-band="action-row"] .bj-phone-view__action-bar-row--primary',
+      '.bj-view-card-desktop .bj-table-zone--actions [data-layout-band="action-row"] .bj-table-actions__row, .bj-view-card-desktop .bj-table-zone--actions [data-layout-band="action-row"] .ds-btn--hit',
     );
     const command = document.querySelector('.bj-view-card-desktop .bj-table-zone--summary');
+    const commandPill = document.querySelector(
+      '.bj-view-card-desktop .bj-card-layout__command, .bj-view-card-desktop .dealer-block__command',
+    );
+    const heroCards = document.querySelector('.bj-view-card-desktop [data-layout-band="hero-cards"]');
+    const heroValue = document.querySelector('.bj-view-card-desktop [data-layout-band="hero-value"]');
     const slotRow = document.querySelector('.bj-view-card-desktop .bj-table-slot-row.bj-arc--player-boxes');
     const slotRects = slotRow
       ? [...slotRow.children].map((el, i) => {
@@ -90,19 +104,21 @@ async function main() {
         })
       : [];
     const trayLabelEl = document.querySelector('.bj-view-card-desktop .bj-value-chips__row--label');
+    const trayRow = document.querySelector('.bj-view-card-desktop [data-layout-band="tray-row"]');
     return {
       felt: rect(felt),
       bankInfo: rect(bankInfo),
       dealer: rect(dealer),
       cardsZone: rect(cardsZone),
       command: rect(command),
-      heroCards: rect(q('hero-cards')),
-      heroValue: rect(q('hero-value')),
-      actionRow: rect(q('action-row')),
+      commandPill: rect(commandPill),
+      actionsZone: rect(actionsZone),
+      heroCards: rect(heroCards),
+      heroValue: rect(heroValue),
+      actionRow: rect(actionRow),
       actionButtons: rect(actionButtons),
-      playerBoxes: rect(q('player-boxes')),
       boxesZone: rect(boxesZone),
-      trayRow: rect(q('tray-row')),
+      trayRow: rect(trayRow),
       trayLabel: rect(trayLabelEl),
       slotRow: rect(slotRow),
       slots: slotRects,
@@ -127,12 +143,13 @@ async function main() {
     heroValue,
     actionRow,
     actionButtons,
-    playerBoxes,
+    actionsZone,
     boxesZone,
     trayRow,
     trayLabel,
     felt,
     command,
+    commandPill,
     bankInfo,
     dealer,
     cardsZone,
@@ -142,11 +159,12 @@ async function main() {
     heroValue: { top: number; bottom: number; left: number; right: number } | null;
     actionRow: { top: number; bottom: number; left: number; width: number } | null;
     actionButtons: { top: number; bottom: number; left: number; width: number } | null;
-    playerBoxes: { top: number; bottom: number; width: number; left: number; right: number } | null;
+    actionsZone: { top: number; bottom: number } | null;
     boxesZone: { top: number; bottom: number; left: number; right: number } | null;
     trayRow: { top: number; bottom: number } | null;
     trayLabel: { top: number; bottom: number } | null;
-    command: { top: number } | null;
+    command: { top: number; bottom: number } | null;
+    commandPill: { top: number; bottom: number } | null;
     felt: { top: number; bottom: number; width: number; left: number; right: number } | null;
     bankInfo: { top: number; bottom: number } | null;
     dealer: { top: number; bottom: number } | null;
@@ -154,7 +172,17 @@ async function main() {
     slots: Array<{ left: number; right: number; center: number }>;
   };
 
-  if (!heroCards || !heroValue || !actionRow || !playerBoxes || !trayRow || !felt || !command) {
+  if (!layoutMeta.layoutPhase) {
+    throw new Error('Missing data-bj-phase on .bj-view-card-desktop.bj-casino');
+  }
+  if (layoutMeta.bjView !== 'card') {
+    throw new Error(`Expected data-bj-view="card", got ${layoutMeta.bjView}`);
+  }
+  if (layoutMeta.layoutPhase !== 'playing') {
+    throw new Error(`Expected data-bj-phase="playing" for capture state, got ${layoutMeta.layoutPhase}`);
+  }
+
+  if (!heroCards || !heroValue || !actionRow || !trayRow || !felt || !command || !commandPill || !actionsZone) {
     throw new Error('Missing layout bands in capture — is .bj-view-card-desktop present?');
   }
   if (!bankInfo || !dealer || !cardsZone || !boxesZone) {
@@ -171,14 +199,19 @@ async function main() {
       `heroValue.top ${heroValue.top.toFixed(1)}px < heroCards.bottom + 2 (${(heroCards.bottom + 2).toFixed(1)}px)`,
     );
   }
-  if (actionRow.top + 2 < heroValue.bottom) {
+  if (commandPill.bottom > cardsZone.top + 6) {
     throw new Error(
-      `actionRow overlaps heroValue (action top ${actionRow.top.toFixed(1)}px, value bottom ${heroValue.bottom.toFixed(1)}px)`,
+      `command pill overlaps cards zone (pill bottom ${commandPill.bottom.toFixed(1)}px, cards top ${cardsZone.top.toFixed(1)}px)`,
     );
   }
-  if (boxesTop + 8 < actionRow.bottom) {
+  if (cardsZone.bottom > actionsZone.top + 2) {
     throw new Error(
-      `boxesZone overlaps action row (boxes top ${boxesTop.toFixed(1)}px, action bottom ${actionRow.bottom.toFixed(1)}px)`,
+      `cards zone overlaps actions zone (cards bottom ${cardsZone.bottom.toFixed(1)}px, actions top ${actionsZone.top.toFixed(1)}px)`,
+    );
+  }
+  if (actionsZone.bottom > boxesTop + 2) {
+    throw new Error(
+      `actions zone overlaps boxes (actions bottom ${actionsZone.bottom.toFixed(1)}px, boxes top ${boxesTop.toFixed(1)}px)`,
     );
   }
   if (trayLabel && trayLabel.bottom > felt.bottom + 24) {

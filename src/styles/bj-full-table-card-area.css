@@ -443,6 +443,59 @@
     padding-bottom: 0.35rem;
   }
 
+  /* Shared cloth band — Full Table + Card View; phase from data-bj-phase on .bj-casino. */
+  .bj-view-full-desktop.bj-casino[data-bj-phase='betting']
+    .bj-table-layout-shell
+    .bj-table-zone--cards
+    .bj-felt-cloth-layer,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='betting']
+    .bj-table-layout-shell
+    .bj-table-zone--cards
+    .bj-felt-cloth-layer,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved']
+    .bj-table-layout-shell
+    .bj-table-zone--cards
+    .bj-felt-cloth-layer,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='resolved']
+    .bj-table-layout-shell
+    .bj-table-zone--cards
+    .bj-felt-cloth-layer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0.92;
+    pointer-events: none;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='dealing']
+    .bj-table-layout-shell
+    .bj-table-zone--cards
+    .bj-felt-cloth-layer,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='dealing']
+    .bj-table-layout-shell
+    .bj-table-zone--cards
+    .bj-felt-cloth-layer,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-table-layout-shell
+    .bj-table-zone--cards
+    .bj-felt-cloth-layer,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='playing']
+    .bj-table-layout-shell
+    .bj-table-zone--cards
+    .bj-felt-cloth-layer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0.38;
+    pointer-events: none;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--cards .bj-felt-cloth-layer__svg,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards .bj-felt-cloth-layer__svg {
+    width: var(--bj-cloth-svg-width);
+    max-height: var(--bj-cloth-svg-max-height);
+  }
+
   /* Play phase — hand total lives in player box only; shorter column stacks cards above box. */
   .bj-view-full-desktop .bj-arc__slot--card-column--stack-value-in-box {
     grid-template-rows:

@@ -42,6 +42,8 @@ async function measure(page: import('playwright').Page, rootSel: string) {
       return { i, left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width), center: Math.round(r.left + r.width / 2) };
     });
     return {
+      layoutPhase: root.getAttribute('data-bj-phase'),
+      bjView: root.getAttribute('data-bj-view'),
       felt: rect(root.querySelector('.bj-casino__felt')),
       clothLayer: rect(root.querySelector('.bj-felt-cloth-layer')),
       clothTitle: rect(clothTitle),
@@ -52,7 +54,8 @@ async function measure(page: import('playwright').Page, rootSel: string) {
       cardsZone: rect(root.querySelector('.bj-table-zone--cards')),
       heroCards: rect(q('hero-cards')),
       heroValue: rect(q('hero-value')),
-      actionRow: rect(q('action-row')),
+      actionRow: rect(root.querySelector('.bj-table-zone--actions [data-layout-band="action-row"]')),
+      actionZone: rect(root.querySelector('.bj-table-zone--actions')),
       actionButtons: rect(root.querySelector('[data-layout-band="action-row"] .bj-table-actions__row, [data-layout-band="action-row"] .ds-btn--hit')),
       boxesZone: rect(root.querySelector('.bj-table-zone--boxes')),
       trayRow: rect(q('tray-row')),
@@ -99,6 +102,37 @@ for (const [key, state] of [
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(out, null, 2));
 console.log('Wrote', OUT);
+
+const PARITY_TOL = 4;
+for (const [fullKey, cardKey] of [
+  ['full-betting', 'card-betting'],
+  ['full-playing', 'card-playing'],
+] as const) {
+  const full = out[fullKey] as Record<string, { top?: number; bottom?: number; height?: number } | null>;
+  const card = out[cardKey] as Record<string, { top?: number; bottom?: number; height?: number } | null>;
+  for (const band of ['commandPill', 'boxesZone', 'trayRow', 'actionZone'] as const) {
+    const ft = full[band]?.top;
+    const ct = card[band]?.top;
+    if (ft == null || ct == null) continue;
+    if (Math.abs(ft - ct) > PARITY_TOL) {
+      throw new Error(
+        `Desktop parity: ${band}.top ${fullKey}=${ft} vs ${cardKey}=${ct} (tol ${PARITY_TOL}px)`,
+      );
+    }
+  }
+  const fSlots = (full as { slots?: Array<{ center: number }> }).slots ?? [];
+  const cSlots = (card as { slots?: Array<{ center: number }> }).slots ?? [];
+  if (fSlots.length === cSlots.length) {
+    for (let i = 0; i < fSlots.length; i++) {
+      if (Math.abs(fSlots[i].center - cSlots[i].center) > PARITY_TOL) {
+        throw new Error(
+          `Desktop parity: slot ${i} center ${fullKey}=${fSlots[i].center} vs ${cardKey}=${cSlots[i].center}`,
+        );
+      }
+    }
+  }
+}
+
 console.log(JSON.stringify(out, null, 2));
 
 await browser.close();

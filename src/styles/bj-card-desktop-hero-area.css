@@ -1,15 +1,10 @@
 /**
- * Desktop Card View — hero cards area internals only.
+ * Desktop Card View — hero cards/value inside cards area only.
  * Scope: .bj-view-card-desktop .bj-cards-area--hero .bj-card-desktop-hero
- * Shell zones: bj-blackjack-table-shell.css
+ * Shell zones + phase tokens: bj-blackjack-table-shell.css
  */
 
 @media (min-width: 721px) {
-  .bj-view-card-desktop {
-    --bj-cloth-svg-width: min(84%, 36rem);
-    --bj-cloth-svg-max-height: 62%;
-  }
-
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
     flex-direction: column;
     align-items: stretch;
@@ -109,7 +104,8 @@
     align-self: center;
   }
 
-  .bj-view-card-desktop .bj-card-desktop-hero__value:has(.bj-card-desktop-hero__value-placeholder) {
+  .bj-view-card-desktop.bj-casino[data-bj-phase='betting'] .bj-card-desktop-hero__value,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='resolved'] .bj-card-desktop-hero__value {
     min-height: 0;
     max-height: 1.1rem;
   }
@@ -145,37 +141,6 @@
     color: var(--ds-color-danger, #e85d5d);
   }
 
-  .bj-view-card-desktop .bj-card-desktop-hero:has(.bj-card-desktop-hero__actions) .bj-card-desktop-hero__value {
-    padding-bottom: 0;
-    margin-bottom: 0;
-  }
-
-  .bj-view-card-desktop .bj-card-desktop-hero__actions {
-    flex: 0 0 auto;
-    display: flex;
-    width: 100%;
-    max-width: 100%;
-    justify-content: center;
-    align-items: center;
-    min-height: 0;
-    margin-top: 0.75rem;
-    overflow: visible;
-  }
-
-  .bj-view-card-desktop .bj-card-desktop-hero__actions .bj-action-row {
-    width: 100%;
-    max-width: 14rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .bj-view-card-desktop .bj-card-desktop-hero__actions .bj-table-actions {
-    width: 100%;
-    max-width: 14rem;
-    margin-inline: auto;
-  }
-
   .bj-view-card-desktop .bj-card-desktop-hero__results {
     display: flex;
     flex-direction: column;
@@ -192,23 +157,6 @@
 
   .bj-view-card-desktop .bj-card-desktop-hero__result-line {
     margin: 0;
-  }
-
-  .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer {
-    display: flex !important;
-    align-items: flex-end;
-    justify-content: center;
-    padding-bottom: 0.35rem;
-    opacity: 0.92;
-    pointer-events: none;
-  }
-
-  .bj-view-card-desktop .bj-cards-area--hero:has(.bj-card-desktop-hero__card) .bj-felt-cloth-layer {
-    opacity: 0.38;
-  }
-
-  .bj-view-card-desktop .bj-cards-area--hero:has(.bj-card-desktop-hero__cards-placeholder) .bj-felt-cloth-layer {
-    opacity: 0.92;
   }
 
   .bj-view-card-desktop .bj-table-zone--cards .bj-felt-cloth-layer__svg {
