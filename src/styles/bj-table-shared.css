@@ -2391,6 +2391,22 @@
   flex-direction: column;
 }
 
+.bj-table-layout-shell .bj-table-zone--boxes {
+  flex: 0 0 auto;
+  height: var(--bj-zone-boxes-height);
+  min-height: var(--bj-zone-boxes-height);
+  max-height: var(--bj-zone-boxes-height);
+  margin-top: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0.08rem var(--bj-card-boxes-padding-inline) var(--bj-card-boxes-padding-bottom);
+  box-sizing: border-box;
+}
+
 /* Full Table card zone — fixed height in bj-full-table-card-area.css; desktop shell in bj-blackjack-table-shell.css */
 
 .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes,

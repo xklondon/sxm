@@ -1,0 +1,115 @@
+/**
+ * Targeted Blackjack UX fixes — scoped selectors only.
+ * Full Table scrollbar, desktop game-over table overlay.
+ */
+
+/* 1 — Full Table: no internal scrollbars on felt / box row during deal & play */
+@media (min-width: 721px) {
+  .bj-view-full-desktop.bj-casino[data-bj-phase='dealing'],
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'],
+  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved'] {
+    --bj-desktop-zone-boxes-height: 6.35rem;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='dealing'] .bj-casino__felt,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] .bj-casino__felt,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved'] .bj-casino__felt {
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='dealing'] .bj-table-layout-shell,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] .bj-table-layout-shell,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved'] .bj-table-layout-shell {
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='dealing'] .bj-table-layout-shell > .bj-table-zone--boxes,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] .bj-table-layout-shell > .bj-table-zone--boxes,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved'] .bj-table-layout-shell > .bj-table-zone--boxes {
+    overflow: hidden;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='dealing']
+    .bj-table-layout-shell
+    > .bj-table-zone--boxes
+    .bj-player-boxes-wrap,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-table-layout-shell
+    > .bj-table-zone--boxes
+    .bj-player-boxes-wrap,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved']
+    .bj-table-layout-shell
+    > .bj-table-zone--boxes
+    .bj-player-boxes-wrap {
+    overflow: hidden;
+    overflow-y: hidden;
+  }
+}
+
+/* 6 — Desktop game-over hero overlay (table centre; side rail keeps full actions) */
+@media (min-width: 721px) {
+  .bj-casino__felt {
+    position: relative;
+  }
+
+  .bj-game-over-table-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgb(0 0 0 / 0.52);
+    border-radius: inherit;
+    pointer-events: auto;
+  }
+
+  .bj-game-over-table-overlay__panel {
+    width: min(92%, 22rem);
+    padding: 1.35rem 1.25rem 1.1rem;
+    border-radius: 1rem;
+    border: 2px solid rgb(250 204 21 / 0.45);
+    background: linear-gradient(165deg, rgb(16 58 40 / 0.96) 0%, rgb(8 28 20 / 0.98) 100%);
+    box-shadow:
+      0 12px 40px rgb(0 0 0 / 0.55),
+      0 0 24px rgb(250 204 21 / 0.12);
+    text-align: center;
+  }
+
+  .bj-game-over-table-overlay__glyph {
+    display: block;
+    font-size: 2.75rem;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+
+  .bj-game-over-table-overlay__title {
+    margin: 0 0 0.35rem;
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ds-color-gold, #f0d060);
+  }
+
+  .bj-game-over-table-overlay__winner {
+    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: rgb(240 253 250);
+  }
+
+  .bj-game-over-table-overlay__summary {
+    margin: 0 0 0.85rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    opacity: 0.9;
+  }
+
+  .bj-game-over-table-overlay__dismiss {
+    min-width: 8rem;
+  }
+}

@@ -6,6 +6,7 @@ import type { BankBustSettlementMode } from '../types/table';
 import {
   applyTableResetSetup,
   applyTableStakeSetup,
+  applyZilchTableResetSetup,
   applyZilchTableStakeSetup,
   DEFAULT_TABLE_CHIPS,
   ensureZilchTableIdentity,
@@ -394,10 +395,7 @@ export function TableStakePanel({
     let next =
       setupTab === 'dice'
         ? isReset
-          ? applyZilchTableStakeSetup(
-              applyTableResetSetup(base, input, base.tableMeta.ownerPersonId),
-              buildZilchSetupInput(),
-            )
+          ? applyZilchTableResetSetup(base, buildZilchSetupInput(), base.tableMeta.ownerPersonId)
           : applyZilchTableStakeSetup(base, buildZilchSetupInput())
         : isReset
           ? applyTableResetSetup(base, input, base.tableMeta.ownerPersonId)
@@ -574,7 +572,7 @@ export function TableStakePanel({
     return (
       <>
         <p className="table-stake-panel__hint">
-          <strong>Zilch</strong> — six dice, scoring combinations, bank your turn or risk a zilch.
+          <strong>Zilch</strong> — roll six dice, keep scoring combinations, and bank before you zilch.
         </p>
         <label className="table-stake-panel__field">
           <span>Game mode</span>
@@ -583,8 +581,8 @@ export function TableStakePanel({
             value={zilchMode}
             onChange={(e) => setZilchMode(e.target.value as 'target_points' | 'fixed_rounds')}
           >
-            <option value="target_points">First to target points</option>
-            <option value="fixed_rounds">Most points after fixed rounds</option>
+            <option value="target_points">Play to point goal</option>
+            <option value="fixed_rounds">Play fixed amount of rounds</option>
           </select>
         </label>
         {zilchMode === 'target_points' ? (
@@ -600,7 +598,7 @@ export function TableStakePanel({
           </label>
         ) : (
           <label className="table-stake-panel__field">
-            <span>Round limit (per player)</span>
+            <span>Round limit</span>
             <input
               type="number"
               min={1}
@@ -981,7 +979,7 @@ export function TableStakePanel({
               onClick={() => void handleConfirm()}
               disabled={submitting}
             >
-              Start Table
+              Start Zilch
             </button>
           </div>
         </>
@@ -1192,7 +1190,7 @@ export function TableStakePanel({
             onClick={() => void handleConfirm()}
             disabled={submitting}
           >
-            {isReset ? 'Start new game' : 'Start playing'}
+            {isReset ? 'Start new Zilch game' : 'Start Zilch'}
           </button>
         </>
       ) : (

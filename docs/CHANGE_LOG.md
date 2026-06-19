@@ -15,6 +15,15 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-19 — Blackjack targeted UX fixes (6 items)
+
+- **Full Table scroll:** play/dealing/resolved phases hide internal felt/box-row scrollbars (CSS containment only; desktop Full Table).
+- **Mobile Card View portrait:** hero cards ~2.5× scale; BUST/BlackJack stack badges on hero cards area.
+- **Mobile landscape:** isolated `@media (max-width: 900px) and (orientation: landscape)` layout for Full Table + Card View (`bj-mobile-landscape-layout.css`).
+- **Bank draw skip:** when every active bet is terminal (bust, natural/blackjack, done) before bank draw, skip bank draw and resolve immediately; stood hands still require normal bank comparison.
+- **Desktop game over:** large dismissible table-centre overlay on felt (`bj-game-over-table-overlay`); mobile overlay + right-rail inline summary unchanged.
+- **Tests:** `blackjackTargetedFixes.test.ts`, `roundFlow.terminal.test.ts`.
+
 ## 2026-06-19 — Table chat unread badge (client-side)
 
 - **Unread:** `lastSeenAt` per table/user in localStorage; closed dock shows `Chat • N` and brief pulse on new messages from others.

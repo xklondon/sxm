@@ -137,7 +137,8 @@ export interface TableMeta {
     | 'single-holder'
     | 'bank-has-all-chips'
     | 'bank-empty'
-    | 'all-players-eliminated';
+    | 'all-players-eliminated'
+    | 'zilch-completed';
   /** Effective settlement applied at game end (may fall back to fractional on tie). */
   settlementMode?: BankBustSettlementMode;
   endedAt: string | null;

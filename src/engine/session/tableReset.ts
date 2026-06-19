@@ -29,7 +29,7 @@ export function beginTableResetSetup(state: GameState): GameState {
   };
 }
 
-function clearGameStateForReset(state: GameState): GameState {
+export function clearGameStateForReset(state: GameState): GameState {
   const sessionId = state.session.id;
   const ledger = createEmptyLedger(sessionId);
   const session = {
@@ -69,7 +69,7 @@ function clearGameStateForReset(state: GameState): GameState {
   });
 }
 
-function appendTableResetLedgerNote(
+export function appendTableResetLedgerNote(
   state: GameState,
   resetByPersonId: string | null,
 ): GameState {
@@ -96,7 +96,7 @@ function appendTableResetLedgerNote(
 }
 
 /** Seat bankrolls for seated players (bank/owner may already be allocated in stake setup). */
-function allocateRemainingSeatBankrolls(state: GameState): GameState {
+export function allocateRemainingSeatBankrolls(state: GameState): GameState {
   let next = state;
   const seatChips = getStartingChipsEachSeat(next);
   if (seatChips <= 0) {

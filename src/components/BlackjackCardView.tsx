@@ -35,6 +35,8 @@ import { shouldShowBoxHandResultMarkers } from "./boxHandStatusDisplay";
 import {
   cardAreaOutcomeMarkerClass,
   cardAreaOutcomeMarkerText,
+  cardAreaOutcomeStackBadgeText,
+  cardAreaOutcomeUsesStackBadge,
   resolveCardAreaOutcomeMarker,
 } from "./cardAreaOutcomeDisplay";
 import { getDisplayedHandValue } from "./blackjackDealingContract";
@@ -441,6 +443,13 @@ export function BlackjackCardView({
   }
 
   function renderHeroCardsBand() {
+    const showHeroStackBadge =
+      deviceView === 'mobile' &&
+      heroOutcomeMarker !== null &&
+      (heroOutcomeMarker === 'blackjack' ||
+        heroOutcomeMarker === 'bust' ||
+        showCardAreaResults);
+
     return (
       <div className="bj-phone-view__cards-slot" data-layout-band="hero-cards">
         {heroCardIds.length > 0 ? (
@@ -469,6 +478,18 @@ export function BlackjackCardView({
                 )}
               </div>
             ))}
+            {showHeroStackBadge && cardAreaOutcomeUsesStackBadge(heroOutcomeMarker!) ? (
+              <span
+                className={[
+                  cardAreaOutcomeMarkerClass(heroOutcomeMarker!),
+                  'bj-card-outcome-marker--stack-badge',
+                  'bj-card-view__hero-stack-badge',
+                ].join(' ')}
+                aria-hidden="true"
+              >
+                {cardAreaOutcomeStackBadgeText(heroOutcomeMarker!)}
+              </span>
+            ) : null}
           </div>
         ) : (
           <div

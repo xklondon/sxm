@@ -8,6 +8,7 @@
   .bj-view-card-mobile {
     --bj-card-hero-card-width: clamp(5.5rem, 42vw, 8.5rem);
     --bj-card-hero-card-max-height: clamp(7.5rem, 58vw, 12rem);
+    --bj-card-hero-card-scale: 2.5;
   }
 
   /* Card View keeps compact command during play — not Full Table's tall playing band. */
@@ -38,8 +39,14 @@
       .bj-table-zone--cards.bj-cards-area--hero
       .bj-phone-view__cards
       .playing-card.ds-card--hero {
-      width: min(var(--bj-card-hero-card-width), 46cqw);
-      max-height: min(var(--bj-card-hero-card-max-height), 88cqh);
+      width: min(
+        calc(var(--bj-card-hero-card-width) * var(--bj-card-hero-card-scale, 1)),
+        92cqw
+      );
+      max-height: min(
+        calc(var(--bj-card-hero-card-max-height) * var(--bj-card-hero-card-scale, 1)),
+        88cqh
+      );
       height: auto;
     }
   }
@@ -100,13 +107,44 @@
 
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.bj-phone-card--hero,
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.ds-card--hero {
-    max-width: min(var(--bj-card-hero-card-width), 42vw, 50%);
-    width: min(var(--bj-card-hero-card-width), 42vw, 50%);
-    max-height: min(var(--bj-card-hero-card-max-height), 100%);
+    max-width: min(
+      calc(var(--bj-card-hero-card-width) * var(--bj-card-hero-card-scale, 1)),
+      92vw,
+      100%
+    );
+    width: min(
+      calc(var(--bj-card-hero-card-width) * var(--bj-card-hero-card-scale, 1)),
+      92vw,
+      100%
+    );
+    max-height: min(
+      calc(var(--bj-card-hero-card-max-height) * var(--bj-card-hero-card-scale, 1)),
+      100%
+    );
     height: auto;
     min-width: 3.15rem;
     min-height: 4.1rem;
     aspect-ratio: 5 / 7;
+  }
+
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards.bj-phone-view__cards--stitched {
+    position: relative;
+    overflow: visible;
+  }
+
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--hero
+    .bj-card-view__hero-stack-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 8;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
 
   .bj-view-card-mobile

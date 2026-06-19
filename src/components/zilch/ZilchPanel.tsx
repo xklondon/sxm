@@ -4,7 +4,7 @@ import type { VirtualPlayerStyle } from '../../types/player';
 import {
   addVirtualPlayer,
   mergeSessionUpdate,
-  recordTableOutcome,
+  recordZilchGameEnd,
 } from '../../engine/session';
 import { canRollDice } from '../../engine/dice/zilch';
 import { useIsMobileViewport } from '../../hooks/useIsMobileViewport';
@@ -167,22 +167,17 @@ export function ZilchPanel({
     if (zilch?.phase !== 'completed' || !zilch.winnerPlayerId) {
       return;
     }
-    if (tableMeta.outcome || tableMeta.status === 'complete') {
+    if (tableMeta.gameStatus === 'ended' || tableMeta.outcome) {
       return;
     }
-    const winnerId = zilch.winnerPlayerId;
-    const loserId =
-      playerOrder.find((id) => id !== winnerId) ?? session.bankPlayerId ?? null;
-    onGameStateChange(recordTableOutcome(gameState, winnerId, loserId));
+    onGameStateChange(recordZilchGameEnd(gameState));
   }, [
     zilch?.phase,
     zilch?.winnerPlayerId,
+    tableMeta.gameStatus,
     tableMeta.outcome,
-    tableMeta.status,
     gameState,
     onGameStateChange,
-    playerOrder,
-    session.bankPlayerId,
   ]);
 
   function handleAddVirtual() {
@@ -232,14 +227,14 @@ export function ZilchPanel({
 
       <ZilchCommand zilch={zilch} playerNames={playerNames} canAct={canAct} />
 
-      {!zilch && (
-        <button
-          type="button"
-          onClick={handleStartGame}
-          disabled={playerOrder.length === 0}
-        >
-          Start game
+      {!zilch && playerOrder.length > 0 && (
+        <button type="button" onClick={handleStartGame} disabled={onlineActionInFlight}>
+          Start Zilch
         </button>
+      )}
+
+      {!zilch && playerOrder.length === 0 && (
+        <p className="zilch-panel__hint">Add at least one player to start Zilch.</p>
       )}
 
       {zilch && (
@@ -266,6 +261,7 @@ export function ZilchPanel({
               rolling={rolling}
               controlsDisabled={controlsDisabled}
               onlineActionInFlight={onlineActionInFlight}
+              hasPlayers={playerOrder.length > 0}
               onRandomiseStarter={onRandomiseStarter}
               onRollDice={handleRollDice}
               onBank={handleBank}

@@ -282,6 +282,7 @@ export function BlackjackPanel({
   const setProfileOpen = onProfileOpenChange ?? setProfileOpenInternal;
   const [personalLedgerAdded, setPersonalLedgerAdded] = useState(false);
   const [gameOverOverlayDismissed, setGameOverOverlayDismissed] = useState(false);
+  const [gameOverTableOverlayDismissed, setGameOverTableOverlayDismissed] = useState(false);
   const [gameOverOverlayConfirmed, setGameOverOverlayConfirmed] = useState(false);
   const [iouPending, setIouPending] = useState(false);
   const [gameOverActionPending, setGameOverActionPending] = useState(false);
@@ -600,6 +601,8 @@ export function BlackjackPanel({
     gameOverDelayReady;
   const showGameOverDesktopPanel =
     showGameOverActions && deviceView === 'desktop' && gameEndRevealReady;
+  const showGameOverDesktopTableOverlay =
+    showGameOverDesktopPanel && !gameOverTableOverlayDismissed;
   const desktopSideRailPanel: SideRailPanel =
     showGameOverDesktopPanel ? 'thisTable' : sideRailPanel;
 
@@ -611,6 +614,7 @@ export function BlackjackPanel({
   useEffect(() => {
     if (!gameEnded) {
       setGameOverOverlayDismissed(false);
+      setGameOverTableOverlayDismissed(false);
       setGameOverOverlayConfirmed(false);
       setPersonalLedgerAdded(false);
       setIouFeedback(null);
@@ -2647,6 +2651,31 @@ export function BlackjackPanel({
             playerBoxes={renderPlayerBoxesArc()}
             chipTray={renderTrayInner()}
           />
+          {showGameOverDesktopTableOverlay ? (
+            <div
+              className="bj-game-over-table-overlay"
+              role="dialog"
+              aria-labelledby="bj-game-over-table-title"
+            >
+              <div className="bj-game-over-table-overlay__panel">
+                <span className="bj-game-over-table-overlay__glyph" aria-hidden="true">
+                  {gameOverPresentation.visual.glyph}
+                </span>
+                <h2 id="bj-game-over-table-title" className="bj-game-over-table-overlay__title">
+                  Game Over
+                </h2>
+                <p className="bj-game-over-table-overlay__winner">{gameOverPresentation.winnerLine}</p>
+                <p className="bj-game-over-table-overlay__summary">{gameOverPresentation.resultLine}</p>
+                <button
+                  type="button"
+                  className="ds-btn ds-btn--secondary bj-game-over-table-overlay__dismiss"
+                  onClick={() => setGameOverTableOverlayDismissed(true)}
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          ) : null}
         </div>
         </div>
       </div>

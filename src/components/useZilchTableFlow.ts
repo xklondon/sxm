@@ -2,12 +2,12 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { GameState } from '../types';
 import {
   applyZilchActionToState,
+  ensureZilchGameOnState,
   type ZilchGameplayAction,
   canBank,
   canRollDice,
   completeDiceRoll,
 } from '../engine/zilch';
-import { beginZilchPlay } from '../engine/session';
 
 interface UseZilchTableFlowOptions {
   gameState: GameState;
@@ -72,7 +72,7 @@ export function useZilchTableFlow({
 
   const handleStartGame = useCallback(() => {
     try {
-      onGameStateChange(beginZilchPlay(gameState));
+      onGameStateChange(ensureZilchGameOnState(gameState));
     } catch (err) {
       console.error(err);
     }
@@ -80,16 +80,19 @@ export function useZilchTableFlow({
 
   /** Authoritative starter selection — completes in one reducer step. Returns starter id when applied locally. */
   const handleRandomiseStarter = useCallback((): string | null => {
-    if (onlineDispatch) {
-      void dispatch('zilchRandomiseStarter', {});
+    try {
+      const ready = ensureZilchGameOnState(gameState);
+      if (onlineDispatch) {
+        void dispatch('zilchRandomiseStarter', {});
+        return null;
+      }
+      const next = applyZilchActionToState(ready, 'zilchRandomiseStarter', {});
+      onGameStateChange(next);
+      return next.zilch?.starterPlayerId ?? null;
+    } catch (err) {
+      console.error(err);
       return null;
     }
-    if (!gameState.zilch) {
-      return null;
-    }
-    const next = applyZilchActionToState(gameState, 'zilchRandomiseStarter', {});
-    onGameStateChange(next);
-    return next.zilch?.starterPlayerId ?? null;
   }, [dispatch, gameState, onGameStateChange, onlineDispatch]);
 
   const handleRollDice = useCallback(() => {

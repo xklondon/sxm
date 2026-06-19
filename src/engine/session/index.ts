@@ -29,9 +29,12 @@ export {
   type TableBankerSetupMode,
 } from './tableSetup';
 export {
+  applyZilchTableResetSetup,
   applyZilchTableStakeSetup,
   beginZilchPlay,
+  initializeZilchPlayState,
   parseZilchTableStakePayload,
+  recordZilchGameEnd,
   type ZilchTableStakeSetupInput,
 } from './zilchTableSetup';
 export {

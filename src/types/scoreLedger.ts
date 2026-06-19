@@ -29,7 +29,13 @@ export interface ScoreLedgerEntry {
   /** People at the table when the game ended. */
   playersInvolved?: string[];
   gameType?: string;
+  /** Human-readable game name for personal ledger (e.g. Zilch, Blackjack). */
+  gameLabel?: string;
   protocolId?: string;
+  /** Zilch-only: target_points or fixed_rounds. */
+  zilchMode?: string;
+  /** Zilch-only: final score totals by player id. */
+  finalScores?: Record<string, number>;
   mode?: TableMode;
   /** Effective bank-bust settlement recorded for this game. */
   settlementMode?: BankBustSettlementMode;

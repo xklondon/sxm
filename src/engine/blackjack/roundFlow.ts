@@ -5,7 +5,7 @@ import { findNextActingHand } from './virtual';
 
 export const ALL_PLAYERS_BUST_MESSAGE = 'All players busted — bank wins this round.';
 
-/** Hand still needs dealer comparison (stood / pending natural). */
+/** Hand still needs dealer comparison (stood). Naturals/busts are terminal before bank draw. */
 export function handNeedsDealerComparison(hand: BlackjackRound['playerHands'][string]): boolean {
   if (!hand || hand.currentBet <= 0) {
     return false;
@@ -17,9 +17,27 @@ export function handNeedsDealerComparison(hand: BlackjackRound['playerHands'][st
     return false;
   }
   if (hand.actionStatus === 'blackjack') {
-    return true;
+    return false;
   }
   return hand.actionStatus === 'stood';
+}
+
+export function isHandTerminalBeforeBankDraw(
+  hand: BlackjackRound['playerHands'][string],
+): boolean {
+  if (!hand || hand.currentBet <= 0) {
+    return false;
+  }
+  if (hand.bustSettled || hand.actionStatus === 'busted') {
+    return true;
+  }
+  if (hand.naturalSettled || hand.actionStatus === 'done') {
+    return true;
+  }
+  if (hand.actionStatus === 'blackjack') {
+    return true;
+  }
+  return false;
 }
 
 export function hasHandsNeedingDealerComparison(
@@ -45,13 +63,7 @@ export function allPlayerHandsEliminated(session: GameSession, round: BlackjackR
   }
   return keys.every((key) => {
     const hand = round.playerHands[key]!;
-    if (hand.bustSettled || hand.actionStatus === 'busted') {
-      return true;
-    }
-    if (hand.naturalSettled || hand.actionStatus === 'done') {
-      return true;
-    }
-    return false;
+    return isHandTerminalBeforeBankDraw(hand);
   });
 }
 

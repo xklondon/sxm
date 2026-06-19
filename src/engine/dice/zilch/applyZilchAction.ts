@@ -1,5 +1,6 @@
 import type { GameState } from '../../../types';
 import type { ZilchGameSettings, ZilchTableMode } from './zilchTypes';
+import { isZilchTable } from '../../session/zilchTableKind';
 import {
   bankTurn,
   completeDiceRoll,
@@ -10,6 +11,30 @@ import {
   rollDice,
 } from './zilchEngine';
 import { normalizeZilchState } from './normalizeZilchState';
+
+function resolveZilchPlayerIds(state: GameState): string[] {
+  if (state.session.playerIds.length > 0) {
+    return state.session.playerIds;
+  }
+  return state.tableMeta.boxSlots
+    .map((s) => s.playerId)
+    .filter((id): id is string => Boolean(id));
+}
+
+/** Ensure zilch engine state exists before gameplay actions (repair on load/dispatch). */
+export function ensureZilchGameOnState(state: GameState): GameState {
+  if (state.zilch) {
+    return state;
+  }
+  if (!isZilchTable(state)) {
+    throw new Error('No Zilch game in progress');
+  }
+  const playerIds = resolveZilchPlayerIds(state);
+  if (playerIds.length === 0) {
+    throw new Error('Add at least one player before starting Zilch');
+  }
+  return startZilchGameOnState(state, playerIds, state.zilchSettings);
+}
 
 export const ZILCH_GAMEPLAY_ACTIONS = [
   'zilchRandomiseStarter',
@@ -32,11 +57,9 @@ export function applyZilchActionToState(
   action: ZilchGameplayAction,
   payload: Record<string, unknown> = {},
 ): GameState {
-  if (!state.zilch) {
-    throw new Error('No Zilch game in progress');
-  }
-  const settings = state.zilchSettings;
-  let zilch = state.zilch;
+  const ready = ensureZilchGameOnState(state);
+  const settings = ready.zilchSettings;
+  let zilch = ready.zilch!;
 
   switch (action) {
     case 'zilchRandomiseStarter':
@@ -69,7 +92,7 @@ export function applyZilchActionToState(
       throw new Error(`Unknown Zilch action: ${action}`);
   }
 
-  return { ...state, zilch: normalizeZilchState(zilch) };
+  return { ...ready, zilch: normalizeZilchState(zilch) };
 }
 
 /** @alias applyZilchActionToState */

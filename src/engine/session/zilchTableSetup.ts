@@ -1,7 +1,11 @@
 import type { GameState } from '../../types';
 import type { ZilchMode } from '../zilch/zilchTypes';
 import { DEFAULT_ZILCH_DICE_ANIMATION } from '../zilch/settings';
-import { startZilchGameOnState } from '../zilch/applyZilchAction';
+import {
+  ensureZilchGameOnState,
+  startZilchGameOnState,
+} from '../zilch/applyZilchAction';
+import { getZilchWinnerId } from '../dice/zilch/zilchSelectors';
 import {
   assignBankBot,
   assignBankPerson,
@@ -11,6 +15,7 @@ import { setTableOwner } from './invites';
 import {
   confirmTableAgreement,
   DEFAULT_TABLE_CHIPS,
+  recordTableOutcome,
 } from './table';
 import {
   logDerivedBalances,
@@ -19,6 +24,11 @@ import {
 } from './tokens';
 import type { TableBankerSetupMode, TableStakeSetupInput } from './tableSetup';
 import { ensureZilchTableIdentity } from './zilchTableKind';
+import {
+  allocateRemainingSeatBankrolls,
+  appendTableResetLedgerNote,
+  clearGameStateForReset,
+} from './tableReset';
 
 export interface ZilchTableStakeSetupInput extends TableStakeSetupInput {
   zilchMode: ZilchMode;
@@ -112,24 +122,102 @@ export function applyZilchTableStakeSetup(
   logDerivedBalances(next, 'zilch-start');
   logTableMetaStartingChips(next, 'zilch-start');
 
-  return ensureZilchTableIdentity(next);
+  next = ensureZilchTableIdentity(next);
+  return initializeZilchPlayState(next);
+}
+
+function resolveZilchPlayerIds(state: GameState): string[] {
+  if (state.session.playerIds.length > 0) {
+    return state.session.playerIds;
+  }
+  return state.tableMeta.boxSlots
+    .map((s) => s.playerId)
+    .filter((id): id is string => Boolean(id));
+}
+
+/** Create fresh zilch engine state in setup phase (ready for random starter). */
+export function initializeZilchPlayState(state: GameState): GameState {
+  const playerIds = resolveZilchPlayerIds(state);
+  if (playerIds.length === 0) {
+    return state;
+  }
+  return startZilchGameOnState(state, playerIds, state.zilchSettings);
 }
 
 export function beginZilchPlay(state: GameState): GameState {
   if (state.session.gameType !== 'zilch' && state.tableGame !== 'zilch') {
     throw new Error('Not a Zilch table');
   }
-  const playerIds =
-    state.session.playerIds.length > 0
-      ? state.session.playerIds
-      : state.tableMeta.boxSlots
-          .map((s) => s.playerId)
-          .filter((id): id is string => Boolean(id));
-  if (playerIds.length === 0) {
-    throw new Error('Add at least one player before starting Zilch');
-  }
   if (state.zilch && state.zilch.phase !== 'setup') {
     return state;
   }
-  return startZilchGameOnState(state, playerIds, state.zilchSettings);
+  return ensureZilchGameOnState(state);
+}
+
+/**
+ * Reset a Zilch table for a new game: same table id, players, invites; fresh zilch state.
+ */
+export function applyZilchTableResetSetup(
+  state: GameState,
+  input: ZilchTableStakeSetupInput,
+  resetByPersonId: string | null = null,
+): GameState {
+  let next = clearGameStateForReset(state);
+  next = appendTableResetLedgerNote(next, resetByPersonId);
+  next = applyZilchTableStakeSetup(next, input);
+  next = allocateRemainingSeatBankrolls(next);
+  return {
+    ...next,
+    tableGame: 'zilch',
+    session: { ...next.session, gameType: 'zilch' },
+    tableMeta: {
+      ...next.tableMeta,
+      showStakeSetup: false,
+      gameCategory: 'dice',
+      diceGame: 'zilch',
+    },
+  };
+}
+
+/** Record Zilch game completion for table outcome + personal ledger eligibility. */
+export function recordZilchGameEnd(state: GameState): GameState {
+  const zilch = state.zilch;
+  if (!zilch || zilch.phase !== 'completed') {
+    return state;
+  }
+  if (state.tableMeta.gameStatus === 'ended') {
+    return state;
+  }
+  const winnerId = zilch.winnerPlayerId ?? getZilchWinnerId(zilch);
+  const loserId =
+    zilch.players.map((p) => p.playerId).find((id) => id !== winnerId) ??
+    state.session.bankPlayerId ??
+    null;
+  const modeLabel =
+    zilch.mode === 'fixed_rounds'
+      ? `${zilch.roundLimit ?? '?'} rounds`
+      : `target ${zilch.targetPoints ?? '?'} points`;
+  const scoreLine = Object.entries(zilch.totalScoresByPlayerId)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, score]) => `${state.players[id]?.displayName ?? id}: ${score}`)
+    .join(' · ');
+
+  let next = recordTableOutcome(state, winnerId, loserId);
+  return {
+    ...next,
+    tableMeta: {
+      ...next.tableMeta,
+      gameStatus: 'ended',
+      winnerId,
+      gameEndReason: 'zilch-completed',
+      endedAt: new Date().toISOString(),
+      status: 'complete',
+      outcome: next.tableMeta.outcome
+        ? {
+            ...next.tableMeta.outcome,
+            note: `Zilch (${modeLabel}) · ${scoreLine}`,
+          }
+        : next.tableMeta.outcome,
+    },
+  };
 }

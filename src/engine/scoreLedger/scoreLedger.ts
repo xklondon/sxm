@@ -2,6 +2,8 @@ import type { GameState } from '../../types';
 import type { ScoreLedgerEntry, ScoreLedgerParticipantResult } from '../../types/scoreLedger';
 import { resolveTableClothName } from '../../types/tableFeltSkin';
 import { generateId } from '../utils/id';
+import { isZilchTable } from '../session/zilchTableKind';
+import { getZilchWinnerId } from '../dice/zilch/zilchSelectors';
 import {
   appendScoreLedgerEntry,
   loadScoreLedgerEntries,
@@ -115,6 +117,10 @@ export function buildGameOverSummary(state: GameState): {
 } {
   if (state.tableMeta.gameStatus !== 'ended') {
     return { message: '', entry: null };
+  }
+
+  if (isZilchTable(state) && state.zilch) {
+    return buildZilchGameOverSummary(state);
   }
 
   const winnerId = state.tableMeta.winnerId;
@@ -239,6 +245,61 @@ export function buildGameOverSummary(state: GameState): {
   return { message, entry };
 }
 
+function buildZilchGameOverSummary(state: GameState): {
+  message: string;
+  entry: ScoreLedgerEntry | null;
+} {
+  const zilch = state.zilch!;
+  const winnerId = state.tableMeta.winnerId ?? zilch.winnerPlayerId ?? getZilchWinnerId(zilch);
+  const wager = state.tableMeta.agreement?.stakeDescription?.trim() || 'the agreed wager';
+  const winnerName = winnerId ? resolveWinnerDisplayName(state, winnerId) : '—';
+  const loserId =
+    zilch.players.map((p) => p.playerId).find((id) => id !== winnerId) ??
+    state.session.bankPlayerId ??
+    null;
+  const loserName = loserId ? personShortName(state, loserId) : '—';
+  const modeLabel =
+    zilch.mode === 'fixed_rounds'
+      ? `${zilch.roundLimit ?? '?'} rounds`
+      : `target ${zilch.targetPoints ?? '?'} points`;
+  const scoreLine = Object.entries(zilch.totalScoresByPlayerId)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, score]) => `${state.players[id]?.displayName ?? id}: ${score}`)
+    .join(' · ');
+  const participants: ScoreLedgerParticipantResult[] = zilch.players
+    .map((p) => ({
+      email: resolveEmailForPlayerId(state, p.playerId) ?? '',
+      name: personShortName(state, p.playerId),
+      personId: p.playerId,
+      startingChips: 0,
+      endingChips: zilch.totalScoresByPlayerId[p.playerId] ?? 0,
+      outcome: (p.playerId === winnerId ? 'winner' : 'loser') as ScoreLedgerParticipantResult['outcome'],
+      rank:
+        Object.entries(zilch.totalScoresByPlayerId)
+          .sort((a, b) => b[1] - a[1])
+          .findIndex(([id]) => id === p.playerId) + 1,
+    }))
+    .sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99));
+
+  const message = `Zilch — ${winnerName} wins (${modeLabel}). ${scoreLine}`;
+  const entry = buildLedgerEntryFromParts(state, {
+    winnerId,
+    winnerName,
+    loserId,
+    loserName,
+    owedDescription: `${loserName} owes ${winnerName}: ${wager}`,
+    participants,
+    roundCount: zilch.currentRound,
+    wager,
+    gameType: 'zilch',
+    gameLabel: 'Zilch',
+    protocolId: 'zilch',
+    zilchMode: zilch.mode,
+    finalScores: { ...zilch.totalScoresByPlayerId },
+  });
+  return { message, entry };
+}
+
 function buildLedgerEntryFromParts(
   state: GameState,
   parts: {
@@ -250,6 +311,11 @@ function buildLedgerEntryFromParts(
     participants: ScoreLedgerParticipantResult[];
     roundCount: number;
     wager: string;
+    gameType?: string;
+    gameLabel?: string;
+    protocolId?: string;
+    zilchMode?: string;
+    finalScores?: Record<string, number>;
   },
 ): ScoreLedgerEntry {
   const bankId = state.session.bankPlayerId;
@@ -282,8 +348,11 @@ function buildLedgerEntryFromParts(
     loserName: parts.loserName,
     owedDescription: parts.owedDescription,
     playersInvolved,
-    gameType: state.tableGame ?? 'blackjack',
-    protocolId: state.blackjackProtocolId,
+    gameType: parts.gameType ?? (isZilchTable(state) ? 'zilch' : (state.tableGame ?? 'blackjack')),
+    gameLabel: parts.gameLabel ?? (isZilchTable(state) ? 'Zilch' : undefined),
+    protocolId: parts.protocolId ?? (isZilchTable(state) ? 'zilch' : state.blackjackProtocolId),
+    zilchMode: parts.zilchMode,
+    finalScores: parts.finalScores,
     mode: resolveTableModeFromState(state),
     settlementMode: resolveEffectiveSettlementMode(state),
     bankName: bankId

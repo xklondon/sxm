@@ -20,14 +20,16 @@ import {
   parseTableStakeSetupPayload,
 } from '../../../src/engine/session/tableSetup.js';
 import {
+  applyZilchTableResetSetup,
   applyZilchTableStakeSetup,
+  beginZilchPlay,
   parseZilchTableStakePayload,
 } from '../../../src/engine/session/zilchTableSetup.js';
+import { isZilchTable } from '../../../src/engine/session/zilchTableKind.js';
 import {
   applyZilchActionToState,
   isZilchGameplayAction,
 } from '../../../src/engine/zilch/applyZilchAction.js';
-import { beginZilchPlay } from '../../../src/engine/session/zilchTableSetup.js';
 import type { TableActionType } from './actions.js';
 
 export function applyTableAction(
@@ -98,6 +100,10 @@ export function applyTableAction(
       const caller = state.players[personId];
       const controllerName =
         caller?.controllerName?.trim() || caller?.displayName || state.tableMeta.controllerName;
+      if (payload.zilchMode !== undefined || isZilchTable(state)) {
+        const zilchInput = parseZilchTableStakePayload(payload, controllerName);
+        return applyZilchTableStakeSetup(state, zilchInput);
+      }
       const input = parseTableStakeSetupPayload(payload, controllerName);
       return applyTableStakeSetup(state, input);
     }
@@ -105,12 +111,9 @@ export function applyTableAction(
       const caller = state.players[personId];
       const controllerName =
         caller?.controllerName?.trim() || caller?.displayName || state.tableMeta.controllerName;
-      if (payload.zilchMode !== undefined || state.tableGame === 'zilch') {
+      if (payload.zilchMode !== undefined || isZilchTable(state)) {
         const zilchInput = parseZilchTableStakePayload(payload, controllerName);
-        return applyZilchTableStakeSetup(
-          applyTableResetSetup(state, zilchInput, personId),
-          zilchInput,
-        );
+        return applyZilchTableResetSetup(state, zilchInput, personId);
       }
       const input = parseTableStakeSetupPayload(payload, controllerName);
       return applyTableResetSetup(state, input, personId);

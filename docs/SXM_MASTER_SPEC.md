@@ -198,7 +198,7 @@ Challenge bank plays against boxes; `session.bankPlayerId` is always a seated **
 **Game end presentation:**
 
 - **Final cards stay visible** — summary/ledger UI must not obscure the felt.
-- **Desktop:** **Game Over** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — random happy/sad glyph visual, winner/result/round summary, round-count comment line, Magic 8 wisdom; **Add to Ledger** checkbox + **Open Ledger** link (toggle only — no save until **Start New Game**); **Create IOU** checkbox + **Add message** expand (max 180 chars; empty uses default IOU message); **Start New Game** (owner only) and **Exit Table** apply ledger/IOU choices via `runGameOverCompleteAction` — IOU handoff POST runs before reset or leave; IOU failure keeps overlay open; **Exit Table** opens save-table prompt then returns to lobby/start; close/dismiss does not save ledger or create IOU (dismiss hides game-over UI and restores dealer fallback); panel re-opens automatically while game-over is active; dealer **New Game** only after game-over confirmation.
+- **Desktop:** **Game Over** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — random happy/sad glyph visual, winner/result/round summary, round-count comment line, Magic 8 wisdom; **Add to Ledger** checkbox + **Open Ledger** link (toggle only — no save until **Start New Game**); **Create IOU** checkbox + **Add message** expand (max 180 chars; empty uses default IOU message); **Start New Game** (owner only) and **Exit Table** apply ledger/IOU choices via `runGameOverCompleteAction` — IOU handoff POST runs before reset or leave; IOU failure keeps overlay open; **Exit Table** opens save-table prompt then returns to lobby/start; close/dismiss does not save ledger or create IOU (dismiss hides game-over UI and restores dealer fallback); panel re-opens automatically while game-over is active; dealer **New Game** only after game-over confirmation. **Additionally:** a dismissible table-centre overlay on the felt (`bj-game-over-table-overlay`, desktop only) shows “Game Over”, winner, and summary over the table; side panel actions remain available.
 - **Mobile:** centered **Game Over** overlay (`bj-game-over-overlay`) with the same content/flow after reveal delay; `gameEndRevealReady = cardRevealComplete || gameStatus === 'ended'`.
 - **Desktop polish:** toolbar nav aligned to felt right edge; Full Table card stacks align with player boxes; hand totals fixed at bottom of card column (stacks grow upward toward dealer; outcome/active frame must not shift value); tray label (e.g. **SxM Casino Challenge**) on desktop + mobile; ~10% larger mobile table typography (text tokens only).
 
@@ -274,6 +274,8 @@ Row click expands details; **ReOpen** button required (no load-on-click).
 ### Phases
 
 Protocol-driven phases via `getBlackjackProtocolPhase`. Betting → deal → player turns → insurance/even-money (when offered) → bank draw → settlement → next round.
+
+**Bank draw skip:** When every active bet is terminal before bank draw (bust, natural/blackjack, or no further player action), the engine skips bank drawing and resolves immediately (`shouldSkipBankDraw` / `applySkipBankIfNeeded` in `roundFlow.ts`). Stood hands that still need dealer comparison follow normal bank draw rules.
 
 ### Online actions (blackjack)
 
@@ -450,7 +452,7 @@ Fixed 7-row grid in `bj-blackjack-table-shell.css`; **identical slot geometry in
 
 **Desktop Card View dealer cards:** Same compact dealer implementation as Full Table — shared `bj-dealer-area` shell, `--bj-desktop-zone-dealer-height: 6.05rem`, `--bj-dealer-cards-slot-min-height: 3.35rem`, compact playing-cards (`2.05rem × 2.7rem`). No Card View-only tall dealer band.
 
-**Mobile shell parity:** Full Table + Card View share one command slot height via `data-phase` on `.bj-casino` (betting vs player/dealer/resolved). Player boxes spread across felt width (`1fr` grid). Mobile Card View portrait hides hero hand total under hero cards; player box values remain visible (~2× scale token).
+**Mobile shell parity:** Full Table + Card View share one command slot height via `data-phase` on `.bj-casino` (betting vs player/dealer/resolved). Player boxes spread across felt width (`1fr` grid). Mobile Card View portrait: hero cards ~2.5× scale (`--bj-card-hero-card-scale`); BUST/BlackJack stack badges on hero cards area (`bj-card-view__hero-stack-badge`); hand total under hero cards hidden; player box values remain visible (~2× scale token). Mobile landscape layout (`bj-mobile-landscape-layout.css`, `@media (max-width: 900px) and (orientation: landscape)`) aligns dealer, command, cards, actions, boxes, and tray without altering portrait or desktop rules. Desktop Full Table play/dealing/resolved: felt and box row use overflow containment to avoid internal scrollbars (`bj-blackjack-targeted-fixes.css`).
 
 1. Bank hand info (`bj-table-info-bar--felt-row`)
 2. Dealer cards + bank hand value (`bj-table-zone--dealer`)

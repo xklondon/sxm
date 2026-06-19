@@ -6,6 +6,7 @@ interface ZilchActionsProps {
   rolling: boolean;
   controlsDisabled: boolean;
   onlineActionInFlight: boolean;
+  hasPlayers: boolean;
   onRandomiseStarter: () => void;
   onRollDice: () => void;
   onBank: () => void;
@@ -17,6 +18,7 @@ export function ZilchActions({
   rolling,
   controlsDisabled,
   onlineActionInFlight,
+  hasPlayers,
   onRandomiseStarter,
   onRollDice,
   onBank,
@@ -26,7 +28,11 @@ export function ZilchActions({
     <div className="zilch-table__actions">
       {(zilch.phase === 'setup' ||
         (zilch.phase === 'randomising-starter' && !zilch.starterPlayerId)) && (
-        <button type="button" onClick={onRandomiseStarter} disabled={onlineActionInFlight}>
+        <button
+          type="button"
+          onClick={onRandomiseStarter}
+          disabled={onlineActionInFlight || !hasPlayers}
+        >
           Randomise starter
         </button>
       )}
