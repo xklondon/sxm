@@ -106,13 +106,9 @@ import {
   hasPersonalLedgerEntryForTable,
 } from '../engine/scoreLedger/scoreLedger';
 import {
-  buildIouHandoffCreateRequest,
   canOfferGameEndIou,
   getGameEndIouDisabledReason,
 } from '../engine/scoreLedger/gameEndIou';
-import { createIouHandoff } from '../api/iouHandoff';
-import { iouHandoffStorageKey } from '../lib/iouHandoffPayload';
-import type { GameOverIouFeedback } from './GameOverActionOverlay';
 import { buildRoundResultSummary } from '../engine/blackjack';
 import { buildRoundSummaryOverlayModel } from '../engine/blackjack/roundSummaryOverlay';
 import { buildBlackjackCommandText } from './tableCommandDisplay';
@@ -181,7 +177,8 @@ import {
 } from './cardAreaOutcomeDisplay';
 import { shouldShowBoxHandResultMarkers } from './boxHandStatusDisplay';
 import { buildBlackjackCountByBoxDisplay } from './blackjackCountByBoxDisplay';
-import { GameOverActionOverlay, type GameOverCompleteOptions } from './GameOverActionOverlay';
+import { GameOverActionOverlay, type GameOverCompleteOptions, type GameOverIouFeedback } from './GameOverActionOverlay';
+import { runGameOverCompleteAction } from './gameOverActionFlow';
 import { buildGameOverPresentationModel } from './gameOverPresentation';
 import { AceDecisionButtonRow } from './blackjackAceDecisionActions';
 import {
@@ -241,6 +238,7 @@ interface BlackjackPanelProps {
   profileOpen?: boolean;
   onProfileOpenChange?: (open: boolean) => void;
   onSaveTable?: () => void;
+  onExitTable?: () => void;
   onBeginTableReset?: (variant?: TableResetSetupVariant) => void;
   onlineTableId?: string | null;
   viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
@@ -255,6 +253,7 @@ export function BlackjackPanel({
   profileOpen: profileOpenProp,
   onProfileOpenChange,
   onSaveTable,
+  onExitTable,
   onBeginTableReset,
   onlineTableId = null,
   viewerAuth = null,
@@ -285,6 +284,7 @@ export function BlackjackPanel({
   const [gameOverOverlayDismissed, setGameOverOverlayDismissed] = useState(false);
   const [gameOverOverlayConfirmed, setGameOverOverlayConfirmed] = useState(false);
   const [iouPending, setIouPending] = useState(false);
+  const [gameOverActionPending, setGameOverActionPending] = useState(false);
   const [iouFeedback, setIouFeedback] = useState<GameOverIouFeedback | null>(null);
   const [assignChipsOpen, setAssignChipsOpen] = useState(false);
   const [minBetOpen, setMinBetOpen] = useState(false);
@@ -615,6 +615,7 @@ export function BlackjackPanel({
       setPersonalLedgerAdded(false);
       setIouFeedback(null);
       setIouPending(false);
+      setGameOverActionPending(false);
     }
   }, [gameEnded, gameState.session.id]);
 
@@ -685,69 +686,40 @@ export function BlackjackPanel({
     }
   }
 
-  async function submitIouHandoff(customMessage?: string) {
-    setError(null);
-    setIouPending(true);
-    setIouFeedback(null);
-    try {
-      const request = buildIouHandoffCreateRequest(gameStateRef.current, {
-        message: customMessage,
-      });
-      if (!request) {
-        throw new Error('Missing debtor or creditor email for this wager.');
-      }
+  async function completeGameOverAction(options: GameOverCompleteOptions): Promise<void> {
+    if (gameOverActionPending || iouPending) {
+      return;
+    }
 
-      const storageKey = iouHandoffStorageKey(request.tableId, request.sessionId);
-      const prior = typeof localStorage !== 'undefined' ? localStorage.getItem(storageKey) : null;
-      if (prior) {
-        setIouFeedback({
-          tone: 'info',
-          message: 'This IOU handoff was already submitted.',
-        });
+    setGameOverActionPending(true);
+    setError(null);
+    if (options.createIou) {
+      setIouPending(true);
+    }
+
+    try {
+      const result = await runGameOverCompleteAction(options, {
+        getState: () => gameStateRef.current,
+        addToPersonalLedger: handleAddToPersonalLedger,
+        beginNewGame: () => {
+          setGameOverOverlayConfirmed(true);
+          setSideRailPanel(null);
+          onBeginTableReset?.('newGame');
+        },
+        exitTable: () => {
+          onExitTable?.();
+        },
+        setIouFeedback,
+        canResetTable: Boolean(onBeginTableReset && canResetTable),
+        canExitTable: Boolean(onExitTable),
+      });
+
+      if (result === 'blocked') {
         return;
       }
-
-      const result = await createIouHandoff(request);
-      if (!result.ok) {
-        throw new Error(result.error);
-      }
-
-      if (typeof localStorage !== 'undefined' && result.iouId) {
-        localStorage.setItem(storageKey, result.iouId);
-      }
-
-      setIouFeedback({
-        tone: result.alreadySubmitted ? 'info' : 'success',
-        message: result.alreadySubmitted
-          ? 'This IOU handoff was already submitted.'
-          : 'IOU created. The counterparty can accept or decline it in IOU Wallet.',
-        openUrl: result.openUrl,
-      });
-    } catch (err) {
-      setIouFeedback({
-        tone: 'error',
-        message: err instanceof Error ? err.message : 'Could not create IOU.',
-      });
     } finally {
+      setGameOverActionPending(false);
       setIouPending(false);
-    }
-  }
-
-  async function handleGameOverComplete(options: GameOverCompleteOptions) {
-    if (options.saveLedger) {
-      handleAddToPersonalLedger();
-    }
-    if (options.createIou) {
-      await submitIouHandoff(options.iouMessage);
-    }
-    setGameOverOverlayConfirmed(true);
-  }
-
-  async function handleGameOverNewGame(options: GameOverCompleteOptions) {
-    await handleGameOverComplete(options);
-    if (onBeginTableReset && canResetTable) {
-      setSideRailPanel(null);
-      onBeginTableReset('newGame');
     }
   }
 
@@ -1273,7 +1245,7 @@ export function BlackjackPanel({
     awaitingNextRound,
     gameEnded,
     onNewGame:
-      gameEnded && onBeginTableReset && !showGameOverActions
+      gameEnded && onBeginTableReset && gameOverOverlayConfirmed
         ? () => onBeginTableReset('newGame')
         : undefined,
     canStartNewGame: canResetTable,
@@ -2299,6 +2271,7 @@ export function BlackjackPanel({
         iouPending={iouPending}
         iouFeedback={iouFeedback}
         iouDisabledReason={iouDisabledReason}
+        pending={gameOverActionPending}
         canStartNewGame={canResetTable}
         newGameDisabledReason={
           !canResetTable
@@ -2308,7 +2281,7 @@ export function BlackjackPanel({
               : null
         }
         onOpenLedger={() => setActiveTablePanel('playLedger')}
-        onComplete={handleGameOverNewGame}
+        onComplete={completeGameOverAction}
         onDismiss={handleGameOverDismiss}
       />
     );
@@ -2482,6 +2455,7 @@ export function BlackjackPanel({
           iouPending={iouPending}
           iouFeedback={iouFeedback}
           iouDisabledReason={iouDisabledReason}
+          pending={gameOverActionPending}
           canStartNewGame={canResetTable}
           newGameDisabledReason={
             !canResetTable
@@ -2491,7 +2465,7 @@ export function BlackjackPanel({
                 : null
           }
           onOpenLedger={() => setActiveTablePanel('playLedger')}
-          onComplete={handleGameOverNewGame}
+          onComplete={completeGameOverAction}
           onDismiss={handleGameOverDismiss}
         />
       )}

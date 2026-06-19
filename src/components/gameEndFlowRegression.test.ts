@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const OVERLAY_SRC = readFileSync(join(process.cwd(), 'src/components/GameOverActionOverlay.tsx'), 'utf8');
+const TABLE_SRC = readFileSync(join(process.cwd(), 'src/screens/TableScreen.tsx'), 'utf8');
+const APP_SRC = readFileSync(join(process.cwd(), 'src/App.tsx'), 'utf8');
 
 describe('game end flow regression guards', () => {
   it('uses safe reveal gate without requiring winnerPersonId', () => {
@@ -39,9 +41,18 @@ describe('game end flow regression guards', () => {
     expect(PANEL_SRC).not.toMatch(/handleGameOverDismiss[\s\S]*submitIouHandoff/);
   });
 
-  it('applies ledger and IOU only from Start New Game completion handler', () => {
-    expect(PANEL_SRC).toMatch(/handleGameOverComplete[\s\S]*options\.saveLedger/);
-    expect(PANEL_SRC).toMatch(/handleGameOverComplete[\s\S]*options\.createIou/);
+  it('applies ledger and IOU only from completeGameOverAction', () => {
+    expect(PANEL_SRC).toMatch(/completeGameOverAction[\s\S]*runGameOverCompleteAction/);
+    expect(PANEL_SRC).toMatch(/nextAction === 'new-game'[\s\S]*setGameOverOverlayConfirmed\(true\)/);
+    expect(PANEL_SRC).not.toMatch(/exit-table[\s\S]*setGameOverOverlayConfirmed\(true\)/);
     expect(OVERLAY_SRC).toMatch(/handleStartNewGame[\s\S]*onComplete\(/);
+    expect(OVERLAY_SRC).toContain('Exit Table');
+  });
+
+  it('routes Exit Table through onLeave save prompt in TableScreen', () => {
+    expect(TABLE_SRC).toContain('onExitTable={onLeave}');
+    expect(APP_SRC).toContain('onLeave={requestLeaveTable}');
+    expect(APP_SRC).toContain('exitTableScreen');
+    expect(APP_SRC).toMatch(/setScreen\(onlineMode && user \? 'lobby' : 'start'\)/);
   });
 });

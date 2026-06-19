@@ -191,6 +191,16 @@
   z-index: 1;
 }
 
+.bj-game-over__actions-row {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.bj-game-over__actions-row .ds-btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .bj-game-over__actions .ds-btn {
   width: 100%;
 }

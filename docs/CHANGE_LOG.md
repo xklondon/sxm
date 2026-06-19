@@ -15,7 +15,14 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-13 — Mobile Card View hero cards + Full Table landscape layout
+## 2026-06-13 — Blackjack engine/layout freeze baseline
+
+- **Freeze doc:** `docs/BLACKJACK_ENGINE_FREEZE.md` — engine rules, dealing, phases, desktop + mobile portrait/landscape Full Table baseline, split display, shared shell; new-game gate.
+- **BJ badge:** Full Table stack outcome badge text `BJ` → **BlackJack** with subtle gold festive styling (badge-only; zones unchanged).
+- **Guards:** `blackjackEngineFreezeGuards.test.ts` — shell zone order, desktop `data-bj-view`/`data-bj-phase`, shared `renderActionsContent`, Card View desktop/mobile routes, routine scripts exclude `blackjackRenderedLayout`.
+- **New games:** must use separate game protocol modules and table panels — not by modifying frozen Blackjack engine/shared shell without explicit unfreeze.
+
+---
 
 - **Mobile Card View portrait:** play phase no longer applies Full Table's tall command band (`6.375rem`) — hero cards zone recovers height; portrait owner restores hero card min size (~50×70px at 390×844). Hero hand total stays hidden in Card View.
 - **Mobile Full Table landscape:** grid targets `.bj-dealer-area` (not missing `.bj-table-zone--dealer`); felt bank row hidden; play phase uses compact landscape command height; flex chain fits shell in viewport below toolbar.

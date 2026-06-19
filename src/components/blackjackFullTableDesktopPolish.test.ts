@@ -282,7 +282,7 @@ describe('desktop Full Table layout polish', () => {
     expect(cardAreaOutcomeStackBadgeText('bust')).toBe('BUST');
     expect(cardAreaOutcomeStackBadgeText('win')).toBe('WIN');
     expect(cardAreaOutcomeStackBadgeText('even')).toBe('EVEN');
-    expect(cardAreaOutcomeStackBadgeText('blackjack')).toBe('BJ');
+    expect(cardAreaOutcomeStackBadgeText('blackjack')).toBe('BlackJack');
   });
 
   it('does not apply desktop polish tokens to mobile Full Table markup', () => {

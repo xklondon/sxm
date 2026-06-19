@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { cleanup, fireEvent, render, screen, within, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 
 vi.mock('../storage/profileStorage', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../storage/profileStorage')>();
@@ -16,10 +16,8 @@ import { GameOverActionOverlay } from './GameOverActionOverlay';
 import { buildGameOverPresentationModel } from './gameOverPresentation';
 import { IOU_HANDOFF_MESSAGE_MAX_LENGTH } from './gameOverIouMessage';
 import { BlackjackPanel } from './BlackjackPanel';
-import * as iouHandoffApi from '../api/iouHandoff';
-import { tableWithClaimedBox } from '../engine/blackjack/sanity/fixtures';
 import { hasPersonalLedgerEntryForTable } from '../engine/scoreLedger/scoreLedger';
-import { saveScoreLedgerEntries } from '../storage/scoreLedgerStorage';
+import { tableWithClaimedBox } from '../engine/blackjack/sanity/fixtures';
 
 const noop = () => {};
 
@@ -132,6 +130,29 @@ async function clickStartNewGame(options: {
   fireEvent.click(within(overlay).getByRole('button', { name: 'Start New Game' }));
 }
 
+async function clickExitTable(options?: {
+  createIou?: boolean;
+  iouMessage?: string;
+  openMessage?: boolean;
+}) {
+  const overlay = screen.getByRole('dialog');
+  if (options?.createIou) {
+    const iouToggle = within(overlay).getByRole('checkbox', { name: /create iou/i }) as HTMLInputElement;
+    if (!iouToggle.checked) {
+      fireEvent.click(iouToggle);
+    }
+    if (options.openMessage || options.iouMessage) {
+      fireEvent.click(within(overlay).getByRole('button', { name: 'Add message' }));
+    }
+    if (options.iouMessage) {
+      fireEvent.change(within(overlay).getByPlaceholderText(/optional note for the iou handoff/i), {
+        target: { value: options.iouMessage },
+      });
+    }
+  }
+  fireEvent.click(within(overlay).getByRole('button', { name: 'Exit Table' }));
+}
+
 describe('GameOverActionOverlay', () => {
   afterEach(() => {
     cleanup();
@@ -157,6 +178,7 @@ describe('GameOverActionOverlay', () => {
     expect(html).toContain('Create IOU');
     expect(html).toContain('Add message');
     expect(html).toContain('Start New Game');
+    expect(html).toContain('Exit Table');
     expect(html).not.toContain('Don&#x27;t Add');
   });
 
@@ -180,6 +202,7 @@ describe('GameOverActionOverlay', () => {
       saveLedger: true,
       createIou: false,
       iouMessage: undefined,
+      nextAction: 'new-game',
     });
   });
 
@@ -224,6 +247,7 @@ describe('GameOverActionOverlay', () => {
       saveLedger: false,
       createIou: true,
       iouMessage: 'x'.repeat(IOU_HANDOFF_MESSAGE_MAX_LENGTH),
+      nextAction: 'new-game',
     });
   });
 
@@ -245,6 +269,29 @@ describe('GameOverActionOverlay', () => {
       saveLedger: false,
       createIou: true,
       iouMessage: undefined,
+      nextAction: 'new-game',
+    });
+  });
+
+  it('passes exit-table action when Exit Table is clicked', async () => {
+    const onComplete = vi.fn();
+    render(
+      <GameOverActionOverlay
+        open
+        presentation={samplePresentation()}
+        canSaveToLedger={false}
+        ledgerAlreadyAdded={false}
+        canCreateIou
+        onComplete={onComplete}
+        onDismiss={noop}
+      />,
+    );
+    await clickExitTable({ createIou: true, iouMessage: 'Exit note' });
+    expect(onComplete).toHaveBeenCalledWith({
+      saveLedger: false,
+      createIou: true,
+      iouMessage: 'Exit note',
+      nextAction: 'exit-table',
     });
   });
 
@@ -284,55 +331,18 @@ describe('GameOverActionOverlay', () => {
 });
 
 describe('GameOverActionOverlay — panel integration', () => {
-  beforeEach(() => {
-    installLocalStorageMock();
-    saveScoreLedgerEntries([]);
-    vi.spyOn(iouHandoffApi, 'createIouHandoff').mockResolvedValue({
-      ok: true,
-      iouId: 'iou-123',
-      status: 'pending',
-      message: 'IOU created and sent.',
-    });
-  });
-
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
-  it('applies Add to Ledger only when Start New Game is clicked for owner', async () => {
-    const state = endedChallengeState();
-    const onBeginTableReset = vi.fn();
+  it('keeps game-over overlay visible after Exit Table triggers leave flow', async () => {
+    const onExitTable = vi.fn();
     render(
       <BlackjackPanel
-        gameState={state}
+        gameState={endedChallengeState()}
         onGameStateChange={noop}
-        onBeginTableReset={onBeginTableReset}
+        onExitTable={onExitTable}
       />,
     );
-    expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(false);
-    await clickStartNewGame({ saveLedger: true });
-    expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(true);
-    expect(onBeginTableReset).toHaveBeenCalledWith('newGame');
-  });
-
-  it('calls backend IOU create with custom message without saving ledger', async () => {
-    const state = endedChallengeState();
-    render(
-      <BlackjackPanel
-        gameState={state}
-        onGameStateChange={noop}
-        onBeginTableReset={vi.fn()}
-      />,
-    );
-    await clickStartNewGame({ createIou: true, openMessage: true, iouMessage: 'Custom IOU note' });
-    await waitFor(() => {
-      expect(iouHandoffApi.createIouHandoff).toHaveBeenCalledTimes(1);
-    });
-    expect(iouHandoffApi.createIouHandoff).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'Custom IOU note' }),
-    );
-    expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(false);
+    await clickExitTable();
+    expect(onExitTable).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Exit Table' })).toBeTruthy();
   });
 
   it('does not save ledger or create IOU when overlay is dismissed', async () => {
@@ -340,6 +350,5 @@ describe('GameOverActionOverlay — panel integration', () => {
     render(<BlackjackPanel gameState={state} onGameStateChange={noop} onBeginTableReset={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: /close without saving/i }));
     expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(false);
-    expect(iouHandoffApi.createIouHandoff).not.toHaveBeenCalled();
   });
 });

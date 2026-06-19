@@ -25,10 +25,14 @@ import {
 
 export const FULL_TABLE_DESKTOP_FROZEN = true as const;
 export const FULL_TABLE_MOBILE_PORTRAIT_FROZEN = true as const;
-export const FULL_TABLE_MOBILE_LANDSCAPE_FROZEN = false as const;
+export const FULL_TABLE_MOBILE_LANDSCAPE_FROZEN = true as const;
 export const CARD_VIEW_DESKTOP_FROZEN = true as const;
-export const CARD_VIEW_MOBILE_PORTRAIT_FROZEN = false as const;
+export const CARD_VIEW_MOBILE_PORTRAIT_FROZEN = true as const;
 export const CARD_VIEW_MOBILE_LANDSCAPE_FROZEN = false as const;
+
+/** Engine + layout baseline freeze — see docs/BLACKJACK_ENGINE_FREEZE.md */
+export const BLACKJACK_ENGINE_FROZEN = true as const;
+export const BLACKJACK_ENGINE_FREEZE_DOC = 'docs/BLACKJACK_ENGINE_FREEZE.md' as const;
 
 /** @deprecated Use FULL_TABLE_MOBILE_PORTRAIT_FROZEN — alias for existing tests. */
 export const FULL_TABLE_MOBILE_FROZEN = FULL_TABLE_MOBILE_PORTRAIT_FROZEN;

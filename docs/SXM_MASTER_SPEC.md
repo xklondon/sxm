@@ -471,7 +471,9 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 - No sentimental/random phrasing.
 - Natural blackjack: `Box [n], Blackjack.` only for `actionStatus === 'blackjack'`.
 
-**Full Table outcome markers:** WIN, BUST, EVEN, and BJ render as compact stack badges over the card stack (`bj-card-outcome-marker--stack-badge` inside `bj-arc__play-zone`) on Full Table desktop and mobile — not as floating markers in the outcome row above the stack.
+**Full Table outcome markers:** WIN, BUST, EVEN, and **BlackJack** (natural) render as compact stack badges over the card stack (`bj-card-outcome-marker--stack-badge` inside `bj-arc__play-zone`) on Full Table desktop and mobile — not as floating markers in the outcome row above the stack. Floating hero markers may still use `★ BJ` copy in Card View.
+
+**Engine freeze (2026-06-13):** [BLACKJACK_ENGINE_FREEZE.md](./BLACKJACK_ENGINE_FREEZE.md) — baseline for rules, layout, and new-game gate.
 
 **Full Table play zone:** See **`docs/BLACKJACK_LAYOUT_CONTRACTS.md`** (canonical layout source of truth). Desktop: card stacks aligned to boxes via 1fr grid; actions `flex-end` just above boxes; play-phase hand total in player box only.
 
@@ -668,7 +670,7 @@ before the work is considered complete. See `.cursorrules`.
 | Lobby | `src/screens/EntryLobbyScreen.tsx` |
 | Table setup | `src/components/TableStakePanel.tsx` |
 | Table play | `src/screens/TableScreen.tsx` |
-| BJ engine | `src/engine/blackjack/applyBlackjackAction.ts` |
+| BJ engine | `src/engine/blackjack/applyBlackjackAction.ts` — **frozen** per [BLACKJACK_ENGINE_FREEZE.md](./BLACKJACK_ENGINE_FREEZE.md) |
 | BJ stability contracts | `docs/BLACKJACK_STABILITY_CONTRACTS.md`, `src/components/blackjackActionContract.ts` |
 | Zilch engine | `src/engine/zilch/` |
 | Hold'em engine | `src/engine/holdem/` |

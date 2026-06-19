@@ -120,18 +120,17 @@ describe('layout contract audit guards — freeze flags', () => {
 
   it('separates portrait frozen from landscape pending flags', () => {
     expect(FULL_TABLE_MOBILE_PORTRAIT_FROZEN).toBe(true);
-    expect(FULL_TABLE_MOBILE_LANDSCAPE_FROZEN).toBe(false);
+    expect(FULL_TABLE_MOBILE_LANDSCAPE_FROZEN).toBe(true);
     expect(CARD_VIEW_DESKTOP_FROZEN).toBe(true);
-    expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(false);
+    expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(true);
     expect(CARD_VIEW_MOBILE_LANDSCAPE_FROZEN).toBe(false);
     expect(CARD_VIEW_FROZEN).toBe(false);
   });
 });
 
-describe('layout contract audit guards — Full Table Mobile Landscape (B2 pending)', () => {
-  it('documents B2 as pending freeze with landscape risks in contract doc', () => {
+describe('layout contract audit guards — Full Table Mobile Landscape (B2 frozen)', () => {
+  it('documents B2 landscape owner in contract doc', () => {
     expect(CONTRACT_DOC).toContain('B2. Full Table Mobile Landscape');
-    expect(CONTRACT_DOC).toContain('PENDING FREEZE');
     expect(CONTRACT_DOC).toContain('Duplicate landscape');
     expect(CONTRACT_DOC).toContain('overflow: hidden');
   });
@@ -217,7 +216,7 @@ describe('layout contract audit guards — Mobile Card View (C2 pending)', () =>
       html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
     expect(actionsZone).toContain('ds-btn--hit');
     expect(actionsZone).toContain('ds-btn--stand');
-    expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(false);
+    expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(true);
   });
 });
 

@@ -2,6 +2,8 @@
 
 **Single source of truth for all blackjack table layout.** Protocol, betting, and dealing boundaries live in [BLACKJACK_STABILITY_CONTRACTS.md](./BLACKJACK_STABILITY_CONTRACTS.md) — that doc defers layout detail here.
 
+**Engine freeze baseline:** [BLACKJACK_ENGINE_FREEZE.md](./BLACKJACK_ENGINE_FREEZE.md) — frozen scope, new-game gate, unfreeze process.
+
 **Code constants:** `src/components/blackjackLayoutContract.ts`  
 **Mobile boundary:** `src/styles/mobileLayoutContract.ts` (`MOBILE_MAX_WIDTH`, `MOBILE_LAYOUT_MEDIA`)
 

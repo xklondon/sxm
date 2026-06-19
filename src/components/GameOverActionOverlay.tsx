@@ -9,10 +9,13 @@ export type GameOverIouFeedback = {
   openUrl?: string;
 };
 
+export type GameOverNextAction = 'new-game' | 'exit-table';
+
 export type GameOverCompleteOptions = {
   saveLedger: boolean;
   createIou: boolean;
   iouMessage?: string;
+  nextAction: GameOverNextAction;
 };
 
 export interface GameOverActionOverlayProps {
@@ -66,16 +69,28 @@ export function GameOverActionOverlay({
   const ledgerToggleDisabled = !canSaveToLedger || ledgerAlreadyAdded || busy;
   const startNewGameDisabled = !canStartNewGame || busy;
 
+  function buildCompleteOptions(nextAction: GameOverNextAction): GameOverCompleteOptions {
+    const trimmedMessage = iouMessage.trim().slice(0, IOU_HANDOFF_MESSAGE_MAX_LENGTH);
+    return {
+      saveLedger: addToLedger && !ledgerAlreadyAdded && canSaveToLedger,
+      createIou: createIou && canCreateIou,
+      iouMessage: trimmedMessage || undefined,
+      nextAction,
+    };
+  }
+
   async function handleStartNewGame() {
     if (startNewGameDisabled) {
       return;
     }
-    const trimmedMessage = iouMessage.trim().slice(0, IOU_HANDOFF_MESSAGE_MAX_LENGTH);
-    await onComplete({
-      saveLedger: addToLedger && !ledgerAlreadyAdded && canSaveToLedger,
-      createIou: createIou && canCreateIou,
-      iouMessage: trimmedMessage || undefined,
-    });
+    await onComplete(buildCompleteOptions('new-game'));
+  }
+
+  async function handleExitTable() {
+    if (busy) {
+      return;
+    }
+    await onComplete(buildCompleteOptions('exit-table'));
   }
 
   const isInline = layout === 'inline';
@@ -236,15 +251,25 @@ export function GameOverActionOverlay({
       ) : null}
 
       <div className="bj-game-over__actions">
-        <button
-          type="button"
-          className="ds-btn ds-btn--primary"
-          disabled={startNewGameDisabled}
-          title={startNewGameDisabled ? newGameDisabledReason ?? undefined : undefined}
-          onClick={() => void handleStartNewGame()}
-        >
-          {iouPending ? 'Creating IOU…' : 'Start New Game'}
-        </button>
+        <div className="bj-game-over__actions-row">
+          <button
+            type="button"
+            className="ds-btn ds-btn--primary"
+            disabled={startNewGameDisabled}
+            title={startNewGameDisabled ? newGameDisabledReason ?? undefined : undefined}
+            onClick={() => void handleStartNewGame()}
+          >
+            {iouPending ? 'Creating IOU…' : 'Start New Game'}
+          </button>
+          <button
+            type="button"
+            className="ds-btn ds-btn--secondary"
+            disabled={busy}
+            onClick={() => void handleExitTable()}
+          >
+            Exit Table
+          </button>
+        </div>
       </div>
     </div>
   );

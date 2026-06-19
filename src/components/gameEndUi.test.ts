@@ -19,7 +19,11 @@ describe('game end UI wiring', () => {
     expect(OVERLAY_SRC).toContain('Add to Ledger');
     expect(OVERLAY_SRC).toContain('Open Ledger');
     expect(OVERLAY_SRC).toContain('Start New Game');
+    expect(OVERLAY_SRC).toContain('Exit Table');
     expect(OVERLAY_SRC).toContain('Create IOU');
+    expect(PANEL_SRC).toContain('completeGameOverAction');
+    expect(PANEL_SRC).toContain('runGameOverCompleteAction');
+    expect(PANEL_SRC).toContain('onExitTable');
   });
 
   it('New Table Step 2 Practice/Challenge use canonical select-btn tabs', () => {

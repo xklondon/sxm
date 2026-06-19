@@ -59,7 +59,7 @@ export function cardAreaOutcomeStackBadgeText(marker: CardAreaOutcomeMarker): st
     case 'even':
       return 'EVEN';
     case 'blackjack':
-      return 'BJ';
+      return 'BlackJack';
   }
 }
 

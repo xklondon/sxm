@@ -80,6 +80,7 @@ function dealingStatusLabel(status: GameState['session']['dealingStatus']): stri
 export function TableScreen({
   gameState,
   onGameStateChange,
+  onLeave,
   onlineTableId = null,
   viewerAuth = null,
   onlineDispatch,
@@ -355,6 +356,7 @@ export function TableScreen({
               profileOpen={profileOpen}
               onProfileOpenChange={onProfileOpenChange}
               onSaveTable={handleSaveGame}
+              onExitTable={onLeave}
               onBeginTableReset={(variant = 'resetTable') => {
                 setResetSetupVariant(variant);
                 setStakePanelMode('reset');
