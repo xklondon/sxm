@@ -1,5 +1,6 @@
 import type { GameState, TableMode } from '../types';
 import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
+import type { InvitedTablePlayerSetup } from '../features/messaging/tableMessagingTypes';
 import { listBlackjackProtocolPresets } from '../engine/blackjack/protocols';
 import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import type { TableBankerSetupMode } from '../engine/session';
@@ -15,6 +16,7 @@ export interface TableStakeSetupSnapshot {
   stake: string;
   tableName: string;
   invitedEmails: string[];
+  invitedPlayers: InvitedTablePlayerSetup[];
   inviteEmailInput: string;
   challengeBank: string;
   seatChips: string;
@@ -46,6 +48,7 @@ export interface TableStakeSetupSnapshotInput {
   stake: string;
   tableName: string;
   invitedEmails: string[];
+  invitedPlayers: InvitedTablePlayerSetup[];
   inviteEmailInput: string;
   challengeBank: string;
   seatChips: string;
@@ -85,6 +88,7 @@ export function createInitialTableStakeSetupSnapshot(
     stake: agreement?.stakeDescription ?? '',
     tableName: gameState.tableMeta.tableClothName?.trim() || DEFAULT_PRACTICE_TABLE_NAME,
     invitedEmails: [],
+    invitedPlayers: [],
     inviteEmailInput: '',
     challengeBank: 'self',
     seatChips: String(gameState.tableMeta.startingChipsEachSeat ?? 500),
@@ -126,6 +130,10 @@ export function collectTableStakeSetupSnapshot(
     stake: input.stake,
     tableName: input.tableName,
     invitedEmails: [...input.invitedEmails],
+    invitedPlayers: input.invitedPlayers.map((player) => ({
+      email: player.email,
+      inviteMessage: player.inviteMessage,
+    })),
     inviteEmailInput: input.inviteEmailInput,
     challengeBank: input.challengeBank,
     seatChips: input.seatChips,

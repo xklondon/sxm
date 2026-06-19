@@ -5,6 +5,7 @@ import {
   createNewBlackjackTable,
   normalizeLoadedGameState,
 } from './engine/session';
+import type { InvitedTablePlayerSetup } from './features/messaging/tableMessagingTypes';
 import type { TableStakeSetupInput } from './engine/session/tableSetup';
 import { applySettingsToGameState, loadSettings } from './storage/settingsStorage';
 import { loadArchivedGame } from './storage/gameStorage';
@@ -366,15 +367,22 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
     setScreen('table');
   }, [handleNewOnlineGame, onlineMode]);
 
-  const sendChallengeInvites = useCallback(
-    async (tableId: string, emails: string[]) => {
-      for (const email of emails) {
-        const displayName = email.split('@')[0] || 'Guest';
-        await invitePersonToTable(tableId, email, displayName);
-      }
-    },
-    [],
-  );
+  const sendChallengeInvites = useCallback(async (tableId: string, input: TableStakeSetupInput) => {
+    const players: InvitedTablePlayerSetup[] =
+      input.invitedPlayers?.length
+        ? input.invitedPlayers
+        : (input.invitedEmails ?? []).map((email) => ({ email }));
+    for (const player of players) {
+      const displayName = player.email.split('@')[0] || 'Guest';
+      await invitePersonToTable(
+        tableId,
+        player.email,
+        displayName,
+        undefined,
+        player.inviteMessage,
+      );
+    }
+  }, []);
 
   const handleConfirmNavNewTable = useCallback(
     async (input: TableStakeSetupInput) => {
@@ -389,8 +397,11 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
           input as unknown as Record<string, unknown>,
           result.version,
         );
-        if (input.tableMode === 'challenge' && input.invitedEmails?.length) {
-          await sendChallengeInvites(result.tableId, input.invitedEmails);
+        if (
+          input.tableMode === 'challenge' &&
+          ((input.invitedPlayers?.length ?? 0) > 0 || (input.invitedEmails?.length ?? 0) > 0)
+        ) {
+          await sendChallengeInvites(result.tableId, input);
         }
         const configured = normalizeLoadedGameState(actionResult.state);
         setGameState(configured);
@@ -412,7 +423,17 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
         { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
         input,
       );
-      if (input.invitedEmails?.length) {
+      if (input.invitedPlayers?.length) {
+        for (const player of input.invitedPlayers) {
+          const inviteResult = createTableInvite(
+            state,
+            player.email.split('@')[0] || 'Guest',
+            player.email,
+            player.inviteMessage ?? '',
+          );
+          state = inviteResult.state;
+        }
+      } else if (input.invitedEmails?.length) {
         for (const email of input.invitedEmails) {
           const inviteResult = createTableInvite(state, email.split('@')[0] || 'Guest', email);
           state = inviteResult.state;

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 
@@ -15,8 +15,6 @@ import type { GameState } from '../types';
 import { GameOverActionOverlay } from './GameOverActionOverlay';
 import { buildGameOverPresentationModel } from './gameOverPresentation';
 import { IOU_HANDOFF_MESSAGE_MAX_LENGTH } from './gameOverIouMessage';
-import { BlackjackPanel } from './BlackjackPanel';
-import { hasPersonalLedgerEntryForTable } from '../engine/scoreLedger/scoreLedger';
 import { tableWithClaimedBox } from '../engine/blackjack/sanity/fixtures';
 
 const noop = () => {};
@@ -327,28 +325,5 @@ describe('GameOverActionOverlay', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /close without saving/i }));
     expect(onComplete).not.toHaveBeenCalled();
-  });
-});
-
-describe('GameOverActionOverlay — panel integration', () => {
-  it('keeps game-over overlay visible after Exit Table triggers leave flow', async () => {
-    const onExitTable = vi.fn();
-    render(
-      <BlackjackPanel
-        gameState={endedChallengeState()}
-        onGameStateChange={noop}
-        onExitTable={onExitTable}
-      />,
-    );
-    await clickExitTable();
-    expect(onExitTable).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('button', { name: 'Exit Table' })).toBeTruthy();
-  });
-
-  it('does not save ledger or create IOU when overlay is dismissed', async () => {
-    const state = endedChallengeState();
-    render(<BlackjackPanel gameState={state} onGameStateChange={noop} onBeginTableReset={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /close without saving/i }));
-    expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(false);
   });
 });

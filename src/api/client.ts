@@ -258,10 +258,11 @@ export async function invitePersonToTable(
   email: string,
   displayName: string,
   role?: 'guest' | 'player',
+  inviteMessage?: string,
 ): Promise<{ inviteId: string; joinUrl: string; personId: string; emailSent: boolean }> {
   const res = await apiFetch(`/api/tables/${tableId}/invite-person`, {
     method: 'POST',
-    body: JSON.stringify({ email, displayName, name: displayName, role }),
+    body: JSON.stringify({ email, displayName, name: displayName, role, inviteMessage }),
   });
   const data = await res.json();
   if (!res.ok) {

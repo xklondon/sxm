@@ -1,6 +1,7 @@
 import type { GameState } from '../../types';
 import type { TableInviteRecord } from '../../types/invites';
 import { generateId } from '../utils/id';
+import { formatInviteHostMessage } from '../../features/messaging/tableMessagingTypes';
 import { log } from '../../utils/logger';
 
 function randomToken(): string {
@@ -84,7 +85,8 @@ export function buildInviteMessage(state: GameState, invite: TableInviteRecord):
   const wager = state.tableMeta.agreement?.stakeDescription ?? 'a friendly game';
   const owner = invite.invitedBy;
   const link = buildJoinTableUrl(state, invite);
-  const note = invite.note ? `\n\nNote: ${invite.note}` : '';
+  const hostMessage = invite.note ? formatInviteHostMessage(invite.note) : '';
+  const note = hostMessage ? `\n\n${hostMessage}` : '';
   return [
     `You're invited to my SXMCards table (${wager}).`,
     `Hosted by ${owner}.`,

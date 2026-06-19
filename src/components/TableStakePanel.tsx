@@ -26,6 +26,7 @@ import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
 import { loadProfile } from '../storage/profileStorage';
 import { log } from '../utils/logger';
 import { invitePersonToTable } from '../api/client';
+import type { InvitedTablePlayerSetup } from '../features/messaging/tableMessagingTypes';
 import { isOnlineModeEnabled } from '../api/config';
 import { createTableInvite } from '../engine/table/invites';
 
@@ -104,8 +105,9 @@ export function TableStakePanel({
 
   const [setupStage, setSetupStage] = useState<NewSetupStage>('game');
   const [tableMode, setTableMode] = useState<TableMode>('practice');
-  const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
+  const [invitedPlayers, setInvitedPlayers] = useState<InvitedTablePlayerSetup[]>([]);
   const [inviteEmailInput, setInviteEmailInput] = useState('');
+  const invitedEmails = invitedPlayers.map((player) => player.email);
   const [challengeBank, setChallengeBank] = useState<'self' | string>('self');
   const [bankBustSettlementMode, setBankBustSettlementMode] = useState<BankBustSettlementMode>(
     () => gameState.tableMeta.bankBustSettlementMode ?? 'fractional',
@@ -221,6 +223,10 @@ export function TableStakePanel({
         bankDrawAuto,
         tableMode: 'challenge',
         invitedEmails,
+        invitedPlayers: invitedPlayers.map((player) => ({
+          email: player.email,
+          inviteMessage: player.inviteMessage?.trim() || undefined,
+        })),
         bankBustSettlementMode,
       };
     }
@@ -274,16 +280,22 @@ export function TableStakePanel({
       return;
     }
     if (!invitedEmails.includes(trimmed)) {
-      setInvitedEmails((prev) => [...prev, trimmed]);
+      setInvitedPlayers((prev) => [...prev, { email: trimmed, inviteMessage: '' }]);
     }
     setInviteEmailInput('');
   }
 
   function removeInvitedEmail(email: string) {
-    setInvitedEmails((prev) => prev.filter((e) => e !== email));
+    setInvitedPlayers((prev) => prev.filter((player) => player.email !== email));
     if (challengeBank === email) {
       setChallengeBank('self');
     }
+  }
+
+  function updateInviteMessage(email: string, inviteMessage: string) {
+    setInvitedPlayers((prev) =>
+      prev.map((player) => (player.email === email ? { ...player, inviteMessage } : player)),
+    );
   }
 
   async function handleConfirm() {
@@ -343,9 +355,15 @@ export function TableStakePanel({
         const payload =
           setupTab === 'dice' ? buildZilchSetupInput() : input;
         await onlineDispatch('configureTable', payload as unknown as Record<string, unknown>);
-        if (onlineTableId && input.tableMode === 'challenge' && input.invitedEmails?.length) {
-          for (const email of input.invitedEmails) {
-            await invitePersonToTable(onlineTableId, email, email.split('@')[0] || 'Guest');
+        if (onlineTableId && input.tableMode === 'challenge' && input.invitedPlayers?.length) {
+          for (const player of input.invitedPlayers) {
+            await invitePersonToTable(
+              onlineTableId,
+              player.email,
+              player.email.split('@')[0] || 'Guest',
+              undefined,
+              player.inviteMessage,
+            );
           }
         }
         onFinished?.();
@@ -384,9 +402,14 @@ export function TableStakePanel({
         : isReset
           ? applyTableResetSetup(base, input, base.tableMeta.ownerPersonId)
           : applyTableStakeSetup(base, input);
-    if (!isReset && input.invitedEmails?.length) {
-      for (const email of input.invitedEmails) {
-        ({ state: next } = createTableInvite(next, email.split('@')[0] || 'Guest', email));
+    if (!isReset && input.invitedPlayers?.length) {
+      for (const player of input.invitedPlayers) {
+        ({ state: next } = createTableInvite(
+          next,
+          player.email.split('@')[0] || 'Guest',
+          player.email,
+          player.inviteMessage ?? '',
+        ));
       }
     }
     onConfirm(next);
@@ -415,6 +438,7 @@ export function TableStakePanel({
       stake,
       tableName,
       invitedEmails,
+      invitedPlayers,
       inviteEmailInput,
       challengeBank,
       seatChips,
@@ -448,6 +472,7 @@ export function TableStakePanel({
     stake,
     tableName,
     invitedEmails,
+    invitedPlayers,
     inviteEmailInput,
     challengeBank,
     seatChips,
@@ -819,14 +844,31 @@ export function TableStakePanel({
               Add
             </button>
           </div>
-          {invitedEmails.length > 0 && (
+          {invitedPlayers.length > 0 && (
             <ul className="table-stake-panel__invite-list">
-              {invitedEmails.map((email) => (
-                <li key={email}>
-                  {email}
-                  <button type="button" className="secondary" onClick={() => removeInvitedEmail(email)}>
-                    Remove
-                  </button>
+              {invitedPlayers.map((player) => (
+                <li key={player.email}>
+                  <div className="table-stake-panel__invite-item">
+                    <span>{player.email}</span>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => removeInvitedEmail(player.email)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <label className="table-stake-panel__field table-stake-panel__invite-message">
+                    <span>Message for invite</span>
+                    <input
+                      type="text"
+                      className="table-stake-panel__input"
+                      placeholder="Add a short note to this player's invite…"
+                      value={player.inviteMessage ?? ''}
+                      onChange={(e) => updateInviteMessage(player.email, e.target.value)}
+                      maxLength={500}
+                    />
+                  </label>
                 </li>
               ))}
             </ul>

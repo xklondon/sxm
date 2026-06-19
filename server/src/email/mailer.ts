@@ -1,6 +1,14 @@
 import { config, getEmailFrom, isEmailConfigured } from '../config.js';
 import { sanitizeEmail, sendMailWithLogging } from './smtp.js';
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 export async function sendMagicLinkEmail(to: string, verifyUrl: string): Promise<void> {
   if (!isEmailConfigured()) {
     // eslint-disable-next-line no-console
@@ -31,6 +39,7 @@ export async function sendTableInviteEmail(params: {
   inviterName: string;
   tableName: string;
   joinUrl: string;
+  inviteMessage?: string;
 }): Promise<{ messageId?: string }> {
   const recipient = sanitizeEmail(params.to);
   // eslint-disable-next-line no-console
@@ -45,12 +54,18 @@ export async function sendTableInviteEmail(params: {
     throw new Error(message);
   }
 
+  const inviteMessage = params.inviteMessage?.trim();
+  const hostMessageText = inviteMessage ? `\n\nMessage from host:\n${inviteMessage}\n` : '';
+  const hostMessageHtml = inviteMessage
+    ? `<p><strong>Message from host:</strong><br>${escapeHtml(inviteMessage).replace(/\n/g, '<br>')}</p>`
+    : '';
+
   const info = await sendMailWithLogging('table-invite', {
     from: getEmailFrom(),
     to: params.to,
     subject: 'You have been invited to an SXM Casino table',
-    text: `${params.inviterName} invited you to ${params.tableName}.\n\nClick this link to join the table:\n${params.joinUrl}\n`,
-    html: `<p><strong>${params.inviterName}</strong> invited you to <strong>${params.tableName}</strong>.</p><p>Click this link to join the table.</p><p><a href="${params.joinUrl}">Join table</a></p>`,
+    text: `${params.inviterName} invited you to ${params.tableName}.\n\nClick this link to join the table:\n${params.joinUrl}\n${hostMessageText}`,
+    html: `<p><strong>${escapeHtml(params.inviterName)}</strong> invited you to <strong>${escapeHtml(params.tableName)}</strong>.</p><p>Click this link to join the table.</p><p><a href="${params.joinUrl}">Join table</a></p>${hostMessageHtml}`,
   });
 
   const messageId =

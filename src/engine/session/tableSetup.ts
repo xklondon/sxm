@@ -1,3 +1,4 @@
+import type { InvitedTablePlayerSetup } from '../../features/messaging/tableMessagingTypes';
 import type { GameState, TableMode, BankBustSettlementMode } from '../../types';
 import type { CardTimerPreset, DealSpeedPreset } from '../blackjack/flowSettings';
 import { DEFAULT_PRACTICE_TABLE_NAME } from '../../types/tableFeltSkin';
@@ -37,7 +38,40 @@ export interface TableStakeSetupInput {
   bankDrawAuto: boolean;
   tableMode?: TableMode;
   invitedEmails?: string[];
+  invitedPlayers?: InvitedTablePlayerSetup[];
   bankBustSettlementMode?: BankBustSettlementMode;
+}
+
+function normalizeInvitedPlayers(
+  invitedPlayers: InvitedTablePlayerSetup[] | undefined,
+  invitedEmails: string[] | undefined,
+): InvitedTablePlayerSetup[] {
+  if (invitedPlayers?.length) {
+    return invitedPlayers
+      .map((player) => ({
+        email: player.email.trim().toLowerCase(),
+        inviteMessage: player.inviteMessage?.trim() || undefined,
+      }))
+      .filter((player) => player.email);
+  }
+  return (invitedEmails ?? [])
+    .map((email) => ({ email: email.trim().toLowerCase() }))
+    .filter((player) => player.email);
+}
+
+export function resolveInvitedEmails(input: TableStakeSetupInput): string[] {
+  return normalizeInvitedPlayers(input.invitedPlayers, input.invitedEmails).map((player) => player.email);
+}
+
+export function resolveInviteMessageForEmail(
+  input: TableStakeSetupInput,
+  email: string,
+): string | undefined {
+  const normalized = email.trim().toLowerCase();
+  const player = normalizeInvitedPlayers(input.invitedPlayers, input.invitedEmails).find(
+    (entry) => entry.email === normalized,
+  );
+  return player?.inviteMessage;
 }
 
 function parseBankBustSettlementMode(raw: unknown): BankBustSettlementMode | undefined {
@@ -78,6 +112,18 @@ export function parseTableStakeSetupPayload(
     invitedEmails: Array.isArray(payload.invitedEmails)
       ? payload.invitedEmails.map((e) => String(e).trim().toLowerCase()).filter(Boolean)
       : undefined,
+    invitedPlayers: Array.isArray(payload.invitedPlayers)
+      ? payload.invitedPlayers
+          .map((entry) => {
+            const record = entry as Record<string, unknown>;
+            return {
+              email: String(record.email ?? '').trim().toLowerCase(),
+              inviteMessage:
+                typeof record.inviteMessage === 'string' ? record.inviteMessage.trim() : undefined,
+            };
+          })
+          .filter((player) => player.email)
+      : undefined,
     bankBustSettlementMode: parseBankBustSettlementMode(payload.bankBustSettlementMode),
   };
 }
@@ -106,7 +152,7 @@ export function applyTableStakeSetup(state: GameState, input: TableStakeSetupInp
 
   next = setTableOwner(next, input.controllerName, input.controllerEmail);
 
-  const invitedEmails = (input.invitedEmails ?? []).map((e) => e.trim().toLowerCase()).filter(Boolean);
+  const invitedEmails = resolveInvitedEmails(input);
 
   next = {
     ...next,

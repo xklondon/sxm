@@ -38,6 +38,8 @@ import {
 import { NewTableOverlay } from '../components/NewTableOverlay';
 import { InviteModal } from '../components/InviteModal';
 import { AdminPanel } from '../components/AdminPanel';
+import { TableChatDock } from '../features/messaging/TableChatDock';
+import { loadProfile } from '../storage/profileStorage';
 import './TableScreen.css';
 
 export interface TableNavHandlers {
@@ -266,6 +268,10 @@ export function TableScreen({
   }, [onRegisterNavHandlers, registerNavHandlers]);
 
   const canDeal = deck !== null && remaining > 0;
+  const profile = loadProfile();
+  const chatTableId = onlineTableId ?? session.id;
+  const chatUserEmail = viewerAuth?.email ?? profile.email ?? null;
+  const chatUserName = viewerAuth?.displayName ?? profile.name ?? null;
 
   return (
     <main className="table-screen table-screen--casino">
@@ -448,6 +454,12 @@ export function TableScreen({
           />
         </NewTableOverlay>
       )}
+      <TableChatDock
+        tableId={chatTableId}
+        currentUserEmail={chatUserEmail}
+        currentUserName={chatUserName}
+        preferServer={Boolean(onlineTableId)}
+      />
     </main>
   );
 }

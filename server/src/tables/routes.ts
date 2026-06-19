@@ -8,6 +8,7 @@ import { clientEmailErrorMessage } from '../email/smtp.js';
 import type { Server as SocketServer } from 'socket.io';
 import { respondPeopleAuthError } from '../people/httpErrors.js';
 import { TableForbiddenError, TableMembershipError, TableNotFoundError } from './errors.js';
+import { addTableChatMessage, listTableChatMessages } from './tableChatStore.js';
 
 function respondTableServiceError(res: import('express').Response, err: unknown): boolean {
   if (err instanceof TableNotFoundError) {
@@ -141,6 +142,46 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
     }
   });
 
+  router.get('/:tableId/messages', requireAuth, async (req: AuthedRequest, res) => {
+    try {
+      const tableId = req.params.tableId!;
+      await tables.getTableForUser(tableId, req.auth!.userId, req.auth!.email);
+      res.json({ ok: true, messages: listTableChatMessages(tableId) });
+    } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      if (respondTableServiceError(res, err)) {
+        return;
+      }
+      res.status(404).json({ error: err instanceof Error ? err.message : 'Not found' });
+    }
+  });
+
+  router.post('/:tableId/messages', requireAuth, async (req: AuthedRequest, res) => {
+    try {
+      const tableId = req.params.tableId!;
+      await tables.getTableForUser(tableId, req.auth!.userId, req.auth!.email);
+      const message = addTableChatMessage({
+        tableId,
+        senderEmail: req.auth!.email,
+        senderName: String(req.body?.senderName ?? '').trim() || undefined,
+        body: String(req.body?.body ?? ''),
+      });
+      res.status(201).json({ ok: true, message });
+    } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      if (respondTableServiceError(res, err)) {
+        return;
+      }
+      const message = err instanceof Error ? err.message : 'Could not send message';
+      const status = /empty|exceed/i.test(message) ? 400 : 404;
+      res.status(status).json({ error: message });
+    }
+  });
+
   router.post('/:tableId/invites', requireAuth, async (req: AuthedRequest, res) => {
     const invitedEmail = String(req.body?.email ?? '').trim();
     // eslint-disable-next-line no-console
@@ -180,6 +221,8 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         displayName: String(req.body?.displayName ?? req.body?.name ?? ''),
         role: req.body?.role,
         sessionEmail: req.auth!.email,
+        inviteMessage:
+          typeof req.body?.inviteMessage === 'string' ? req.body.inviteMessage : undefined,
       });
       res.status(201).json(result);
     } catch (err) {

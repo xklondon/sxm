@@ -86,6 +86,12 @@ SXM Casino (SXMCards) is a casual card-and-dice table app for friends. Players u
 - `createTableInvite()` stores invites in `tableMeta.invites` (device-local)
 - Magic link format: `/join-table?tableId={sessionId}&inviteId={uuid}&token={opaque}`
 
+### Table messaging
+
+- **Module:** `src/features/messaging/` — table-scoped, game-agnostic (Blackjack/Zilch/Hold'em share the same dock).
+- **Invite notes:** Challenge setup stores per-player `inviteMessage`; online invite emails and offline mailto bodies include optional “Message from host” when set.
+- **Table chat:** `TableChatDock` on `TableScreen` (not inside game panels); online tables use `GET/POST /api/tables/:tableId/messages` with in-memory server store (200 msgs/table max); offline falls back to localStorage only when API unavailable.
+
 ### Join requests (“Knock”)
 
 - Non-members request access: `POST /api/tables/:id/request-access`
@@ -149,7 +155,7 @@ No numbered step headings (`1. Game`, etc.). Stage fieldsets use clean titles on
 2. **Mode:** Practice vs Challenge (tap advances) → **configure**
 3. **Configure:**
    - **Practice:** table name, starting chips, advanced deal settings → **Start Table**
-   - **Challenge:** table name, wager, invite emails, chips, bank selection → **Start Table**
+   - **Challenge:** table name, wager, invite emails (optional per-player invite message), chips, bank selection → **Start Table**
 
 **Dice — Zilch (2 stages)**
 
@@ -192,7 +198,7 @@ Challenge bank plays against boxes; `session.bankPlayerId` is always a seated **
 **Game end presentation:**
 
 - **Final cards stay visible** — summary/ledger UI must not obscure the felt.
-- **Desktop:** **Game Over** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — random happy/sad glyph visual, winner/result/round summary, round-count comment line, Magic 8 wisdom; **Add to Ledger** checkbox + **Open Ledger** link (toggle only — no save until **Start New Game**); **Create IOU** checkbox + **Add message** expand (max 180 chars; empty uses default IOU message); main **Start New Game** button (owner only) applies ledger/IOU choices then reset flow; close/dismiss does not save ledger or create IOU (dismiss hides game-over UI and restores dealer fallback); panel re-opens automatically while game-over is active; dealer **New Game** hidden while panel is open.
+- **Desktop:** **Game Over** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — random happy/sad glyph visual, winner/result/round summary, round-count comment line, Magic 8 wisdom; **Add to Ledger** checkbox + **Open Ledger** link (toggle only — no save until **Start New Game**); **Create IOU** checkbox + **Add message** expand (max 180 chars; empty uses default IOU message); **Start New Game** (owner only) and **Exit Table** apply ledger/IOU choices via `runGameOverCompleteAction` — IOU handoff POST runs before reset or leave; IOU failure keeps overlay open; **Exit Table** opens save-table prompt then returns to lobby/start; close/dismiss does not save ledger or create IOU (dismiss hides game-over UI and restores dealer fallback); panel re-opens automatically while game-over is active; dealer **New Game** only after game-over confirmation.
 - **Mobile:** centered **Game Over** overlay (`bj-game-over-overlay`) with the same content/flow after reveal delay; `gameEndRevealReady = cardRevealComplete || gameStatus === 'ended'`.
 - **Desktop polish:** toolbar nav aligned to felt right edge; Full Table card stacks align with player boxes; hand totals fixed at bottom of card column (stacks grow upward toward dealer; outcome/active frame must not shift value); tray label (e.g. **SxM Casino Challenge**) on desktop + mobile; ~10% larger mobile table typography (text tokens only).
 
@@ -299,15 +305,24 @@ Hold'em has its own Full/Card view toggle in `TableScreen` (separate from blackj
 
 | Component | Path |
 |-----------|------|
-| Engine | `src/engine/zilch/` — `zilchEngine`, `zilchScoring`, `applyZilchAction` |
+| Engine | `src/engine/dice/zilch/` — `zilchRules`, `zilchEngine`, `applyZilchAction` (re-exported from `src/engine/zilch/`) |
 | Setup | `zilchTableSetup.ts`, `createNewZilchTable()` |
-| UI | `ZilchPanel` + `useZilchTableFlow` |
+| UI | `src/components/zilch/ZilchPanel` + `useZilchTableFlow` |
 | Mobile | Optional shake-to-roll (`useDeviceShake`, 3+ seconds) |
 
 ### Game modes
 
-- **Target points:** first to N points wins
+- **Target points:** first to **10,000** points wins (configurable at table setup)
 - **Fixed rounds:** most points after N rounds per player
+
+### Scoring (canonical points scale)
+
+- Single 1 = 100; single 5 = 50
+- Three of a kind: 1s = 1000; 2s–6s = face × 100
+- Four/five/six of a kind: each extra die doubles the triple score
+- Straight 1–6 = 1500; three pairs = 1500; two triplets = 2500
+- No scoring dice on a roll = zilch (turn score lost, pass turn)
+- All six dice scored in a turn = hot dice (roll all six again)
 
 ### Online actions
 
@@ -672,7 +687,7 @@ before the work is considered complete. See `.cursorrules`.
 | Table play | `src/screens/TableScreen.tsx` |
 | BJ engine | `src/engine/blackjack/applyBlackjackAction.ts` — **frozen** per [BLACKJACK_ENGINE_FREEZE.md](./BLACKJACK_ENGINE_FREEZE.md) |
 | BJ stability contracts | `docs/BLACKJACK_STABILITY_CONTRACTS.md`, `src/components/blackjackActionContract.ts` |
-| Zilch engine | `src/engine/zilch/` |
+| Zilch engine | `src/engine/dice/zilch/` |
 | Hold'em engine | `src/engine/holdem/` |
 | Server actions | `server/src/tables/applyAction.ts`, `authority.ts` |
 | Auth | `server/src/auth/` |

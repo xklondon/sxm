@@ -15,6 +15,32 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-19 — Shared table chat via server API
+
+- **Server:** in-memory `tableChatStore` + `GET/POST /api/tables/:tableId/messages` (member-only, max 200 msgs/table).
+- **Client:** `tableChatService` prefers server API when `preferServer`; localStorage fallback only on API failure.
+- **UI:** `TableChatDock` polls every 2s open / 5s closed; dedupes by message id.
+
+## 2026-06-19 — Table messaging (invite notes + table chat dock)
+
+- **Types:** `src/features/messaging/tableMessagingTypes.ts` — `TableInviteMessage`, `TableChatMessage`, `InvitedTablePlayerSetup`.
+- **Invite setup:** Challenge flow stores per-player `inviteMessage`; online invite emails include optional “Message from host” section.
+- **Chat:** `tableChatService` (localStorage) + `TableChatDock` mounted on `TableScreen` (not inside game panels).
+- **Blackjack:** engine, rules, phases, and layout unchanged.
+
+---
+
+## 2026-06-13 — Zilch isolated Dice engine + canonical scoring
+
+- **Engine home:** `src/engine/dice/zilch/` (`zilchRules`, `zilchState`, `zilchEngine`, `zilchSelectors`, `zilchResult`); `src/engine/zilch/` re-exports for server/client compatibility.
+- **Scoring:** migrated to canonical points scale (e.g. single 1 = 100, default target 10,000); added two triplets combo.
+- **UI:** split into `src/components/zilch/*` + `src/styles/zilch-table.css`; `ZilchPanel` re-export unchanged for `TableScreen`.
+- **Adapters:** `ZilchGameResult` envelope + IOU handoff stub; ledger outcome on game complete via existing `recordTableOutcome`.
+- **Guards:** `zilchIsolationGuards.test.tsx` — no Blackjack imports, routing unchanged.
+- **Blackjack:** untouched (freeze guards pass).
+
+---
+
 ## 2026-06-13 — Blackjack engine/layout freeze baseline
 
 - **Freeze doc:** `docs/BLACKJACK_ENGINE_FREEZE.md` — engine rules, dealing, phases, desktop + mobile portrait/landscape Full Table baseline, split display, shared shell; new-game gate.
@@ -164,7 +190,13 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-12 — Shared-pot settlement + desktop Hit/Stay position
+## 2026-06-19 — Game-over IOU handoff + Exit Table
+
+- **IOU on New Game:** `runGameOverCompleteAction` submits `/api/iou-handoff/create` before new-game reset; removed client localStorage gate that skipped the API; IOU failure blocks proceed; duplicate/alreadySubmitted is non-fatal.
+- **Exit Table:** Game-over overlay adds Exit Table beside Start New Game; IOU + save-table prompt (`LeaveTableConfirmDialog`) before returning to lobby/start.
+
+---
+
 
 - **Challenge same-person bank+box:** Round/bust/natural settlement skips internal bank↔box ledger transfers when `personsShareOneChipPot` — wins restore committed bet only; losses refund committed bet without crediting bank; total chips invariant.
 - **Desktop Full Table:** Hit/Stay pinned to bottom of actions row (`justify-content: flex-end`); `--bj-full-desktop-actions-boxes-gap: 0.25rem`.

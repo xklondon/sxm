@@ -68,7 +68,7 @@ describe('ZilchPanel acceptance', () => {
       <ZilchPanel gameState={state} onGameStateChange={() => {}} />,
     );
     expect(html).toContain('zilch-table');
-    expect(html).toContain('Dice');
+    expect(html).toContain('Roll');
   });
 
   it('banking adds turn score to total', () => {
@@ -126,20 +126,20 @@ describe('ZilchPanel acceptance', () => {
           id: 'three',
           label: 'Three 1s',
           diceIds: ['a', 'b', 'c'],
-          score: 10,
+          score: 1000,
           type: 'three_of_a_kind',
         },
         {
           id: 'single-a',
           label: 'Single 1',
           diceIds: ['a'],
-          score: 1,
+          score: 100,
           type: 'single_one',
         },
       ],
     };
     zilch = keepCombination(zilch, 'single-a');
-    expect(zilch.turnScore).toBe(1);
+    expect(zilch.turnScore).toBe(100);
   });
 
   it('cannot bank during zilch phase', () => {

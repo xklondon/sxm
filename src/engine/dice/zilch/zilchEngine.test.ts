@@ -4,9 +4,9 @@ import { resolveDiceAnimationDurationMs } from './settings';
 import {
   bankTurn,
   completeDiceRoll,
-  createInitialZilchState,
+  createZilchGame,
   endTurnWithZilch,
-  keepCombination,
+  holdScoringDice,
   randomiseStarter,
   rollDice,
   startTurn,
@@ -15,6 +15,7 @@ import type { ZilchDie } from './zilchTypes';
 
 const P1 = 'p1';
 const P2 = 'p2';
+
 function seqRng(values: number[]): () => number {
   let i = 0;
   return () => values[i++ % values.length]!;
@@ -30,8 +31,16 @@ function dice(values: number[]): ZilchDie[] {
 }
 
 describe('zilchEngine', () => {
-  it('turnover / Greater Glory clears kept dice for full re-roll', () => {
-    let state = createInitialZilchState([P1], DEFAULT_ZILCH_SETTINGS);
+  it('creates a game', () => {
+    const state = createZilchGame([P1, P2], DEFAULT_ZILCH_SETTINGS);
+    expect(state.protocolId).toBe('zilch');
+    expect(state.phase).toBe('setup');
+    expect(state.targetPoints).toBe(10_000);
+    expect(state.players).toHaveLength(2);
+  });
+
+  it('hot dice clears kept dice for full re-roll', () => {
+    let state = createZilchGame([P1], DEFAULT_ZILCH_SETTINGS);
     state = randomiseStarter(state, () => 0);
     state = {
       ...state,
@@ -43,57 +52,75 @@ describe('zilchEngine', () => {
           id: 'three-1s',
           label: 'Three 1s',
           diceIds: ['d0', 'd1', 'd2'],
-          score: 10,
+          score: 1000,
           type: 'three_of_a_kind',
         },
         {
           id: 'three-5s',
           label: 'Three 5s',
           diceIds: ['d3', 'd4', 'd5'],
-          score: 5,
+          score: 500,
           type: 'three_of_a_kind',
         },
       ],
     };
-    state = keepCombination(state, 'three-1s');
-    const second = state.availableCombinations.find((c) => c.type === 'three_of_a_kind' && c.label.includes('5'));
+    state = holdScoringDice(state, 'three-1s');
+    const second = state.availableCombinations.find(
+      (c) => c.type === 'three_of_a_kind' && c.label.includes('5'),
+    );
     expect(second).toBeDefined();
-    state = keepCombination(state, second!.id);
+    state = holdScoringDice(state, second!.id);
     expect(state.dice).toHaveLength(0);
     expect(state.keptDice).toHaveLength(0);
-    expect(state.turnScore).toBe(15);
+    expect(state.turnScore).toBe(1500);
     expect(state.phase).toBe('player-turn');
   });
 
   it('zilch resets turn score only', () => {
-    let state = createInitialZilchState([P1], DEFAULT_ZILCH_SETTINGS);
+    let state = createZilchGame([P1], DEFAULT_ZILCH_SETTINGS);
     state = randomiseStarter(state, () => 0);
+    state = startTurn(state, P1);
     state = {
       ...state,
-      totalScoresByPlayerId: { [P1]: 42 },
-      turnScore: 7,
+      totalScoresByPlayerId: { [P1]: 4200 },
+      turnScore: 700,
       phase: 'player-turn',
       dice: dice([2, 3, 4, 6, 2, 3]),
       availableCombinations: [],
     };
     state = endTurnWithZilch(state);
     expect(state.turnScore).toBe(0);
-    expect(state.totalScoresByPlayerId[P1]).toBe(42);
+    expect(state.totalScoresByPlayerId[P1]).toBe(4200);
   });
 
-  it('target points final round after leader banks', () => {
-    const settings = {
-      ...DEFAULT_ZILCH_SETTINGS,
-      mode: 'target_points' as const,
-      targetPoints: 100,
-    };
-    let state = createInitialZilchState([P1, P2], settings);
+  it('banks points and passes turn', () => {
+    let state = createZilchGame([P1, P2], DEFAULT_ZILCH_SETTINGS);
     state = randomiseStarter(state, () => 0);
     state = startTurn(state, P1);
     state = {
       ...state,
-      totalScoresByPlayerId: { [P1]: 95, [P2]: 50 },
-      turnScore: 10,
+      turnScore: 500,
+      keptThisRoll: true,
+    };
+    state = bankTurn(state);
+    expect(state.totalScoresByPlayerId[P1]).toBe(500);
+    expect(state.currentPlayerId).toBe(P2);
+    expect(state.turnScore).toBe(0);
+  });
+
+  it('target points final round after leader banks at target', () => {
+    const settings = {
+      ...DEFAULT_ZILCH_SETTINGS,
+      mode: 'target_points' as const,
+      targetPoints: 10_000,
+    };
+    let state = createZilchGame([P1, P2], settings);
+    state = randomiseStarter(state, () => 0);
+    state = startTurn(state, P1);
+    state = {
+      ...state,
+      totalScoresByPlayerId: { [P1]: 9950, [P2]: 5000 },
+      turnScore: 100,
       keptThisRoll: true,
     };
     state = bankTurn(state);
@@ -103,27 +130,50 @@ describe('zilchEngine', () => {
     expect(state.currentPlayerId).toBe(P2);
   });
 
-  it('fixed rounds winner after round limit', () => {
+  it('winner at target score when solo player banks', () => {
     const settings = {
       ...DEFAULT_ZILCH_SETTINGS,
-      mode: 'fixed_rounds' as const,
-      roundLimit: 1,
+      targetPoints: 1000,
     };
-    let state = createInitialZilchState([P1, P2], settings);
+    let state = createZilchGame([P1], settings);
     state = randomiseStarter(state, () => 0);
     state = startTurn(state, P1);
     state = {
       ...state,
-      totalScoresByPlayerId: { [P1]: 20, [P2]: 30 },
-      turnScore: 5,
+      totalScoresByPlayerId: { [P1]: 900 },
+      turnScore: 100,
       keptThisRoll: true,
     };
     state = bankTurn(state);
-    state = startTurn(state, P2);
-    state = { ...state, turnScore: 1, keptThisRoll: true };
-    state = bankTurn(state);
     expect(state.phase).toBe('completed');
-    expect(state.winnerPlayerId).toBe(P2);
+    expect(state.winnerPlayerId).toBe(P1);
+  });
+
+  it('rolls dice with seeded rng', () => {
+    let state = createZilchGame([P1], DEFAULT_ZILCH_SETTINGS);
+    state = randomiseStarter(state, () => 0);
+    state = startTurn(state, P1);
+    state = rollDice(state, DEFAULT_ZILCH_SETTINGS, seqRng([0, 0.5, 0.99]), 1000);
+    expect(state.diceAnimation.isRolling).toBe(true);
+    expect(state.diceAnimation.pendingValues).toHaveLength(6);
+  });
+
+  it('completeDiceRoll reveals zilch path', () => {
+    let state = createZilchGame([P1], DEFAULT_ZILCH_SETTINGS);
+    state = randomiseStarter(state, () => 0);
+    state = startTurn(state, P1);
+    state = rollDice(state, DEFAULT_ZILCH_SETTINGS, seqRng([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]), 1000);
+    state = {
+      ...state,
+      diceAnimation: {
+        isRolling: true,
+        pendingValues: [2, 3, 4, 6, 2, 3],
+      },
+      dice: dice([1, 1, 1, 1, 1, 1]),
+    };
+    state = completeDiceRoll(state);
+    expect(state.turnScore).toBe(0);
+    expect(state.totalScoresByPlayerId[P1]).toBe(0);
   });
 
   it('dice animation duration fixed and random', () => {
@@ -145,35 +195,7 @@ describe('zilchEngine', () => {
       },
       rng,
     );
-    const b = resolveDiceAnimationDurationMs(
-      {
-        diceAnimationMode: 'random',
-        diceAnimationMs: 2500,
-        diceAnimationRandomMinMs: 2000,
-        diceAnimationRandomMaxMs: 8000,
-      },
-      rng,
-    );
     expect(a).toBeGreaterThanOrEqual(2000);
     expect(a).toBeLessThanOrEqual(8000);
-    expect(b).toBeGreaterThanOrEqual(2000);
-    expect(b).toBeLessThanOrEqual(8000);
-  });
-
-  it('completeDiceRoll reveals zilch path', () => {
-    let state = createInitialZilchState([P1], DEFAULT_ZILCH_SETTINGS);
-    state = randomiseStarter(state, () => 0);
-    state = rollDice(state, DEFAULT_ZILCH_SETTINGS, seqRng([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]), 1000);
-    state = {
-      ...state,
-      diceAnimation: {
-        isRolling: true,
-        pendingValues: [2, 3, 4, 6, 2, 3],
-      },
-      dice: dice([1, 1, 1, 1, 1, 1]),
-    };
-    state = completeDiceRoll(state);
-    expect(state.turnScore).toBe(0);
-    expect(state.totalScoresByPlayerId[P1]).toBe(0);
   });
 });

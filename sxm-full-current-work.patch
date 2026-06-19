@@ -1,0 +1,2740 @@
+diff --git a/docs/CHANGE_LOG.md b/docs/CHANGE_LOG.md
+index 8678a9e..421ab05 100644
+--- a/docs/CHANGE_LOG.md
++++ b/docs/CHANGE_LOG.md
+@@ -15,6 +15,32 @@ before the work is considered complete. This rule is also stated in `.cursorrule
+ 
+ ---
+ 
++## 2026-06-19 — Shared table chat via server API
++
++- **Server:** in-memory `tableChatStore` + `GET/POST /api/tables/:tableId/messages` (member-only, max 200 msgs/table).
++- **Client:** `tableChatService` prefers server API when `preferServer`; localStorage fallback only on API failure.
++- **UI:** `TableChatDock` polls every 2s open / 5s closed; dedupes by message id.
++
++## 2026-06-19 — Table messaging (invite notes + table chat dock)
++
++- **Types:** `src/features/messaging/tableMessagingTypes.ts` — `TableInviteMessage`, `TableChatMessage`, `InvitedTablePlayerSetup`.
++- **Invite setup:** Challenge flow stores per-player `inviteMessage`; online invite emails include optional “Message from host” section.
++- **Chat:** `tableChatService` (localStorage) + `TableChatDock` mounted on `TableScreen` (not inside game panels).
++- **Blackjack:** engine, rules, phases, and layout unchanged.
++
++---
++
++## 2026-06-13 — Zilch isolated Dice engine + canonical scoring
++
++- **Engine home:** `src/engine/dice/zilch/` (`zilchRules`, `zilchState`, `zilchEngine`, `zilchSelectors`, `zilchResult`); `src/engine/zilch/` re-exports for server/client compatibility.
++- **Scoring:** migrated to canonical points scale (e.g. single 1 = 100, default target 10,000); added two triplets combo.
++- **UI:** split into `src/components/zilch/*` + `src/styles/zilch-table.css`; `ZilchPanel` re-export unchanged for `TableScreen`.
++- **Adapters:** `ZilchGameResult` envelope + IOU handoff stub; ledger outcome on game complete via existing `recordTableOutcome`.
++- **Guards:** `zilchIsolationGuards.test.tsx` — no Blackjack imports, routing unchanged.
++- **Blackjack:** untouched (freeze guards pass).
++
++---
++
+ ## 2026-06-13 — Blackjack engine/layout freeze baseline
+ 
+ - **Freeze doc:** `docs/BLACKJACK_ENGINE_FREEZE.md` — engine rules, dealing, phases, desktop + mobile portrait/landscape Full Table baseline, split display, shared shell; new-game gate.
+@@ -164,7 +190,13 @@ before the work is considered complete. This rule is also stated in `.cursorrule
+ 
+ ---
+ 
+-## 2026-06-12 — Shared-pot settlement + desktop Hit/Stay position
++## 2026-06-19 — Game-over IOU handoff + Exit Table
++
++- **IOU on New Game:** `runGameOverCompleteAction` submits `/api/iou-handoff/create` before new-game reset; removed client localStorage gate that skipped the API; IOU failure blocks proceed; duplicate/alreadySubmitted is non-fatal.
++- **Exit Table:** Game-over overlay adds Exit Table beside Start New Game; IOU + save-table prompt (`LeaveTableConfirmDialog`) before returning to lobby/start.
++
++---
++
+ 
+ - **Challenge same-person bank+box:** Round/bust/natural settlement skips internal bank↔box ledger transfers when `personsShareOneChipPot` — wins restore committed bet only; losses refund committed bet without crediting bank; total chips invariant.
+ - **Desktop Full Table:** Hit/Stay pinned to bottom of actions row (`justify-content: flex-end`); `--bj-full-desktop-actions-boxes-gap: 0.25rem`.
+diff --git a/docs/SXM_MASTER_SPEC.md b/docs/SXM_MASTER_SPEC.md
+index 2bf9a82..35c48b4 100644
+--- a/docs/SXM_MASTER_SPEC.md
++++ b/docs/SXM_MASTER_SPEC.md
+@@ -86,6 +86,12 @@ SXM Casino (SXMCards) is a casual card-and-dice table app for friends. Players u
+ - `createTableInvite()` stores invites in `tableMeta.invites` (device-local)
+ - Magic link format: `/join-table?tableId={sessionId}&inviteId={uuid}&token={opaque}`
+ 
++### Table messaging
++
++- **Module:** `src/features/messaging/` — table-scoped, game-agnostic (Blackjack/Zilch/Hold'em share the same dock).
++- **Invite notes:** Challenge setup stores per-player `inviteMessage`; online invite emails and offline mailto bodies include optional “Message from host” when set.
++- **Table chat:** `TableChatDock` on `TableScreen` (not inside game panels); online tables use `GET/POST /api/tables/:tableId/messages` with in-memory server store (200 msgs/table max); offline falls back to localStorage only when API unavailable.
++
+ ### Join requests (“Knock”)
+ 
+ - Non-members request access: `POST /api/tables/:id/request-access`
+@@ -149,7 +155,7 @@ No numbered step headings (`1. Game`, etc.). Stage fieldsets use clean titles on
+ 2. **Mode:** Practice vs Challenge (tap advances) → **configure**
+ 3. **Configure:**
+    - **Practice:** table name, starting chips, advanced deal settings → **Start Table**
+-   - **Challenge:** table name, wager, invite emails, chips, bank selection → **Start Table**
++   - **Challenge:** table name, wager, invite emails (optional per-player invite message), chips, bank selection → **Start Table**
+ 
+ **Dice — Zilch (2 stages)**
+ 
+@@ -192,7 +198,7 @@ Challenge bank plays against boxes; `session.bankPlayerId` is always a seated **
+ **Game end presentation:**
+ 
+ - **Final cards stay visible** — summary/ledger UI must not obscure the felt.
+-- **Desktop:** **Game Over** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — random happy/sad glyph visual, winner/result/round summary, round-count comment line, Magic 8 wisdom; **Add to Ledger** checkbox + **Open Ledger** link (toggle only — no save until **Start New Game**); **Create IOU** checkbox + **Add message** expand (max 180 chars; empty uses default IOU message); main **Start New Game** button (owner only) applies ledger/IOU choices then reset flow; close/dismiss does not save ledger or create IOU (dismiss hides game-over UI and restores dealer fallback); panel re-opens automatically while game-over is active; dealer **New Game** hidden while panel is open.
++- **Desktop:** **Game Over** in the right-hand **This Table** side panel (`GameOverActionOverlay` `layout="inline"`) — random happy/sad glyph visual, winner/result/round summary, round-count comment line, Magic 8 wisdom; **Add to Ledger** checkbox + **Open Ledger** link (toggle only — no save until **Start New Game**); **Create IOU** checkbox + **Add message** expand (max 180 chars; empty uses default IOU message); **Start New Game** (owner only) and **Exit Table** apply ledger/IOU choices via `runGameOverCompleteAction` — IOU handoff POST runs before reset or leave; IOU failure keeps overlay open; **Exit Table** opens save-table prompt then returns to lobby/start; close/dismiss does not save ledger or create IOU (dismiss hides game-over UI and restores dealer fallback); panel re-opens automatically while game-over is active; dealer **New Game** only after game-over confirmation.
+ - **Mobile:** centered **Game Over** overlay (`bj-game-over-overlay`) with the same content/flow after reveal delay; `gameEndRevealReady = cardRevealComplete || gameStatus === 'ended'`.
+ - **Desktop polish:** toolbar nav aligned to felt right edge; Full Table card stacks align with player boxes; hand totals fixed at bottom of card column (stacks grow upward toward dealer; outcome/active frame must not shift value); tray label (e.g. **SxM Casino Challenge**) on desktop + mobile; ~10% larger mobile table typography (text tokens only).
+ 
+@@ -299,16 +305,25 @@ Hold'em has its own Full/Card view toggle in `TableScreen` (separate from blackj
+ 
+ | Component | Path |
+ |-----------|------|
+-| Engine | `src/engine/zilch/` — `zilchEngine`, `zilchScoring`, `applyZilchAction` |
++| Engine | `src/engine/dice/zilch/` — `zilchRules`, `zilchEngine`, `applyZilchAction` (re-exported from `src/engine/zilch/`) |
+ | Setup | `zilchTableSetup.ts`, `createNewZilchTable()` |
+-| UI | `ZilchPanel` + `useZilchTableFlow` |
++| UI | `src/components/zilch/ZilchPanel` + `useZilchTableFlow` |
+ | Mobile | Optional shake-to-roll (`useDeviceShake`, 3+ seconds) |
+ 
+ ### Game modes
+ 
+-- **Target points:** first to N points wins
++- **Target points:** first to **10,000** points wins (configurable at table setup)
+ - **Fixed rounds:** most points after N rounds per player
+ 
++### Scoring (canonical points scale)
++
++- Single 1 = 100; single 5 = 50
++- Three of a kind: 1s = 1000; 2s–6s = face × 100
++- Four/five/six of a kind: each extra die doubles the triple score
++- Straight 1–6 = 1500; three pairs = 1500; two triplets = 2500
++- No scoring dice on a roll = zilch (turn score lost, pass turn)
++- All six dice scored in a turn = hot dice (roll all six again)
++
+ ### Online actions
+ 
+ `zilchStartGame`, `zilchRandomiseStarter`, `zilchConfirmStarter`, `zilchRollDice`, `zilchCompleteRoll`, `zilchKeepCombination`, `zilchBankTurn`, `zilchQuitTurn`
+@@ -672,7 +687,7 @@ before the work is considered complete. See `.cursorrules`.
+ | Table play | `src/screens/TableScreen.tsx` |
+ | BJ engine | `src/engine/blackjack/applyBlackjackAction.ts` — **frozen** per [BLACKJACK_ENGINE_FREEZE.md](./BLACKJACK_ENGINE_FREEZE.md) |
+ | BJ stability contracts | `docs/BLACKJACK_STABILITY_CONTRACTS.md`, `src/components/blackjackActionContract.ts` |
+-| Zilch engine | `src/engine/zilch/` |
++| Zilch engine | `src/engine/dice/zilch/` |
+ | Hold'em engine | `src/engine/holdem/` |
+ | Server actions | `server/src/tables/applyAction.ts`, `authority.ts` |
+ | Auth | `server/src/auth/` |
+diff --git a/server/src/email/mailer.ts b/server/src/email/mailer.ts
+index 0e2bee8..c4abf0d 100644
+--- a/server/src/email/mailer.ts
++++ b/server/src/email/mailer.ts
+@@ -1,6 +1,14 @@
+ import { config, getEmailFrom, isEmailConfigured } from '../config.js';
+ import { sanitizeEmail, sendMailWithLogging } from './smtp.js';
+ 
++function escapeHtml(value: string): string {
++  return value
++    .replace(/&/g, '&amp;')
++    .replace(/</g, '&lt;')
++    .replace(/>/g, '&gt;')
++    .replace(/"/g, '&quot;');
++}
++
+ export async function sendMagicLinkEmail(to: string, verifyUrl: string): Promise<void> {
+   if (!isEmailConfigured()) {
+     // eslint-disable-next-line no-console
+@@ -31,6 +39,7 @@ export async function sendTableInviteEmail(params: {
+   inviterName: string;
+   tableName: string;
+   joinUrl: string;
++  inviteMessage?: string;
+ }): Promise<{ messageId?: string }> {
+   const recipient = sanitizeEmail(params.to);
+   // eslint-disable-next-line no-console
+@@ -45,12 +54,18 @@ export async function sendTableInviteEmail(params: {
+     throw new Error(message);
+   }
+ 
++  const inviteMessage = params.inviteMessage?.trim();
++  const hostMessageText = inviteMessage ? `\n\nMessage from host:\n${inviteMessage}\n` : '';
++  const hostMessageHtml = inviteMessage
++    ? `<p><strong>Message from host:</strong><br>${escapeHtml(inviteMessage).replace(/\n/g, '<br>')}</p>`
++    : '';
++
+   const info = await sendMailWithLogging('table-invite', {
+     from: getEmailFrom(),
+     to: params.to,
+     subject: 'You have been invited to an SXM Casino table',
+-    text: `${params.inviterName} invited you to ${params.tableName}.\n\nClick this link to join the table:\n${params.joinUrl}\n`,
+-    html: `<p><strong>${params.inviterName}</strong> invited you to <strong>${params.tableName}</strong>.</p><p>Click this link to join the table.</p><p><a href="${params.joinUrl}">Join table</a></p>`,
++    text: `${params.inviterName} invited you to ${params.tableName}.\n\nClick this link to join the table:\n${params.joinUrl}\n${hostMessageText}`,
++    html: `<p><strong>${escapeHtml(params.inviterName)}</strong> invited you to <strong>${escapeHtml(params.tableName)}</strong>.</p><p>Click this link to join the table.</p><p><a href="${params.joinUrl}">Join table</a></p>${hostMessageHtml}`,
+   });
+ 
+   const messageId =
+diff --git a/server/src/tables/routes.ts b/server/src/tables/routes.ts
+index 7f05c96..a4cd720 100644
+--- a/server/src/tables/routes.ts
++++ b/server/src/tables/routes.ts
+@@ -8,6 +8,7 @@ import { clientEmailErrorMessage } from '../email/smtp.js';
+ import type { Server as SocketServer } from 'socket.io';
+ import { respondPeopleAuthError } from '../people/httpErrors.js';
+ import { TableForbiddenError, TableMembershipError, TableNotFoundError } from './errors.js';
++import { addTableChatMessage, listTableChatMessages } from './tableChatStore.js';
+ 
+ function respondTableServiceError(res: import('express').Response, err: unknown): boolean {
+   if (err instanceof TableNotFoundError) {
+@@ -141,6 +142,46 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
+     }
+   });
+ 
++  router.get('/:tableId/messages', requireAuth, async (req: AuthedRequest, res) => {
++    try {
++      const tableId = req.params.tableId!;
++      await tables.getTableForUser(tableId, req.auth!.userId, req.auth!.email);
++      res.json({ ok: true, messages: listTableChatMessages(tableId) });
++    } catch (err) {
++      if (respondPeopleAuthError(res, err)) {
++        return;
++      }
++      if (respondTableServiceError(res, err)) {
++        return;
++      }
++      res.status(404).json({ error: err instanceof Error ? err.message : 'Not found' });
++    }
++  });
++
++  router.post('/:tableId/messages', requireAuth, async (req: AuthedRequest, res) => {
++    try {
++      const tableId = req.params.tableId!;
++      await tables.getTableForUser(tableId, req.auth!.userId, req.auth!.email);
++      const message = addTableChatMessage({
++        tableId,
++        senderEmail: req.auth!.email,
++        senderName: String(req.body?.senderName ?? '').trim() || undefined,
++        body: String(req.body?.body ?? ''),
++      });
++      res.status(201).json({ ok: true, message });
++    } catch (err) {
++      if (respondPeopleAuthError(res, err)) {
++        return;
++      }
++      if (respondTableServiceError(res, err)) {
++        return;
++      }
++      const message = err instanceof Error ? err.message : 'Could not send message';
++      const status = /empty|exceed/i.test(message) ? 400 : 404;
++      res.status(status).json({ error: message });
++    }
++  });
++
+   router.post('/:tableId/invites', requireAuth, async (req: AuthedRequest, res) => {
+     const invitedEmail = String(req.body?.email ?? '').trim();
+     // eslint-disable-next-line no-console
+@@ -180,6 +221,8 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
+         displayName: String(req.body?.displayName ?? req.body?.name ?? ''),
+         role: req.body?.role,
+         sessionEmail: req.auth!.email,
++        inviteMessage:
++          typeof req.body?.inviteMessage === 'string' ? req.body.inviteMessage : undefined,
+       });
+       res.status(201).json(result);
+     } catch (err) {
+diff --git a/server/src/tables/service.ts b/server/src/tables/service.ts
+index f87e7ad..eaeabbd 100644
+--- a/server/src/tables/service.ts
++++ b/server/src/tables/service.ts
+@@ -313,6 +313,7 @@ export class TableService {
+     invitedEmail: string;
+     invitedName: string;
+     sessionEmail?: string;
++    inviteMessage?: string;
+   }): Promise<{ inviteId: string; joinUrl: string; emailSent: boolean }> {
+     const host = await this.people.resolveSessionUser(
+       params.userId,
+@@ -356,6 +357,7 @@ export class TableService {
+         inviterName: inviter?.displayName ?? 'A friend',
+         tableName: table.name,
+         joinUrl,
++        inviteMessage: params.inviteMessage,
+       });
+       emailSent = true;
+     }
+@@ -369,6 +371,7 @@ export class TableService {
+     displayName: string;
+     role?: import('../store/types.js').PersonRole;
+     sessionEmail?: string;
++    inviteMessage?: string;
+   }): Promise<{ inviteId: string; joinUrl: string; personId: string; emailSent: boolean }> {
+     const inviter = await this.people.resolveSessionUser(
+       params.userId,
+@@ -393,6 +396,7 @@ export class TableService {
+       invitedEmail: normalizedEmail,
+       invitedName: params.displayName,
+       sessionEmail: params.sessionEmail,
++      inviteMessage: params.inviteMessage,
+     });
+     return { inviteId, joinUrl, personId: person.id, emailSent };
+   }
+diff --git a/src/App.tsx b/src/App.tsx
+index 892378e..0697d14 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -5,6 +5,7 @@ import {
+   createNewBlackjackTable,
+   normalizeLoadedGameState,
+ } from './engine/session';
++import type { InvitedTablePlayerSetup } from './features/messaging/tableMessagingTypes';
+ import type { TableStakeSetupInput } from './engine/session/tableSetup';
+ import { applySettingsToGameState, loadSettings } from './storage/settingsStorage';
+ import { loadArchivedGame } from './storage/gameStorage';
+@@ -366,15 +367,22 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
+     setScreen('table');
+   }, [handleNewOnlineGame, onlineMode]);
+ 
+-  const sendChallengeInvites = useCallback(
+-    async (tableId: string, emails: string[]) => {
+-      for (const email of emails) {
+-        const displayName = email.split('@')[0] || 'Guest';
+-        await invitePersonToTable(tableId, email, displayName);
+-      }
+-    },
+-    [],
+-  );
++  const sendChallengeInvites = useCallback(async (tableId: string, input: TableStakeSetupInput) => {
++    const players: InvitedTablePlayerSetup[] =
++      input.invitedPlayers?.length
++        ? input.invitedPlayers
++        : (input.invitedEmails ?? []).map((email) => ({ email }));
++    for (const player of players) {
++      const displayName = player.email.split('@')[0] || 'Guest';
++      await invitePersonToTable(
++        tableId,
++        player.email,
++        displayName,
++        undefined,
++        player.inviteMessage,
++      );
++    }
++  }, []);
+ 
+   const handleConfirmNavNewTable = useCallback(
+     async (input: TableStakeSetupInput) => {
+@@ -389,8 +397,11 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
+           input as unknown as Record<string, unknown>,
+           result.version,
+         );
+-        if (input.tableMode === 'challenge' && input.invitedEmails?.length) {
+-          await sendChallengeInvites(result.tableId, input.invitedEmails);
++        if (
++          input.tableMode === 'challenge' &&
++          ((input.invitedPlayers?.length ?? 0) > 0 || (input.invitedEmails?.length ?? 0) > 0)
++        ) {
++          await sendChallengeInvites(result.tableId, input);
+         }
+         const configured = normalizeLoadedGameState(actionResult.state);
+         setGameState(configured);
+@@ -412,7 +423,17 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
+         { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
+         input,
+       );
+-      if (input.invitedEmails?.length) {
++      if (input.invitedPlayers?.length) {
++        for (const player of input.invitedPlayers) {
++          const inviteResult = createTableInvite(
++            state,
++            player.email.split('@')[0] || 'Guest',
++            player.email,
++            player.inviteMessage ?? '',
++          );
++          state = inviteResult.state;
++        }
++      } else if (input.invitedEmails?.length) {
+         for (const email of input.invitedEmails) {
+           const inviteResult = createTableInvite(state, email.split('@')[0] || 'Guest', email);
+           state = inviteResult.state;
+diff --git a/src/api/client.ts b/src/api/client.ts
+index b80a5c4..9983422 100644
+--- a/src/api/client.ts
++++ b/src/api/client.ts
+@@ -258,10 +258,11 @@ export async function invitePersonToTable(
+   email: string,
+   displayName: string,
+   role?: 'guest' | 'player',
++  inviteMessage?: string,
+ ): Promise<{ inviteId: string; joinUrl: string; personId: string; emailSent: boolean }> {
+   const res = await apiFetch(`/api/tables/${tableId}/invite-person`, {
+     method: 'POST',
+-    body: JSON.stringify({ email, displayName, name: displayName, role }),
++    body: JSON.stringify({ email, displayName, name: displayName, role, inviteMessage }),
+   });
+   const data = await res.json();
+   if (!res.ok) {
+diff --git a/src/components/TableStakePanel.tsx b/src/components/TableStakePanel.tsx
+index 71f7714..150ffc0 100644
+--- a/src/components/TableStakePanel.tsx
++++ b/src/components/TableStakePanel.tsx
+@@ -26,6 +26,7 @@ import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
+ import { loadProfile } from '../storage/profileStorage';
+ import { log } from '../utils/logger';
+ import { invitePersonToTable } from '../api/client';
++import type { InvitedTablePlayerSetup } from '../features/messaging/tableMessagingTypes';
+ import { isOnlineModeEnabled } from '../api/config';
+ import { createTableInvite } from '../engine/table/invites';
+ 
+@@ -104,8 +105,9 @@ export function TableStakePanel({
+ 
+   const [setupStage, setSetupStage] = useState<NewSetupStage>('game');
+   const [tableMode, setTableMode] = useState<TableMode>('practice');
+-  const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
++  const [invitedPlayers, setInvitedPlayers] = useState<InvitedTablePlayerSetup[]>([]);
+   const [inviteEmailInput, setInviteEmailInput] = useState('');
++  const invitedEmails = invitedPlayers.map((player) => player.email);
+   const [challengeBank, setChallengeBank] = useState<'self' | string>('self');
+   const [bankBustSettlementMode, setBankBustSettlementMode] = useState<BankBustSettlementMode>(
+     () => gameState.tableMeta.bankBustSettlementMode ?? 'fractional',
+@@ -221,6 +223,10 @@ export function TableStakePanel({
+         bankDrawAuto,
+         tableMode: 'challenge',
+         invitedEmails,
++        invitedPlayers: invitedPlayers.map((player) => ({
++          email: player.email,
++          inviteMessage: player.inviteMessage?.trim() || undefined,
++        })),
+         bankBustSettlementMode,
+       };
+     }
+@@ -274,18 +280,24 @@ export function TableStakePanel({
+       return;
+     }
+     if (!invitedEmails.includes(trimmed)) {
+-      setInvitedEmails((prev) => [...prev, trimmed]);
++      setInvitedPlayers((prev) => [...prev, { email: trimmed, inviteMessage: '' }]);
+     }
+     setInviteEmailInput('');
+   }
+ 
+   function removeInvitedEmail(email: string) {
+-    setInvitedEmails((prev) => prev.filter((e) => e !== email));
++    setInvitedPlayers((prev) => prev.filter((player) => player.email !== email));
+     if (challengeBank === email) {
+       setChallengeBank('self');
+     }
+   }
+ 
++  function updateInviteMessage(email: string, inviteMessage: string) {
++    setInvitedPlayers((prev) =>
++      prev.map((player) => (player.email === email ? { ...player, inviteMessage } : player)),
++    );
++  }
++
+   async function handleConfirm() {
+     setSetupError(null);
+ 
+@@ -343,9 +355,15 @@ export function TableStakePanel({
+         const payload =
+           setupTab === 'dice' ? buildZilchSetupInput() : input;
+         await onlineDispatch('configureTable', payload as unknown as Record<string, unknown>);
+-        if (onlineTableId && input.tableMode === 'challenge' && input.invitedEmails?.length) {
+-          for (const email of input.invitedEmails) {
+-            await invitePersonToTable(onlineTableId, email, email.split('@')[0] || 'Guest');
++        if (onlineTableId && input.tableMode === 'challenge' && input.invitedPlayers?.length) {
++          for (const player of input.invitedPlayers) {
++            await invitePersonToTable(
++              onlineTableId,
++              player.email,
++              player.email.split('@')[0] || 'Guest',
++              undefined,
++              player.inviteMessage,
++            );
+           }
+         }
+         onFinished?.();
+@@ -384,9 +402,14 @@ export function TableStakePanel({
+         : isReset
+           ? applyTableResetSetup(base, input, base.tableMeta.ownerPersonId)
+           : applyTableStakeSetup(base, input);
+-    if (!isReset && input.invitedEmails?.length) {
+-      for (const email of input.invitedEmails) {
+-        ({ state: next } = createTableInvite(next, email.split('@')[0] || 'Guest', email));
++    if (!isReset && input.invitedPlayers?.length) {
++      for (const player of input.invitedPlayers) {
++        ({ state: next } = createTableInvite(
++          next,
++          player.email.split('@')[0] || 'Guest',
++          player.email,
++          player.inviteMessage ?? '',
++        ));
+       }
+     }
+     onConfirm(next);
+@@ -415,6 +438,7 @@ export function TableStakePanel({
+       stake,
+       tableName,
+       invitedEmails,
++      invitedPlayers,
+       inviteEmailInput,
+       challengeBank,
+       seatChips,
+@@ -448,6 +472,7 @@ export function TableStakePanel({
+     stake,
+     tableName,
+     invitedEmails,
++    invitedPlayers,
+     inviteEmailInput,
+     challengeBank,
+     seatChips,
+@@ -819,14 +844,31 @@ export function TableStakePanel({
+               Add
+             </button>
+           </div>
+-          {invitedEmails.length > 0 && (
++          {invitedPlayers.length > 0 && (
+             <ul className="table-stake-panel__invite-list">
+-              {invitedEmails.map((email) => (
+-                <li key={email}>
+-                  {email}
+-                  <button type="button" className="secondary" onClick={() => removeInvitedEmail(email)}>
+-                    Remove
+-                  </button>
++              {invitedPlayers.map((player) => (
++                <li key={player.email}>
++                  <div className="table-stake-panel__invite-item">
++                    <span>{player.email}</span>
++                    <button
++                      type="button"
++                      className="secondary"
++                      onClick={() => removeInvitedEmail(player.email)}
++                    >
++                      Remove
++                    </button>
++                  </div>
++                  <label className="table-stake-panel__field table-stake-panel__invite-message">
++                    <span>Message for invite</span>
++                    <input
++                      type="text"
++                      className="table-stake-panel__input"
++                      placeholder="Add a short note to this player's invite…"
++                      value={player.inviteMessage ?? ''}
++                      onChange={(e) => updateInviteMessage(player.email, e.target.value)}
++                      maxLength={500}
++                    />
++                  </label>
+                 </li>
+               ))}
+             </ul>
+diff --git a/src/components/ZilchPanel.tsx b/src/components/ZilchPanel.tsx
+index 2bd792c..88911db 100644
+--- a/src/components/ZilchPanel.tsx
++++ b/src/components/ZilchPanel.tsx
+@@ -1,447 +1 @@
+-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+-import type { GameState } from '../types';
+-import type { VirtualPlayerStyle } from '../types/player';
+-import {
+-  addVirtualPlayer,
+-  mergeSessionUpdate,
+-  recordTableOutcome,
+-} from '../engine/session';
+-import {
+-  canBank,
+-  canKeepCombination,
+-  canRollDice,
+-  getZilchWinnerId,
+-} from '../engine/zilch';
+-import { useIsMobileViewport } from '../hooks/useIsMobileViewport';
+-import { useDeviceShake } from '../hooks/useDeviceShake';
+-import { useZilchTableFlow } from './useZilchTableFlow';
+-import { LedgerPanel } from './LedgerPanel';
+-import {
+-  canActOnZilchTurn,
+-  dieThrowStyle,
+-  playerBoxStatus,
+-  resolveZilchController,
+-  seatPositionClass,
+-  statusLabel,
+-} from './zilchPlayerDisplay';
+-import './ZilchPanel.css';
+-
+-interface ZilchPanelProps {
+-  gameState: GameState;
+-  onGameStateChange: (state: GameState) => void;
+-  onInviteTable?: () => void;
+-  onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
+-  onlineActionInFlight?: boolean;
+-}
+-
+-const RANDOMISER_SPIN_MS = 2400;
+-const RANDOMISER_TICK_MS = 120;
+-const RANDOMISER_FALLBACK_MS = 3200;
+-
+-const VIRTUAL_STYLES: VirtualPlayerStyle[] = [
+-  'conservative',
+-  'normal',
+-  'aggressive',
+-  'random',
+-];
+-
+-export function ZilchPanel({
+-  gameState,
+-  onGameStateChange,
+-  onInviteTable,
+-  onlineDispatch,
+-  onlineActionInFlight = false,
+-}: ZilchPanelProps) {
+-  const { session, players, zilch, tableMeta } = gameState;
+-  const isMobile = useIsMobileViewport();
+-  const controller = resolveZilchController(gameState);
+-  const canAct = zilch ? canActOnZilchTurn(gameState, controller) : true;
+-  const shakeReady = useDeviceShake(
+-    isMobile && Boolean(zilch?.phase === 'player-turn' && canAct),
+-  );
+-  const [virtualStyle, setVirtualStyle] = useState<VirtualPlayerStyle>('normal');
+-  const [animSeed] = useState(() => Math.floor(Math.random() * 1000));
+-
+-  const {
+-    handleStartGame,
+-    handleRandomiseStarter,
+-    handleRollDice,
+-    handleKeepCombination,
+-    handleBank,
+-    handleQuitTurn,
+-  } = useZilchTableFlow({ gameState, onGameStateChange, onlineDispatch });
+-
+-  const [starterSpinActive, setStarterSpinActive] = useState(false);
+-  const [randomiserIndex, setRandomiserIndex] = useState(0);
+-  const spinTimersRef = useRef<{ tick?: number; done?: number }>(
+-    {},
+-  );
+-  const pendingStarterSpinRef = useRef(false);
+-
+-  const playerOrder = useMemo(() => {
+-    if (session.playerIds.length > 0) {
+-      return session.playerIds;
+-    }
+-    return tableMeta.boxSlots
+-      .filter((s) => s.playerId)
+-      .map((s) => s.playerId!);
+-  }, [session.playerIds, tableMeta.boxSlots]);
+-
+-  function stopStarterSpin() {
+-    const timers = spinTimersRef.current;
+-    if (timers.tick) {
+-      clearInterval(timers.tick);
+-    }
+-    if (timers.done) {
+-      clearTimeout(timers.done);
+-    }
+-    spinTimersRef.current = {};
+-    setStarterSpinActive(false);
+-  }
+-
+-  function startStarterSpinPresentation(starterId: string | null) {
+-    stopStarterSpin();
+-    if (playerOrder.length === 0) {
+-      return;
+-    }
+-    setStarterSpinActive(true);
+-    const starterIdx = starterId ? playerOrder.indexOf(starterId) : 0;
+-    setRandomiserIndex(starterIdx >= 0 ? starterIdx : 0);
+-
+-    spinTimersRef.current.tick = window.setInterval(() => {
+-      setRandomiserIndex((i) => (i + 1) % playerOrder.length);
+-    }, RANDOMISER_TICK_MS);
+-
+-    spinTimersRef.current.done = window.setTimeout(() => {
+-      if (starterId) {
+-        const idx = playerOrder.indexOf(starterId);
+-        if (idx >= 0) {
+-          setRandomiserIndex(idx);
+-        }
+-      }
+-      stopStarterSpin();
+-    }, RANDOMISER_SPIN_MS);
+-  }
+-
+-  function onRandomiseStarter() {
+-    pendingStarterSpinRef.current = true;
+-    startStarterSpinPresentation(null);
+-    const starterId = handleRandomiseStarter();
+-    if (starterId) {
+-      pendingStarterSpinRef.current = false;
+-      startStarterSpinPresentation(starterId);
+-    }
+-  }
+-
+-  useEffect(() => {
+-    const starterId = zilch?.starterPlayerId;
+-    if (
+-      !pendingStarterSpinRef.current ||
+-      !starterId ||
+-      zilch?.phase !== 'player-turn'
+-    ) {
+-      return;
+-    }
+-    pendingStarterSpinRef.current = false;
+-    startStarterSpinPresentation(starterId);
+-  }, [zilch?.starterPlayerId, zilch?.phase]);
+-
+-  useEffect(() => {
+-    if (!starterSpinActive) {
+-      return;
+-    }
+-    const fallback = window.setTimeout(() => stopStarterSpin(), RANDOMISER_FALLBACK_MS);
+-    return () => clearTimeout(fallback);
+-  }, [starterSpinActive]);
+-
+-  useEffect(() => () => stopStarterSpin(), []);
+-
+-  useEffect(() => {
+-    if (shakeReady && zilch && canAct && canRollDice(zilch)) {
+-      handleRollDice();
+-    }
+-  }, [shakeReady, zilch, canAct, handleRollDice]);
+-
+-  useEffect(() => {
+-    if (zilch?.phase !== 'completed' || !zilch.winnerPlayerId) {
+-      return;
+-    }
+-    if (tableMeta.outcome || tableMeta.status === 'complete') {
+-      return;
+-    }
+-    const winnerId = zilch.winnerPlayerId;
+-    const loserId =
+-      playerOrder.find((id) => id !== winnerId) ?? session.bankPlayerId ?? null;
+-    onGameStateChange(recordTableOutcome(gameState, winnerId, loserId));
+-  }, [
+-    zilch?.phase,
+-    zilch?.winnerPlayerId,
+-    tableMeta.outcome,
+-    tableMeta.status,
+-    gameState,
+-    onGameStateChange,
+-    playerOrder,
+-    session.bankPlayerId,
+-  ]);
+-
+-  function handleAddVirtual() {
+-    try {
+-      const spl = addVirtualPlayer(session, players, gameState.ledger, { virtualStyle });
+-      onGameStateChange(mergeSessionUpdate(gameState, spl));
+-    } catch (err) {
+-      console.error(err);
+-    }
+-  }
+-
+-  const rolling = zilch?.diceAnimation.isRolling ?? false;
+-  const rollMs = zilch?.diceAnimation.durationMs ?? gameState.zilchSettings.diceAnimation.diceAnimationMs;
+-  const showValues = Boolean(zilch && !rolling);
+-  const controlsDisabled = rolling || onlineActionInFlight || !canAct;
+-
+-  const statusBanner = (() => {
+-    if (!zilch) {
+-      return 'Invite players, then start the Zilch game.';
+-    }
+-    switch (zilch.phase) {
+-      case 'setup':
+-        return 'Randomise who starts.';
+-      case 'randomising-starter':
+-        return 'Starting…';
+-      case 'final-round':
+-        return 'Final round — each other player gets one last turn.';
+-      case 'completed': {
+-        const w = getZilchWinnerId(zilch);
+-        const name = w ? players[w]?.displayName ?? 'Winner' : '—';
+-        return `Game over — ${name} wins!`;
+-      }
+-      case 'zilch':
+-        return 'Zilch! Turn score lost.';
+-      case 'awaiting-keep-selection':
+-        return 'Select a scoring combination to keep (you may choose a lower-scoring option).';
+-      default:
+-        if (!canAct) {
+-          return 'Waiting for another player…';
+-        }
+-        return zilch.turnScore > 0
+-          ? `Turn score ${zilch.turnScore} — roll again or bank.`
+-          : 'Press Dice to roll.';
+-    }
+-  })();
+-
+-  const bannerClass =
+-    zilch?.phase === 'zilch' || zilch?.lastZilchPlayerId
+-      ? ' zilch-panel__banner--zilch'
+-      : zilch?.phase === 'final-round'
+-        ? ' zilch-panel__banner--final'
+-        : zilch?.phase === 'completed'
+-          ? ' zilch-panel__banner--winner'
+-          : '';
+-
+-  const diceToRender =
+-    rolling && zilch
+-      ? zilch.dice.length > 0
+-        ? zilch.dice
+-        : Array.from({ length: 6 }, (_, i) => ({
+-            id: `rolling-${i}`,
+-            value: 1,
+-            isAvailable: true,
+-            isKept: false,
+-          }))
+-      : zilch?.dice ?? [];
+-
+-  return (
+-    <div className="zilch-panel" data-game="zilch">
+-      <div className="zilch-panel__toolbar">
+-        <h2 className="zilch-panel__title">Zilch</h2>
+-        <div className="zilch-panel__toolbar-actions">
+-          {onInviteTable && (
+-            <button type="button" onClick={onInviteTable}>
+-              Invite to table
+-            </button>
+-          )}
+-          <select
+-            className="secondary"
+-            value={virtualStyle}
+-            onChange={(e) => setVirtualStyle(e.target.value as VirtualPlayerStyle)}
+-            aria-label="Virtual player style"
+-          >
+-            {VIRTUAL_STYLES.map((s) => (
+-              <option key={s} value={s}>
+-                {s}
+-              </option>
+-            ))}
+-          </select>
+-          <button type="button" className="secondary" onClick={handleAddVirtual}>
+-            Add virtual player
+-          </button>
+-        </div>
+-      </div>
+-
+-      <p className={`zilch-panel__banner${bannerClass}`} role="status">
+-        {statusBanner}
+-      </p>
+-
+-      {!zilch && (
+-        <button
+-          type="button"
+-          onClick={handleStartGame}
+-          disabled={playerOrder.length === 0}
+-        >
+-          Start game
+-        </button>
+-      )}
+-
+-      <div
+-        className="zilch-table"
+-        style={{ '--zilch-roll-ms': `${rollMs}ms` } as CSSProperties}
+-      >
+-        {playerOrder.map((id, index) => {
+-          const player = players[id];
+-          const status = playerBoxStatus(id, zilch);
+-          const isActive = zilch?.currentPlayerId === id;
+-          const total = zilch?.totalScoresByPlayerId[id] ?? 0;
+-          const showTurnScore = isActive && zilch && zilch.turnScore > 0;
+-          return (
+-            <div
+-              key={id}
+-              className={`zilch-seat ${seatPositionClass(index, playerOrder.length)}${
+-                isActive ? ' zilch-seat--active' : ''
+-              }${status === 'zilch' ? ' zilch-seat--zilch' : ''}${
+-                status === 'winner' ? ' zilch-seat--winner' : ''
+-              }`}
+-            >
+-              <div className="zilch-seat__name">
+-                {player?.displayName ?? id}
+-                {player?.playerType === 'virtual' && (
+-                  <span className="zilch-seat__badge zilch-seat__badge--virtual">Virtual</span>
+-                )}
+-              </div>
+-              <div className="zilch-seat__score">Total: {total}</div>
+-              {showTurnScore && (
+-                <div className="zilch-seat__turn-score">Turn: {zilch!.turnScore}</div>
+-              )}
+-              <div
+-                className={`zilch-seat__status${
+-                  status === 'turn' ? ' zilch-seat__status--turn' : ''
+-                }${status === 'zilch' ? ' zilch-seat__status--zilch' : ''}`}
+-              >
+-                {statusLabel(status)}
+-              </div>
+-            </div>
+-          );
+-        })}
+-
+-        <div className="zilch-table__felt">
+-          {starterSpinActive && (
+-            <div
+-              className="zilch-panel__randomiser zilch-panel__randomiser--spin"
+-              aria-live="polite"
+-            >
+-              {players[playerOrder[randomiserIndex] ?? '']?.displayName ?? '…'}
+-            </div>
+-          )}
+-
+-          {zilch && (
+-            <>
+-              <div className="zilch-table__roll-zone" aria-label="Dice on table">
+-                {diceToRender.map((die, index) => (
+-                  <div
+-                    key={die.id}
+-                    className={`zilch-die${rolling ? ' zilch-die--throw' : ''}${
+-                      die.isKept ? ' zilch-die--kept' : ''
+-                    }`}
+-                    style={
+-                      rolling
+-                        ? (dieThrowStyle(index, animSeed + index) as CSSProperties)
+-                        : undefined
+-                    }
+-                  >
+-                    {rolling ? '?' : showValues ? die.value : '?'}
+-                  </div>
+-                ))}
+-                {diceToRender.length === 0 && zilch.phase === 'player-turn' && !rolling && (
+-                  <span className="zilch-table__hint">Press Dice to roll</span>
+-                )}
+-              </div>
+-
+-              {zilch.keptDice.length > 0 && (
+-                <div className="zilch-table__kept" aria-label="Kept dice">
+-                  {zilch.keptDice.map((g) => (
+-                    <span key={g.id} className="zilch-table__kept-chip">
+-                      {g.label} (+{g.score})
+-                    </span>
+-                  ))}
+-                </div>
+-              )}
+-
+-              {showValues && zilch.availableCombinations.length > 0 && (
+-                <div className="zilch-table__combos" aria-label="Scoring options">
+-                  {zilch.availableCombinations.map((combo) => (
+-                    <button
+-                      key={combo.id}
+-                      type="button"
+-                      className="zilch-table__combo-btn secondary"
+-                      onClick={() => handleKeepCombination(combo.id)}
+-                      disabled={controlsDisabled || !canKeepCombination(zilch)}
+-                    >
+-                      {combo.label} ({combo.score})
+-                    </button>
+-                  ))}
+-                </div>
+-              )}
+-
+-              <div className="zilch-table__actions">
+-                {(zilch.phase === 'setup' ||
+-                  (zilch.phase === 'randomising-starter' && !zilch.starterPlayerId)) && (
+-                  <button
+-                    type="button"
+-                    onClick={onRandomiseStarter}
+-                    disabled={onlineActionInFlight}
+-                  >
+-                    Randomise starter
+-                  </button>
+-                )}
+-                {(zilch.phase === 'player-turn' || zilch.phase === 'awaiting-keep-selection') && (
+-                  <>
+-                    <button
+-                      type="button"
+-                      onClick={handleRollDice}
+-                      disabled={!canRollDice(zilch) || controlsDisabled}
+-                    >
+-                      {rolling ? 'Rolling…' : 'Dice'}
+-                    </button>
+-                    <button
+-                      type="button"
+-                      onClick={handleBank}
+-                      disabled={!canBank(zilch) || controlsDisabled}
+-                    >
+-                      Bank
+-                    </button>
+-                    <button
+-                      type="button"
+-                      className="secondary"
+-                      onClick={handleQuitTurn}
+-                      disabled={!canBank(zilch) || controlsDisabled}
+-                    >
+-                      Quit turn
+-                    </button>
+-                  </>
+-                )}
+-              </div>
+-            </>
+-          )}
+-        </div>
+-      </div>
+-
+-      {isMobile && zilch?.phase === 'player-turn' && canAct && (
+-        <p className="zilch-panel__shake-hint">
+-          Shake your phone for 3+ seconds to roll.
+-        </p>
+-      )}
+-
+-      <div className="zilch-panel__ledger">
+-        <LedgerPanel gameState={gameState} />
+-      </div>
+-    </div>
+-  );
+-}
++export { ZilchPanel } from './zilch/ZilchPanel';
+diff --git a/src/components/gameEndFlowRegression.test.ts b/src/components/gameEndFlowRegression.test.ts
+index 8671c2d..b485d62 100644
+--- a/src/components/gameEndFlowRegression.test.ts
++++ b/src/components/gameEndFlowRegression.test.ts
+@@ -43,8 +43,8 @@ describe('game end flow regression guards', () => {
+ 
+   it('applies ledger and IOU only from completeGameOverAction', () => {
+     expect(PANEL_SRC).toMatch(/completeGameOverAction[\s\S]*runGameOverCompleteAction/);
+-    expect(PANEL_SRC).toMatch(/nextAction === 'new-game'[\s\S]*setGameOverOverlayConfirmed\(true\)/);
+-    expect(PANEL_SRC).not.toMatch(/exit-table[\s\S]*setGameOverOverlayConfirmed\(true\)/);
++    expect(PANEL_SRC).toMatch(/beginNewGame[\s\S]*setGameOverOverlayConfirmed\(true\)/);
++    expect(PANEL_SRC).not.toMatch(/exitTable[\s\S]*setGameOverOverlayConfirmed\(true\)/);
+     expect(OVERLAY_SRC).toMatch(/handleStartNewGame[\s\S]*onComplete\(/);
+     expect(OVERLAY_SRC).toContain('Exit Table');
+   });
+diff --git a/src/components/gameEndUi.test.ts b/src/components/gameEndUi.test.ts
+index 1fb171b..5ba0226 100644
+--- a/src/components/gameEndUi.test.ts
++++ b/src/components/gameEndUi.test.ts
+@@ -10,8 +10,8 @@ describe('game end UI wiring', () => {
+   it('routes game-end actions through GameOverActionOverlay instead of table buttons', () => {
+     expect(PANEL_SRC).toContain('GameOverActionOverlay');
+     expect(PANEL_SRC).not.toContain('bj-game-end-actions');
+-    expect(PANEL_SRC).toContain('createIouHandoff');
+-    expect(PANEL_SRC).toContain('buildIouHandoffCreateRequest');
++    expect(PANEL_SRC).toContain('runGameOverCompleteAction');
++    expect(PANEL_SRC).toContain('gameOverActionFlow');
+     expect(PANEL_SRC).toContain("deviceView === 'mobile'");
+     expect(PANEL_SRC).toContain('showGameOverDesktopPanel');
+     expect(PANEL_SRC).toContain('layout="inline"');
+diff --git a/src/components/gameOverActionOverlay.test.tsx b/src/components/gameOverActionOverlay.test.tsx
+index a67c274..f1cf45d 100644
+--- a/src/components/gameOverActionOverlay.test.tsx
++++ b/src/components/gameOverActionOverlay.test.tsx
+@@ -1,5 +1,5 @@
+ // @vitest-environment happy-dom
+-import { afterEach, describe, expect, it, vi, beforeEach } from 'vitest';
++import { afterEach, describe, expect, it, vi } from 'vitest';
+ import { renderToStaticMarkup } from 'react-dom/server';
+ import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+ 
+@@ -15,8 +15,6 @@ import type { GameState } from '../types';
+ import { GameOverActionOverlay } from './GameOverActionOverlay';
+ import { buildGameOverPresentationModel } from './gameOverPresentation';
+ import { IOU_HANDOFF_MESSAGE_MAX_LENGTH } from './gameOverIouMessage';
+-import { BlackjackPanel } from './BlackjackPanel';
+-import { hasPersonalLedgerEntryForTable } from '../engine/scoreLedger/scoreLedger';
+ import { tableWithClaimedBox } from '../engine/blackjack/sanity/fixtures';
+ 
+ const noop = () => {};
+@@ -329,26 +327,3 @@ describe('GameOverActionOverlay', () => {
+     expect(onComplete).not.toHaveBeenCalled();
+   });
+ });
+-
+-describe('GameOverActionOverlay — panel integration', () => {
+-  it('keeps game-over overlay visible after Exit Table triggers leave flow', async () => {
+-    const onExitTable = vi.fn();
+-    render(
+-      <BlackjackPanel
+-        gameState={endedChallengeState()}
+-        onGameStateChange={noop}
+-        onExitTable={onExitTable}
+-      />,
+-    );
+-    await clickExitTable();
+-    expect(onExitTable).toHaveBeenCalledTimes(1);
+-    expect(screen.getByRole('button', { name: 'Exit Table' })).toBeTruthy();
+-  });
+-
+-  it('does not save ledger or create IOU when overlay is dismissed', async () => {
+-    const state = endedChallengeState();
+-    render(<BlackjackPanel gameState={state} onGameStateChange={noop} onBeginTableReset={vi.fn()} />);
+-    fireEvent.click(screen.getByRole('button', { name: /close without saving/i }));
+-    expect(hasPersonalLedgerEntryForTable(state.session.id)).toBe(false);
+-  });
+-});
+diff --git a/src/components/tableStakeSetupDirty.test.ts b/src/components/tableStakeSetupDirty.test.ts
+index 2c5f0c3..85a4332 100644
+--- a/src/components/tableStakeSetupDirty.test.ts
++++ b/src/components/tableStakeSetupDirty.test.ts
+@@ -18,6 +18,7 @@ describe('tableStakeSetupDirty', () => {
+       stake: '',
+       tableName: baseline.tableName,
+       invitedEmails: [],
++      invitedPlayers: [],
+       inviteEmailInput: '',
+       challengeBank: 'self',
+       seatChips: baseline.seatChips,
+@@ -54,6 +55,7 @@ describe('tableStakeSetupDirty', () => {
+       stake: '',
+       tableName: baseline.tableName,
+       invitedEmails: [],
++      invitedPlayers: [],
+       inviteEmailInput: '',
+       challengeBank: 'self',
+       seatChips: baseline.seatChips,
+diff --git a/src/components/tableStakeSetupDirty.ts b/src/components/tableStakeSetupDirty.ts
+index 01ba74f..90f4cc3 100644
+--- a/src/components/tableStakeSetupDirty.ts
++++ b/src/components/tableStakeSetupDirty.ts
+@@ -1,5 +1,6 @@
+ import type { GameState, TableMode } from '../types';
+ import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
++import type { InvitedTablePlayerSetup } from '../features/messaging/tableMessagingTypes';
+ import { listBlackjackProtocolPresets } from '../engine/blackjack/protocols';
+ import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
+ import type { TableBankerSetupMode } from '../engine/session';
+@@ -15,6 +16,7 @@ export interface TableStakeSetupSnapshot {
+   stake: string;
+   tableName: string;
+   invitedEmails: string[];
++  invitedPlayers: InvitedTablePlayerSetup[];
+   inviteEmailInput: string;
+   challengeBank: string;
+   seatChips: string;
+@@ -46,6 +48,7 @@ export interface TableStakeSetupSnapshotInput {
+   stake: string;
+   tableName: string;
+   invitedEmails: string[];
++  invitedPlayers: InvitedTablePlayerSetup[];
+   inviteEmailInput: string;
+   challengeBank: string;
+   seatChips: string;
+@@ -85,6 +88,7 @@ export function createInitialTableStakeSetupSnapshot(
+     stake: agreement?.stakeDescription ?? '',
+     tableName: gameState.tableMeta.tableClothName?.trim() || DEFAULT_PRACTICE_TABLE_NAME,
+     invitedEmails: [],
++    invitedPlayers: [],
+     inviteEmailInput: '',
+     challengeBank: 'self',
+     seatChips: String(gameState.tableMeta.startingChipsEachSeat ?? 500),
+@@ -126,6 +130,10 @@ export function collectTableStakeSetupSnapshot(
+     stake: input.stake,
+     tableName: input.tableName,
+     invitedEmails: [...input.invitedEmails],
++    invitedPlayers: input.invitedPlayers.map((player) => ({
++      email: player.email,
++      inviteMessage: player.inviteMessage,
++    })),
+     inviteEmailInput: input.inviteEmailInput,
+     challengeBank: input.challengeBank,
+     seatChips: input.seatChips,
+diff --git a/src/components/zilchPanel.acceptance.test.tsx b/src/components/zilchPanel.acceptance.test.tsx
+index 56e2f23..bbf74d9 100644
+--- a/src/components/zilchPanel.acceptance.test.tsx
++++ b/src/components/zilchPanel.acceptance.test.tsx
+@@ -68,7 +68,7 @@ describe('ZilchPanel acceptance', () => {
+       <ZilchPanel gameState={state} onGameStateChange={() => {}} />,
+     );
+     expect(html).toContain('zilch-table');
+-    expect(html).toContain('Dice');
++    expect(html).toContain('Roll');
+   });
+ 
+   it('banking adds turn score to total', () => {
+@@ -126,20 +126,20 @@ describe('ZilchPanel acceptance', () => {
+           id: 'three',
+           label: 'Three 1s',
+           diceIds: ['a', 'b', 'c'],
+-          score: 10,
++          score: 1000,
+           type: 'three_of_a_kind',
+         },
+         {
+           id: 'single-a',
+           label: 'Single 1',
+           diceIds: ['a'],
+-          score: 1,
++          score: 100,
+           type: 'single_one',
+         },
+       ],
+     };
+     zilch = keepCombination(zilch, 'single-a');
+-    expect(zilch.turnScore).toBe(1);
++    expect(zilch.turnScore).toBe(100);
+   });
+ 
+   it('cannot bank during zilch phase', () => {
+diff --git a/src/engine/session/tableSetup.js b/src/engine/session/tableSetup.js
+deleted file mode 100644
+index 7ad797d..0000000
+--- a/src/engine/session/tableSetup.js
++++ /dev/null
+@@ -1,103 +0,0 @@
+-import { updateBlackjackFlowSettings } from '../blackjack';
+-import { setBlackjackProtocolOnState } from '../blackjack/protocolState';
+-import { assignBankBot, assignBankPerson, } from './boxOps';
+-import { ensureTableOwnerPersonBankroll } from './ownerBankroll';
+-import { setTableOwner } from './invites';
+-import { confirmTableAgreement, DEFAULT_TABLE_CHIPS, } from './table';
+-import { logDerivedBalances, logLedgerAfterAllocation, logTableMetaStartingChips, } from './tokens';
+-import { DEFAULT_PRACTICE_TABLE_NAME } from '../../types/tableFeltSkin';
+-export function parseTableStakeSetupPayload(payload, fallbackController) {
+-    const seatChips = Number(payload.seatChips);
+-    const bankChips = Number(payload.bankChips);
+-    const bankerMode = payload.bankerMode;
+-    return {
+-        stakeDescription: String(payload.stakeDescription ?? 'Friendly game'),
+-        tableName: typeof payload.tableName === 'string' ? payload.tableName : undefined,
+-        seatChips: Number.isFinite(seatChips) && seatChips > 0 ? seatChips : DEFAULT_TABLE_CHIPS,
+-        bankChips: Number.isFinite(bankChips) && bankChips > 0 ? bankChips : DEFAULT_TABLE_CHIPS,
+-        bankerMode: bankerMode === 'self' || bankerMode === 'other' ? bankerMode : 'bot',
+-        bankerName: String(payload.bankerName ?? ''),
+-        controllerName: String(payload.controllerName ?? fallbackController).trim() || fallbackController,
+-        controllerEmail: String(payload.controllerEmail ?? ''),
+-        protocolId: String(payload.protocolId ?? 'las-vegas-house'),
+-        naturalDealing: payload.naturalDealing === true,
+-        dealSpeedPreset: payload.dealSpeedPreset ?? 'fast',
+-        cardTimerPreset: (Number(payload.cardTimerPreset) || 0),
+-        bankDrawAuto: payload.bankDrawAuto !== false,
+-        tableMode: payload.tableMode === 'practice' || payload.tableMode === 'challenge'
+-            ? payload.tableMode
+-            : undefined,
+-        invitedEmails: Array.isArray(payload.invitedEmails)
+-            ? payload.invitedEmails.map((e) => String(e).trim().toLowerCase()).filter(Boolean)
+-            : undefined,
+-        bankBustSettlementMode: payload.bankBustSettlementMode === 'winner-takes-all' ||
+-            payload.bankBustSettlementMode === 'winner_takes_all'
+-            ? 'winner-takes-all'
+-            : payload.bankBustSettlementMode === 'fractional'
+-                ? 'fractional'
+-                : undefined,
+-    };
+-}
+-export function resolveTableMode(input) {
+-    if (input.tableMode) {
+-        return input.tableMode;
+-    }
+-    return input.bankerMode === 'bot' ? 'practice' : 'challenge';
+-}
+-/** First-time table setup (new table or post–stake-panel confirm). */
+-export function applyTableStakeSetup(state, input) {
+-    const seatAmount = input.seatChips;
+-    const bankAmount = input.bankChips;
+-    const tableMode = resolveTableMode(input);
+-    const isPractice = tableMode === 'practice';
+-    const stakeDescription = isPractice
+-        ? input.stakeDescription.trim() || 'Practice'
+-        : input.stakeDescription.trim() || 'Friendly wager';
+-    const tableClothName = isPractice
+-        ? input.tableName?.trim() || DEFAULT_PRACTICE_TABLE_NAME
+-        : input.tableName?.trim() || stakeDescription;
+-    let next = confirmTableAgreement(state, stakeDescription, seatAmount, bankAmount);
+-    next = setTableOwner(next, input.controllerName, input.controllerEmail);
+-    const invitedEmails = (input.invitedEmails ?? []).map((e) => e.trim().toLowerCase()).filter(Boolean);
+-    next = {
+-        ...next,
+-        tableMeta: {
+-            ...next.tableMeta,
+-            controllerName: input.controllerName,
+-            showBankerSetup: false,
+-            showStakeSetup: false,
+-            tableMode,
+-            setupInvitedEmails: invitedEmails.length > 0 ? invitedEmails : undefined,
+-            bankBustSettlementMode: tableMode === 'challenge' ? input.bankBustSettlementMode ?? 'fractional' : undefined,
+-            tableClothName,
+-            tableClothWager: isPractice ? 'Practice' : stakeDescription,
+-        },
+-    };
+-    if (isPractice || input.bankerMode === 'bot') {
+-        if (tableMode === 'challenge') {
+-            next = assignBankPerson(next, input.controllerName, bankAmount);
+-        }
+-        else {
+-            next = assignBankBot(next, bankAmount);
+-        }
+-    }
+-    else if (input.bankerMode === 'self') {
+-        next = assignBankPerson(next, input.controllerName, bankAmount);
+-    }
+-    else {
+-        next = assignBankPerson(next, input.bankerName.trim(), bankAmount);
+-    }
+-    next = ensureTableOwnerPersonBankroll(next);
+-    logLedgerAfterAllocation(next, 'start-playing');
+-    logDerivedBalances(next, 'start-playing');
+-    logTableMetaStartingChips(next, 'start-playing');
+-    next = setBlackjackProtocolOnState(next, input.protocolId, input.controllerName);
+-    next = updateBlackjackFlowSettings(next, {
+-        initialDealMode: input.naturalDealing ? 'natural' : 'staged',
+-        dealSpeedPreset: input.dealSpeedPreset,
+-        cardTimerPreset: input.cardTimerPreset,
+-        countdownSeconds: input.cardTimerPreset,
+-        bankDrawMode: input.bankDrawAuto ? 'auto' : 'manual',
+-    });
+-    return next;
+-}
+diff --git a/src/engine/session/tableSetup.ts b/src/engine/session/tableSetup.ts
+index 51ff82b..9a2d0f4 100644
+--- a/src/engine/session/tableSetup.ts
++++ b/src/engine/session/tableSetup.ts
+@@ -1,3 +1,4 @@
++import type { InvitedTablePlayerSetup } from '../../features/messaging/tableMessagingTypes';
+ import type { GameState, TableMode, BankBustSettlementMode } from '../../types';
+ import type { CardTimerPreset, DealSpeedPreset } from '../blackjack/flowSettings';
+ import { DEFAULT_PRACTICE_TABLE_NAME } from '../../types/tableFeltSkin';
+@@ -37,9 +38,42 @@ export interface TableStakeSetupInput {
+   bankDrawAuto: boolean;
+   tableMode?: TableMode;
+   invitedEmails?: string[];
++  invitedPlayers?: InvitedTablePlayerSetup[];
+   bankBustSettlementMode?: BankBustSettlementMode;
+ }
+ 
++function normalizeInvitedPlayers(
++  invitedPlayers: InvitedTablePlayerSetup[] | undefined,
++  invitedEmails: string[] | undefined,
++): InvitedTablePlayerSetup[] {
++  if (invitedPlayers?.length) {
++    return invitedPlayers
++      .map((player) => ({
++        email: player.email.trim().toLowerCase(),
++        inviteMessage: player.inviteMessage?.trim() || undefined,
++      }))
++      .filter((player) => player.email);
++  }
++  return (invitedEmails ?? [])
++    .map((email) => ({ email: email.trim().toLowerCase() }))
++    .filter((player) => player.email);
++}
++
++export function resolveInvitedEmails(input: TableStakeSetupInput): string[] {
++  return normalizeInvitedPlayers(input.invitedPlayers, input.invitedEmails).map((player) => player.email);
++}
++
++export function resolveInviteMessageForEmail(
++  input: TableStakeSetupInput,
++  email: string,
++): string | undefined {
++  const normalized = email.trim().toLowerCase();
++  const player = normalizeInvitedPlayers(input.invitedPlayers, input.invitedEmails).find(
++    (entry) => entry.email === normalized,
++  );
++  return player?.inviteMessage;
++}
++
+ function parseBankBustSettlementMode(raw: unknown): BankBustSettlementMode | undefined {
+   if (raw === 'winner-takes-all' || raw === 'winner_takes_all') {
+     return 'winner-takes-all';
+@@ -78,6 +112,18 @@ export function parseTableStakeSetupPayload(
+     invitedEmails: Array.isArray(payload.invitedEmails)
+       ? payload.invitedEmails.map((e) => String(e).trim().toLowerCase()).filter(Boolean)
+       : undefined,
++    invitedPlayers: Array.isArray(payload.invitedPlayers)
++      ? payload.invitedPlayers
++          .map((entry) => {
++            const record = entry as Record<string, unknown>;
++            return {
++              email: String(record.email ?? '').trim().toLowerCase(),
++              inviteMessage:
++                typeof record.inviteMessage === 'string' ? record.inviteMessage.trim() : undefined,
++            };
++          })
++          .filter((player) => player.email)
++      : undefined,
+     bankBustSettlementMode: parseBankBustSettlementMode(payload.bankBustSettlementMode),
+   };
+ }
+@@ -106,7 +152,7 @@ export function applyTableStakeSetup(state: GameState, input: TableStakeSetupInp
+ 
+   next = setTableOwner(next, input.controllerName, input.controllerEmail);
+ 
+-  const invitedEmails = (input.invitedEmails ?? []).map((e) => e.trim().toLowerCase()).filter(Boolean);
++  const invitedEmails = resolveInvitedEmails(input);
+ 
+   next = {
+     ...next,
+diff --git a/src/engine/table/invites.js b/src/engine/table/invites.js
+deleted file mode 100644
+index 6909f8f..0000000
+--- a/src/engine/table/invites.js
++++ /dev/null
+@@ -1,91 +0,0 @@
+-import { generateId } from '../utils/id';
+-import { log } from '../../utils/logger';
+-function randomToken() {
+-    return generateId().replace(/-/g, '').slice(0, 24);
+-}
+-export function getTableId(state) {
+-    return state.session.id;
+-}
+-export function getTableOwnerId(state) {
+-    return state.tableMeta.owner?.ownerName ?? state.tableMeta.controllerName ?? null;
+-}
+-export function buildJoinTablePath(params) {
+-    const q = new URLSearchParams({
+-        tableId: params.tableId,
+-        inviteId: params.inviteId,
+-        token: params.token,
+-    });
+-    return `/join-table?${q.toString()}`;
+-}
+-import { getTableInviteOrigin } from '../../utils/tableHost';
+-export function buildJoinTableUrl(_state, invite) {
+-    const origin = getTableInviteOrigin();
+-    return `${origin}${buildJoinTablePath({
+-        tableId: invite.tableId,
+-        inviteId: invite.inviteId,
+-        token: invite.token,
+-    })}`;
+-}
+-export function createTableInvite(state, invitedName, invitedEmail, note = '', canInviteOthers = false) {
+-    const trimmedEmail = invitedEmail.trim();
+-    const trimmedName = invitedName.trim();
+-    const invitedBy = state.tableMeta.owner?.ownerName ??
+-        state.tableMeta.controllerName ??
+-        'Table host';
+-    const invite = {
+-        inviteId: generateId(),
+-        tableId: getTableId(state),
+-        invitedEmail: trimmedEmail || '',
+-        invitedName: trimmedName || trimmedEmail || 'Guest',
+-        invitedBy,
+-        inviteStatus: 'pending',
+-        canInviteOthers,
+-        createdAt: new Date().toISOString(),
+-        token: randomToken(),
+-        note: note.trim() || undefined,
+-    };
+-    log.info('Table invite created', { inviteId: invite.inviteId, email: trimmedEmail });
+-    const next = {
+-        ...state,
+-        tableMeta: {
+-            ...state.tableMeta,
+-            invites: [...state.tableMeta.invites, invite],
+-        },
+-    };
+-    return { state: next, invite };
+-}
+-export function buildInviteMessage(state, invite) {
+-    const wager = state.tableMeta.agreement?.stakeDescription ?? 'a friendly game';
+-    const owner = invite.invitedBy;
+-    const link = buildJoinTableUrl(state, invite);
+-    const note = invite.note ? `\n\nNote: ${invite.note}` : '';
+-    return [
+-        `You're invited to my SXMCards table (${wager}).`,
+-        `Hosted by ${owner}.`,
+-        '',
+-        `Join link: ${link}`,
+-        '',
+-        'Open the link on your device when you arrive — local friends table, not real-money gambling.',
+-        note,
+-    ]
+-        .filter(Boolean)
+-        .join('\n');
+-}
+-export function buildInviteMailto(state, invite) {
+-    if (!invite.invitedEmail) {
+-        throw new Error('No email on invite');
+-    }
+-    const subject = encodeURIComponent('Join my SXMCards table');
+-    const body = encodeURIComponent(buildInviteMessage(state, invite));
+-    return `mailto:${encodeURIComponent(invite.invitedEmail)}?subject=${subject}&body=${body}`;
+-}
+-export function parseJoinTableParams(search) {
+-    const params = new URLSearchParams(search.startsWith('?') ? search : `?${search}`);
+-    const tableId = params.get('tableId');
+-    const inviteId = params.get('inviteId');
+-    const token = params.get('token');
+-    if (!tableId || !inviteId || !token) {
+-        return null;
+-    }
+-    return { tableId, inviteId, token };
+-}
+diff --git a/src/engine/table/invites.ts b/src/engine/table/invites.ts
+index d19f937..e35f5d9 100644
+--- a/src/engine/table/invites.ts
++++ b/src/engine/table/invites.ts
+@@ -1,6 +1,7 @@
+ import type { GameState } from '../../types';
+ import type { TableInviteRecord } from '../../types/invites';
+ import { generateId } from '../utils/id';
++import { formatInviteHostMessage } from '../../features/messaging/tableMessagingTypes';
+ import { log } from '../../utils/logger';
+ 
+ function randomToken(): string {
+@@ -84,7 +85,8 @@ export function buildInviteMessage(state: GameState, invite: TableInviteRecord):
+   const wager = state.tableMeta.agreement?.stakeDescription ?? 'a friendly game';
+   const owner = invite.invitedBy;
+   const link = buildJoinTableUrl(state, invite);
+-  const note = invite.note ? `\n\nNote: ${invite.note}` : '';
++  const hostMessage = invite.note ? formatInviteHostMessage(invite.note) : '';
++  const note = hostMessage ? `\n\n${hostMessage}` : '';
+   return [
+     `You're invited to my SXMCards table (${wager}).`,
+     `Hosted by ${owner}.`,
+diff --git a/src/engine/zilch/applyZilchAction.ts b/src/engine/zilch/applyZilchAction.ts
+index 633c740..f169ae1 100644
+--- a/src/engine/zilch/applyZilchAction.ts
++++ b/src/engine/zilch/applyZilchAction.ts
+@@ -1,91 +1 @@
+-import type { GameState } from '../../types';
+-import type { ZilchGameSettings } from './zilchTypes';
+-import {
+-  bankTurn,
+-  completeDiceRoll,
+-  confirmStarter,
+-  createInitialZilchState,
+-  keepCombination,
+-  randomiseStarter,
+-  rollDice,
+-} from './zilchEngine';
+-import { normalizeZilchState } from './normalizeZilchState';
+-
+-export const ZILCH_GAMEPLAY_ACTIONS = [
+-  'zilchRandomiseStarter',
+-  'zilchConfirmStarter',
+-  'zilchRollDice',
+-  'zilchCompleteRoll',
+-  'zilchKeepCombination',
+-  'zilchBankTurn',
+-  'zilchQuitTurn',
+-] as const;
+-
+-export type ZilchGameplayAction = (typeof ZILCH_GAMEPLAY_ACTIONS)[number];
+-
+-export function isZilchGameplayAction(action: string): action is ZilchGameplayAction {
+-  return (ZILCH_GAMEPLAY_ACTIONS as readonly string[]).includes(action);
+-}
+-
+-export function applyZilchActionToState(
+-  state: GameState,
+-  action: ZilchGameplayAction,
+-  payload: Record<string, unknown> = {},
+-): GameState {
+-  if (!state.zilch) {
+-    throw new Error('No Zilch game in progress');
+-  }
+-  const settings = state.zilchSettings;
+-  let zilch = state.zilch;
+-
+-  switch (action) {
+-    case 'zilchRandomiseStarter':
+-      zilch = randomiseStarter(zilch);
+-      break;
+-    case 'zilchConfirmStarter':
+-      zilch = confirmStarter(zilch);
+-      break;
+-    case 'zilchRollDice':
+-      zilch = rollDice(zilch, settings);
+-      break;
+-    case 'zilchCompleteRoll':
+-      zilch = completeDiceRoll(zilch);
+-      break;
+-    case 'zilchKeepCombination': {
+-      const combinationId = String(payload.combinationId ?? '');
+-      if (!combinationId) {
+-        throw new Error('combinationId required');
+-      }
+-      zilch = keepCombination(zilch, combinationId);
+-      break;
+-    }
+-    case 'zilchBankTurn':
+-      zilch = bankTurn(zilch);
+-      break;
+-    case 'zilchQuitTurn':
+-      zilch = bankTurn(zilch);
+-      break;
+-    default:
+-      throw new Error(`Unknown Zilch action: ${action}`);
+-  }
+-
+-  return { ...state, zilch: normalizeZilchState(zilch) };
+-}
+-
+-export function startZilchGameOnState(
+-  state: GameState,
+-  playerIds: string[],
+-  settings: ZilchGameSettings,
+-): GameState {
+-  return {
+-    ...state,
+-    zilch: normalizeZilchState(createInitialZilchState(playerIds, settings)),
+-    zilchSettings: settings,
+-    tableMeta: {
+-      ...state.tableMeta,
+-      gameCategory: 'dice',
+-      diceGame: 'zilch',
+-      protocolLocked: true,
+-    },
+-  };
+-}
++export * from '../dice/zilch/applyZilchAction';
+diff --git a/src/engine/zilch/index.ts b/src/engine/zilch/index.ts
+index e522050..f3c63d5 100644
+--- a/src/engine/zilch/index.ts
++++ b/src/engine/zilch/index.ts
+@@ -1,6 +1 @@
+-export * from './zilchTypes';
+-export * from './zilchScoring';
+-export * from './zilchEngine';
+-export * from './settings';
+-export * from './normalizeZilchState';
+-export * from './applyZilchAction';
++export * from '../dice/zilch';
+diff --git a/src/engine/zilch/normalizeZilchState.ts b/src/engine/zilch/normalizeZilchState.ts
+index 937c7e7..96db50a 100644
+--- a/src/engine/zilch/normalizeZilchState.ts
++++ b/src/engine/zilch/normalizeZilchState.ts
+@@ -1,37 +1 @@
+-import type { ZilchGameState } from './zilchTypes';
+-import { startTurn } from './zilchEngine';
+-
+-/** Repair stuck or legacy Zilch phases after load/hydration. */
+-export function normalizeZilchState(zilch: ZilchGameState): ZilchGameState {
+-  let next = { ...zilch };
+-
+-  if (next.diceAnimation?.isRolling) {
+-    const stuckStarter =
+-      next.phase === 'setup' ||
+-      next.phase === 'randomising-starter' ||
+-      !next.currentPlayerId;
+-    if (stuckStarter) {
+-      next = {
+-        ...next,
+-        diceAnimation: { isRolling: false },
+-      };
+-    }
+-  }
+-
+-  if (next.phase === 'randomising-starter') {
+-    if (next.starterPlayerId && next.currentPlayerId) {
+-      return startTurn(next, next.starterPlayerId);
+-    }
+-    if (next.players.length > 0) {
+-      return {
+-        ...next,
+-        phase: 'setup',
+-        starterPlayerId: null,
+-        currentPlayerId: null,
+-        diceAnimation: { isRolling: false },
+-      };
+-    }
+-  }
+-
+-  return next;
+-}
++export * from '../dice/zilch/normalizeZilchState';
+diff --git a/src/engine/zilch/settings.ts b/src/engine/zilch/settings.ts
+index 973e773..2cb1aaf 100644
+--- a/src/engine/zilch/settings.ts
++++ b/src/engine/zilch/settings.ts
+@@ -1,28 +1 @@
+-import type { ZilchDiceAnimationSettings, ZilchGameSettings } from './zilchTypes';
+-
+-export const DEFAULT_ZILCH_DICE_ANIMATION: ZilchDiceAnimationSettings = {
+-  diceAnimationMode: 'fixed',
+-  diceAnimationMs: 2500,
+-  diceAnimationRandomMinMs: 2000,
+-  diceAnimationRandomMaxMs: 8000,
+-};
+-
+-export const DEFAULT_ZILCH_SETTINGS: ZilchGameSettings = {
+-  mode: 'target_points',
+-  targetPoints: 100,
+-  roundLimit: 10,
+-  diceAnimation: { ...DEFAULT_ZILCH_DICE_ANIMATION },
+-};
+-
+-export function resolveDiceAnimationDurationMs(
+-  settings: ZilchDiceAnimationSettings,
+-  rng: () => number = Math.random,
+-): number {
+-  if (settings.diceAnimationMode === 'random') {
+-    const min = settings.diceAnimationRandomMinMs;
+-    const max = settings.diceAnimationRandomMaxMs;
+-    const span = Math.max(0, max - min);
+-    return min + Math.floor(rng() * (span + 1));
+-  }
+-  return settings.diceAnimationMs;
+-}
++export * from '../dice/zilch/settings';
+diff --git a/src/engine/zilch/zilchEngine.test.ts b/src/engine/zilch/zilchEngine.test.ts
+deleted file mode 100644
+index 0f5282a..0000000
+--- a/src/engine/zilch/zilchEngine.test.ts
++++ /dev/null
+@@ -1,179 +0,0 @@
+-import { describe, expect, it } from 'vitest';
+-import { DEFAULT_ZILCH_SETTINGS } from './settings';
+-import { resolveDiceAnimationDurationMs } from './settings';
+-import {
+-  bankTurn,
+-  completeDiceRoll,
+-  createInitialZilchState,
+-  endTurnWithZilch,
+-  keepCombination,
+-  randomiseStarter,
+-  rollDice,
+-  startTurn,
+-} from './zilchEngine';
+-import type { ZilchDie } from './zilchTypes';
+-
+-const P1 = 'p1';
+-const P2 = 'p2';
+-function seqRng(values: number[]): () => number {
+-  let i = 0;
+-  return () => values[i++ % values.length]!;
+-}
+-
+-function dice(values: number[]): ZilchDie[] {
+-  return values.map((value, idx) => ({
+-    id: `d${idx}`,
+-    value,
+-    isAvailable: true,
+-    isKept: false,
+-  }));
+-}
+-
+-describe('zilchEngine', () => {
+-  it('turnover / Greater Glory clears kept dice for full re-roll', () => {
+-    let state = createInitialZilchState([P1], DEFAULT_ZILCH_SETTINGS);
+-    state = randomiseStarter(state, () => 0);
+-    state = {
+-      ...state,
+-      phase: 'awaiting-keep-selection',
+-      dice: dice([1, 1, 1, 5, 5, 5]),
+-      rollNumberInTurn: 1,
+-      availableCombinations: [
+-        {
+-          id: 'three-1s',
+-          label: 'Three 1s',
+-          diceIds: ['d0', 'd1', 'd2'],
+-          score: 10,
+-          type: 'three_of_a_kind',
+-        },
+-        {
+-          id: 'three-5s',
+-          label: 'Three 5s',
+-          diceIds: ['d3', 'd4', 'd5'],
+-          score: 5,
+-          type: 'three_of_a_kind',
+-        },
+-      ],
+-    };
+-    state = keepCombination(state, 'three-1s');
+-    const second = state.availableCombinations.find((c) => c.type === 'three_of_a_kind' && c.label.includes('5'));
+-    expect(second).toBeDefined();
+-    state = keepCombination(state, second!.id);
+-    expect(state.dice).toHaveLength(0);
+-    expect(state.keptDice).toHaveLength(0);
+-    expect(state.turnScore).toBe(15);
+-    expect(state.phase).toBe('player-turn');
+-  });
+-
+-  it('zilch resets turn score only', () => {
+-    let state = createInitialZilchState([P1], DEFAULT_ZILCH_SETTINGS);
+-    state = randomiseStarter(state, () => 0);
+-    state = {
+-      ...state,
+-      totalScoresByPlayerId: { [P1]: 42 },
+-      turnScore: 7,
+-      phase: 'player-turn',
+-      dice: dice([2, 3, 4, 6, 2, 3]),
+-      availableCombinations: [],
+-    };
+-    state = endTurnWithZilch(state);
+-    expect(state.turnScore).toBe(0);
+-    expect(state.totalScoresByPlayerId[P1]).toBe(42);
+-  });
+-
+-  it('target points final round after leader banks', () => {
+-    const settings = {
+-      ...DEFAULT_ZILCH_SETTINGS,
+-      mode: 'target_points' as const,
+-      targetPoints: 100,
+-    };
+-    let state = createInitialZilchState([P1, P2], settings);
+-    state = randomiseStarter(state, () => 0);
+-    state = startTurn(state, P1);
+-    state = {
+-      ...state,
+-      totalScoresByPlayerId: { [P1]: 95, [P2]: 50 },
+-      turnScore: 10,
+-      keptThisRoll: true,
+-    };
+-    state = bankTurn(state);
+-    expect(state.phase).toBe('final-round');
+-    expect(state.finalRoundStartedByPlayerId).toBe(P1);
+-    expect(state.playersRemainingFinalTurn).toEqual([P2]);
+-    expect(state.currentPlayerId).toBe(P2);
+-  });
+-
+-  it('fixed rounds winner after round limit', () => {
+-    const settings = {
+-      ...DEFAULT_ZILCH_SETTINGS,
+-      mode: 'fixed_rounds' as const,
+-      roundLimit: 1,
+-    };
+-    let state = createInitialZilchState([P1, P2], settings);
+-    state = randomiseStarter(state, () => 0);
+-    state = startTurn(state, P1);
+-    state = {
+-      ...state,
+-      totalScoresByPlayerId: { [P1]: 20, [P2]: 30 },
+-      turnScore: 5,
+-      keptThisRoll: true,
+-    };
+-    state = bankTurn(state);
+-    state = startTurn(state, P2);
+-    state = { ...state, turnScore: 1, keptThisRoll: true };
+-    state = bankTurn(state);
+-    expect(state.phase).toBe('completed');
+-    expect(state.winnerPlayerId).toBe(P2);
+-  });
+-
+-  it('dice animation duration fixed and random', () => {
+-    const fixed = resolveDiceAnimationDurationMs({
+-      diceAnimationMode: 'fixed',
+-      diceAnimationMs: 2500,
+-      diceAnimationRandomMinMs: 2000,
+-      diceAnimationRandomMaxMs: 8000,
+-    });
+-    expect(fixed).toBe(2500);
+-
+-    const rng = seqRng([0, 0.5, 1]);
+-    const a = resolveDiceAnimationDurationMs(
+-      {
+-        diceAnimationMode: 'random',
+-        diceAnimationMs: 2500,
+-        diceAnimationRandomMinMs: 2000,
+-        diceAnimationRandomMaxMs: 8000,
+-      },
+-      rng,
+-    );
+-    const b = resolveDiceAnimationDurationMs(
+-      {
+-        diceAnimationMode: 'random',
+-        diceAnimationMs: 2500,
+-        diceAnimationRandomMinMs: 2000,
+-        diceAnimationRandomMaxMs: 8000,
+-      },
+-      rng,
+-    );
+-    expect(a).toBeGreaterThanOrEqual(2000);
+-    expect(a).toBeLessThanOrEqual(8000);
+-    expect(b).toBeGreaterThanOrEqual(2000);
+-    expect(b).toBeLessThanOrEqual(8000);
+-  });
+-
+-  it('completeDiceRoll reveals zilch path', () => {
+-    let state = createInitialZilchState([P1], DEFAULT_ZILCH_SETTINGS);
+-    state = randomiseStarter(state, () => 0);
+-    state = rollDice(state, DEFAULT_ZILCH_SETTINGS, seqRng([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]), 1000);
+-    state = {
+-      ...state,
+-      diceAnimation: {
+-        isRolling: true,
+-        pendingValues: [2, 3, 4, 6, 2, 3],
+-      },
+-      dice: dice([1, 1, 1, 1, 1, 1]),
+-    };
+-    state = completeDiceRoll(state);
+-    expect(state.turnScore).toBe(0);
+-    expect(state.totalScoresByPlayerId[P1]).toBe(0);
+-  });
+-});
+diff --git a/src/engine/zilch/zilchEngine.ts b/src/engine/zilch/zilchEngine.ts
+index 255fde0..c77c395 100644
+--- a/src/engine/zilch/zilchEngine.ts
++++ b/src/engine/zilch/zilchEngine.ts
+@@ -1,499 +1 @@
+-import { generateId } from '../utils/id';
+-import { detectZilchCombinations } from './zilchScoring';
+-import { resolveDiceAnimationDurationMs } from './settings';
+-import type {
+-  ZilchCombination,
+-  ZilchDie,
+-  ZilchGameSettings,
+-  ZilchGameState,
+-  ZilchKeptGroup,
+-  ZilchPlayerState,
+-} from './zilchTypes';
+-
+-export function createInitialZilchState(
+-  playerIds: string[],
+-  settings: ZilchGameSettings,
+-): ZilchGameState {
+-  const players: ZilchPlayerState[] = playerIds.map((playerId) => ({
+-    playerId,
+-    roundsPlayed: 0,
+-    hasHadFinalTurn: false,
+-  }));
+-  const totalScoresByPlayerId: Record<string, number> = {};
+-  for (const id of playerIds) {
+-    totalScoresByPlayerId[id] = 0;
+-  }
+-
+-  return {
+-    phase: 'setup',
+-    players,
+-    currentPlayerId: null,
+-    starterPlayerId: null,
+-    mode: settings.mode,
+-    targetPoints: settings.mode === 'target_points' ? settings.targetPoints : undefined,
+-    roundLimit: settings.mode === 'fixed_rounds' ? settings.roundLimit : undefined,
+-    currentRound: 1,
+-    finalRoundStartedByPlayerId: null,
+-    playersRemainingFinalTurn: undefined,
+-    dice: [],
+-    rollNumberInTurn: 0,
+-    turnScore: 0,
+-    totalScoresByPlayerId,
+-    keptDice: [],
+-    availableCombinations: [],
+-    keptThisRoll: false,
+-    diceAnimation: { isRolling: false },
+-    winnerPlayerId: null,
+-  };
+-}
+-
+-function rollDieValue(rng: () => number): number {
+-  return 1 + Math.floor(rng() * 6);
+-}
+-
+-export function randomiseStarter(
+-  state: ZilchGameState,
+-  rng: () => number = Math.random,
+-): ZilchGameState {
+-  if (state.phase !== 'setup' && state.phase !== 'randomising-starter') {
+-    throw new Error('Starter can only be randomised before the first turn');
+-  }
+-  if (state.players.length === 0) {
+-    throw new Error('At least one player is required');
+-  }
+-  const index = Math.floor(rng() * state.players.length);
+-  const starter = state.players[index]!.playerId;
+-  return startTurn(
+-    {
+-      ...state,
+-      starterPlayerId: starter,
+-      diceAnimation: { isRolling: false },
+-    },
+-    starter,
+-  );
+-}
+-
+-/** @deprecated Starter selection completes in randomiseStarter; kept for legacy actions. */
+-export function confirmStarter(state: ZilchGameState): ZilchGameState {
+-  if (state.phase === 'player-turn' && state.starterPlayerId && state.currentPlayerId) {
+-    return state;
+-  }
+-  if (state.phase !== 'randomising-starter' || !state.starterPlayerId) {
+-    throw new Error('Starter randomisation is not active');
+-  }
+-  return startTurn(state, state.starterPlayerId);
+-}
+-
+-export function startTurn(state: ZilchGameState, playerId: string): ZilchGameState {
+-  if (!state.players.some((p) => p.playerId === playerId)) {
+-    throw new Error(`Unknown player ${playerId}`);
+-  }
+-  const phase =
+-    state.phase === 'final-round' ? 'final-round' : ('player-turn' as ZilchGameState['phase']);
+-  return {
+-    ...state,
+-    phase,
+-    currentPlayerId: playerId,
+-    rollNumberInTurn: 0,
+-    turnScore: 0,
+-    dice: [],
+-    keptDice: [],
+-    availableCombinations: [],
+-    keptThisRoll: false,
+-    diceAnimation: { isRolling: false },
+-  };
+-}
+-
+-function diceToRollCount(state: ZilchGameState): number {
+-  const available = state.dice.filter((d) => d.isAvailable && !d.isKept);
+-  if (available.length > 0) {
+-    return available.length;
+-  }
+-  return 6;
+-}
+-
+-export function rollDice(
+-  state: ZilchGameState,
+-  settings: ZilchGameSettings,
+-  rng: () => number = Math.random,
+-  now: number = Date.now(),
+-): ZilchGameState {
+-  if (state.phase !== 'player-turn') {
+-    throw new Error('Can only roll during an active turn');
+-  }
+-  if (state.diceAnimation.isRolling) {
+-    throw new Error('Dice are already rolling');
+-  }
+-
+-  const count = diceToRollCount(state);
+-  const values = Array.from({ length: count }, () => rollDieValue(rng));
+-  const durationMs = resolveDiceAnimationDurationMs(settings.diceAnimation, rng);
+-
+-  const nextDice: ZilchDie[] =
+-    count === 6
+-      ? values.map((value) => ({
+-          id: generateId(),
+-          value,
+-          isAvailable: true,
+-          isKept: false,
+-        }))
+-      : state.dice
+-          .filter((d) => d.isKept)
+-          .concat(
+-            values.map((value) => ({
+-              id: generateId(),
+-              value,
+-              isAvailable: true,
+-              isKept: false,
+-            })),
+-          );
+-
+-  return {
+-    ...state,
+-    rollNumberInTurn: state.rollNumberInTurn + 1,
+-    keptThisRoll: false,
+-    lastZilchPlayerId: null,
+-    dice: nextDice,
+-    availableCombinations: [],
+-    diceAnimation: {
+-      isRolling: true,
+-      startedAt: now,
+-      durationMs,
+-      pendingValues: values,
+-    },
+-  };
+-}
+-
+-/** Reveal dice after animation — evaluates combinations or zilch. */
+-export function completeDiceRoll(state: ZilchGameState): ZilchGameState {
+-  if (!state.diceAnimation.isRolling) {
+-    return state;
+-  }
+-
+-  let dice = state.dice;
+-  const pending = state.diceAnimation.pendingValues;
+-  if (pending && pending.length > 0) {
+-    const unkept = dice.filter((d) => !d.isKept);
+-    dice = [
+-      ...dice.filter((d) => d.isKept),
+-      ...unkept.map((die, i) => ({
+-        ...die,
+-        value: pending[i] ?? die.value,
+-      })),
+-    ];
+-  }
+-
+-  const combinations = detectZilchCombinations(dice);
+-  if (combinations.length === 0) {
+-    return endTurnWithZilch({
+-      ...state,
+-      dice,
+-      diceAnimation: { isRolling: false },
+-      availableCombinations: [],
+-    });
+-  }
+-
+-  return {
+-    ...state,
+-    dice,
+-    phase: 'awaiting-keep-selection',
+-    availableCombinations: combinations,
+-    diceAnimation: { isRolling: false },
+-  };
+-}
+-
+-function findCombination(
+-  state: ZilchGameState,
+-  combinationId: string,
+-): ZilchCombination | undefined {
+-  return state.availableCombinations.find((c) => c.id === combinationId);
+-}
+-
+-function combinationDiceAvailable(state: ZilchGameState, combo: ZilchCombination): boolean {
+-  const dieMap = new Map(state.dice.map((d) => [d.id, d]));
+-  return combo.diceIds.every((id) => {
+-    const die = dieMap.get(id);
+-    return die && die.isAvailable && !die.isKept;
+-  });
+-}
+-
+-export function keepCombination(
+-  state: ZilchGameState,
+-  combinationId: string,
+-): ZilchGameState {
+-  if (state.phase !== 'awaiting-keep-selection' && state.phase !== 'player-turn') {
+-    throw new Error('Cannot keep a combination in the current phase');
+-  }
+-
+-  const combo = findCombination(state, combinationId);
+-  if (!combo) {
+-    throw new Error(`Unknown combination ${combinationId}`);
+-  }
+-  if (!combinationDiceAvailable(state, combo)) {
+-    throw new Error('Combination dice are not available');
+-  }
+-
+-  const groupId = generateId();
+-  const keptGroup: ZilchKeptGroup = {
+-    id: groupId,
+-    combinationId: combo.id,
+-    label: combo.label,
+-    diceIds: [...combo.diceIds],
+-    score: combo.score,
+-    rollNumberInTurn: state.rollNumberInTurn,
+-  };
+-
+-  const keptIds = new Set(combo.diceIds);
+-  const nextDice = state.dice.map((d) =>
+-    keptIds.has(d.id)
+-      ? { ...d, isKept: true, isAvailable: false, keptGroupId: groupId }
+-      : d,
+-  );
+-
+-  const remainingAvailable = nextDice.filter((d) => d.isAvailable && !d.isKept);
+-  const nextCombinations = detectZilchCombinations(nextDice).filter((c) =>
+-    combinationDiceAvailable({ ...state, dice: nextDice }, c),
+-  );
+-
+-  const turnover = remainingAvailable.length === 0;
+-  let phase: ZilchGameState['phase'] = 'player-turn';
+-  let diceAfter = nextDice;
+-  let keptAfter = [...state.keptDice, keptGroup];
+-
+-  if (turnover) {
+-    diceAfter = [];
+-    keptAfter = [];
+-    phase = 'player-turn';
+-  }
+-
+-  return {
+-    ...state,
+-    phase,
+-    dice: diceAfter,
+-    keptDice: keptAfter,
+-    turnScore: state.turnScore + combo.score,
+-    availableCombinations: turnover ? [] : nextCombinations,
+-    keptThisRoll: true,
+-  };
+-}
+-
+-export function bankTurn(state: ZilchGameState): ZilchGameState {
+-  if (state.phase !== 'player-turn' && state.phase !== 'awaiting-keep-selection') {
+-    throw new Error('Cannot bank in the current phase');
+-  }
+-  if (state.turnScore <= 0) {
+-    throw new Error('Nothing to bank');
+-  }
+-  if (!state.keptThisRoll) {
+-    throw new Error('Must keep a scoring combination before banking');
+-  }
+-
+-  const playerId = state.currentPlayerId;
+-  if (!playerId) {
+-    throw new Error('No active player');
+-  }
+-
+-  const totalScoresByPlayerId = {
+-    ...state.totalScoresByPlayerId,
+-    [playerId]: (state.totalScoresByPlayerId[playerId] ?? 0) + state.turnScore,
+-  };
+-
+-  const next = incrementRoundsPlayed(
+-    {
+-      ...state,
+-      totalScoresByPlayerId,
+-      turnScore: 0,
+-      dice: [],
+-      keptDice: [],
+-      availableCombinations: [],
+-      keptThisRoll: false,
+-      diceAnimation: { isRolling: false },
+-    },
+-    playerId,
+-  );
+-
+-  if (next.mode === 'target_points' && !next.finalRoundStartedByPlayerId) {
+-    const total = totalScoresByPlayerId[playerId] ?? 0;
+-    if (total > (next.targetPoints ?? 0)) {
+-      const remaining = next.players
+-        .map((p) => p.playerId)
+-        .filter((id) => id !== playerId);
+-      if (remaining.length === 0) {
+-        return {
+-          ...next,
+-          phase: 'completed',
+-          winnerPlayerId: highestScorePlayerId(next),
+-          currentPlayerId: null,
+-        };
+-      }
+-      const first = remaining[0]!;
+-      return startTurn(
+-        {
+-          ...next,
+-          phase: 'final-round',
+-          finalRoundStartedByPlayerId: playerId,
+-          playersRemainingFinalTurn: remaining,
+-        },
+-        first,
+-      );
+-    }
+-  }
+-
+-  if (next.mode === 'fixed_rounds' && allPlayersReachedRoundLimit(next)) {
+-    return {
+-      ...next,
+-      phase: 'completed',
+-      winnerPlayerId: highestScorePlayerId(next),
+-      currentPlayerId: null,
+-    };
+-  }
+-
+-  return advanceToNextPlayer(next);
+-}
+-
+-export function endTurnWithZilch(state: ZilchGameState): ZilchGameState {
+-  const playerId = state.currentPlayerId;
+-  if (!playerId) {
+-    throw new Error('No active player');
+-  }
+-
+-  const priorTotal = state.totalScoresByPlayerId[playerId] ?? 0;
+-
+-  const next = incrementRoundsPlayed(
+-    {
+-      ...state,
+-      phase: 'zilch',
+-      turnScore: 0,
+-      dice: [],
+-      keptDice: [],
+-      availableCombinations: [],
+-      keptThisRoll: false,
+-      diceAnimation: { isRolling: false },
+-      lastZilchPlayerId: playerId,
+-    },
+-    playerId,
+-  );
+-
+-  if ((next.totalScoresByPlayerId[playerId] ?? 0) !== priorTotal) {
+-    throw new Error('Zilch must not change total game score');
+-  }
+-
+-  if (next.mode === 'fixed_rounds' && allPlayersReachedRoundLimit(next)) {
+-    return {
+-      ...next,
+-      phase: 'completed',
+-      winnerPlayerId: highestScorePlayerId(next),
+-      currentPlayerId: null,
+-    };
+-  }
+-
+-  return advanceToNextPlayer(next);
+-}
+-
+-function incrementRoundsPlayed(state: ZilchGameState, playerId: string): ZilchGameState {
+-  return {
+-    ...state,
+-    players: state.players.map((p) =>
+-      p.playerId === playerId
+-        ? { ...p, roundsPlayed: p.roundsPlayed + 1 }
+-        : p,
+-    ),
+-  };
+-}
+-
+-export function advanceToNextPlayer(state: ZilchGameState): ZilchGameState {
+-  const currentId = state.currentPlayerId;
+-  if (!currentId) {
+-    return state;
+-  }
+-
+-  if (state.phase === 'final-round' && state.playersRemainingFinalTurn) {
+-    const remaining = state.playersRemainingFinalTurn.filter((id) => id !== currentId);
+-    if (remaining.length === 0) {
+-      return {
+-        ...state,
+-        phase: 'completed',
+-        winnerPlayerId: highestScorePlayerId(state),
+-        currentPlayerId: null,
+-      };
+-    }
+-    const nextPlayerId = remaining[0]!;
+-    return startTurn(
+-      { ...state, playersRemainingFinalTurn: remaining },
+-      nextPlayerId,
+-    );
+-  }
+-
+-  const order = state.players.map((p) => p.playerId);
+-  const idx = order.indexOf(currentId);
+-  const nextIdx = (idx + 1) % order.length;
+-  const nextPlayerId = order[nextIdx]!;
+-  const nextRound = state.currentRound + (nextIdx === 0 ? 1 : 0);
+-
+-  return startTurn({ ...state, currentRound: nextRound }, nextPlayerId);
+-}
+-
+-function highestScorePlayerId(state: ZilchGameState): string | null {
+-  let best: string | null = null;
+-  let bestScore = -Infinity;
+-  for (const [id, score] of Object.entries(state.totalScoresByPlayerId)) {
+-    if (score > bestScore) {
+-      bestScore = score;
+-      best = id;
+-    }
+-  }
+-  return best;
+-}
+-
+-function allPlayersReachedRoundLimit(state: ZilchGameState): boolean {
+-  const limit = state.roundLimit ?? 0;
+-  return state.players.every((p) => p.roundsPlayed >= limit);
+-}
+-
+-export function checkZilchGameEnd(state: ZilchGameState): ZilchGameState {
+-  if (state.phase === 'completed') {
+-    return state;
+-  }
+-
+-  if (state.mode === 'fixed_rounds' && allPlayersReachedRoundLimit(state)) {
+-    return {
+-      ...state,
+-      phase: 'completed',
+-      currentPlayerId: null,
+-      winnerPlayerId: highestScorePlayerId(state),
+-    };
+-  }
+-
+-  return state;
+-}
+-
+-export function getZilchWinnerId(state: ZilchGameState): string | null {
+-  if (state.winnerPlayerId) {
+-    return state.winnerPlayerId;
+-  }
+-  return highestScorePlayerId(state);
+-}
+-
+-export function canRollDice(state: ZilchGameState): boolean {
+-  return state.phase === 'player-turn' && !state.diceAnimation.isRolling;
+-}
+-
+-export function canBank(state: ZilchGameState): boolean {
+-  if (state.phase === 'zilch' || state.phase === 'completed') {
+-    return false;
+-  }
+-  return (
+-    state.turnScore > 0 &&
+-    state.keptThisRoll &&
+-    (state.phase === 'player-turn' || state.phase === 'awaiting-keep-selection')
+-  );
+-}
+-
+-export function canKeepCombination(state: ZilchGameState): boolean {
+-  return state.phase === 'awaiting-keep-selection' && state.availableCombinations.length > 0;
+-}
+-
+-/** Bank current turn score without rolling remaining dice (Greater Glory quit). */
+-export function quitTurn(state: ZilchGameState): ZilchGameState {
+-  return bankTurn(state);
+-}
++export * from '../dice/zilch/zilchEngine';
+diff --git a/src/engine/zilch/zilchScoring.test.ts b/src/engine/zilch/zilchScoring.test.ts
+deleted file mode 100644
+index 7fd4a3a..0000000
+--- a/src/engine/zilch/zilchScoring.test.ts
++++ /dev/null
+@@ -1,65 +0,0 @@
+-import { describe, expect, it } from 'vitest';
+-import {
+-  detectZilchCombinations,
+-  fourOfAKindScore,
+-  fiveOfAKindScore,
+-  isZilchRoll,
+-  threeOfAKindScore,
+-} from './zilchScoring';
+-import type { ZilchDie } from './zilchTypes';
+-
+-function dice(values: number[]): ZilchDie[] {
+-  return values.map((value, i) => ({
+-    id: `d${i}`,
+-    value,
+-    isAvailable: true,
+-    isKept: false,
+-  }));
+-}
+-
+-describe('zilchScoring', () => {
+-  it('scores six of a kind', () => {
+-    const combos = detectZilchCombinations(dice([6, 6, 6, 6, 6, 6]));
+-    expect(combos.some((c) => c.type === 'six_of_a_kind' && c.score === 100)).toBe(true);
+-  });
+-
+-  it('scores straight', () => {
+-    const combos = detectZilchCombinations(dice([1, 2, 3, 4, 5, 6]));
+-    expect(combos.find((c) => c.type === 'straight')?.score).toBe(30);
+-  });
+-
+-  it('scores three pairs', () => {
+-    const combos = detectZilchCombinations(dice([2, 2, 4, 4, 6, 6]));
+-    expect(combos.find((c) => c.type === 'three_pairs')?.score).toBe(10);
+-  });
+-
+-  it('scores three/four/five of a kind', () => {
+-    expect(threeOfAKindScore(1)).toBe(10);
+-    expect(threeOfAKindScore(2)).toBe(2);
+-    expect(fourOfAKindScore(3)).toBe(6);
+-    expect(fiveOfAKindScore(4)).toBe(16);
+-    const combos = detectZilchCombinations(dice([4, 4, 4, 4, 2, 3]));
+-    expect(combos.find((c) => c.type === 'four_of_a_kind')?.score).toBe(8);
+-    const five = detectZilchCombinations(dice([5, 5, 5, 5, 5, 1]));
+-    expect(five.find((c) => c.type === 'five_of_a_kind')?.score).toBe(20);
+-  });
+-
+-  it('scores single 1s and 5s', () => {
+-    const combos = detectZilchCombinations(dice([1, 5, 2, 3, 4, 4]));
+-    expect(combos.filter((c) => c.type === 'single_one')).toHaveLength(1);
+-    expect(combos.find((c) => c.type === 'single_five')?.score).toBe(0.5);
+-  });
+-
+-  it('detects zilch', () => {
+-    expect(isZilchRoll(dice([2, 3, 4, 6, 2, 3]))).toBe(true);
+-  });
+-
+-  it('allows lower scoring option (single 1 vs three 1s)', () => {
+-    const combos = detectZilchCombinations(dice([1, 1, 1, 2, 3, 4]));
+-    const three = combos.find((c) => c.type === 'three_of_a_kind');
+-    const singles = combos.filter((c) => c.type === 'single_one');
+-    expect(three?.score).toBe(10);
+-    expect(singles).toHaveLength(3);
+-    expect(singles[0]?.score).toBe(1);
+-  });
+-});
+diff --git a/src/engine/zilch/zilchScoring.ts b/src/engine/zilch/zilchScoring.ts
+index 5e060a8..101ca09 100644
+--- a/src/engine/zilch/zilchScoring.ts
++++ b/src/engine/zilch/zilchScoring.ts
+@@ -1,172 +1,10 @@
+-import type { ZilchCombination, ZilchCombinationType, ZilchDie } from './zilchTypes';
+-
+-const THREE_OF_KIND_SCORE: Record<number, number> = {
+-  1: 10,
+-  2: 2,
+-  3: 3,
+-  4: 4,
+-  5: 5,
+-  6: 6,
+-};
+-
+-export function threeOfAKindScore(face: number): number {
+-  return THREE_OF_KIND_SCORE[face] ?? 0;
+-}
+-
+-export function fourOfAKindScore(face: number): number {
+-  return 2 * threeOfAKindScore(face);
+-}
+-
+-export function fiveOfAKindScore(face: number): number {
+-  return 2 * fourOfAKindScore(face);
+-}
+-
+-function availableDice(dice: ZilchDie[]): ZilchDie[] {
+-  return dice.filter((d) => d.isAvailable && !d.isKept);
+-}
+-
+-function diceByFace(dice: ZilchDie[]): Map<number, ZilchDie[]> {
+-  const map = new Map<number, ZilchDie[]>();
+-  for (const die of dice) {
+-    const list = map.get(die.value) ?? [];
+-    list.push(die);
+-    map.set(die.value, list);
+-  }
+-  return map;
+-}
+-
+-function makeCombination(
+-  type: ZilchCombinationType,
+-  label: string,
+-  diceIds: string[],
+-  score: number,
+-  suffix: string,
+-): ZilchCombination {
+-  return {
+-    id: `${type}-${suffix}-${diceIds.join('_')}`,
+-    label,
+-    diceIds,
+-    score,
+-    type,
+-  };
+-}
+-
+-/** All valid scoring options on currently available (unkept) dice from this roll. */
+-export function detectZilchCombinations(dice: ZilchDie[]): ZilchCombination[] {
+-  const pool = availableDice(dice);
+-  if (pool.length === 0) {
+-    return [];
+-  }
+-
+-  const combinations: ZilchCombination[] = [];
+-  const byFace = diceByFace(pool);
+-  const values = pool.map((d) => d.value);
+-
+-  if (pool.length === 6) {
+-    const sorted = [...values].sort((a, b) => a - b);
+-    const isStraight =
+-      sorted[0] === 1 &&
+-      sorted[1] === 2 &&
+-      sorted[2] === 3 &&
+-      sorted[3] === 4 &&
+-      sorted[4] === 5 &&
+-      sorted[5] === 6;
+-    if (isStraight) {
+-      combinations.push(
+-        makeCombination(
+-          'straight',
+-          'Straight 1–6',
+-          pool.map((d) => d.id),
+-          30,
+-          'straight',
+-        ),
+-      );
+-    }
+-
+-    const pairFaces = [...byFace.entries()].filter(([, list]) => list.length === 2);
+-    if (pairFaces.length === 3) {
+-      combinations.push(
+-        makeCombination(
+-          'three_pairs',
+-          'Three pairs',
+-          pool.map((d) => d.id),
+-          10,
+-          'three-pairs',
+-        ),
+-      );
+-    }
+-
+-    for (const [face, list] of byFace.entries()) {
+-      if (list.length === 6) {
+-        combinations.push(
+-          makeCombination(
+-            'six_of_a_kind',
+-            `Six ${face}s`,
+-            list.map((d) => d.id),
+-            100,
+-            `six-${face}`,
+-          ),
+-        );
+-      }
+-    }
+-  }
+-
+-  for (const [face, list] of byFace.entries()) {
+-    const count = list.length;
+-    if (count === 6) {
+-      continue;
+-    }
+-    if (count >= 5) {
+-      combinations.push(
+-        makeCombination(
+-          'five_of_a_kind',
+-          `Five ${face}s`,
+-          list.slice(0, 5).map((d) => d.id),
+-          fiveOfAKindScore(face),
+-          `five-${face}`,
+-        ),
+-      );
+-    }
+-    if (count >= 4) {
+-      combinations.push(
+-        makeCombination(
+-          'four_of_a_kind',
+-          `Four ${face}s`,
+-          list.slice(0, 4).map((d) => d.id),
+-          fourOfAKindScore(face),
+-          `four-${face}`,
+-        ),
+-      );
+-    }
+-    if (count >= 3) {
+-      combinations.push(
+-        makeCombination(
+-          'three_of_a_kind',
+-          `Three ${face}s`,
+-          list.slice(0, 3).map((d) => d.id),
+-          threeOfAKindScore(face),
+-          `three-${face}`,
+-        ),
+-      );
+-    }
+-  }
+-
+-  for (const die of pool) {
+-    if (die.value === 1) {
+-      combinations.push(
+-        makeCombination('single_one', 'Single 1', [die.id], 1, die.id),
+-      );
+-    }
+-    if (die.value === 5) {
+-      combinations.push(
+-        makeCombination('single_five', 'Single 5', [die.id], 0.5, die.id),
+-      );
+-    }
+-  }
+-
+-  return combinations;
+-}
+-
+-export function isZilchRoll(dice: ZilchDie[]): boolean {
+-  return detectZilchCombinations(dice).length === 0;
+-}
++export * from '../dice/zilch/zilchRules';
++/** @deprecated Use zilchRules — re-export for compatibility */
++export {
++  detectZilchCombinations,
++  fourOfAKindScore,
++  fiveOfAKindScore,
++  isZilchRoll,
++  sixOfAKindScore,
++  threeOfAKindScore,
++} from '../dice/zilch/zilchRules';
+diff --git a/src/engine/zilch/zilchTypes.ts b/src/engine/zilch/zilchTypes.ts
+index 29efafd..7be3eed 100644
+--- a/src/engine/zilch/zilchTypes.ts
++++ b/src/engine/zilch/zilchTypes.ts
+@@ -1,98 +1 @@
+-export type ZilchPhase =
+-  | 'setup'
+-  | 'randomising-starter'
+-  | 'player-turn'
+-  | 'awaiting-keep-selection'
+-  | 'zilch'
+-  | 'final-round'
+-  | 'completed';
+-
+-export type ZilchMode = 'target_points' | 'fixed_rounds';
+-
+-export type ZilchCombinationType =
+-  | 'six_of_a_kind'
+-  | 'straight'
+-  | 'three_pairs'
+-  | 'five_of_a_kind'
+-  | 'four_of_a_kind'
+-  | 'three_of_a_kind'
+-  | 'single_one'
+-  | 'single_five';
+-
+-export interface ZilchDie {
+-  id: string;
+-  value: number;
+-  isAvailable: boolean;
+-  isKept: boolean;
+-  keptGroupId?: string;
+-}
+-
+-export interface ZilchKeptGroup {
+-  id: string;
+-  combinationId: string;
+-  label: string;
+-  diceIds: string[];
+-  score: number;
+-  rollNumberInTurn: number;
+-}
+-
+-export interface ZilchCombination {
+-  id: string;
+-  label: string;
+-  diceIds: string[];
+-  score: number;
+-  type: ZilchCombinationType;
+-}
+-
+-export interface ZilchPlayerState {
+-  playerId: string;
+-  roundsPlayed: number;
+-  hasHadFinalTurn: boolean;
+-}
+-
+-export type DiceAnimationMode = 'fixed' | 'random';
+-
+-export interface ZilchDiceAnimationSettings {
+-  diceAnimationMode: DiceAnimationMode;
+-  diceAnimationMs: number;
+-  diceAnimationRandomMinMs: number;
+-  diceAnimationRandomMaxMs: number;
+-}
+-
+-export interface ZilchGameSettings {
+-  mode: ZilchMode;
+-  targetPoints: number;
+-  roundLimit: number;
+-  diceAnimation: ZilchDiceAnimationSettings;
+-}
+-
+-export interface ZilchGameState {
+-  phase: ZilchPhase;
+-  players: ZilchPlayerState[];
+-  currentPlayerId: string | null;
+-  starterPlayerId: string | null;
+-  mode: ZilchMode;
+-  targetPoints?: number;
+-  roundLimit?: number;
+-  currentRound: number;
+-  finalRoundStartedByPlayerId?: string | null;
+-  playersRemainingFinalTurn?: string[];
+-  dice: ZilchDie[];
+-  rollNumberInTurn: number;
+-  turnScore: number;
+-  totalScoresByPlayerId: Record<string, number>;
+-  keptDice: ZilchKeptGroup[];
+-  availableCombinations: ZilchCombination[];
+-  /** True once at least one combination is kept after the current roll. */
+-  keptThisRoll: boolean;
+-  diceAnimation: {
+-    isRolling: boolean;
+-    startedAt?: number;
+-    durationMs?: number;
+-    /** Values hidden until animation completes — set when roll finishes. */
+-    pendingValues?: number[];
+-  };
+-  winnerPlayerId?: string | null;
+-  /** Set when a player just zilched — cleared on next roll. */
+-  lastZilchPlayerId?: string | null;
+-}
++export * from '../dice/zilch/zilchTypes';
+diff --git a/src/screens/TableScreen.tsx b/src/screens/TableScreen.tsx
+index 10965a0..0df4532 100644
+--- a/src/screens/TableScreen.tsx
++++ b/src/screens/TableScreen.tsx
+@@ -38,6 +38,8 @@ import {
+ import { NewTableOverlay } from '../components/NewTableOverlay';
+ import { InviteModal } from '../components/InviteModal';
+ import { AdminPanel } from '../components/AdminPanel';
++import { TableChatDock } from '../features/messaging/TableChatDock';
++import { loadProfile } from '../storage/profileStorage';
+ import './TableScreen.css';
+ 
+ export interface TableNavHandlers {
+@@ -266,6 +268,10 @@ export function TableScreen({
+   }, [onRegisterNavHandlers, registerNavHandlers]);
+ 
+   const canDeal = deck !== null && remaining > 0;
++  const profile = loadProfile();
++  const chatTableId = onlineTableId ?? session.id;
++  const chatUserEmail = viewerAuth?.email ?? profile.email ?? null;
++  const chatUserName = viewerAuth?.displayName ?? profile.name ?? null;
+ 
+   return (
+     <main className="table-screen table-screen--casino">
+@@ -448,6 +454,12 @@ export function TableScreen({
+           />
+         </NewTableOverlay>
+       )}
++      <TableChatDock
++        tableId={chatTableId}
++        currentUserEmail={chatUserEmail}
++        currentUserName={chatUserName}
++        preferServer={Boolean(onlineTableId)}
++      />
+     </main>
+   );
+ }

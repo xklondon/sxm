@@ -313,6 +313,7 @@ export class TableService {
     invitedEmail: string;
     invitedName: string;
     sessionEmail?: string;
+    inviteMessage?: string;
   }): Promise<{ inviteId: string; joinUrl: string; emailSent: boolean }> {
     const host = await this.people.resolveSessionUser(
       params.userId,
@@ -356,6 +357,7 @@ export class TableService {
         inviterName: inviter?.displayName ?? 'A friend',
         tableName: table.name,
         joinUrl,
+        inviteMessage: params.inviteMessage,
       });
       emailSent = true;
     }
@@ -369,6 +371,7 @@ export class TableService {
     displayName: string;
     role?: import('../store/types.js').PersonRole;
     sessionEmail?: string;
+    inviteMessage?: string;
   }): Promise<{ inviteId: string; joinUrl: string; personId: string; emailSent: boolean }> {
     const inviter = await this.people.resolveSessionUser(
       params.userId,
@@ -393,6 +396,7 @@ export class TableService {
       invitedEmail: normalizedEmail,
       invitedName: params.displayName,
       sessionEmail: params.sessionEmail,
+      inviteMessage: params.inviteMessage,
     });
     return { inviteId, joinUrl, personId: person.id, emailSent };
   }

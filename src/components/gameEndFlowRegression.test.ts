@@ -43,8 +43,8 @@ describe('game end flow regression guards', () => {
 
   it('applies ledger and IOU only from completeGameOverAction', () => {
     expect(PANEL_SRC).toMatch(/completeGameOverAction[\s\S]*runGameOverCompleteAction/);
-    expect(PANEL_SRC).toMatch(/nextAction === 'new-game'[\s\S]*setGameOverOverlayConfirmed\(true\)/);
-    expect(PANEL_SRC).not.toMatch(/exit-table[\s\S]*setGameOverOverlayConfirmed\(true\)/);
+    expect(PANEL_SRC).toMatch(/beginNewGame[\s\S]*setGameOverOverlayConfirmed\(true\)/);
+    expect(PANEL_SRC).not.toMatch(/exitTable[\s\S]*setGameOverOverlayConfirmed\(true\)/);
     expect(OVERLAY_SRC).toMatch(/handleStartNewGame[\s\S]*onComplete\(/);
     expect(OVERLAY_SRC).toContain('Exit Table');
   });
