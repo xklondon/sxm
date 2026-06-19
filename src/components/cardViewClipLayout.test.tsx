@@ -38,6 +38,23 @@ describe('Card View — full card visibility', () => {
     expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__total--compact[\s\S]*font-size:\s*var\(--bj-card-total-font-size\)/);
   });
 
+  const shellCss = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
+
+  it('Card View desktop uses shared compact dealer path (no tall dealer band)', () => {
+    expect(shellCss).not.toMatch(
+      /\.bj-view-card-desktop\s*\{[\s\S]*--bj-dealer-cards-slot-min-height:\s*6rem/,
+    );
+    expect(shellCss).not.toMatch(
+      /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-dealer-height:\s*10\.85rem/,
+    );
+    expect(shellCss).toMatch(
+      /\.bj-view-card-desktop\s*\{[\s\S]*--bj-desktop-zone-dealer-height:\s*6\.05rem/,
+    );
+    expect(shellCss).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-dealer-area \.dealer-block__cards \.playing-card\.playing-card--compact[\s\S]*height:\s*2\.7rem/,
+    );
+  });
+
   it('dealer/command header block uses compact spacing', () => {
     expect(dealerCss).toMatch(/\.dealer-block__command[\s\S]*min-height:\s*1\.85rem/);
     expect(dealerCss).toMatch(/\.dealer-block__cards-slot[\s\S]*min-height:\s*var\(--bj-dealer-cards-slot-min-height/);

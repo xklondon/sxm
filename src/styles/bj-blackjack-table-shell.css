@@ -373,6 +373,36 @@
     box-sizing: border-box;
   }
 
+  /* Desktop dealer cards — same compact stack path as Full Table (bj-dealer-area shell). */
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards {
+    min-height: 2.35rem;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__card-stack,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__card-stack {
+    width: 2.05rem;
+    height: 2.7rem;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__card-back,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__card-back {
+    width: 1.85rem;
+    height: 2.55rem;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__card-placeholder,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__card-placeholder {
+    min-height: 2.35rem;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards .playing-card.playing-card--compact,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards .playing-card.playing-card--compact {
+    width: 2.05rem;
+    height: 2.7rem;
+    border-radius: 0.28rem;
+  }
+
   .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot .dealer-block__cards,
   .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot .dealer-block__cards,
   .bj-view-full-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot .dealer-block__card-placeholder,

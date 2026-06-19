@@ -36,6 +36,16 @@
       },
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
     },
+    "dealerArea": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 274.3,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 96.8
+      }
+    },
     "dealerCards": {
       "rect": {
         "top": 147.7,
@@ -49,6 +59,20 @@
       "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
+    "dealerCardClip": {
+      "ok": null,
+      "cards": [],
+      "slot": {
+        "top": 147.7,
+        "bottom": 201.3,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "container": null
+    },
+    "dealerPlayingCardRects": [],
     "dealButton": {
       "rect": {
         "top": 228.6,
@@ -416,6 +440,16 @@
       },
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
     },
+    "dealerArea": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 291.9,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 114.4
+      }
+    },
     "dealerCards": {
       "rect": {
         "top": 165.3,
@@ -429,6 +463,59 @@
       "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
+    "dealerCardClip": {
+      "ok": true,
+      "slot": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "container": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "cards": [
+        {
+          "i": 0,
+          "topOk": true,
+          "bottomOk": true,
+          "ok": true,
+          "height": 43.2
+        },
+        {
+          "i": 1,
+          "topOk": true,
+          "bottomOk": false,
+          "ok": false,
+          "height": 43.2
+        }
+      ]
+    },
+    "dealerPlayingCardRects": [
+      {
+        "top": 165.3,
+        "bottom": 208.5,
+        "left": 581.2,
+        "right": 614,
+        "width": 32.8,
+        "height": 43.2
+      },
+      {
+        "top": 208.5,
+        "bottom": 251.6,
+        "left": 581.2,
+        "right": 614,
+        "width": 32.8,
+        "height": 43.2
+      }
+    ],
     "dealButton": {
       "rect": {
         "top": 246.2,
@@ -824,6 +911,16 @@
       },
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
     },
+    "dealerArea": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 274.3,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 96.8
+      }
+    },
     "dealerCards": {
       "rect": {
         "top": 147.7,
@@ -837,6 +934,20 @@
       "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
+    "dealerCardClip": {
+      "ok": null,
+      "cards": [],
+      "slot": {
+        "top": 147.7,
+        "bottom": 201.3,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "container": null
+    },
+    "dealerPlayingCardRects": [],
     "dealButton": {
       "rect": {
         "top": 228.6,
@@ -1178,6 +1289,16 @@
       },
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
     },
+    "dealerArea": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 274.3,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 96.8
+      }
+    },
     "dealerCards": {
       "rect": {
         "top": 147.7,
@@ -1191,6 +1312,20 @@
       "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
+    "dealerCardClip": {
+      "ok": null,
+      "cards": [],
+      "slot": {
+        "top": 147.7,
+        "bottom": 201.3,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "container": null
+    },
+    "dealerPlayingCardRects": [],
     "dealButton": {
       "rect": {
         "top": 228.6,
@@ -1558,6 +1693,16 @@
       },
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
     },
+    "dealerArea": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 274.3,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 96.8
+      }
+    },
     "dealerCards": {
       "rect": {
         "top": 147.7,
@@ -1571,6 +1716,59 @@
       "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
+    "dealerCardClip": {
+      "ok": true,
+      "slot": {
+        "top": 147.7,
+        "bottom": 201.3,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "container": {
+        "top": 147.7,
+        "bottom": 201.3,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "cards": [
+        {
+          "i": 0,
+          "topOk": true,
+          "bottomOk": true,
+          "ok": true,
+          "height": 43.2
+        },
+        {
+          "i": 1,
+          "topOk": true,
+          "bottomOk": false,
+          "ok": false,
+          "height": 43.2
+        }
+      ]
+    },
+    "dealerPlayingCardRects": [
+      {
+        "top": 147.7,
+        "bottom": 190.9,
+        "left": 581.2,
+        "right": 614,
+        "width": 32.8,
+        "height": 43.2
+      },
+      {
+        "top": 190.9,
+        "bottom": 234,
+        "left": 581.2,
+        "right": 614,
+        "width": 32.8,
+        "height": 43.2
+      }
+    ],
     "dealButton": {
       "rect": {
         "top": 228.6,
@@ -2003,6 +2201,16 @@
       },
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-full-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
     },
+    "dealerArea": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 291.9,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 114.4
+      }
+    },
     "dealerCards": {
       "rect": {
         "top": 165.3,
@@ -2016,6 +2224,59 @@
       "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
+    "dealerCardClip": {
+      "ok": true,
+      "slot": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "container": {
+        "top": 165.3,
+        "bottom": 218.9,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "cards": [
+        {
+          "i": 0,
+          "topOk": true,
+          "bottomOk": true,
+          "ok": true,
+          "height": 43.2
+        },
+        {
+          "i": 1,
+          "topOk": true,
+          "bottomOk": false,
+          "ok": false,
+          "height": 43.2
+        }
+      ]
+    },
+    "dealerPlayingCardRects": [
+      {
+        "top": 165.3,
+        "bottom": 208.5,
+        "left": 581.2,
+        "right": 614,
+        "width": 32.8,
+        "height": 43.2
+      },
+      {
+        "top": 208.5,
+        "bottom": 251.6,
+        "left": 581.2,
+        "right": 614,
+        "width": 32.8,
+        "height": 43.2
+      }
+    ],
     "dealButton": {
       "rect": {
         "top": 246.2,
@@ -2411,6 +2672,16 @@
       },
       "domPath": "div#root > div.sxm-layout-root.bj-casino.bj-view-card-desktop > div.bj-casino__desktop-stage.bj-casino__desktop-stage--with-rail > div.sxm-table-shell.bj-casino__rail-wrap.bj-table-desktop-shell > div.bj-casino__rail.bj-table-rail > div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area"
     },
+    "dealerArea": {
+      "rect": {
+        "top": 177.5,
+        "bottom": 274.3,
+        "left": 132,
+        "right": 1148,
+        "width": 1016,
+        "height": 96.8
+      }
+    },
     "dealerCards": {
       "rect": {
         "top": 147.7,
@@ -2424,6 +2695,59 @@
       "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-casino__felt--card-view > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
+    "dealerCardClip": {
+      "ok": true,
+      "slot": {
+        "top": 147.7,
+        "bottom": 201.3,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "container": {
+        "top": 147.7,
+        "bottom": 201.3,
+        "left": 581.2,
+        "right": 698.7,
+        "width": 117.5,
+        "height": 53.6
+      },
+      "cards": [
+        {
+          "i": 0,
+          "topOk": true,
+          "bottomOk": true,
+          "ok": true,
+          "height": 43.2
+        },
+        {
+          "i": 1,
+          "topOk": true,
+          "bottomOk": false,
+          "ok": false,
+          "height": 43.2
+        }
+      ]
+    },
+    "dealerPlayingCardRects": [
+      {
+        "top": 147.7,
+        "bottom": 190.9,
+        "left": 581.2,
+        "right": 614,
+        "width": 32.8,
+        "height": 43.2
+      },
+      {
+        "top": 190.9,
+        "bottom": 234,
+        "left": 581.2,
+        "right": 614,
+        "width": 32.8,
+        "height": 43.2
+      }
+    ],
     "dealButton": {
       "rect": {
         "top": 228.6,

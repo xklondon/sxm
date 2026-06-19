@@ -433,6 +433,8 @@ Fixed 7-row grid in `bj-blackjack-table-shell.css`; **identical slot geometry in
 
 **Desktop split presentation (display-only):** Engine keeps one physical box per player (`boxId:handIndex` hand keys, equal wager). Desktop Full Table + Card View render split companions inside a nested `.bj-arc__slot--split-host` cluster: smaller `.bj-arc__split-companion-tile` immediately left of the normal `.bj-arc__slot-split-main` (same `currentBet`, card ranks, active highlight follows `activeHandKey`). Full Table card columns use compact side-by-side `.bj-arc__slot--card-split` stacks. Card View hero shows only the active split hand.
 
+**Desktop Card View dealer cards:** Same compact dealer implementation as Full Table — shared `bj-dealer-area` shell, `--bj-desktop-zone-dealer-height: 6.05rem`, `--bj-dealer-cards-slot-min-height: 3.35rem`, compact playing-cards (`2.05rem × 2.7rem`). No Card View-only tall dealer band.
+
 **Mobile shell parity:** Full Table + Card View share one command slot height via `data-phase` on `.bj-casino` (betting vs player/dealer/resolved). Player boxes spread across felt width (`1fr` grid). Mobile Card View portrait hides hero hand total under hero cards; player box values remain visible (~2× scale token).
 
 1. Bank hand info (`bj-table-info-bar--felt-row`)

@@ -126,6 +126,39 @@ const AUDIT_JS = `(() => {
 
   const feltCenterX = centerX(feltSurface);
 
+  const dealerArea = root.querySelector('.bj-dealer-area');
+  const dealerPlayingCards = [...(dealerCards?.querySelectorAll('.playing-card') ?? [])];
+  const dealerCardsContainer = root.querySelector('.dealer-block__cards-slot .dealer-block__cards');
+  const dealerPlayingCardRects = dealerPlayingCards
+    .map((card) => rect(card))
+    .filter((r) => r && r.height > 1);
+  const dealerCardClip = (() => {
+    const sr = rect(dealerCards);
+    const cr = rect(dealerCardsContainer);
+    if (!sr) return { ok: null, cards: [] };
+    if (!cr || cr.height <= 1) {
+      return { ok: null, cards: [], slot: sr, container: cr };
+    }
+    const topOk = cr.top >= sr.top - 0.5;
+    const bottomOk = cr.bottom <= sr.bottom + 0.5;
+    return {
+      ok: topOk && bottomOk,
+      slot: sr,
+      container: cr,
+      cards: dealerPlayingCards.map((card, i) => {
+        const cardRect = rect(card);
+        if (!cardRect) return { i, ok: false, topOk: false, bottomOk: false, height: 0 };
+        return {
+          i,
+          topOk: cardRect.top >= sr.top - 0.5,
+          bottomOk: cardRect.bottom <= sr.bottom + 0.5,
+          ok: cardRect.top >= sr.top - 0.5 && cardRect.bottom <= sr.bottom + 0.5,
+          height: cardRect.height,
+        };
+      }),
+    };
+  })();
+
   return {
     root: {
       className: root.className,
@@ -139,6 +172,7 @@ const AUDIT_JS = `(() => {
       centerX: feltCenterX,
     },
     dealerZone: { rect: rect(dealerZone), domPath: domPath(dealerZone) },
+    dealerArea: { rect: rect(dealerArea) },
     dealerCards: {
       rect: rect(dealerCards),
       centerX: centerX(dealerCards),
@@ -150,6 +184,8 @@ const AUDIT_JS = `(() => {
       })(),
       domPath: domPath(dealerCards),
     },
+    dealerCardClip,
+    dealerPlayingCardRects,
     dealButton: {
       rect: rect(dealBtn),
       centerX: centerX(dealBtn),
@@ -246,6 +282,7 @@ const AUDIT_JS = `(() => {
 })()`;
 
 type AuditRow = {
+  root?: { className?: string };
   dealButton?: {
     rect?: { top?: number; bottom?: number; left?: number } | null;
     centerX?: number | null;
@@ -255,7 +292,19 @@ type AuditRow = {
     centerX?: number | null;
     deltaFromFeltCenter?: number | null;
   };
-  commandPill?: { rect?: { top?: number; bottom?: number } | null };
+  dealerCardClip?: {
+    ok?: boolean | null;
+    cards?: Array<{
+      i?: number;
+      ok?: boolean;
+      topOk?: boolean;
+      bottomOk?: boolean;
+      height?: number;
+    }>;
+  };
+  dealerPlayingCardRects?: Array<{ width?: number; height?: number } | null>;
+  dealerArea?: { rect?: { top?: number; bottom?: number; height?: number } | null };
+  commandPill?: { rect?: { top?: number; bottom?: number } | null; centerX?: number | null };
   commandPillToDealGap?: number | null;
   dealToCommandZoneTopGap?: number | null;
   slots?: Array<{ rect?: { top?: number; height?: number } | null }>;
@@ -283,8 +332,6 @@ function assertAudit(report: Record<string, AuditRow>) {
   }
   const fullBetDealBottom = fullBet.dealButton?.rect?.bottom;
   const fullBetCmdTop = fullBet.commandPill?.rect?.top;
-  const cardBetDealBottom = cardBet.dealButton?.rect?.bottom;
-  const cardBetCmdTop = cardBet.commandPill?.rect?.top;
   if (fullBetDealBottom != null && fullBetCmdTop != null && fullBetDealBottom > fullBetCmdTop) {
     throw new Error(
       `Full betting deal overlaps command pill (deal bottom ${fullBetDealBottom} > pill top ${fullBetCmdTop})`,
@@ -302,6 +349,8 @@ function assertAudit(report: Record<string, AuditRow>) {
     }
   }
 
+  const cardBetDealBottom = cardBet.dealButton?.rect?.bottom;
+  const cardBetCmdTop = cardBet.commandPill?.rect?.top;
   if (fullBetDealBottom != null && fullBetCmdTop != null && cardBetDealBottom != null && cardBetCmdTop != null) {
     const fullGap = fullBetCmdTop - fullBetDealBottom;
     const cardGap = cardBetCmdTop - cardBetDealBottom;
@@ -309,6 +358,18 @@ function assertAudit(report: Record<string, AuditRow>) {
       throw new Error(`Full vs Card betting deal→command gap delta ${Math.abs(fullGap - cardGap)}px exceeds 5px`);
     }
   }
+
+  for (const [label, row] of [
+    ['Card View betting dealer clip', cardBet],
+    ['Card View playing dealer clip', cardPlay],
+  ] as const) {
+    if (!row) throw new Error(`Missing audit row for ${label}`);
+    const clip = row.dealerCardClip;
+    if (clip?.ok === false) {
+      throw new Error(`${label}: dealer cards container escapes cards-slot`);
+    }
+  }
+
   for (const [label, row] of [
     ['Card View betting dealer cards', cardBet],
     ['Card View playing dealer cards', cardPlay],
@@ -338,6 +399,21 @@ function assertAudit(report: Record<string, AuditRow>) {
     }
     if (Math.abs(fs.height! - cs.height!) > 4) {
       throw new Error(`Box slot height ${phase}: full ${fs.height} vs card ${cs.height} (>4px)`);
+    }
+  }
+
+  const fullPlayCard = fullPlay?.dealerPlayingCardRects?.[0];
+  const cardPlayCard = cardPlay?.dealerPlayingCardRects?.[0];
+  if (fullPlayCard && cardPlayCard) {
+    if (Math.abs((fullPlayCard.width ?? 0) - (cardPlayCard.width ?? 0)) > 2) {
+      throw new Error(
+        `Full vs Card playing dealer card width delta ${Math.abs((fullPlayCard.width ?? 0) - (cardPlayCard.width ?? 0))}px (>2px)`,
+      );
+    }
+    if (Math.abs((fullPlayCard.height ?? 0) - (cardPlayCard.height ?? 0)) > 2) {
+      throw new Error(
+        `Full vs Card playing dealer card height delta ${Math.abs((fullPlayCard.height ?? 0) - (cardPlayCard.height ?? 0))}px (>2px)`,
+      );
     }
   }
 
