@@ -16,10 +16,12 @@ import {
   isBlackjackTable,
   isHoldemTable,
   isZilchTable,
+  normalizeLoadedGameState,
   removeSeatFromTable,
   recordTableOutcome,
 } from '../engine/session';
 import type { TableStakeSetupInput } from '../engine/session/tableSetup';
+import type { ZilchTableStakeSetupInput } from '../engine/session/zilchTableSetup';
 import { log } from '../utils/logger';
 import {
   loadCurrentGame,
@@ -63,7 +65,7 @@ interface TableScreenProps {
   onProfileOpenChange?: (open: boolean) => void;
   onRegisterNavHandlers?: (handlers: TableNavHandlers | null) => void;
   /** When set, confirming New Table setup creates a fresh table (online or local). */
-  onConfirmNavNewTable?: (input: TableStakeSetupInput) => void | Promise<void>;
+  onConfirmNavNewTable?: (input: TableStakeSetupInput | ZilchTableStakeSetupInput) => void | Promise<void>;
 }
 
 function dealingStatusLabel(status: GameState['session']['dealingStatus']): string {
@@ -209,14 +211,22 @@ export function TableScreen({
   const stakeSetupOpen = (isBlackjack || isZilch) && (tableMeta.showStakeSetup || resetSetupOpen);
   const stagedNewTableOpen = stakeSetupOpen && !resetSetupOpen;
   const stakeSetupTitle = resetSetupOpen
-    ? resetSetupVariant === 'newGame'
-      ? 'New Game'
-      : 'Reset table'
+    ? isZilch
+      ? resetSetupVariant === 'newGame'
+        ? 'New Zilch game'
+        : 'Reset Zilch table'
+      : resetSetupVariant === 'newGame'
+        ? 'New Game'
+        : 'Reset table'
     : 'New Table';
   const stakeSetupAriaLabel = resetSetupOpen
-    ? resetSetupVariant === 'newGame'
-      ? 'New game setup'
-      : 'Reset table setup'
+    ? isZilch
+      ? resetSetupVariant === 'newGame'
+        ? 'New Zilch game setup'
+        : 'Reset Zilch table setup'
+      : resetSetupVariant === 'newGame'
+        ? 'New game setup'
+        : 'Reset table setup'
     : 'New table setup';
 
   const registerNavHandlers = useCallback((): TableNavHandlers => ({
@@ -345,6 +355,11 @@ export function TableScreen({
               onInviteTable={() => setInviteOpen(true)}
               onlineDispatch={onlineDispatch}
               onlineActionInFlight={onlineActionInFlight}
+              onBeginTableReset={(variant = 'resetTable') => {
+                setResetSetupVariant(variant);
+                setStakePanelMode('reset');
+                setResetSetupOpen(true);
+              }}
             />
           )}
 
@@ -438,7 +453,7 @@ export function TableScreen({
               navNewTableSetup && onConfirmNavNewTable ? onConfirmNavNewTable : undefined
             }
             onConfirm={(next) => {
-              onGameStateChange(next);
+              onGameStateChange(normalizeLoadedGameState(next));
               setNavNewTableSetup(false);
               setResetSetupOpen(false);
               setResetSetupVariant('resetTable');

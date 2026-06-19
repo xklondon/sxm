@@ -18,12 +18,15 @@ import { ZilchDiceArea } from './ZilchDiceArea';
 import { ZilchActions } from './ZilchActions';
 import '../../styles/zilch-table.css';
 
+import type { TableResetSetupVariant } from '../TableStakePanel';
+
 interface ZilchPanelProps {
   gameState: GameState;
   onGameStateChange: (state: GameState) => void;
   onInviteTable?: () => void;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
   onlineActionInFlight?: boolean;
+  onBeginTableReset?: (variant?: TableResetSetupVariant) => void;
 }
 
 const RANDOMISER_SPIN_MS = 2400;
@@ -43,6 +46,7 @@ export function ZilchPanel({
   onInviteTable,
   onlineDispatch,
   onlineActionInFlight = false,
+  onBeginTableReset,
 }: ZilchPanelProps) {
   const { session, players, zilch, tableMeta } = gameState;
   const isMobile = useIsMobileViewport();
@@ -202,6 +206,15 @@ export function ZilchPanel({
           <span className="zilch-panel__mode-label">{tableModeLabel}</span>
         </div>
         <div className="zilch-panel__toolbar-actions">
+          {onBeginTableReset && (
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => onBeginTableReset('resetTable')}
+            >
+              Reset table
+            </button>
+          )}
           {onInviteTable && (
             <button type="button" onClick={onInviteTable}>
               Invite to table

@@ -2,11 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState } from './types';
 import {
   applyTableStakeSetup,
+  applyZilchTableStakeSetup,
   createNewBlackjackTable,
+  createNewZilchTable,
   normalizeLoadedGameState,
 } from './engine/session';
 import type { InvitedTablePlayerSetup } from './features/messaging/tableMessagingTypes';
 import type { TableStakeSetupInput } from './engine/session/tableSetup';
+import type { ZilchTableStakeSetupInput } from './engine/session/zilchTableSetup';
 import { applySettingsToGameState, loadSettings } from './storage/settingsStorage';
 import { loadArchivedGame } from './storage/gameStorage';
 import { applyTableVisualPrefs } from './types/tableFeltSkin';
@@ -385,7 +388,8 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
   }, []);
 
   const handleConfirmNavNewTable = useCallback(
-    async (input: TableStakeSetupInput) => {
+    async (input: TableStakeSetupInput | ZilchTableStakeSetupInput) => {
+      const isZilchInput = 'zilchMode' in input;
       if (onlineMode) {
         const profile = loadProfile();
         const displayName = profile.name.trim() || user?.email.split('@')[0] || 'Host';
@@ -398,6 +402,7 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
           result.version,
         );
         if (
+          !isZilchInput &&
           input.tableMode === 'challenge' &&
           ((input.invitedPlayers?.length ?? 0) > 0 || (input.invitedEmails?.length ?? 0) > 0)
         ) {
@@ -418,12 +423,19 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
         setScreen('table');
         return;
       }
-      let state = createTableWithSettings();
-      state = applyTableStakeSetup(
-        { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
-        input,
-      );
-      if (input.invitedPlayers?.length) {
+      let state = isZilchInput
+        ? createNewZilchTable()
+        : createTableWithSettings();
+      state = isZilchInput
+        ? applyZilchTableStakeSetup(
+            { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
+            input,
+          )
+        : applyTableStakeSetup(
+            { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
+            input,
+          );
+      if (!isZilchInput && input.invitedPlayers?.length) {
         for (const player of input.invitedPlayers) {
           const inviteResult = createTableInvite(
             state,
@@ -433,13 +445,13 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
           );
           state = inviteResult.state;
         }
-      } else if (input.invitedEmails?.length) {
+      } else if (!isZilchInput && input.invitedEmails?.length) {
         for (const email of input.invitedEmails) {
           const inviteResult = createTableInvite(state, email.split('@')[0] || 'Guest', email);
           state = inviteResult.state;
         }
       }
-      setGameState(state);
+      setGameState(normalizeLoadedGameState(state));
       setScreen('table');
     },
     [onlineMode, user?.email, sendChallengeInvites],

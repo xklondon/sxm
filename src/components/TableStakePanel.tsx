@@ -58,7 +58,7 @@ interface TableStakePanelProps {
   resetSetupVariant?: TableResetSetupVariant;
   onConfirm: (state: GameState) => void;
   /** When set with mode `new`, confirm creates a fresh table instead of mutating the current one. */
-  onConfirmNewTable?: (input: TableStakeSetupInput) => void | Promise<void>;
+  onConfirmNewTable?: (input: TableStakeSetupInput | ZilchTableStakeSetupInput) => void | Promise<void>;
   /** Called after online reset dispatches (state arrives via socket). */
   onFinished?: () => void;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
@@ -165,6 +165,8 @@ export function TableStakePanel({
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
   const isStagedNew = !isReset;
+  const isZilchReset = isReset && isZilchTable(gameState);
+  const isZilchStakeFlow = isZilchTable(gameState) || setupTab === 'dice';
   const initialSetupSnapshotRef = useRef<TableStakeSetupSnapshot | null>(null);
   if (isStagedNew && !initialSetupSnapshotRef.current) {
     initialSetupSnapshotRef.current = createInitialTableStakeSetupSnapshot(gameState);
@@ -175,6 +177,12 @@ export function TableStakePanel({
   const showPlayingFor = isReset && bankerMode === 'bot';
   const onlineMode = isOnlineModeEnabled();
   const controller = profile.name.trim() || gameState.tableMeta.controllerName;
+
+  useEffect(() => {
+    if (isZilchReset && setupTab !== 'dice') {
+      setSetupTab('dice');
+    }
+  }, [isZilchReset, setupTab]);
 
   function resolveChallengeBanker(): { bankerMode: TableBankerSetupMode; bankerName: string } {
     if (challengeBank === 'self') {
@@ -330,7 +338,7 @@ export function TableStakePanel({
       setSubmitting(true);
       try {
         const resetPayload =
-          setupTab === 'dice'
+          isZilchStakeFlow
             ? { ...buildZilchSetupInput(), inviteNote: inviteNote.trim() || undefined }
             : { ...input, inviteNote: inviteNote.trim() || undefined };
         await onlineDispatch('resetTable', resetPayload);
@@ -353,8 +361,7 @@ export function TableStakePanel({
     if (onlineMode && onlineDispatch && !isReset && !onConfirmNewTable) {
       setSubmitting(true);
       try {
-        const payload =
-          setupTab === 'dice' ? buildZilchSetupInput() : input;
+        const payload = isZilchStakeFlow ? buildZilchSetupInput() : input;
         await onlineDispatch('configureTable', payload as unknown as Record<string, unknown>);
         if (onlineTableId && input.tableMode === 'challenge' && input.invitedPlayers?.length) {
           for (const player of input.invitedPlayers) {
@@ -377,7 +384,7 @@ export function TableStakePanel({
     if (!isReset && onConfirmNewTable) {
       setSubmitting(true);
       try {
-        await onConfirmNewTable(input);
+        await onConfirmNewTable(isZilchStakeFlow ? buildZilchSetupInput() : input);
         onFinished?.();
       } finally {
         setSubmitting(false);
@@ -386,14 +393,14 @@ export function TableStakePanel({
     }
 
     let base = gameState;
-    if (setupTab === 'dice' && !isZilchTable(base)) {
+    if (isZilchStakeFlow && !isZilchTable(base)) {
       base = applySettingsToDiceTable(base);
-    } else if (setupTab === 'cards' && isZilchTable(base)) {
+    } else if (!isReset && setupTab === 'cards' && isZilchTable(base)) {
       base = switchGameType(base, 'blackjack');
     }
 
     let next =
-      setupTab === 'dice'
+      isZilchStakeFlow
         ? isReset
           ? applyZilchTableResetSetup(base, buildZilchSetupInput(), base.tableMeta.ownerPersonId)
           : applyZilchTableStakeSetup(base, buildZilchSetupInput())
@@ -702,6 +709,11 @@ export function TableStakePanel({
               <p className="table-stake-panel__hint">{selectedProtocol.shortDescription}</p>
             </>
           )}
+          {setupTab === 'dice' && (
+            <p className="table-stake-panel__hint">
+              <strong>Zilch</strong> — roll six dice, keep scoring combinations, and bank before you zilch.
+            </p>
+          )}
         </fieldset>
         <div className="table-stake-panel__nav">
           <button
@@ -709,7 +721,7 @@ export function TableStakePanel({
             className="table-stake-panel__confirm table-stake-panel__select-btn"
             onClick={handleGameStageNext}
           >
-            Continue
+            {setupTab === 'dice' ? 'Configure Zilch' : 'Continue'}
           </button>
         </div>
       </>
@@ -991,6 +1003,47 @@ export function TableStakePanel({
     return renderChallengeConfigure();
   }
 
+  function renderZilchResetPanel() {
+    return (
+      <div className="table-stake-panel__grid table-stake-panel__grid--zilch">
+        <fieldset className="table-stake-panel__banker">
+          <legend>Players at this table</legend>
+          <p className="table-stake-panel__hint">
+            Seat assignments and invites stay the same. Adjust the wager and Zilch settings below.
+          </p>
+          {onlineMode && (
+            <input
+              type="text"
+              className="table-stake-panel__input"
+              placeholder="Optional note for invited players"
+              value={inviteNote}
+              onChange={(e) => setInviteNote(e.target.value)}
+            />
+          )}
+        </fieldset>
+
+        <label className="table-stake-panel__field">
+          <span>Wager</span>
+          <input
+            type="text"
+            className="table-stake-panel__input"
+            placeholder='e.g. "Dinner", "€20", "Loser buys drinks"'
+            value={stake}
+            onChange={(e) => setStake(e.target.value)}
+            list="stake-examples"
+          />
+          <datalist id="stake-examples">
+            {STAKE_EXAMPLES.map((ex) => (
+              <option key={ex} value={ex} />
+            ))}
+          </datalist>
+        </label>
+
+        {renderDiceConfigure()}
+      </div>
+    );
+  }
+
   function renderResetPanel() {
     return (
       <div className="table-stake-panel__grid">
@@ -1163,11 +1216,21 @@ export function TableStakePanel({
       {!embeddedInOverlay && (
         <header className="table-stake-panel__header">
           <h2 className="table-stake-panel__title">
-            {isNewGameSetup ? 'New Game' : isReset ? 'Reset table' : 'New Table'}
+            {isNewGameSetup
+              ? isZilchReset
+                ? 'New Zilch game'
+                : 'New Game'
+              : isReset
+                ? isZilchReset
+                  ? 'Reset Zilch table'
+                  : 'Reset table'
+                : 'New Table'}
           </h2>
           <p className="table-stake-panel__sub">
             {isReset
-              ? 'Start a new game with the players currently at this table.'
+              ? isZilchReset
+                ? 'Start a new Zilch game with the players currently at this table.'
+                : 'Start a new game with the players currently at this table.'
               : isStagedNew
                 ? null
                 : 'Set up who plays, who banks, and how the table runs.'}
@@ -1183,14 +1246,20 @@ export function TableStakePanel({
 
       {isReset ? (
         <>
-          {renderResetPanel()}
+          {isZilchReset ? renderZilchResetPanel() : renderResetPanel()}
           <button
             type="button"
             className="table-stake-panel__confirm"
             onClick={() => void handleConfirm()}
             disabled={submitting}
           >
-            {isReset ? 'Start new Zilch game' : 'Start Zilch'}
+            {isZilchReset
+              ? isNewGameSetup
+                ? 'Start new Zilch game'
+                : 'Start Zilch'
+              : isNewGameSetup
+                ? 'Start new game'
+                : 'Start new game'}
           </button>
         </>
       ) : (
