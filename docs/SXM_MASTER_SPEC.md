@@ -90,7 +90,7 @@ SXM Casino (SXMCards) is a casual card-and-dice table app for friends. Players u
 
 - **Module:** `src/features/messaging/` — table-scoped, game-agnostic (Blackjack/Zilch/Hold'em share the same dock).
 - **Invite notes:** Challenge setup stores per-player `inviteMessage`; online invite emails and offline mailto bodies include optional “Message from host” when set.
-- **Table chat:** `TableChatDock` on `TableScreen` (not inside game panels); online tables use `GET/POST /api/tables/:tableId/messages` with in-memory server store (200 msgs/table max); offline falls back to localStorage only when API unavailable.
+- **Table chat:** `TableChatDock` on `TableScreen` (not inside game panels); online tables use `GET/POST /api/tables/:tableId/messages` with in-memory server store (200 msgs/table max); offline falls back to localStorage only when API unavailable. Unread badge is client-side (`lastSeenAt` per table/user in localStorage); own messages never count as unread.
 
 ### Join requests (“Knock”)
 

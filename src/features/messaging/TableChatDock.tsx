@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { addTableMessage, getTableMessages } from './tableChatService';
-import { mergeTableMessagesById, type TableChatMessage } from './tableMessagingTypes';
+import {
+  countUnreadTableChatMessages,
+  latestTableChatMessageTimestamp,
+  mergeTableMessagesById,
+  readTableChatLastSeenAt,
+  writeTableChatLastSeenAt,
+  type TableChatMessage,
+} from './tableMessagingTypes';
 import './TableChatDock.css';
 
 const CHAT_EMOJIS = [
@@ -24,6 +31,7 @@ const CHAT_EMOJIS = [
 
 const OPEN_POLL_MS = 2000;
 const CLOSED_POLL_MS = 5000;
+const UNREAD_PULSE_MS = 1200;
 
 export interface TableChatDockProps {
   tableId: string;
@@ -60,9 +68,14 @@ export function TableChatDock({
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<TableChatMessage[]>([]);
   const [draft, setDraft] = useState('');
-  const [lastReadCount, setLastReadCount] = useState(0);
+  const [lastSeenAt, setLastSeenAt] = useState<string | null>(() =>
+    tableId ? readTableChatLastSeenAt(tableId, currentUserEmail ?? 'guest@local') : null,
+  );
   const [sending, setSending] = useState(false);
+  const [pulseUnread, setPulseUnread] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const bootstrapDoneRef = useRef(false);
+  const prevUnreadRef = useRef(0);
   const normalizedEmail = (currentUserEmail ?? 'guest@local').trim().toLowerCase() || 'guest@local';
   const displayName = currentUserName?.trim() || 'Guest';
 
@@ -70,8 +83,20 @@ export function TableChatDock({
     if (open) {
       return 0;
     }
-    return Math.max(0, messages.length - lastReadCount);
-  }, [open, messages.length, lastReadCount]);
+    return countUnreadTableChatMessages(messages, lastSeenAt, normalizedEmail);
+  }, [open, messages, lastSeenAt, normalizedEmail]);
+
+  const markMessagesSeen = useCallback(
+    (messageList: TableChatMessage[]) => {
+      if (!tableId) {
+        return;
+      }
+      const seenAt = latestTableChatMessageTimestamp(messageList) ?? new Date().toISOString();
+      writeTableChatLastSeenAt(tableId, normalizedEmail, seenAt);
+      setLastSeenAt(seenAt);
+    },
+    [tableId, normalizedEmail],
+  );
 
   const refreshMessages = useCallback(async () => {
     if (!tableId) {
@@ -80,6 +105,30 @@ export function TableChatDock({
     const fetched = await getTableMessages(tableId, { preferServer });
     setMessages((current) => mergeTableMessagesById(current, fetched));
   }, [tableId, preferServer]);
+
+  useEffect(() => {
+    if (!tableId) {
+      return;
+    }
+    bootstrapDoneRef.current = false;
+    setLastSeenAt(readTableChatLastSeenAt(tableId, normalizedEmail));
+  }, [tableId, normalizedEmail]);
+
+  useEffect(() => {
+    if (!tableId || bootstrapDoneRef.current) {
+      return;
+    }
+    const stored = readTableChatLastSeenAt(tableId, normalizedEmail);
+    if (stored) {
+      setLastSeenAt(stored);
+      bootstrapDoneRef.current = true;
+      return;
+    }
+    const bootstrapAt = latestTableChatMessageTimestamp(messages) ?? new Date().toISOString();
+    writeTableChatLastSeenAt(tableId, normalizedEmail, bootstrapAt);
+    setLastSeenAt(bootstrapAt);
+    bootstrapDoneRef.current = true;
+  }, [tableId, normalizedEmail, messages]);
 
   useEffect(() => {
     if (!tableId) {
@@ -103,9 +152,24 @@ export function TableChatDock({
     if (!open) {
       return;
     }
-    setLastReadCount(messages.length);
+    markMessagesSeen(messages);
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [open, messages]);
+  }, [open, messages, markMessagesSeen]);
+
+  useEffect(() => {
+    if (open) {
+      prevUnreadRef.current = 0;
+      setPulseUnread(false);
+      return;
+    }
+    if (unreadCount > prevUnreadRef.current && unreadCount > 0) {
+      setPulseUnread(true);
+      const timer = window.setTimeout(() => setPulseUnread(false), UNREAD_PULSE_MS);
+      prevUnreadRef.current = unreadCount;
+      return () => window.clearTimeout(timer);
+    }
+    prevUnreadRef.current = unreadCount;
+  }, [unreadCount, open]);
 
   function handleOpen() {
     setOpen(true);
@@ -114,7 +178,7 @@ export function TableChatDock({
 
   function handleClose() {
     setOpen(false);
-    setLastReadCount(messages.length);
+    markMessagesSeen(messages);
   }
 
   function appendEmoji(emoji: string) {
@@ -153,6 +217,9 @@ export function TableChatDock({
     }
   }
 
+  const toggleLabel =
+    unreadCount > 0 ? `Chat • ${unreadCount > 99 ? '99+' : unreadCount}` : 'Chat';
+
   if (!tableId) {
     return null;
   }
@@ -160,13 +227,13 @@ export function TableChatDock({
   return (
     <div className="table-chat-dock" data-table-id={tableId}>
       {!open ? (
-        <button type="button" className="table-chat-toggle" onClick={handleOpen}>
-          Chat
-          {unreadCount > 0 && (
-            <span className="table-chat-toggle__badge" aria-label={`${unreadCount} unread`}>
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
-          )}
+        <button
+          type="button"
+          className={`table-chat-toggle${pulseUnread ? ' table-chat-toggle--pulse' : ''}`}
+          onClick={handleOpen}
+          aria-label={unreadCount > 0 ? `Chat, ${unreadCount} unread messages` : 'Open table chat'}
+        >
+          {toggleLabel}
         </button>
       ) : (
         <div className="table-chat-panel" role="region" aria-label="Table Chat">

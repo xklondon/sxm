@@ -18,7 +18,7 @@ import {
   logTableMetaStartingChips,
 } from './tokens';
 import type { TableBankerSetupMode, TableStakeSetupInput } from './tableSetup';
-import { ensureZilchTableIdentity } from './tableKind';
+import { ensureZilchTableIdentity } from './zilchTableKind';
 
 export interface ZilchTableStakeSetupInput extends TableStakeSetupInput {
   zilchMode: ZilchMode;

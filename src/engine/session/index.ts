@@ -40,7 +40,7 @@ export {
   isHoldemTable,
   isZilchTable,
   normalizeLoadedGameState,
-} from './tableKind';
+} from './zilchTableKind';
 export {
   applyTableResetSetup,
   beginTableResetSetup,

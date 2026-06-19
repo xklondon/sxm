@@ -29,25 +29,34 @@ export function randomiseStarter(
   state: ZilchGameState,
   rng: () => number = Math.random,
 ): ZilchGameState {
+  if (state.phase !== 'setup' && state.phase !== 'randomising-starter') {
+    throw new Error('Starter can only be randomised before the first turn');
+  }
   if (state.players.length === 0) {
     throw new Error('No players');
   }
   const idx = Math.floor(rng() * state.players.length);
   const starterId = state.players[idx]!.playerId;
-  return {
-    ...state,
-    phase: 'randomising-starter',
-    starterPlayerId: starterId,
-    history: appendEvent(state, 'starter-randomised', starterId),
-  };
+  return startTurn(
+    {
+      ...state,
+      starterPlayerId: starterId,
+      diceAnimation: { isRolling: false },
+      history: appendEvent(state, 'starter-randomised', starterId),
+    },
+    starterId,
+  );
 }
 
+/** @deprecated Starter selection completes in randomiseStarter; kept for legacy actions. */
 export function confirmStarter(state: ZilchGameState): ZilchGameState {
-  const starterId = state.starterPlayerId;
-  if (!starterId) {
-    throw new Error('No starter selected');
+  if (state.phase === 'player-turn' && state.starterPlayerId && state.currentPlayerId) {
+    return state;
   }
-  return startTurn(state, starterId);
+  if (state.phase !== 'randomising-starter' || !state.starterPlayerId) {
+    throw new Error('Starter randomisation is not active');
+  }
+  return startTurn(state, state.starterPlayerId);
 }
 
 export function startTurn(state: ZilchGameState, playerId: string): ZilchGameState {

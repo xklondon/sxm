@@ -32,7 +32,7 @@ export function normalizeZilchState(zilch: ZilchGameState): ZilchGameState {
   }
 
   if (next.phase === 'randomising-starter') {
-    if (next.starterPlayerId && next.currentPlayerId) {
+    if (next.starterPlayerId) {
       return startTurn(next, next.starterPlayerId);
     }
     if (next.players.length > 0) {

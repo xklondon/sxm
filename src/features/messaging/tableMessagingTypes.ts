@@ -48,6 +48,58 @@ export function mergeTableMessagesById(
   return [...byId.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
+export function tableChatLastSeenStorageKey(tableId: string, userEmail: string): string {
+  const normalizedEmail = userEmail.trim().toLowerCase() || 'guest@local';
+  return `sxm:table-chat:last-seen:${tableId}:${normalizedEmail}`;
+}
+
+export function readTableChatLastSeenAt(tableId: string, userEmail: string): string | null {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+  try {
+    const raw = localStorage.getItem(tableChatLastSeenStorageKey(tableId, userEmail));
+    return raw?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeTableChatLastSeenAt(tableId: string, userEmail: string, lastSeenAt: string): void {
+  if (typeof localStorage === 'undefined') {
+    return;
+  }
+  try {
+    localStorage.setItem(tableChatLastSeenStorageKey(tableId, userEmail), lastSeenAt);
+  } catch {
+    // Ignore quota / privacy mode errors.
+  }
+}
+
+export function latestTableChatMessageTimestamp(messages: TableChatMessage[]): string | null {
+  if (messages.length === 0) {
+    return null;
+  }
+  return messages[messages.length - 1]!.createdAt;
+}
+
+export function countUnreadTableChatMessages(
+  messages: TableChatMessage[],
+  lastSeenAt: string | null,
+  currentUserEmail: string,
+): number {
+  if (!lastSeenAt) {
+    return 0;
+  }
+  const normalizedSelf = currentUserEmail.trim().toLowerCase() || 'guest@local';
+  return messages.filter((message) => {
+    if (message.senderEmail.trim().toLowerCase() === normalizedSelf) {
+      return false;
+    }
+    return message.createdAt > lastSeenAt;
+  }).length;
+}
+
 export function formatInviteHostMessage(message: string): string {
   const trimmed = message.trim();
   if (!trimmed) {

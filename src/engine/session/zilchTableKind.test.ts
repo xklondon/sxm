@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { createNewBlackjackTable, createNewZilchTable } from './table';
+import { createZilchGame } from '../dice/zilch';
 import {
   ensureZilchTableIdentity,
   isBlackjackTable,
   isZilchTable,
   normalizeLoadedGameState,
-} from './tableKind';
+} from './zilchTableKind';
 import { applyZilchTableStakeSetup } from './zilchTableSetup';
 import { DEFAULT_TABLE_CHIPS } from './table';
 
@@ -64,12 +65,18 @@ describe('tableKind', () => {
     expect(state.blackjack).toBeNull();
   });
 
-  it('normalizeLoadedGameState upgrades dice meta tables', () => {
-    const bj = createNewBlackjackTable();
-    const normalized = normalizeLoadedGameState({
-      ...bj,
-      tableMeta: { ...bj.tableMeta, gameCategory: 'dice', diceGame: 'zilch' },
+  it('normalizeLoadedGameState repairs stuck zilch starter phase', () => {
+    const z = createNewZilchTable();
+    const zilch = {
+      ...createZilchGame(['p1', 'p2'], z.zilchSettings),
+      phase: 'randomising-starter' as const,
+      starterPlayerId: 'p1',
+      currentPlayerId: null,
+    };
+    const loaded = normalizeLoadedGameState({
+      ...z,
+      zilch,
     });
-    expect(normalized.tableGame).toBe('zilch');
+    expect(loaded.zilch?.phase).toBe('player-turn');
   });
 });

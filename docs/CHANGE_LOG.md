@@ -15,6 +15,10 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-19 — Table chat unread badge (client-side)
+
+- **Unread:** `lastSeenAt` per table/user in localStorage; closed dock shows `Chat • N` and brief pulse on new messages from others.
+
 ## 2026-06-19 — Shared table chat via server API
 
 - **Server:** in-memory `tableChatStore` + `GET/POST /api/tables/:tableId/messages` (member-only, max 200 msgs/table).
