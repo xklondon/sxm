@@ -15,7 +15,13 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-13 — Desktop split companion cluster + Full Table dealer centering
+## 2026-06-13 — Mobile Card View hero cards + Full Table landscape layout
+
+- **Mobile Card View portrait:** play phase no longer applies Full Table's tall command band (`6.375rem`) — hero cards zone recovers height; portrait owner restores hero card min size (~50×70px at 390×844). Hero hand total stays hidden in Card View.
+- **Mobile Full Table landscape:** grid targets `.bj-dealer-area` (not missing `.bj-table-zone--dealer`); felt bank row hidden; play phase uses compact landscape command height; flex chain fits shell in viewport below toolbar.
+- **Captures:** `capture-mobile-card-layout.mts` asserts hero `.playing-card` rects; new `capture-mobile-full-landscape-layout.mts`.
+
+---
 
 - **Split display (engine unchanged):** split hands remain `boxId:handIndex` on one slot. Desktop Full Table + Card View render a nested `.bj-arc__slot--split-host` cluster: smaller `.bj-arc__split-companion-tile` left of normal `.bj-arc__slot-split-main` (wager, card ranks, active highlight per `activeHandKey`). Full Table card columns use compact `.bj-arc__slot--card-split` stacks side-by-side.
 - **Card View hero:** still follows `activeHandKey` only (one split hand at a time).

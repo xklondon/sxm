@@ -63,7 +63,7 @@ async function main() {
   <meta charset="utf-8" />
   <link rel="stylesheet" href="http://127.0.0.1:5198/src/index.css" />
   <style>
-    html, body, #root { margin: 0; min-height: 100vh; background: #0a1a12; }
+    html, body, #root { margin: 0; height: 844px; max-height: 844px; min-height: 844px; overflow: hidden; background: #0a1a12; }
     .bj-casino { max-width: 390px; margin: 0 auto; }
     .bj-side-rail { display: none !important; }
   </style>
@@ -91,19 +91,29 @@ async function main() {
       const r = el.getBoundingClientRect();
       return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height };
     };
-  const heroValueEl = document.querySelector(
-    '.bj-view-card-mobile .bj-card-view__hero-value.bj-phone-view__total--hero',
-  );
-  const heroValueStyle = heroValueEl ? getComputedStyle(heroValueEl) : null;
-  return {
-    heroCards: rect(q('hero-cards')),
-    heroValue: rect(q('hero-value')),
-    heroValueText: rect(heroValueEl),
-    heroValueDisplay: heroValueStyle?.display ?? null,
-    heroValueVisibility: heroValueStyle?.visibility ?? null,
-    actionRow: rect(q('action-row')),
-    playerBoxes: rect(q('player-boxes')),
-  };
+    const heroValueEl = document.querySelector(
+      '.bj-view-card-mobile .bj-card-view__hero-value.bj-phone-view__total--hero',
+    );
+    const heroValueStyle = heroValueEl ? getComputedStyle(heroValueEl) : null;
+    const cardsZone = document.querySelector('.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero');
+    const cardsZoneRect = rect(cardsZone);
+    const heroPlayingCards = [...document.querySelectorAll(
+      '.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .playing-card.bj-phone-card--hero, .bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .playing-card.ds-card--hero',
+    )].map((c, i) => {
+      const r = c.getBoundingClientRect();
+      return { i, width: r.width, height: r.height, top: r.top, bottom: r.bottom };
+    });
+    return {
+      heroCards: rect(q('hero-cards')),
+      heroValue: rect(q('hero-value')),
+      heroValueText: rect(heroValueEl),
+      heroValueDisplay: heroValueStyle?.display ?? null,
+      heroValueVisibility: heroValueStyle?.visibility ?? null,
+      actionRow: rect(q('action-row')),
+      playerBoxes: rect(q('player-boxes')),
+      cardsZone: cardsZoneRect,
+      heroPlayingCards,
+    };
   })()`);
 
   writeFileSync(OUT_AFTER, JSON.stringify(boxes, null, 2));
@@ -117,7 +127,17 @@ async function main() {
   }
   console.log(JSON.stringify(boxes, null, 2));
 
-  const { heroCards, heroValue, heroValueText, heroValueDisplay, actionRow, playerBoxes } = boxes as {
+  const {
+    heroCards,
+    heroValue,
+    heroValueText,
+    heroValueDisplay,
+    heroValueVisibility,
+    actionRow,
+    playerBoxes,
+    cardsZone,
+    heroPlayingCards,
+  } = boxes as {
     heroCards: { top: number; bottom: number; width: number; height: number } | null;
     heroValue: { top: number; bottom: number; height: number } | null;
     heroValueText: { top: number; bottom: number; height: number } | null;
@@ -125,9 +145,11 @@ async function main() {
     heroValueVisibility: string | null;
     actionRow: { top: number } | null;
     playerBoxes: { top: number } | null;
+    cardsZone: { top: number; bottom: number } | null;
+    heroPlayingCards: { width: number; height: number; top: number; bottom: number }[];
   };
 
-  if (!heroCards || !actionRow || !playerBoxes) {
+  if (!heroCards || !actionRow || !playerBoxes || !cardsZone) {
     throw new Error('Missing mobile Card View layout bands');
   }
 
@@ -137,12 +159,25 @@ async function main() {
     );
   }
 
-  if (heroCards.height < 48) {
-    throw new Error(`hero cards band too short (${heroCards.height.toFixed(1)}px)`);
+  const heroCard = heroPlayingCards.find((c) => c.width > 0 && c.height > 0);
+  if (!heroCard) {
+    throw new Error('no visible hero playing cards in mobile Card View');
+  }
+  if (heroCard.width <= 45 || heroCard.height <= 65) {
+    throw new Error(
+      `hero playing card too small (${heroCard.width.toFixed(1)}×${heroCard.height.toFixed(1)}px)`,
+    );
+  }
+  if (heroCard.top < cardsZone.top - 2 || heroCard.bottom > cardsZone.bottom + 2) {
+    throw new Error('hero playing card outside cards zone');
   }
 
   if (heroCards.bottom > actionRow.top - 4) {
     throw new Error('hero cards overlap action row');
+  }
+
+  if (heroCards.bottom > playerBoxes.top - 4) {
+    throw new Error('hero cards overlap player boxes');
   }
 }
 

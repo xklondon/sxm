@@ -1,0 +1,88 @@
+{
+  "root": "sxm-layout-root bj-casino bj-view-full-mobile",
+  "viewport": {
+    "w": 844,
+    "h": 390
+  },
+  "shell": {
+    "w": 842,
+    "h": 366,
+    "top": 135.34375,
+    "bottom": 501.34375
+  },
+  "dealer": null,
+  "command": {
+    "top": 189.5625,
+    "bottom": 212.75,
+    "left": 1,
+    "right": 843,
+    "w": 842,
+    "h": 23.1875,
+    "relTop": 54.21875,
+    "relBottom": 77.40625
+  },
+  "cardsZone": {
+    "top": 218.96875,
+    "bottom": 388.296875,
+    "left": 1,
+    "right": 843,
+    "w": 842,
+    "h": 169.328125,
+    "relTop": 83.625,
+    "relBottom": 252.953125
+  },
+  "actions": {
+    "top": 388.921875,
+    "bottom": 418.515625,
+    "left": 1,
+    "right": 843,
+    "w": 842,
+    "h": 29.59375,
+    "relTop": 253.578125,
+    "relBottom": 283.171875
+  },
+  "boxes": {
+    "top": 419.140625,
+    "bottom": 461.53125,
+    "left": 1,
+    "right": 843,
+    "w": 842,
+    "h": 42.390625,
+    "relTop": 283.796875,
+    "relBottom": 326.1875
+  },
+  "tray": {
+    "top": 465.34375,
+    "bottom": 501.34375,
+    "left": 1,
+    "right": 843,
+    "w": 842,
+    "h": 36,
+    "relTop": 330,
+    "relBottom": 366
+  },
+  "playingCards": [
+    {
+      "i": 0,
+      "w": 42.390625,
+      "h": 56.796875,
+      "top": 316.484375,
+      "bottom": 373.28125
+    },
+    {
+      "i": 1,
+      "w": 42.390625,
+      "h": 56.796875,
+      "top": 279.6875,
+      "bottom": 336.484375
+    }
+  ],
+  "allInView": {
+    "dealer": null,
+    "command": true,
+    "cards": true,
+    "actions": false,
+    "boxes": false,
+    "tray": false
+  }
+}

@@ -10,9 +10,18 @@
     --bj-card-hero-card-max-height: clamp(7.5rem, 58vw, 12rem);
   }
 
+  /* Card View keeps compact command during play — not Full Table's tall playing band. */
+  .bj-view-card-mobile[data-phase='player'],
+  .bj-view-card-mobile[data-phase='dealer'],
+  .bj-view-card-mobile[data-phase='resolved'] {
+    --bj-zone-command-height: var(--bj-mobile-zone-command-height, 2.25rem);
+    --bj-zone-command-max-height: var(--bj-zone-command-max-height, 3.4rem);
+    --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height, 5.15rem);
+  }
+
   .bj-view-card-mobile[data-phase='player'] .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
     flex: 1 1 0;
-    min-height: 6rem;
+    min-height: 7.75rem;
     overflow: hidden;
     container-type: size;
     container-name: bj-mobile-hero-cards;
@@ -60,7 +69,7 @@
     max-height: 100%;
     justify-content: flex-end;
     align-items: center;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards,
@@ -71,6 +80,7 @@
     justify-content: center;
     align-items: flex-end;
     margin-bottom: 0.08rem;
+    overflow: visible;
   }
 
   /* Mobile Card View — no hero hand total under cards (player box values unchanged). */
@@ -90,12 +100,12 @@
 
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.bj-phone-card--hero,
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__cards .playing-card.ds-card--hero {
-    width: auto;
     max-width: min(var(--bj-card-hero-card-width), 42vw, 50%);
     width: min(var(--bj-card-hero-card-width), 42vw, 50%);
-    max-height: min(var(--bj-card-hero-card-max-height), 5.5rem, 100%);
+    max-height: min(var(--bj-card-hero-card-max-height), 100%);
     height: auto;
-    min-width: 0;
+    min-width: 3.15rem;
+    min-height: 4.1rem;
     aspect-ratio: 5 / 7;
   }
 

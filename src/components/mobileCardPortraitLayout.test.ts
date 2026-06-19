@@ -27,5 +27,6 @@ describe('Mobile Card View portrait layout owner', () => {
     expect(PORTRAIT_CSS).toMatch(
       /\.bj-view-card-mobile[\s\S]*\.bj-card-view__hero-value\.bj-phone-view__total--hero[\s\S]*display:\s*none/,
     );
+    expect(PORTRAIT_CSS).toContain("--bj-zone-command-height: var(--bj-mobile-zone-command-height");
   });
 });

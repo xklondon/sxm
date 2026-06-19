@@ -27,7 +27,10 @@ describe('Mobile Full Table landscape layout owner', () => {
       /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table/,
     );
     expect(LANDSCAPE_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*margin-top:\s*0/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-dealer-area[\s\S]*grid-area:\s*dealer/,
+    );
+    expect(LANDSCAPE_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*margin-top:\s*0/,
     );
   });
 });

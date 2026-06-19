@@ -6,6 +6,17 @@
 
 @media (max-width: 920px) and (orientation: landscape) {
   .bj-view-full-mobile.bj-casino {
+    --bj-mobile-landscape-header-reserve: 2.5rem;
+    --bj-mobile-table-canvas-height: min(
+      calc(
+        100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) -
+          var(--bj-mobile-landscape-header-reserve)
+      ),
+      calc(
+        100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) -
+          var(--bj-mobile-landscape-header-reserve)
+      )
+    );
     --bj-mobile-zone-dealer-height: 3.35rem;
     --bj-mobile-zone-command-height: 1.45rem;
     --bj-mobile-zone-actions-height: 1.85rem;
@@ -15,6 +26,54 @@
     --bj-zone-tray-padding-bottom: max(0.35rem, calc(env(safe-area-inset-bottom, 0px) + 0.15rem));
     --bj-full-table-box-height: 2.35rem;
     --bj-mobile-zone-command-top-gap: 0.15rem;
+  }
+
+  /* Play phases use landscape compact bands — not portrait's tall playing command slot. */
+  .bj-view-full-mobile[data-phase='player'],
+  .bj-view-full-mobile[data-phase='dealer'],
+  .bj-view-full-mobile[data-phase='resolved'] {
+    --bj-zone-command-height: var(--bj-mobile-zone-command-height);
+    --bj-zone-command-max-height: var(--bj-mobile-zone-command-height);
+    --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
+  }
+
+  .bj-view-full-mobile.bj-casino,
+  .bj-view-full-mobile .bj-mobile-table-shell,
+  .bj-view-full-mobile .bj-casino__rail-wrap,
+  .bj-view-full-mobile .bj-casino__felt,
+  .bj-view-full-mobile .bj-casino__felt-main {
+    min-height: 0;
+    max-height: var(--bj-mobile-table-canvas-height, 100dvh);
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-mobile-table-shell {
+    display: flex;
+    flex-direction: column;
+    max-height: 100dvh;
+  }
+
+  .bj-view-full-mobile .bj-casino__rail {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-casino__felt {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-casino__felt-main.bj-table-layout-shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    max-height: 100%;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell {
@@ -30,20 +89,36 @@
       'tray tray';
     row-gap: 0.04rem;
     column-gap: 0.35rem;
-    height: 100%;
-    max-height: var(--bj-mobile-table-canvas-height);
+    height: auto;
+    max-height: 100%;
     overflow: hidden;
     align-content: start;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--dealer {
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-info-bar--felt-row {
+    display: none;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-dealer-area {
     grid-area: dealer;
+    flex: 0 0 auto;
+    min-height: var(--bj-mobile-zone-dealer-height);
+    max-height: var(--bj-mobile-zone-dealer-height);
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-dealer-area > .dealer-block {
+    min-height: 0;
+    max-height: 100%;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--summary {
     grid-area: command;
-    min-height: 0;
+    flex: 0 0 auto;
+    min-height: var(--bj-mobile-zone-command-height);
+    max-height: var(--bj-mobile-zone-command-height);
     padding-top: var(--bj-mobile-zone-command-top-gap);
+    overflow: hidden;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards {
@@ -73,7 +148,7 @@
     overflow: hidden;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes {
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--boxes {
     grid-area: boxes;
     flex: 0 0 auto;
     height: var(--bj-mobile-zone-boxes-height);

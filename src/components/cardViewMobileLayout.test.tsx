@@ -145,6 +145,6 @@ describe('mobile Card View layout contract', () => {
 
   it('dealer command area carries box/caller turn text', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toMatch(/Box \d+ — your turn\./);
+    expect(html).toMatch(/Box \d+ — .+ — your turn\./);
   });
 });

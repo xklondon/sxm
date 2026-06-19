@@ -1,0 +1,79 @@
+{
+  "viewport": {
+    "width": 844,
+    "height": 390
+  },
+  "shell": {
+    "top": 45.78125,
+    "bottom": 395.78125,
+    "left": 1,
+    "right": 843,
+    "width": 842,
+    "height": 350
+  },
+  "dealer": {
+    "top": 45.78125,
+    "bottom": 99.375,
+    "left": 1,
+    "right": 843,
+    "width": 842,
+    "height": 53.59375
+  },
+  "command": {
+    "top": 100,
+    "bottom": 123.1875,
+    "left": 1,
+    "right": 843,
+    "width": 842,
+    "height": 23.1875
+  },
+  "cardsZone": {
+    "top": 129.40625,
+    "bottom": 282.734375,
+    "left": 1,
+    "right": 843,
+    "width": 842,
+    "height": 153.328125
+  },
+  "actions": {
+    "top": 283.359375,
+    "bottom": 312.953125,
+    "left": 1,
+    "right": 843,
+    "width": 842,
+    "height": 29.59375
+  },
+  "playerBoxes": {
+    "top": 313.578125,
+    "bottom": 355.96875,
+    "left": 1,
+    "right": 843,
+    "width": 842,
+    "height": 42.390625
+  },
+  "tray": {
+    "top": 359.78125,
+    "bottom": 395.78125,
+    "left": 1,
+    "right": 843,
+    "width": 842,
+    "height": 36
+  },
+  "playingCards": [
+    {
+      "i": 0,
+      "width": 42.390625,
+      "height": 56.796875,
+      "top": 210.921875,
+      "bottom": 267.71875
+    },
+    {
+      "i": 1,
+      "width": 42.390625,
+      "height": 56.796875,
+      "top": 174.125,
+      "bottom": 230.921875
+    }
+  ],
+  "shellHeight": 350
+}

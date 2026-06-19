@@ -1,11 +1,11 @@
 {
   "heroCards": {
-    "top": 449.265625,
-    "bottom": 506.09375,
+    "top": 383.265625,
+    "bottom": 456.984375,
     "left": 19.875,
     "right": 370.125,
     "width": 350.25,
-    "height": 56.828125
+    "height": 73.71875
   },
   "heroValue": {
     "top": 0,
@@ -26,19 +26,43 @@
   "heroValueDisplay": "none",
   "heroValueVisibility": "hidden",
   "actionRow": {
-    "top": 542.875,
-    "bottom": 572.453125,
+    "top": 504.875,
+    "bottom": 534.453125,
     "left": 149.046875,
     "right": 240.953125,
     "width": 91.90625,
     "height": 29.578125
   },
   "playerBoxes": {
-    "top": 576.140625,
-    "bottom": 677.546875,
+    "top": 538.140625,
+    "bottom": 639.546875,
     "left": 31.875,
     "right": 358.125,
     "width": 326.25,
     "height": 101.40625
-  }
+  },
+  "cardsZone": {
+    "top": 375.28125,
+    "bottom": 499.28125,
+    "left": 19.875,
+    "right": 370.125,
+    "width": 350.25,
+    "height": 124
+  },
+  "heroPlayingCards": [
+    {
+      "i": 0,
+      "width": 50.390625,
+      "height": 70.546875,
+      "top": 385.171875,
+      "bottom": 455.71875
+    },
+    {
+      "i": 1,
+      "width": 50.390625,
+      "height": 70.546875,
+      "top": 385.171875,
+      "bottom": 455.71875
+    }
+  ]
 }
