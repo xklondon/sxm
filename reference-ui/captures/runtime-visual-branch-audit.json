@@ -420,26 +420,26 @@
       "rect": {
         "top": 165.3,
         "bottom": 218.9,
-        "left": 297.2,
-        "right": 414.7,
+        "left": 581.2,
+        "right": 698.7,
         "width": 117.5,
         "height": 53.6
       },
-      "centerX": 356,
-      "deltaFromFeltCenter": -284,
+      "centerX": 640,
+      "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
     "dealButton": {
       "rect": {
         "top": 246.2,
         "bottom": 291,
-        "left": 297.2,
-        "right": 414.7,
+        "left": 581.2,
+        "right": 698.7,
         "width": 117.5,
         "height": 44.8
       },
-      "centerX": 356,
-      "deltaFromFeltCenter": -284,
+      "centerX": 640,
+      "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
       "text": "Deal Cards",
       "styles": {
@@ -2007,26 +2007,26 @@
       "rect": {
         "top": 165.3,
         "bottom": 218.9,
-        "left": 297.2,
-        "right": 414.7,
+        "left": 581.2,
+        "right": 698.7,
         "width": 117.5,
         "height": 53.6
       },
-      "centerX": 356,
-      "deltaFromFeltCenter": -284,
+      "centerX": 640,
+      "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt.bj-table-surface.bj-felt-skin--classic-casino > div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__cards-slot"
     },
     "dealButton": {
       "rect": {
         "top": 246.2,
         "bottom": 291,
-        "left": 297.2,
-        "right": 414.7,
+        "left": 581.2,
+        "right": 698.7,
         "width": 117.5,
         "height": 44.8
       },
-      "centerX": 356,
-      "deltaFromFeltCenter": -284,
+      "centerX": 640,
+      "deltaFromFeltCenter": 0,
       "domPath": "div.bj-casino__felt-main.bj-table-layout-shell > div.bj-dealer-area > div.sxm-dealer-zone.dealer-block > div.dealer-block__grid > div.dealer-block__center-col > div.dealer-block__stack > div.dealer-block__action-slot > button.dealer-block__action.dealer-block__action--primary.dealer-block__action--reserved",
       "text": "Deal Cards",
       "styles": {

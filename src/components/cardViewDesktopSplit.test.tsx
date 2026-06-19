@@ -135,16 +135,38 @@ describe('Desktop Card View split presentation', () => {
     expect(secondHtml).not.toContain(`aria-label="${firstCards[0]!.rank} of ${firstCards[0]!.suit}`);
   });
 
-  it('desktop Card View panel renders split companion box left of parent slot', () => {
+  it('desktop Card View panel renders split companion inside cluster left of main box', () => {
     const state = splitPlayingState('card');
     const html = renderToStaticMarkup(
       createElement(BlackjackPanel, { gameState: state, onGameStateChange: noop }),
     );
-    expect(html).toContain('bj-arc__slot--split-companion');
+    expect(html).toContain('bj-arc__slot--split-host');
+    expect(html).toContain('bj-arc__slot-split-cluster');
+    expect(html).toContain('bj-arc__split-companion-tile');
     expect(html).toContain('data-split-hand-key');
-    const companionIdx = html.indexOf('bj-arc__slot--split-companion');
-    const parentOwnedIdx = html.indexOf('bj-arc__slot--owned', companionIdx + 1);
-    expect(companionIdx).toBeGreaterThan(-1);
-    expect(parentOwnedIdx).toBeGreaterThan(companionIdx);
+    const clusterIdx = html.indexOf('bj-arc__slot-split-cluster');
+    const companionIdx = html.indexOf('bj-arc__split-companion-tile', clusterIdx);
+    const mainIdx = html.indexOf('bj-arc__slot-split-main', clusterIdx);
+    expect(clusterIdx).toBeGreaterThan(-1);
+    expect(companionIdx).toBeGreaterThan(clusterIdx);
+    expect(mainIdx).toBeGreaterThan(companionIdx);
+  });
+
+  it('desktop Full Table panel nests split companion without extra grid slots', () => {
+    const state = splitPlayingState('full');
+    const html = renderToStaticMarkup(
+      createElement(BlackjackPanel, { gameState: state, onGameStateChange: noop }),
+    );
+    expect(html).toContain('bj-arc__slot--split-host');
+    expect(html).toContain('bj-arc__slot--card-split');
+    expect(html).toContain('bj-arc__split-hand--active');
+    const clusterIdx = html.indexOf('bj-arc__slot-split-cluster');
+    const companionIdx = html.indexOf('bj-arc__split-companion-tile', clusterIdx);
+    const mainIdx = html.indexOf('bj-arc__slot-split-main', clusterIdx);
+    expect(companionIdx).toBeGreaterThan(clusterIdx);
+    expect(mainIdx).toBeGreaterThan(companionIdx);
+    const playerBoxesIdx = html.indexOf('bj-arc--player-boxes');
+    const beforePlayerBoxes = html.slice(0, playerBoxesIdx);
+    expect(beforePlayerBoxes).not.toContain('bj-arc__split-companion-tile');
   });
 });

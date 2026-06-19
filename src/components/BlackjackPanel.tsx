@@ -1096,6 +1096,21 @@ export function BlackjackPanel({
     }
   }
 
+  function resolveArcSlotHandKeys(boxId: string | null): string[] {
+    if (!boxId) {
+      return [];
+    }
+    let handKeys = handKeysByBox.get(boxId) ?? [];
+    if (handKeys.length === 0 && visualRound) {
+      const primaryKey = blackjackHandKey(boxId, 0);
+      const hand = visualRound.playerHands[primaryKey];
+      if (hand && (hand.currentBet > 0 || hand.cardIds.some(Boolean))) {
+        handKeys = [primaryKey];
+      }
+    }
+    return handKeys;
+  }
+
   const inBetting = bettingOpen;
   const showAddBoxLead = canAddVisibleBox && inBetting;
   const showBoxHandResultMarkers = shouldShowBoxHandResultMarkers({
@@ -1740,8 +1755,22 @@ export function BlackjackPanel({
                 isFullTableView && splitMarker && cardAreaOutcomeUsesStackBadge(splitMarker);
               const splitFloatingMarker =
                 splitMarker && !splitStackBadge ? splitMarker : null;
+              const isSplitHandActive =
+                isPlayerTurnPhase(protocolPhase) &&
+                !showBoxHandResultMarkers &&
+                visualRound?.activeHandKey === handKey &&
+                splitHand?.actionStatus === 'acting';
               return (
-                <div key={handKey} className="bj-arc__split-hand">
+                <div
+                  key={handKey}
+                  className={[
+                    'bj-arc__split-hand',
+                    isSplitHandActive ? 'bj-arc__split-hand--active' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  data-split-hand-key={handKey}
+                >
                   {splitFloatingMarker ? (
                     <span className={cardAreaOutcomeMarkerClass(splitFloatingMarker)} aria-hidden="true">
                       {cardAreaOutcomeMarkerText(splitFloatingMarker)}
@@ -1807,11 +1836,38 @@ export function BlackjackPanel({
 
   function renderArcSlot(
     slotNumber: number,
-    slotOpts?: { splitHandKey?: string; splitCompanion?: boolean },
+    slotOpts?: {
+      splitHandKey?: string;
+      splitCompanion?: boolean;
+      splitClusterMain?: boolean;
+    },
   ) {
     const isSplitCompanion = Boolean(slotOpts?.splitCompanion && slotOpts.splitHandKey);
+    const isSplitClusterMain = Boolean(slotOpts?.splitClusterMain);
     const slot = tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
     const boxId = slot?.playerId ?? null;
+
+    if (!isSplitCompanion && !isSplitClusterMain && deviceView === 'desktop' && boxId) {
+      const splitCompanionKeys = resolveArcSlotHandKeys(boxId).slice(1);
+      if (splitCompanionKeys.length > 0) {
+        const hostRotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
+        return (
+          <div
+            key={slotArcReactKey(slotNumber)}
+            className="bj-arc__slot bj-arc__slot--owned bj-arc__slot--split-host"
+            style={{ '--arc-rot': `${hostRotation}deg` } as CSSProperties}
+            data-box-slot={slotNumber}
+          >
+            <div className="bj-arc__slot-split-cluster">
+              {splitCompanionKeys.map((handKey) =>
+                renderArcSlot(slotNumber, { splitHandKey: handKey, splitCompanion: true }),
+              )}
+              {renderArcSlot(slotNumber, { splitClusterMain: true })}
+            </div>
+          </div>
+        );
+      }
+    }
     const isEmpty = !boxId;
     const pendingChips = pendingOnlineStakesBySlot[slotNumber] ?? [];
     const openStake = boxId ? getStakeForBox(gameState, boxId) : 0;
@@ -1832,14 +1888,7 @@ export function BlackjackPanel({
     const boxInfo = boxId
       ? buildBlackjackPlayerBoxInfo(gameState, slotNumber, boxId)
       : null;
-    let handKeys = boxId ? (handKeysByBox.get(boxId) ?? []) : [];
-    if (boxId && handKeys.length === 0 && visualRound) {
-      const primaryKey = blackjackHandKey(boxId, 0);
-      const hand = visualRound.playerHands[primaryKey];
-      if (hand && (hand.currentBet > 0 || hand.cardIds.some(Boolean))) {
-        handKeys = [primaryKey];
-      }
-    }
+    const handKeys = resolveArcSlotHandKeys(boxId);
     const primaryHandKey = handKeys[0];
     const displayHandKey = slotOpts?.splitHandKey ?? primaryHandKey;
     const primaryHand = primaryHandKey ? visualRound?.playerHands[primaryHandKey] : null;
@@ -1902,7 +1951,8 @@ export function BlackjackPanel({
     const isSelected = inBetting && !isSplitCompanion && selectedBettingSlotNumber === slotNumber;
     const isDrop = !isSplitCompanion && (dropTargetId === dropKey || dropTargetId === `slot-${slotNumber}`);
     const onSelect = () => (boxId ? selectBox(boxId) : handleClaimOrSelectSlot(slotNumber));
-    const useHandLevelTurn = isCardViewDesktop && (isSplitCompanion || handKeys.length > 1);
+    const useHandLevelTurn =
+      deviceView === 'desktop' && (isSplitCompanion || handKeys.length > 1);
     const isHandTurn =
       useHandLevelTurn &&
       isPlayerTurnPhase(protocolPhase) &&
@@ -1917,27 +1967,53 @@ export function BlackjackPanel({
         ? BOX_BORDER_TURN
         : '';
 
+    const slotSurfaceClass = isSplitCompanion
+      ? 'bj-arc__split-companion-tile'
+      : isSplitClusterMain
+        ? 'bj-arc__slot-split-main'
+        : [
+            'bj-arc__slot',
+            isEmpty ? 'bj-arc__slot--empty' : 'bj-arc__slot--owned',
+            TABLE_UX.boxHitZone,
+            isJoinAssigned ? 'bj-arc__slot--join-highlight' : '',
+            isDrop ? 'bj-arc__slot--drop' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+
     return (
       <div
         key={
           isSplitCompanion
             ? `split-companion-${slotNumber}-${slotOpts!.splitHandKey}`
-            : slotArcReactKey(slotNumber)
+            : isSplitClusterMain
+              ? `split-main-${slotNumber}`
+              : slotArcReactKey(slotNumber)
         }
         className={[
-          'bj-arc__slot',
-          isEmpty && !isSplitCompanion ? 'bj-arc__slot--empty' : 'bj-arc__slot--owned',
-          isSplitCompanion ? 'bj-arc__slot--split-companion' : TABLE_UX.boxHitZone,
-          isJoinAssigned && !isSplitCompanion ? 'bj-arc__slot--join-highlight' : '',
-          isDrop ? 'bj-arc__slot--drop' : '',
-        ].filter(Boolean).join(' ')}
-        style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
+          slotSurfaceClass,
+          isSplitCompanion ? 'bj-arc__slot--split-companion' : '',
+          isHandTurn ? 'bj-arc__split-companion-tile--active' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        style={
+          isSplitCompanion || isSplitClusterMain
+            ? undefined
+            : ({ '--arc-rot': `${rotation}deg` } as CSSProperties)
+        }
         {...(isSplitCompanion
           ? { 'data-split-hand-key': slotOpts!.splitHandKey }
-          : {
-              [CHIP_DROP_SLOT_ATTR]: slotNumber,
-              [CHIP_DROP_BOX_ATTR]: boxId ?? '',
-            })}
+          : isSplitClusterMain
+            ? {
+                [CHIP_DROP_SLOT_ATTR]: slotNumber,
+                [CHIP_DROP_BOX_ATTR]: boxId ?? '',
+              }
+            : {
+                [CHIP_DROP_SLOT_ATTR]: slotNumber,
+                [CHIP_DROP_BOX_ATTR]: boxId ?? '',
+              })}
+        {...(!isSplitCompanion && !isSplitClusterMain ? { 'data-box-slot': slotNumber } : {})}
       >
         {isSplitCompanion ? null : (
         <button
@@ -2105,20 +2181,7 @@ export function BlackjackPanel({
               +
             </button>
           ) : null}
-          {displaySlots.flatMap((slot) => {
-            if (!isCardViewDesktop) {
-              return [renderArcSlot(slot.slotNumber)];
-            }
-            const boxId =
-              tableMeta.boxSlots.find((s) => s.slotNumber === slot.slotNumber)?.playerId ?? null;
-            const splitCompanions = boxId ? (handKeysByBox.get(boxId) ?? []).slice(1) : [];
-            return [
-              ...splitCompanions.map((handKey) =>
-                renderArcSlot(slot.slotNumber, { splitHandKey: handKey, splitCompanion: true }),
-              ),
-              renderArcSlot(slot.slotNumber),
-            ];
-          })}
+          {displaySlots.map((slot) => renderArcSlot(slot.slotNumber))}
           </div>
         </div>
       </BlackjackPlayerBoxRow>

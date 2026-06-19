@@ -15,7 +15,14 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-13 — Card View shared-zone parity, mobile layout reuse, double overlay, New Game modal
+## 2026-06-13 — Desktop split companion cluster + Full Table dealer centering
+
+- **Split display (engine unchanged):** split hands remain `boxId:handIndex` on one slot. Desktop Full Table + Card View render a nested `.bj-arc__slot--split-host` cluster: smaller `.bj-arc__split-companion-tile` left of normal `.bj-arc__slot-split-main` (wager, card ranks, active highlight per `activeHandKey`). Full Table card columns use compact `.bj-arc__slot--card-split` stacks side-by-side.
+- **Card View hero:** still follows `activeHandKey` only (one split hand at a time).
+- **Full Table dealer:** `.bj-view-full-desktop` centers dealer cards + deal button on felt in betting and playing (≤5px at 1280×800); Card View unchanged.
+- **Tests:** `cardViewDesktopSplit.test.tsx` (cluster DOM + Full Table split cards); runtime audit extended for Full Table felt-center checks.
+
+---
 
 - **Desktop Card View:** command/dealer tokens aligned with Full Table; optional Double/Split in command zone (not unstyled cards anchor).
 - **Mobile Card View:** reuse Full Table shell zones; hero value inside cards area (`segment="all"`); stripped portrait layout owner to hero card sizing only.

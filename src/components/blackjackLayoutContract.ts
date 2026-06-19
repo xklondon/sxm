@@ -125,7 +125,7 @@ export const CARD_VIEW_HERO_LAYERED_CARD_WRAP_CLASS = 'bj-phone-view__card-wrap-
 /** Card View shell vertical order (matches BlackjackTableLayoutShell). */
 export const CARD_VIEW_SHELL_VERTICAL_ORDER = [
   'bj-table-info-bar--felt-row',
-  'bj-table-zone--dealer',
+  'bj-dealer-area',
   'bj-table-zone--summary',
   'bj-cards-area--hero',
   'bj-table-zone--actions',
@@ -259,7 +259,7 @@ export const FULL_TABLE_SHELL_ZONE_ORDER = [
 
 /** Shell zone CSS classes in DOM order (after bank info header inside felt). */
 export const FULL_TABLE_SHELL_ZONE_CLASSES = [
-  'bj-table-zone--dealer',
+  'bj-dealer-area',
   'bj-table-zone--summary',
   'bj-table-zone--cards',
   'bj-table-zone--actions',

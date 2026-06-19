@@ -429,7 +429,9 @@ Shake-to-roll optional. Primary action label: **Dice** (roll).
 
 Fixed 7-row grid in `bj-blackjack-table-shell.css`; **identical slot geometry in betting and playing** (≤1px measured parity). `data-bj-phase` affects cards-area **content** only (cloth/title vs cards), not row heights or box/tray position.
 
-**Desktop Full Table betting alignment:** In betting only, Full Table centers dealer cards + Deal button + command pill on felt to match Card View betting (≤5px); playing keeps existing Full Table dealer alignment.
+**Desktop Full Table dealer alignment:** Full Table centers dealer cards + Deal button on felt in betting and playing (≤5px at 1280×800), matching Card View felt-center rules; command pill parity with Card View in betting only.
+
+**Desktop split presentation (display-only):** Engine keeps one physical box per player (`boxId:handIndex` hand keys, equal wager). Desktop Full Table + Card View render split companions inside a nested `.bj-arc__slot--split-host` cluster: smaller `.bj-arc__split-companion-tile` immediately left of the normal `.bj-arc__slot-split-main` (same `currentBet`, card ranks, active highlight follows `activeHandKey`). Full Table card columns use compact side-by-side `.bj-arc__slot--card-split` stacks. Card View hero shows only the active split hand.
 
 **Mobile shell parity:** Full Table + Card View share one command slot height via `data-phase` on `.bj-casino` (betting vs player/dealer/resolved). Player boxes spread across felt width (`1fr` grid). Mobile Card View portrait hides hero hand total under hero cards; player box values remain visible (~2× scale token).
 

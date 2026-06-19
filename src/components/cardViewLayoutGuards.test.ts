@@ -60,7 +60,7 @@ describe('Card View layout guards', () => {
     expect(gapRem(LAYOUT_CSS, '--bj-cardview-cards-actions-gap')).toBeLessThanOrEqual(0.5);
     expect(SHELL_CSS).toMatch(/--bj-desktop-zone-actions-height:\s*2\.5rem/);
     expect(SHELL_CSS).not.toMatch(
-      /\[data-bj-phase='betting'\][\s\S]*--bj-desktop-zone-actions-height/,
+      /\[data-bj-phase='betting'\][^{]*\{[^}]*--bj-desktop-zone-actions-height/,
     );
     expect(SHELL_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/,

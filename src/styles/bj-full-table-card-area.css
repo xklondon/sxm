@@ -139,6 +139,34 @@
   overflow: visible;
 }
 
+.bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-split,
+.bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-split {
+  --bj-table-card-width: 1.42rem;
+  --bj-table-card-height: 1.92rem;
+  --bj-table-card-overlap-2: 0.68rem;
+  --bj-table-card-overlap-3: 0.92rem;
+  --bj-table-card-overlap-4plus: 1.12rem;
+}
+
+.bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-split > .bj-arc__split-hands,
+.bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-split > .bj-arc__split-hands {
+  gap: 0.08rem;
+  justify-content: center;
+}
+
+.bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-split .bj-arc__split-hand,
+.bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-split .bj-arc__split-hand {
+  flex: 0 1 auto;
+  max-width: calc(50% - 0.06rem);
+}
+
+.bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-split .bj-arc__split-hand--active,
+.bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-split .bj-arc__split-hand--active {
+  outline: 1px solid rgb(251 191 36 / 0.55);
+  outline-offset: 0.04rem;
+  border-radius: 0.18rem;
+}
+
 /* Stack host — play-zone wraps stack in DOM; must pin row 2 even when outcome row is empty. */
 .bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__play-zone,
 .bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__play-zone,

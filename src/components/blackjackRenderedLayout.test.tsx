@@ -1,8 +1,19 @@
 // @vitest-environment happy-dom
 /**
- * Rendered layout band tests — heavy BlackjackPanel mounts.
- * Do NOT run this full file for routine layout audits; use test:layout:audit + targeted cases.
- * Full file only when explicitly requested or after geometry contract changes.
+ * HEAVY / MANUAL — rendered layout band tests (happy-dom BlackjackPanel mounts).
+ *
+ * NOT for routine layout audit. Run only when explicitly requested:
+ *   npm run test:layout:rendered
+ *
+ * Known issue: full-file batch runs can hang or crash Vitest workers in happy-dom
+ * (especially late hero-stack / full-table column scenarios). If a test hangs,
+ * isolate with `.only` and report the specific assertion — do not continue the full run.
+ *
+ * Routine fast signal instead:
+ *   npm run test:layout:audit
+ *   npm run test:layout:fast
+ *   npm run build
+ *   npx tsx scripts/runtime-visual-branch-audit.mts
  */
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';

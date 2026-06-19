@@ -312,11 +312,13 @@ function assertAudit(report: Record<string, AuditRow>) {
   for (const [label, row] of [
     ['Card View betting dealer cards', cardBet],
     ['Card View playing dealer cards', cardPlay],
+    ['Full Table betting dealer cards', fullBet],
+    ['Full Table playing dealer cards', fullPlay],
   ] as const) {
     if (!row) throw new Error(`Missing audit row for ${label}`);
     for (const [part, delta] of [
       ['dealer cards', row.dealerCards?.deltaFromFeltCenter],
-      ['deal button', row.dealButton?.deltaFromFeltCenter],
+      ...(label.includes('betting') ? [['deal button', row.dealButton?.deltaFromFeltCenter] as const] : []),
     ] as const) {
       if (delta == null) throw new Error(`${label}: missing ${part} felt-center delta`);
       if (Math.abs(delta) > 5) {

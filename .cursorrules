@@ -199,11 +199,13 @@ If a full test run exceeds 2 minutes, stop, identify targeted suites, and run on
 
 **Layout audit-only passes** (target under 1–2 minutes):
 
-1. `npm run build`
-2. `npm run test:layout:ownership`
-3. Targeted changed-file tests only (`vitest run <path>`)
+1. `npm run test:layout:audit` (build + ownership)
+2. `npm run test:layout:fast` (ownership + Card View guard/regression tests)
+3. `npm run build` (if not already run via audit)
+4. `npx tsx scripts/runtime-visual-branch-audit.mts` (1280×800 felt-center parity)
+5. Targeted changed-file tests only (`vitest run <path>`) when patching specific areas
 
-Do **not** run `blackjackRenderedLayout.test.tsx` or other broad rendered-layout suites unless explicitly requested. Full visual/geometry validation is a separate step: `npm run test:layout:all-fast` (browser captures + ownership).
+Do **not** run `blackjackRenderedLayout.test.tsx` or other broad rendered-layout suites unless explicitly requested (`npm run test:layout:rendered`). Full browser geometry: `npm run test:layout:all-fast` (captures + ownership) — separate explicit step.
 
 If a layout test hangs, isolate with `.only`, report the specific stale assertion, and do not continue the full file run.
 
@@ -223,7 +225,14 @@ Use: chips, ledger, table balance, friends, buy-in, settlement, round.
 For Blackjack layout work:
 Do not add new layout ownership tests unless an existing browser capture cannot protect the issue.
 Use BLACKJACK_LAYOUT_CONTRACTS.md + reference-ui/views as the source of truth.
-Routine audit: `npm run test:layout:audit` (build + ownership). Add targeted `vitest run <changed-test>` only.
-Full geometry/screenshots: `npm run test:layout:all-fast` — explicit step only, not routine audits.
+Routine audit: `npm run test:layout:audit`, `npm run test:layout:fast`, `npm run build`, `npx tsx scripts/runtime-visual-branch-audit.mts`. Add targeted `vitest run <changed-test>` only when needed.
+Heavy rendered geometry (manual): `npm run test:layout:rendered` — `blackjackRenderedLayout.test.tsx` only; not for routine audits.
+Full browser captures: `npm run test:layout:all-fast` — explicit step only.
 Do not run `blackjackRenderedLayout.test.tsx` or full `npm test` for layout-only work unless explicitly requested.
 
+
+
+
+OUTPUT:
+put The Full Work Summary into a ChangeSummary.md
+do not keep previous content, overwrite existing with the latest Summary from that latest round of changes.
