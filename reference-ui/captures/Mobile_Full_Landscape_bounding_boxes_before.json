@@ -4,56 +4,56 @@
     "height": 390
   },
   "shell": {
-    "top": 45.78125,
-    "bottom": 395.78125,
+    "top": 1,
+    "bottom": 349,
     "left": 1,
     "right": 843,
     "width": 842,
-    "height": 350
+    "height": 348
   },
   "dealer": {
-    "top": 45.78125,
-    "bottom": 99.375,
+    "top": 1,
+    "bottom": 54.59375,
     "left": 1,
     "right": 843,
     "width": 842,
     "height": 53.59375
   },
   "command": {
-    "top": 100,
-    "bottom": 123.1875,
+    "top": 55.21875,
+    "bottom": 78.40625,
     "left": 1,
     "right": 843,
     "width": 842,
     "height": 23.1875
   },
   "cardsZone": {
-    "top": 129.40625,
-    "bottom": 282.734375,
+    "top": 84.625,
+    "bottom": 235.953125,
     "left": 1,
     "right": 843,
     "width": 842,
-    "height": 153.328125
+    "height": 151.328125
   },
   "actions": {
-    "top": 283.359375,
-    "bottom": 312.953125,
+    "top": 236.578125,
+    "bottom": 266.171875,
     "left": 1,
     "right": 843,
     "width": 842,
     "height": 29.59375
   },
   "playerBoxes": {
-    "top": 313.578125,
-    "bottom": 355.96875,
+    "top": 266.796875,
+    "bottom": 309.1875,
     "left": 1,
     "right": 843,
     "width": 842,
     "height": 42.390625
   },
   "tray": {
-    "top": 359.78125,
-    "bottom": 395.78125,
+    "top": 313,
+    "bottom": 349,
     "left": 1,
     "right": 843,
     "width": 842,
@@ -64,16 +64,16 @@
       "i": 0,
       "width": 42.390625,
       "height": 56.796875,
-      "top": 210.921875,
-      "bottom": 267.71875
+      "top": 164.140625,
+      "bottom": 220.9375
     },
     {
       "i": 1,
       "width": 42.390625,
       "height": 56.796875,
-      "top": 174.125,
-      "bottom": 230.921875
+      "top": 127.34375,
+      "bottom": 184.140625
     }
   ],
-  "shellHeight": 350
+  "shellHeight": 348
 }
