@@ -44,7 +44,7 @@ import './TableStakePanel.css';
 const STAKE_EXAMPLES = ['Dinner', '€20', 'Loser buys drinks', 'Just pride', 'car wash', 'favour'];
 
 type SetupCategoryTab = 'cards' | 'dice';
-type NewSetupStage = 'game' | 'blackjack-mode' | 'configure';
+type NewSetupStage = 'game' | 'dice-game' | 'mode' | 'configure';
 
 export type TableStakePanelMode = 'new' | 'reset';
 
@@ -106,6 +106,7 @@ export function TableStakePanel({
 
   const [setupStage, setSetupStage] = useState<NewSetupStage>('game');
   const [tableMode, setTableMode] = useState<TableMode>('practice');
+  const [virtualPlayerCount, setVirtualPlayerCount] = useState(2);
   const [invitedPlayers, setInvitedPlayers] = useState<InvitedTablePlayerSetup[]>([]);
   const [inviteEmailInput, setInviteEmailInput] = useState('');
   const invitedEmails = invitedPlayers.map((player) => player.email);
@@ -240,6 +241,49 @@ export function TableStakePanel({
       };
     }
 
+    if (isStagedNew && setupTab === 'dice') {
+      if (tableMode === 'practice') {
+        return {
+          stakeDescription: stake.trim() || 'Practice',
+          tableName: tableName.trim() || DEFAULT_PRACTICE_TABLE_NAME,
+          seatChips: seatAmount,
+          bankChips: bankAmount,
+          bankerMode: 'bot',
+          bankerName: '',
+          controllerName: controller,
+          controllerEmail: profile.email,
+          protocolId: 'zilch',
+          naturalDealing: false,
+          dealSpeedPreset: 'normal',
+          cardTimerPreset: 0,
+          bankDrawAuto: true,
+          tableMode: 'practice',
+          invitedEmails: [],
+        };
+      }
+      return {
+        stakeDescription: stake.trim() || 'Friendly wager',
+        tableName: tableName.trim() || stake.trim() || 'Zilch Challenge',
+        seatChips: seatAmount,
+        bankChips: bankAmount,
+        bankerMode: 'self',
+        bankerName: controller,
+        controllerName: controller,
+        controllerEmail: profile.email,
+        protocolId: 'zilch',
+        naturalDealing: false,
+        dealSpeedPreset: 'normal',
+        cardTimerPreset: 0,
+        bankDrawAuto: true,
+        tableMode: 'challenge',
+        invitedEmails,
+        invitedPlayers: invitedPlayers.map((player) => ({
+          email: player.email,
+          inviteMessage: player.inviteMessage?.trim() || undefined,
+        })),
+      };
+    }
+
     const showPlayingForStake = bankerMode === 'bot';
     return {
       stakeDescription: showPlayingForStake ? stake.trim() || 'Friendly wager' : 'Table session',
@@ -268,6 +312,7 @@ export function TableStakePanel({
       diceAnimationMs: Number.parseInt(diceAnimMs, 10) || 2500,
       diceAnimationRandomMinMs: Number.parseInt(diceAnimMin, 10) || 2000,
       diceAnimationRandomMaxMs: Number.parseInt(diceAnimMax, 10) || 8000,
+      virtualPlayerCount: tableMode === 'practice' ? virtualPlayerCount : undefined,
     };
   }
 
@@ -321,6 +366,24 @@ export function TableStakePanel({
       }
     }
 
+    if (isStagedNew && setupTab === 'dice' && tableMode === 'challenge') {
+      if (!stake.trim()) {
+        setSetupError('Enter what you are playing for.');
+        return;
+      }
+      if (invitedEmails.length === 0) {
+        setSetupError('Add at least one invited email.');
+        return;
+      }
+    }
+
+    if (isStagedNew && setupTab === 'dice' && tableMode === 'practice') {
+      if (virtualPlayerCount < 1) {
+        setSetupError('Add at least one virtual player.');
+        return;
+      }
+    }
+
     const input = buildSetupInput();
 
     log.info('setupStartingChipsInput', {
@@ -363,8 +426,12 @@ export function TableStakePanel({
       try {
         const payload = isZilchStakeFlow ? buildZilchSetupInput() : input;
         await onlineDispatch('configureTable', payload as unknown as Record<string, unknown>);
-        if (onlineTableId && input.tableMode === 'challenge' && input.invitedPlayers?.length) {
-          for (const player of input.invitedPlayers) {
+        if (
+          onlineTableId &&
+          input.tableMode === 'challenge' &&
+          (input.invitedPlayers?.length ?? 0) > 0
+        ) {
+          for (const player of input.invitedPlayers ?? []) {
             await invitePersonToTable(
               onlineTableId,
               player.email,
@@ -503,13 +570,13 @@ export function TableStakePanel({
 
   function handleGameStageNext() {
     if (setupTab === 'dice') {
-      setSetupStage('configure');
+      setSetupStage('dice-game');
       return;
     }
-    setSetupStage('blackjack-mode');
+    setSetupStage('mode');
   }
 
-  function selectBlackjackMode(next: TableMode) {
+  function selectTableMode(next: TableMode) {
     setTableMode(next);
     setSetupStage('configure');
   }
@@ -711,7 +778,7 @@ export function TableStakePanel({
           )}
           {setupTab === 'dice' && (
             <p className="table-stake-panel__hint">
-              <strong>Zilch</strong> — roll six dice, keep scoring combinations, and bank before you zilch.
+              Dice games use the same table shell — pick a game on the next step.
             </p>
           )}
         </fieldset>
@@ -721,7 +788,32 @@ export function TableStakePanel({
             className="table-stake-panel__confirm table-stake-panel__select-btn"
             onClick={handleGameStageNext}
           >
-            {setupTab === 'dice' ? 'Configure Zilch' : 'Continue'}
+            Continue
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  function renderDiceGameStage() {
+    return (
+      <>
+        <fieldset className="table-stake-panel__banker">
+          <legend>Dice game</legend>
+          <p className="table-stake-panel__hint">
+            <strong>Zilch</strong> — roll six dice, keep scoring combinations, and bank before you zilch.
+          </p>
+          <button
+            type="button"
+            className="table-stake-panel__select-btn"
+            onClick={() => setSetupStage('mode')}
+          >
+            Zilch
+          </button>
+        </fieldset>
+        <div className="table-stake-panel__nav">
+          <button type="button" className="secondary" onClick={() => setSetupStage('game')}>
+            Back
           </button>
         </div>
       </>
@@ -729,33 +821,39 @@ export function TableStakePanel({
   }
 
   function renderStagedModeStage() {
+    const isDice = setupTab === 'dice';
     return (
       <>
         <fieldset className="table-stake-panel__banker">
           <legend>Mode</legend>
           <p className="table-stake-panel__hint table-stake-panel__hint--mode">
-            Practice is a quick solo game with the dealer as bank. Challenge adds a wager, invited
-            players, and a player bank.
+            {isDice
+              ? 'Practice uses virtual players you control. Challenge is for real players with a wager and email invites.'
+              : 'Practice is a quick solo game with the dealer as bank. Challenge adds a wager, invited players, and a player bank.'}
           </p>
           <div className="table-stake-panel__tabs" role="group" aria-label="Table mode">
             <button
               type="button"
               className={`table-stake-panel__select-btn${tableMode === 'practice' ? '' : ' secondary'}`}
-              onClick={() => selectBlackjackMode('practice')}
+              onClick={() => selectTableMode('practice')}
             >
               Practice
             </button>
             <button
               type="button"
               className={`table-stake-panel__select-btn${tableMode === 'challenge' ? '' : ' secondary'}`}
-              onClick={() => selectBlackjackMode('challenge')}
+              onClick={() => selectTableMode('challenge')}
             >
               Challenge
             </button>
           </div>
         </fieldset>
         <div className="table-stake-panel__nav">
-          <button type="button" className="secondary" onClick={() => setSetupStage('game')}>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setSetupStage(isDice ? 'dice-game' : 'game')}
+          >
             Back
           </button>
         </div>
@@ -792,7 +890,7 @@ export function TableStakePanel({
         </label>
         {renderAdvancedSettings()}
         <div className="table-stake-panel__nav">
-          <button type="button" className="secondary" onClick={() => setSetupStage('blackjack-mode')}>
+          <button type="button" className="secondary" onClick={() => setSetupStage('mode')}>
             Back
           </button>
           <button
@@ -960,7 +1058,7 @@ export function TableStakePanel({
         {renderAdvancedSettings()}
 
         <div className="table-stake-panel__nav">
-          <button type="button" className="secondary" onClick={() => setSetupStage('blackjack-mode')}>
+          <button type="button" className="secondary" onClick={() => setSetupStage('mode')}>
             Back
           </button>
           <button
@@ -976,26 +1074,174 @@ export function TableStakePanel({
     );
   }
 
-  function renderStagedConfigureStage() {
-    if (setupTab === 'dice') {
-      return (
-        <>
-          {renderDiceConfigure()}
-          <div className="table-stake-panel__nav">
-            <button type="button" className="secondary" onClick={() => setSetupStage('game')}>
-              Back
-            </button>
-            <button
-              type="button"
-              className="table-stake-panel__confirm table-stake-panel__select-btn"
-              onClick={() => void handleConfirm()}
-              disabled={submitting}
-            >
-              Start Zilch
+  function renderZilchPracticeConfigure() {
+    return (
+      <>
+        <p className="table-stake-panel__hint">
+          Virtual players only — you control every seat. No email invites.
+        </p>
+        <label className="table-stake-panel__field">
+          <span>Table name</span>
+          <input
+            type="text"
+            className="table-stake-panel__input"
+            placeholder={DEFAULT_PRACTICE_TABLE_NAME}
+            value={tableName}
+            onChange={(e) => setTableName(e.target.value)}
+            maxLength={48}
+          />
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Virtual players</span>
+          <input
+            type="number"
+            min={1}
+            max={6}
+            className="table-stake-panel__input table-stake-panel__input--short"
+            value={virtualPlayerCount}
+            onChange={(e) => setVirtualPlayerCount(Number.parseInt(e.target.value, 10) || 1)}
+          />
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Play for what (optional)</span>
+          <input
+            type="text"
+            className="table-stake-panel__input"
+            placeholder='e.g. "Just pride", "Loser buys drinks"'
+            value={stake}
+            onChange={(e) => setStake(e.target.value)}
+            list="stake-examples-zilch-practice"
+          />
+          <datalist id="stake-examples-zilch-practice">
+            {STAKE_EXAMPLES.map((ex) => (
+              <option key={ex} value={ex} />
+            ))}
+          </datalist>
+        </label>
+        {renderDiceConfigure()}
+        <div className="table-stake-panel__nav">
+          <button type="button" className="secondary" onClick={() => setSetupStage('mode')}>
+            Back
+          </button>
+          <button
+            type="button"
+            className="table-stake-panel__confirm table-stake-panel__select-btn"
+            onClick={() => void handleConfirm()}
+            disabled={submitting}
+          >
+            Start Zilch
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  function renderZilchChallengeConfigure() {
+    return (
+      <>
+        <label className="table-stake-panel__field">
+          <span>Table name</span>
+          <input
+            type="text"
+            className="table-stake-panel__input"
+            placeholder="Friday Night Zilch"
+            value={tableName}
+            onChange={(e) => setTableName(e.target.value)}
+            maxLength={48}
+          />
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Play for what</span>
+          <input
+            type="text"
+            className="table-stake-panel__input"
+            placeholder='e.g. "Dinner", "€20", "Loser buys drinks"'
+            value={stake}
+            onChange={(e) => setStake(e.target.value)}
+            list="stake-examples-zilch-challenge"
+          />
+          <datalist id="stake-examples-zilch-challenge">
+            {STAKE_EXAMPLES.map((ex) => (
+              <option key={ex} value={ex} />
+            ))}
+          </datalist>
+        </label>
+
+        <fieldset className="table-stake-panel__banker">
+          <legend>Invite players by email</legend>
+          <div className="table-stake-panel__invite-row">
+            <input
+              type="email"
+              className="table-stake-panel__input"
+              placeholder="friend@example.com"
+              value={inviteEmailInput}
+              onChange={(e) => setInviteEmailInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addInvitedEmail())}
+            />
+            <button type="button" className="secondary" onClick={addInvitedEmail}>
+              Add
             </button>
           </div>
-        </>
-      );
+          {invitedPlayers.length > 0 && (
+            <ul className="table-stake-panel__invite-list">
+              {invitedPlayers.map((player) => (
+                <li key={player.email}>
+                  <div className="table-stake-panel__invite-item">
+                    <span>{player.email}</span>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => removeInvitedEmail(player.email)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <label className="table-stake-panel__field table-stake-panel__invite-message">
+                    <span>Message for invite</span>
+                    <input
+                      type="text"
+                      className="table-stake-panel__input"
+                      placeholder="Add a short note to this player's invite…"
+                      value={player.inviteMessage ?? ''}
+                      onChange={(e) => updateInviteMessage(player.email, e.target.value)}
+                      maxLength={500}
+                    />
+                  </label>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="table-stake-panel__hint">
+            {onlineMode
+              ? 'Invites are sent when the table starts.'
+              : 'Invite links are created when the table starts.'}
+          </p>
+        </fieldset>
+
+        {renderDiceConfigure()}
+        <div className="table-stake-panel__nav">
+          <button type="button" className="secondary" onClick={() => setSetupStage('mode')}>
+            Back
+          </button>
+          <button
+            type="button"
+            className="table-stake-panel__confirm table-stake-panel__select-btn"
+            onClick={() => void handleConfirm()}
+            disabled={submitting}
+          >
+            Start Zilch
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  function renderStagedConfigureStage() {
+    if (setupTab === 'dice') {
+      if (tableMode === 'practice') {
+        return renderZilchPracticeConfigure();
+      }
+      return renderZilchChallengeConfigure();
     }
     if (tableMode === 'practice') {
       return renderPracticeConfigure();
@@ -1265,7 +1511,8 @@ export function TableStakePanel({
       ) : (
         <>
           {setupStage === 'game' && renderStagedGameStage()}
-          {setupStage === 'blackjack-mode' && renderStagedModeStage()}
+          {setupStage === 'dice-game' && renderDiceGameStage()}
+          {setupStage === 'mode' && renderStagedModeStage()}
           {setupStage === 'configure' && renderStagedConfigureStage()}
         </>
       )}

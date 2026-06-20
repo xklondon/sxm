@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import type { AuthUser } from '../../api/client';
 import type { GameState } from '../../types';
 import type { VirtualPlayerStyle } from '../../types/player';
 import {
@@ -12,6 +13,7 @@ import { useDeviceShake } from '../../hooks/useDeviceShake';
 import { useZilchTableFlow } from '../useZilchTableFlow';
 import { LedgerPanel } from '../LedgerPanel';
 import { canActOnZilchTurn, resolveZilchController } from '../zilchPlayerDisplay';
+import { resolveViewerPersonIdForTable } from '../viewerIdentity';
 import { ZilchCommand } from './ZilchCommand';
 import { ZilchPlayerRail } from './ZilchPlayerRail';
 import { ZilchDiceArea } from './ZilchDiceArea';
@@ -24,6 +26,8 @@ interface ZilchPanelProps {
   gameState: GameState;
   onGameStateChange: (state: GameState) => void;
   onInviteTable?: () => void;
+  onlineTableId?: string | null;
+  viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
   onlineActionInFlight?: boolean;
   onBeginTableReset?: (variant?: TableResetSetupVariant) => void;
@@ -44,6 +48,8 @@ export function ZilchPanel({
   gameState,
   onGameStateChange,
   onInviteTable,
+  onlineTableId = null,
+  viewerAuth = null,
   onlineDispatch,
   onlineActionInFlight = false,
   onBeginTableReset,
@@ -51,7 +57,9 @@ export function ZilchPanel({
   const { session, players, zilch, tableMeta } = gameState;
   const isMobile = useIsMobileViewport();
   const controller = resolveZilchController(gameState);
-  const canAct = zilch ? canActOnZilchTurn(gameState, controller) : true;
+  const viewerPersonId = resolveViewerPersonIdForTable(gameState, onlineTableId, viewerAuth);
+  const canAct = zilch ? canActOnZilchTurn(gameState, controller, viewerPersonId) : true;
+  const isPracticeTable = tableMeta.tableMode !== 'challenge';
   const shakeReady = useDeviceShake(
     isMobile && Boolean(zilch?.phase === 'player-turn' && canAct),
   );
@@ -65,6 +73,7 @@ export function ZilchPanel({
     handleKeepCombination,
     handleBank,
     handleQuitTurn,
+    actionError,
   } = useZilchTableFlow({ gameState, onGameStateChange, onlineDispatch });
 
   const [starterSpinActive, setStarterSpinActive] = useState(false);
@@ -220,25 +229,34 @@ export function ZilchPanel({
               Invite to table
             </button>
           )}
-          <select
-            className="secondary"
-            value={virtualStyle}
-            onChange={(e) => setVirtualStyle(e.target.value as VirtualPlayerStyle)}
-            aria-label="Virtual player style"
-          >
-            {VIRTUAL_STYLES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-          <button type="button" className="secondary" onClick={handleAddVirtual}>
-            Add virtual player
-          </button>
+          {isPracticeTable && (
+            <>
+              <select
+                className="secondary"
+                value={virtualStyle}
+                onChange={(e) => setVirtualStyle(e.target.value as VirtualPlayerStyle)}
+                aria-label="Virtual player style"
+              >
+                {VIRTUAL_STYLES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <button type="button" className="secondary" onClick={handleAddVirtual}>
+                Add virtual player
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      <ZilchCommand zilch={zilch} playerNames={playerNames} canAct={canAct} />
+      <ZilchCommand
+        zilch={zilch}
+        playerNames={playerNames}
+        canAct={canAct}
+        actionError={actionError}
+      />
 
       {!zilch && playerOrder.length > 0 && (
         <button type="button" onClick={handleStartGame} disabled={onlineActionInFlight}>

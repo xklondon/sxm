@@ -1,5 +1,10 @@
 import type { GameState } from '../types';
 import type { ZilchGameState } from '../engine/zilch/zilchTypes';
+import {
+  canControllerActOnZilchTurn,
+  canPersonActOnZilchTurn,
+  listPlayableZilchPlayerIds,
+} from '../engine/dice/zilch/zilchTurnAuthority';
 import { loadProfile } from '../storage/profileStorage';
 
 export type ZilchPlayerBoxStatus =
@@ -11,29 +16,28 @@ export type ZilchPlayerBoxStatus =
   | 'setup';
 
 function zilchPlayerOrder(gameState: GameState): string[] {
-  if (gameState.session.playerIds.length > 0) {
-    return gameState.session.playerIds;
+  const playable = listPlayableZilchPlayerIds(gameState);
+  if (playable.length > 0) {
+    return playable;
   }
   return gameState.tableMeta.boxSlots
     .map((s) => s.playerId)
     .filter((id): id is string => Boolean(id));
 }
 
-export function canActOnZilchTurn(gameState: GameState, controllerName: string): boolean {
+export function canActOnZilchTurn(
+  gameState: GameState,
+  controllerName: string,
+  viewerPersonId?: string | null,
+): boolean {
   const order = zilchPlayerOrder(gameState);
   if (order.length <= 1) {
     return true;
   }
-  const currentId = gameState.zilch?.currentPlayerId;
-  if (!currentId) {
-    return false;
+  if (viewerPersonId && canPersonActOnZilchTurn(gameState, viewerPersonId)) {
+    return true;
   }
-  const player = gameState.players[currentId];
-  if (!player) {
-    return false;
-  }
-  const label = player.controllerName?.trim() || player.displayName;
-  return label === controllerName.trim();
+  return canControllerActOnZilchTurn(gameState, controllerName);
 }
 
 export function resolveZilchController(gameState: GameState): string {

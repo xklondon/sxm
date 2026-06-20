@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState } from '../types';
 import {
   applyZilchActionToState,
@@ -21,19 +21,26 @@ export function useZilchTableFlow({
   onlineDispatch,
 }: UseZilchTableFlowOptions) {
   const rollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const dispatch = useCallback(
     async (type: string, payload?: Record<string, unknown>) => {
-      if (onlineDispatch) {
-        await onlineDispatch(type, payload);
-        return;
+      try {
+        setActionError(null);
+        if (onlineDispatch) {
+          await onlineDispatch(type, payload);
+          return;
+        }
+        if (!gameState.zilch) {
+          return;
+        }
+        onGameStateChange(
+          applyZilchActionToState(gameState, type as ZilchGameplayAction, payload),
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Action failed';
+        setActionError(message);
       }
-      if (!gameState.zilch) {
-        return;
-      }
-      onGameStateChange(
-        applyZilchActionToState(gameState, type as ZilchGameplayAction, payload),
-      );
     },
     [gameState, onGameStateChange, onlineDispatch],
   );
@@ -48,14 +55,22 @@ export function useZilchTableFlow({
       clearTimeout(rollTimerRef.current);
     }
     rollTimerRef.current = setTimeout(() => {
-      if (onlineDispatch) {
-        void onlineDispatch('zilchCompleteRoll', {});
-      } else {
-        onGameStateChange({
-          ...gameState,
-          zilch: completeDiceRoll(gameState.zilch!),
-        });
-      }
+      void (async () => {
+        try {
+          setActionError(null);
+          if (onlineDispatch) {
+            await onlineDispatch('zilchCompleteRoll', {});
+          } else {
+            onGameStateChange({
+              ...gameState,
+              zilch: completeDiceRoll(gameState.zilch!),
+            });
+          }
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Action failed';
+          setActionError(message);
+        }
+      })();
     }, duration);
     return () => {
       if (rollTimerRef.current) {
@@ -72,15 +87,18 @@ export function useZilchTableFlow({
 
   const handleStartGame = useCallback(() => {
     try {
+      setActionError(null);
       onGameStateChange(ensureZilchGameOnState(gameState));
     } catch (err) {
-      console.error(err);
+      const message = err instanceof Error ? err.message : 'Could not start game';
+      setActionError(message);
     }
   }, [gameState, onGameStateChange]);
 
   /** Authoritative starter selection — completes in one reducer step. Returns starter id when applied locally. */
   const handleRandomiseStarter = useCallback((): string | null => {
     try {
+      setActionError(null);
       const ready = ensureZilchGameOnState(gameState);
       if (onlineDispatch) {
         void dispatch('zilchRandomiseStarter', {});
@@ -90,7 +108,8 @@ export function useZilchTableFlow({
       onGameStateChange(next);
       return next.zilch?.starterPlayerId ?? null;
     } catch (err) {
-      console.error(err);
+      const message = err instanceof Error ? err.message : 'Randomiser failed';
+      setActionError(message);
       return null;
     }
   }, [dispatch, gameState, onGameStateChange, onlineDispatch]);
@@ -120,6 +139,10 @@ export function useZilchTableFlow({
     handleBank();
   }, [handleBank]);
 
+  const clearActionError = useCallback(() => {
+    setActionError(null);
+  }, []);
+
   return {
     handleStartGame,
     handleRandomiseStarter,
@@ -127,5 +150,7 @@ export function useZilchTableFlow({
     handleKeepCombination,
     handleBank,
     handleQuitTurn,
+    actionError,
+    clearActionError,
   };
 }

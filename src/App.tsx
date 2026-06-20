@@ -408,6 +408,13 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
         ) {
           await sendChallengeInvites(result.tableId, input);
         }
+        if (
+          isZilchInput &&
+          input.tableMode === 'challenge' &&
+          ((input.invitedPlayers?.length ?? 0) > 0 || (input.invitedEmails?.length ?? 0) > 0)
+        ) {
+          await sendChallengeInvites(result.tableId, input);
+        }
         const configured = normalizeLoadedGameState(actionResult.state);
         setGameState(configured);
         applyOnlineTableBootstrap({
@@ -436,6 +443,16 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
             input,
           );
       if (!isZilchInput && input.invitedPlayers?.length) {
+        for (const player of input.invitedPlayers) {
+          const inviteResult = createTableInvite(
+            state,
+            player.email.split('@')[0] || 'Guest',
+            player.email,
+            player.inviteMessage ?? '',
+          );
+          state = inviteResult.state;
+        }
+      } else if (isZilchInput && input.tableMode === 'challenge' && input.invitedPlayers?.length) {
         for (const player of input.invitedPlayers) {
           const inviteResult = createTableInvite(
             state,

@@ -6,7 +6,7 @@ import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import type { TableBankerSetupMode } from '../engine/session';
 import { DEFAULT_PRACTICE_TABLE_NAME } from '../types/tableFeltSkin';
 
-export type NewSetupStage = 'game' | 'blackjack-mode' | 'configure';
+export type NewSetupStage = 'game' | 'dice-game' | 'mode' | 'configure';
 export type SetupCategoryTab = 'cards' | 'dice';
 
 export interface TableStakeSetupSnapshot {

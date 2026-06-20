@@ -7,3 +7,4 @@ export * from './settings';
 export * from './normalizeZilchState';
 export * from './applyZilchAction';
 export * from './zilchResult';
+export * from './zilchTurnAuthority';

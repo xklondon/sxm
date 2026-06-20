@@ -56,6 +56,11 @@
   background: rgb(30 100 50 / 0.55);
 }
 
+.zilch-panel__banner--error {
+  background: rgb(120 30 30 / 0.55);
+  color: #ffd4d4;
+}
+
 /* Central table + surrounding seats */
 .zilch-table {
   position: relative;

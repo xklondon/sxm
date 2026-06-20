@@ -5,10 +5,17 @@ interface ZilchCommandProps {
   zilch: ZilchGameState | null;
   playerNames: Record<string, string>;
   canAct: boolean;
+  actionError?: string | null;
   className?: string;
 }
 
-export function ZilchCommand({ zilch, playerNames, canAct, className = '' }: ZilchCommandProps) {
+export function ZilchCommand({
+  zilch,
+  playerNames,
+  canAct,
+  actionError = null,
+  className = '',
+}: ZilchCommandProps) {
   const message = zilch
     ? commandStatusForPhase(zilch, playerNames, canAct)
     : 'Invite players, then start the Zilch game.';
@@ -23,8 +30,15 @@ export function ZilchCommand({ zilch, playerNames, canAct, className = '' }: Zil
           : '';
 
   return (
-    <p className={`zilch-panel__banner${bannerClass}${className}`} role="status">
-      {message}
-    </p>
+    <>
+      {actionError && (
+        <p className="zilch-panel__banner zilch-panel__banner--error" role="alert">
+          {actionError}
+        </p>
+      )}
+      <p className={`zilch-panel__banner${bannerClass}${className}`} role="status">
+        {message}
+      </p>
+    </>
   );
 }

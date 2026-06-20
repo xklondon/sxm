@@ -353,6 +353,8 @@ export function TableScreen({
               gameState={gameState}
               onGameStateChange={onGameStateChange}
               onInviteTable={() => setInviteOpen(true)}
+              onlineTableId={onlineTableId}
+              viewerAuth={viewerAuth}
               onlineDispatch={onlineDispatch}
               onlineActionInFlight={onlineActionInFlight}
               onBeginTableReset={(variant = 'resetTable') => {

@@ -1,4 +1,5 @@
 import type { GameState } from '../../../types';
+import { listPlayableZilchPlayerIds } from './zilchTurnAuthority';
 import type { ZilchGameSettings, ZilchTableMode } from './zilchTypes';
 import { isZilchTable } from '../../session/zilchTableKind';
 import {
@@ -13,12 +14,7 @@ import {
 import { normalizeZilchState } from './normalizeZilchState';
 
 function resolveZilchPlayerIds(state: GameState): string[] {
-  if (state.session.playerIds.length > 0) {
-    return state.session.playerIds;
-  }
-  return state.tableMeta.boxSlots
-    .map((s) => s.playerId)
-    .filter((id): id is string => Boolean(id));
+  return listPlayableZilchPlayerIds(state);
 }
 
 /** Ensure zilch engine state exists before gameplay actions (repair on load/dispatch). */

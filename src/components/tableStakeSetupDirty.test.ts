@@ -49,7 +49,7 @@ describe('tableStakeSetupDirty', () => {
     const baseline = createInitialTableStakeSetupSnapshot(gameState);
     const advanced = collectTableStakeSetupSnapshot({
       gameState,
-      setupStage: 'blackjack-mode',
+      setupStage: 'mode',
       setupTab: 'cards',
       tableMode: 'practice',
       stake: '',

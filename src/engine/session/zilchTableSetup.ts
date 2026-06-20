@@ -1,6 +1,8 @@
 import type { GameState } from '../../types';
 import type { ZilchMode } from '../zilch/zilchTypes';
+import { listPlayableZilchPlayerIds } from '../dice/zilch/zilchTurnAuthority';
 import { DEFAULT_ZILCH_DICE_ANIMATION } from '../zilch/settings';
+import { addVirtualPlayer, mergeSessionUpdate } from './session';
 import {
   ensureZilchGameOnState,
   startZilchGameOnState,
@@ -23,6 +25,7 @@ import {
   logTableMetaStartingChips,
 } from './tokens';
 import type { TableBankerSetupMode, TableStakeSetupInput } from './tableSetup';
+import { resolveTableMode } from './tableSetup';
 import { ensureZilchTableIdentity } from './zilchTableKind';
 import {
   allocateRemainingSeatBankrolls,
@@ -38,6 +41,8 @@ export interface ZilchTableStakeSetupInput extends TableStakeSetupInput {
   diceAnimationMs: number;
   diceAnimationRandomMinMs: number;
   diceAnimationRandomMaxMs: number;
+  /** Practice mode only — virtual opponents controlled by the host. */
+  virtualPlayerCount?: number;
 }
 
 export function parseZilchTableStakePayload(
@@ -59,8 +64,15 @@ export function parseZilchTableStakePayload(
     bankDrawAuto: true,
   };
   const mode = payload.zilchMode === 'fixed_rounds' ? 'fixed_rounds' : 'target_points';
+  const tableMode =
+    payload.tableMode === 'practice' || payload.tableMode === 'challenge'
+      ? payload.tableMode
+      : undefined;
   return {
     ...base,
+    tableMode,
+    virtualPlayerCount:
+      tableMode === 'practice' ? Number(payload.virtualPlayerCount) || 2 : undefined,
     zilchMode: mode,
     targetPoints: Number(payload.targetPoints) || 100,
     roundLimit: Number(payload.roundLimit) || 10,
@@ -79,10 +91,11 @@ export function applyZilchTableStakeSetup(
 ): GameState {
   const seatAmount = input.seatChips;
   const bankAmount = input.bankChips;
-  const showPlayingFor = input.bankerMode === 'bot';
-  const stakeDescription = showPlayingFor
-    ? input.stakeDescription.trim() || 'Friendly wager'
-    : 'Table session';
+  const tableMode = resolveTableMode(input);
+  const isPractice = tableMode === 'practice';
+  const stakeDescription = isPractice
+    ? input.stakeDescription.trim() || 'Practice'
+    : input.stakeDescription.trim() || 'Friendly wager';
 
   let next = confirmTableAgreement(state, stakeDescription, seatAmount, bankAmount);
   next = setTableOwner(next, input.controllerName, input.controllerEmail);
@@ -95,6 +108,9 @@ export function applyZilchTableStakeSetup(
       showStakeSetup: false,
       gameCategory: 'dice',
       diceGame: 'zilch',
+      tableMode,
+      tableClothName: input.tableName?.trim() || next.tableMeta.tableClothName,
+      tableClothWager: isPractice ? stakeDescription : stakeDescription,
     },
     zilchSettings: {
       mode: input.zilchMode,
@@ -109,12 +125,26 @@ export function applyZilchTableStakeSetup(
     },
   };
 
-  if (input.bankerMode === 'bot') {
-    next = assignBankBot(next, bankAmount);
-  } else if (input.bankerMode === 'self') {
-    next = assignBankPerson(next, input.controllerName, bankAmount);
-  } else {
-    next = assignBankPerson(next, input.bankerName.trim(), bankAmount);
+  if (!isPractice) {
+    if (input.bankerMode === 'bot') {
+      next = assignBankBot(next, bankAmount);
+    } else if (input.bankerMode === 'self') {
+      next = assignBankPerson(next, input.controllerName, bankAmount);
+    } else {
+      next = assignBankPerson(next, input.bankerName.trim(), bankAmount);
+    }
+  }
+
+  if (isPractice) {
+    const count = Math.max(1, input.virtualPlayerCount ?? 2);
+    if (count > 0) {
+      for (let i = 0; i < count; i++) {
+        const spl = addVirtualPlayer(next.session, next.players, next.ledger, {
+          virtualStyle: 'normal',
+        });
+        next = mergeSessionUpdate(next, spl);
+      }
+    }
   }
 
   next = ensureTableOwnerPersonBankroll(next);
@@ -127,12 +157,7 @@ export function applyZilchTableStakeSetup(
 }
 
 function resolveZilchPlayerIds(state: GameState): string[] {
-  if (state.session.playerIds.length > 0) {
-    return state.session.playerIds;
-  }
-  return state.tableMeta.boxSlots
-    .map((s) => s.playerId)
-    .filter((id): id is string => Boolean(id));
+  return listPlayableZilchPlayerIds(state);
 }
 
 /** Create fresh zilch engine state in setup phase (ready for random starter). */
