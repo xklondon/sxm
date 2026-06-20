@@ -76,7 +76,7 @@ export function ZilchDiceArea({
   }
 
   function toggleDieSelection(die: ZilchDie) {
-    if (!canSelect || !isDieScoringSelectable(die, zilch.availableCombinations)) {
+    if (!canSelect || die.isKept) {
       return;
     }
     setSelectedDiceIds((prev) => {
@@ -91,6 +91,9 @@ export function ZilchDiceArea({
     });
   }
 
+  const showInvalidSelectionHint =
+    canSelect && selectedDiceIds.length > 0 && !canKeepSelected;
+
   function handleKeepSelected() {
     const combo = findCombinationForSelection(zilch, selectedDiceIds);
     if (!combo) {
@@ -103,6 +106,7 @@ export function ZilchDiceArea({
   function renderDie(die: ZilchDie, index: number, selectable: boolean) {
     const isSelected = selectedKey === selectionKey([die.id]) || selectedDiceIds.includes(die.id);
     const scoringSelectable = isDieScoringSelectable(die, zilch.availableCombinations);
+    const invalidSelected = isSelected && showInvalidSelectionHint;
     return (
       <button
         key={die.id}
@@ -110,7 +114,9 @@ export function ZilchDiceArea({
         className={`zilch-die${rolling ? ' zilch-die--throw' : ''}${
           die.isKept ? ' zilch-die--kept' : ''
         }${isSelected ? ' zilch-die--selected' : ''}${
-          selectable && scoringSelectable ? ' zilch-die--selectable' : ''
+          invalidSelected ? ' zilch-die--invalid' : ''
+        }${selectable && !die.isKept ? ' zilch-die--selectable' : ''}${
+          selectable && !die.isKept && !scoringSelectable ? ' zilch-die--non-scoring' : ''
         }`}
         style={
           rolling
@@ -118,7 +124,7 @@ export function ZilchDiceArea({
             : undefined
         }
         onClick={() => toggleDieSelection(die)}
-        disabled={!selectable || !scoringSelectable || die.isKept}
+        disabled={!selectable || die.isKept}
         aria-pressed={isSelected}
         aria-label={
           rolling
@@ -127,7 +133,7 @@ export function ZilchDiceArea({
               ? `Kept die ${die.value}`
               : scoringSelectable
                 ? `Select die ${die.value}`
-                : `Die ${die.value}`
+                : `Die ${die.value}, not scoring`
         }
       >
         <DieFace value={die.value} rolling={rolling || !showValues} />
@@ -196,8 +202,13 @@ export function ZilchDiceArea({
             onClick={handleKeepSelected}
             disabled={controlsDisabled || !canKeepSelected}
           >
-            Keep selected
+            Keep selected dice
           </button>
+          {showInvalidSelectionHint && (
+            <p className="zilch-table__selection-hint" role="status">
+              Select scoring dice only.
+            </p>
+          )}
         </div>
       )}
     </>

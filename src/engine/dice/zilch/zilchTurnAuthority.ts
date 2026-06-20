@@ -69,6 +69,13 @@ export function canPersonControlZilchPlayer(
     return true;
   }
 
+  const ownerId = state.tableMeta.ownerPersonId;
+  const isPractice = state.tableMeta.tableMode !== 'challenge';
+  const playable = listPlayableZilchPlayerIds(state);
+  if (isPractice && ownerId && personId === ownerId && playable.includes(playerId)) {
+    return true;
+  }
+
   const person = state.players[personId];
   if (person && player.playerType !== 'virtual') {
     const personLabel = (person.controllerName?.trim() || person.displayName || '').toLowerCase();

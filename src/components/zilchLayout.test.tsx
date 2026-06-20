@@ -21,11 +21,34 @@ describe('Zilch visual layout', () => {
     expect(html).toContain('Die 5');
   });
 
-  it('uses grid-based seat ring and larger felt surface', () => {
+  it('uses grid-based seat ring and compact above-fold desktop shell', () => {
     expect(ZILCH_CSS).toContain('.zilch-table--play');
     expect(ZILCH_CSS).toContain('grid-template-areas');
-    expect(ZILCH_CSS).toContain('min-height: 32rem');
+    expect(ZILCH_CSS).toContain('.zilch-panel--compact');
+    expect(ZILCH_CSS).toContain('@media (min-width: 921px)');
+    expect(ZILCH_CSS).toContain('max-height: min(64vh');
     expect(ZILCH_CSS).toContain('overflow-x: hidden');
+  });
+
+  it('ZilchPanel renders compact shell with reset and invite controls', () => {
+    const html = renderToStaticMarkup(
+      <ZilchPanel
+        gameState={zilchPracticeState()}
+        onGameStateChange={() => {}}
+        onInviteTable={() => {}}
+        onBeginTableReset={() => {}}
+      />,
+    );
+    expect(html).toContain('zilch-panel--compact');
+    expect(html).toContain('Reset table');
+    expect(html).toContain('Invite to table');
+  });
+
+  it('dice throw animation uses short visual duration and reduced-motion fallback', () => {
+    expect(ZILCH_CSS).toContain('--zilch-roll-visual-ms');
+    expect(ZILCH_CSS).toContain('@keyframes zilch-die-throw');
+    expect(ZILCH_CSS).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(ZILCH_CSS).toContain('zilch-die-throw-reduced');
   });
 
   it('ledger toggle is present but panel is collapsed by default', () => {

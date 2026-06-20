@@ -209,11 +209,12 @@ export function ZilchPanel({
 
   const rolling = zilch?.diceAnimation.isRolling ?? false;
   const rollMs = zilch?.diceAnimation.durationMs ?? gameState.zilchSettings.diceAnimation.diceAnimationMs;
+  const visualRollMs = Math.min(900, Math.max(500, rollMs));
   const showValues = Boolean(zilch && !rolling);
   const controlsDisabled = rolling || onlineActionInFlight || !canAct;
 
   return (
-    <div className="zilch-panel" data-game="zilch">
+    <div className="zilch-panel zilch-panel--compact" data-game="zilch">
       <div className="zilch-panel__toolbar">
         <div>
           <h2 className="zilch-panel__title">Zilch</h2>
@@ -276,7 +277,12 @@ export function ZilchPanel({
       {zilch && (
         <div
           className="zilch-table zilch-table--play"
-          style={{ '--zilch-roll-ms': `${rollMs}ms` } as CSSProperties}
+          style={
+            {
+              '--zilch-roll-ms': `${rollMs}ms`,
+              '--zilch-roll-visual-ms': `${visualRollMs}ms`,
+            } as CSSProperties
+          }
         >
           <ZilchPlayerRail gameState={gameState} zilch={zilch} playerOrder={playerOrder} />
           <div className="zilch-table__felt">
