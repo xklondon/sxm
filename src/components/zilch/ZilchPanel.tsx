@@ -8,16 +8,17 @@ import {
   recordZilchGameEnd,
 } from '../../engine/session';
 import { canRollDice } from '../../engine/dice/zilch';
+import { listPlayableZilchPlayerIds } from '../../engine/dice/zilch/zilchTurnAuthority';
 import { useIsMobileViewport } from '../../hooks/useIsMobileViewport';
 import { useDeviceShake } from '../../hooks/useDeviceShake';
 import { useZilchTableFlow } from '../useZilchTableFlow';
-import { LedgerPanel } from '../LedgerPanel';
 import { canActOnZilchTurn, resolveZilchController } from '../zilchPlayerDisplay';
 import { resolveViewerPersonIdForTable } from '../viewerIdentity';
 import { ZilchCommand } from './ZilchCommand';
 import { ZilchPlayerRail } from './ZilchPlayerRail';
 import { ZilchDiceArea } from './ZilchDiceArea';
 import { ZilchActions } from './ZilchActions';
+import { ZilchLedgerDrawer } from './ZilchLedgerDrawer';
 import '../../styles/zilch-table.css';
 
 import type { TableResetSetupVariant } from '../TableStakePanel';
@@ -61,7 +62,7 @@ export function ZilchPanel({
   const canAct = zilch ? canActOnZilchTurn(gameState, controller, viewerPersonId) : true;
   const isPracticeTable = tableMeta.tableMode !== 'challenge';
   const shakeReady = useDeviceShake(
-    isMobile && Boolean(zilch?.phase === 'player-turn' && canAct),
+    isMobile && Boolean(zilch && (zilch.phase === 'player-turn' || zilch.phase === 'final-round') && canAct),
   );
   const [virtualStyle, setVirtualStyle] = useState<VirtualPlayerStyle>('normal');
   const [animSeed] = useState(() => Math.floor(Math.random() * 1000));
@@ -82,13 +83,17 @@ export function ZilchPanel({
   const pendingStarterSpinRef = useRef(false);
 
   const playerOrder = useMemo(() => {
+    const playable = listPlayableZilchPlayerIds(gameState);
+    if (playable.length > 0) {
+      return playable;
+    }
     if (session.playerIds.length > 0) {
       return session.playerIds;
     }
     return tableMeta.boxSlots
       .filter((s) => s.playerId)
       .map((s) => s.playerId!);
-  }, [session.playerIds, tableMeta.boxSlots]);
+  }, [gameState, session.playerIds, tableMeta.boxSlots]);
 
   const playerNames = useMemo(() => {
     const names: Record<string, string> = {};
@@ -270,7 +275,7 @@ export function ZilchPanel({
 
       {zilch && (
         <div
-          className="zilch-table"
+          className="zilch-table zilch-table--play"
           style={{ '--zilch-roll-ms': `${rollMs}ms` } as CSSProperties}
         >
           <ZilchPlayerRail gameState={gameState} zilch={zilch} playerOrder={playerOrder} />
@@ -302,15 +307,13 @@ export function ZilchPanel({
         </div>
       )}
 
-      {isMobile && zilch?.phase === 'player-turn' && canAct && (
+      {isMobile && zilch && (zilch.phase === 'player-turn' || zilch.phase === 'final-round') && canAct && (
         <p className="zilch-panel__shake-hint">
           Shake your phone for 3+ seconds to roll.
         </p>
       )}
 
-      <div className="zilch-panel__ledger">
-        <LedgerPanel gameState={gameState} />
-      </div>
+      <ZilchLedgerDrawer gameState={gameState} />
     </div>
   );
 }

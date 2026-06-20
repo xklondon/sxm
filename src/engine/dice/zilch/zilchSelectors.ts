@@ -1,6 +1,11 @@
 import type { ZilchGameState } from './zilchTypes';
 import { findCombinationForExactDiceIds } from './zilchRules';
 
+/** Phases where a seated player may roll, keep, or bank. */
+export function isActiveZilchTurnPhase(state: ZilchGameState): boolean {
+  return state.phase === 'player-turn' || state.phase === 'final-round';
+}
+
 export function getZilchWinnerId(state: ZilchGameState): string | null {
   if (state.winnerPlayerId) {
     return state.winnerPlayerId;
@@ -42,10 +47,7 @@ export function canRollDice(state: ZilchGameState): boolean {
   if (state.diceAnimation.isRolling) {
     return false;
   }
-  if (state.phase !== 'player-turn') {
-    return false;
-  }
-  return true;
+  return isActiveZilchTurnPhase(state);
 }
 
 export function mustKeepBeforeRoll(state: ZilchGameState): boolean {
@@ -54,7 +56,7 @@ export function mustKeepBeforeRoll(state: ZilchGameState): boolean {
 
 export function isTurnoverRoll(state: ZilchGameState): boolean {
   return (
-    state.phase === 'player-turn' &&
+    isActiveZilchTurnPhase(state) &&
     state.dice.length === 0 &&
     state.turnScore > 0 &&
     state.rollNumberInTurn > 0
@@ -82,7 +84,7 @@ export function canBank(state: ZilchGameState): boolean {
   return (
     state.turnScore > 0 &&
     state.keptThisRoll &&
-    (state.phase === 'player-turn' || state.phase === 'awaiting-keep-selection')
+    (isActiveZilchTurnPhase(state) || state.phase === 'awaiting-keep-selection')
   );
 }
 
@@ -92,7 +94,7 @@ export function canKeepCombination(state: ZilchGameState): boolean {
   }
   return (
     state.phase === 'awaiting-keep-selection' ||
-    (state.phase === 'player-turn' && state.keptThisRoll)
+    (isActiveZilchTurnPhase(state) && state.keptThisRoll)
   );
 }
 

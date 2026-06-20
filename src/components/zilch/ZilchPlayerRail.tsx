@@ -1,6 +1,6 @@
 import type { GameState } from '../../types';
 import type { ZilchGameState } from '../../engine/dice/zilch';
-import { playerBoxStatus, seatPositionClass, statusLabel } from '../zilchPlayerDisplay';
+import { playerBoxStatus, seatGridSlot, statusLabel } from '../zilchPlayerDisplay';
 
 interface ZilchPlayerRailProps {
   gameState: GameState;
@@ -10,9 +10,10 @@ interface ZilchPlayerRailProps {
 
 export function ZilchPlayerRail({ gameState, zilch, playerOrder }: ZilchPlayerRailProps) {
   const { players } = gameState;
+  const count = playerOrder.length;
 
   return (
-    <>
+    <div className="zilch-table__seat-ring" data-player-count={Math.min(count, 6)}>
       {playerOrder.map((id, index) => {
         const player = players[id];
         const status = playerBoxStatus(id, zilch);
@@ -22,7 +23,7 @@ export function ZilchPlayerRail({ gameState, zilch, playerOrder }: ZilchPlayerRa
         return (
           <div
             key={id}
-            className={`zilch-seat ${seatPositionClass(index, playerOrder.length)}${
+            className={`zilch-seat ${seatGridSlot(index, count)}${
               isActive ? ' zilch-seat--active' : ''
             }${status === 'zilch' ? ' zilch-seat--zilch' : ''}${
               status === 'winner' ? ' zilch-seat--winner' : ''
@@ -48,6 +49,6 @@ export function ZilchPlayerRail({ gameState, zilch, playerOrder }: ZilchPlayerRa
           </div>
         );
       })}
-    </>
+    </div>
   );
 }

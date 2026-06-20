@@ -84,19 +84,42 @@ export function statusLabel(status: ZilchPlayerBoxStatus): string {
   }
 }
 
-/** Seat positions around the central dice table (up to 6 players). */
-export function seatPositionClass(index: number, total: number): string {
+/** Seat grid slots around the felt (non-overlapping layout). */
+export function seatGridSlot(index: number, total: number): string {
   if (total <= 1) {
-    return 'zilch-seat--solo';
+    return 'zilch-seat--slot-top';
   }
-  const positions = ['zilch-seat--top', 'zilch-seat--right', 'zilch-seat--bottom', 'zilch-seat--left'];
   if (total === 2) {
-    return index === 0 ? 'zilch-seat--top' : 'zilch-seat--bottom';
+    return index === 0 ? 'zilch-seat--slot-top' : 'zilch-seat--slot-bottom';
   }
   if (total === 3) {
-    return ['zilch-seat--top', 'zilch-seat--left', 'zilch-seat--right'][index] ?? 'zilch-seat--bottom';
+    return (
+      ['zilch-seat--slot-top', 'zilch-seat--slot-left', 'zilch-seat--slot-right'][index] ??
+      'zilch-seat--slot-bottom'
+    );
   }
-  return positions[index % positions.length] ?? 'zilch-seat--bottom';
+  if (total === 4) {
+    return (
+      [
+        'zilch-seat--slot-top',
+        'zilch-seat--slot-left',
+        'zilch-seat--slot-right',
+        'zilch-seat--slot-bottom',
+      ][index] ?? 'zilch-seat--slot-extra'
+    );
+  }
+  if (index === 0) {
+    return 'zilch-seat--slot-top';
+  }
+  if (index === total - 1) {
+    return 'zilch-seat--slot-bottom';
+  }
+  return index % 2 === 1 ? 'zilch-seat--slot-left' : 'zilch-seat--slot-right';
+}
+
+/** @deprecated Use seatGridSlot — kept for tests migrating off absolute positions. */
+export function seatPositionClass(index: number, total: number): string {
+  return seatGridSlot(index, total);
 }
 
 /** Per-die throw trajectory (visual only). */

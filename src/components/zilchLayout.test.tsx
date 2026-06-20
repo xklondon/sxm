@@ -7,8 +7,6 @@ import { DieFace } from './zilch/DieFace';
 import {
   applyZilchTableStakeSetup,
   createNewZilchTable,
-  addVirtualPlayer,
-  mergeSessionUpdate,
   DEFAULT_TABLE_CHIPS,
 } from '../engine/session';
 import { ZilchPanel } from './zilch/ZilchPanel';
@@ -23,37 +21,27 @@ describe('Zilch visual layout', () => {
     expect(html).toContain('Die 5');
   });
 
-  it('uses isolated zilch-table stylesheet with felt and gold rim', () => {
-    expect(ZILCH_CSS).toContain('.zilch-table');
-    expect(ZILCH_CSS).toMatch(/212 175 55/);
-    expect(ZILCH_CSS).toContain('.zilch-die-face__cube');
+  it('uses grid-based seat ring and larger felt surface', () => {
+    expect(ZILCH_CSS).toContain('.zilch-table--play');
+    expect(ZILCH_CSS).toContain('grid-template-areas');
+    expect(ZILCH_CSS).toContain('min-height: 32rem');
     expect(ZILCH_CSS).toContain('overflow-x: hidden');
   });
 
-  it('ledger sits outside felt play surface', () => {
+  it('ledger toggle is present but panel is collapsed by default', () => {
     const html = renderToStaticMarkup(
       <ZilchPanel
         gameState={zilchPracticeState()}
         onGameStateChange={() => {}}
       />,
     );
-    const ledgerIdx = html.indexOf('zilch-panel__ledger');
-    const feltIdx = html.indexOf('zilch-table__felt');
-    expect(ledgerIdx).toBeGreaterThan(-1);
-    if (feltIdx >= 0) {
-      expect(ledgerIdx).toBeGreaterThan(feltIdx);
-    }
+    expect(html).toContain('Table ledger');
+    expect(html).not.toContain('ledger-panel__title');
   });
 });
 
 function zilchPracticeState() {
-  let state = createNewZilchTable();
-  const spl = addVirtualPlayer(state.session, state.players, state.ledger, {
-    displayName: 'Bot',
-    virtualStyle: 'normal',
-  });
-  state = mergeSessionUpdate(state, spl);
-  return applyZilchTableStakeSetup(state, {
+  return applyZilchTableStakeSetup(createNewZilchTable(), {
     stakeDescription: 'Practice',
     seatChips: DEFAULT_TABLE_CHIPS,
     bankChips: DEFAULT_TABLE_CHIPS,

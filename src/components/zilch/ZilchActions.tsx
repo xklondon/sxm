@@ -1,5 +1,5 @@
 import type { ZilchGameState } from '../../engine/dice/zilch';
-import { canBank, canRollDice, isTurnoverRoll, mustKeepBeforeRoll } from '../../engine/dice/zilch';
+import { canBank, canRollDice, isActiveZilchTurnPhase, isTurnoverRoll, mustKeepBeforeRoll } from '../../engine/dice/zilch';
 
 interface ZilchActionsProps {
   zilch: ZilchGameState;
@@ -45,7 +45,7 @@ export function ZilchActions({
           Randomise starter
         </button>
       )}
-      {(zilch.phase === 'player-turn' || zilch.phase === 'awaiting-keep-selection') && (
+      {(isActiveZilchTurnPhase(zilch) || zilch.phase === 'awaiting-keep-selection') && (
         <>
           <button
             type="button"

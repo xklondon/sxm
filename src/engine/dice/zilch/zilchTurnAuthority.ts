@@ -93,6 +93,13 @@ export function canPersonActOnZilchTurn(state: GameState, personId: string | nul
   if (!personId) {
     return false;
   }
+
+  const ownerId = state.tableMeta.ownerPersonId;
+  const isPractice = state.tableMeta.tableMode !== 'challenge';
+  if (isPractice && ownerId && personId === ownerId && playable.includes(currentId)) {
+    return true;
+  }
+
   return canPersonControlZilchPlayer(state, personId, currentId);
 }
 

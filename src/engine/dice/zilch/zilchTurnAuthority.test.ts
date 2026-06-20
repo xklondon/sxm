@@ -4,6 +4,7 @@ import {
   applyZilchTableStakeSetup,
   DEFAULT_TABLE_CHIPS,
 } from '../../session';
+import { setTableOwner } from '../../session/invites';
 import { applyZilchActionToState } from '../../zilch';
 import {
   canPersonActOnZilchTurn,
@@ -37,7 +38,7 @@ const practiceSetup: ZilchTableStakeSetupInput = {
 };
 
 function practiceTable() {
-  let state = createNewZilchTable();
+  let state = setTableOwner(createNewZilchTable(), 'Host', 'host@example.com');
   state = applyZilchTableStakeSetup(state, practiceSetup);
   const hostId = state.tableMeta.ownerPersonId;
   if (!hostId) {

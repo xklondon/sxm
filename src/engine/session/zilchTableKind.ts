@@ -1,5 +1,6 @@
 import type { GameState } from '../../types';
 import type { ZilchGameState } from '../dice/zilch/zilchTypes';
+import { normalizeZilchState } from '../dice/zilch/normalizeZilchState';
 
 export function repairStuckRandomisingStarter(zilch: ZilchGameState): ZilchGameState {
   if (zilch.phase !== 'randomising-starter' || !zilch.starterPlayerId) {
@@ -21,19 +22,7 @@ export function repairStuckRandomisingStarter(zilch: ZilchGameState): ZilchGameS
 }
 
 function normalizeLoadedZilch(zilch: ZilchGameState): ZilchGameState {
-  let next = repairStuckRandomisingStarter(zilch);
-  if (!next.history) {
-    next = { ...next, history: [] };
-  }
-  if (!next.protocolId) {
-    next = { ...next, protocolId: 'zilch' };
-  }
-  if (!next.gameId) {
-    next = { ...next, gameId: `legacy-${Date.now()}` };
-  }
-  if (!next.tableMode) {
-    next = { ...next, tableMode: 'practice' };
-  }
+  let next = normalizeZilchState(zilch);
   if (next.diceAnimation?.isRolling && !next.currentPlayerId) {
     next = { ...next, diceAnimation: { isRolling: false } };
   }
@@ -120,8 +109,11 @@ export function isHoldemTable(state: GameState): boolean {
 
 /** Normalize loaded/saved/hydrated state before render. */
 export function normalizeLoadedGameState(state: GameState): GameState {
-  if (state.tableGame === 'blackjack' || state.session.gameType === 'blackjack') {
+  if (state.tableGame === 'blackjack') {
     return ensureBlackjackTableIdentity(state);
+  }
+  if (!isZilchTable(state)) {
+    return state;
   }
   const withIdentity = ensureZilchTableIdentity(state);
   const zilch = withIdentity.zilch;

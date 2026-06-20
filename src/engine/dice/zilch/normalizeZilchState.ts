@@ -1,5 +1,5 @@
 import type { ZilchGameState } from './zilchTypes';
-import { startTurn } from './zilchEngine';
+import { advanceToNextPlayer, startTurn } from './zilchEngine';
 
 /** Repair stuck or legacy Zilch phases after load/hydration. */
 export function normalizeZilchState(zilch: ZilchGameState): ZilchGameState {
@@ -44,6 +44,23 @@ export function normalizeZilchState(zilch: ZilchGameState): ZilchGameState {
         diceAnimation: { isRolling: false },
       };
     }
+  }
+
+  if (next.phase === 'zilch') {
+    const order = next.players.map((p) => p.playerId);
+    if (order.length > 0) {
+      return advanceToNextPlayer(next);
+    }
+  }
+
+  const order = next.players.map((p) => p.playerId);
+  if (
+    order.length > 0 &&
+    next.currentPlayerId &&
+    !order.includes(next.currentPlayerId) &&
+    (next.phase === 'player-turn' || next.phase === 'final-round')
+  ) {
+    return startTurn(next, order[0]!);
   }
 
   return next;

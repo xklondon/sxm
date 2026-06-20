@@ -84,7 +84,7 @@ export function rollDice(
   rng: () => number = Math.random,
   now: number = Date.now(),
 ): ZilchGameState {
-  if (state.phase !== 'player-turn') {
+  if (state.phase !== 'player-turn' && state.phase !== 'final-round') {
     throw new Error('Cannot roll in the current phase');
   }
   if (state.diceAnimation.isRolling) {
@@ -192,7 +192,7 @@ export function holdScoringDice(
 ): ZilchGameState {
   if (
     state.phase !== 'awaiting-keep-selection' &&
-    !(state.phase === 'player-turn' && state.keptThisRoll)
+    !((state.phase === 'player-turn' || state.phase === 'final-round') && state.keptThisRoll)
   ) {
     throw new Error('Cannot keep a combination in the current phase');
   }
@@ -228,7 +228,8 @@ export function holdScoringDice(
   );
 
   const hotDice = remainingAvailable.length === 0;
-  let phase: ZilchGameState['phase'] = 'player-turn';
+  let phase: ZilchGameState['phase'] =
+    state.phase === 'final-round' ? 'final-round' : 'player-turn';
   let diceAfter = nextDice;
   let keptAfter = [...state.keptDice, keptGroup];
 
@@ -266,7 +267,11 @@ export function toggleHoldDie(state: ZilchGameState, dieId: string): ZilchGameSt
 }
 
 export function bankTurn(state: ZilchGameState): ZilchGameState {
-  if (state.phase !== 'player-turn' && state.phase !== 'awaiting-keep-selection') {
+  if (
+    state.phase !== 'player-turn' &&
+    state.phase !== 'final-round' &&
+    state.phase !== 'awaiting-keep-selection'
+  ) {
     throw new Error('Cannot bank in the current phase');
   }
   if (state.turnScore <= 0) {
@@ -408,9 +413,14 @@ function incrementRoundsPlayed(state: ZilchGameState, playerId: string): ZilchGa
 }
 
 export function advanceToNextPlayer(state: ZilchGameState): ZilchGameState {
-  const currentId = state.currentPlayerId;
-  if (!currentId) {
+  const order = state.players.map((p) => p.playerId);
+  if (order.length === 0) {
     return state;
+  }
+
+  let currentId = state.currentPlayerId;
+  if (!currentId || !order.includes(currentId)) {
+    return startTurn(state, order[0]!);
   }
 
   if (state.phase === 'final-round' && state.playersRemainingFinalTurn) {
@@ -431,7 +441,6 @@ export function advanceToNextPlayer(state: ZilchGameState): ZilchGameState {
     );
   }
 
-  const order = state.players.map((p) => p.playerId);
   const idx = order.indexOf(currentId);
   const nextIdx = (idx + 1) % order.length;
   const nextPlayerId = order[nextIdx]!;
