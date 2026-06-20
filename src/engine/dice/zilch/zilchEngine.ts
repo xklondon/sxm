@@ -315,11 +315,11 @@ export function bankTurn(state: ZilchGameState): ZilchGameState {
       const remaining = next.players
         .map((p) => p.playerId)
         .filter((id) => id !== playerId);
-      if (remaining.length === 0) {
+      if (remaining.length === 0 || next.tableMode === 'practice') {
         return {
           ...next,
           phase: 'completed',
-          winnerPlayerId: getZilchWinnerId(next),
+          winnerPlayerId: getZilchWinnerId({ ...next, totalScoresByPlayerId }),
           currentPlayerId: null,
           history: appendEvent(next, 'game-completed', playerId),
         };

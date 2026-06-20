@@ -1,8 +1,30 @@
 import type { GameState } from '../../../types';
 
-/** Zilch seats that can take turns — excludes bank bot and empty placeholders. */
+function isVirtualBackedBoxShell(state: GameState, playerId: string): boolean {
+  const player = state.players[playerId];
+  if (!player || player.role !== 'box') {
+    return false;
+  }
+  const ownerId = player.bankrollOwnerId;
+  if (!ownerId) {
+    return false;
+  }
+  return state.players[ownerId]?.playerType === 'virtual';
+}
+
+function isOwnerBankrollShell(state: GameState, playerId: string): boolean {
+  const player = state.players[playerId];
+  if (!player || player.role !== 'box') {
+    return false;
+  }
+  const ownerId = state.tableMeta.ownerPersonId;
+  return Boolean(ownerId && player.bankrollOwnerId === ownerId);
+}
+
+/** Zilch seats that can take turns — excludes bank bot, owner shell, and duplicate box aliases. */
 export function listPlayableZilchPlayerIds(state: GameState): string[] {
   const bankId = state.session.bankPlayerId;
+  const isPractice = state.tableMeta.tableMode !== 'challenge';
   const rawIds =
     state.session.playerIds.length > 0
       ? state.session.playerIds
@@ -28,7 +50,16 @@ export function listPlayableZilchPlayerIds(state: GameState): string[] {
     if (player.playerType === 'virtual') {
       return true;
     }
+    if (isPractice) {
+      return false;
+    }
     if (player.role === 'box') {
+      if (isVirtualBackedBoxShell(state, id)) {
+        return false;
+      }
+      if (isOwnerBankrollShell(state, id)) {
+        return false;
+      }
       return true;
     }
     if (player.role === 'person' && player.playerType === 'real') {

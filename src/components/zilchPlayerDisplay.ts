@@ -3,8 +3,8 @@ import type { ZilchGameState } from '../engine/zilch/zilchTypes';
 import {
   canControllerActOnZilchTurn,
   canPersonActOnZilchTurn,
-  listPlayableZilchPlayerIds,
 } from '../engine/dice/zilch/zilchTurnAuthority';
+import { getVisibleZilchPlayers } from '../engine/dice/zilch/zilchVisiblePlayers';
 import { loadProfile } from '../storage/profileStorage';
 
 export type ZilchPlayerBoxStatus =
@@ -16,13 +16,7 @@ export type ZilchPlayerBoxStatus =
   | 'setup';
 
 function zilchPlayerOrder(gameState: GameState): string[] {
-  const playable = listPlayableZilchPlayerIds(gameState);
-  if (playable.length > 0) {
-    return playable;
-  }
-  return gameState.tableMeta.boxSlots
-    .map((s) => s.playerId)
-    .filter((id): id is string => Boolean(id));
+  return getVisibleZilchPlayers(gameState).map((player) => player.playerId);
 }
 
 export function canActOnZilchTurn(

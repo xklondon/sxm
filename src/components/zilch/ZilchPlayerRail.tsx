@@ -1,37 +1,33 @@
-import type { GameState } from '../../types';
+import type { ZilchVisiblePlayer } from '../../engine/dice/zilch/zilchVisiblePlayers';
 import type { ZilchGameState } from '../../engine/dice/zilch';
-import {
-  distributeZilchSeats,
-  playerBoxStatus,
-  resolveZilchSeatDisplay,
-  statusLabel,
-} from '../zilchPlayerDisplay';
+import { distributeZilchSeats, playerBoxStatus, statusLabel } from '../zilchPlayerDisplay';
 
 interface ZilchPlayerRailProps {
-  gameState: GameState;
   zilch: ZilchGameState | null;
-  playerOrder: string[];
+  visiblePlayers: ZilchVisiblePlayer[];
+  highlightPlayerId?: string | null;
 }
 
 function renderSeat(
-  gameState: GameState,
+  player: ZilchVisiblePlayer,
   zilch: ZilchGameState | null,
-  id: string,
+  highlightPlayerId?: string | null,
 ) {
-  const { name, boxLabel, isVirtual } = resolveZilchSeatDisplay(gameState, id);
-  const status = playerBoxStatus(id, zilch);
-  const isActive = zilch?.currentPlayerId === id;
-  const total = zilch?.totalScoresByPlayerId[id] ?? 0;
+  const { playerId, name, boxLabel, isVirtual } = player;
+  const status = playerBoxStatus(playerId, zilch);
+  const isActive = zilch?.currentPlayerId === playerId;
+  const isHighlighted = highlightPlayerId === playerId;
+  const total = zilch?.totalScoresByPlayerId[playerId] ?? 0;
   const showTurnScore = isActive && zilch && zilch.turnScore > 0;
 
   return (
     <div
-      key={id}
+      key={playerId}
       className={`zilch-seat${
         isActive ? ' zilch-seat--active' : ''
-      }${status === 'zilch' ? ' zilch-seat--zilch' : ''}${
-        status === 'winner' ? ' zilch-seat--winner' : ''
-      }`}
+      }${isHighlighted ? ' zilch-seat--highlight' : ''}${
+        status === 'zilch' ? ' zilch-seat--zilch' : ''
+      }${status === 'winner' ? ' zilch-seat--winner' : ''}`}
     >
       <div className="zilch-seat__name" title={name}>
         {name}
@@ -62,15 +58,15 @@ function renderSeat(
 function SeatColumn({
   className,
   indices,
-  gameState,
+  visiblePlayers,
   zilch,
-  playerOrder,
+  highlightPlayerId,
 }: {
   className: string;
   indices: number[];
-  gameState: GameState;
+  visiblePlayers: ZilchVisiblePlayer[];
   zilch: ZilchGameState | null;
-  playerOrder: string[];
+  highlightPlayerId?: string | null;
 }) {
   if (indices.length === 0) {
     return null;
@@ -78,48 +74,52 @@ function SeatColumn({
   return (
     <div className={className}>
       {indices.map((index) => {
-        const id = playerOrder[index];
-        if (!id) {
+        const player = visiblePlayers[index];
+        if (!player) {
           return null;
         }
-        return renderSeat(gameState, zilch, id);
+        return renderSeat(player, zilch, highlightPlayerId);
       })}
     </div>
   );
 }
 
-export function ZilchPlayerRail({ gameState, zilch, playerOrder }: ZilchPlayerRailProps) {
-  const ring = distributeZilchSeats(playerOrder.length);
+export function ZilchPlayerRail({
+  zilch,
+  visiblePlayers,
+  highlightPlayerId = null,
+}: ZilchPlayerRailProps) {
+  const ring = distributeZilchSeats(visiblePlayers.length);
 
   return (
-    <div className="zilch-table__seat-ring" data-player-count={Math.min(playerOrder.length, 6)}>
+    <div className="zilch-table__seat-ring" data-player-count={visiblePlayers.length}>
       <SeatColumn
         className="zilch-table__seats zilch-table__seats--top"
         indices={ring.top}
-        gameState={gameState}
+        visiblePlayers={visiblePlayers}
         zilch={zilch}
-        playerOrder={playerOrder}
+        highlightPlayerId={highlightPlayerId}
       />
       <SeatColumn
         className="zilch-table__seats zilch-table__seats--left"
         indices={ring.left}
-        gameState={gameState}
+        visiblePlayers={visiblePlayers}
         zilch={zilch}
-        playerOrder={playerOrder}
+        highlightPlayerId={highlightPlayerId}
       />
       <SeatColumn
         className="zilch-table__seats zilch-table__seats--right"
         indices={ring.right}
-        gameState={gameState}
+        visiblePlayers={visiblePlayers}
         zilch={zilch}
-        playerOrder={playerOrder}
+        highlightPlayerId={highlightPlayerId}
       />
       <SeatColumn
         className="zilch-table__seats zilch-table__seats--bottom"
         indices={ring.bottom}
-        gameState={gameState}
+        visiblePlayers={visiblePlayers}
         zilch={zilch}
-        playerOrder={playerOrder}
+        highlightPlayerId={highlightPlayerId}
       />
     </div>
   );

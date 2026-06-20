@@ -128,6 +128,34 @@ export function useZilchTableFlow({
     [dispatch],
   );
 
+  const handleKeepAndRoll = useCallback(
+    (combinationId: string) => {
+      try {
+        setActionError(null);
+        if (onlineDispatch) {
+          void (async () => {
+            await onlineDispatch('zilchKeepCombination', { combinationId });
+            await onlineDispatch('zilchRollDice', {});
+          })();
+          return;
+        }
+        if (!gameState.zilch) {
+          return;
+        }
+        let next = applyZilchActionToState(gameState, 'zilchKeepCombination', { combinationId });
+        const afterKeep = next.zilch!;
+        if (canRollDice(afterKeep) && afterKeep.phase !== 'awaiting-keep-selection') {
+          next = applyZilchActionToState(next, 'zilchRollDice', {});
+        }
+        onGameStateChange(next);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Action failed';
+        setActionError(message);
+      }
+    },
+    [gameState, onGameStateChange, onlineDispatch],
+  );
+
   const handleBank = useCallback(() => {
     if (!gameState.zilch || !canBank(gameState.zilch)) {
       return;
@@ -148,6 +176,7 @@ export function useZilchTableFlow({
     handleRandomiseStarter,
     handleRollDice,
     handleKeepCombination,
+    handleKeepAndRoll,
     handleBank,
     handleQuitTurn,
     actionError,

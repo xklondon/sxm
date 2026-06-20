@@ -108,13 +108,13 @@ describe('zilchEngine', () => {
     expect(state.turnScore).toBe(0);
   });
 
-  it('target points final round after leader banks at target', () => {
+  it('target points final round after leader banks at target in challenge mode', () => {
     const settings = {
       ...DEFAULT_ZILCH_SETTINGS,
       mode: 'target_points' as const,
       targetPoints: 10_000,
     };
-    let state = createZilchGame([P1, P2], settings);
+    let state = createZilchGame([P1, P2], settings, { tableMode: 'challenge' });
     state = randomiseStarter(state, () => 0);
     state = startTurn(state, P1);
     state = {
@@ -128,6 +128,25 @@ describe('zilchEngine', () => {
     expect(state.finalRoundStartedByPlayerId).toBe(P1);
     expect(state.playersRemainingFinalTurn).toEqual([P2]);
     expect(state.currentPlayerId).toBe(P2);
+  });
+
+  it('practice mode completes immediately when leader reaches target', () => {
+    const settings = {
+      ...DEFAULT_ZILCH_SETTINGS,
+      targetPoints: 1000,
+    };
+    let state = createZilchGame([P1, P2], settings, { tableMode: 'practice' });
+    state = randomiseStarter(state, () => 0);
+    state = startTurn(state, P1);
+    state = {
+      ...state,
+      totalScoresByPlayerId: { [P1]: 950, [P2]: 400 },
+      turnScore: 50,
+      keptThisRoll: true,
+    };
+    state = bankTurn(state);
+    expect(state.phase).toBe('completed');
+    expect(state.winnerPlayerId).toBe(P1);
   });
 
   it('winner at target score when solo player banks', () => {

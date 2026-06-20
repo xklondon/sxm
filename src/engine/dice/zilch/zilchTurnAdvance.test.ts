@@ -153,7 +153,7 @@ describe('Zilch turn advancement', () => {
 
   it('final-round phase allows next player to roll', () => {
     const settings = { ...DEFAULT_ZILCH_SETTINGS, targetPoints: 100 };
-    let state = createZilchGame(['p1', 'p2'], settings);
+    let state = createZilchGame(['p1', 'p2'], settings, { tableMode: 'challenge' });
     state = startTurn(state, 'p1');
     state = {
       ...state,

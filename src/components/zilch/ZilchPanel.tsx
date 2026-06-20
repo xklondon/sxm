@@ -8,7 +8,7 @@ import {
   recordZilchGameEnd,
 } from '../../engine/session';
 import { canRollDice } from '../../engine/dice/zilch';
-import { listPlayableZilchPlayerIds } from '../../engine/dice/zilch/zilchTurnAuthority';
+import { getVisibleZilchPlayers } from '../../engine/dice/zilch/zilchVisiblePlayers';
 import { useIsMobileViewport } from '../../hooks/useIsMobileViewport';
 import { useDeviceShake } from '../../hooks/useDeviceShake';
 import { useZilchTableFlow } from '../useZilchTableFlow';
@@ -17,7 +17,8 @@ import { resolveViewerPersonIdForTable } from '../viewerIdentity';
 import { ZilchCommand } from './ZilchCommand';
 import { ZilchPlayerRail } from './ZilchPlayerRail';
 import { ZilchDiceArea } from './ZilchDiceArea';
-import { ZilchActions } from './ZilchActions';
+import { ZilchStarterSpinner } from './ZilchStarterSpinner';
+import { ZilchPracticeEndScreen } from './ZilchPracticeEndScreen';
 import { ZilchLedgerDrawer } from './ZilchLedgerDrawer';
 import '../../styles/zilch-table.css';
 
@@ -55,7 +56,7 @@ export function ZilchPanel({
   onlineActionInFlight = false,
   onBeginTableReset,
 }: ZilchPanelProps) {
-  const { session, players, zilch, tableMeta } = gameState;
+  const { session, zilch, tableMeta } = gameState;
   const isMobile = useIsMobileViewport();
   const controller = resolveZilchController(gameState);
   const viewerPersonId = resolveViewerPersonIdForTable(gameState, onlineTableId, viewerAuth);
@@ -71,9 +72,8 @@ export function ZilchPanel({
     handleStartGame,
     handleRandomiseStarter,
     handleRollDice,
-    handleKeepCombination,
+    handleKeepAndRoll,
     handleBank,
-    handleQuitTurn,
     actionError,
   } = useZilchTableFlow({ gameState, onGameStateChange, onlineDispatch });
 
@@ -82,26 +82,19 @@ export function ZilchPanel({
   const spinTimersRef = useRef<{ tick?: number; done?: number }>({});
   const pendingStarterSpinRef = useRef(false);
 
-  const playerOrder = useMemo(() => {
-    const playable = listPlayableZilchPlayerIds(gameState);
-    if (playable.length > 0) {
-      return playable;
-    }
-    if (session.playerIds.length > 0) {
-      return session.playerIds;
-    }
-    return tableMeta.boxSlots
-      .filter((s) => s.playerId)
-      .map((s) => s.playerId!);
-  }, [gameState, session.playerIds, tableMeta.boxSlots]);
+  const visiblePlayers = useMemo(() => getVisibleZilchPlayers(gameState), [gameState]);
+  const playerOrder = useMemo(
+    () => visiblePlayers.map((player) => player.playerId),
+    [visiblePlayers],
+  );
 
   const playerNames = useMemo(() => {
     const names: Record<string, string> = {};
-    for (const id of playerOrder) {
-      names[id] = players[id]?.displayName ?? id;
+    for (const player of visiblePlayers) {
+      names[player.playerId] = player.name;
     }
     return names;
-  }, [playerOrder, players]);
+  }, [visiblePlayers]);
 
   const tableModeLabel =
     tableMeta.tableMode === 'challenge' ? 'Challenge' : 'Practice';
@@ -200,7 +193,7 @@ export function ZilchPanel({
 
   function handleAddVirtual() {
     try {
-      const spl = addVirtualPlayer(session, players, gameState.ledger, { virtualStyle });
+      const spl = addVirtualPlayer(session, gameState.players, gameState.ledger, { virtualStyle });
       onGameStateChange(mergeSessionUpdate(gameState, spl));
     } catch (err) {
       console.error(err);
@@ -212,6 +205,19 @@ export function ZilchPanel({
   const visualRollMs = Math.min(900, Math.max(500, rollMs));
   const showValues = Boolean(zilch && !rolling);
   const controlsDisabled = rolling || onlineActionInFlight || !canAct;
+  const showPracticeEnd = Boolean(
+    isPracticeTable && zilch?.phase === 'completed' && zilch.winnerPlayerId,
+  );
+  const showStarterSpinner = Boolean(
+    zilch &&
+      (zilch.phase === 'setup' ||
+        zilch.phase === 'randomising-starter' ||
+        starterSpinActive),
+  );
+  const highlightStarterId =
+    starterSpinActive || zilch?.phase === 'setup'
+      ? playerOrder[randomiserIndex] ?? null
+      : zilch?.starterPlayerId ?? null;
 
   return (
     <div className="zilch-panel zilch-panel--compact" data-game="zilch">
@@ -274,7 +280,17 @@ export function ZilchPanel({
         <p className="zilch-panel__hint">Add at least one player to start Zilch.</p>
       )}
 
-      {zilch && (
+      {zilch && showPracticeEnd && (
+        <ZilchPracticeEndScreen
+          zilch={zilch}
+          visiblePlayers={visiblePlayers}
+          onStartNewRound={
+            onBeginTableReset ? () => onBeginTableReset('resetTable') : undefined
+          }
+        />
+      )}
+
+      {zilch && !showPracticeEnd && (
         <div
           className="zilch-table zilch-table--play"
           style={
@@ -284,32 +300,35 @@ export function ZilchPanel({
             } as CSSProperties
           }
         >
-          <ZilchPlayerRail gameState={gameState} zilch={zilch} playerOrder={playerOrder} />
-          <div className="zilch-table__felt">
-            <ZilchDiceArea
+          <div className="zilch-table__felt zilch-table__felt--canvas">
+            <ZilchPlayerRail
               zilch={zilch}
-              rolling={rolling}
-              showValues={showValues}
-              animSeed={animSeed}
-              controlsDisabled={controlsDisabled}
-              starterSpinActive={starterSpinActive}
-              randomiserIndex={randomiserIndex}
-              playerOrder={playerOrder}
-              playerNames={playerNames}
-              onKeepCombination={handleKeepCombination}
-            >
-              <ZilchActions
-                zilch={zilch}
-                rolling={rolling}
-                controlsDisabled={controlsDisabled}
-                onlineActionInFlight={onlineActionInFlight}
-                hasPlayers={playerOrder.length > 0}
-                onRandomiseStarter={onRandomiseStarter}
-                onRollDice={handleRollDice}
-                onBank={handleBank}
-                onQuitTurn={handleQuitTurn}
-              />
-            </ZilchDiceArea>
+              visiblePlayers={visiblePlayers}
+              highlightPlayerId={highlightStarterId}
+            />
+            <div className="zilch-table__felt-center">
+              {showStarterSpinner ? (
+                <ZilchStarterSpinner
+                  players={visiblePlayers}
+                  activeIndex={randomiserIndex}
+                  spinning={starterSpinActive}
+                  starterPlayerId={zilch.starterPlayerId}
+                  disabled={onlineActionInFlight || !canAct}
+                  onRandomiseStarter={onRandomiseStarter}
+                />
+              ) : (
+                <ZilchDiceArea
+                  zilch={zilch}
+                  rolling={rolling}
+                  showValues={showValues}
+                  animSeed={animSeed}
+                  controlsDisabled={controlsDisabled}
+                  onKeepAndRoll={handleKeepAndRoll}
+                  onRollDice={handleRollDice}
+                  onBank={handleBank}
+                />
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -320,7 +339,7 @@ export function ZilchPanel({
         </p>
       )}
 
-      <ZilchLedgerDrawer gameState={gameState} />
+      {!showPracticeEnd && <ZilchLedgerDrawer gameState={gameState} />}
     </div>
   );
 }

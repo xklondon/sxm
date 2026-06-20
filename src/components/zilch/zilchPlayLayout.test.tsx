@@ -11,21 +11,20 @@ import {
 } from '../../engine/session';
 import { ZilchPlayerRail } from './ZilchPlayerRail';
 import { distributeZilchSeats } from '../zilchPlayerDisplay';
+import { getVisibleZilchPlayers } from '../../engine/dice/zilch/zilchVisiblePlayers';
 
 const ZILCH_CSS = readFileSync(join(process.cwd(), 'src/styles/zilch-table.css'), 'utf8');
 
 describe('Zilch play layout and seats', () => {
-  it('desktop play grid separates dice zone and options zone', () => {
-    expect(ZILCH_CSS).toContain('.zilch-play-grid');
-    expect(ZILCH_CSS).toContain('.zilch-dice-zone');
-    expect(ZILCH_CSS).toContain('.zilch-options-zone');
-    expect(ZILCH_CSS).toContain('grid-template-columns: minmax(18rem, 1fr) minmax(14rem, 18rem)');
+  it('felt canvas contains center dice zone inside play area', () => {
+    expect(ZILCH_CSS).toContain('.zilch-table__felt--canvas');
+    expect(ZILCH_CSS).toContain('.zilch-felt-center');
+    expect(ZILCH_CSS).toContain('grid-template-areas');
   });
 
-  it('mobile stacks options below dice without overlap guards', () => {
-    expect(ZILCH_CSS).toContain('.zilch-play-grid');
-    expect(ZILCH_CSS).toContain('grid-template-columns: 1fr');
-    expect(ZILCH_CSS).toContain('.zilch-table__actions--stacked');
+  it('mobile stacks compact actions without side options panel', () => {
+    expect(ZILCH_CSS).not.toContain('.zilch-options-zone');
+    expect(ZILCH_CSS).toContain('.zilch-table__actions--compact');
   });
 
   it('left/right seat columns stack one card per player without shared grid cell', () => {
@@ -35,30 +34,22 @@ describe('Zilch play layout and seats', () => {
 
     expect(ZILCH_CSS).toContain('.zilch-table__seats--left');
     expect(ZILCH_CSS).toContain('flex-direction: column');
-    expect(ZILCH_CSS).toContain('.zilch-seat__box');
   });
 
-  it('player seats render one card with canonical fields and no duplicate box label', () => {
+  it('player seats render one card with canonical fields', () => {
     let state = applyZilchTableStakeSetup(createNewZilchTable(), practiceSetup());
     state = beginZilchPlay(state);
+    const visiblePlayers = getVisibleZilchPlayers(state);
 
-    const playerOrder = state.session.playerIds;
     const html = renderToStaticMarkup(
-      <ZilchPlayerRail gameState={state} zilch={state.zilch} playerOrder={playerOrder} />,
+      <ZilchPlayerRail zilch={state.zilch} visiblePlayers={visiblePlayers} />,
     );
 
     const seatCount = (html.match(/class="zilch-seat(?![\w-])/g) ?? []).length;
-    expect(seatCount).toBe(playerOrder.length);
-
-    for (const id of playerOrder) {
-      const player = state.players[id]!;
-      expect(html).toContain(`>${player.displayName}<`);
-    }
-
+    expect(seatCount).toBe(visiblePlayers.length);
     expect(html).toContain('zilch-seat__name');
     expect(html).toContain('zilch-seat__score');
     expect(html).toContain('zilch-seat__status');
-    expect(html).toContain('zilch-seat__badge');
   });
 });
 
@@ -79,7 +70,7 @@ function practiceSetup() {
     tableMode: 'practice' as const,
     virtualPlayerCount: 2,
     zilchMode: 'target_points' as const,
-    targetPoints: 100,
+    targetPoints: 1000,
     roundLimit: 10,
     diceAnimationMode: 'fixed' as const,
     diceAnimationMs: 400,

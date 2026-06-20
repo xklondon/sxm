@@ -8,12 +8,11 @@ import {
   randomiseStarter,
   rollDice,
 } from '../../engine/dice/zilch/zilchEngine';
-import type { ZilchGameState } from '../../engine/dice/zilch';
 import { ZilchDiceArea } from './ZilchDiceArea';
 
 afterEach(() => cleanup());
 
-function awaitingKeepState(values: number[] = [1, 2, 3, 4, 5, 6]): ZilchGameState {
+function awaitingKeepState(values: number[] = [1, 2, 3, 4, 5, 6]) {
   let state = createZilchGame(['p1'], DEFAULT_ZILCH_SETTINGS);
   state = randomiseStarter(state, () => 0);
   state = rollDice(state, DEFAULT_ZILCH_SETTINGS, () => 0, 400);
@@ -28,10 +27,10 @@ function awaitingKeepState(values: number[] = [1, 2, 3, 4, 5, 6]): ZilchGameStat
 }
 
 describe('Zilch manual die selection', () => {
-  it('selects a valid scoring die and keeps via Keep selected dice', () => {
-    const zilch = awaitingKeepState();
+  it('selects a valid scoring die and keeps via Keep and roll', () => {
+    const zilch = awaitingKeepState([1, 2, 3, 4, 6, 2]);
     const singleOne = zilch.availableCombinations.find((c) => c.type === 'single_one')!;
-    const onKeepCombination = vi.fn();
+    const onKeepAndRoll = vi.fn();
 
     render(
       <ZilchDiceArea
@@ -40,23 +39,16 @@ describe('Zilch manual die selection', () => {
         showValues
         animSeed={1}
         controlsDisabled={false}
-        starterSpinActive={false}
-        randomiserIndex={0}
-        playerOrder={['p1']}
-        playerNames={{ p1: 'Player 1' }}
-        onKeepCombination={onKeepCombination}
+        onKeepAndRoll={onKeepAndRoll}
+        onRollDice={vi.fn()}
+        onBank={vi.fn()}
       />,
     );
 
-    const dieButton = screen.getByRole('button', { name: 'Select die 1' });
-    fireEvent.click(dieButton);
+    fireEvent.click(screen.getByRole('button', { name: 'Select die 1' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Keep and roll' }));
 
-    const keepBtn = screen.getByRole('button', { name: 'Keep selected dice' }) as HTMLButtonElement;
-    expect(keepBtn.disabled).toBe(false);
-    fireEvent.click(keepBtn);
-
-    expect(onKeepCombination).toHaveBeenCalledWith(singleOne.id);
-    expect(screen.queryByText('Select scoring dice only.')).toBeNull();
+    expect(onKeepAndRoll).toHaveBeenCalledWith(singleOne.id);
   });
 
   it('blocks keep when selection is invalid and shows helper text', () => {
@@ -69,46 +61,15 @@ describe('Zilch manual die selection', () => {
         showValues
         animSeed={1}
         controlsDisabled={false}
-        starterSpinActive={false}
-        randomiserIndex={0}
-        playerOrder={['p1']}
-        playerNames={{ p1: 'Player 1' }}
-        onKeepCombination={vi.fn()}
+        onKeepAndRoll={vi.fn()}
+        onRollDice={vi.fn()}
+        onBank={vi.fn()}
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Die 3, not scoring' }));
-
-    expect(screen.getByText('Select scoring dice only.')).toBeTruthy();
-    expect((screen.getByRole('button', { name: 'Keep selected dice' }) as HTMLButtonElement).disabled).toBe(
+    expect(screen.getByText('Select scoring dice to keep.')).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Keep and roll' }) as HTMLButtonElement).disabled).toBe(
       true,
     );
-  });
-
-  it('combination buttons still select and keep scoring sets', () => {
-    const zilch = awaitingKeepState();
-    const singleOne = zilch.availableCombinations.find((c) => c.type === 'single_one')!;
-    const onKeepCombination = vi.fn();
-
-    render(
-      <ZilchDiceArea
-        zilch={zilch}
-        rolling={false}
-        showValues
-        animSeed={1}
-        controlsDisabled={false}
-        starterSpinActive={false}
-        randomiserIndex={0}
-        playerOrder={['p1']}
-        playerNames={{ p1: 'Player 1' }}
-        onKeepCombination={onKeepCombination}
-      />,
-    );
-
-    const comboBtn = screen.getByRole('button', { name: /Single 1 \(100\)/ });
-    fireEvent.click(comboBtn);
-    fireEvent.click(screen.getByRole('button', { name: 'Keep selected dice' }));
-
-    expect(onKeepCombination).toHaveBeenCalledWith(singleOne.id);
   });
 });

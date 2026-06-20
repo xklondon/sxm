@@ -25,9 +25,9 @@ describe('Zilch visual layout', () => {
     expect(ZILCH_CSS).toContain('.zilch-table--play');
     expect(ZILCH_CSS).toContain('grid-template-areas');
     expect(ZILCH_CSS).toContain('.zilch-panel--compact');
-    expect(ZILCH_CSS).toContain('.zilch-play-grid');
-    expect(ZILCH_CSS).toContain('@media (min-width: 921px)');
-    expect(ZILCH_CSS).toContain('max-height: min(64vh');
+    expect(ZILCH_CSS).toContain('.zilch-table__felt--canvas');
+    expect(ZILCH_CSS).toContain('.zilch-felt-center');
+    expect(ZILCH_CSS).toContain('max-height: min(68vh');
     expect(ZILCH_CSS).toContain('overflow-x: hidden');
   });
 

@@ -1,72 +1,72 @@
 import type { ZilchGameState } from '../../engine/dice/zilch';
-import { canBank, canRollDice, isActiveZilchTurnPhase, isTurnoverRoll, mustKeepBeforeRoll } from '../../engine/dice/zilch';
+import { canBank, canInitialRollAllDice, canRollAvailableDice } from '../../engine/dice/zilch';
 
 interface ZilchActionsProps {
   zilch: ZilchGameState;
   rolling: boolean;
   controlsDisabled: boolean;
-  onlineActionInFlight: boolean;
-  hasPlayers: boolean;
-  onRandomiseStarter: () => void;
+  canKeepAndRoll: boolean;
+  onKeepAndRoll: () => void;
   onRollDice: () => void;
   onBank: () => void;
-  onQuitTurn: () => void;
 }
 
 export function ZilchActions({
   zilch,
   rolling,
   controlsDisabled,
-  onlineActionInFlight,
-  hasPlayers,
-  onRandomiseStarter,
+  canKeepAndRoll,
+  onKeepAndRoll,
   onRollDice,
   onBank,
-  onQuitTurn,
 }: ZilchActionsProps) {
-  const unkeptCount = zilch.dice.filter((d) => !d.isKept).length;
-  const rollLabel = rolling
+  const showPlayActions =
+    zilch.phase === 'player-turn' ||
+    zilch.phase === 'final-round' ||
+    zilch.phase === 'awaiting-keep-selection';
+
+  if (!showPlayActions) {
+    return null;
+  }
+
+  const initialRoll = canInitialRollAllDice(zilch);
+  const rollAvailable = canRollAvailableDice(zilch);
+  const rollAllLabel = rolling
     ? 'Rolling…'
-    : isTurnoverRoll(zilch)
-      ? 'Roll all 6'
-      : unkeptCount > 0 && unkeptCount < 6 && zilch.keptThisRoll
-        ? `Roll ${unkeptCount} dice`
-        : 'Roll';
+    : initialRoll
+      ? 'Roll all dice'
+      : rollAvailable
+        ? `Roll ${zilch.dice.filter((d) => !d.isKept).length || 6} dice`
+        : 'Roll available dice';
 
   return (
-    <div className="zilch-table__actions zilch-table__actions--stacked">
-      {(zilch.phase === 'setup' ||
-        (zilch.phase === 'randomising-starter' && !zilch.starterPlayerId)) && (
+    <div className="zilch-table__actions zilch-table__actions--compact">
+      {zilch.phase === 'awaiting-keep-selection' && (
         <button
           type="button"
-          onClick={onRandomiseStarter}
-          disabled={onlineActionInFlight || !hasPlayers}
+          className="zilch-table__action-btn"
+          onClick={onKeepAndRoll}
+          disabled={!canKeepAndRoll || controlsDisabled}
         >
-          Randomise starter
+          Keep and roll
         </button>
       )}
-      {(isActiveZilchTurnPhase(zilch) || zilch.phase === 'awaiting-keep-selection') && (
-        <>
-          <button
-            type="button"
-            onClick={onRollDice}
-            disabled={!canRollDice(zilch) || controlsDisabled || mustKeepBeforeRoll(zilch)}
-          >
-            {rollLabel}
-          </button>
-          <button type="button" onClick={onBank} disabled={!canBank(zilch) || controlsDisabled}>
-            Bank points
-          </button>
-          <button
-            type="button"
-            className="secondary"
-            onClick={onQuitTurn}
-            disabled={!canBank(zilch) || controlsDisabled}
-          >
-            End turn
-          </button>
-        </>
-      )}
+      <button
+        type="button"
+        className="zilch-table__action-btn"
+        onClick={onRollDice}
+        disabled={controlsDisabled || rolling || !(initialRoll || rollAvailable)}
+      >
+        {rollAllLabel}
+      </button>
+      <button
+        type="button"
+        className="zilch-table__action-btn"
+        onClick={onBank}
+        disabled={!canBank(zilch) || controlsDisabled}
+      >
+        Bank
+      </button>
     </div>
   );
 }

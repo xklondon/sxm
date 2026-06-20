@@ -110,6 +110,54 @@ export function activePlayerName(state: ZilchGameState, names: Record<string, st
   return names[id] ?? id;
 }
 
+export function canRollAvailableDice(state: ZilchGameState): boolean {
+  if (!canRollDice(state) || mustKeepBeforeRoll(state) || state.diceAnimation.isRolling) {
+    return false;
+  }
+  if (!state.keptThisRoll) {
+    return false;
+  }
+  if (isTurnoverRoll(state)) {
+    return true;
+  }
+  return state.dice.some((d) => !d.isKept);
+}
+
+export function canInitialRollAllDice(state: ZilchGameState): boolean {
+  if (!canRollDice(state) || mustKeepBeforeRoll(state) || state.diceAnimation.isRolling) {
+    return false;
+  }
+  if (isTurnoverRoll(state)) {
+    return true;
+  }
+  return state.rollNumberInTurn === 0 && state.dice.length === 0;
+}
+
+export function canKeepAndRollSelected(
+  state: ZilchGameState,
+  selectedDiceIds: string[],
+): boolean {
+  return state.phase === 'awaiting-keep-selection' && canKeepSelectedDice(state, selectedDiceIds);
+}
+
+export function selectionHintForDice(
+  state: ZilchGameState,
+  selectedDiceIds: string[],
+  canSelect: boolean,
+): string | null {
+  if (!canSelect) {
+    return null;
+  }
+  if (selectedDiceIds.length === 0) {
+    return state.phase === 'awaiting-keep-selection' ? 'Select scoring dice to keep.' : null;
+  }
+  const combo = findCombinationForSelection(state, selectedDiceIds);
+  if (combo) {
+    return `Selected: ${combo.label} = ${combo.score}`;
+  }
+  return 'Selected dice are not a valid scoring set.';
+}
+
 export function commandStatusForPhase(
   state: ZilchGameState,
   names: Record<string, string>,
@@ -139,7 +187,7 @@ export function commandStatusForPhase(
         return 'Turnover — Greater Glory: roll all 6 dice.';
       }
       if (state.keptThisRoll && state.turnScore > 0) {
-        return 'Keep selected dice or bank points.';
+        return 'Keep and roll, roll available dice, or bank points.';
       }
       if (state.dice.some((d) => !d.isKept) && state.rollNumberInTurn > 0) {
         return 'Roll remaining dice.';
