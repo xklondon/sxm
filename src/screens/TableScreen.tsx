@@ -115,6 +115,7 @@ export function TableScreen({
     useState<TableResetSetupVariant>('resetTable');
   const [navNewTableSetup, setNavNewTableSetup] = useState(false);
   const [newTableSetupDirty, setNewTableSetupDirty] = useState(false);
+  const [setupFlowKey, setSetupFlowKey] = useState(0);
 
   const balances = deriveAllBalancesFromLedger(session, ledger);
   const remaining = deck ? getRemainingCardCount(deck) : 0;
@@ -194,6 +195,31 @@ export function TableScreen({
     onGameStateChange(resetGameDeck(gameState));
   }
 
+  function openSetupFlow(options: {
+    reset?: boolean;
+    variant?: TableResetSetupVariant;
+    navNew?: boolean;
+  }) {
+    setSetupFlowKey((key) => key + 1);
+    if (options.reset) {
+      setResetSetupOpen(true);
+      setResetSetupVariant(options.variant ?? 'resetTable');
+      setStakePanelMode('reset');
+      setNavNewTableSetup(false);
+      return;
+    }
+    setNavNewTableSetup(Boolean(options.navNew));
+    setResetSetupOpen(false);
+    setResetSetupVariant('resetTable');
+    setStakePanelMode('new');
+    if (options.navNew) {
+      onGameStateChange({
+        ...gameState,
+        tableMeta: { ...gameState.tableMeta, showStakeSetup: true },
+      });
+    }
+  }
+
   function closeStakeSetup() {
     setNavNewTableSetup(false);
     setResetSetupOpen(false);
@@ -211,23 +237,16 @@ export function TableScreen({
   const stakeSetupOpen = (isBlackjack || isZilch) && (tableMeta.showStakeSetup || resetSetupOpen);
   const stagedNewTableOpen = stakeSetupOpen && !resetSetupOpen;
   const stakeSetupTitle = resetSetupOpen
-    ? isZilch
-      ? resetSetupVariant === 'newGame'
-        ? 'New Zilch game'
-        : 'Reset Zilch table'
-      : resetSetupVariant === 'newGame'
-        ? 'New Game'
-        : 'Reset table'
-    : 'New Table';
+    ? resetSetupVariant === 'newGame'
+      ? 'New game'
+      : 'Reset table'
+    : 'Start new table';
   const stakeSetupAriaLabel = resetSetupOpen
-    ? isZilch
-      ? resetSetupVariant === 'newGame'
-        ? 'New Zilch game setup'
-        : 'Reset Zilch table setup'
-      : resetSetupVariant === 'newGame'
-        ? 'New game setup'
-        : 'Reset table setup'
-    : 'New table setup';
+    ? resetSetupVariant === 'newGame'
+      ? 'New game setup'
+      : 'Reset table setup'
+    : 'Start new table setup';
+  const setupEntryPoint = resetSetupOpen ? 'reset-table' : 'menu-new-table';
 
   const registerNavHandlers = useCallback((): TableNavHandlers => ({
     saveTable: () => {
@@ -253,14 +272,7 @@ export function TableScreen({
       }
     },
     openNewTableSetup: () => {
-      setNavNewTableSetup(true);
-      setResetSetupOpen(false);
-      setResetSetupVariant('resetTable');
-      setStakePanelMode('new');
-      onGameStateChange({
-        ...gameState,
-        tableMeta: { ...gameState.tableMeta, showStakeSetup: true },
-      });
+      openSetupFlow({ navNew: true });
     },
     openAdmin: () => setAdminOpen(true),
   }), [gameState, onGameStateChange, tableMeta]);
@@ -358,9 +370,7 @@ export function TableScreen({
               onlineDispatch={onlineDispatch}
               onlineActionInFlight={onlineActionInFlight}
               onBeginTableReset={(variant = 'resetTable') => {
-                setResetSetupVariant(variant);
-                setStakePanelMode('reset');
-                setResetSetupOpen(true);
+                openSetupFlow({ reset: true, variant });
               }}
             />
           )}
@@ -381,9 +391,7 @@ export function TableScreen({
               onSaveTable={handleSaveGame}
               onExitTable={onLeave}
               onBeginTableReset={(variant = 'resetTable') => {
-                setResetSetupVariant(variant);
-                setStakePanelMode('reset');
-                setResetSetupOpen(true);
+                openSetupFlow({ reset: true, variant });
               }}
             />
           )}
@@ -450,6 +458,8 @@ export function TableScreen({
             mode={resetSetupOpen ? 'reset' : stakePanelMode}
             resetSetupVariant={resetSetupVariant}
             embeddedInOverlay
+            entryPoint={setupEntryPoint}
+            setupFlowKey={setupFlowKey}
             onSetupDirtyChange={stagedNewTableOpen ? setNewTableSetupDirty : undefined}
             onConfirmNewTable={
               navNewTableSetup && onConfirmNavNewTable ? onConfirmNavNewTable : undefined

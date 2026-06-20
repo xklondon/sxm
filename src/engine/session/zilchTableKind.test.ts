@@ -11,7 +11,7 @@ import { applyZilchTableStakeSetup } from './zilchTableSetup';
 import { DEFAULT_TABLE_CHIPS } from './table';
 
 describe('tableKind', () => {
-  it('detects zilch from tableMeta when tableGame is still blackjack', () => {
+  it('explicit blackjack tableGame wins over stale dice meta', () => {
     const bj = createNewBlackjackTable();
     const hybrid = {
       ...bj,
@@ -21,20 +21,32 @@ describe('tableKind', () => {
         diceGame: 'zilch' as const,
       },
     };
-    expect(isZilchTable(hybrid)).toBe(true);
-    expect(isBlackjackTable(hybrid)).toBe(false);
+    expect(isZilchTable(hybrid)).toBe(false);
+    expect(isBlackjackTable(hybrid)).toBe(true);
   });
 
-  it('ensureZilchTableIdentity sets tableGame and session.gameType', () => {
+  it('ensureZilchTableIdentity sets tableGame and session.gameType for zilch tables', () => {
+    const z = createNewZilchTable();
+    const next = ensureZilchTableIdentity({
+      ...z,
+      tableGame: 'zilch',
+      session: { ...z.session, gameType: 'blackjack' },
+      tableMeta: { ...z.tableMeta, gameCategory: 'dice', diceGame: 'zilch' },
+    });
+    expect(next.tableGame).toBe('zilch');
+    expect(next.session.gameType).toBe('zilch');
+    expect(next.tableMeta.diceGame).toBe('zilch');
+  });
+
+  it('ensureZilchTableIdentity does not override explicit blackjack identity', () => {
     const z = createNewZilchTable();
     const next = ensureZilchTableIdentity({
       ...z,
       tableGame: 'blackjack',
       session: { ...z.session, gameType: 'blackjack' },
     });
-    expect(next.tableGame).toBe('zilch');
-    expect(next.session.gameType).toBe('zilch');
-    expect(next.tableMeta.diceGame).toBe('zilch');
+    expect(next.tableGame).toBe('blackjack');
+    expect(next.session.gameType).toBe('blackjack');
   });
 
   it('applyZilchTableStakeSetup leaves table as zilch', () => {

@@ -395,10 +395,23 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
         const displayName = profile.name.trim() || user?.email.split('@')[0] || 'Host';
         const result = await createOnlineTable(displayName);
         consumePendingTable();
+        const configurePayload = isZilchInput
+          ? {
+              ...input,
+              gameCategory: 'dice',
+              gameType: 'zilch',
+              diceGame: 'zilch',
+            }
+          : {
+              ...input,
+              gameCategory: 'cards',
+              gameType: 'blackjack',
+              cardGame: 'blackjack',
+            };
         const actionResult = await sendTableAction(
           result.tableId,
           'configureTable',
-          input as unknown as Record<string, unknown>,
+          configurePayload as unknown as Record<string, unknown>,
           result.version,
         );
         if (

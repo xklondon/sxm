@@ -18,6 +18,7 @@ import {
   confirmTableAgreement,
   DEFAULT_TABLE_CHIPS,
   recordTableOutcome,
+  switchGameType,
 } from './table';
 import {
   logDerivedBalances,
@@ -152,6 +153,7 @@ export function applyZilchTableStakeSetup(
   logDerivedBalances(next, 'zilch-start');
   logTableMetaStartingChips(next, 'zilch-start');
 
+  next = switchGameType(next, 'zilch');
   next = ensureZilchTableIdentity(next);
   return initializeZilchPlayState(next);
 }

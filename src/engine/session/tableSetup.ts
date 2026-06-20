@@ -162,6 +162,9 @@ export function applyTableStakeSetup(state: GameState, input: TableStakeSetupInp
       showBankerSetup: false,
       showStakeSetup: false,
       tableMode,
+      gameCategory: 'cards',
+      cardGame: 'blackjack',
+      diceGame: undefined,
       setupInvitedEmails: invitedEmails.length > 0 ? invitedEmails : undefined,
       bankBustSettlementMode:
         tableMode === 'challenge' ? input.bankBustSettlementMode ?? 'fractional' : undefined,

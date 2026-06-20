@@ -8,6 +8,7 @@ import {
   isTurnoverRoll,
 } from '../../engine/dice/zilch';
 import { dieThrowStyle } from '../zilchPlayerDisplay';
+import { DieFace } from './DieFace';
 
 interface ZilchDiceAreaProps {
   zilch: ZilchGameState;
@@ -129,7 +130,7 @@ export function ZilchDiceArea({
                 : `Die ${die.value}`
         }
       >
-        {rolling ? '?' : showValues ? die.value : '?'}
+        <DieFace value={die.value} rolling={rolling || !showValues} />
       </button>
     );
   }

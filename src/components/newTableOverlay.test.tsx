@@ -82,7 +82,7 @@ describe('New Table staged UI cleanup', () => {
     const html = renderToStaticMarkup(
       <TableStakePanel gameState={createNewBlackjackTable()} mode="new" embeddedInOverlay onConfirm={() => {}} />,
     );
-    expect(html).toContain('<legend>Game</legend>');
+    expect(html).toContain('<legend>Game category</legend>');
     expect(html).not.toContain('1. Game');
     expect(html).not.toContain('2. Mode');
     expect(html).not.toContain('table-stake-panel__steps');
@@ -98,7 +98,7 @@ describe('New Table staged UI cleanup', () => {
     );
     expect(html).toContain('table-stake-panel__select-btn');
     expect(html).toContain('>Cards<');
-    expect(html).toContain('>Continue<');
+    expect(html).not.toContain('>Continue<');
     expect(html).toContain('table-stake-panel--compact');
     expect(html).toContain('table-stake-panel--embedded');
   });

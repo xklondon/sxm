@@ -74,7 +74,7 @@ describe('Zilch table routing', () => {
     expect(html).not.toContain('Deal Cards');
   });
 
-  it('renders Zilch when reloaded with dice meta only', () => {
+  it('explicit blackjack tableGame wins over stale dice meta on reload', () => {
     let state = normalizeLoadedGameState({
       ...createNewBlackjackTable(),
       tableGame: 'blackjack',
@@ -90,7 +90,9 @@ describe('Zilch table routing', () => {
       <TableScreen gameState={state} onGameStateChange={noop} onLeave={noop} />,
     );
 
-    expect(html).toContain('data-game="zilch"');
-    expect(isZilchTable(state)).toBe(true);
+    expect(html).toContain('bj-casino');
+    expect(html).not.toContain('data-game="zilch"');
+    expect(isZilchTable(state)).toBe(false);
+    expect(isBlackjackTable(state)).toBe(true);
   });
 });

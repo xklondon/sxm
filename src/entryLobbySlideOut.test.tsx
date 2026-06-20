@@ -174,7 +174,7 @@ describe('entry lobby slide-outs', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
     expect(screen.getByRole('dialog', { name: 'Open New Table' })).toBeTruthy();
     expect(document.querySelector('.new-table-overlay')).toBeTruthy();
-    expect(screen.getByText('Game')).toBeTruthy();
+    expect(screen.getByText('Game category')).toBeTruthy();
     expect(createOnlineTableMock).not.toHaveBeenCalled();
   });
 
@@ -189,7 +189,7 @@ describe('entry lobby slide-outs', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cards' }));
     expect(screen.getByText('Practice')).toBeTruthy();
     expect(screen.getByText('Challenge')).toBeTruthy();
   });
@@ -206,7 +206,7 @@ describe('entry lobby slide-outs', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cards' }));
     fireEvent.click(screen.getByRole('button', { name: /Practice/i }));
     expect(screen.queryByText('Play for what')).toBeNull();
     expect(screen.queryByText(/invite by email/i)).toBeNull();
@@ -229,7 +229,7 @@ describe('entry lobby slide-outs', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cards' }));
     fireEvent.click(screen.getByRole('button', { name: /Challenge/i }));
     expect(screen.getByText('Play for what')).toBeTruthy();
     expect(screen.getByText(/invite by email/i)).toBeTruthy();

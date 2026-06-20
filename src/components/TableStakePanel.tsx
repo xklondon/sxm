@@ -9,9 +9,6 @@ import {
   applyZilchTableResetSetup,
   applyZilchTableStakeSetup,
   DEFAULT_TABLE_CHIPS,
-  ensureZilchTableIdentity,
-  isZilchTable,
-  switchGameType,
   type TableBankerSetupMode,
   type TableStakeSetupInput,
   type ZilchTableStakeSetupInput,
@@ -19,7 +16,6 @@ import {
 import {
   listBlackjackProtocolPresets,
   getBlackjackProtocolOrDefault,
-  getProtocolDisplayRules,
 } from '../engine/blackjack/protocols';
 import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
@@ -39,12 +35,21 @@ import {
   isTableStakeSetupDirty,
   type TableStakeSetupSnapshot,
 } from './tableStakeSetupDirty';
+import {
+  createFreshSetupDraft,
+  goBackFromMode,
+  goBackFromSettings,
+  isZilchSetupDraft,
+  prepareTableStateForSetupConfirm,
+  selectCategoryCards,
+  selectCategoryDice,
+  selectMode,
+  type SetupDraft,
+  type SetupEntryPoint,
+} from './tableSetupFlow';
 import './TableStakePanel.css';
 
 const STAKE_EXAMPLES = ['Dinner', '€20', 'Loser buys drinks', 'Just pride', 'car wash', 'favour'];
-
-type SetupCategoryTab = 'cards' | 'dice';
-type NewSetupStage = 'game' | 'dice-game' | 'mode' | 'configure';
 
 export type TableStakePanelMode = 'new' | 'reset';
 
@@ -65,6 +70,10 @@ interface TableStakePanelProps {
   onlineTableId?: string | null;
   /** When true, panel title is rendered by NewTableOverlay shell. */
   embeddedInOverlay?: boolean;
+  /** Canonical setup entry — drives fresh draft on open. */
+  entryPoint?: SetupEntryPoint;
+  /** Change when overlay opens to re-initialise setup draft. */
+  setupFlowKey?: number | string;
   /** Staged New Table only — reports whether the user has changed setup from baseline. */
   onSetupDirtyChange?: (dirty: boolean) => void;
 }
@@ -96,17 +105,21 @@ export function TableStakePanel({
   onlineDispatch,
   onlineTableId = null,
   embeddedInOverlay = false,
+  entryPoint: entryPointProp,
+  setupFlowKey = 0,
   onSetupDirtyChange,
 }: TableStakePanelProps) {
   const profile = loadProfile();
   const flow = gameState.blackjackFlowSettings;
   const isReset = mode === 'reset';
   const isNewGameSetup = isReset && resetSetupVariant === 'newGame';
+  const entryPoint: SetupEntryPoint =
+    entryPointProp ?? (isReset ? 'reset-table' : embeddedInOverlay ? 'root' : 'menu-new-table');
   const agreement = gameState.tableMeta.agreement;
 
-  const [setupStage, setSetupStage] = useState<NewSetupStage>('game');
-  const [tableMode, setTableMode] = useState<TableMode>('practice');
-  const [virtualPlayerCount, setVirtualPlayerCount] = useState(2);
+  const [draft, setDraft] = useState<SetupDraft>(() => createFreshSetupDraft(entryPoint));
+  const tableMode = draft.mode ?? 'practice';
+  const setupCategory = draft.category;
   const [invitedPlayers, setInvitedPlayers] = useState<InvitedTablePlayerSetup[]>([]);
   const [inviteEmailInput, setInviteEmailInput] = useState('');
   const invitedEmails = invitedPlayers.map((player) => player.email);
@@ -119,7 +132,7 @@ export function TableStakePanel({
   const [tableName, setTableName] = useState(
     () => gameState.tableMeta.tableClothName?.trim() || DEFAULT_PRACTICE_TABLE_NAME,
   );
-  const [inviteNote, setInviteNote] = useState('');
+  const [inviteNote] = useState('');
   const [seatChips, setSeatChips] = useState(
     String(gameState.tableMeta.startingChipsEachSeat ?? DEFAULT_TABLE_CHIPS),
   );
@@ -127,15 +140,9 @@ export function TableStakePanel({
     String(gameState.tableMeta.startingChipsBank ?? gameState.tableMeta.startingChipsEachSeat ?? DEFAULT_TABLE_CHIPS),
   );
   const [bankChipsCustom, setBankChipsCustom] = useState(false);
-  const [bankerMode, setBankerMode] = useState<TableBankerSetupMode>(() => initialBankerMode(gameState));
-  const [bankerName, setBankerName] = useState(
-    () => gameState.tableMeta.bankerSetup.displayName ?? '',
-  );
-  const [setupTab, setSetupTab] = useState<SetupCategoryTab>(() =>
-    gameState.tableMeta.gameCategory === 'dice' || gameState.tableGame === 'zilch'
-      ? 'dice'
-      : 'cards',
-  );
+  const bankerMode: TableBankerSetupMode = initialBankerMode(gameState);
+  const bankerName = gameState.tableMeta.bankerSetup.displayName ?? '';
+  const [virtualPlayerCount, setVirtualPlayerCount] = useState(2);
   const [protocolId, setProtocolId] = useState(
     gameState.blackjackProtocolId ?? listBlackjackProtocolPresets()[0]?.protocolId ?? 'las-vegas-house',
   );
@@ -165,25 +172,21 @@ export function TableStakePanel({
   const [bankDrawAuto, setBankDrawAuto] = useState(flow.bankDrawMode === 'auto');
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
-  const isStagedNew = !isReset;
-  const isZilchReset = isReset && isZilchTable(gameState);
-  const isZilchStakeFlow = isZilchTable(gameState) || setupTab === 'dice';
+  const isZilchStakeFlow = isZilchSetupDraft(draft);
   const initialSetupSnapshotRef = useRef<TableStakeSetupSnapshot | null>(null);
-  if (isStagedNew && !initialSetupSnapshotRef.current) {
+  if (!initialSetupSnapshotRef.current) {
     initialSetupSnapshotRef.current = createInitialTableStakeSetupSnapshot(gameState);
   }
 
+  useEffect(() => {
+    setDraft(createFreshSetupDraft(entryPoint));
+    setSetupError(null);
+    initialSetupSnapshotRef.current = createInitialTableStakeSetupSnapshot(gameState);
+  }, [setupFlowKey, entryPoint, gameState.session.id]);
+
   const selectedProtocol = getBlackjackProtocolOrDefault(protocolId);
-  const protocolRules = getProtocolDisplayRules(selectedProtocol);
-  const showPlayingFor = isReset && bankerMode === 'bot';
   const onlineMode = isOnlineModeEnabled();
   const controller = profile.name.trim() || gameState.tableMeta.controllerName;
-
-  useEffect(() => {
-    if (isZilchReset && setupTab !== 'dice') {
-      setSetupTab('dice');
-    }
-  }, [isZilchReset, setupTab]);
 
   function resolveChallengeBanker(): { bankerMode: TableBankerSetupMode; bankerName: string } {
     if (challengeBank === 'self') {
@@ -196,7 +199,7 @@ export function TableStakePanel({
     const seatAmount = Number.parseInt(seatChips, 10) || DEFAULT_TABLE_CHIPS;
     const bankAmount = Number.parseInt(bankChips, 10) || seatAmount;
 
-    if (isStagedNew && setupTab === 'cards') {
+    if (setupCategory === 'cards') {
       if (tableMode === 'practice') {
         return {
           stakeDescription: 'Practice',
@@ -241,7 +244,7 @@ export function TableStakePanel({
       };
     }
 
-    if (isStagedNew && setupTab === 'dice') {
+    if (setupCategory === 'dice') {
       if (tableMode === 'practice') {
         return {
           stakeDescription: stake.trim() || 'Practice',
@@ -355,7 +358,7 @@ export function TableStakePanel({
   async function handleConfirm() {
     setSetupError(null);
 
-    if (isStagedNew && setupTab === 'cards' && tableMode === 'challenge') {
+    if (setupCategory === 'cards' && tableMode === 'challenge') {
       if (!stake.trim()) {
         setSetupError('Enter what you are playing for.');
         return;
@@ -366,7 +369,7 @@ export function TableStakePanel({
       }
     }
 
-    if (isStagedNew && setupTab === 'dice' && tableMode === 'challenge') {
+    if (setupCategory === 'dice' && tableMode === 'challenge') {
       if (!stake.trim()) {
         setSetupError('Enter what you are playing for.');
         return;
@@ -377,7 +380,7 @@ export function TableStakePanel({
       }
     }
 
-    if (isStagedNew && setupTab === 'dice' && tableMode === 'practice') {
+    if (setupCategory === 'dice' && tableMode === 'practice') {
       if (virtualPlayerCount < 1) {
         setSetupError('Add at least one virtual player.');
         return;
@@ -400,10 +403,21 @@ export function TableStakePanel({
     if (onlineMode && onlineDispatch && onlineTableId && gameState.session.id === onlineTableId && isReset) {
       setSubmitting(true);
       try {
-        const resetPayload =
-          isZilchStakeFlow
-            ? { ...buildZilchSetupInput(), inviteNote: inviteNote.trim() || undefined }
-            : { ...input, inviteNote: inviteNote.trim() || undefined };
+        const resetPayload = isZilchStakeFlow
+          ? {
+              ...buildZilchSetupInput(),
+              gameCategory: 'dice',
+              gameType: 'zilch',
+              diceGame: 'zilch',
+              inviteNote: inviteNote.trim() || undefined,
+            }
+          : {
+              ...input,
+              gameCategory: 'cards',
+              gameType: 'blackjack',
+              cardGame: 'blackjack',
+              inviteNote: inviteNote.trim() || undefined,
+            };
         await onlineDispatch('resetTable', resetPayload);
         onFinished?.();
       } catch (err) {
@@ -424,7 +438,19 @@ export function TableStakePanel({
     if (onlineMode && onlineDispatch && !isReset && !onConfirmNewTable) {
       setSubmitting(true);
       try {
-        const payload = isZilchStakeFlow ? buildZilchSetupInput() : input;
+        const payload = isZilchStakeFlow
+          ? {
+              ...buildZilchSetupInput(),
+              gameCategory: 'dice',
+              gameType: 'zilch',
+              diceGame: 'zilch',
+            }
+          : {
+              ...input,
+              gameCategory: 'cards',
+              gameType: 'blackjack',
+              cardGame: 'blackjack',
+            };
         await onlineDispatch('configureTable', payload as unknown as Record<string, unknown>);
         if (
           onlineTableId &&
@@ -451,7 +477,9 @@ export function TableStakePanel({
     if (!isReset && onConfirmNewTable) {
       setSubmitting(true);
       try {
-        await onConfirmNewTable(isZilchStakeFlow ? buildZilchSetupInput() : input);
+        await onConfirmNewTable(
+          isZilchStakeFlow ? buildZilchSetupInput() : input,
+        );
         onFinished?.();
       } finally {
         setSubmitting(false);
@@ -459,12 +487,7 @@ export function TableStakePanel({
       return;
     }
 
-    let base = gameState;
-    if (isZilchStakeFlow && !isZilchTable(base)) {
-      base = applySettingsToDiceTable(base);
-    } else if (!isReset && setupTab === 'cards' && isZilchTable(base)) {
-      base = switchGameType(base, 'blackjack');
-    }
+    let base = prepareTableStateForSetupConfirm(gameState, draft);
 
     let next =
       isZilchStakeFlow
@@ -487,25 +510,18 @@ export function TableStakePanel({
     onConfirm(next);
   }
 
-  function applySettingsToDiceTable(state: GameState): GameState {
-    return ensureZilchTableIdentity({
-      ...state,
-      blackjack: null,
-      tableMeta: {
-        ...state.tableMeta,
-        showStakeSetup: true,
-      },
-    });
+  function mapDraftStepToSnapshotStage(step: SetupDraft['step']): 'category' | 'mode' | 'settings' {
+    return step;
   }
 
   useEffect(() => {
-    if (!isStagedNew || !onSetupDirtyChange || !initialSetupSnapshotRef.current) {
+    if (!onSetupDirtyChange || !initialSetupSnapshotRef.current) {
       return;
     }
     const current = collectTableStakeSetupSnapshot({
       gameState,
-      setupStage,
-      setupTab,
+      setupStage: mapDraftStepToSnapshotStage(draft.step),
+      setupTab: setupCategory ?? 'cards',
       tableMode,
       stake,
       tableName,
@@ -535,11 +551,10 @@ export function TableStakePanel({
     });
     onSetupDirtyChange(isTableStakeSetupDirty(initialSetupSnapshotRef.current, current));
   }, [
-    isStagedNew,
     onSetupDirtyChange,
     gameState,
-    setupStage,
-    setupTab,
+    draft.step,
+    setupCategory,
     tableMode,
     stake,
     tableName,
@@ -568,17 +583,16 @@ export function TableStakePanel({
     inviteNote,
   ]);
 
-  function handleGameStageNext() {
-    if (setupTab === 'dice') {
-      setSetupStage('dice-game');
-      return;
-    }
-    setSetupStage('mode');
+  function handleSelectCategoryCards() {
+    setDraft((prev) => selectCategoryCards(prev));
   }
 
-  function selectTableMode(next: TableMode) {
-    setTableMode(next);
-    setSetupStage('configure');
+  function handleSelectCategoryDice() {
+    setDraft((prev) => selectCategoryDice(prev));
+  }
+
+  function handleSelectMode(next: TableMode) {
+    setDraft((prev) => selectMode(prev, next));
   }
 
   function renderAdvancedSettings() {
@@ -639,6 +653,28 @@ export function TableStakePanel({
           </div>
         )}
       </div>
+    );
+  }
+
+  function renderBlackjackProtocolFields() {
+    return (
+      <>
+        <label className="table-stake-panel__field">
+          <span>Rule protocol</span>
+          <select
+            className="table-stake-panel__input"
+            value={protocolId}
+            onChange={(e) => setProtocolId(e.target.value)}
+          >
+            {listBlackjackProtocolPresets().map((p) => (
+              <option key={p.protocolId} value={p.protocolId}>
+                {p.displayName}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="table-stake-panel__hint">{selectedProtocol.shortDescription}</p>
+      </>
     );
   }
 
@@ -732,98 +768,45 @@ export function TableStakePanel({
     );
   }
 
-  function renderStagedGameStage() {
+  function renderCategoryStage() {
     return (
       <>
         <fieldset className="table-stake-panel__banker">
-          <legend>Game</legend>
-          <div className="table-stake-panel__tabs" role="tablist">
+          <legend>Game category</legend>
+          <p className="table-stake-panel__hint">
+            Choose cards or dice — practice and challenge options come next.
+          </p>
+          <div className="table-stake-panel__tabs" role="group" aria-label="Game category">
             <button
               type="button"
-              role="tab"
-              aria-selected={setupTab === 'cards'}
-              className={`table-stake-panel__select-btn${setupTab === 'cards' ? '' : ' secondary'}`}
-              onClick={() => setSetupTab('cards')}
+              className="table-stake-panel__select-btn"
+              onClick={handleSelectCategoryCards}
             >
               Cards
             </button>
             <button
               type="button"
-              role="tab"
-              aria-selected={setupTab === 'dice'}
-              className={`table-stake-panel__select-btn${setupTab === 'dice' ? '' : ' secondary'}`}
-              onClick={() => setSetupTab('dice')}
+              className="table-stake-panel__select-btn"
+              onClick={handleSelectCategoryDice}
             >
               Dice
             </button>
           </div>
-          {setupTab === 'cards' && (
-            <>
-              <label className="table-stake-panel__field">
-                <span>Rule protocol</span>
-                <select
-                  className="table-stake-panel__input"
-                  value={protocolId}
-                  onChange={(e) => setProtocolId(e.target.value)}
-                >
-                  {listBlackjackProtocolPresets().map((p) => (
-                    <option key={p.protocolId} value={p.protocolId}>
-                      {p.displayName}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <p className="table-stake-panel__hint">{selectedProtocol.shortDescription}</p>
-            </>
-          )}
-          {setupTab === 'dice' && (
-            <p className="table-stake-panel__hint">
-              Dice games use the same table shell — pick a game on the next step.
-            </p>
-          )}
         </fieldset>
-        <div className="table-stake-panel__nav">
-          <button
-            type="button"
-            className="table-stake-panel__confirm table-stake-panel__select-btn"
-            onClick={handleGameStageNext}
-          >
-            Continue
-          </button>
-        </div>
-      </>
-    );
-  }
-
-  function renderDiceGameStage() {
-    return (
-      <>
-        <fieldset className="table-stake-panel__banker">
-          <legend>Dice game</legend>
-          <p className="table-stake-panel__hint">
-            <strong>Zilch</strong> — roll six dice, keep scoring combinations, and bank before you zilch.
-          </p>
-          <button
-            type="button"
-            className="table-stake-panel__select-btn"
-            onClick={() => setSetupStage('mode')}
-          >
-            Zilch
-          </button>
-        </fieldset>
-        <div className="table-stake-panel__nav">
-          <button type="button" className="secondary" onClick={() => setSetupStage('game')}>
-            Back
-          </button>
-        </div>
       </>
     );
   }
 
   function renderStagedModeStage() {
-    const isDice = setupTab === 'dice';
+    const isDice = setupCategory === 'dice';
+    const gameLabel = isDice ? 'Zilch' : 'Blackjack';
     return (
       <>
+        {isReset && (
+          <p className="table-stake-panel__hint">
+            Players, seats, and invites stay the same. Choose mode for the new {gameLabel} game.
+          </p>
+        )}
         <fieldset className="table-stake-panel__banker">
           <legend>Mode</legend>
           <p className="table-stake-panel__hint table-stake-panel__hint--mode">
@@ -834,15 +817,15 @@ export function TableStakePanel({
           <div className="table-stake-panel__tabs" role="group" aria-label="Table mode">
             <button
               type="button"
-              className={`table-stake-panel__select-btn${tableMode === 'practice' ? '' : ' secondary'}`}
-              onClick={() => selectTableMode('practice')}
+              className="table-stake-panel__select-btn"
+              onClick={() => handleSelectMode('practice')}
             >
               Practice
             </button>
             <button
               type="button"
-              className={`table-stake-panel__select-btn${tableMode === 'challenge' ? '' : ' secondary'}`}
-              onClick={() => selectTableMode('challenge')}
+              className="table-stake-panel__select-btn"
+              onClick={() => handleSelectMode('challenge')}
             >
               Challenge
             </button>
@@ -852,7 +835,7 @@ export function TableStakePanel({
           <button
             type="button"
             className="secondary"
-            onClick={() => setSetupStage(isDice ? 'dice-game' : 'game')}
+            onClick={() => setDraft((prev) => goBackFromMode(prev))}
           >
             Back
           </button>
@@ -888,9 +871,10 @@ export function TableStakePanel({
             onChange={(e) => handleSeatChipsChange(e.target.value)}
           />
         </label>
+        {renderBlackjackProtocolFields()}
         {renderAdvancedSettings()}
         <div className="table-stake-panel__nav">
-          <button type="button" className="secondary" onClick={() => setSetupStage('mode')}>
+          <button type="button" className="secondary" onClick={() => setDraft((prev) => goBackFromSettings(prev))}>
             Back
           </button>
           <button
@@ -899,7 +883,7 @@ export function TableStakePanel({
             onClick={() => void handleConfirm()}
             disabled={submitting}
           >
-            Start Table
+            {confirmButtonLabel()}
           </button>
         </div>
       </>
@@ -1055,10 +1039,11 @@ export function TableStakePanel({
           </label>
         </fieldset>
 
+        {renderBlackjackProtocolFields()}
         {renderAdvancedSettings()}
 
         <div className="table-stake-panel__nav">
-          <button type="button" className="secondary" onClick={() => setSetupStage('mode')}>
+          <button type="button" className="secondary" onClick={() => setDraft((prev) => goBackFromSettings(prev))}>
             Back
           </button>
           <button
@@ -1067,7 +1052,7 @@ export function TableStakePanel({
             onClick={() => void handleConfirm()}
             disabled={submitting}
           >
-            Start Table
+            {confirmButtonLabel()}
           </button>
         </div>
       </>
@@ -1120,7 +1105,7 @@ export function TableStakePanel({
         </label>
         {renderDiceConfigure()}
         <div className="table-stake-panel__nav">
-          <button type="button" className="secondary" onClick={() => setSetupStage('mode')}>
+          <button type="button" className="secondary" onClick={() => setDraft((prev) => goBackFromSettings(prev))}>
             Back
           </button>
           <button
@@ -1129,7 +1114,7 @@ export function TableStakePanel({
             onClick={() => void handleConfirm()}
             disabled={submitting}
           >
-            Start Zilch
+            {confirmButtonLabel()}
           </button>
         </div>
       </>
@@ -1220,7 +1205,7 @@ export function TableStakePanel({
 
         {renderDiceConfigure()}
         <div className="table-stake-panel__nav">
-          <button type="button" className="secondary" onClick={() => setSetupStage('mode')}>
+          <button type="button" className="secondary" onClick={() => setDraft((prev) => goBackFromSettings(prev))}>
             Back
           </button>
           <button
@@ -1229,15 +1214,15 @@ export function TableStakePanel({
             onClick={() => void handleConfirm()}
             disabled={submitting}
           >
-            Start Zilch
+            {confirmButtonLabel()}
           </button>
         </div>
       </>
     );
   }
 
-  function renderStagedConfigureStage() {
-    if (setupTab === 'dice') {
+  function renderStagedSettingsStage() {
+    if (setupCategory === 'dice') {
       if (tableMode === 'practice') {
         return renderZilchPracticeConfigure();
       }
@@ -1249,238 +1234,47 @@ export function TableStakePanel({
     return renderChallengeConfigure();
   }
 
-  function renderZilchResetPanel() {
+  function renderResetPlayersNote() {
+    if (!isReset) {
+      return null;
+    }
     return (
-      <div className="table-stake-panel__grid table-stake-panel__grid--zilch">
-        <fieldset className="table-stake-panel__banker">
-          <legend>Players at this table</legend>
-          <p className="table-stake-panel__hint">
-            Seat assignments and invites stay the same. Adjust the wager and Zilch settings below.
-          </p>
-          {onlineMode && (
-            <input
-              type="text"
-              className="table-stake-panel__input"
-              placeholder="Optional note for invited players"
-              value={inviteNote}
-              onChange={(e) => setInviteNote(e.target.value)}
-            />
-          )}
-        </fieldset>
-
-        <label className="table-stake-panel__field">
-          <span>Wager</span>
-          <input
-            type="text"
-            className="table-stake-panel__input"
-            placeholder='e.g. "Dinner", "€20", "Loser buys drinks"'
-            value={stake}
-            onChange={(e) => setStake(e.target.value)}
-            list="stake-examples"
-          />
-          <datalist id="stake-examples">
-            {STAKE_EXAMPLES.map((ex) => (
-              <option key={ex} value={ex} />
-            ))}
-          </datalist>
-        </label>
-
-        {renderDiceConfigure()}
-      </div>
+      <p className="table-stake-panel__hint">
+        Players, seats, and invites stay the same for this table.
+      </p>
     );
   }
 
-  function renderResetPanel() {
-    return (
-      <div className="table-stake-panel__grid">
-        <div className="table-stake-panel__col">
-          <fieldset className="table-stake-panel__banker">
-            <legend>Players at this table</legend>
-            <p className="table-stake-panel__hint">
-              {isReset
-                ? 'Seat assignments and invites stay the same. Adjust bank, wager, and chips below.'
-                : onlineMode
-                  ? 'After the table starts, use Invite on This Table to email friends a join link.'
-                  : 'Add players at the table once play begins.'}
-            </p>
-            {onlineMode && !isReset && (
-              <input
-                type="text"
-                className="table-stake-panel__input"
-                placeholder="Friend names or emails (optional reminder)"
-                value={inviteNote}
-                onChange={(e) => setInviteNote(e.target.value)}
-              />
-            )}
-          </fieldset>
-
-          <fieldset className="table-stake-panel__banker">
-            <legend>Who is the bank?</legend>
-            <label className="table-stake-panel__option">
-              <input
-                type="radio"
-                name="banker"
-                checked={bankerMode === 'bot'}
-                onChange={() => setBankerMode('bot')}
-              />
-              Bank Bot
-            </label>
-            <label className="table-stake-panel__option">
-              <input
-                type="radio"
-                name="banker"
-                checked={bankerMode === 'self'}
-                onChange={() => setBankerMode('self')}
-              />
-              Me ({controller || 'local player'})
-            </label>
-            <label className="table-stake-panel__option">
-              <input
-                type="radio"
-                name="banker"
-                checked={bankerMode === 'other'}
-                onChange={() => setBankerMode('other')}
-              />
-              Someone else
-            </label>
-            {bankerMode === 'other' && (
-              <input
-                type="text"
-                className="table-stake-panel__input"
-                placeholder="Banker name"
-                value={bankerName}
-                onChange={(e) => setBankerName(e.target.value)}
-              />
-            )}
-          </fieldset>
-
-          {showPlayingFor && (
-            <label className="table-stake-panel__field">
-              <span>What to play for</span>
-              <input
-                type="text"
-                className="table-stake-panel__input"
-                placeholder="e.g. dinner, favour, friendly wager"
-                value={stake}
-                onChange={(e) => setStake(e.target.value)}
-                list="stake-examples"
-              />
-              <datalist id="stake-examples">
-                {STAKE_EXAMPLES.map((ex) => (
-                  <option key={ex} value={ex} />
-                ))}
-              </datalist>
-            </label>
-          )}
-        </div>
-
-        <div className="table-stake-panel__col">
-          <label className="table-stake-panel__field">
-            <span>Starting chips each seat</span>
-            <input
-              type="number"
-              min={1}
-              className="table-stake-panel__input table-stake-panel__input--short"
-              value={seatChips}
-              onChange={(e) => handleSeatChipsChange(e.target.value)}
-            />
-          </label>
-
-          <label className="table-stake-panel__field">
-            <span>Starting chips bank</span>
-            <input
-              type="number"
-              min={1}
-              className="table-stake-panel__input table-stake-panel__input--short"
-              value={bankChips}
-              onChange={(e) => handleBankChipsChange(e.target.value)}
-            />
-          </label>
-
-          <fieldset className="table-stake-panel__banker">
-            <legend>Game category</legend>
-            <div className="table-stake-panel__tabs" role="tablist">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={setupTab === 'cards'}
-                className={setupTab === 'cards' ? '' : 'secondary'}
-                onClick={() => setSetupTab('cards')}
-              >
-                Cards
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={setupTab === 'dice'}
-                className={setupTab === 'dice' ? '' : 'secondary'}
-                onClick={() => setSetupTab('dice')}
-              >
-                Dice
-              </button>
-            </div>
-            {setupTab === 'cards' && (
-              <>
-                <label className="table-stake-panel__field">
-                  <span>Rule protocol</span>
-                  <select
-                    className="table-stake-panel__input"
-                    value={protocolId}
-                    onChange={(e) => setProtocolId(e.target.value)}
-                  >
-                    {listBlackjackProtocolPresets().map((p) => (
-                      <option key={p.protocolId} value={p.protocolId}>
-                        {p.displayName}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <ul className="table-stake-panel__protocol-rules">
-                  {protocolRules.map((rule) => (
-                    <li key={rule.id}>
-                      <strong>{rule.label}:</strong> {rule.value}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-            {setupTab === 'dice' && renderDiceConfigure()}
-          </fieldset>
-
-          {setupTab === 'cards' && renderAdvancedSettings()}
-        </div>
-      </div>
-    );
+  function confirmButtonLabel(): string {
+    if (isReset) {
+      if (isNewGameSetup) {
+        return isZilchStakeFlow ? 'Start new Zilch game' : 'Start new game';
+      }
+      return isZilchStakeFlow ? 'Start Zilch' : 'Start new game';
+    }
+    return isZilchStakeFlow ? 'Start Zilch' : 'Start Table';
   }
 
   return (
     <div
-      className={`table-stake-panel${isStagedNew ? ' table-stake-panel--compact' : ''}${
+      className={`table-stake-panel table-stake-panel--compact${
         embeddedInOverlay ? ' table-stake-panel--embedded' : ''
       }`}
     >
       {!embeddedInOverlay && (
         <header className="table-stake-panel__header">
           <h2 className="table-stake-panel__title">
-            {isNewGameSetup
-              ? isZilchReset
-                ? 'New Zilch game'
-                : 'New Game'
-              : isReset
-                ? isZilchReset
-                  ? 'Reset Zilch table'
-                  : 'Reset table'
-                : 'New Table'}
-          </h2>
-          <p className="table-stake-panel__sub">
             {isReset
-              ? isZilchReset
-                ? 'Start a new Zilch game with the players currently at this table.'
-                : 'Start a new game with the players currently at this table.'
-              : isStagedNew
-                ? null
-                : 'Set up who plays, who banks, and how the table runs.'}
-          </p>
+              ? isNewGameSetup
+                ? 'New game'
+                : 'Reset table'
+              : 'Start new table'}
+          </h2>
+          {isReset && draft.step === 'category' && (
+            <p className="table-stake-panel__sub">
+              Choose a game category. Players and invites stay on this table.
+            </p>
+          )}
         </header>
       )}
 
@@ -1490,30 +1284,12 @@ export function TableStakePanel({
         </p>
       )}
 
-      {isReset ? (
+      {draft.step === 'category' && renderCategoryStage()}
+      {draft.step === 'mode' && renderStagedModeStage()}
+      {draft.step === 'settings' && (
         <>
-          {isZilchReset ? renderZilchResetPanel() : renderResetPanel()}
-          <button
-            type="button"
-            className="table-stake-panel__confirm"
-            onClick={() => void handleConfirm()}
-            disabled={submitting}
-          >
-            {isZilchReset
-              ? isNewGameSetup
-                ? 'Start new Zilch game'
-                : 'Start Zilch'
-              : isNewGameSetup
-                ? 'Start new game'
-                : 'Start new game'}
-          </button>
-        </>
-      ) : (
-        <>
-          {setupStage === 'game' && renderStagedGameStage()}
-          {setupStage === 'dice-game' && renderDiceGameStage()}
-          {setupStage === 'mode' && renderStagedModeStage()}
-          {setupStage === 'configure' && renderStagedConfigureStage()}
+          {renderResetPlayersNote()}
+          {renderStagedSettingsStage()}
         </>
       )}
     </div>

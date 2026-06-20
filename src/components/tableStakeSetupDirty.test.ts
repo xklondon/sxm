@@ -12,7 +12,7 @@ describe('tableStakeSetupDirty', () => {
     const baseline = createInitialTableStakeSetupSnapshot(gameState);
     const current = collectTableStakeSetupSnapshot({
       gameState,
-      setupStage: 'game',
+      setupStage: 'category',
       setupTab: 'cards',
       tableMode: 'practice',
       stake: '',

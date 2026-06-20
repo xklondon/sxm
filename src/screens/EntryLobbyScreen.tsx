@@ -7,11 +7,14 @@ import { NewTableOverlay } from '../components/NewTableOverlay';
 import { TableStakePanel } from '../components/TableStakePanel';
 import { createNewBlackjackTable } from '../engine/session';
 import type { TableStakeSetupInput } from '../engine/session/tableSetup';
+import type { ZilchTableStakeSetupInput } from '../engine/session/zilchTableSetup';
 
 export type EntryLobbySlideOutKind = 'new' | 'join' | 'load';
 
 interface EntryLobbyScreenProps {
-  onConfirmNewTable: (input: TableStakeSetupInput) => void | Promise<void>;
+  onConfirmNewTable: (
+    input: TableStakeSetupInput | ZilchTableStakeSetupInput,
+  ) => void | Promise<void>;
   onOpenTable: (tableId: string) => void;
   onLoadEntry: (entry: LoadTableEntry) => void;
   onlineMode: boolean;
@@ -38,7 +41,9 @@ export function EntryLobbyScreen({
     setNewTableSetupDirty(false);
   }
 
-  async function handleConfirmNewTable(input: TableStakeSetupInput) {
+  async function handleConfirmNewTable(
+    input: TableStakeSetupInput | ZilchTableStakeSetupInput,
+  ) {
     await onConfirmNewTable(input);
     closeSlideOut();
   }
@@ -102,6 +107,8 @@ export function EntryLobbyScreen({
           gameState={newTableSeed}
           mode="new"
           embeddedInOverlay
+          entryPoint="root"
+          setupFlowKey={slideOut === 'new' ? 'lobby-new' : 0}
           onConfirm={() => {}}
           onConfirmNewTable={handleConfirmNewTable}
           onSetupDirtyChange={setNewTableSetupDirty}

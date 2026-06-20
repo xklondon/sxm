@@ -6,7 +6,7 @@ import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import type { TableBankerSetupMode } from '../engine/session';
 import { DEFAULT_PRACTICE_TABLE_NAME } from '../types/tableFeltSkin';
 
-export type NewSetupStage = 'game' | 'dice-game' | 'mode' | 'configure';
+export type NewSetupStage = 'category' | 'mode' | 'settings';
 export type SetupCategoryTab = 'cards' | 'dice';
 
 export interface TableStakeSetupSnapshot {
@@ -79,7 +79,7 @@ export function createInitialTableStakeSetupSnapshot(
   const flow = gameState.blackjackFlowSettings;
   const agreement = gameState.tableMeta.agreement;
   return {
-    setupStage: 'game',
+    setupStage: 'category',
     setupTab:
       gameState.tableMeta.gameCategory === 'dice' || gameState.tableGame === 'zilch'
         ? 'dice'

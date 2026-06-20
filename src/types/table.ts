@@ -150,6 +150,8 @@ export interface TableMeta {
   gameCategory?: import('./session').GameCategory;
   /** Active dice game when gameCategory is dice. */
   diceGame?: 'zilch';
+  /** Active card game when gameCategory is cards. */
+  cardGame?: 'blackjack';
   /** Brief table-wide message in the command area (e.g. player joined). */
   tableNotice?: {
     message: string;

@@ -40,14 +40,43 @@ function normalizeLoadedZilch(zilch: ZilchGameState): ZilchGameState {
   return next;
 }
 
-/** True when this table session is a dice Zilch game (any authoritative marker). */
+/** True when this table session is a dice Zilch game (authoritative game type first). */
 export function isZilchTable(state: GameState): boolean {
-  return (
-    state.tableGame === 'zilch' ||
-    state.session.gameType === 'zilch' ||
-    state.tableMeta.diceGame === 'zilch' ||
-    state.tableMeta.gameCategory === 'dice'
-  );
+  if (state.tableGame === 'blackjack') {
+    return false;
+  }
+  if (state.tableGame === 'zilch') {
+    return true;
+  }
+  if (state.session.gameType === 'blackjack') {
+    return false;
+  }
+  if (state.session.gameType === 'zilch') {
+    return true;
+  }
+  return state.tableMeta.diceGame === 'zilch' || state.tableMeta.gameCategory === 'dice';
+}
+
+/** Align tableGame, session.gameType, and table meta for blackjack tables. */
+export function ensureBlackjackTableIdentity(state: GameState): GameState {
+  if (isZilchTable(state)) {
+    return state;
+  }
+  return {
+    ...state,
+    tableGame: 'blackjack',
+    session: {
+      ...state.session,
+      gameType: 'blackjack',
+    },
+    tableMeta: {
+      ...state.tableMeta,
+      gameCategory: 'cards',
+      cardGame: 'blackjack',
+      diceGame: undefined,
+    },
+    zilch: null,
+  };
 }
 
 /** Align tableGame, session.gameType, and table meta for dice/Zilch tables. */
@@ -66,6 +95,7 @@ export function ensureZilchTableIdentity(state: GameState): GameState {
       ...state.tableMeta,
       gameCategory: 'dice',
       diceGame: 'zilch',
+      cardGame: undefined,
     },
     blackjack: null,
   };
@@ -75,7 +105,10 @@ export function isBlackjackTable(state: GameState): boolean {
   if (isZilchTable(state)) {
     return false;
   }
-  return state.tableGame === 'blackjack' || state.session.gameType === 'blackjack';
+  if (state.tableGame === 'blackjack') {
+    return true;
+  }
+  return state.session.gameType === 'blackjack';
 }
 
 export function isHoldemTable(state: GameState): boolean {
@@ -87,6 +120,9 @@ export function isHoldemTable(state: GameState): boolean {
 
 /** Normalize loaded/saved/hydrated state before render. */
 export function normalizeLoadedGameState(state: GameState): GameState {
+  if (state.tableGame === 'blackjack' || state.session.gameType === 'blackjack') {
+    return ensureBlackjackTableIdentity(state);
+  }
   const withIdentity = ensureZilchTableIdentity(state);
   const zilch = withIdentity.zilch;
   if (!zilch) {

@@ -38,6 +38,7 @@ export {
   type ZilchTableStakeSetupInput,
 } from './zilchTableSetup';
 export {
+  ensureBlackjackTableIdentity,
   ensureZilchTableIdentity,
   isBlackjackTable,
   isHoldemTable,

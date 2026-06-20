@@ -6,12 +6,12 @@ import { createNewBlackjackTable } from '../engine/session';
 import type { TableStakeSetupInput } from '../engine/session/tableSetup';
 
 describe('Start New Table nav setup', () => {
-  it('renders New Table title for mode=new (same as post magic-link setup)', () => {
+  it('renders Start new table title for mode=new (same as post magic-link setup)', () => {
     const html = renderToStaticMarkup(
       <TableStakePanel gameState={createNewBlackjackTable()} mode="new" onConfirm={() => {}} />,
     );
-    expect(html).toContain('New Table');
-    expect(html).toContain('<legend>Game</legend>');
+    expect(html).toContain('Start new table');
+    expect(html).toContain('<legend>Game category</legend>');
     expect(html).not.toContain('Reset table');
     expect(html).not.toContain('New Game');
   });
@@ -27,7 +27,7 @@ describe('Start New Table nav setup', () => {
         onConfirmNewTable={onConfirmNewTable}
       />,
     );
-    expect(html).toContain('New Table');
+    expect(html).toContain('Start new table');
     expect(onConfirm).not.toHaveBeenCalled();
     expect(onConfirmNewTable).not.toHaveBeenCalled();
   });

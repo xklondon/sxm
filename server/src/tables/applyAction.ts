@@ -100,7 +100,11 @@ export function applyTableAction(
       const caller = state.players[personId];
       const controllerName =
         caller?.controllerName?.trim() || caller?.displayName || state.tableMeta.controllerName;
-      if (payload.zilchMode !== undefined || isZilchTable(state)) {
+      if (
+        payload.gameCategory === 'dice' ||
+        payload.diceGame === 'zilch' ||
+        payload.gameType === 'zilch'
+      ) {
         const zilchInput = parseZilchTableStakePayload(payload, controllerName);
         return applyZilchTableStakeSetup(state, zilchInput);
       }
@@ -111,7 +115,11 @@ export function applyTableAction(
       const caller = state.players[personId];
       const controllerName =
         caller?.controllerName?.trim() || caller?.displayName || state.tableMeta.controllerName;
-      if (payload.zilchMode !== undefined || isZilchTable(state)) {
+      if (
+        payload.gameCategory === 'dice' ||
+        payload.diceGame === 'zilch' ||
+        payload.gameType === 'zilch'
+      ) {
         const zilchInput = parseZilchTableStakePayload(payload, controllerName);
         return applyZilchTableResetSetup(state, zilchInput, personId);
       }

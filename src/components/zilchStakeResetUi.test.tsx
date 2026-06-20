@@ -20,9 +20,7 @@ import type { ZilchTableStakeSetupInput } from '../engine/session/zilchTableSetu
 
 const noop = () => {};
 
-beforeEach(() => {
-  cleanup();
-});
+beforeEach(() => cleanup());
 
 const zilchSetup: ZilchTableStakeSetupInput = {
   stakeDescription: 'Dinner',
@@ -53,51 +51,52 @@ function zilchTableState() {
     virtualStyle: 'normal',
   });
   state = mergeSessionUpdate(state, spl);
-  return applyZilchTableStakeSetup(state, zilchSetup);
+  return applyZilchTableStakeSetup(state, { ...zilchSetup, tableMode: 'practice', virtualPlayerCount: 1 });
 }
 
 function navigateToZilchPracticeConfigure() {
-  fireEvent.click(screen.getAllByRole('tab', { name: 'Dice' })[0]!);
-  fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-  fireEvent.click(screen.getAllByRole('button', { name: 'Zilch' })[0]!);
+  fireEvent.click(screen.getByRole('button', { name: 'Dice' }));
   fireEvent.click(screen.getByRole('button', { name: 'Practice' }));
 }
 
 describe('Zilch reset and new-table UI routing', () => {
-  it('reset modal on Zilch table shows Zilch settings, not Blackjack bank/protocol', () => {
+  it('reset modal uses staged flow with category step', () => {
     const html = renderToStaticMarkup(
-      <TableStakePanel gameState={zilchTableState()} mode="reset" onConfirm={noop} />,
-    );
-    expect(html).toContain('Reset Zilch table');
-    expect(html).toContain('Play to point goal');
-    expect(html).toContain('Dice animation');
-    expect(html).toContain('Start Zilch');
-    expect(html).not.toContain('Who is the bank?');
-    expect(html).not.toContain('Starting chips bank');
-    expect(html).not.toContain('Las Vegas');
-    expect(html).not.toContain('Rule protocol');
-    expect(html).not.toContain('Game category');
-  });
-
-  it('blackjack reset modal still shows blackjack settings', () => {
-    const state = tableAfterStartPlaying(500);
-    const html = renderToStaticMarkup(
-      <TableStakePanel gameState={state} mode="reset" onConfirm={noop} />,
+      <TableStakePanel
+        gameState={zilchTableState()}
+        mode="reset"
+        entryPoint="reset-table"
+        setupFlowKey="r1"
+        onConfirm={noop}
+      />,
     );
     expect(html).toContain('Reset table');
-    expect(html).toContain('Who is the bank?');
-    expect(html).toContain('Start new game');
-    expect(html).not.toContain('Reset Zilch table');
+    expect(html).toContain('Game category');
+    expect(html).not.toContain('Who is the bank?');
   });
 
-  it('resetting Zilch preserves Zilch identity', () => {
+  it('blackjack reset modal uses staged category step', () => {
+    const state = tableAfterStartPlaying(500);
+    const html = renderToStaticMarkup(
+      <TableStakePanel
+        gameState={state}
+        mode="reset"
+        entryPoint="reset-table"
+        setupFlowKey="r2"
+        onConfirm={noop}
+      />,
+    );
+    expect(html).toContain('Reset table');
+    expect(html).toContain('Game category');
+  });
+
+  it('resetting Zilch preserves table id with fresh setup state', () => {
     const state = zilchTableState();
     const sessionId = state.session.id;
     const reset = applyZilchTableResetSetup(state, zilchSetup, null);
     expect(reset.session.id).toBe(sessionId);
     expect(isZilchTable(reset)).toBe(true);
     expect(isBlackjackTable(reset)).toBe(false);
-    expect(reset.tableGame).toBe('zilch');
     expect(reset.zilch?.phase).toBe('setup');
   });
 
@@ -111,25 +110,35 @@ describe('Zilch reset and new-table UI routing', () => {
     expect(html).not.toContain('bj-casino');
   });
 
-  it('new table Dice step leads to Zilch game selection', () => {
+  it('new table Dice step leads directly to mode after category click', () => {
     render(
-      <TableStakePanel gameState={createNewBlackjackTable()} mode="new" onConfirm={noop} />,
+      <TableStakePanel
+        gameState={createNewBlackjackTable()}
+        mode="new"
+        entryPoint="root"
+        setupFlowKey="n1"
+        onConfirm={noop}
+      />,
     );
-    fireEvent.click(screen.getAllByRole('tab', { name: 'Dice' })[0]!);
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-    expect(screen.getByRole('button', { name: 'Zilch' })).toBeTruthy();
-    cleanup();
+    fireEvent.click(screen.getByRole('button', { name: 'Dice' }));
+    expect(screen.getByRole('button', { name: 'Practice' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Continue' })).toBeNull();
   });
 
   it('new table Dice → Zilch practice configure shows game mode fields', () => {
     render(
-      <TableStakePanel gameState={createNewBlackjackTable()} mode="new" onConfirm={noop} />,
+      <TableStakePanel
+        gameState={createNewBlackjackTable()}
+        mode="new"
+        entryPoint="root"
+        setupFlowKey="n2"
+        onConfirm={noop}
+      />,
     );
     navigateToZilchPracticeConfigure();
     expect(screen.getByText('Play to point goal')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Start Zilch' })).toBeTruthy();
     expect(screen.queryByText('Who is the bank?')).toBeNull();
-    cleanup();
   });
 
   it('new table Dice → Zilch confirm uses zilch payload', async () => {
@@ -138,6 +147,8 @@ describe('Zilch reset and new-table UI routing', () => {
       <TableStakePanel
         gameState={createNewBlackjackTable()}
         mode="new"
+        entryPoint="menu-new-table"
+        setupFlowKey="n3"
         onConfirm={noop}
         onConfirmNewTable={onConfirmNewTable}
       />,
@@ -150,6 +161,5 @@ describe('Zilch reset and new-table UI routing', () => {
       tableMode: 'practice',
       virtualPlayerCount: 2,
     });
-    cleanup();
   });
 });

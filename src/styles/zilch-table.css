@@ -6,6 +6,7 @@
   max-width: 56rem;
   margin: 0 auto;
   padding: 0.5rem;
+  overflow-x: hidden;
 }
 
 .zilch-panel__toolbar {
@@ -65,21 +66,28 @@
 .zilch-table {
   position: relative;
   min-height: 22rem;
-  margin: 0.5rem 0 1rem;
+  margin: 0.5rem 0 0;
   border-radius: 16px;
-  background: radial-gradient(ellipse at center, rgb(20 90 50 / 0.55) 0%, rgb(10 50 30 / 0.85) 70%);
-  border: 2px solid rgb(212 175 55 / 0.35);
-  box-shadow: inset 0 0 40px rgb(0 0 0 / 0.35);
+  background:
+    radial-gradient(ellipse 85% 70% at 50% 45%, rgb(28 110 62 / 0.5) 0%, transparent 55%),
+    radial-gradient(ellipse at center, rgb(16 72 42 / 0.75) 0%, rgb(8 38 22 / 0.95) 72%);
+  border: 2px solid rgb(212 175 55 / 0.45);
+  box-shadow:
+    inset 0 0 48px rgb(0 0 0 / 0.4),
+    0 4px 20px rgb(0 0 0 / 0.35);
+  overflow: hidden;
 }
 
 .zilch-table__felt {
-  position: absolute;
-  inset: 3.5rem 4rem;
+  position: relative;
+  margin: 3.75rem 4.25rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
+  justify-content: flex-start;
+  gap: 0.65rem;
+  min-height: 14rem;
+  z-index: 1;
 }
 
 .zilch-table__roll-zone {
@@ -273,26 +281,75 @@
   color: #f08060;
 }
 
-/* Dice */
+/* Dice — 3D pip faces */
 .zilch-die {
-  width: 3rem;
-  height: 3rem;
+  width: 3.25rem;
+  height: 3.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.45rem;
-  font-weight: 800;
-  border-radius: 10px;
-  background: #fff;
-  color: #111;
-  box-shadow: 0 3px 8px rgb(0 0 0 / 0.4);
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
   position: relative;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.zilch-die--kept {
-  opacity: 0.85;
-  border: 2px solid var(--accent, #d4af37);
+button.zilch-die {
   cursor: default;
+}
+
+.zilch-die-face {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.zilch-die-face__cube {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #faf8f2 0%, #e8e4d8 45%, #d4cfc0 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.85),
+    inset 0 -2px 4px rgb(0 0 0 / 0.12),
+    0 4px 10px rgb(0 0 0 / 0.45),
+    0 1px 0 rgb(0 0 0 / 0.2);
+  border: 1px solid rgb(180 170 150 / 0.55);
+}
+
+.zilch-die-face__pip {
+  position: absolute;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #444 0%, #111 70%);
+  transform: translate(-50%, -50%);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.15);
+}
+
+.zilch-die-face__rolling-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: rgb(0 0 0 / 0.35);
+}
+
+.zilch-die--kept .zilch-die-face__cube {
+  border-color: var(--accent, #d4af37);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    0 0 0 2px rgb(212 175 55 / 0.55),
+    0 3px 8px rgb(0 0 0 / 0.35);
+  opacity: 0.92;
 }
 
 .zilch-die--selectable {
@@ -301,24 +358,28 @@
 
 .zilch-die--selectable:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.45);
+}
+
+.zilch-die--selectable:hover:not(:disabled) .zilch-die-face__cube {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.85),
+    0 6px 14px rgb(0 0 0 / 0.5),
+    0 1px 0 rgb(0 0 0 / 0.2);
+}
+
+.zilch-die--selected .zilch-die-face__cube {
+  outline: 3px solid #6ec6ff;
+  outline-offset: 2px;
 }
 
 .zilch-die--selected {
-  outline: 3px solid #6ec6ff;
-  outline-offset: 2px;
   transform: translateY(-2px);
-}
-
-button.zilch-die {
-  border: none;
-  padding: 0;
-  font: inherit;
 }
 
 .zilch-die--throw {
   animation: zilch-die-throw var(--zilch-roll-ms, 2.5s) cubic-bezier(0.22, 0.85, 0.36, 1) forwards;
   animation-delay: calc(var(--die-index, 0) * 90ms);
+  will-change: transform;
 }
 
 @keyframes zilch-die-throw {
@@ -367,16 +428,28 @@ button.zilch-die {
 }
 
 .zilch-panel__ledger {
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
+  width: 100%;
 }
 
 @media (max-width: 720px) {
   .zilch-table {
-    min-height: 26rem;
+    min-height: auto;
   }
 
   .zilch-table__felt {
-    inset: 4.5rem 0.75rem;
+    margin: 4.75rem 0.5rem 0.75rem;
+    min-height: 12rem;
+  }
+
+  .zilch-die {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .zilch-die-face__pip {
+    width: 0.6rem;
+    height: 0.6rem;
   }
 
   .zilch-seat {
@@ -398,5 +471,28 @@ button.zilch-die {
 
   .zilch-seat--right {
     right: 0.25rem;
+  }
+}
+
+@media (max-height: 430px) and (orientation: landscape) {
+  .zilch-table {
+    min-height: auto;
+  }
+
+  .zilch-table__felt {
+    margin: 3.5rem 0.5rem 0.5rem;
+    gap: 0.4rem;
+  }
+
+  .zilch-die {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .zilch-seat {
+    min-width: 6rem;
+    max-width: 7.5rem;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.72rem;
   }
 }
