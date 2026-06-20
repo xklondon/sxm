@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import type { ZilchDie, ZilchGameState } from '../../engine/dice/zilch';
 import {
   canKeepCombination,
@@ -21,6 +21,7 @@ interface ZilchDiceAreaProps {
   playerOrder: string[];
   playerNames: Record<string, string>;
   onKeepCombination: (combinationId: string) => void;
+  children?: ReactNode;
 }
 
 function placeholderDice(): ZilchDie[] {
@@ -47,6 +48,7 @@ export function ZilchDiceArea({
   playerOrder,
   playerNames,
   onKeepCombination,
+  children,
 }: ZilchDiceAreaProps) {
   const [selectedDiceIds, setSelectedDiceIds] = useState<string[]>([]);
 
@@ -141,76 +143,83 @@ export function ZilchDiceArea({
     );
   }
 
+  const showScoringOptions = showValues && zilch.availableCombinations.length > 0;
+
   return (
-    <>
-      {starterSpinActive && (
-        <div
-          className="zilch-panel__randomiser zilch-panel__randomiser--spin"
-          aria-live="polite"
-        >
-          {playerNames[playerOrder[randomiserIndex] ?? ''] ?? '…'}
+    <div className="zilch-play-grid">
+      <div className="zilch-dice-zone">
+        {starterSpinActive && (
+          <div
+            className="zilch-panel__randomiser zilch-panel__randomiser--spin"
+            aria-live="polite"
+          >
+            {playerNames[playerOrder[randomiserIndex] ?? ''] ?? '…'}
+          </div>
+        )}
+
+        {turnover && !rolling && (
+          <p className="zilch-table__turnover" role="status">
+            Turnover — roll all 6 dice again
+          </p>
+        )}
+
+        <div className="zilch-table__roll-zone" aria-label="Dice on table">
+          {activeDice.map((die, index) => renderDie(die, index, canSelect))}
+          {activeDice.length === 0 && zilch.phase === 'player-turn' && !rolling && !turnover && (
+            <span className="zilch-table__hint">Press Roll to throw dice</span>
+          )}
         </div>
-      )}
 
-      {turnover && !rolling && (
-        <p className="zilch-table__turnover" role="status">
-          Turnover — roll all 6 dice again
-        </p>
-      )}
-
-      <div className="zilch-table__roll-zone" aria-label="Dice on table">
-        {activeDice.map((die, index) => renderDie(die, index, canSelect))}
-        {activeDice.length === 0 && zilch.phase === 'player-turn' && !rolling && !turnover && (
-          <span className="zilch-table__hint">Press Roll to throw dice</span>
+        {(keptOnTable.length > 0 || zilch.keptDice.length > 0) && (
+          <div className="zilch-table__kept" aria-label="Kept this turn">
+            <span className="zilch-table__kept-label">Kept this turn</span>
+            <div className="zilch-table__kept-dice">
+              {keptOnTable.map((die, index) => renderDie(die, index + 100, false))}
+            </div>
+            {zilch.keptDice.map((group) => (
+              <span key={group.id} className="zilch-table__kept-chip">
+                {group.label} (+{group.score})
+              </span>
+            ))}
+          </div>
         )}
       </div>
 
-      {(keptOnTable.length > 0 || zilch.keptDice.length > 0) && (
-        <div className="zilch-table__kept" aria-label="Kept this turn">
-          <span className="zilch-table__kept-label">Kept this turn</span>
-          <div className="zilch-table__kept-dice">
-            {keptOnTable.map((die, index) => renderDie(die, index + 100, false))}
+      <div className="zilch-options-zone">
+        {showScoringOptions && (
+          <div className="zilch-table__combos" aria-label="Scoring options">
+            {zilch.availableCombinations.map((combo) => {
+              const isSelected = selectedKey === selectionKey(combo.diceIds);
+              return (
+                <button
+                  key={combo.id}
+                  type="button"
+                  className={`zilch-table__combo-btn secondary${isSelected ? ' zilch-table__combo-btn--selected' : ''}`}
+                  onClick={() => selectCombination(combo.diceIds)}
+                  disabled={controlsDisabled || !canKeepCombination(zilch)}
+                  aria-pressed={isSelected}
+                >
+                  {combo.label} ({combo.score})
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              className="zilch-table__keep-btn"
+              onClick={handleKeepSelected}
+              disabled={controlsDisabled || !canKeepSelected}
+            >
+              Keep selected dice
+            </button>
+            {showInvalidSelectionHint && (
+              <p className="zilch-table__selection-hint" role="status">
+                Select scoring dice only.
+              </p>
+            )}
           </div>
-          {zilch.keptDice.map((group) => (
-            <span key={group.id} className="zilch-table__kept-chip">
-              {group.label} (+{group.score})
-            </span>
-          ))}
-        </div>
-      )}
-
-      {showValues && zilch.availableCombinations.length > 0 && (
-        <div className="zilch-table__combos" aria-label="Scoring options">
-          {zilch.availableCombinations.map((combo) => {
-            const isSelected = selectedKey === selectionKey(combo.diceIds);
-            return (
-              <button
-                key={combo.id}
-                type="button"
-                className={`zilch-table__combo-btn secondary${isSelected ? ' zilch-table__combo-btn--selected' : ''}`}
-                onClick={() => selectCombination(combo.diceIds)}
-                disabled={controlsDisabled || !canKeepCombination(zilch)}
-                aria-pressed={isSelected}
-              >
-                {combo.label} ({combo.score})
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            className="zilch-table__keep-btn"
-            onClick={handleKeepSelected}
-            disabled={controlsDisabled || !canKeepSelected}
-          >
-            Keep selected dice
-          </button>
-          {showInvalidSelectionHint && (
-            <p className="zilch-table__selection-hint" role="status">
-              Select scoring dice only.
-            </p>
-          )}
-        </div>
-      )}
-    </>
+        )}
+        {children}
+      </div>
+    </div>
   );
 }

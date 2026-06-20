@@ -179,20 +179,95 @@
   display: contents;
 }
 
+.zilch-table__seats {
+  display: flex;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.zilch-table__seats--top {
+  grid-area: seats-top;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.zilch-table__seats--bottom {
+  grid-area: seats-bottom;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.zilch-table__seats--left {
+  grid-area: seats-left;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.zilch-table__seats--right {
+  grid-area: seats-right;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
 .zilch-table__felt {
   grid-area: felt;
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.35rem;
   min-height: 18rem;
-  padding: 0.75rem 0.5rem;
+  padding: 0.55rem 0.45rem;
   border-radius: 12px;
   background: rgb(0 0 0 / 0.12);
   box-shadow: inset 0 0 24px rgb(0 0 0 / 0.22);
   z-index: 1;
+  min-width: 0;
+}
+
+.zilch-play-grid {
+  display: grid;
+  width: 100%;
+  gap: 0.55rem;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.zilch-dice-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.zilch-options-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+@media (min-width: 721px) {
+  .zilch-play-grid {
+    grid-template-columns: minmax(18rem, 1fr) minmax(14rem, 18rem);
+    gap: 0.65rem;
+  }
+
+  .zilch-dice-zone {
+    align-items: center;
+  }
+
+  .zilch-options-zone {
+    max-height: 100%;
+    overflow-y: auto;
+  }
 }
 
 .zilch-table__roll-zone {
@@ -256,15 +331,16 @@
 
 .zilch-table__combos {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  justify-content: center;
-  max-width: 100%;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
 }
 
 .zilch-table__combo-btn {
-  font-size: 0.8rem;
-  padding: 0.35rem 0.6rem;
+  font-size: 0.76rem;
+  padding: 0.3rem 0.55rem;
+  width: 100%;
+  text-align: left;
 }
 
 .zilch-table__combo-btn--selected {
@@ -272,18 +348,18 @@
 }
 
 .zilch-table__keep-btn {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 0.35rem 0.75rem;
+  padding: 0.35rem 0.65rem;
+  width: 100%;
 }
 
 .zilch-table__selection-hint {
-  flex-basis: 100%;
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: #ffb4a8;
-  text-align: center;
+  text-align: left;
 }
 
 .zilch-table__actions {
@@ -293,19 +369,37 @@
   justify-content: center;
 }
 
-/* Player seats — grid slots (no absolute overlap) */
+.zilch-table__actions--stacked {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.zilch-table__actions--stacked button {
+  width: 100%;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.55rem;
+}
+
+/* Player seats — ring columns (no grid-area overlap) */
 .zilch-seat {
   position: relative;
   min-width: 0;
   width: 100%;
-  max-width: 10rem;
-  padding: 0.55rem 0.7rem;
-  border-radius: 10px;
+  max-width: 8.25rem;
+  padding: 0.38rem 0.5rem;
+  border-radius: 8px;
   background: rgb(0 0 0 / 0.42);
   border: 2px solid transparent;
-  font-size: 0.85rem;
-  justify-self: center;
-  align-self: center;
+  font-size: 0.76rem;
+  line-height: 1.25;
+  flex-shrink: 0;
+}
+
+.zilch-table__seats--left .zilch-seat,
+.zilch-table__seats--right .zilch-seat {
+  max-width: 7.75rem;
 }
 
 .zilch-seat--slot-top {
@@ -345,19 +439,31 @@
 
 .zilch-seat__name {
   font-weight: 700;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zilch-seat__box {
+  margin-top: 0.1rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  opacity: 0.82;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .zilch-seat__badge {
-  font-size: 0.65rem;
+  display: inline-block;
+  margin-top: 0.15rem;
+  font-size: 0.62rem;
   font-weight: 600;
   text-transform: uppercase;
-  padding: 0.1rem 0.35rem;
+  padding: 0.08rem 0.3rem;
   border-radius: 4px;
   background: rgb(255 255 255 / 0.15);
+  line-height: 1.2;
 }
 
 .zilch-seat__badge--virtual {
@@ -365,22 +471,25 @@
 }
 
 .zilch-seat__score {
-  margin-top: 0.2rem;
+  margin-top: 0.15rem;
   opacity: 0.92;
+  white-space: nowrap;
 }
 
 .zilch-seat__turn-score {
-  margin-top: 0.15rem;
+  margin-top: 0.1rem;
   color: var(--accent, #d4af37);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .zilch-seat__status {
-  margin-top: 0.2rem;
-  font-size: 0.75rem;
+  margin-top: 0.12rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   opacity: 0.85;
+  white-space: nowrap;
 }
 
 .zilch-seat__status--turn {

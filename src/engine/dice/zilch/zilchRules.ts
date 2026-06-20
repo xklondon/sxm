@@ -4,7 +4,7 @@ import type { ZilchCombination, ZilchDie } from './zilchTypes';
 
 export const SINGLE_ONE_SCORE = 100;
 export const SINGLE_FIVE_SCORE = 50;
-export const STRAIGHT_SCORE = 1500;
+export const STRAIGHT_SCORE = 2000;
 export const THREE_PAIRS_SCORE = 1500;
 export const TWO_TRIPLETS_SCORE = 2500;
 

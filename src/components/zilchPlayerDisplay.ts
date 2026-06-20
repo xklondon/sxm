@@ -84,7 +84,78 @@ export function statusLabel(status: ZilchPlayerBoxStatus): string {
   }
 }
 
-/** Seat grid slots around the felt (non-overlapping layout). */
+export type ZilchSeatRing = {
+  top: number[];
+  bottom: number[];
+  left: number[];
+  right: number[];
+};
+
+/** Assign seat indices to non-overlapping ring columns/rows. */
+export function distributeZilchSeats(count: number): ZilchSeatRing {
+  if (count <= 0) {
+    return { top: [], bottom: [], left: [], right: [] };
+  }
+  if (count === 1) {
+    return { top: [0], bottom: [], left: [], right: [] };
+  }
+  if (count === 2) {
+    return { top: [0], bottom: [1], left: [], right: [] };
+  }
+  if (count === 3) {
+    return { top: [0], bottom: [], left: [1], right: [2] };
+  }
+  if (count === 4) {
+    return { top: [0], bottom: [3], left: [1], right: [2] };
+  }
+
+  const middle = Array.from({ length: count - 2 }, (_, i) => i + 1);
+  const left: number[] = [];
+  const right: number[] = [];
+  for (const idx of middle) {
+    if (left.length <= right.length) {
+      left.push(idx);
+    } else {
+      right.push(idx);
+    }
+  }
+  return { top: [0], bottom: [count - 1], left, right };
+}
+
+export interface ZilchSeatDisplay {
+  name: string;
+  boxLabel: string | null;
+  isVirtual: boolean;
+}
+
+export function resolveZilchSeatDisplay(
+  gameState: GameState,
+  playerId: string,
+): ZilchSeatDisplay {
+  const player = gameState.players[playerId];
+  if (!player) {
+    return { name: playerId, boxLabel: null, isVirtual: false };
+  }
+
+  const slot = gameState.tableMeta.boxSlots.find((s) => s.playerId === playerId);
+  const boxLabel = slot?.slotNumber ? `Box ${slot.slotNumber}` : null;
+  const isVirtual = player.playerType === 'virtual';
+  let name = player.displayName.trim() || playerId;
+
+  if (boxLabel && name === boxLabel && player.controllerName?.trim()) {
+    name = player.controllerName.trim();
+  }
+
+  const showBoxLabel = Boolean(boxLabel && boxLabel !== name);
+
+  return {
+    name,
+    boxLabel: showBoxLabel ? boxLabel : null,
+    isVirtual,
+  };
+}
+
+/** @deprecated Use distributeZilchSeats ring slots instead. */
 export function seatGridSlot(index: number, total: number): string {
   if (total <= 1) {
     return 'zilch-seat--slot-top';

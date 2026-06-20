@@ -47,7 +47,7 @@ describe('zilchRules', () => {
 
   it('scores straight', () => {
     const combos = detectZilchCombinations(dice([1, 2, 3, 4, 5, 6]));
-    expect(combos.find((c) => c.type === 'straight')?.score).toBe(1500);
+    expect(combos.find((c) => c.type === 'straight')?.score).toBe(2000);
   });
 
   it('scores three pairs', () => {

@@ -297,18 +297,19 @@ export function ZilchPanel({
               playerOrder={playerOrder}
               playerNames={playerNames}
               onKeepCombination={handleKeepCombination}
-            />
-            <ZilchActions
-              zilch={zilch}
-              rolling={rolling}
-              controlsDisabled={controlsDisabled}
-              onlineActionInFlight={onlineActionInFlight}
-              hasPlayers={playerOrder.length > 0}
-              onRandomiseStarter={onRandomiseStarter}
-              onRollDice={handleRollDice}
-              onBank={handleBank}
-              onQuitTurn={handleQuitTurn}
-            />
+            >
+              <ZilchActions
+                zilch={zilch}
+                rolling={rolling}
+                controlsDisabled={controlsDisabled}
+                onlineActionInFlight={onlineActionInFlight}
+                hasPlayers={playerOrder.length > 0}
+                onRandomiseStarter={onRandomiseStarter}
+                onRollDice={handleRollDice}
+                onBank={handleBank}
+                onQuitTurn={handleQuitTurn}
+              />
+            </ZilchDiceArea>
           </div>
         </div>
       )}

@@ -34,7 +34,7 @@ export function ZilchActions({
         : 'Roll';
 
   return (
-    <div className="zilch-table__actions">
+    <div className="zilch-table__actions zilch-table__actions--stacked">
       {(zilch.phase === 'setup' ||
         (zilch.phase === 'randomising-starter' && !zilch.starterPlayerId)) && (
         <button
