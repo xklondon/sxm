@@ -92,6 +92,7 @@ export function rollDice(
   }
 
   const unkept = state.dice.filter((d) => !d.isKept);
+  const turnover = unkept.length === 0 && state.turnScore > 0 && state.rollNumberInTurn > 0;
   const count = unkept.length > 0 ? unkept.length : 6;
   const nextDice =
     unkept.length > 0
@@ -114,8 +115,9 @@ export function rollDice(
       durationMs,
       pendingValues: values,
     },
-    history: appendEvent(state, 'roll-started', state.currentPlayerId ?? undefined, {
+    history: appendEvent(state, turnover ? 'turnover-roll-started' : 'roll-started', state.currentPlayerId ?? undefined, {
       count,
+      turnover,
     }),
   };
 }
@@ -188,7 +190,10 @@ export function holdScoringDice(
   state: ZilchGameState,
   combinationId: string,
 ): ZilchGameState {
-  if (state.phase !== 'awaiting-keep-selection' && state.phase !== 'player-turn') {
+  if (
+    state.phase !== 'awaiting-keep-selection' &&
+    !(state.phase === 'player-turn' && state.keptThisRoll)
+  ) {
     throw new Error('Cannot keep a combination in the current phase');
   }
 

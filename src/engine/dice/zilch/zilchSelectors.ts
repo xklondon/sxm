@@ -1,4 +1,5 @@
 import type { ZilchGameState } from './zilchTypes';
+import { findCombinationForExactDiceIds } from './zilchRules';
 
 export function getZilchWinnerId(state: ZilchGameState): string | null {
   if (state.winnerPlayerId) {
@@ -38,7 +39,40 @@ export function checkZilchGameEnd(state: ZilchGameState): ZilchGameState {
 }
 
 export function canRollDice(state: ZilchGameState): boolean {
-  return state.phase === 'player-turn' && !state.diceAnimation.isRolling;
+  if (state.diceAnimation.isRolling) {
+    return false;
+  }
+  if (state.phase !== 'player-turn') {
+    return false;
+  }
+  return true;
+}
+
+export function mustKeepBeforeRoll(state: ZilchGameState): boolean {
+  return state.phase === 'awaiting-keep-selection';
+}
+
+export function isTurnoverRoll(state: ZilchGameState): boolean {
+  return (
+    state.phase === 'player-turn' &&
+    state.dice.length === 0 &&
+    state.turnScore > 0 &&
+    state.rollNumberInTurn > 0
+  );
+}
+
+export function findCombinationForSelection(
+  state: ZilchGameState,
+  selectedDiceIds: string[],
+): ReturnType<typeof findCombinationForExactDiceIds> {
+  return findCombinationForExactDiceIds(state.availableCombinations, selectedDiceIds);
+}
+
+export function canKeepSelectedDice(state: ZilchGameState, selectedDiceIds: string[]): boolean {
+  if (!canKeepCombination(state)) {
+    return false;
+  }
+  return Boolean(findCombinationForSelection(state, selectedDiceIds));
 }
 
 export function canBank(state: ZilchGameState): boolean {
@@ -53,7 +87,13 @@ export function canBank(state: ZilchGameState): boolean {
 }
 
 export function canKeepCombination(state: ZilchGameState): boolean {
-  return state.phase === 'awaiting-keep-selection' && state.availableCombinations.length > 0;
+  if (state.availableCombinations.length === 0) {
+    return false;
+  }
+  return (
+    state.phase === 'awaiting-keep-selection' ||
+    (state.phase === 'player-turn' && state.keptThisRoll)
+  );
 }
 
 export function canPassTurn(state: ZilchGameState): boolean {
@@ -86,15 +126,24 @@ export function commandStatusForPhase(
       return `Game over — ${name} wins!`;
     }
     case 'zilch':
-      return 'Zilch — turn passes.';
+      return 'ZILCH — turn score lost.';
     case 'awaiting-keep-selection':
-      return 'Hold scoring dice or bank.';
+      return 'Select scoring dice to keep.';
     default:
       if (!canAct) {
         return 'Waiting for another player…';
       }
+      if (isTurnoverRoll(state)) {
+        return 'Turnover — Greater Glory: roll all 6 dice.';
+      }
+      if (state.keptThisRoll && state.turnScore > 0) {
+        return 'Keep selected dice or bank points.';
+      }
+      if (state.dice.some((d) => !d.isKept) && state.rollNumberInTurn > 0) {
+        return 'Roll remaining dice.';
+      }
       if (state.turnScore > 0) {
-        return `${activePlayerName(state, names)} — hold scoring dice or bank (${state.turnScore} this turn).`;
+        return `${activePlayerName(state, names)} — ${state.turnScore} this turn. Bank or roll.`;
       }
       return `${activePlayerName(state, names)} rolls.`;
   }

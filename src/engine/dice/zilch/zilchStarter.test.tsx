@@ -124,7 +124,7 @@ describe('Zilch starter randomiser', () => {
       <ZilchPanel gameState={state} onGameStateChange={() => {}} />,
     );
     expect(html).toContain('Roll');
-    expect(html).toContain('Press Dice to roll');
+    expect(html).toContain('Press Roll to throw dice');
   });
 
   it('can re-run randomiseStarter from stuck randomising-starter phase', () => {

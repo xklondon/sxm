@@ -222,6 +222,26 @@ export function isZilchRoll(dice: ZilchDie[]): boolean {
   return detectZilchCombinations(dice).length === 0;
 }
 
+/** Find an available combination that uses exactly these dice (order-independent). */
+export function findCombinationForExactDiceIds(
+  combinations: ZilchCombination[],
+  diceIds: string[],
+): ZilchCombination | undefined {
+  if (diceIds.length === 0) {
+    return undefined;
+  }
+  const key = [...diceIds].sort().join(',');
+  return combinations.find((combo) => [...combo.diceIds].sort().join(',') === key);
+}
+
+/** True when a die is part of at least one currently available scoring combination. */
+export function isDieScoringSelectable(die: ZilchDie, combinations: ZilchCombination[]): boolean {
+  if (!die.isAvailable || die.isKept) {
+    return false;
+  }
+  return combinations.some((combo) => combo.diceIds.includes(die.id));
+}
+
 /** Score a set of die values (for unit tests). */
 export function scoreDieValues(values: number[]): number {
   const dice: ZilchDie[] = values.map((value, i) => ({
