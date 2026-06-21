@@ -15,6 +15,31 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-21 — Table Layout Engine: one shell owner for all four Blackjack views
+
+- **Canonical engine contract** (`src/components/tableLayoutEngine.ts`): neutral, gameplay-free
+  description of the seven zones (`bankInfo → dealer → command → cards → actions → boxes → tray`)
+  and the four modes (`desktopFull`, `desktopCard`, `mobileFull`, `mobileCard`). Same zone names,
+  same order, phase-invariant; `cards` is the single stretch row; boxes baseline sits directly
+  above the tray in every mode. Includes the CSS ownership map.
+- **Single grid engine** (`bj-blackjack-table-shell.css`): mobile (portrait) now uses the SAME
+  CSS-grid engine as desktop (added mobile grid block). The legacy bare-flex shell + per-zone
+  height/`margin-top` overrides previously in `bj-player-row-layout.css` and
+  `bj-full-table-card-area.css` were removed so there is ONE shell-geometry owner.
+- **Bug fixes via contract (not patches):** desktop Card View hero cards get a non-collapsing
+  `cards` row floor (`--bj-zone-cards-min-height`); desktop Full Table card tops read (cards zone
+  `overflow: visible`, shell still clips horizontally); mobile Table boxes/tray share the Card View
+  baseline (shell owns mobile boxes/tray placement, no zone movers).
+- **CSS ownership headers** added to every layout stylesheet (MAY OWN / MUST NOT own), plus leaky
+  bare `.bj-cards-area--table` selectors scoped under view roots.
+- **Debug overlay** (`?layoutDebug=1`, hidden by default): now reports engine version, resolved
+  mode, active phase, per-zone bounding boxes, rendered component per zone, and CSS owner per zone.
+- **Tests:** `tableLayoutEngine.test.ts` (contract invariants), `tableLayoutEngineShell.test.tsx`
+  (zone-order smoke), and extended `productionRouteOwnership.test.ts` (single shell owner + CSS
+  ownership map). Re-baselined frozen-layout assertions to the consolidated engine.
+- **Scope:** layout architecture only — no gameplay, payout, betting, invite/auth, people, ledger,
+  IOU, Zilch, or table-setup changes.
+
 ## 2026-06-13 — Targeted Blackjack mobile/desktop layout cleanup (6 issues)
 
 - **Mobile Full Table cards:** Cards zone uses natural height (`flex: 0 0 auto`) with arc row `margin-top: auto` so stacks sit just above actions; play-zone stays top-anchored on mobile.

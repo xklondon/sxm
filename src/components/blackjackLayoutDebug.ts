@@ -6,6 +6,39 @@ import {
   CANONICAL_BLACKJACK_CSS_IMPORT_ORDER,
   FULL_TABLE_SHELL_ZONE_ORDER,
 } from './blackjackLayoutContract';
+import {
+  CSS_OWNERSHIP,
+  LAYOUT_ZONES,
+  LAYOUT_ZONE_CLASS,
+  resolveLayoutMode,
+  type DeviceClass,
+  type LayoutMode,
+  type LayoutZone,
+  type ViewClass,
+} from './tableLayoutEngine';
+
+export { TABLE_LAYOUT_ENGINE_VERSION } from './tableLayoutEngine';
+
+/** Per-zone CSS owner file surfaced by the debug overlay (matches CSS file headers). */
+const ZONE_CSS_OWNER: Record<LayoutZone, string> = {
+  bankInfo: CSS_OWNERSHIP.shellGeometry,
+  dealer: CSS_OWNERSHIP.shellGeometry,
+  command: CSS_OWNERSHIP.shellGeometry,
+  cards: `${CSS_OWNERSHIP.shellGeometry} (band) + cards-area/hero (content)`,
+  actions: CSS_OWNERSHIP.shellGeometry,
+  boxes: CSS_OWNERSHIP.shellGeometry,
+  tray: CSS_OWNERSHIP.shellGeometry,
+};
+
+/** Resolve the active layout mode from device + view-mode strings. */
+export function resolveLayoutModeFromStrings(
+  deviceView: string,
+  viewMode: string,
+): LayoutMode {
+  const device: DeviceClass = deviceView === 'mobile' ? 'mobile' : 'desktop';
+  const view: ViewClass = viewMode === 'card' ? 'card' : 'full';
+  return resolveLayoutMode(device, view);
+}
 
 export const BLACKJACK_LAYOUT_DEBUG_PARAM = 'layoutDebug';
 /** Build marker — confirms production bundle includes this audit pass. */
@@ -36,7 +69,22 @@ export function isBlackjackLayoutDebugEnabled(search = ''): boolean {
   return new URLSearchParams(search).get(BLACKJACK_LAYOUT_DEBUG_PARAM) === '1';
 }
 
+export interface LayoutZoneDiagnostic {
+  zone: LayoutZone;
+  zoneClass: string;
+  present: boolean;
+  bounds: string;
+  cssOwner: string;
+  /** First meaningful child component class rendered into the zone. */
+  renderedComponent: string;
+}
+
 export interface LayoutDebugComputedSnapshot {
+  /** Resolved layout mode: desktopFull | desktopCard | mobileFull | mobileCard. */
+  layoutMode: string;
+  shellDisplay: string;
+  shellGridRows: string;
+  zoneDiagnostics: LayoutZoneDiagnostic[];
   boxesRowDisplay: string;
   boxesRowGridTemplate: string;
   addBoxWidth: string;
@@ -89,6 +137,41 @@ function formatBounds(rect: DOMRect | undefined): string {
   return `t=${Math.round(rect.top)} b=${Math.round(rect.bottom)} h=${Math.round(rect.height)}`;
 }
 
+/** First non-empty child class inside a zone — identifies the rendered component. */
+function firstChildComponentClass(zoneEl: Element | null): string {
+  if (!zoneEl) {
+    return 'missing';
+  }
+  for (const child of zoneEl.children) {
+    if (child instanceof HTMLElement && child.className && typeof child.className === 'string') {
+      const cls = child.className.trim().split(/\s+/)[0];
+      if (cls) {
+        return `.${cls}`;
+      }
+    }
+  }
+  return zoneEl.children.length ? '(unclassed children)' : '(empty)';
+}
+
+/** Per-zone diagnostics: presence, bounding box, CSS owner, rendered component. */
+export function readZoneDiagnostics(root: HTMLElement | null): LayoutZoneDiagnostic[] {
+  if (!root || typeof window === 'undefined') {
+    return [];
+  }
+  return LAYOUT_ZONES.map((zone) => {
+    const zoneClass = LAYOUT_ZONE_CLASS[zone];
+    const el = root.querySelector(`.${zoneClass}`);
+    return {
+      zone,
+      zoneClass,
+      present: Boolean(el),
+      bounds: formatBounds(el?.getBoundingClientRect()),
+      cssOwner: ZONE_CSS_OWNER[zone],
+      renderedComponent: firstChildComponentClass(el),
+    };
+  });
+}
+
 function rectsOverlap(a: DOMRect, b: DOMRect): boolean {
   return a.top < b.bottom && a.bottom > b.top && a.left < b.right && a.right > b.left;
 }
@@ -131,7 +214,15 @@ export function readLayoutDebugComputedSnapshot(root: HTMLElement | null): Layou
   const playerRowRect = playerRow?.getBoundingClientRect();
   const trayRect = trayZone?.getBoundingClientRect();
 
+  const deviceView = root.getAttribute('data-device-view') ?? 'desktop';
+  const viewMode = root.getAttribute('data-view-mode') ?? 'full';
+  const layoutMode = resolveLayoutModeFromStrings(deviceView, viewMode);
+
   return {
+    layoutMode,
+    shellDisplay: canvasStyle?.display ?? 'n/a',
+    shellGridRows: canvasStyle?.gridTemplateRows ?? 'n/a',
+    zoneDiagnostics: readZoneDiagnostics(root),
     boxesRowDisplay: playerRowStyle?.display ?? 'n/a',
     boxesRowGridTemplate: playerRowStyle?.gridTemplateColumns ?? playerRowStyle?.flexDirection ?? 'n/a',
     addBoxWidth: addBoxStyle?.width ?? 'n/a',

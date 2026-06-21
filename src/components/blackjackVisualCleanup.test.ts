@@ -113,7 +113,8 @@ describe('blackjack visual cleanup — cloth, player boxes, desktop tray', () =>
     expect(SHELL_CSS).toContain('--bj-desktop-zone-boxes-height: 6.1rem');
     expect(SHELL_CSS).toContain('--bj-desktop-zone-tray-height: 4.15rem');
     expect(SHELL_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 0.42rem');
-    expect(SHELL_CSS).toContain('--bj-desktop-grid-row-cards: minmax(0, 1fr)');
+    // cards is the single stretch row; floor var prevents collapse (table-layout-engine).
+    expect(SHELL_CSS).toContain('--bj-desktop-grid-row-cards: minmax(var(--bj-zone-cards-min-height, 0), 1fr)');
     expect(SHELL_CSS).toMatch(
       /@media \(min-width: 721px\)[\s\S]*--bj-zone-boxes-height:\s*var\(--bj-desktop-zone-boxes-height\)/,
     );

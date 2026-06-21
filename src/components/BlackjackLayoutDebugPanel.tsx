@@ -4,10 +4,12 @@ import {
   BLACKJACK_CSS_LAYOUT_ROUTE_VERSION,
   BLACKJACK_TABLE_LAYOUT_SHELL_NAME,
   BLACKJACK_UI_FIX_VERSION,
+  TABLE_LAYOUT_ENGINE_VERSION,
   formatBlackjackCssImportRoute,
   formatBlackjackShellZoneOrder,
   logLayoutDebugSnapshot,
   readLayoutDebugComputedSnapshot,
+  resolveLayoutModeFromStrings,
   type LayoutDebugComputedSnapshot,
 } from './blackjackLayoutDebug';
 import type { GetCurrentChipTargetForBettingResult } from './localChipTargetSelection';
@@ -76,13 +78,23 @@ export function BlackjackLayoutDebugPanel({
       ? `null (${chipTargetPreview.reason})`
       : 'n/a';
 
+  const layoutMode = computed?.layoutMode ?? resolveLayoutModeFromStrings(deviceView, viewMode);
+
   return (
     <aside className="bj-layout-debug-panel" aria-label="Layout debug diagnostics">
-      <div className="bj-layout-debug-panel__title">Layout debug · {BLACKJACK_UI_FIX_VERSION}</div>
+      <div className="bj-layout-debug-panel__title">Layout debug · {TABLE_LAYOUT_ENGINE_VERSION}</div>
       <dl className="bj-layout-debug-panel__list">
+        <div>
+          <dt>engine version</dt>
+          <dd>{TABLE_LAYOUT_ENGINE_VERSION}</dd>
+        </div>
         <div>
           <dt>layout version</dt>
           <dd>{BLACKJACK_UI_FIX_VERSION}</dd>
+        </div>
+        <div>
+          <dt>mode</dt>
+          <dd>{layoutMode}</dd>
         </div>
         <div>
           <dt>shell</dt>
@@ -141,6 +153,27 @@ export function BlackjackLayoutDebugPanel({
         </div>
         {computed && (
           <>
+            <div>
+              <dt>shell display</dt>
+              <dd>{computed.shellDisplay}</dd>
+            </div>
+            <div>
+              <dt>shell grid rows</dt>
+              <dd>{computed.shellGridRows}</dd>
+            </div>
+            {computed.zoneDiagnostics.map((zone) => (
+              <div key={zone.zone}>
+                <dt>
+                  zone · {zone.zone}
+                  {zone.present ? '' : ' (missing)'}
+                </dt>
+                <dd>
+                  {zone.bounds} · {zone.renderedComponent}
+                  <br />
+                  owner: {zone.cssOwner}
+                </dd>
+              </div>
+            ))}
             <div>
               <dt>boxes display</dt>
               <dd>

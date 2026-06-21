@@ -1,5 +1,10 @@
 /**
- * Stitch Master visual tokens scoped to the blackjack table shell.
+ * sxm-stitch-visual.css — THEME tokens only (Stitch Master), scoped to .bj-casino.sxm-layout-root.
+ * Contract: src/components/tableLayoutEngine.ts (CSS_OWNERSHIP.themeOnly).
+ *
+ * MAY OWN  : color/felt/border/accent/text theme custom properties.
+ * MUST NOT : own ANY layout geometry — no grid templates, no named grid rows, no table-zone
+ *            placement, no layout-shell rules (enforced by productionRouteOwnership.test.ts).
  * Global :root tokens stay unchanged; admin overrides apply inline on .sxm-layout-root.
  */
 .bj-casino.sxm-layout-root {

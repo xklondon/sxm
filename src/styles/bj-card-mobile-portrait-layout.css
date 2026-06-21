@@ -1,6 +1,10 @@
 /**
- * Mobile Portrait Card View — hero card sizing + cards/value vertical pairing.
- * Shell zone placement matches Mobile Full Table via bj-table-shared.css.
+ * bj-card-mobile-portrait-layout.css — Mobile Portrait Card View hero CONTENT inside the cards zone.
+ * Contract: src/components/tableLayoutEngine.ts (CSS_OWNERSHIP.cardViewHeroMobile).
+ *
+ * MAY OWN  : hero card sizing + cards/value vertical pairing inside `.bj-cards-area--hero`.
+ * MUST NOT : own the shell grid, zone band heights, or zone placement
+ *            (bj-blackjack-table-shell.css — mobile grid block owns mobile zone placement).
  * Loaded late in index.css — final hero sizing authority for mobile Card View.
  */
 

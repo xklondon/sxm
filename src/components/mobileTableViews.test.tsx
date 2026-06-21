@@ -337,8 +337,10 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*min-height:\s*var\(--bj-mobile-felt-min-height\)/,
     );
     expect(sharedCss).toMatch(/\.bj-table-slot-row|\.bj-arc--player-boxes/);
-    expect(readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8')).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*height:\s*auto/,
+    // Mobile boxes baseline is owned by the shell grid (table-layout-engine), not player-row.
+    const shellCss = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
+    expect(shellCss).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--boxes,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell > \.bj-table-zone--boxes/,
     );
     const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
     expect(layoutCss).toContain('--bj-card-row-hero-min: 0');

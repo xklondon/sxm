@@ -1,9 +1,18 @@
 /**
- * BlackjackTableLayoutShell — sole structural layout owner (all views).
- * Zones (fixed order): bank-info → dealer → command → cards → actions → boxes → tray.
- * Phase bands: data-bj-phase on .bj-casino (betting | dealing | playing | resolved).
- * Cards-area content only differs: bj-cards-area--table vs bj-cards-area--hero.
- * No :has(), transforms, negative-margin alignment, or per-view shell row hacks.
+ * bj-blackjack-table-shell.css — SOLE owner of shell/grid/flex geometry (Table Layout Engine).
+ * Contract: src/components/tableLayoutEngine.ts (CSS_OWNERSHIP.shellGeometry).
+ *
+ * MAY OWN  : the .bj-table-layout-shell grid, grid-template-rows/-columns, every zone's
+ *            grid-row placement + outer band height/min/max, zone margins, and the single
+ *            stretch row (cards). One CSS grid engine for ALL FOUR modes
+ *            (desktopFull / desktopCard / mobileFull / mobileCard).
+ * MUST NOT : reach inside a zone to lay out its content (card stacks → bj-full-table-card-area.css;
+ *            hero fan → bj-card-*-hero/portrait; tokens/visuals → bj-table-shared.css / sxm-stitch-visual.css).
+ *
+ * Zones (fixed, phase-invariant order): bank-info → dealer → command → cards → actions → boxes → tray.
+ * Phase bands: data-bj-phase on .bj-casino (betting | dealing | playing | resolved) tune TOKENS only,
+ * never zone order. Cards-area content only differs: bj-cards-area--table vs bj-cards-area--hero.
+ * No :has(), transforms, negative-margin alignment, margin-top:auto on a zone wrapper, or per-view shell row hacks.
  */
 
 /* ── Desktop shared shell (Full Table + Card View) ─────────────────────────── */
@@ -21,7 +30,8 @@
     --bj-zone-tray-padding-bottom: var(--bj-desktop-bottom-padding);
     --bj-dealer-command-gap: var(--bj-desktop-dealer-command-gap);
     --bj-cards-actions-gap: var(--bj-desktop-actions-zone-padding-top);
-    --bj-desktop-grid-row-cards: minmax(0, 1fr);
+    /* cards is the single stretch row; floor keeps it from collapsing (hero/table always readable). */
+    --bj-desktop-grid-row-cards: minmax(var(--bj-zone-cards-min-height, 0), 1fr);
   }
 
   /* Shared desktop geometry — play phase is canonical; all shell phases use identical slot tokens. */
@@ -55,6 +65,8 @@
     --bj-desktop-actions-zone-padding-top: 1.05rem;
     --bj-card-hero-card-width: min(22vw, 7.25rem);
     --bj-card-hero-card-max-height: min(42vh, 9.75rem);
+    /* Floor so the hero fan always has room — the 1fr cards row cannot collapse to 0. */
+    --bj-zone-cards-min-height: 9rem;
   }
 
   /* Full Table betting + playing — center dealer/deal on felt (Card View unchanged). */
@@ -210,7 +222,8 @@
     flex: unset;
     position: relative;
     align-self: stretch;
-    overflow: hidden;
+    /* Card tops/fans read outside the fixed band; shell overflow-x:hidden blocks page scroll. */
+    overflow: visible;
     display: flex;
     flex-direction: column;
   }
@@ -559,5 +572,91 @@
     .dealer-block__status {
     line-height: 1.28;
     font-size: 0.58rem;
+  }
+}
+
+/* ── Mobile shell (portrait) — SAME engine as desktop: one CSS grid, same zone order ──────
+ * Replaces the legacy bare flex shell (bj-table-shared.css) and the per-zone height/margin
+ * overrides previously in bj-player-row-layout.css / bj-full-table-card-area.css. mobileFull
+ * and mobileCard share this block so their boxes + tray baselines match (cards is the single
+ * stretch row; boxes sit directly above the tray with no margin-top:auto / translateY).
+ * Zone heights come from the mobile --bj-zone-* tokens in bj-table-shared.css. */
+@media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
+  .bj-view-full-mobile .bj-table-layout-shell,
+  .bj-view-card-mobile .bj-table-layout-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows:
+      [bank-info] minmax(0, auto)
+      [dealer] auto
+      [command] auto
+      [cards] minmax(var(--bj-zone-cards-min-height, 0), 1fr)
+      [actions] auto
+      [boxes] auto
+      [tray] auto;
+    row-gap: 0;
+    column-gap: 0;
+    /* Fill the viewport so boxes hug the tray when content is short; scroll when tall. */
+    min-height: 100%;
+    height: auto;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-info-bar--felt-row,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-info-bar--felt-row {
+    grid-row: bank-info;
+    grid-column: 1;
+    margin: 0;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-dealer-area,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-dealer-area {
+    grid-row: dealer;
+    grid-column: 1;
+    margin: 0;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--summary,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--summary {
+    grid-row: command;
+    grid-column: 1;
+    margin: 0;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--cards {
+    grid-row: cards;
+    grid-column: 1;
+    margin: 0;
+    min-height: var(--bj-zone-cards-min-height, 0);
+    /* Card tops/fans read outside the band; shell clips horizontally only. */
+    overflow: visible;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--actions,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--actions {
+    grid-row: actions;
+    grid-column: 1;
+    margin: 0;
+  }
+
+  /* Boxes baseline — phase-invariant, identical for mobileFull + mobileCard (no zone movers). */
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--boxes,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--boxes {
+    grid-row: boxes;
+    grid-column: 1;
+    margin: 0;
+    overflow: visible;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--bottom,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--bottom {
+    grid-row: tray;
+    grid-column: 1;
+    margin: 0;
+    min-height: var(--bj-zone-tray-height);
+    overflow: visible;
   }
 }

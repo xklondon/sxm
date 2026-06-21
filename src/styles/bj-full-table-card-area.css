@@ -1,8 +1,13 @@
 /**
- * Full Table play zone — SINGLE canonical layout contract.
- * Cards Area internals (columns, stacks, actions chrome) for `.bj-view-full-desktop` + `.bj-view-full-mobile`.
- * Imported after bj-table-shared.css, bj-player-row-layout.css, and bj-card-layout.css.
- * Card View hero (`.bj-cards-area--hero`) is out of scope.
+ * bj-full-table-card-area.css — Full Table play zone: CARD-STACK geometry INSIDE the cards zone only.
+ * Contract: src/components/tableLayoutEngine.ts (CSS_OWNERSHIP.fullTableCardStack).
+ *
+ * MAY OWN  : per-box card columns, vertical stacks, card overlap, and the card row's
+ *            content alignment INSIDE `.bj-table-zone--cards.bj-cards-area--table`
+ *            for `.bj-view-full-desktop` + `.bj-view-full-mobile`.
+ * MUST NOT : own the .bj-table-layout-shell grid, zone band heights, or zone placement
+ *            (bj-blackjack-table-shell.css). Card View hero (`.bj-cards-area--hero`) is out of scope.
+ * Imported after bj-table-shared.css, bj-player-row-layout.css, bj-card-layout.css.
  */
 
 :root {

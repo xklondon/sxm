@@ -1,5 +1,12 @@
 /**
- * Shared blackjack table surface, seat, action, and side-rail panel tokens.
+ * bj-table-shared.css — TOKENS + shared surface/seat/action/side-rail VISUALS.
+ * Contract: src/components/tableLayoutEngine.ts (CSS_OWNERSHIP.tokensAndVisuals).
+ *
+ * MAY OWN  : :root design tokens (incl. mobile --bj-zone-* band heights/gaps consumed by the
+ *            shell grid), colors, borders, seat/box/tray visual chrome, side-rail panel styling.
+ * MUST NOT : own the shell grid, grid templates, named grid-row placement, or zone bands —
+ *            that is bj-blackjack-table-shell.css (the single Table Layout Engine owner).
+ *            (Guarded by productionRouteOwnership.test.ts: no named-row grid geometry here.)
  * Full Table + Card View (desktop + mobile) consume these — view roots only tweak proportions.
  */
 

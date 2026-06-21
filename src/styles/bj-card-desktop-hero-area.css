@@ -1,6 +1,9 @@
 /**
- * Desktop Card View — cards-area hero internals only (.bj-card-desktop-hero*).
- * Shell cards-zone geometry: bj-blackjack-table-shell.css (all phases identical).
+ * bj-card-desktop-hero-area.css — Desktop Card View hero CONTENT inside the cards zone only.
+ * Contract: src/components/tableLayoutEngine.ts (CSS_OWNERSHIP.cardViewHeroDesktop).
+ *
+ * MAY OWN  : .bj-card-desktop-hero* internals (fan, card sizing, outcome badge) inside cards zone.
+ * MUST NOT : own the shell grid, zone band heights, or zone placement (bj-blackjack-table-shell.css).
  * Cloth/title opacity: bj-full-table-card-area.css (content only).
  * Hero card sizing: shell tokens (--bj-card-hero-card-*) + container fit.
  */

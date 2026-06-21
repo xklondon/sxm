@@ -3,6 +3,11 @@
  * One DOM/grid model for desktop/mobile and Full Table/Card View.
  * Imported after bj-table-shared.css.
  *
+ * MAY OWN  : the slot ROW internals (grid-template-columns for boxes/cards rows, slot gaps,
+ *            per-slot sizing, the + control) INSIDE the boxes/cards zones.
+ * MUST NOT : own the .bj-table-layout-shell grid, zone band heights, zone margins, or
+ *            margin-top on a zone wrapper — that is bj-blackjack-table-shell.css.
+ *
  * SIZING CONTRACTS (do not collapse into one universal box size):
  * A. Desktop/laptop Full Table + Card View — compact max-content columns, fixed box tokens.
  * B. Desktop/laptop Card View — same player-box tokens as Full Table (hero layout separate).
@@ -715,7 +720,9 @@
   justify-content: flex-start;
 }
 
-/* Mobile shell — boxes and tray are separate non-overlapping flow zones. */
+/* Mobile rail-wrap scroll containers (outside the layout shell). The layout shell itself
+ * and its boxes/tray placement are owned by bj-blackjack-table-shell.css (mobile grid block).
+ * Boxes/tray zone height + margin overrides were removed here to keep ONE shell owner. */
 @media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
   .bj-view-full-mobile .bj-casino__felt,
   .bj-view-card-mobile .bj-casino__felt {
@@ -727,45 +734,5 @@
   .bj-view-full-mobile .bj-casino__rail,
   .bj-view-card-mobile .bj-casino__rail {
     overflow: visible;
-  }
-
-  .bj-view-full-mobile .bj-casino__felt-main,
-  .bj-view-card-mobile .bj-casino__felt-main {
-    overflow: visible;
-    height: auto;
-    max-height: none;
-  }
-
-  .bj-view-full-mobile .bj-table-layout-shell,
-  .bj-view-card-mobile .bj-table-layout-shell {
-    overflow: visible;
-    height: auto;
-    max-height: none;
-  }
-
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes,
-  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes {
-    height: auto;
-    min-height: 0;
-    max-height: none;
-    overflow: visible;
-    margin-top: 0;
-    flex: 0 0 auto;
-  }
-
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--bottom,
-  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--bottom {
-    position: static;
-    overflow: visible;
-    height: auto;
-    min-height: var(--bj-zone-tray-height);
-    max-height: none;
-    margin-top: var(--bj-zone-boxes-tray-gap);
-  }
-
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap,
-  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap {
-    overflow: visible;
-    position: static;
   }
 }

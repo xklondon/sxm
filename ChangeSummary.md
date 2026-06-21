@@ -1,82 +1,72 @@
-# Change Summary — Targeted Blackjack cleanup (6 issues)
+# Change Summary — Table Layout Engine (Blackjack layout stabilization)
 
-## 1. Files changed
+**Scope:** Layout architecture only. No gameplay, payout, betting, invite/auth, people, ledger, IOU, Zilch, or table-setup changes.
 
-| File | Change |
-|------|--------|
-| `src/styles/bj-full-table-card-area.css` | Mobile cards zone sizing/anchor; split desktop vs mobile play-zone stack anchoring |
-| `src/styles/bj-table-shared.css` | Mobile HIT/STAY −15%; actions z-index 6; felt `pan-x` for box swipe |
-| `src/components/tableCommandDisplay.ts` | Single player-turn command paragraph; empty command when `gameEnded` (overlay owns copy) |
-| `src/components/DealerBlock.tsx` | Gold styling when command includes detail lines |
-| `src/components/BlackjackPanel.tsx` | Removed dealer command props; suppress command when game-over overlay active |
-| `src/components/blackjackMobileCleanup.test.tsx` | **New** — mobile layout, command, game-over route guards |
-| `src/components/tableCommandDisplay.test.ts` | Updated for merged player-turn command |
-| `src/components/blackjackFullTablePlayZoneLayout.test.ts` | Desktop stack band expects bottom anchor |
-| `docs/CHANGE_LOG.md` | Entry for this cleanup pass |
+## What the audit found
 
-## 2. Tests added/updated
+- **Component layer was already consolidated.** All four views route through one shell:
+  `TableScreen → BlackjackPanel → BlackjackTableLayoutShell → zone wrappers`. Card View only
+  swaps the inner component of the `cards` zone; mobile and desktop share components. The
+  "duplicate" files in git status are Windows path-separator artifacts (single physical files).
+- **The real defect was in CSS: three competing layout engines** positioning the one shell:
+  desktop = CSS grid (`bj-blackjack-table-shell.css`), mobile portrait = bare flex
+  (`bj-table-shared.css`), mobile landscape = grid in two rival files. Plus leaky bare selectors
+  and `margin-top: auto` zone movers, and a mobile boxes/tray override in
+  `bj-player-row-layout.css` that fought the shared fixed heights (cause of the mobile
+  baseline regression).
 
-| Test | Action |
-|------|--------|
-| `src/components/blackjackMobileCleanup.test.tsx` | **Added** — 8 tests: cards zone, stack anchor, button size, z-index/swipe, single command DOM, game-over route |
-| `src/components/tableCommandDisplay.test.ts` | Updated merged player-turn expectations |
-| `src/components/blackjackFullTablePlayZoneLayout.test.ts` | Desktop play-zone bottom-anchor contract |
+## What changed
 
-## 3. Validation run
+### New canonical contract
+- `src/components/tableLayoutEngine.ts` — neutral engine contract: 7 zones, 4 modes, per-mode
+  stretch zone / fixed zones / boxes + cards baselines / allowed overflow / phase-invariant rows,
+  plus the CSS ownership map and forbidden zone-mover list. `TABLE_LAYOUT_ENGINE_VERSION = table-layout-engine-v1`.
 
-### Ownership — **RUN** `npm run test:ownership`
+### One shell owner (all four modes use one CSS-grid engine)
+- `bj-blackjack-table-shell.css`: added a **mobile (portrait) grid block** mirroring the desktop
+  grid (same zone rows, `cards` = single stretch row, boxes directly above tray, no movers).
+  Updated header to declare MAY/MUST-NOT ownership.
+- Removed competing mobile zone overrides from `bj-player-row-layout.css` (boxes/tray
+  `height:auto; margin-top:0`) and kept only the outer rail-wrap scroll containers.
+- Scoped the leaky bare `.bj-cards-area--table` selectors in `bj-card-layout.css` under view roots.
+- Added MAY/MUST-NOT ownership headers to: shell, `bj-table-shared.css`, `bj-full-table-card-area.css`,
+  `bj-card-layout.css`, `bj-card-desktop-hero-area.css`, `bj-card-mobile-portrait-layout.css`,
+  `sxm-stitch-visual.css`, `bj-player-row-layout.css`.
 
-**Why run:** Touched `BlackjackPanel` wiring, command route, and layout CSS ownership.
+### Targeted bug fixes (via contract, not pixel patches)
+- **Desktop Card View hero cards:** `cards` grid row floored with `--bj-zone-cards-min-height: 9rem`
+  so the `1fr` row can't collapse to zero.
+- **Desktop Full Table clipping:** cards zone `overflow: visible` (shell still clips horizontally —
+  no page scroll) so card tops/values read.
+- **Mobile boxes baseline:** shell now owns mobile boxes/tray placement identically for `mobileFull`
+  and `mobileCard`, so their baselines match; `cards` stretch pins boxes above the tray.
 
-**Result:** 10/10 pass (run at task start and after panel/command edits)
+### Debug overlay (`?layoutDebug=1`, hidden by default)
+- Now reports: engine version, resolved mode (desktopFull/desktopCard/mobileFull/mobileCard),
+  active phase, shell display + grid rows, and **per-zone** bounding box, rendered component, and
+  CSS owner file.
 
-### Layout — **RUN** `npm run test:layout:target`
+### Tests
+- `tableLayoutEngine.test.ts` — contract invariants (same zone names/order all modes, boxes baseline
+  phase-invariant, cards is sole stretch zone, cards can't own boxes/tray, ownership rules).
+- `tableLayoutEngineShell.test.tsx` — rendered zone-order smoke (table + hero modes).
+- `productionRouteOwnership.test.ts` — extended: single shell owner, mobile grid block present,
+  no competing grid rows, header ownership declarations, no bare `--table` selector, player-row no
+  longer moves zones, shell owns mobile boxes/tray.
+- Re-baselined frozen-layout assertions in `blackjackVisualCleanup.test.ts` and
+  `mobileTableViews.test.tsx` to the consolidated engine.
 
-**Why run:** Card-area and play-zone CSS changed; layout contract tests guard regressions.
+## Validation (targeted only)
+- `npm run test:ownership` → 18 passed
+- `npm run test:layout:target` → 53 passed
+- `npm run test:blackjack:layout` → 205 passed
+- `tableLayoutEngine` + `tableLayoutEngineShell` → 10 passed
+- `npm run build` → success
 
-**Result:** 53/53 pass
+## Visual confirmation checklist (please verify in browser)
+- [ ] Desktop Card View: hero cards visible, tops readable, total/status legible.
+- [ ] Desktop Full Table: per-box stacks align above box columns; tops/bottoms read; splits stay in column; no clipping.
+- [ ] Mobile Table View: boxes baseline matches Mobile Card View; boxes hug tray every phase; cards above boxes; no horizontal scroll.
+- [ ] All views: one compact command box; stable tray; no duplicate command/game-over route.
 
-### Blackjack engine — **RUN** `npm run test:blackjack:engine`
-
-**Why run:** Verified end-game evaluator path unchanged (`evaluateTableGameEnd` / `gameOverEvaluation.test.ts`).
-
-**Result:** 259/259 pass
-
-### Mobile cleanup — **RUN** `npx vitest run src/components/blackjackMobileCleanup.test.tsx`
-
-**Why run:** New targeted tests for this task.
-
-**Result:** 8/8 pass
-
-### Build — **RUN** `npm run build`
-
-**Result:** pass
-
-### Blackjack Layout — **SKIPPED** `npm run test:blackjack:layout`
-
-**Why skipped:** No frozen stitch/reference imports; targeted layout + new cleanup tests cover this pass. Full 214-test batch reserved for broad shell geometry edits.
-
-### People / Invites — **SKIPPED** `npm run test:people-invite`
-
-**Why skipped:** Out of scope.
-
-## 4. Architecture impact
-
-- **Route confirmed:** `App → TableScreen → BlackjackPanel → BlackjackTableLayoutShell` (unchanged)
-- **Issue 5 duplicate removed:** Obsolete second command source was dual `<p>` routes (green turn line + gold `commandLines`) plus unused `commandMessage`/`commandLines` on `dealerBlockProps`. Now one `BlackjackCommandBox` paragraph via `formatPlayerTurnCommand`; dealer uses `omitCommand` with no command props.
-- **Issue 6 canonical route:** `evaluateTableGameEnd` → `applyTableGameEndIfNeeded` → `gameEnded` → `GameOverActionOverlay` (mobile overlay + desktop rail/table overlay). Command zone stays empty while overlay is active.
-- **Issue 3 swipe:** Existing `useMobileBoxSwipeNavigation` on `.bj-casino__felt`; fixed pointer stacking (actions above cards) and horizontal `touch-action`.
-
-## 5. Deploy readiness
-
-| Gate | Status |
-|------|--------|
-| Ownership | Pass |
-| Layout target | Pass |
-| Engine | Pass |
-| Mobile cleanup tests | Pass |
-| Build | Pass |
-
-**Ready for commit** after human review.
-
-**Spec discipline: checked/updated `docs/CHANGE_LOG.md`.**
+**Spec discipline:** checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.

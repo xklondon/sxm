@@ -5,6 +5,7 @@ import {
   BLACKJACK_TABLE_LAYOUT_SHELL_NAME,
   CANONICAL_BLACKJACK_CSS_IMPORT_ORDER,
 } from './blackjackLayoutContract';
+import { CSS_OWNERSHIP, LAYOUT_ZONES } from './tableLayoutEngine';
 
 const ROOT = process.cwd();
 const PANEL_SRC = readFileSync(join(ROOT, 'src/components/BlackjackPanel.tsx'), 'utf8');
@@ -18,6 +19,7 @@ const CARD_AREA_CSS = readFileSync(join(ROOT, 'src/styles/bj-full-table-card-are
 const CARD_LAYOUT_CSS = readFileSync(join(ROOT, 'src/styles/bj-card-layout.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(ROOT, 'src/components/BlackjackCardView.css'), 'utf8');
 const STITCH_CSS = readFileSync(join(ROOT, 'src/styles/sxm-stitch-visual.css'), 'utf8');
+const PLAYER_ROW_CSS = readFileSync(join(ROOT, 'src/styles/bj-player-row-layout.css'), 'utf8');
 
 const PRODUCTION_FORBIDDEN_IMPORT_PATTERNS = [
   /reference-ui/,
@@ -164,5 +166,77 @@ describe('production route ownership — shell class and CSS geometry', () => {
     expect(STITCH_CSS).not.toMatch(/grid-row:/);
     expect(STITCH_CSS).not.toMatch(/\.bj-table-zone--/);
     expect(STITCH_CSS).not.toMatch(/\.bj-table-layout-shell/);
+  });
+});
+
+describe('Table Layout Engine — single shell owner (CSS ownership map)', () => {
+  it('the shell file is the engine owner named by the contract', () => {
+    expect(CSS_OWNERSHIP.shellGeometry).toBe('src/styles/bj-blackjack-table-shell.css');
+  });
+
+  it('shell file owns the grid for ALL four modes (desktop grid rows + mobile grid block)', () => {
+    // Desktop named grid rows.
+    expect(SHELL_CSS).toMatch(/\[dealer\][\s\S]*\[command\][\s\S]*\[cards\][\s\S]*\[actions\]/);
+    // Mobile grid block consolidated into the same owner.
+    expect(SHELL_CSS).toMatch(/Mobile shell \(portrait\)/);
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell,[\s\S]*?display:\s*grid/,
+    );
+  });
+
+  it('no competing file defines the shell grid template rows by zone name', () => {
+    for (const css of [SHARED_CSS, CARD_LAYOUT_CSS, PLAYER_ROW_CSS, STITCH_CSS]) {
+      expect(css).not.toMatch(/grid-template-rows:[\s\S]*\[command\]/);
+      expect(css).not.toMatch(/grid-row:\s*command/);
+    }
+  });
+
+  it('every CSS owner declares its scope in a header comment', () => {
+    const owners = [
+      { file: 'src/styles/bj-blackjack-table-shell.css', src: SHELL_CSS },
+      { file: 'src/styles/bj-table-shared.css', src: SHARED_CSS },
+      { file: 'src/styles/bj-full-table-card-area.css', src: CARD_AREA_CSS },
+      { file: 'src/styles/bj-card-layout.css', src: CARD_LAYOUT_CSS },
+      { file: 'src/styles/sxm-stitch-visual.css', src: STITCH_CSS },
+    ];
+    for (const { file, src } of owners) {
+      expect(src, `${file} must declare MAY OWN`).toMatch(/MAY OWN/);
+      expect(src, `${file} must declare MUST NOT`).toMatch(/MUST NOT/);
+    }
+  });
+
+  it('bj-card-layout.css has no bare (un-scoped) cards-area table selector', () => {
+    // A leaky selector starts a rule at column 0 with the zone class (no view root ancestor).
+    expect(CARD_LAYOUT_CSS).not.toMatch(/^\.bj-table-zone--cards\.bj-cards-area--table\s*\{/m);
+  });
+
+  it('bj-player-row-layout.css no longer moves the boxes/tray zone wrappers (no margin-top on zone)', () => {
+    expect(PLAYER_ROW_CSS).not.toMatch(
+      /\.bj-table-zone--boxes[\s\S]{0,160}margin-top:\s*0/,
+    );
+    expect(PLAYER_ROW_CSS).not.toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]{0,200}margin-top:/,
+    );
+  });
+
+  it('shell file owns mobile boxes + tray placement (consolidated from player-row)', () => {
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--boxes/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--bottom/,
+    );
+  });
+
+  it('contract enumerates all seven zones (shell DOM order parity)', () => {
+    expect(LAYOUT_ZONES).toEqual([
+      'bankInfo',
+      'dealer',
+      'command',
+      'cards',
+      'actions',
+      'boxes',
+      'tray',
+    ]);
   });
 });

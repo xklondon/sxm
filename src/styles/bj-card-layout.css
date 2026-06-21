@@ -1,6 +1,11 @@
 /**
- * CardsArea content only — hero fan sizing and inner phone-view flex.
- * Shell zone order, dimensions, actions, boxes, and tray: bj-table-shared.css
+ * bj-card-layout.css — CardsArea CONTENT only: hero fan sizing and inner phone-view flex.
+ * Contract: src/components/tableLayoutEngine.ts.
+ *
+ * MAY OWN  : layout INSIDE the cards zone (hero fan, phone-view flex, hero value band).
+ * MUST NOT : own the shell grid, zone order, zone band heights, or zone margins
+ *            (bj-blackjack-table-shell.css). No bare/leaky selectors — scope under a view root.
+ * No grid-template-rows here (enforced by productionRouteOwnership.test.ts).
  */
 
 :root {
@@ -94,7 +99,10 @@
 .bj-view-full-desktop .bj-table-zone--cards.bj-cards-area--hero,
 .bj-view-full-mobile .bj-table-zone--cards.bj-cards-area--hero,
 .bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero,
-.bj-table-zone--cards.bj-cards-area--table {
+.bj-view-full-desktop .bj-table-zone--cards.bj-cards-area--table,
+.bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--table,
+.bj-view-full-mobile .bj-table-zone--cards.bj-cards-area--table,
+.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--table {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -104,7 +112,11 @@
   justify-content: flex-start;
 }
 
-.bj-table-zone--cards.bj-cards-area--table {
+/* Table card row pins to the bottom of the cards zone (content alignment INSIDE the zone). */
+.bj-view-full-desktop .bj-table-zone--cards.bj-cards-area--table,
+.bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--table,
+.bj-view-full-mobile .bj-table-zone--cards.bj-cards-area--table,
+.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--table {
   justify-content: flex-end;
 }
 

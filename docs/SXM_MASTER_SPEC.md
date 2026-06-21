@@ -550,9 +550,9 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 
 ### Blackjack shell zones (canonical)
 
-`BlackjackTableLayoutShell`: bank-info → dealer → command → cards → actions → player boxes → chip tray. Desktop geometry owned solely by `bj-blackjack-table-shell.css` (Full Table + Card View). Global CSS cascade order is documented in `CANONICAL_BLACKJACK_CSS_IMPORT_ORDER` (`blackjackLayoutContract.ts`); stitch theme tokens import before table layout CSS.
+`BlackjackTableLayoutShell`: bank-info → dealer → command → cards → actions → player boxes → chip tray. The neutral layout contract lives in `src/components/tableLayoutEngine.ts` (zones, four modes `desktopFull` / `desktopCard` / `mobileFull` / `mobileCard`, per-mode stretch zone, baselines, overflow, and the CSS ownership map). **One CSS-grid engine for all four modes** — desktop and mobile (portrait) shell geometry is owned solely by `bj-blackjack-table-shell.css` (Full Table + Card View). `cards` is the single stretch row; the player-boxes baseline sits directly above the tray in every mode (no `margin-top: auto` / `translateY` / absolute zone movers). Other stylesheets own CONTENT inside a zone only (card stacks → `bj-full-table-card-area.css`; hero fan → `bj-card-*-hero/portrait`; tokens/visuals → `bj-table-shared.css`; theme → `sxm-stitch-visual.css`). Each layout stylesheet declares MAY OWN / MUST NOT own in its header; `productionRouteOwnership.test.ts` enforces the single owner + ownership map. Global CSS cascade order is documented in `CANONICAL_BLACKJACK_CSS_IMPORT_ORDER` (`blackjackLayoutContract.ts`); stitch theme tokens import before table layout CSS.
 
-**Layout debug (`?layoutDebug=1`):** Hidden by default. When enabled, overlays zone labels and a diagnostics panel (layout version, shell name, view mode, protocol phase, CSS route, zone order).
+**Layout debug (`?layoutDebug=1`):** Hidden by default. When enabled, overlays zone labels and a diagnostics panel (engine version, resolved mode, shell name, view mode, protocol phase, CSS route, zone order, per-zone bounding boxes, rendered component per zone, and CSS owner file per zone).
 
 **Mobile chip tray (`ValueAndChipsBar`):**
 
