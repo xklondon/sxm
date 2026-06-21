@@ -143,6 +143,20 @@ describe('mobile Card View layout contract', () => {
     expect(html).not.toContain('Full table view');
   });
 
+  it('mobile Full Table shows command box in betting and playing phases', () => {
+    const betting = renderPanelAt(390, withView(bettingState(), 'full'));
+    const playing = renderPanelAt(390, withView(playingState(), 'full'));
+    for (const html of [betting, playing]) {
+      expect(html).toContain('bj-view-full-mobile');
+      const commandZone =
+        html.split(TABLE_UX.tableZoneSummary)[1]?.split(TABLE_UX.tableZoneCards)[0] ?? '';
+      expect(commandZone).toContain(TABLE_UX.cardLayoutCommand);
+      expect(commandZone).toContain('dealer-block__command');
+    }
+    expect(betting).toMatch(/Place your bets|shuffle|deal/i);
+    expect(playing).toMatch(/Box \d+ — .+ — your turn\./);
+  });
+
   it('dealer command area carries box/caller turn text', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
     expect(html).toMatch(/Box \d+ — .+ — your turn\./);

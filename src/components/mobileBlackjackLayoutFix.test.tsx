@@ -211,12 +211,12 @@ describe('mobile blackjack layout fix', () => {
   });
 
   describe('E — mobile action button integration', () => {
-    it('uses compact casino-style hit/stand tokens in mobile actions zone', () => {
+    it('uses larger touch-friendly hit/stand tokens in mobile actions zone', () => {
       expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--hit[\s\S]*min-height:\s*1\.55rem/,
+        /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--hit[\s\S]*min-height:\s*2\.75rem/,
       );
       expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--stand[\s\S]*border-radius:\s*0\.38rem/,
+        /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--stand[\s\S]*border-radius:\s*0\.45rem/,
       );
     });
   });

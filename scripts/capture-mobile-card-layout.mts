@@ -163,9 +163,9 @@ async function main() {
   if (!heroCard) {
     throw new Error('no visible hero playing cards in mobile Card View');
   }
-  if (heroCard.width <= 45 || heroCard.height <= 65) {
+  if (heroCard.width < 70 || heroCard.height < 100) {
     throw new Error(
-      `hero playing card too small (${heroCard.width.toFixed(1)}×${heroCard.height.toFixed(1)}px)`,
+      `hero playing card too small (${heroCard.width.toFixed(1)}×${heroCard.height.toFixed(1)}px; need ≥70×100)`,
     );
   }
   if (heroCard.top < cardsZone.top - 2 || heroCard.bottom > cardsZone.bottom + 2) {

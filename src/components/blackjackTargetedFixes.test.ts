@@ -74,10 +74,19 @@ describe('Blackjack targeted fixes', () => {
     expect(TARGETED_CSS).not.toMatch(/data-bj-phase='playing'[\s\S]*overflow-y:\s*auto/);
   });
 
-  it('mobile Card View portrait scales hero cards ~2.5x', () => {
-    expect(PORTRAIT_CSS).toContain('--bj-card-hero-card-scale: 2.5');
-    expect(PORTRAIT_CSS).toMatch(
-      /calc\(var\(--bj-card-hero-card-width\) \* var\(--bj-card-hero-card-scale/,
+  it('mobile Card View portrait hero cards fill cards area with 70×100px floor', () => {
+    expect(PORTRAIT_CSS).toContain('min-width: 4.375rem');
+    expect(PORTRAIT_CSS).toContain('min-height: 6.25rem');
+    expect(PORTRAIT_CSS).toMatch(/92cqh|78cqw/);
+  });
+
+  it('mobile Full Table command box is not zero-height in shared CSS', () => {
+    const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    expect(SHARED_CSS).not.toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--summary \.bj-card-layout__command,\s*\n\s*\.bj-view-full-mobile\[data-phase='player'\]/,
+    );
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--summary \.bj-card-layout__command,\s*\n\s*\.bj-view-card-mobile/,
     );
   });
 

@@ -1,0 +1,158 @@
+{
+  "betting": {
+    "phase": "betting",
+    "hasMobileFull": true,
+    "commandZone": {
+      "top": 239.28125,
+      "bottom": 275.28125,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 36,
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "hidden"
+    },
+    "commandBox": {
+      "top": 246.953125,
+      "bottom": 275.28125,
+      "left": 25.46875,
+      "right": 364.53125,
+      "width": 339.0625,
+      "height": 28.328125,
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "hidden"
+    },
+    "commandPill": {
+      "top": 246.953125,
+      "bottom": 275.28125,
+      "left": 25.46875,
+      "right": 364.53125,
+      "width": 339.0625,
+      "height": 28.328125,
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "hidden"
+    },
+    "commandText": "Place your bets, then shuffle to start the shoe.",
+    "hitButton": null,
+    "standButton": null,
+    "actionRow": {
+      "top": 486.4375,
+      "bottom": 486.4375,
+      "left": 195,
+      "right": 195,
+      "width": 0,
+      "height": 0,
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "visible"
+    },
+    "playerBoxes": {
+      "top": 518.09375,
+      "bottom": 603.734375,
+      "left": 31.875,
+      "right": 358.125,
+      "width": 326.25,
+      "height": 85.640625,
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "visible"
+    }
+  },
+  "playing": {
+    "phase": "playing",
+    "hasMobileFull": true,
+    "commandZone": {
+      "top": 335.28125,
+      "bottom": 437.28125,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 102,
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "hidden"
+    },
+    "commandBox": {
+      "top": 342.953125,
+      "bottom": 419.078125,
+      "left": 25.46875,
+      "right": 364.53125,
+      "width": 339.0625,
+      "height": 76.125,
+      "display": "flex",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "hidden"
+    },
+    "commandPill": {
+      "top": 342.953125,
+      "bottom": 419.078125,
+      "left": 25.46875,
+      "right": 364.53125,
+      "width": 339.0625,
+      "height": 76.125,
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "hidden"
+    },
+    "commandText": "Box 1 — Alice — your turn.Bank has 7♥ against your 13.",
+    "hitButton": {
+      "top": 471.9375,
+      "bottom": 515.9375,
+      "left": 195,
+      "right": 283,
+      "width": 88,
+      "height": 44,
+      "display": "inline-block",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "visible"
+    },
+    "standButton": {
+      "top": 471.9375,
+      "bottom": 515.9375,
+      "left": 107,
+      "right": 195,
+      "width": 88,
+      "height": 44,
+      "display": "inline-block",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "visible"
+    },
+    "actionRow": {
+      "top": 470.671875,
+      "bottom": 516.265625,
+      "left": 103.8125,
+      "right": 286.1875,
+      "width": 182.375,
+      "height": 45.59375,
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "visible"
+    },
+    "playerBoxes": {
+      "top": 502.328125,
+      "bottom": 603.734375,
+      "left": 31.875,
+      "right": 358.125,
+      "width": 326.25,
+      "height": 101.40625,
+      "display": "block",
+      "visibility": "visible",
+      "opacity": "1",
+      "overflow": "visible"
+    }
+  }
+}

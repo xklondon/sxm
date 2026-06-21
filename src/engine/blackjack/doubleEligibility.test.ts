@@ -54,6 +54,14 @@ function playerTurn(
 }
 
 describe('double eligibility — protocol', () => {
+  it('two-card hard 10 from 8+2 offers Double', () => {
+    const { state: playing, handKey } = playerTurn(tableWithClaimedBox(1), ['8', '2']);
+    const cards = cardsFromIds(playing.deck!, playing.blackjack!.playerHands[handKey]!.cardIds);
+    expect(getBlackjackHandValue(cards).value).toBe(10);
+    expect(getBlackjackHandValue(cards).isSoft).toBe(false);
+    expect(canDoubleBlackjackForState(playing, handKey)).toBe(true);
+  });
+
   it('two-card hard 10 offers Double', () => {
     let state = tableWithClaimedBox(1);
     const { state: playing, handKey } = playerTurn(state, ['6', '4']);
@@ -177,6 +185,18 @@ describe('double eligibility — protocol', () => {
     ).toBe(false);
     const next = processPlayFlowAutoStands(playing);
     expect(next.blackjack!.playerHands[handKey]!.actionStatus).toBe('acting');
+  });
+
+  it('command text lists Double for hard 10 from 8+2 when allowDoubleDown is true', () => {
+    const { state, handKey } = playerTurn(tableWithClaimedBox(1), ['8', '2']);
+    const optionsLine = formatPlayerTurnOptions(
+      true,
+      true,
+      state.blackjackSettings.allowDoubleDown &&
+        canDoubleBlackjackForState(state, handKey),
+      state.blackjackSettings.allowSplit && canSplitBlackjackForState(state, handKey),
+    );
+    expect(optionsLine).toMatch(/Double/i);
   });
 
   it('command text lists Double for hard 10 when allowDoubleDown is true', () => {

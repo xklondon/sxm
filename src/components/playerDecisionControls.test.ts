@@ -21,6 +21,34 @@ import { claimBoxSlot } from '../engine/session/boxOps';
 import { getBlackjackProtocolPhase } from '../engine/blackjack/protocol';
 
 describe('table command display', () => {
+  it('includes double in options line for hard 10 from 8+2', () => {
+    let state = tableWithClaimedBox(1);
+    const boxId = boxPlayerId(state, 1)!;
+    const handKey = blackjackHandKey(boxId, 0);
+    state = {
+      ...state,
+      blackjack: {
+        ...actingRound(state, boxId, [findCardId(state.deck!, '8'), findCardId(state.deck!, '2')], 50),
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: boxId,
+      },
+      blackjackSettings: { ...state.blackjackSettings, allowDoubleDown: true, allowSplit: false },
+    };
+    const result = buildBlackjackCommandText({
+      gameState: state,
+      gameEnded: false,
+      gameOverMessage: '',
+      centerStatus: '',
+      protocolPhase: 'player',
+      roundSummaryLines: [],
+      controllerName: 'Alice',
+      viewerPersonId: state.tableMeta.ownerPersonId,
+    });
+    expect(result.commandLines).toContain('Double available.');
+    expect(result.commandLines.some((line) => line.startsWith('Options:'))).toBe(false);
+  });
+
   it('includes double in options line when split/double are available', () => {
     let state = tableWithClaimedBox(1);
     const boxId = boxPlayerId(state, 1)!;

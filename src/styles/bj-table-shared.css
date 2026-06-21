@@ -794,10 +794,12 @@
     color: rgb(251 191 36 / 0.98);
     border: 1px solid rgb(251 191 36 / 0.62);
     box-shadow: none;
-    min-height: 1.55rem;
-    max-height: 1.55rem;
-    padding: 0.14rem 0.55rem;
-    border-radius: 0.38rem;
+    min-height: 2.75rem;
+    max-height: 2.75rem;
+    min-width: 5.5rem;
+    padding: 0.28rem 0.85rem;
+    font-size: 0.92rem;
+    border-radius: 0.45rem;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--stand,
@@ -805,10 +807,12 @@
     background: rgb(0 0 0 / 0.28);
     color: rgb(235 245 240 / 0.95);
     border: 1px solid rgb(255 255 255 / 0.22);
-    min-height: 1.55rem;
-    max-height: 1.55rem;
-    padding: 0.14rem 0.55rem;
-    border-radius: 0.38rem;
+    min-height: 2.75rem;
+    max-height: 2.75rem;
+    min-width: 5.5rem;
+    padding: 0.28rem 0.85rem;
+    font-size: 0.92rem;
+    border-radius: 0.45rem;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__btn--sm,
@@ -853,7 +857,6 @@
     --bj-zone-dealer-height: 4.35rem;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command,
   .bj-view-full-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
   .bj-view-full-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action--reserved,
   .bj-view-card-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
@@ -867,6 +870,7 @@
   }
 
   .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--summary .dealer-block__command,
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command,
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command,
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--summary .dealer-block__command {
     margin-inline: auto;

@@ -396,8 +396,7 @@
 }
 
 .bj-view-full-desktop .bj-table-zone--actions .ds-btn--hit,
-.bj-view-card-desktop .bj-table-zone--actions .ds-btn--hit,
-.bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--actions .ds-btn--hit {
+.bj-view-card-desktop .bj-table-zone--actions .ds-btn--hit {
   background: rgb(8 22 16 / 0.82);
   color: rgb(251 191 36 / 0.98);
   border: 1px solid rgb(251 191 36 / 0.62);
@@ -409,8 +408,7 @@
 }
 
 .bj-view-full-desktop .bj-table-zone--actions .ds-btn--stand,
-.bj-view-card-desktop .bj-table-zone--actions .ds-btn--stand,
-.bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--actions .ds-btn--stand {
+.bj-view-card-desktop .bj-table-zone--actions .ds-btn--stand {
   background: rgb(0 0 0 / 0.28);
   color: rgb(235 245 240 / 0.95);
   border: 1px solid rgb(255 255 255 / 0.22);
