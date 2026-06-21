@@ -628,6 +628,22 @@
     > .bj-phone-view__box-value--card-column-below {
     grid-row: 2;
   }
+
+  /* Insurance — compact table stacks so two-card hands stay inside cardsArea clearance. */
+  .bj-view-full-desktop[data-phase='insurance'] {
+    --bj-table-card-width: 2.68rem;
+    --bj-table-card-height: 3.48rem;
+    --bj-table-card-overlap-2: 1.08rem;
+    --bj-table-card-overlap-3: 1.62rem;
+    --bj-table-card-overlap-4plus: 1.95rem;
+  }
+
+  .bj-view-full-desktop[data-phase='insurance']
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--table {
+    padding-bottom: 0.14rem;
+    box-sizing: border-box;
+  }
 }
 
 /* Full Table stack outcome badges — desktop + mobile (overlay on card stack) */

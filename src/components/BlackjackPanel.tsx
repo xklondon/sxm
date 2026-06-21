@@ -91,8 +91,8 @@ import { AssignChipsModal } from './AssignChipsModal';
 import { ChangeMinBetModal } from './ChangeMinBetModal';
 import { TableAccountsPanel } from './TableAccountsPanel';
 import {
-  takeInsuranceForPersonOnState,
-  declineInsuranceForPersonOnState,
+  takeInsuranceOnState,
+  declineInsuranceOnState,
   takeEvenMoneyOnState,
   waitForBlackjackPayoutOnState,
   getStakeBetValidationMessage,
@@ -1307,11 +1307,8 @@ export function BlackjackPanel({
       return null;
     }
 
-    const { personId, maxBet, canAfford, slotNumbers } = primary;
-    const boxLabel =
-      slotNumbers.length > 1
-        ? `Boxes ${slotNumbers.join(' & ')}`
-        : `Box ${slotNumbers[0] ?? '?'}`;
+    const { playerId: boxId, maxBet, canAfford, slotNumber, slotNumbers } = primary;
+    const boxLabel = `Box ${slotNumber ?? slotNumbers[0] ?? '?'}`;
     const insuranceBusy = insuranceDecisionPending || onlineActionInFlight;
     return (
       <InsuranceDecisionOverlay
@@ -1324,9 +1321,9 @@ export function BlackjackPanel({
             return;
           }
           setInsuranceDecisionPending(true);
-          run((s) => takeInsuranceForPersonOnState(s, personId), {
+          run((s) => takeInsuranceOnState(s, boxId), {
             type: 'takeInsurance',
-            payload: { personId },
+            payload: { playerId: boxId },
           });
         }}
         onDecline={() => {
@@ -1334,9 +1331,9 @@ export function BlackjackPanel({
             return;
           }
           setInsuranceDecisionPending(true);
-          run((s) => declineInsuranceForPersonOnState(s, personId), {
+          run((s) => declineInsuranceOnState(s, boxId), {
             type: 'declineInsurance',
-            payload: { personId },
+            payload: { playerId: boxId },
           });
         }}
       />

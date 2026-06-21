@@ -15,6 +15,14 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-13 — Desktop Full Table insurance clipping + per-box insurance decisions
+
+- **Visual (Full Table desktop):** Insurance command row rebalanced (dealer/command/actions bands); compact overlay in command zone; insurance-phase card stack tokens so two-card hands stay inside `cardsArea` without clipping.
+- **Insurance flow:** Each eligible box/hand gets its own decision in slot order; UI dispatches `takeInsurance` / `declineInsurance` with `{ playerId: boxId }` (no batched person-level decision).
+- **Tests:** `multiBoxInsurance.test.ts`, `insurancePhase.test.ts`; capture `scripts/capture-desktop-full-insurance-layout.mts`.
+
+---
+
 ## 2026-06-20 — Table invite flow stability + diagnostics
 
 - **Diagnostics:** `[SXM][invite-flow]` logs on invite create/accept/join/preview/fail with masked emails/ids (no raw tokens).

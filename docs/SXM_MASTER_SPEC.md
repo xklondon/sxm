@@ -649,7 +649,7 @@ Enforced in `server/src/tables/authority.ts` before `applyTableAction`:
 | Betting | Phase `betting`, not locked; any seated member may place chips |
 | Player turns | Box owner for active `activeHandKey` only |
 | Host-only | shuffle, deal, nextRound, configureTable, resetTable, zilch host actions |
-| Insurance | Sole staker on a box (or box caller when multiple stakers); one person-scoped decision covers all their eligible boxes; `personId` payload online |
+| Insurance | Sole staker on a box (or box caller when multiple stakers); **one decision per eligible box/hand** in slot order; `{ playerId: boxId }` payload online |
 | Zilch | `currentPlayerId === ctx.personId` |
 | assignChips | `canUserAssignChips` (table admin + owner rules) |
 | Personal ledger | Game ended, not already added |

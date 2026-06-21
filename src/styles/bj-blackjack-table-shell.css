@@ -492,4 +492,43 @@
     max-height: calc(1.05rem * var(--bj-desktop-box-value-scale, 2) * 0.55);
     line-height: 1.05;
   }
+
+  /* Full Table desktop — fund taller command row from dealer band; reclaim cards height from actions padding. */
+  .bj-view-full-desktop[data-phase='insurance'] {
+    --bj-desktop-zone-dealer-height: 5.5rem;
+    --bj-desktop-zone-command-height: 7.5rem;
+    --bj-desktop-actions-zone-padding-top: 0.35rem;
+    --bj-desktop-zone-actions-height: 1.85rem;
+  }
+
+  .bj-view-full-desktop[data-phase='insurance'] .bj-table-layout-shell > .bj-table-zone--summary {
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop[data-phase='insurance']
+    .bj-table-layout-shell
+    > .bj-table-zone--summary
+    .bj-card-layout__command {
+    flex: 0 1 auto;
+    min-height: 0;
+    padding: 0.28rem 1.5rem;
+    gap: 0.08rem;
+  }
+
+  .bj-view-full-desktop[data-phase='insurance'] .bj-insurance-overlay {
+    margin-top: 0.04rem;
+    padding: 0.16rem 0.38rem 0.18rem;
+    gap: 0.12rem;
+    max-width: min(100%, 20rem);
+  }
+
+  .bj-view-full-desktop[data-phase='insurance'] .bj-insurance-overlay__hint {
+    display: none;
+  }
+
+  .bj-view-full-desktop[data-phase='insurance'] .bj-insurance-overlay__btn {
+    min-height: 1.35rem;
+    font-size: 0.54rem;
+    padding: 0.08rem 0.28rem;
+  }
 }

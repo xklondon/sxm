@@ -21,6 +21,7 @@ import {
   getInsuranceActionsForController,
   getMyPendingInsurancePlayerIds,
   getPendingInsurancePlayerIds,
+  getPrimaryInsuranceActionForController,
   showInsuranceControls,
 } from '../../components/blackjackViewPhase';
 import { canDoubleBlackjackForState, canSplitBlackjackForState } from './validation';
@@ -28,6 +29,8 @@ import type { GameState } from '../../types';
 import { actingRound, boxPlayerId, findCardId, tableWithClaimedBox } from './sanity/fixtures';
 import { claimBoxSlot, setControllerName } from '../session/boxOps';
 import { syncCallersForDeal } from '../session/playerAssignment';
+import { addSeatAtTable } from '../session/table';
+import { allocateChipsToBankrollOwner } from '../session/allocation';
 
 function insuranceRound(
   state: GameState,
@@ -227,6 +230,76 @@ describe('insurance phase', () => {
     if (actions.length > 0) {
       expect(actions[0]?.canAfford).toBe(false);
     }
+  });
+
+  it('two players with two boxes require two sequential insurance decisions', () => {
+    let state = tableWithClaimedBox(1);
+    state = claimBoxSlot(state, 2);
+    const box1 = boxPlayerId(state, 1)!;
+    const box2 = boxPlayerId(state, 2)!;
+    const aliceId = state.tableMeta.ownerPersonId!;
+    state = addChipToBoxStake(state, box1, 50, aliceId);
+    state = confirmBoxStake(state, box1);
+
+    state = addSeatAtTable(state, {
+      displayName: 'Bob',
+      controllerName: 'Bob',
+      role: 'person',
+      startingChips: 500,
+    });
+    const bobId = state.session.playerIds[state.session.playerIds.length - 1]!;
+    state = allocateChipsToBankrollOwner(state, {
+      bankrollOwnerId: bobId,
+      amount: 500,
+      reason: 'initial-player',
+      source: 'setup',
+    });
+    state = addChipToBoxStake(state, box2, 20, bobId);
+    state = confirmBoxStake(state, box2);
+    state = syncCallersForDeal(state, [box1, box2]);
+    state = {
+      ...state,
+      blackjack: {
+        ...createEmptyBlackjackRound(),
+        status: 'player-turns',
+        insuranceOfferPending: true,
+        dealerCardIds: [findCardId(state.deck!, 'A'), findCardId(state.deck!, '10')],
+        dealerHoleHidden: true,
+        activeHandKey: null,
+        insuranceBets: {},
+        insuranceDeclined: {},
+        playerHands: {
+          [blackjackHandKey(box1, 0)]: {
+            ...createBlackjackPlayerHand(box1, 0),
+            cardIds: [findCardId(state.deck!, '9'), findCardId(state.deck!, '8')],
+            currentBet: 50,
+            actionStatus: 'acting',
+          },
+          [blackjackHandKey(box2, 0)]: {
+            ...createBlackjackPlayerHand(box2, 0),
+            cardIds: [findCardId(state.deck!, '7'), findCardId(state.deck!, '6')],
+            currentBet: 20,
+            actionStatus: 'acting',
+          },
+        },
+      },
+    };
+
+    expect(getPendingInsurancePlayerIds(state, state.blackjack!)).toEqual([box1, box2]);
+    expect(getInsuranceActionsForController(state, state.blackjack!, aliceId)).toHaveLength(1);
+    expect(getInsuranceActionsForController(state, state.blackjack!, bobId)).toHaveLength(1);
+
+    state = declineInsuranceOnState(state, box1);
+    expect(state.blackjack?.insuranceOfferPending).toBe(true);
+    expect(getPrimaryInsuranceActionForController(state, state.blackjack!, bobId)?.playerId).toBe(
+      box2,
+    );
+    expect(getInsuranceActionsForController(state, state.blackjack!, aliceId)).toEqual([]);
+
+    state = takeInsuranceOnState(state, box2);
+    expect(state.blackjack?.insuranceOfferPending).toBe(false);
+    expect(state.blackjack?.insuranceBets?.[box2]).toBe(10);
+    expect(getBlackjackProtocolPhase(state)).not.toBe('insurance');
   });
 
   it('getPendingInsurancePlayerIds lists only unresolved eligible boxes', () => {

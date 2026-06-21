@@ -1,0 +1,88 @@
+{
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "dataPhase": "insurance",
+  "dataBjPhase": "dealing",
+  "dealerArea": {
+    "top": 169.53125,
+    "bottom": 257.53125,
+    "left": 27.984375,
+    "right": 1044,
+    "width": 1016.015625,
+    "height": 88,
+    "overflow": "hidden",
+    "zIndex": "2"
+  },
+  "commandZone": {
+    "top": 257.53125,
+    "bottom": 377.53125,
+    "left": 27.984375,
+    "right": 1044,
+    "width": 1016.015625,
+    "height": 120,
+    "overflow": "hidden",
+    "zIndex": "3"
+  },
+  "commandBox": {
+    "top": 264.125,
+    "bottom": 318.796875,
+    "left": 311.984375,
+    "right": 759.984375,
+    "width": 448,
+    "height": 54.671875,
+    "overflow": "visible",
+    "zIndex": "auto"
+  },
+  "overlay": {
+    "top": 320.046875,
+    "bottom": 351.75,
+    "left": 472.265625,
+    "right": 599.703125,
+    "width": 127.4375,
+    "height": 31.703125,
+    "overflow": "visible",
+    "zIndex": "auto"
+  },
+  "cardsArea": {
+    "top": 378.796875,
+    "bottom": 487.0625,
+    "left": 27.984375,
+    "right": 1044,
+    "width": 1016.015625,
+    "height": 108.265625,
+    "overflow": "hidden",
+    "zIndex": "5"
+  },
+  "feltCloth": {
+    "top": 378.796875,
+    "bottom": 487.0625,
+    "left": 27.984375,
+    "right": 1044,
+    "width": 1016.015625,
+    "height": 108.265625,
+    "overflow": "visible",
+    "zIndex": "0"
+  },
+  "cardStacks": [
+    {
+      "i": 0,
+      "top": 428.53125,
+      "bottom": 484.203125,
+      "left": 887.265625,
+      "right": 930.140625,
+      "height": 55.671875,
+      "width": 42.875
+    },
+    {
+      "i": 1,
+      "top": 390.125,
+      "bottom": 445.796875,
+      "left": 887.265625,
+      "right": 930.140625,
+      "height": 55.671875,
+      "width": 42.875
+    }
+  ]
+}

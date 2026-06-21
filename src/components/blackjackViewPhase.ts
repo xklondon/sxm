@@ -451,7 +451,7 @@ export interface InsuranceActionView {
   slotNumber: number | undefined;
 }
 
-/** One insurance decision per viewer covering all their pending eligible boxes. */
+/** One insurance action per pending eligible box the viewer may decide (slot order). */
 export function getInsuranceActionsForController(
   state: GameState,
   round: BlackjackRound,
@@ -462,37 +462,27 @@ export function getInsuranceActionsForController(
   }
   const protocol = getBlackjackProtocolForState(state);
   const pendingBoxIds = getMyPendingInsurancePlayerIds(state, round, viewerPersonId);
-  const offers = pendingBoxIds
-    .map((boxId) => ({
-      boxId,
-      offer: getInsuranceOfferForBox(state, round, boxId, protocol),
-    }))
-    .filter((entry): entry is { boxId: string; offer: NonNullable<typeof entry.offer> } =>
-      Boolean(entry.offer),
-    );
-  if (offers.length === 0) {
-    return [];
-  }
-  const slotNumbers = offers
-    .map(({ boxId }) => state.session.boxSlotNumbers?.[boxId])
-    .filter((n): n is number => typeof n === 'number');
-  const maxBet = offers.reduce((sum, { offer }) => sum + offer.maxBet, 0);
-  const canAfford = offers.every(({ offer }) => offer.canAfford);
-  const boxIds = offers.map(({ boxId }) => boxId);
-  return [
-    {
-      personId: viewerPersonId,
-      boxIds,
-      maxBet,
-      canAfford,
-      slotNumbers,
-      playerId: boxIds[0]!,
-      slotNumber: slotNumbers[0],
-    },
-  ];
+  return pendingBoxIds.flatMap((boxId) => {
+    const offer = getInsuranceOfferForBox(state, round, boxId, protocol);
+    if (!offer) {
+      return [];
+    }
+    const slotNumber = state.session.boxSlotNumbers?.[boxId];
+    return [
+      {
+        personId: viewerPersonId,
+        boxIds: [boxId],
+        maxBet: offer.maxBet,
+        canAfford: offer.canAfford,
+        slotNumbers: typeof slotNumber === 'number' ? [slotNumber] : [],
+        playerId: boxId,
+        slotNumber,
+      },
+    ];
+  });
 }
 
-/** Next insurance decision for this controller (Card View shows one box at a time). */
+/** Next insurance decision for this controller — first pending eligible box only. */
 export function getPrimaryInsuranceActionForController(
   state: GameState,
   round: BlackjackRound,

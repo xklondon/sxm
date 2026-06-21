@@ -353,10 +353,7 @@ export function buildBlackjackCommandText(params: {
     const first = actions[0]!;
     const caller = players[first.personId];
     const displayName = caller?.controllerName?.trim() || caller?.displayName?.trim() || 'player';
-    const boxLabel =
-      first.slotNumbers.length > 1
-        ? `Boxes ${first.slotNumbers.join(' & ')}`
-        : `Box ${first.slotNumber ?? '?'}`;
+    const boxLabel = `Box ${first.slotNumber ?? first.slotNumbers[0] ?? '?'}`;
     return {
       commandMessage: `${boxLabel} — ${displayName} — your insurance call.`,
       commandLines: ['Insurance pays 2:1 when the bank has blackjack.'],

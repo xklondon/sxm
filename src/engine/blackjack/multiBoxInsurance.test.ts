@@ -3,7 +3,8 @@ import type { GameState } from '../../types';
 import type { BlackjackRound } from '../../types/blackjack';
 import { createBlackjackPlayerHand, createEmptyBlackjackRound } from '../../types/blackjack';
 import {
-  takeInsuranceForPersonOnState,
+  takeInsuranceOnState,
+  declineInsuranceOnState,
   applyInsuranceAdvanceOnState,
 } from './gameState';
 import { getBlackjackProtocolPhase } from './protocol';
@@ -87,7 +88,7 @@ describe('multi-box insurance', () => {
     expect(eligible).toHaveLength(2);
   });
 
-  it('same player: one decision covers every eligible box', () => {
+  it('same player: each eligible box requires its own decision', () => {
     let state = readyTwoBoxInsurance();
     const box1 = boxPlayerId(state, 1)!;
     const box2 = boxPlayerId(state, 2)!;
@@ -95,15 +96,25 @@ describe('multi-box insurance', () => {
 
     expect(getPendingInsurancePlayerIds(state, state.blackjack!)).toEqual([box1, box2]);
 
-    const actions = getInsuranceActionsForController(state, state.blackjack!, personId);
-    expect(actions).toHaveLength(1);
-    expect(actions[0]?.boxIds).toEqual([box1, box2]);
-    expect(actions[0]?.maxBet).toBe(30);
+    let actions = getInsuranceActionsForController(state, state.blackjack!, personId);
+    expect(actions).toHaveLength(2);
+    expect(actions[0]?.boxIds).toEqual([box1]);
+    expect(actions[0]?.maxBet).toBe(25);
+    expect(actions[1]?.boxIds).toEqual([box2]);
+    expect(actions[1]?.maxBet).toBe(5);
 
-    state = takeInsuranceForPersonOnState(state, personId);
-    expect(state.blackjack?.insuranceOfferPending).toBe(false);
+    state = takeInsuranceOnState(state, box1);
+    expect(state.blackjack?.insuranceOfferPending).toBe(true);
     expect(state.blackjack?.insuranceBets?.[box1]).toBe(25);
-    expect(state.blackjack?.insuranceBets?.[box2]).toBe(5);
+    expect(getBlackjackProtocolPhase(state)).toBe('insurance');
+
+    actions = getInsuranceActionsForController(state, state.blackjack!, personId);
+    expect(actions).toHaveLength(1);
+    expect(actions[0]?.boxIds).toEqual([box2]);
+
+    state = declineInsuranceOnState(state, box2);
+    expect(state.blackjack?.insuranceOfferPending).toBe(false);
+    expect(state.blackjack?.insuranceDeclined?.[box2]).toBe(true);
     expect(getBlackjackProtocolPhase(state)).not.toBe('insurance');
   });
 
