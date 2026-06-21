@@ -310,6 +310,26 @@ Ownership smoke: `npm run test:ownership`. Layout patch: `npm run test:layout:ta
 
 New games add a **protocol module + panel**, routed from `TableScreen` — do not fork the table engine or duplicate the blackjack shell.
 
-## Output
+## Output — Change Summary (required every task)
 
-Put the full work summary into **`ChangeSummary.md`** (overwrite each round; do not append stale content).
+At task completion, overwrite **`ChangeSummary.md`** with:
+
+1. **Files changed**
+2. **Tests added/updated**
+3. **Validation run** — list each tier with **run or skipped + why**
+4. **Architecture impact**
+5. **Deploy readiness**
+
+### Required validation tiers
+
+| Tier | Command | When required |
+|------|---------|---------------|
+| Ownership | `npm run test:ownership` | layout, routing, imports, CSS ownership, auth, people, invites, table flow, game over, render path |
+| Layout | `npm run test:layout:target` | Full Table layout / CSS contract changes |
+| Blackjack layout | `npm run test:blackjack:layout` | Broader blackjack layout regressions touched |
+| People / invites | `npm run test:people-invite` | people, invite, auth server changes |
+| Build | `npm run build` | Any substantive code change before marking complete |
+
+**Never** mark a task complete without reporting which commands were executed.  
+**Never** run full `npm test` inside a Cursor agent loop.  
+**Never** pipe `npm test` through `Select-Object`.

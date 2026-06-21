@@ -44,16 +44,17 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   height: auto;
   min-height: 0;
   max-height: none;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: stretch;
   overflow: visible;
   margin-top: var(--bj-full-table-command-cards-gap);
+  margin-bottom: 0;
   padding-top: 0;
   padding-bottom: 0;
   box-sizing: border-box;
@@ -169,8 +170,22 @@
 
 /* Stack host — play-zone wraps stack in DOM; must pin row 2 even when outcome row is empty. */
 .bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__play-zone,
+.bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__split-hands {
+  grid-row: 2;
+  align-self: end;
+  width: 100%;
+  height: 100%;
+  min-height: var(--bj-full-table-card-stack-zone-min-2);
+  max-height: var(--bj-full-table-card-stack-zone-height);
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  box-sizing: border-box;
+}
+
 .bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__play-zone,
-.bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__split-hands,
 .bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__split-hands {
   grid-row: 2;
   align-self: start;
@@ -436,11 +451,18 @@
 
 @media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
   .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     height: auto;
     min-height: 0;
     max-height: none;
     overflow: visible;
+  }
+
+  .bj-view-full-mobile
+    .bj-table-layout-shell
+    .bj-table-zone--cards.bj-cards-area--table
+    .bj-table-slot-row.bj-arc--cards {
+    margin-top: auto;
   }
 }
 

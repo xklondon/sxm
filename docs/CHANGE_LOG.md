@@ -15,7 +15,15 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-13 — Version 1.0 architecture discipline (rules, docs, ownership tests)
+## 2026-06-13 — Targeted Blackjack mobile/desktop layout cleanup (6 issues)
+
+- **Mobile Full Table cards:** Cards zone uses natural height (`flex: 0 0 auto`) with arc row `margin-top: auto` so stacks sit just above actions; play-zone stays top-anchored on mobile.
+- **Mobile actions:** HIT/STAY reduced ~15% (2.34rem / 0.78rem); actions zone `z-index: 6` above cards; felt `touch-action: pan-x pan-y` restores horizontal box swipe.
+- **Desktop Full Table stacks:** Play-zone bottom-anchors (`align-self: end` / `flex-end`) so lower card values stay visible inside cards zone.
+- **Command route:** Player-turn copy merged into one `BlackjackCommandBox` paragraph; dealer block no longer receives command props; game-over command suppressed when overlay is active (`evaluateTableGameEnd` / `GameOverActionOverlay` remain canonical).
+- **Tests:** Added `blackjackMobileCleanup.test.tsx`; updated layout/command contract tests.
+
+---
 
 - **`.cursorrules`:** Expanded SXM Architecture Discipline — canonical routes, CSS ownership, layer model, test tiers, no parallel implementations.
 - **Docs:** Added `docs/SXM_ARCHITECTURE.md`; pointers in `README.md` and `docs/TEST_WORKFLOW.md`.

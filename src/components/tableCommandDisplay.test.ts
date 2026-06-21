@@ -79,9 +79,10 @@ describe('buildBlackjackCommandText', () => {
       roundSummaryLines: [],
       controllerName: 'Alice',
     });
-    expect(result.commandMessage).toBe('Box 2 — Alice — your turn.');
-    expect(result.commandLines.some((line) => /Bank has/.test(line))).toBe(true);
-    expect(result.commandLines.some((line) => /^(Option|Options):/.test(line))).toBe(false);
+    expect(result.commandMessage).toContain('Box 2 — Alice — your turn.');
+    expect(result.commandMessage).toMatch(/Bank has/);
+    expect(result.commandLines).toEqual([]);
+    expect(result.commandMessage).not.toMatch(/^(Option|Options):/m);
   });
 
   it('shows join notice during betting when tableNotice is set', () => {
@@ -141,8 +142,9 @@ describe('buildBlackjackCommandText', () => {
       allowSplit: false,
       allowDouble: false,
     });
-    expect(result.commandMessage).toBe('Box 3 — Kji — your turn.');
-    expect(result.commandLines.some((line) => /against your soft 17/.test(line))).toBe(true);
+    expect(result.commandMessage).toContain('Box 3 — Kji — your turn.');
+    expect(result.commandMessage).toMatch(/against your soft 17/);
+    expect(result.commandLines).toEqual([]);
   });
 
   it('omits bank-against line when no dealer cards are visible', () => {
@@ -154,6 +156,7 @@ describe('buildBlackjackCommandText', () => {
       { gameState: state, displayState: state },
     );
     expect(result.commandLines.some((line) => /Bank has/.test(line))).toBe(false);
+    expect(result.commandMessage).not.toMatch(/Bank has/);
   });
 });
 

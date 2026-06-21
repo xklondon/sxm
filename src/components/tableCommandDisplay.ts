@@ -184,9 +184,13 @@ export function formatPlayerTurnCommand(
     lines.push(...resolvePlayerHandCommandLines(handOptions));
   }
 
+  const turnLine = `${boxLabel} — ${playerLabel} — your turn.`;
+  const detailLines = lines.filter((line) => line.trim().length > 0);
+
   return {
-    commandMessage: `${boxLabel} — ${playerLabel} — your turn.`,
-    commandLines: lines,
+    commandMessage:
+      detailLines.length > 0 ? `${turnLine}\n${detailLines.join('\n')}` : turnLine,
+    commandLines: [],
   };
 }
 
@@ -328,7 +332,7 @@ export function buildBlackjackCommandText(params: {
     displayState: displayStateParam,
     cardRevealComplete = true,
     gameEnded,
-    gameOverMessage,
+    gameOverMessage: _gameOverMessage,
     centerStatus,
     protocolPhase,
     roundSummaryLines,
@@ -345,7 +349,7 @@ export function buildBlackjackCommandText(params: {
   const { players } = gameState;
 
   if (gameEnded) {
-    return { commandMessage: gameOverMessage, commandLines: [] };
+    return { commandMessage: null, commandLines: [] };
   }
 
   if (roundSummaryLines.length > 0 && cardRevealComplete) {

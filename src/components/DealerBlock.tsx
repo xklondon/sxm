@@ -69,7 +69,9 @@ export function DealerCommandArea({
               className={[
                 'dealer-block__status',
                 gameEnded ? 'dealer-block__status--game-over' : '',
-                isTableInstructionMessage(commandMessage) ? 'dealer-block__status--summary' : '',
+                isTableInstructionMessage(commandMessage) || commandMessage.includes('\n')
+                  ? 'dealer-block__status--summary'
+                  : '',
               ]
                 .filter(Boolean)
                 .join(' ')}

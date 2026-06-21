@@ -1256,8 +1256,6 @@ export function BlackjackPanel({
     newGameDisabledReason:
       gameEnded && !canResetTable ? 'Only the table owner can start a new game.' : null,
     commentaryText: tableAidTip,
-    commandMessage: tableCommand.commandMessage,
-    commandLines: tableCommand.commandLines,
     onNextRound: handleNextRound,
     protocolPhase,
     bankerReady,
@@ -2508,8 +2506,10 @@ export function BlackjackPanel({
             }
             command={
               <BlackjackCommandBox
-                commandMessage={tableCommand.commandMessage}
-                commandLines={tableCommand.commandLines}
+                commandMessage={
+                  showGameOverActions ? null : tableCommand.commandMessage
+                }
+                commandLines={showGameOverActions ? [] : tableCommand.commandLines}
                 gameEnded={gameEnded}
               />
             }

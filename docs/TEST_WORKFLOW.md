@@ -43,6 +43,20 @@ npm run check:patch
 
 Runs `test:layout:target` + `npm run build`. Expand to `test:blackjack:layout` or area-specific scripts if your diff touches those files.
 
+### Change Summary validation (required every Cursor task)
+
+Every task must end with an updated **`ChangeSummary.md`** reporting: files changed, tests added/updated, validation run (each tier executed or skipped with reason), architecture impact, deploy readiness.
+
+| Tier | Command | Run when |
+|------|---------|----------|
+| Ownership | `npm run test:ownership` | layout, routing, imports, CSS ownership, auth, people, invites, table flow, game over, render path |
+| Layout | `npm run test:layout:target` | Full Table layout / CSS contracts |
+| Blackjack layout | `npm run test:blackjack:layout` | Broader blackjack layout batch touched |
+| People / invites | `npm run test:people-invite` | people / invite / auth server |
+| Build | `npm run build` | substantive code changes |
+
+Do **not** mark a task complete without listing which commands ran.
+
 ### Before deploy (manual, outside agent loop)
 
 ```bash

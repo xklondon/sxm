@@ -1,121 +1,82 @@
-# Change Summary — SXM V1.0 stabilization (architecture rules, ownership tests, audit)
+# Change Summary — Targeted Blackjack cleanup (6 issues)
 
-## Part 1 — `.cursorrules`
-
-Added/expanded **SXM Architecture Discipline (Version 1.0)** with:
-
-- Canonical route over parallel implementations
-- Required audit checklist before layout/auth/invite/table/game-flow changes
-- No duplicate shells, layout systems, or CSS geometry
-- Canonical Blackjack route: `App → TableScreen → BlackjackPanel → BlackjackTableLayoutShell`
-- CSS ownership table (shell, shared, card area, Card View, stitch theme)
-- Reference/stitch/frozen rules + `design/templates` theme exception
-- Test discipline (targeted patch, build on commit, full suite manual deploy only)
-- Three-layer model: App / Table Engine / Game Protocol
-- `ChangeSummary.md` output requirement
-
-## Part 2 — Documentation
+## 1. Files changed
 
 | File | Change |
 |------|--------|
-| `docs/SXM_ARCHITECTURE.md` | **New** — V1.0 target, layers, routes, CSS map, testing tiers, how to add games/variations |
-| `docs/TEST_WORKFLOW.md` | Pointer to `.cursorrules` + `SXM_ARCHITECTURE.md`; `test:ownership` in script table |
-| `README.md` | Link to `SXM_ARCHITECTURE.md` |
-| `docs/CHANGE_LOG.md` | Entry for this pass |
+| `src/styles/bj-full-table-card-area.css` | Mobile cards zone sizing/anchor; split desktop vs mobile play-zone stack anchoring |
+| `src/styles/bj-table-shared.css` | Mobile HIT/STAY −15%; actions z-index 6; felt `pan-x` for box swipe |
+| `src/components/tableCommandDisplay.ts` | Single player-turn command paragraph; empty command when `gameEnded` (overlay owns copy) |
+| `src/components/DealerBlock.tsx` | Gold styling when command includes detail lines |
+| `src/components/BlackjackPanel.tsx` | Removed dealer command props; suppress command when game-over overlay active |
+| `src/components/blackjackMobileCleanup.test.tsx` | **New** — mobile layout, command, game-over route guards |
+| `src/components/tableCommandDisplay.test.ts` | Updated for merged player-turn command |
+| `src/components/blackjackFullTablePlayZoneLayout.test.ts` | Desktop stack band expects bottom anchor |
+| `docs/CHANGE_LOG.md` | Entry for this cleanup pass |
 
-## Part 3 — Ownership tests
+## 2. Tests added/updated
 
-**New:** `src/components/productionRouteOwnership.test.ts`  
-**Script:** `npm run test:ownership`
+| Test | Action |
+|------|--------|
+| `src/components/blackjackMobileCleanup.test.tsx` | **Added** — 8 tests: cards zone, stack anchor, button size, z-index/swipe, single command DOM, game-over route |
+| `src/components/tableCommandDisplay.test.ts` | Updated merged player-turn expectations |
+| `src/components/blackjackFullTablePlayZoneLayout.test.ts` | Desktop play-zone bottom-anchor contract |
 
-Covers:
+## 3. Validation run
 
-1. Single `BlackjackTableLayoutShell` in `BlackjackPanel`
-2. Production import scan (no `reference-ui`, frozen layout, sanity fixtures)
-3. `index.css` matches `CANONICAL_BLACKJACK_CSS_IMPORT_ORDER`
-4. Full route chain App → TableScreen → BlackjackPanel → Shell
-5. Shell class ownership; no competing grid in `bj-table-shared.css`
-6. CSS geometry guards (shell, card area, Card View, stitch theme-only)
+### Ownership — **RUN** `npm run test:ownership`
 
-## Part 4 — Audit report (no deletions beyond proven obsolete)
+**Why run:** Touched `BlackjackPanel` wiring, command route, and layout CSS ownership.
 
-### Active production route
+**Result:** 10/10 pass (run at task start and after panel/command edits)
 
-```
-App.tsx
-  → TableScreen.tsx
-       → BlackjackPanel.tsx (when isBlackjackTable)
-            → BlackjackTableLayoutShell.tsx
-                 → zone components (dealer, command, cards, actions, boxes, tray)
-       → ZilchPanel.tsx (when isZilchTable)
-       → HoldemPanel.tsx (when isHoldemTable)
-```
+### Layout — **RUN** `npm run test:layout:target`
 
-Single layout shell component: **`BlackjackTableLayoutShell.tsx`** only.
+**Why run:** Card-area and play-zone CSS changed; layout contract tests guard regressions.
 
-### Duplicate candidates (same concern, different files — documented owners)
+**Result:** 53/53 pass
 
-| Concern | Files | Status |
-|---------|-------|--------|
-| Route ownership tests | `productionRouteOwnership.test.ts`, `blackjackRenderArchitecture.test.ts`, `blackjackLayoutDebug.test.ts` | Overlap by design; **removed** redundant `blackjackRenderRouteAudit.test.ts` |
-| CSS geometry guards | `productionRouteOwnership.test.ts`, `fullTableDesktopLayoutOwnership.test.ts`, `cardViewDesktopLayoutOwnership.test.ts` | Complementary scopes |
-| Legacy class hooks | `bj-card-layout__command` etc. in `tableUxContract.ts` | **Not** a second shell — CSS hooks on canonical command box |
-| Shared vs shell tokens | `bj-table-shared.css` + `bj-blackjack-table-shell.css` | Shell wins desktop grid; shared owns mobile flex + tokens |
+### Blackjack engine — **RUN** `npm run test:blackjack:engine`
 
-### Obsolete candidates
+**Why run:** Verified end-game evaluator path unchanged (`evaluateTableGameEnd` / `gameOverEvaluation.test.ts`).
 
-| Item | Evidence | Action |
-|------|----------|--------|
-| `blackjackRenderRouteAudit.test.ts` | Superseded by `productionRouteOwnership.test.ts` | **Deleted** |
-| `BlackjackDealerAreaSection` | Exported, zero imports | **Removed** |
+**Result:** 259/259 pass
 
-### Safe-to-delete (done this pass)
+### Mobile cleanup — **RUN** `npx vitest run src/components/blackjackMobileCleanup.test.tsx`
 
-- `src/components/blackjackRenderRouteAudit.test.ts`
-- `BlackjackDealerAreaSection` export in `BlackjackDealerArea.tsx`
+**Why run:** New targeted tests for this task.
 
-### Keep as reference / test-only
+**Result:** 8/8 pass
 
-| Asset | Role |
-|-------|------|
-| `reference-ui/` | Screenshot reference — never production |
-| `blackjackLayoutContract.ts` reference image path constants | Test/doc anchors only |
-| `src/engine/blackjack/sanity/fixtures` | Tests + capture scripts |
-| `src/design/templates/stitchMobile.ts` | Theme registry entry (allowed) |
-| Frozen layout test files (`*Frozen*.test.ts`, `blackjackEngineFreezeGuards.test.ts`) | Guard approved geometry |
+### Build — **RUN** `npm run build`
 
-### Risky / needs review (not changed)
+**Result:** pass
 
-| Item | Risk | Recommendation |
-|------|------|----------------|
-| `bj-table-shared.css` unscoped `.bj-table-layout-shell` rules | May compete with shell on specificity edge cases | Monitor via `test:ownership`; migrate stragglers only when proven |
-| `TABLE_UX.cardLayout*` legacy class names | Naming suggests old layout system | Rename in dedicated pass; hooks are canonical today |
-| `cardViewPhaseChecks.ts` imports `blackjackTableLayout` from components | Engine → UI coupling | Future refactor to move layout constants to neutral module |
-| 100+ layout regression tests with overlapping guards | Maintenance cost | Keep; use tiered scripts (`test:ownership`, `test:layout:target`) |
-| `blackjackRenderedLayout.test.tsx` | Happy-dom hangs | Manual only (`test:layout:rendered`) |
+### Blackjack Layout — **SKIPPED** `npm run test:blackjack:layout`
 
-### CSS files touching layout selectors
+**Why skipped:** No frozen stitch/reference imports; targeted layout + new cleanup tests cover this pass. Full 214-test batch reserved for broad shell geometry edits.
 
-All under `src/styles/bj*.css` + `BlackjackCardView.css` — ownership mapped in `SXM_ARCHITECTURE.md`. No duplicate `*LayoutShell*` components found.
+### People / Invites — **SKIPPED** `npm run test:people-invite`
 
-### JS/TS duplicates
+**Why skipped:** Out of scope.
 
-No `.js`/`.jsx` production sources under `src/` (TypeScript only).
+## 4. Architecture impact
 
-## Part 5 — Cleanup performed
+- **Route confirmed:** `App → TableScreen → BlackjackPanel → BlackjackTableLayoutShell` (unchanged)
+- **Issue 5 duplicate removed:** Obsolete second command source was dual `<p>` routes (green turn line + gold `commandLines`) plus unused `commandMessage`/`commandLines` on `dealerBlockProps`. Now one `BlackjackCommandBox` paragraph via `formatPlayerTurnCommand`; dealer uses `omitCommand` with no command props.
+- **Issue 6 canonical route:** `evaluateTableGameEnd` → `applyTableGameEndIfNeeded` → `gameEnded` → `GameOverActionOverlay` (mobile overlay + desktop rail/table overlay). Command zone stays empty while overlay is active.
+- **Issue 3 swipe:** Existing `useMobileBoxSwipeNavigation` on `.bj-casino__felt`; fixed pointer stacking (actions above cards) and horizontal `touch-action`.
 
-- Removed `blackjackRenderRouteAudit.test.ts` from repo and `test:blackjack:layout` script
-- Removed dead `BlackjackDealerAreaSection` export
-- Wired `test:ownership` into `test:layout:audit` and `test:layout:fast`
+## 5. Deploy readiness
 
-No gameplay, UI redesign, or layout geometry changes.
+| Gate | Status |
+|------|--------|
+| Ownership | Pass |
+| Layout target | Pass |
+| Engine | Pass |
+| Mobile cleanup tests | Pass |
+| Build | Pass |
 
-## Part 6 — Validation
+**Ready for commit** after human review.
 
-```
-npm run test:ownership   → 10/10 pass
-npm run test:layout:target → 53/53 pass
-npm run build            → pass
-```
-
-**Spec discipline: checked/updated SXM_MASTER_SPEC.md (prior pass) and CHANGE_LOG.md.**
+**Spec discipline: checked/updated `docs/CHANGE_LOG.md`.**

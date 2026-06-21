@@ -234,13 +234,13 @@ describe('Full Table play zone canonical contract', () => {
     }
   });
 
-  it('card column contract avoids vertical centering / flex-grow on stack host', () => {
+  it('card column contract bottom-anchors desktop stacks in the stack band', () => {
     const stackHostRule =
       PLAY_ZONE_CSS.match(
         /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column > \.bj-arc__play-zone[\s\S]*?\{[^}]*\}/,
       )?.[0] ?? '';
-    expect(stackHostRule).toContain('align-self: start');
-    expect(stackHostRule).toContain('justify-content: flex-start');
+    expect(stackHostRule).toContain('align-self: end');
+    expect(stackHostRule).toContain('justify-content: flex-end');
     expect(stackHostRule).not.toContain('align-self: center');
     expect(stackHostRule).not.toContain('justify-content: center');
     expect(stackHostRule).not.toMatch(/[^-]flex:\s*1\s+1\s+auto/);
