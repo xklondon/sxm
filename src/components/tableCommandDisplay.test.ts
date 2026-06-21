@@ -62,7 +62,11 @@ describe('buildBlackjackCommandText', () => {
     const k2 = blackjackHandKey(box2, 0);
     state = {
       ...state,
-      blackjack: actingRound(state, box2, [findCardId(state.deck!, '6'), findCardId(state.deck!, '7')], 10),
+      blackjack: {
+        ...actingRound(state, box2, [findCardId(state.deck!, '6'), findCardId(state.deck!, '7')], 10),
+        dealerCardIds: [findCardId(state.deck!, '10'), ''],
+        dealerHoleHidden: true,
+      },
     };
     state.blackjack!.activeHandKey = k2;
     state.blackjack!.activePlayerId = box2;
@@ -115,18 +119,41 @@ describe('buildBlackjackCommandText', () => {
   });
 
   it('includes soft totals in bank-against line', () => {
+    let state = tableWithClaimedBox(3);
+    const box3 = boxPlayerId(state, 3)!;
+    const handKey = `${box3}:0`;
+    state = {
+      ...state,
+      blackjack: {
+        ...actingRound(state, box3, [findCardId(state.deck!, '6'), findCardId(state.deck!, 'A')], 10),
+        dealerCardIds: [findCardId(state.deck!, '10'), ''],
+        dealerHoleHidden: true,
+      },
+    };
     const result = formatPlayerTurnCommand(3, 'Kji', {
       value: 17,
       isSoft: true,
       isBlackjack: false,
     }, {
-      gameState: tableWithClaimedBox(3),
-      handKey: `${boxPlayerId(tableWithClaimedBox(3), 3)!}:0`,
+      gameState: state,
+      displayState: state,
+      handKey,
       allowSplit: false,
       allowDouble: false,
     });
     expect(result.commandMessage).toBe('Box 3 — Kji — your turn.');
     expect(result.commandLines.some((line) => /against your soft 17/.test(line))).toBe(true);
+  });
+
+  it('omits bank-against line when no dealer cards are visible', () => {
+    const state = createNewBlackjackTable();
+    const result = formatPlayerTurnCommand(
+      1,
+      'Host',
+      { value: 12, isSoft: false, isBlackjack: false },
+      { gameState: state, displayState: state },
+    );
+    expect(result.commandLines.some((line) => /Bank has/.test(line))).toBe(false);
   });
 });
 

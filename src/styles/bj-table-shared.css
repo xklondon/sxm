@@ -208,7 +208,7 @@
     --bj-mobile-tray-inner-reserve: 0.4rem;
     --bj-mobile-zone-dealer-height: 5.15rem;
     --bj-mobile-zone-command-height: 2.25rem;
-    --bj-mobile-zone-command-playing-height: 6.375rem;
+    --bj-mobile-zone-command-playing-height: 2.85rem;
     --bj-zone-command-max-height: 3.4rem;
     --bj-mobile-zone-actions-height: 2.45rem;
     --bj-mobile-zone-cards-min-height: 0;
@@ -866,8 +866,8 @@
   .bj-view-card-mobile[data-phase='dealer'],
   .bj-view-full-mobile[data-phase='resolved'],
   .bj-view-card-mobile[data-phase='resolved'] {
-    --bj-zone-command-height: var(--bj-mobile-zone-command-playing-height, 6.375rem);
-    --bj-zone-command-max-height: var(--bj-mobile-zone-command-playing-height, 6.375rem);
+    --bj-zone-command-height: var(--bj-mobile-zone-command-playing-height, 2.85rem);
+    --bj-zone-command-max-height: var(--bj-mobile-zone-command-playing-height, 2.85rem);
     --bj-zone-dealer-height: 4.35rem;
   }
 

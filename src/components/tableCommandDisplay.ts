@@ -88,6 +88,48 @@ function formatBankHandPhrase(displayState: GameState): string {
   return `Bank has ${value}`;
 }
 
+/** Command zone must not show bank totals before visible dealer cards justify them. */
+export function shouldIncludeBankHandCommandLine(displayState: GameState): boolean {
+  const round = displayState.blackjack;
+  const deck = displayState.deck;
+  if (!round || !deck) {
+    return false;
+  }
+  const cardIds = getVisibleDealerCardIds(displayState);
+  return cardIds.length > 0;
+}
+
+/** Strip premature bank totals from centre status during paced reveal. */
+export function sanitizeCommandStatusForVisibleBank(
+  message: string,
+  displayState: GameState,
+  protocolPhase: BlackjackProtocolPhase,
+  cardRevealComplete = true,
+): string {
+  const trimmed = message.trim();
+  if (!trimmed) {
+    return message;
+  }
+
+  const round = displayState.blackjack;
+  const visibleDealerCards = getVisibleDealerCardIds(displayState).length;
+  const bankDrawPhases = protocolPhase === 'bank' || protocolPhase === 'dealing';
+
+  if (bankDrawPhases && (!cardRevealComplete || visibleDealerCards === 0)) {
+    if (/Bank stands on|Dealer stands on|Bank has \d+|Bank busts/i.test(trimmed)) {
+      return protocolPhase === 'bank' ? "Dealer's turn." : 'Dealing…';
+    }
+  }
+
+  if (round?.dealerHoleHidden && round.status !== 'bank-turn' && round.status !== 'banking' && round.status !== 'resolved') {
+    if (/Bank stands on \d+|Dealer stands on \d+|Bank has \d+/i.test(trimmed)) {
+      return "Dealer's turn.";
+    }
+  }
+
+  return message;
+}
+
 /** Canonical player-turn lines — strict format, no sentimental copy. */
 export function formatPlayerTurnCommand(
   slotNum: number | undefined,
@@ -124,7 +166,7 @@ export function formatPlayerTurnCommand(
 
   const lines: string[] = [];
   const bankDisplayState = options?.displayState ?? options?.gameState;
-  if (bankDisplayState) {
+  if (bankDisplayState && shouldIncludeBankHandCommandLine(bankDisplayState)) {
     lines.push(`${formatBankHandPhrase(bankDisplayState)} against your ${playerScore}${splitNote}.`);
   }
 
@@ -395,7 +437,12 @@ export function buildBlackjackCommandText(params: {
   }
 
   return {
-    commandMessage: polishCenterStatusMessage(centerStatus, protocolPhase),
+    commandMessage: sanitizeCommandStatusForVisibleBank(
+      polishCenterStatusMessage(centerStatus, protocolPhase),
+      displayState,
+      protocolPhase,
+      cardRevealComplete,
+    ),
     commandLines: [],
   };
 }

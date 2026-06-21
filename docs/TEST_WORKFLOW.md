@@ -1,5 +1,7 @@
 # Test workflow guardrails
 
+**Before architecture, layout, auth, invite, or game-flow changes:** read [`.cursorrules`](../.cursorrules) and [`docs/SXM_ARCHITECTURE.md`](./SXM_ARCHITECTURE.md).
+
 Cursor agent sessions slow down when broad test commands hang or run for hours. Useful Vitest + build time for layout patches is on the order of **~90 seconds**; **shell waits** on piped or full-suite runs dominate wall-clock time.
 
 Use the scripts below instead of ad-hoc `npm test` / `npx vitest run src` inside agent loops.
@@ -8,6 +10,7 @@ Use the scripts below instead of ad-hoc `npm test` / `npx vitest run src` inside
 
 | Script | Purpose | Typical duration |
 |--------|---------|------------------|
+| `npm run test:ownership` | Production route + CSS cascade ownership smoke | ~2–5 s |
 | `npm run test:layout:target` | Four core Full Table layout contract tests (52 cases) | ~10–25 s |
 | `npm run test:blackjack:layout` | Extended blackjack layout + shell contract batch (175 cases) | ~20–40 s |
 | `npm run test:blackjack:engine` | `src/engine/blackjack` unit tests | varies |
@@ -23,6 +26,7 @@ Run **only tests for the area you touched**:
 
 | Area | Command |
 |------|---------|
+| Route / CSS ownership | `npm run test:ownership` |
 | Full Table layout / CSS contracts | `npm run test:layout:target` |
 | Broader blackjack layout regressions | `npm run test:blackjack:layout` |
 | Blackjack engine / round flow | `npm run test:blackjack:engine` |

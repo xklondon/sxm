@@ -177,7 +177,7 @@ describe('blackjack visual cleanup — command route and dealer/command grid', (
 
   it('reserves taller dealer and command rows on desktop', () => {
     expect(SHELL_CSS).toContain('--bj-desktop-zone-dealer-height: 7.15rem');
-    expect(SHELL_CSS).toContain('--bj-desktop-zone-command-height: 5.85rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-command-height: 4.35rem');
     const desktop = desktopShellBlock();
     expect(desktop).toContain('[dealer] var(--bj-desktop-zone-dealer-height)');
     expect(desktop).toContain('[command] var(--bj-desktop-zone-command-height)');

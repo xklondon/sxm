@@ -173,7 +173,7 @@
 .bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__split-hands,
 .bj-view-full-mobile .bj-arc--cards.bj-full-table-card-area .bj-arc__slot--card-column > .bj-arc__split-hands {
   grid-row: 2;
-  align-self: end;
+  align-self: start;
   width: 100%;
   height: 100%;
   min-height: var(--bj-full-table-card-stack-zone-min-2);
@@ -182,7 +182,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   box-sizing: border-box;
 }
 
@@ -502,7 +502,7 @@
     .bj-table-zone--cards
     .bj-felt-cloth-layer {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     opacity: 0.38;
     pointer-events: none;
@@ -512,6 +512,8 @@
   .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--cards .bj-felt-cloth-layer__svg {
     width: var(--bj-cloth-svg-width);
     max-height: var(--bj-cloth-svg-max-height);
+    min-width: min(68%, 22rem);
+    min-height: 4.5rem;
   }
 
   /* Play phase — hand total lives in player box only; shorter column stacks cards above box. */

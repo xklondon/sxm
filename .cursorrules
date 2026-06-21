@@ -230,9 +230,86 @@ Heavy rendered geometry (manual): `npm run test:layout:rendered` — `blackjackR
 Full browser captures: `npm run test:layout:all-fast` — explicit step only.
 Do not run `blackjackRenderedLayout.test.tsx` or full `npm test` for layout-only work unless explicitly requested.
 
+# SXM Architecture Discipline (Version 1.0)
 
+Read **`docs/SXM_ARCHITECTURE.md`** before architecture, layout, auth, invite, table-flow, or game-flow changes.
 
+## 1. Source of truth
 
-OUTPUT:
-put The Full Work Summary into a ChangeSummary.md
-do not keep previous content, overwrite existing with the latest Summary from that latest round of changes.
+The latest user request is product intent, but implementation must update the **canonical route**, not create parallel routes.
+
+## 2. Required audit before changes
+
+Before modifying layout, auth, invite, table flow, or game-over wiring:
+
+1. Identify the active production route/component chain.
+2. Search for duplicate, legacy, frozen, stitch, or reference paths.
+3. Report what owns behavior now.
+4. Delete or isolate obsolete competing code (same task when replacing).
+5. Add or adjust **one ownership test** (`npm run test:ownership`).
+
+## 3. No parallel implementations
+
+Do not create:
+
+- duplicate Blackjack shells or table layout systems
+- duplicate CSS geometry for the same selector
+- temporary “new” components beside old ones unless the old production import is removed in the same task
+
+If replacing: update the production entry import, remove obsolete production CSS/components, quarantine reference-only assets, run `npm run test:ownership`.
+
+## 4. Canonical Blackjack production route
+
+```
+App → TableScreen → BlackjackPanel → BlackjackTableLayoutShell
+```
+
+Full Table vs Card View and desktop vs mobile differ by **props and view-root CSS only** — not separate layout shells or routes.
+
+## 5. CSS ownership
+
+| File | Owns |
+|------|------|
+| `bj-blackjack-table-shell.css` | Shell grid geometry, zone rows |
+| `bj-table-shared.css` | Shared visual tokens, mobile flex shell |
+| `bj-full-table-card-area.css` | Full Table card area stacks/overlap |
+| `bj-card-layout.css` / `BlackjackCardView.css` | Card View hero/layout |
+| `sxm-stitch-visual.css` | Theme tokens only (no gameplay zone geometry) |
+
+Do not define the same layout property for the same selector in multiple files unless documented in `blackjackLayoutContract.ts` or `docs/SXM_ARCHITECTURE.md`.
+
+Import order: `CANONICAL_BLACKJACK_CSS_IMPORT_ORDER` in `blackjackLayoutContract.ts` mirrors `src/index.css`.
+
+## 6. Reference / Stitch / Frozen
+
+- `reference-ui/` is **never** production.
+- Stitch/frozen/test fixtures must **not** be imported by production UI/runtime code.
+- `src/design/templates/` is the allowed **theme registry** (applies CSS variables to `.bj-casino`) — not a layout fork.
+- Frozen layout **tests** and reference screenshots may exist; they must not be imported by production panels.
+
+## 7. Test discipline
+
+| When | Run |
+|------|-----|
+| Patch | Targeted tests for touched area only |
+| Commit | Targeted tests + `npm run build` |
+| Deploy | Full deploy gate manually (`npm run check:deploy`) |
+
+**Never** run full `npm test` inside a Cursor agent loop.  
+**Never** pipe `npm test` through `Select-Object`.
+
+Ownership smoke: `npm run test:ownership`. Layout patch: `npm run test:layout:target`.
+
+## 8. Layer architecture
+
+**App level** — users/auth/session, people, invites, ledger, saved/open tables (`App.tsx`, `screens/`, `server/src/auth`, `features/messaging`).
+
+**Table engine level** — table model, seating/boxes/chips, table lifecycle, layout shell, game-flow orchestration (`TableScreen`, `TableStakePanel`, session engine, shared table shell).
+
+**Game protocol level** — Blackjack, Zilch, future games; protocol rules; engine logic isolated from UI layout (`src/engine/blackjack/`, `src/engine/zilch/`, game panels).
+
+New games add a **protocol module + panel**, routed from `TableScreen` — do not fork the table engine or duplicate the blackjack shell.
+
+## Output
+
+Put the full work summary into **`ChangeSummary.md`** (overwrite each round; do not append stale content).

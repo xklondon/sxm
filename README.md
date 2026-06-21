@@ -3,6 +3,7 @@
 Online blackjack/card table app with magic-link auth and multiplayer WebSocket sync.
 
 **Product specification:** [docs/SXM_MASTER_SPEC.md](./docs/SXM_MASTER_SPEC.md) — single source of truth for current behavior.  
+**Architecture (V1.0):** [docs/SXM_ARCHITECTURE.md](./docs/SXM_ARCHITECTURE.md) — routes, layers, CSS ownership.  
 **Change log:** [docs/CHANGE_LOG.md](./docs/CHANGE_LOG.md)
 
 ## Local development

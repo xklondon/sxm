@@ -1,4 +1,6 @@
 @import './styles/tokens.css';
+@import './styles/sxm-stitch-visual.css';
+/* Blackjack table CSS — deterministic cascade; see CANONICAL_BLACKJACK_CSS_IMPORT_ORDER. */
 @import './styles/bj-table-shared.css';
 @import './styles/bj-player-row-layout.css';
 @import './styles/bj-card-layout.css';
@@ -13,7 +15,6 @@
 @import './styles/bj-blackjack-targeted-fixes.css';
 @import './styles/bj-layout-debug.css';
 @import './styles/design-system.css';
-@import './styles/sxm-stitch-visual.css';
 @import './styles/mobile-modals.css';
 @import './styles/bj-card-mobile-hero-final.css';
 

@@ -28,7 +28,7 @@
   .bj-view-full-desktop,
   .bj-view-card-desktop {
     --bj-desktop-zone-dealer-height: 7.15rem;
-    --bj-desktop-zone-command-height: 5.85rem;
+    --bj-desktop-zone-command-height: 4.35rem;
     --bj-desktop-zone-boxes-height: 6.1rem;
     --bj-desktop-zone-tray-height: 4.15rem;
     --bj-desktop-zone-boxes-tray-gap: 0.42rem;
@@ -218,7 +218,7 @@
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
     padding-top: 0;
     padding-bottom: 0;
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {

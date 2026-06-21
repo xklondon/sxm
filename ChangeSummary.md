@@ -1,50 +1,121 @@
-# Change Summary — Mobile Card View + Full Table landscape fixes
+# Change Summary — SXM V1.0 stabilization (architecture rules, ownership tests, audit)
 
-## Part A — Mobile Card View portrait (390×844)
+## Part 1 — `.cursorrules`
 
-**Root cause:** Play-phase mobile shell applied `--bj-zone-command-height: 6.375rem` to Card View, starving the hero cards zone. Portrait rules also capped hero cards at `5.5rem` inside a ~57px band.
+Added/expanded **SXM Architecture Discipline (Version 1.0)** with:
 
-**Fix (`bj-card-mobile-portrait-layout.css`):**
-- Card View play phases keep compact command/dealer heights (not Full Table playing band).
-- Hero cards zone `min-height: 7.75rem`; removed `5.5rem` max-height cap; `min-width`/`min-height` on hero cards.
-- Cards slot overflow `visible` so stitched fan is not clipped.
+- Canonical route over parallel implementations
+- Required audit checklist before layout/auth/invite/table/game-flow changes
+- No duplicate shells, layout systems, or CSS geometry
+- Canonical Blackjack route: `App → TableScreen → BlackjackPanel → BlackjackTableLayoutShell`
+- CSS ownership table (shell, shared, card area, Card View, stitch theme)
+- Reference/stitch/frozen rules + `design/templates` theme exception
+- Test discipline (targeted patch, build on commit, full suite manual deploy only)
+- Three-layer model: App / Table Engine / Game Protocol
+- `ChangeSummary.md` output requirement
 
-**Capture after:** hero playing card ~**50.4×70.5px** (was ~45.6×63.8px); hero value hidden.
+## Part 2 — Documentation
 
-## Part B — Mobile Full Table landscape (844×390)
-
-**Root causes:**
-1. Landscape grid targeted `.bj-table-zone--dealer` but shell uses `.bj-dealer-area` + felt bank row — extra auto-placed rows pushed zones off-screen.
-2. Play-phase command height `6.375rem` overrode landscape compact tokens.
-3. Felt/shell height chain did not flex below toolbar + Magic 8.
-
-**Fix (`bj-full-mobile-landscape-layout.css`):**
-- Grid areas on `.bj-dealer-area`; hide `.bj-table-info-bar--felt-row` in landscape.
-- Play phases use landscape compact command/dealer heights.
-- Flex chain: rail → felt → layout shell; shell `height: auto; max-height: 100%`.
-- Canvas height reserves header chrome.
-
-**Capture after:** all zones (dealer, command, cards, actions, boxes, tray) within viewport; playing cards visible.
-
-## Files changed
-
-| File | Scope |
+| File | Change |
 |------|--------|
-| `src/styles/bj-card-mobile-portrait-layout.css` | Mobile Card View portrait only |
-| `src/styles/bj-full-mobile-landscape-layout.css` | Mobile Full Table landscape only |
-| `scripts/capture-mobile-card-layout.mts` | Hero card rect assertions |
-| `scripts/capture-mobile-full-landscape-layout.mts` | New landscape capture |
-| `src/components/mobileCardPortraitLayout.test.ts` | Portrait owner guards |
-| `src/components/mobileLandscapeFullLayout.test.ts` | `.bj-dealer-area` grid guard |
-| `src/components/cardViewMobileLayout.test.tsx` | Command text regex (includes caller name) |
+| `docs/SXM_ARCHITECTURE.md` | **New** — V1.0 target, layers, routes, CSS map, testing tiers, how to add games/variations |
+| `docs/TEST_WORKFLOW.md` | Pointer to `.cursorrules` + `SXM_ARCHITECTURE.md`; `test:ownership` in script table |
+| `README.md` | Link to `SXM_ARCHITECTURE.md` |
+| `docs/CHANGE_LOG.md` | Entry for this pass |
 
-**Desktop:** unchanged — no desktop view-root selectors modified.
+## Part 3 — Ownership tests
 
-## Verification
+**New:** `src/components/productionRouteOwnership.test.ts`  
+**Script:** `npm run test:ownership`
 
-- `npm run build` ✅
-- `npm run test:layout:fast` ✅
-- `npx tsx scripts/capture-mobile-card-layout.mts` ✅
-- `npx tsx scripts/capture-mobile-full-landscape-layout.mts` ✅
+Covers:
 
-Spec discipline: checked `SXM_MASTER_SPEC.md` and `CHANGE_LOG.md`.
+1. Single `BlackjackTableLayoutShell` in `BlackjackPanel`
+2. Production import scan (no `reference-ui`, frozen layout, sanity fixtures)
+3. `index.css` matches `CANONICAL_BLACKJACK_CSS_IMPORT_ORDER`
+4. Full route chain App → TableScreen → BlackjackPanel → Shell
+5. Shell class ownership; no competing grid in `bj-table-shared.css`
+6. CSS geometry guards (shell, card area, Card View, stitch theme-only)
+
+## Part 4 — Audit report (no deletions beyond proven obsolete)
+
+### Active production route
+
+```
+App.tsx
+  → TableScreen.tsx
+       → BlackjackPanel.tsx (when isBlackjackTable)
+            → BlackjackTableLayoutShell.tsx
+                 → zone components (dealer, command, cards, actions, boxes, tray)
+       → ZilchPanel.tsx (when isZilchTable)
+       → HoldemPanel.tsx (when isHoldemTable)
+```
+
+Single layout shell component: **`BlackjackTableLayoutShell.tsx`** only.
+
+### Duplicate candidates (same concern, different files — documented owners)
+
+| Concern | Files | Status |
+|---------|-------|--------|
+| Route ownership tests | `productionRouteOwnership.test.ts`, `blackjackRenderArchitecture.test.ts`, `blackjackLayoutDebug.test.ts` | Overlap by design; **removed** redundant `blackjackRenderRouteAudit.test.ts` |
+| CSS geometry guards | `productionRouteOwnership.test.ts`, `fullTableDesktopLayoutOwnership.test.ts`, `cardViewDesktopLayoutOwnership.test.ts` | Complementary scopes |
+| Legacy class hooks | `bj-card-layout__command` etc. in `tableUxContract.ts` | **Not** a second shell — CSS hooks on canonical command box |
+| Shared vs shell tokens | `bj-table-shared.css` + `bj-blackjack-table-shell.css` | Shell wins desktop grid; shared owns mobile flex + tokens |
+
+### Obsolete candidates
+
+| Item | Evidence | Action |
+|------|----------|--------|
+| `blackjackRenderRouteAudit.test.ts` | Superseded by `productionRouteOwnership.test.ts` | **Deleted** |
+| `BlackjackDealerAreaSection` | Exported, zero imports | **Removed** |
+
+### Safe-to-delete (done this pass)
+
+- `src/components/blackjackRenderRouteAudit.test.ts`
+- `BlackjackDealerAreaSection` export in `BlackjackDealerArea.tsx`
+
+### Keep as reference / test-only
+
+| Asset | Role |
+|-------|------|
+| `reference-ui/` | Screenshot reference — never production |
+| `blackjackLayoutContract.ts` reference image path constants | Test/doc anchors only |
+| `src/engine/blackjack/sanity/fixtures` | Tests + capture scripts |
+| `src/design/templates/stitchMobile.ts` | Theme registry entry (allowed) |
+| Frozen layout test files (`*Frozen*.test.ts`, `blackjackEngineFreezeGuards.test.ts`) | Guard approved geometry |
+
+### Risky / needs review (not changed)
+
+| Item | Risk | Recommendation |
+|------|------|----------------|
+| `bj-table-shared.css` unscoped `.bj-table-layout-shell` rules | May compete with shell on specificity edge cases | Monitor via `test:ownership`; migrate stragglers only when proven |
+| `TABLE_UX.cardLayout*` legacy class names | Naming suggests old layout system | Rename in dedicated pass; hooks are canonical today |
+| `cardViewPhaseChecks.ts` imports `blackjackTableLayout` from components | Engine → UI coupling | Future refactor to move layout constants to neutral module |
+| 100+ layout regression tests with overlapping guards | Maintenance cost | Keep; use tiered scripts (`test:ownership`, `test:layout:target`) |
+| `blackjackRenderedLayout.test.tsx` | Happy-dom hangs | Manual only (`test:layout:rendered`) |
+
+### CSS files touching layout selectors
+
+All under `src/styles/bj*.css` + `BlackjackCardView.css` — ownership mapped in `SXM_ARCHITECTURE.md`. No duplicate `*LayoutShell*` components found.
+
+### JS/TS duplicates
+
+No `.js`/`.jsx` production sources under `src/` (TypeScript only).
+
+## Part 5 — Cleanup performed
+
+- Removed `blackjackRenderRouteAudit.test.ts` from repo and `test:blackjack:layout` script
+- Removed dead `BlackjackDealerAreaSection` export
+- Wired `test:ownership` into `test:layout:audit` and `test:layout:fast`
+
+No gameplay, UI redesign, or layout geometry changes.
+
+## Part 6 — Validation
+
+```
+npm run test:ownership   → 10/10 pass
+npm run test:layout:target → 53/53 pass
+npm run build            → pass
+```
+
+**Spec discipline: checked/updated SXM_MASTER_SPEC.md (prior pass) and CHANGE_LOG.md.**

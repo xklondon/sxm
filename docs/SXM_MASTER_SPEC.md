@@ -550,7 +550,9 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 
 ### Blackjack shell zones (canonical)
 
-`BlackjackTableLayoutShell`: bank-info → dealer → command → cards → actions → player boxes → chip tray. Desktop geometry owned solely by `bj-blackjack-table-shell.css` (Full Table + Card View).
+`BlackjackTableLayoutShell`: bank-info → dealer → command → cards → actions → player boxes → chip tray. Desktop geometry owned solely by `bj-blackjack-table-shell.css` (Full Table + Card View). Global CSS cascade order is documented in `CANONICAL_BLACKJACK_CSS_IMPORT_ORDER` (`blackjackLayoutContract.ts`); stitch theme tokens import before table layout CSS.
+
+**Layout debug (`?layoutDebug=1`):** Hidden by default. When enabled, overlays zone labels and a diagnostics panel (layout version, shell name, view mode, protocol phase, CSS route, zone order).
 
 **Mobile chip tray (`ValueAndChipsBar`):**
 

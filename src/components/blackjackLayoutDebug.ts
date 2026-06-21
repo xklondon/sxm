@@ -1,9 +1,27 @@
 /** Dev-only layout zone overlay — enable with `?layoutDebug=1` in the URL. */
 import { isVerboseDevLogging } from '../utils/devFlags';
+import {
+  BLACKJACK_CSS_LAYOUT_ROUTE_VERSION,
+  BLACKJACK_TABLE_LAYOUT_SHELL_NAME,
+  CANONICAL_BLACKJACK_CSS_IMPORT_ORDER,
+  FULL_TABLE_SHELL_ZONE_ORDER,
+} from './blackjackLayoutContract';
 
 export const BLACKJACK_LAYOUT_DEBUG_PARAM = 'layoutDebug';
 /** Build marker — confirms production bundle includes this audit pass. */
-export const BLACKJACK_UI_FIX_VERSION = 'mobile-box-tray-final-2';
+export const BLACKJACK_UI_FIX_VERSION = 'render-route-canonical-1';
+
+export { BLACKJACK_CSS_LAYOUT_ROUTE_VERSION, BLACKJACK_TABLE_LAYOUT_SHELL_NAME, CANONICAL_BLACKJACK_CSS_IMPORT_ORDER };
+
+/** Human-readable CSS route for debug overlay. */
+export function formatBlackjackCssImportRoute(): string {
+  return `${BLACKJACK_CSS_LAYOUT_ROUTE_VERSION} · ${CANONICAL_BLACKJACK_CSS_IMPORT_ORDER.length} files · shell=${CANONICAL_BLACKJACK_CSS_IMPORT_ORDER.indexOf('src/styles/bj-blackjack-table-shell.css') + 1}`;
+}
+
+/** Shell zone order string for debug overlay. */
+export function formatBlackjackShellZoneOrder(): string {
+  return FULL_TABLE_SHELL_ZONE_ORDER.join(' → ');
+}
 
 /** Local override — set true while tuning zones; never ship enabled. */
 const BLACKJACK_LAYOUT_DEBUG_FORCE = false;

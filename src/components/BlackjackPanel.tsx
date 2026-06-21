@@ -2599,8 +2599,11 @@ export function BlackjackPanel({
         enabled={layoutDebug}
         layoutRootRef={layoutRootRef}
         viewRootClass={viewRootClass}
+        viewMode={viewMode}
         deviceView={deviceView}
         isMobileViewport={isMobileViewport}
+        protocolPhase={protocolPhase}
+        desktopLayoutPhase={desktopLayoutPhase}
         visibleBoxCount={effectiveVisibleBoxCount}
         selectedBettingBoxId={selectedBettingBoxIdForUi}
         selectedBettingSlotNumber={selectedBettingSlotNumber}

@@ -238,8 +238,8 @@ describe('canonical player row layout engine', () => {
     );
   });
 
-  it('exposes debug version mobile-box-tray-final-2 with overlap diagnostics', () => {
-    expect(DEBUG_SRC).toContain("BLACKJACK_UI_FIX_VERSION = 'mobile-box-tray-final-2'");
+  it('exposes debug version render-route-canonical-1 with overlap diagnostics', () => {
+    expect(DEBUG_SRC).toContain("BLACKJACK_UI_FIX_VERSION = 'render-route-canonical-1'");
     expect(DEBUG_SRC).toContain('trayOverlapsPlayerRow');
     expect(DEBUG_SRC).toContain('trayOverflowChain');
   });

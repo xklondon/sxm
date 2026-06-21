@@ -357,3 +357,34 @@ export const FULL_TABLE_DESKTOP_POLISH_TOKENS = [
   '--bj-full-desktop-stack-value-gap',
   '--bj-desktop-dealer-command-gap',
 ] as const;
+
+/** Production shell component — sole Blackjack zone owner (Full Table + Card View). */
+export const BLACKJACK_TABLE_LAYOUT_SHELL_NAME = 'BlackjackTableLayoutShell' as const;
+
+/** Layout CSS cascade version — reported by ?layoutDebug=1. */
+export const BLACKJACK_CSS_LAYOUT_ROUTE_VERSION = 'shell-owner-v2' as const;
+
+/**
+ * Deterministic global CSS import order for blackjack table styles (mirrors src/index.css).
+ * Shell geometry: bj-blackjack-table-shell.css (after shared tokens + card-area play zone).
+ */
+export const CANONICAL_BLACKJACK_CSS_IMPORT_ORDER = [
+  'src/styles/tokens.css',
+  'src/styles/sxm-stitch-visual.css',
+  'src/styles/bj-table-shared.css',
+  'src/styles/bj-player-row-layout.css',
+  'src/styles/bj-card-layout.css',
+  'src/styles/bj-full-table-card-area.css',
+  'src/styles/bj-felt-skins.css',
+  'src/styles/bj-blackjack-table-shell.css',
+  'src/styles/bj-card-desktop-hero-area.css',
+  'src/styles/bj-card-desktop-layout.css',
+  'src/styles/bj-card-mobile-portrait-layout.css',
+  'src/styles/bj-full-mobile-landscape-layout.css',
+  'src/styles/bj-mobile-landscape-layout.css',
+  'src/styles/bj-blackjack-targeted-fixes.css',
+  'src/styles/bj-layout-debug.css',
+  'src/styles/design-system.css',
+  'src/styles/mobile-modals.css',
+  'src/styles/bj-card-mobile-hero-final.css',
+] as const;

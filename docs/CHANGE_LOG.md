@@ -15,6 +15,25 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-13 — Version 1.0 architecture discipline (rules, docs, ownership tests)
+
+- **`.cursorrules`:** Expanded SXM Architecture Discipline — canonical routes, CSS ownership, layer model, test tiers, no parallel implementations.
+- **Docs:** Added `docs/SXM_ARCHITECTURE.md`; pointers in `README.md` and `docs/TEST_WORKFLOW.md`.
+- **Tests:** Added `productionRouteOwnership.test.ts` + `npm run test:ownership`; merged into `test:layout:audit` / `test:layout:fast`.
+- **Cleanup:** Removed superseded `blackjackRenderRouteAudit.test.ts`; removed unused `BlackjackDealerAreaSection` export.
+
+---
+
+## 2026-06-13 — Blackjack render route audit (canonical shell + CSS cascade)
+
+- **Wiring:** Confirmed single production path `BlackjackPanel → BlackjackTableLayoutShell`; desktop grid rows live only in `bj-blackjack-table-shell.css` (removed stale shared-grid test assumptions).
+- **CSS cascade:** Documented `CANONICAL_BLACKJACK_CSS_IMPORT_ORDER`; moved `sxm-stitch-visual.css` before table layout imports (theme tokens only, not layout geometry).
+- **Visual contract fixes:** Compact desktop command row (4.35rem default); mobile play command row 2.85rem (was 6.375rem); Full Table card stacks top-anchored (clip bottom); cloth SVG min-size during play; command text omits bank totals until visible dealer cards justify them.
+- **Debug:** `?layoutDebug=1` panel reports layout version, shell name, view mode, phase, CSS route, and zone order.
+- **Tests:** `blackjackRenderRouteAudit.test.ts`; extended layout debug, command, and play-zone layout guards.
+
+---
+
 ## 2026-06-13 — Full Table 3+/4-card stack containment + bank-owner game-over liveness
 
 - **Desktop Full Table play:** Tighter 3/4-card overlap tokens under `[data-bj-phase='playing']`; fixed playing stack-zone height so columns stay anchored when hand count changes or bank draws.

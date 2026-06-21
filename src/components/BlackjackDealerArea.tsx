@@ -1,6 +1,5 @@
 import type { ComponentProps } from 'react';
 import { DealerBlock } from './DealerBlock';
-import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
 
 export type BlackjackDealerAreaProps = ComponentProps<typeof DealerBlock>;
 
@@ -8,14 +7,6 @@ export type BlackjackDealerAreaProps = ComponentProps<typeof DealerBlock>;
 export function BlackjackDealerArea(props: BlackjackDealerAreaProps) {
   return (
     <div className="bj-dealer-area">
-      <DealerBlock {...props} />
-    </div>
-  );
-}
-
-export function BlackjackDealerAreaSection(props: BlackjackDealerAreaProps) {
-  return (
-    <div {...sxmSectionProps(SXM_LAYOUT.dealerZone, 'dealer-block')}>
       <DealerBlock {...props} />
     </div>
   );

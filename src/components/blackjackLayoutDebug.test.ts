@@ -11,6 +11,7 @@ const INDEX_CSS = readFileSync(join(process.cwd(), 'src/index.css'), 'utf8');
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const DEBUG_SRC = readFileSync(join(process.cwd(), 'src/components/blackjackLayoutDebug.ts'), 'utf8');
 
@@ -26,7 +27,7 @@ const DEBUG_PANEL_SRC = readFileSync(
 describe('blackjack layout debug overlay', () => {
   it('is disabled by default and only enables with ?layoutDebug=1', () => {
     expect(DEBUG_SRC).toContain('BLACKJACK_LAYOUT_DEBUG_FORCE = false');
-    expect(DEBUG_SRC).toContain("BLACKJACK_UI_FIX_VERSION = 'mobile-box-tray-final-2'");
+    expect(DEBUG_SRC).toContain("BLACKJACK_UI_FIX_VERSION = 'render-route-canonical-1'");
     expect(isBlackjackLayoutDebugEnabled('')).toBe(false);
     expect(isBlackjackLayoutDebugEnabled('?foo=1')).toBe(false);
     expect(isBlackjackLayoutDebugEnabled('?layoutDebug=0')).toBe(false);
@@ -79,28 +80,31 @@ describe('canonical blackjack zone order and separation', () => {
   });
 
   it('places command zone before cards in desktop grid rows', () => {
-    const desktop = SHARED_CSS.slice(
-      SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows'),
-      SHARED_CSS.indexOf('/* Desktop stage:', SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows')),
+    expect(SHELL_CSS).toMatch(/\[dealer\][\s\S]*\[command\][\s\S]*\[cards\][\s\S]*\[actions\]/);
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*grid-row:\s*command/,
     );
-    expect(desktop).toMatch(/\[dealer\][\s\S]*\[command\][\s\S]*\[cards\][\s\S]*\[actions\]/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*grid-row:\s*command/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*grid-row:\s*cards/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/);
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*grid-row:\s*cards/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/,
+    );
+    expect(SHARED_CSS).not.toMatch(/\[command\]/);
   });
 
   it('places cards zone below command and actions below cards with safe gaps', () => {
-    expect(SHARED_CSS).toContain('--bj-dealer-command-gap: 0.08rem');
-    expect(SHARED_CSS).toContain('--bj-command-cards-gap: 0.35rem');
-    expect(SHARED_CSS).toContain('--bj-cards-actions-gap: 0.55rem');
-    expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*padding[^;]*var\(--bj-dealer-command-gap\)/,
+    expect(SHELL_CSS).toContain('--bj-desktop-dealer-command-gap: 0.4125rem');
+    expect(SHELL_CSS).toContain('--bj-command-cards-gap: 0.08rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-actions-zone-padding-top: 1.56rem');
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*padding-top:\s*var\(--bj-desktop-dealer-command-gap\)/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*margin-top:\s*var\(--bj-command-cards-gap\)/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*margin:\s*var\(--bj-command-cards-gap\)/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-cards-actions-gap\)/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-desktop-actions-zone-padding-top\)/,
     );
     expect(CARD_VIEW_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--actions \.bj-table-actions > \.bj-table-actions__row:first-child[\s\S]*display:\s*none/,
@@ -123,15 +127,14 @@ describe('canonical blackjack zone order and separation', () => {
   });
 
   it('shows Card View cloth behind hero on desktop and mobile', () => {
-    const CARD_DESKTOP_CSS = readFileSync(
-      join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
-      'utf8',
-    );
     expect(FELT_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*flex:\s*1\s+1\s+auto/,
+    );
+    expect(readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8')).toMatch(
+      /\.bj-view-card-desktop\.bj-casino\[data-bj-phase='betting'\][\s\S]*\.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
   });
 });

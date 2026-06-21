@@ -1,7 +1,11 @@
 import { useLayoutEffect, useState } from 'react';
 import type { RefObject } from 'react';
 import {
+  BLACKJACK_CSS_LAYOUT_ROUTE_VERSION,
+  BLACKJACK_TABLE_LAYOUT_SHELL_NAME,
   BLACKJACK_UI_FIX_VERSION,
+  formatBlackjackCssImportRoute,
+  formatBlackjackShellZoneOrder,
   logLayoutDebugSnapshot,
   readLayoutDebugComputedSnapshot,
   type LayoutDebugComputedSnapshot,
@@ -13,8 +17,11 @@ export interface BlackjackLayoutDebugPanelProps {
   enabled: boolean;
   layoutRootRef: RefObject<HTMLElement | null>;
   viewRootClass: string;
+  viewMode: string;
   deviceView: string;
   isMobileViewport: boolean;
+  protocolPhase: string;
+  desktopLayoutPhase?: string;
   visibleBoxCount: number;
   selectedBettingBoxId: string | null;
   selectedBettingSlotNumber: number | null;
@@ -26,8 +33,11 @@ export function BlackjackLayoutDebugPanel({
   enabled,
   layoutRootRef,
   viewRootClass,
+  viewMode,
   deviceView,
   isMobileViewport,
+  protocolPhase,
+  desktopLayoutPhase,
   visibleBoxCount,
   selectedBettingBoxId,
   selectedBettingSlotNumber,
@@ -71,14 +81,43 @@ export function BlackjackLayoutDebugPanel({
       <div className="bj-layout-debug-panel__title">Layout debug · {BLACKJACK_UI_FIX_VERSION}</div>
       <dl className="bj-layout-debug-panel__list">
         <div>
-          <dt>view root</dt>
-          <dd>{viewRootClass}</dd>
+          <dt>layout version</dt>
+          <dd>{BLACKJACK_UI_FIX_VERSION}</dd>
+        </div>
+        <div>
+          <dt>shell</dt>
+          <dd>{BLACKJACK_TABLE_LAYOUT_SHELL_NAME}</dd>
+        </div>
+        <div>
+          <dt>view mode</dt>
+          <dd>
+            {viewMode} · {viewRootClass}
+          </dd>
         </div>
         <div>
           <dt>device</dt>
           <dd>
             {deviceView} · mobile={String(isMobileViewport)}
           </dd>
+        </div>
+        <div>
+          <dt>phase</dt>
+          <dd>
+            {protocolPhase}
+            {desktopLayoutPhase ? ` · data-bj-phase=${desktopLayoutPhase}` : ''}
+          </dd>
+        </div>
+        <div>
+          <dt>CSS route</dt>
+          <dd>{formatBlackjackCssImportRoute()}</dd>
+        </div>
+        <div>
+          <dt>CSS version</dt>
+          <dd>{BLACKJACK_CSS_LAYOUT_ROUTE_VERSION}</dd>
+        </div>
+        <div>
+          <dt>zone order</dt>
+          <dd>{formatBlackjackShellZoneOrder()}</dd>
         </div>
         <div>
           <dt>visibleBoxCount</dt>
