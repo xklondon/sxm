@@ -531,4 +531,10 @@
     font-size: 0.54rem;
     padding: 0.08rem 0.28rem;
   }
+
+  /* Playing — reclaim cards-row height from actions band (boxes/tray unchanged). */
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] {
+    --bj-desktop-actions-zone-padding-top: 0.55rem;
+    --bj-desktop-zone-actions-height: 2rem;
+  }
 }

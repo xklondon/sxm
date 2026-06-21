@@ -223,18 +223,18 @@ describe('blackjack polish regression', () => {
     expect(PANEL_SRC).toContain('turnBorderClass');
   });
 
-  it('mobile Full Table end-state still renders numeric hand values in card columns', () => {
+  it('mobile Full Table hides numeric hand values under card stacks during play', () => {
     simulatedWidth = 390;
     const html = renderToStaticMarkup(
       createElement(BlackjackPanel, {
-        gameState: settledMobileFullTableState(),
+        gameState: { ...playingState(), tableViewMode: 'full' },
         onGameStateChange: noop,
       }),
     );
     const cardsStart = html.indexOf('bj-cards-area--table');
     const cardsZone = html.slice(cardsStart, html.indexOf('bj-table-zone--actions', cardsStart));
-    expect(cardsZone).toContain('bj-phone-view__box-value--card-column-below');
-    expect(cardsZone).toMatch(/bj-phone-view__box-value--card-column-below[^>]*>13</);
+    expect(cardsZone).not.toMatch(/bj-phone-view__box-value--card-column-below[^>]*>\s*\d+/);
+    expect(cardsZone).toContain('bj-arc__slot--card-column--stack-value-in-box');
   });
 
   it('desktop Full Table card area has downward offset only on desktop', () => {

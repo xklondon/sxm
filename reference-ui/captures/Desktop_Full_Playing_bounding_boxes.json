@@ -1,0 +1,90 @@
+{
+  "dataPhase": "player",
+  "dataBjPhase": "playing",
+  "commandZone": {
+    "top": 283.921875,
+    "bottom": 377.515625,
+    "left": 27.984375,
+    "right": 1044,
+    "width": 1016.015625,
+    "height": 93.59375,
+    "overflow": "visible"
+  },
+  "actionRow": {
+    "top": 492.1875,
+    "bottom": 522.6875,
+    "left": 486.015625,
+    "right": 585.953125,
+    "width": 99.9375,
+    "height": 30.5,
+    "overflow": "visible"
+  },
+  "cardsArea": {
+    "top": 378.78125,
+    "bottom": 484.65625,
+    "left": 27.984375,
+    "right": 1044,
+    "width": 1016.015625,
+    "height": 105.875,
+    "overflow": "hidden"
+  },
+  "cards": [
+    {
+      "i": 0,
+      "top": 424.21875,
+      "bottom": 482.125,
+      "height": 57.90625,
+      "width": 44.46875
+    },
+    {
+      "i": 1,
+      "top": 384.859375,
+      "bottom": 442.765625,
+      "height": 57.90625,
+      "width": 44.46875
+    },
+    {
+      "i": 2,
+      "top": 424.21875,
+      "bottom": 482.125,
+      "height": 57.90625,
+      "width": 44.46875
+    },
+    {
+      "i": 3,
+      "top": 384.859375,
+      "bottom": 442.765625,
+      "height": 57.90625,
+      "width": 44.46875
+    },
+    {
+      "i": 4,
+      "top": 424.21875,
+      "bottom": 482.125,
+      "height": 57.90625,
+      "width": 44.46875
+    },
+    {
+      "i": 5,
+      "top": 384.859375,
+      "bottom": 442.765625,
+      "height": 57.90625,
+      "width": 44.46875
+    },
+    {
+      "i": 6,
+      "top": 424.21875,
+      "bottom": 482.125,
+      "height": 57.90625,
+      "width": 44.46875
+    },
+    {
+      "i": 7,
+      "top": 384.859375,
+      "bottom": 442.765625,
+      "height": 57.90625,
+      "width": 44.46875
+    }
+  ],
+  "cardColumnValues": []
+}

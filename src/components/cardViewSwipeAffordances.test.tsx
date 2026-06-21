@@ -91,6 +91,12 @@ describe('Card View mobile action affordances', () => {
     expect(html).not.toContain('bj-phone-view__swipe-guide');
   });
 
+  it('wires mobile box swipe navigation on the felt shell', () => {
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+    expect(panelSrc).toContain('useMobileBoxSwipeNavigation');
+    expect(panelSrc).toContain('{...mobileBoxSwipe}');
+  });
+
   it('does not wire Card View hero swipe handlers for gameplay actions', () => {
     const cardViewSrc = readFileSync(
       join(process.cwd(), 'src/components/BlackjackCardView.tsx'),

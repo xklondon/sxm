@@ -64,7 +64,14 @@
       "visibility": "visible",
       "opacity": "1",
       "overflow": "visible"
-    }
+    },
+    "cardColumnValues": [],
+    "boxValues": [
+      "",
+      "",
+      "",
+      "50"
+    ]
   },
   "playing": {
     "phase": "playing",
@@ -153,6 +160,13 @@
       "visibility": "visible",
       "opacity": "1",
       "overflow": "visible"
-    }
+    },
+    "cardColumnValues": [],
+    "boxValues": [
+      "",
+      "",
+      "",
+      "20"
+    ]
   }
 }

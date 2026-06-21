@@ -141,6 +141,16 @@ async function main() {
         standButton: rect(standBtn),
         actionRow: rect(document.querySelector('[data-layout-band="action-row"]')),
         playerBoxes: rect(document.querySelector('[data-layout-band="player-boxes"]')),
+        cardColumnValues: [...document.querySelectorAll(
+          '.bj-view-full-mobile .bj-phone-view__box-value--card-column-below:not(.bj-phone-view__box-value--placeholder)',
+        )].map((el) => ({
+          text: el.textContent?.trim() ?? '',
+          display: getComputedStyle(el).display,
+          visibility: getComputedStyle(el).visibility,
+        })),
+        boxValues: [...document.querySelectorAll(
+          '.bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__box-value--above',
+        )].map((el) => el.textContent?.trim() ?? ''),
       };
     })()`);
   }
@@ -184,6 +194,20 @@ async function main() {
     }
     if (phase.hitButton && phase.hitButton.height < 40) {
       throw new Error(`Hit button too small in ${phase} (${phase.hitButton.height.toFixed(1)}px)`);
+    }
+    if (phase.phase === 'playing') {
+      const playingPhase = phase as {
+        cardColumnValues: Array<{ text: string; display: string; visibility: string }>;
+        boxValues: string[];
+      };
+      for (const value of playingPhase.cardColumnValues) {
+        if (value.display !== 'none' && value.visibility !== 'hidden' && /\d/.test(value.text)) {
+          throw new Error(`card-column value visible under stacks: ${value.text}`);
+        }
+      }
+      if (!playingPhase.boxValues.some((text) => /\d/.test(text))) {
+        throw new Error('expected numeric values in mobile Full Table player boxes');
+      }
     }
   }
 }

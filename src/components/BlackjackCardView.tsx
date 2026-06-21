@@ -458,6 +458,7 @@ export function BlackjackCardView({
               SXM_LAYOUT.heroCards,
               'bj-phone-view__cards bj-phone-view__cards--fan bj-phone-view__cards--stitched',
             )}
+            data-bj-hero-card-count={Math.min(heroCardIds.length, 6)}
           >
             {heroCardIds.map((id, i) => (
               <div

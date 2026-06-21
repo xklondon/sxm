@@ -644,6 +644,38 @@
     padding-bottom: 0.14rem;
     box-sizing: border-box;
   }
+
+  /* Playing — fit stacked hands inside cardsArea; values live in player boxes only. */
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] {
+    --bj-table-card-width: 2.78rem;
+    --bj-table-card-height: 3.62rem;
+    --bj-table-card-overlap-2: 1.16rem;
+    --bj-table-card-overlap-3: 1.48rem;
+    --bj-table-card-overlap-4plus: 1.78rem;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--table {
+    padding-bottom: 0.12rem;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-arc__cards-stack[data-bj-card-count='3'] {
+    --bj-table-card-height: 3.34rem;
+    --bj-table-card-overlap-3: 1.24rem;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-arc__cards-stack[data-bj-card-count='4'],
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-arc__cards-stack[data-bj-card-count='5'],
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-arc__cards-stack[data-bj-card-count='6'] {
+    --bj-table-card-height: 3.1rem;
+    --bj-table-card-overlap-4plus: 1.38rem;
+  }
 }
 
 /* Full Table stack outcome badges — desktop + mobile (overlay on card stack) */
@@ -667,6 +699,15 @@
   .bj-arc__slot--card-column--stack-outcome
   > .bj-phone-view__box-value--card-column-below {
   grid-row: 2;
+}
+
+/* Mobile Full Table play — numeric totals stay in player boxes only. */
+.bj-view-full-mobile:not([data-phase='betting'])
+  .bj-arc--cards.bj-full-table-card-area
+  .bj-arc__slot--card-column
+  > .bj-phone-view__box-value--card-column-below:not(.bj-phone-view__box-value--placeholder) {
+  display: none;
+  visibility: hidden;
 }
 
 .bj-view-full-desktop .bj-arc--cards.bj-full-table-card-area .bj-arc__play-zone,

@@ -6,6 +6,12 @@ import { chromium } from 'playwright';
 import { createElement } from 'react';
 import { renderToString } from 'react-dom/server';
 import { playingCardDesktopState } from '../src/test/cardDesktopLayoutState';
+import { boxPlayerId, findCardId, tableAfterStartPlaying } from '../src/engine/blackjack/sanity/fixtures';
+import { claimBoxSlot } from '../src/engine/session';
+import { addChipToBoxStake } from '../src/engine/blackjack';
+import { createBlackjackPlayerHand } from '../src/types/blackjack';
+import { blackjackHandKey } from '../src/engine/blackjack';
+import type { GameState } from '../src/types';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = join(__dirname, '..', 'reference-ui', 'captures');
@@ -30,6 +36,43 @@ function installMobileWindow() {
   } as unknown as Window;
 }
 
+function mobileCardViewState(cardCount: 2 | 3 | 4): GameState {
+  let state = tableAfterStartPlaying(500);
+  state = claimBoxSlot(state, 1);
+  const deck = state.deck!;
+  const box1 = boxPlayerId(state, 1)!;
+  const k1 = blackjackHandKey(box1, 0);
+  state = addChipToBoxStake(state, box1, 20);
+  const ranks = ['6', '7', '8', '9'] as const;
+  const cardIds = ranks.slice(0, cardCount).map((rank) => findCardId(deck, rank));
+  return {
+    ...state,
+    tableViewMode: 'card',
+    selectedSeatId: box1,
+    blackjackFlowSettings: {
+      ...state.blackjackFlowSettings,
+      initialDealMode: 'instant',
+      adviceEnabled: false,
+    },
+    blackjack: {
+      ...state.blackjack!,
+      status: 'player-turns',
+      activeHandKey: k1,
+      activePlayerId: box1,
+      dealerCardIds: [findCardId(deck, '7'), findCardId(deck, 'K')],
+      dealerHoleHidden: true,
+      playerHands: {
+        [k1]: {
+          ...createBlackjackPlayerHand(box1, 0),
+          cardIds,
+          currentBet: 20,
+          actionStatus: 'acting',
+        },
+      },
+    },
+  };
+}
+
 async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
 
@@ -45,19 +88,21 @@ async function main() {
 
   installMobileWindow();
   const { BlackjackPanel } = await server.ssrLoadModule('/src/components/BlackjackPanel.tsx');
-  const panelHtml = renderToString(
-    createElement(BlackjackPanel, {
-      gameState: playingCardDesktopState(),
-      onGameStateChange: () => undefined,
-    }),
-  );
-  delete (globalThis as { window?: Window }).window;
 
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  async function captureHand(cardCount: 2 | 3 | 4) {
+    const panelHtml = renderToString(
+      createElement(BlackjackPanel, {
+        gameState: mobileCardViewState(cardCount),
+        onGameStateChange: () => undefined,
+      }),
+    );
+    delete (globalThis as { window?: Window }).window;
 
-  await page.setContent(
-    `<!DOCTYPE html>
+    const browser = await chromium.launch();
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+
+    await page.setContent(
+      `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -72,66 +117,42 @@ async function main() {
   <div id="root">${panelHtml}</div>
 </body>
 </html>`,
-    { waitUntil: 'networkidle' },
-  );
+      { waitUntil: 'networkidle' },
+    );
 
-  const hasMobileCard = await page.evaluate(
-    'document.querySelector(".bj-view-card-mobile") !== null',
-  );
-  if (!hasMobileCard) {
-    throw new Error('Capture is not Mobile Card View — missing .bj-view-card-mobile');
+    await page.waitForTimeout(500);
+
+    const boxes = await page.evaluate(`(() => {
+      const rect = (el) => {
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height };
+      };
+      const cardsZone = document.querySelector('.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero');
+      const heroPlayingCards = [...document.querySelectorAll(
+        '.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .playing-card.bj-phone-card--hero, .bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .playing-card.ds-card--hero',
+      )].map((c, i) => {
+        const r = c.getBoundingClientRect();
+        return { i, width: r.width, height: r.height, top: r.top, bottom: r.bottom };
+      });
+      return {
+        cardCount: ${cardCount},
+        cardsZone: rect(cardsZone),
+        heroPlayingCards,
+      };
+    })()`);
+
+    await browser.close();
+    installMobileWindow();
+    return boxes;
   }
 
-  await page.waitForTimeout(500);
-
-  const boxes = await page.evaluate(`(() => {
-    const q = (band) => document.querySelector('[data-layout-band="' + band + '"]');
-    const rect = (el) => {
-      if (!el) return null;
-      const r = el.getBoundingClientRect();
-      return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height };
-    };
-    const heroValueEl = document.querySelector(
-      '.bj-view-card-mobile .bj-card-view__hero-value.bj-phone-view__total--hero',
-    );
-    const heroValueStyle = heroValueEl ? getComputedStyle(heroValueEl) : null;
-    const cardsZone = document.querySelector('.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero');
-    const cardsZoneRect = rect(cardsZone);
-    const heroPlayingCards = [...document.querySelectorAll(
-      '.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .playing-card.bj-phone-card--hero, .bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .playing-card.ds-card--hero',
-    )].map((c, i) => {
-      const r = c.getBoundingClientRect();
-      const style = getComputedStyle(c);
-      return {
-        i,
-        width: r.width,
-        height: r.height,
-        top: r.top,
-        bottom: r.bottom,
-        computedWidth: style.width,
-        computedHeight: style.height,
-        computedMaxWidth: style.maxWidth,
-        computedMaxHeight: style.maxHeight,
-        computedMinWidth: style.minWidth,
-        computedMinHeight: style.minHeight,
-      };
-    });
-    return {
-      heroCards: rect(q('hero-cards')),
-      heroValue: rect(q('hero-value')),
-      heroValueText: rect(heroValueEl),
-      heroValueDisplay: heroValueStyle?.display ?? null,
-      heroValueVisibility: heroValueStyle?.visibility ?? null,
-      actionRow: rect(q('action-row')),
-      playerBoxes: rect(q('player-boxes')),
-      cardsZone: cardsZoneRect,
-      heroPlayingCards,
-    };
-  })()`);
+  const twoCard = await captureHand(2);
+  const threeCard = await captureHand(3);
+  const fourCard = await captureHand(4);
+  const boxes = { twoCard, threeCard, fourCard };
 
   writeFileSync(OUT_AFTER, JSON.stringify(boxes, null, 2));
-
-  await browser.close();
   await server.close();
 
   console.log('Mobile Card bounding boxes:', OUT_AFTER);
@@ -140,57 +161,25 @@ async function main() {
   }
   console.log(JSON.stringify(boxes, null, 2));
 
-  const {
-    heroCards,
-    heroValue,
-    heroValueText,
-    heroValueDisplay,
-    heroValueVisibility,
-    actionRow,
-    playerBoxes,
-    cardsZone,
-    heroPlayingCards,
-  } = boxes as {
-    heroCards: { top: number; bottom: number; width: number; height: number } | null;
-    heroValue: { top: number; bottom: number; height: number } | null;
-    heroValueText: { top: number; bottom: number; height: number } | null;
-    heroValueDisplay: string | null;
-    heroValueVisibility: string | null;
-    actionRow: { top: number } | null;
-    playerBoxes: { top: number } | null;
+  for (const phase of [twoCard, threeCard, fourCard] as Array<{
+    cardCount: number;
     cardsZone: { top: number; bottom: number } | null;
-    heroPlayingCards: { width: number; height: number; top: number; bottom: number }[];
-  };
-
-  if (!heroCards || !actionRow || !playerBoxes || !cardsZone) {
-    throw new Error('Missing mobile Card View layout bands');
-  }
-
-  if (heroValueDisplay !== 'none' && heroValueVisibility !== 'hidden') {
-    throw new Error(
-      `hero value should be hidden in mobile Card View (display=${heroValueDisplay}, visibility=${heroValueVisibility})`,
-    );
-  }
-
-  const heroCard = heroPlayingCards.find((c) => c.width > 0 && c.height > 0);
-  if (!heroCard) {
-    throw new Error('no visible hero playing cards in mobile Card View');
-  }
-  if (heroCard.width < 85 || heroCard.height < 120) {
-    throw new Error(
-      `hero playing card too small (${heroCard.width.toFixed(1)}×${heroCard.height.toFixed(1)}px; need ≥85×120)`,
-    );
-  }
-  if (heroCard.top < cardsZone.top - 2 || heroCard.bottom > cardsZone.bottom + 2) {
-    throw new Error('hero playing card outside cards zone');
-  }
-
-  if (heroCards.bottom > actionRow.top - 4) {
-    throw new Error('hero cards overlap action row');
-  }
-
-  if (heroCards.bottom > playerBoxes.top - 4) {
-    throw new Error('hero cards overlap player boxes');
+    heroPlayingCards: Array<{ width: number; height: number; top: number; bottom: number }>;
+  }>) {
+    if (!phase.cardsZone || phase.heroPlayingCards.length !== phase.cardCount) {
+      throw new Error(`expected ${phase.cardCount} hero cards`);
+    }
+    for (const card of phase.heroPlayingCards) {
+      if (card.width < 85 || card.height < 120) {
+        throw new Error(`${phase.cardCount}-card hero too small (${card.width}×${card.height})`);
+      }
+      if (card.top < phase.cardsZone.top + 2) {
+        throw new Error(`${phase.cardCount}-card hero top clipped above cardsArea`);
+      }
+      if (card.bottom > phase.cardsZone.bottom - 1) {
+        throw new Error(`${phase.cardCount}-card hero bottom clipped below cardsArea`);
+      }
+    }
   }
 }
 

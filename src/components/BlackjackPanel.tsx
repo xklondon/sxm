@@ -83,6 +83,7 @@ import {
 } from './blackjackBoxPlacementContract';
 import { InsuranceDecisionOverlay } from './InsuranceDecisionOverlay';
 import { bindTapSelect, createTapSelectHandler } from './tapSelect';
+import { useMobileBoxSwipeNavigation } from '../hooks/useMobileBoxSwipeNavigation';
 import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
 import { TABLE_UX } from './tableUxContract';
 import { TableInfoBar } from './TableInfoBar';
@@ -420,6 +421,7 @@ export function BlackjackPanel({
   const viewMode = localViewMode;
   const deviceView = getDeviceView(isMobileViewport);
   const isFullTableDesktop = deviceView === 'desktop' && viewMode === 'full';
+  const isFullTableMobile = deviceView === 'mobile' && viewMode === 'full';
   const isCardViewDesktop = deviceView === 'desktop' && viewMode === 'card';
   const isCardViewMobile = deviceView === 'mobile' && viewMode === 'card';
   const viewRootClass = getViewRootClass(deviceView, viewMode);
@@ -1109,6 +1111,12 @@ export function BlackjackPanel({
       }),
     [inBetting, bettingOpen],
   );
+  const mobileBoxSwipe = useMobileBoxSwipeNavigation({
+    enabled: deviceView === 'mobile' && !gameEnded,
+    displaySlots,
+    currentSlotNumber: selectedBettingSlotNumber,
+    onSelectSlot: selectLocalTarget,
+  });
   const displayError = error ?? flowError;
   const activeBoxStakeMessage = selectedBettingBoxIdForUi
     ? getStakeBetValidationMessage(gameState, selectedBettingBoxIdForUi)
@@ -1685,7 +1693,7 @@ export function BlackjackPanel({
         </span>
       ) : null;
     const suppressCardColumnStackValue =
-      isFullTableDesktop &&
+      (isFullTableDesktop || isFullTableMobile) &&
       !inBetting &&
       Boolean(cardColumnValueLabel);
     return (
@@ -2162,11 +2170,15 @@ export function BlackjackPanel({
   }
 
   const focusBoxId =
-    round?.status === 'player-turns' && uiActiveBoxId
-      ? uiActiveBoxId
-      : bettingOpen && selectedBettingSlotNumber != null
-        ? selectedBettingBoxIdForUi
-        : selectedBettingBoxIdForUi ?? focusFallbackBoxId;
+    deviceView === 'mobile' &&
+    localChipSelection.hasUserSelected &&
+    selectedBettingBoxIdForUi
+      ? selectedBettingBoxIdForUi
+      : round?.status === 'player-turns' && uiActiveBoxId
+        ? uiActiveBoxId
+        : bettingOpen && selectedBettingSlotNumber != null
+          ? selectedBettingBoxIdForUi
+          : selectedBettingBoxIdForUi ?? focusFallbackBoxId;
 
   const dealerCardNodes =
     dealerCards.length > 0
@@ -2548,7 +2560,8 @@ export function BlackjackPanel({
       <div className={`bj-casino__rail ${TABLE_UX.rail}`}>
           <div
             className={`bj-casino__felt ${TABLE_UX.surface}${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''} ${feltSkinModifierClass(resolveTableFeltSkin(tableMeta))}`}
-        >
+            {...mobileBoxSwipe}
+          >
           <Magic8Ball
             variant="table"
             compact

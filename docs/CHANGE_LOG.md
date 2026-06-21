@@ -15,6 +15,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-13 — Full Table desktop play clipping + mobile visual regressions
+
+- **Desktop Full Table play:** Card stack tokens scaled by `[data-bj-phase='playing']` and card count; actions band trimmed to keep stacks inside `cardsArea`.
+- **Mobile Card View:** Hero fan scales and anchors layered cards (3+) via `data-bj-hero-card-count` so tops stay inside `cardsArea`.
+- **Mobile swipe:** Shared `useMobileBoxSwipeNavigation` on felt — swipe left/right cycles occupied box slots (Card View + Full Table); respects local chip target for hero focus.
+- **Mobile Full Table values:** Card-column hand totals suppressed in play; values remain in player boxes only.
+- **Captures:** `capture-desktop-full-playing-layout.mts`; extended mobile card/full captures.
+
+---
+
 ## 2026-06-13 — Desktop Full Table insurance clipping + per-box insurance decisions
 
 - **Visual (Full Table desktop):** Insurance command row rebalanced (dealer/command/actions bands); compact overlay in command zone; insurance-phase card stack tokens so two-card hands stay inside `cardsArea` without clipping.

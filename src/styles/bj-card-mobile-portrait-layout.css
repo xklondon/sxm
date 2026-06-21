@@ -168,9 +168,103 @@
 
   .bj-view-card-mobile
     .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--fan[data-bj-hero-card-count='2'] {
+    transform: translateY(-0.1875rem);
+  }
+
+  .bj-view-card-mobile
+    .bj-table-layout-shell
     .bj-table-zone--cards.bj-cards-area--hero
     .bj-phone-view__cards
     .bj-phone-view__card-wrap {
     align-self: flex-end;
+  }
+
+  /* 3+ hero cards — scale fan down and anchor layered cards from bottom. */
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--fan[data-bj-hero-card-count='3'] {
+    --bj-card-hero-card-scale: 0.78;
+  }
+
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--fan[data-bj-hero-card-count='4'],
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--fan[data-bj-hero-card-count='5'],
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--fan[data-bj-hero-card-count='6'] {
+    --bj-card-hero-card-scale: 0.66;
+  }
+
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--stitched.bj-phone-view__cards--fan[data-bj-hero-card-count='3'],
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--stitched.bj-phone-view__cards--fan[data-bj-hero-card-count='4'],
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--stitched.bj-phone-view__cards--fan[data-bj-hero-card-count='5'],
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--stitched.bj-phone-view__cards--fan[data-bj-hero-card-count='6'] {
+    position: relative;
+    align-items: flex-end;
+    justify-content: center;
+    height: 100%;
+    max-height: 100%;
+  }
+
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--fan[data-bj-hero-card-count='3']
+    .bj-phone-view__card-wrap--layered,
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--fan[data-bj-hero-card-count='4']
+    .bj-phone-view__card-wrap--layered,
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--fan[data-bj-hero-card-count='5']
+    .bj-phone-view__card-wrap--layered,
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--fan[data-bj-hero-card-count='6']
+    .bj-phone-view__card-wrap--layered {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    margin-left: 0;
+    transform: translateX(-50%)
+      rotate(calc((var(--card-i, 2) - 1.5) * 5deg))
+      translate(calc((var(--card-i, 2) - 2) * 0.42rem), calc((var(--card-i, 2) - 2) * -0.36rem));
+    transform-origin: bottom center;
+  }
+
+  /* 4-card fan — ease layered upward offset so top card stays inside cardsArea. */
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards--fan[data-bj-hero-card-count='4']
+    .bj-phone-view__card-wrap--layered {
+    transform: translateX(-50%)
+      rotate(calc((var(--card-i, 2) - 1.5) * 5deg))
+      translate(calc((var(--card-i, 2) - 2) * 0.42rem), calc((var(--card-i, 2) - 2) * -0.22rem));
   }
 }
