@@ -151,6 +151,11 @@ export function createPostgresStore(prisma: PrismaClient): Store {
       return row ? toUser(row) : null;
     },
 
+    async listUsers() {
+      const rows = await prisma.user.findMany();
+      return rows.map(toUser);
+    },
+
     async createMagicLink(email, token, expiresAt) {
       const normalized = email.trim().toLowerCase();
       const createdAt = new Date();
@@ -364,6 +369,28 @@ export function createPostgresStore(prisma: PrismaClient): Store {
         },
       });
       return toPerson(row);
+    },
+
+    async deletePerson(id) {
+      const existing = await prisma.person.findUnique({ where: { id } });
+      if (!existing) {
+        return false;
+      }
+      await prisma.person.delete({ where: { id } });
+      return true;
+    },
+
+    async revokePendingInvitesForEmail(email) {
+      const normalized = email.trim().toLowerCase();
+      const result = await prisma.tableInvite.updateMany({
+        where: { invitedEmail: normalized, status: 'pending' },
+        data: { status: 'revoked' },
+      });
+      return result.count;
+    },
+
+    replaceMemberPersonId(oldPersonId, newPersonId) {
+      return game.replaceMemberPersonId(oldPersonId, newPersonId);
     },
 
     async appendAuditLog(entry) {

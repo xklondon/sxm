@@ -11,6 +11,14 @@ import {
   personToPermissions,
 } from './permissions.js';
 import { PeopleAuthError } from './errors.js';
+import { InviteFlowError } from './inviteErrors.js';
+import { sanitizeEmail } from '../email/smtp.js';
+import {
+  auditPeopleAndUsers,
+  mergePersonFields,
+  pickCanonicalPerson,
+  type PeopleAuditReport,
+} from './duplicateAudit.js';
 import { logAuthProvision } from './provisioningLog.js';
 
 export class PeopleService {
@@ -61,15 +69,46 @@ export class PeopleService {
   }
 
   async getPersonForUser(userId: string): Promise<PersonRecord | null> {
-    const byUser = await this.store.getPersonByUserId(userId);
-    if (byUser) {
-      return byUser;
-    }
     const user = await this.store.getUserById(userId);
     if (!user) {
       return null;
     }
-    return this.store.getPersonByEmail(user.email);
+    const normalizedUserEmail = normalizeEmail(user.email);
+    const byEmail = await this.store.getPersonByEmail(normalizedUserEmail);
+    const byUser = await this.store.getPersonByUserId(userId);
+
+    if (byUser && normalizeEmail(byUser.email) === normalizedUserEmail) {
+      return byUser;
+    }
+
+    if (byEmail) {
+      if (byEmail.userId !== userId) {
+        logAuthProvision('getPersonForUser', 'repair-user-link', normalizedUserEmail, {
+          resolvedUserId: userId,
+          personId: byEmail.id,
+          previousUserId: byEmail.userId,
+        });
+        const repaired = await this.store.updatePerson(byEmail.id, { userId });
+        return repaired ?? { ...byEmail, userId };
+      }
+      return byEmail;
+    }
+
+    if (byUser && normalizeEmail(byUser.email) !== normalizedUserEmail) {
+      logAuthProvision('getPersonForUser', 'stale-user-link-skipped', normalizedUserEmail, {
+        resolvedUserId: userId,
+        stalePersonId: byUser.id,
+        stalePersonEmail: byUser.email,
+      });
+      return null;
+    }
+
+    return byUser;
+  }
+
+  async auditPeopleDirectory(): Promise<PeopleAuditReport> {
+    const [people, users] = await Promise.all([this.store.listPeople(), this.store.listUsers()]);
+    return auditPeopleAndUsers(people, users);
   }
 
   async canRequestMagicLink(email: string): Promise<boolean> {
@@ -244,6 +283,177 @@ export class PeopleService {
     return updated;
   }
 
+  async removePerson(
+    personId: string,
+    actorEmail: string,
+    options: { hard?: boolean; revokeInvites?: boolean } = {},
+  ): Promise<{ mode: 'disabled' | 'deleted'; person?: PersonRecord }> {
+    const person = await this.store.getPersonById(personId);
+    if (!person) {
+      throw new Error('Person not found');
+    }
+    if (isRootPerson(person)) {
+      throw new Error('Root user cannot be removed');
+    }
+    if (person.role === 'admin' && normalizeEmail(person.email) === normalizeEmail(actorEmail)) {
+      throw new Error('You cannot remove your own admin account');
+    }
+
+    if (!options.hard) {
+      const disabled = await this.updatePerson(
+        personId,
+        { status: 'disabled', canLogin: false },
+        actorEmail,
+      );
+      return { mode: 'disabled', person: disabled };
+    }
+
+    if (options.revokeInvites !== false) {
+      await this.store.revokePendingInvitesForEmail(person.email);
+    }
+    const deleted = await this.store.deletePerson(personId);
+    if (!deleted) {
+      throw new Error('Delete failed');
+    }
+    await this.store.appendAuditLog({
+      id: randomUUID(),
+      at: new Date().toISOString(),
+      actorEmail,
+      action: 'people.delete',
+      targetPersonId: personId,
+      detail: `Removed person ${person.email}`,
+    });
+    return { mode: 'deleted' };
+  }
+
+  async repairPersonByEmail(email: string, actorEmail: string): Promise<{
+    canonicalPerson: PersonRecord;
+    mergedCount: number;
+    revokedInvites: number;
+    membersUpdated: number;
+  }> {
+    const normalized = normalizeEmail(email);
+    if (!normalized) {
+      throw new Error('Email required');
+    }
+    if (isRootEmail(normalized)) {
+      throw new Error('Root user cannot be merged via repair');
+    }
+
+    let user = await this.store.getUserByEmail(normalized);
+    if (!user) {
+      user = await this.store.createUser(normalized, normalized.split('@')[0]!);
+    }
+
+    const allPeople = await this.store.listPeople();
+    const duplicates = allPeople.filter((person) => normalizeEmail(person.email) === normalized);
+    if (duplicates.length === 0) {
+      throw new Error('No person records found for that email');
+    }
+
+    const emailMapped = await this.store.getPersonByEmail(normalized);
+    const canonical =
+      emailMapped && duplicates.some((person) => person.id === emailMapped.id)
+        ? emailMapped
+        : pickCanonicalPerson(duplicates, user.id);
+    const mergePatches = mergePersonFields(canonical, duplicates);
+    let canonicalPerson =
+      (await this.store.updatePerson(canonical.id, {
+        ...mergePatches,
+        email: normalized,
+        userId: user.id,
+      })) ?? canonical;
+
+    let mergedCount = 0;
+    let membersUpdated = 0;
+    for (const duplicate of duplicates) {
+      if (duplicate.id === canonicalPerson.id) {
+        continue;
+      }
+      if (isRootPerson(duplicate)) {
+        continue;
+      }
+      membersUpdated += await this.store.replaceMemberPersonId(duplicate.id, canonicalPerson.id);
+      await this.store.deletePerson(duplicate.id);
+      mergedCount += 1;
+    }
+
+    const revokedInvites = await this.store.revokePendingInvitesForEmail(normalized);
+
+    await this.store.appendAuditLog({
+      id: randomUUID(),
+      at: new Date().toISOString(),
+      actorEmail,
+      action: 'people.repair-email',
+      targetPersonId: canonicalPerson.id,
+      detail: JSON.stringify({ email: normalized, mergedCount, membersUpdated, revokedInvites }),
+    });
+
+    return { canonicalPerson, mergedCount, revokedInvites, membersUpdated };
+  }
+
+  async findPeopleRecordsForEmail(email: string): Promise<PersonRecord[]> {
+    const normalized = normalizeEmail(email);
+    return (await this.store.listPeople()).filter(
+      (person) => normalizeEmail(person.email) === normalized,
+    );
+  }
+
+  async assertInviteTargetEmailClear(email: string, route = 'tables.invite'): Promise<void> {
+    const normalized = normalizeEmail(email);
+    const people = await this.findPeopleRecordsForEmail(normalized);
+    if (people.length > 1) {
+      logAuthProvision(route, 'duplicate-person-email', normalized, {
+        personCount: String(people.length),
+      });
+      throw new InviteFlowError(
+        'INVITE_DUPLICATE_ACCOUNTS',
+        'Duplicate account records found. Admin repair required.',
+      );
+    }
+    const users = (await this.store.listUsers()).filter(
+      (user) => normalizeEmail(user.email) === normalized,
+    );
+    if (users.length > 1) {
+      throw new InviteFlowError(
+        'INVITE_DUPLICATE_ACCOUNTS',
+        'Duplicate account records found. Admin repair required.',
+      );
+    }
+  }
+
+  private assertPersonJoinable(person: PersonRecord, route: string): void {
+    if (person.status === 'disabled' || !person.canLogin) {
+      logAuthProvision(route, 'person-disabled', person.email, { personId: person.id });
+      throw new InviteFlowError(
+        'INVITE_PERSON_DISABLED',
+        'This person is disabled. Admin must re-enable them.',
+      );
+    }
+  }
+
+  async resolveInviteePerson(
+    userId: string,
+    inviteEmail: string,
+    route = 'tables.invite-join',
+  ): Promise<{ user: UserRecord; person: PersonRecord }> {
+    const normalizedInviteEmail = normalizeEmail(inviteEmail);
+    await this.assertInviteTargetEmailClear(normalizedInviteEmail, route);
+    const user = await this.resolveSessionUser(userId, normalizedInviteEmail, route);
+    if (normalizeEmail(user.email) !== normalizedInviteEmail) {
+      throw new InviteFlowError(
+        'INVITE_EMAIL_MISMATCH',
+        `This invite is for another email. Please sign in as ${sanitizeEmail(normalizedInviteEmail)}.`,
+      );
+    }
+    let person = await this.getPersonForUser(user.id);
+    if (!person) {
+      person = await this.ensurePersonOnLogin(normalizedInviteEmail, user.id);
+    }
+    this.assertPersonJoinable(person, route);
+    return { user, person };
+  }
+
   async assertCanOwnTables(
     userId: string,
     sessionEmail?: string,
@@ -275,18 +485,42 @@ export class PeopleService {
     route = 'tables.join',
   ): Promise<PersonRecord> {
     const user = await this.resolveSessionUser(userId, sessionEmail, route);
-    const person = await this.getPersonForUser(user.id);
+    const inviteEmail = invite ? normalizeEmail(invite.invitedEmail) : null;
+
+    if (inviteEmail) {
+      await this.assertInviteTargetEmailClear(inviteEmail, route);
+      if (normalizeEmail(user.email) !== inviteEmail) {
+        throw new InviteFlowError(
+          'INVITE_EMAIL_MISMATCH',
+          `This invite is for another email. Please sign in as ${sanitizeEmail(inviteEmail)}.`,
+        );
+      }
+    }
+
+    let person = await this.getPersonForUser(user.id);
+
+    if (person) {
+      this.assertPersonJoinable(person, route);
+    }
+
     if (person && (person.canPlay || isRootPerson(person))) {
       return person;
     }
-    if (invite && normalizeEmail(invite.invitedEmail) === user.email) {
+
+    if (invite && inviteEmail === normalizeEmail(user.email)) {
       if (!person) {
         logAuthProvision(route, 'ensure-invite-guest', sessionEmail, { resolvedUserId: user.id });
-        return this.ensureInvitedGuestOnJoin(user.email, user.id);
+        const created = await this.ensureInvitedGuestOnJoin(user.email, user.id);
+        this.assertPersonJoinable(created, route);
+        return created;
       }
       return person;
     }
-    throw new Error('You do not have permission to join this table');
+
+    throw new InviteFlowError(
+      'INVITE_JOIN_DENIED',
+      'You do not have permission to join this table',
+    );
   }
 
   async ensureInvitedPersonForTable(params: {
@@ -315,8 +549,11 @@ export class PeopleService {
         userId: null,
       });
     } else {
-      if (person.status === 'disabled') {
-        throw new Error('Account disabled');
+      if (person.status === 'disabled' || !person.canLogin) {
+        throw new InviteFlowError(
+          'INVITE_PERSON_DISABLED',
+          'This person is disabled. Admin must re-enable them.',
+        );
       }
       person = (await this.store.updatePerson(person.id, {
         ...tablePerms,

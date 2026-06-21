@@ -15,6 +15,23 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-20 — Table invite flow stability + diagnostics
+
+- **Diagnostics:** `[SXM][invite-flow]` logs on invite create/accept/join/preview/fail with masked emails/ids (no raw tokens).
+- **Resolution:** canonical email/person/user linking on join; stale `Person.userId` repaired; session/invite email mismatch returns explicit error.
+- **Guards:** duplicate Person/User emails block invite creation until admin repair; disabled persons blocked from join.
+- **Errors:** `INVITE_EMAIL_MISMATCH`, `INVITE_PERSON_DISABLED`, `INVITE_DUPLICATE_ACCOUNTS`, `INVITE_INVALID` / `INVITE_EXPIRED`.
+- **Tests:** `server/tests/inviteFlow.test.ts`.
+
+## 2026-06-20 — People admin duplicate detection and safe cleanup
+
+- **Audit:** `GET /api/people` returns `audit` warnings for duplicate Person/User emails, stale `Person.userId`, and email/user mismatches.
+- **Remove:** `DELETE /api/people/:id` (soft disable default; `?hard=true` removes Person and revokes pending invites — not table history).
+- **Repair:** `POST /api/people/repair-email` merges duplicate Person rows and links canonical Person to User.
+- **Runtime fix:** `getPersonForUser` prefers email-canonical Person and repairs `userId` link on read.
+- **UI:** `PeopleScreen` shows warnings, Repair, Disable, and Remove actions (root protected).
+- **Tests:** `server/tests/peopleCleanup.test.ts`.
+
 ## 2026-06-19 — Blackjack targeted UX fixes (6 items)
 
 - **Full Table scroll:** play/dealing/resolved phases hide internal felt/box-row scrollbars (CSS containment only; desktop Full Table).

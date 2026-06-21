@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   addPerson,
   fetchPeople,
+  removePerson,
+  repairPersonByEmail,
   sendPersonInvite,
   updatePerson,
+  type PeopleAuditReport,
+  type PersonAuditWarning,
   type PersonRecord,
 } from '../api/client';
 import './PeopleScreen.css';
@@ -14,8 +18,17 @@ interface PeopleScreenProps {
 
 const ROLES: PersonRecord['role'][] = ['admin', 'host', 'player', 'guest'];
 
+function warningsForPerson(person: PersonRecord, audit: PeopleAuditReport): PersonAuditWarning[] {
+  return audit.warnings.filter((warning) => warning.personIds.includes(person.id));
+}
+
 export function PeopleScreen({ onBack }: PeopleScreenProps) {
   const [people, setPeople] = useState<PersonRecord[]>([]);
+  const [audit, setAudit] = useState<PeopleAuditReport>({
+    warnings: [],
+    duplicatePersonEmails: [],
+    duplicateUserEmails: [],
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newEmail, setNewEmail] = useState('');
@@ -28,7 +41,9 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
     setLoading(true);
     setError(null);
     try {
-      setPeople(await fetchPeople());
+      const result = await fetchPeople();
+      setPeople(result.people);
+      setAudit(result.audit);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Load failed');
     } finally {
@@ -39,6 +54,11 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  const globalWarnings = useMemo(
+    () => audit.warnings.filter((warning) => warning.type === 'duplicate_user_email'),
+    [audit.warnings],
+  );
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -95,6 +115,58 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
     }
   }
 
+  async function handleDisable(person: PersonRecord) {
+    if (!window.confirm(`Disable ${person.email}? They will not be able to sign in.`)) {
+      return;
+    }
+    setError(null);
+    try {
+      await removePerson(person.id);
+      setSuccessMessage(`Disabled ${person.email}.`);
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Disable failed');
+    }
+  }
+
+  async function handleDelete(person: PersonRecord) {
+    if (
+      !window.confirm(
+        `Permanently remove ${person.email} from People?\n\nPending invites for this email will be revoked. Table/game history is not deleted.`,
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    try {
+      await removePerson(person.id, { hard: true });
+      setSuccessMessage(`Removed ${person.email}.`);
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Delete failed');
+    }
+  }
+
+  async function handleRepairEmail(email: string) {
+    if (
+      !window.confirm(
+        `Repair duplicate records for ${email}?\n\nKeeps one canonical Person, links to the User account, and removes duplicate Person rows.`,
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    try {
+      const result = await repairPersonByEmail(email);
+      setSuccessMessage(
+        `Repaired ${email}: merged ${result.mergedCount} duplicate(s), updated ${result.membersUpdated} membership(s).`,
+      );
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Repair failed');
+    }
+  }
+
   return (
     <main className="people-screen">
       <header className="people-screen__header">
@@ -110,6 +182,38 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
         <p className="people-screen__dev-link">
           Dev magic link: <code>{devLink}</code>
         </p>
+      )}
+
+      {(audit.warnings.length > 0 || globalWarnings.length > 0) && (
+        <section className="people-screen__audit" aria-label="People data warnings">
+          <h2>Data warnings</h2>
+          <p className="people-screen__audit-intro">
+            Duplicate or mismatched Person/User links can cause invite authorization errors. Repair
+            by email or remove stale records below.
+          </p>
+          <ul className="people-screen__audit-list">
+            {audit.warnings.map((warning) => (
+              <li
+                key={`${warning.type}-${warning.normalizedEmail}-${warning.personIds.join('-')}`}
+                className={`people-screen__audit-item people-screen__audit-item--${warning.severity}`}
+              >
+                <span>{warning.message}</span>
+                {warning.type === 'duplicate_person_email' ||
+                warning.type === 'email_user_mismatch' ||
+                warning.type === 'missing_user' ||
+                warning.type === 'multiple_persons_per_user' ? (
+                  <button
+                    type="button"
+                    className="secondary people-screen__audit-repair"
+                    onClick={() => void handleRepairEmail(warning.normalizedEmail)}
+                  >
+                    Repair {warning.normalizedEmail}
+                  </button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <form className="people-screen__add" onSubmit={(e) => void handleAdd(e)}>
@@ -145,6 +249,7 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
               <th>Name</th>
               <th>Role</th>
               <th>Status</th>
+              <th>Link</th>
               <th>Permissions</th>
               <th>Last login</th>
               <th>Actions</th>
@@ -153,9 +258,22 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
           <tbody>
             {people.map((person) => {
               const isRoot = person.role === 'root';
+              const rowWarnings = warningsForPerson(person, audit);
               return (
-                <tr key={person.id}>
-                  <td>{person.email}</td>
+                <tr
+                  key={person.id}
+                  className={rowWarnings.length > 0 ? 'people-screen__row--warning' : undefined}
+                >
+                  <td>
+                    {person.email}
+                    {rowWarnings.length > 0 && (
+                      <ul className="people-screen__row-warnings">
+                        {rowWarnings.map((warning) => (
+                          <li key={`${person.id}-${warning.type}`}>{warning.message}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </td>
                   <td>
                     <input
                       type="text"
@@ -184,6 +302,13 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
                     </select>
                   </td>
                   <td>{person.status}</td>
+                  <td className="people-screen__link-cell">
+                    {person.userId ? (
+                      <span title={person.userId}>Linked</span>
+                    ) : (
+                      <span className="people-screen__link-missing">No user</span>
+                    )}
+                  </td>
                   <td className="people-screen__perms">
                     {!isRoot && (
                       <>
@@ -220,7 +345,7 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
                     {isRoot && <span>All (root)</span>}
                   </td>
                   <td>{person.lastLoginAt ? new Date(person.lastLoginAt).toLocaleString() : '—'}</td>
-                  <td>
+                  <td className="people-screen__actions">
                     {!isRoot && (
                       <>
                         <button
@@ -230,11 +355,20 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
                         >
                           Resend link
                         </button>
+                        {rowWarnings.length > 0 && (
+                          <button
+                            type="button"
+                            className="secondary"
+                            onClick={() => void handleRepairEmail(person.email)}
+                          >
+                            Repair
+                          </button>
+                        )}
                         {person.status !== 'disabled' ? (
                           <button
                             type="button"
                             className="secondary"
-                            onClick={() => void patchPerson(person.id, { status: 'disabled', canLogin: false })}
+                            onClick={() => void handleDisable(person)}
                           >
                             Disable
                           </button>
@@ -249,6 +383,13 @@ export function PeopleScreen({ onBack }: PeopleScreenProps) {
                             Enable
                           </button>
                         )}
+                        <button
+                          type="button"
+                          className="secondary people-screen__delete-btn"
+                          onClick={() => void handleDelete(person)}
+                        >
+                          Remove
+                        </button>
                       </>
                     )}
                   </td>

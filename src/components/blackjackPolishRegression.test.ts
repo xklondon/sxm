@@ -187,7 +187,9 @@ describe('blackjack polish regression', () => {
     });
     expect(active.isTurn).toBe(true);
     expect(inactive.isTurn).toBe(false);
-    expect(PANEL_SRC).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
+    expect(PANEL_SRC).toContain('turnBorderClass');
+    expect(PANEL_SRC).toContain('borderState.isTurn');
+    expect(PANEL_SRC).toContain('BOX_BORDER_TURN');
   });
 
   it('keeps selected betting pulse separate from active-turn box border', () => {
@@ -217,8 +219,8 @@ describe('blackjack polish regression', () => {
       playerPhase: true,
     });
     expect(getBoxBorderVisualClasses(play)).not.toContain(BOX_BORDER_TURN);
-    expect(PANEL_SRC).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
     expect(getBoxActivePulseClassName(play)).toBe('');
+    expect(PANEL_SRC).toContain('turnBorderClass');
   });
 
   it('mobile Full Table end-state still renders numeric hand values in card columns', () => {
@@ -237,10 +239,10 @@ describe('blackjack polish regression', () => {
 
   it('desktop Full Table card area has downward offset only on desktop', () => {
     expect(CARD_AREA_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*translateY\(18px\)/,
+      /\.bj-view-full-desktop[\s\S]*\.bj-full-table-card-area[\s\S]*transform:\s*none/,
     );
     expect(CARD_AREA_CSS).not.toMatch(
-      /@media \(max-width: 720px\)[\s\S]*translateY\(10px\)/,
+      /@media \(max-width: 720px\)[\s\S]*\.bj-full-table-card-area[\s\S]*translateY\(/,
     );
   });
 
@@ -287,9 +289,9 @@ describe('blackjack polish regression', () => {
   });
 
   it('Start New Game routes to same-table NewTableOverlay reset flow with compact game-over shell', () => {
-    expect(PANEL_SRC).toContain("onBeginTableReset('newGame')");
-    expect(TABLE_SRC).toMatch(/onBeginTableReset=\{\(variant[\s\S]*setResetSetupOpen\(true\)/);
-    expect(TABLE_SRC).toMatch(/resetSetupVariant === 'newGame'[\s\S]*New Game/);
+    expect(PANEL_SRC).toContain("onBeginTableReset?.('newGame')");
+    expect(TABLE_SRC).toMatch(/onBeginTableReset=\{\(variant[\s\S]*openSetupFlow\(\{ reset: true, variant \}\)/);
+    expect(TABLE_SRC).toMatch(/resetSetupVariant === 'newGame'[\s\S]*'New game'/);
     expect(GAME_OVER_SRC).not.toContain('invite-modal--table-panel');
     expect(GAME_OVER_CSS).toMatch(/\.bj-game-over\s*\{[\s\S]*width:\s*min\(92vw,\s*24rem\)/);
     expect(GAME_OVER_CSS).toMatch(/\.bj-game-over\s*\{[\s\S]*background:/);

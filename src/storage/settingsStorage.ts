@@ -187,6 +187,12 @@ export function mergeSettingsWithDefaults(partial?: Partial<PersistedSettings>):
 
 export function loadSettings(): PersistedSettings {
 
+  if (typeof localStorage === 'undefined') {
+
+    return defaultPersistedSettings();
+
+  }
+
   try {
 
     const raw = localStorage.getItem(STORAGE_KEY);

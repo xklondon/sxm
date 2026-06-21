@@ -140,7 +140,9 @@ describe('people access control', () => {
         tableId: table.id,
         inviteId: invite.id,
         token,
-      })).rejects.toThrow(/permission to join/i);
+      })).rejects.toMatchObject({
+        code: 'INVITE_EMAIL_MISMATCH',
+      });
 
     const invited = await store.createUser('allowed@example.com', 'Allowed');
     const joined = await tables.joinTable({

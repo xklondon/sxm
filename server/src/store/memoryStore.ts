@@ -11,7 +11,9 @@ import type {
   UserRecord,
 } from './types.js';
 
-export function createMemoryStore(): Store {
+export function createMemoryStore(options?: { enableTestHooks?: boolean }): Store & {
+  insertOrphanPersonForTests?: (person: PersonRecord) => void;
+} {
   const usersByEmail = new Map<string, UserRecord>();
   const usersById = new Map<string, UserRecord>();
   const magicLinks = new Map<string, MagicLinkRecord>();
@@ -33,7 +35,7 @@ export function createMemoryStore(): Store {
     return `${tableId}:${requestId}`;
   }
 
-  return {
+  const store: Store = {
     createUser(email, displayName) {
       const normalized = email.trim().toLowerCase();
       const existing = usersByEmail.get(normalized);
@@ -57,6 +59,10 @@ export function createMemoryStore(): Store {
 
     getUserById(id) {
       return usersById.get(id) ?? null;
+    },
+
+    listUsers() {
+      return [...usersById.values()];
     },
 
     createMagicLink(email, token, expiresAt) {
@@ -201,6 +207,10 @@ export function createMemoryStore(): Store {
 
     createPerson(record) {
       const normalized = record.email.trim().toLowerCase();
+      const existing = peopleByEmail.get(normalized);
+      if (existing && existing.id !== record.id) {
+        peopleById.delete(existing.id);
+      }
       const person = { ...record, email: normalized };
       peopleByEmail.set(normalized, person);
       peopleById.set(person.id, person);
@@ -231,10 +241,64 @@ export function createMemoryStore(): Store {
     updatePerson(id, patches) {
       const person = peopleById.get(id);
       if (!person) return null;
-      const updated = { ...person, ...patches };
+      const nextEmail =
+        patches.email !== undefined ? patches.email.trim().toLowerCase() : person.email;
+      if (nextEmail !== person.email) {
+        peopleByEmail.delete(person.email);
+      }
+      const updated = { ...person, ...patches, email: nextEmail };
       peopleById.set(id, updated);
       peopleByEmail.set(updated.email, updated);
       return updated;
+    },
+
+    deletePerson(id) {
+      const person = peopleById.get(id);
+      if (!person) {
+        return false;
+      }
+      peopleById.delete(id);
+      const current = peopleByEmail.get(person.email);
+      if (current?.id === id) {
+        peopleByEmail.delete(person.email);
+      }
+      return true;
+    },
+
+    revokePendingInvitesForEmail(email) {
+      const normalized = email.trim().toLowerCase();
+      let count = 0;
+      for (const [key, invite] of invites) {
+        if (
+          invite.status === 'pending' &&
+          invite.invitedEmail.trim().toLowerCase() === normalized
+        ) {
+          const updated = { ...invite, status: 'revoked' as const };
+          invites.set(key, updated);
+          invitesByToken.set(updated.token, updated);
+          count += 1;
+        }
+      }
+      return count;
+    },
+
+    replaceMemberPersonId(oldPersonId, newPersonId) {
+      let count = 0;
+      for (const [tableId, list] of members) {
+        let changed = false;
+        const next = list.map((member) => {
+          if (member.personId !== oldPersonId) {
+            return member;
+          }
+          changed = true;
+          count += 1;
+          return { ...member, personId: newPersonId };
+        });
+        if (changed) {
+          members.set(tableId, next);
+        }
+      }
+      return count;
     },
 
     appendAuditLog(entry) {
@@ -257,4 +321,15 @@ export function createMemoryStore(): Store {
       };
     },
   };
+
+  if (options?.enableTestHooks) {
+    return Object.assign(store, {
+      insertOrphanPersonForTests(person: PersonRecord) {
+        const normalized = person.email.trim().toLowerCase();
+        peopleById.set(person.id, { ...person, email: normalized });
+      },
+    });
+  }
+
+  return store;
 }

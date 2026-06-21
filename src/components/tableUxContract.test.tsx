@@ -41,6 +41,7 @@ describe('TABLE_UX class contract', () => {
 
   it('shared CSS defines one table surface, seat shell, and side-rail shell', () => {
     const css = readSrc('src/styles/bj-table-shared.css');
+    const shellCss = readSrc('src/styles/bj-blackjack-table-shell.css');
     const panelCss = readSrc('src/components/BlackjackPanel.css');
     expect(css).toContain('.bj-table-surface');
     expect(css).toContain('.bj-table-rail');
@@ -58,7 +59,7 @@ describe('TABLE_UX class contract', () => {
     expect(css).toMatch(
       /\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*background:\s*transparent/,
     );
-    expect(css).toMatch(/\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
+    expect(shellCss).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc__slot \.bj-phone-view__mini-hand/);
     expect(css).toMatch(/\.bj-view-card-desktop \.bj-arc__slot \.bj-phone-view__mini-hand[\s\S]*--bj-desktop-mini-hand-width/);
     expect(css).toMatch(/\.bj-casino__this-table--dock[\s\S]*flex:\s*0\s*0\s*12\.5rem/);

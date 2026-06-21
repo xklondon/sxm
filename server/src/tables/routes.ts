@@ -7,6 +7,7 @@ import { resolveRequestOrigin } from '../auth/cookies.js';
 import { clientEmailErrorMessage } from '../email/smtp.js';
 import type { Server as SocketServer } from 'socket.io';
 import { respondPeopleAuthError } from '../people/httpErrors.js';
+import { respondInviteOrPeopleError } from './inviteHttpErrors.js';
 import { TableForbiddenError, TableMembershipError, TableNotFoundError } from './errors.js';
 import { addTableChatMessage, listTableChatMessages } from './tableChatStore.js';
 
@@ -34,6 +35,9 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       const preview = await tables.previewInviteByToken(String(req.query.token ?? ''));
       res.json({ preview });
     } catch (err) {
+      if (respondInviteOrPeopleError(res, err)) {
+        return;
+      }
       res.status(400).json({ error: err instanceof Error ? err.message : 'Invalid invite' });
     }
   });
@@ -46,18 +50,23 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       const raw = readSessionToken(req);
       const session = raw ? verifySessionToken(raw) : null;
       let sessionUserId: string | undefined;
+      let clearedSession = false;
 
       if (session) {
         const sessionEmail = session.email.trim().toLowerCase();
         const inviteEmail = preview.invitedEmail.trim().toLowerCase();
         if (sessionEmail !== inviteEmail) {
           clearSessionCookie(res);
+          clearedSession = true;
         } else {
           sessionUserId = session.userId;
         }
       }
 
-      const result = await tables.acceptInviteByToken(token, sessionUserId);
+      const result = await tables.acceptInviteByToken(token, sessionUserId, {
+        clearedSession,
+        route: 'GET /api/tables/invites/accept',
+      });
       setSessionCookie(res, result.sessionToken, { req });
       const spectator = result.spectator ? '&spectator=1' : '';
       res.redirect(`${origin}/?table=${encodeURIComponent(result.tableId)}${spectator}`);
@@ -184,10 +193,6 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
 
   router.post('/:tableId/invites', requireAuth, async (req: AuthedRequest, res) => {
     const invitedEmail = String(req.body?.email ?? '').trim();
-    // eslint-disable-next-line no-console
-    console.log(
-      `[SXM][tables] POST /invites tableId=${req.params.tableId} target=${invitedEmail || '(link-only)'}`,
-    );
     try {
       const result = await tables.createInvite({
         tableId: req.params.tableId!,
@@ -198,6 +203,9 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       });
       res.status(201).json(result);
     } catch (err) {
+      if (respondInviteOrPeopleError(res, err)) {
+        return;
+      }
       if (respondPeopleAuthError(res, err)) {
         return;
       }
@@ -209,10 +217,6 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
 
   router.post('/:tableId/invite-person', requireAuth, async (req: AuthedRequest, res) => {
     const email = String(req.body?.email ?? '').trim();
-    // eslint-disable-next-line no-console
-    console.log(
-      `[SXM][tables] POST /invite-person tableId=${req.params.tableId} target=${email}`,
-    );
     try {
       const result = await tables.invitePersonByEmail({
         tableId: req.params.tableId!,
@@ -226,6 +230,9 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       });
       res.status(201).json(result);
     } catch (err) {
+      if (respondInviteOrPeopleError(res, err)) {
+        return;
+      }
       if (respondPeopleAuthError(res, err)) {
         return;
       }
@@ -252,6 +259,9 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         memberPersonId: joined.memberPersonId,
       });
     } catch (err) {
+      if (respondInviteOrPeopleError(res, err)) {
+        return;
+      }
       if (respondPeopleAuthError(res, err)) {
         return;
       }

@@ -7,13 +7,17 @@ export type AuthProvisionPath =
   | 'ensure-person-login'
   | 'ensure-root'
   | 'ensure-invite-guest'
-  | 'get-auth-profile';
+  | 'get-auth-profile'
+  | 'repair-user-link'
+  | 'stale-user-link-skipped'
+  | 'duplicate-person-email'
+  | 'person-disabled';
 
 export function logAuthProvision(
   route: string,
   path: AuthProvisionPath,
   sessionEmail: string | undefined,
-  detail: Record<string, string | boolean | null | undefined>,
+  detail: Record<string, string | boolean | null | undefined | number>,
 ): void {
   const email = sessionEmail ? sanitizeEmail(sessionEmail) : '(none)';
   const parts = Object.entries(detail)

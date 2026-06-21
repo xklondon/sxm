@@ -150,7 +150,7 @@ describe('table layout stabilization contract', () => {
 
   it('keeps canonical zone structure stable across Full and Card views', () => {
     const full = renderAt(1280, 'full');
-    expect(full).toContain(TABLE_UX.tableZoneDealer);
+    expect(full).toContain('bj-dealer-area');
     expect(full).toContain(TABLE_UX.tableZoneSummary);
     expect(full).toContain(TABLE_UX.tableZoneActions);
     expect(full).toContain(TABLE_UX.tableZoneCards);
@@ -160,7 +160,7 @@ describe('table layout stabilization contract', () => {
 
     const card = renderAt(1280, 'card');
     expect(card).toContain(TABLE_UX.tableLayoutShell);
-    expect(card).toContain(TABLE_UX.tableZoneDealer);
+    expect(card).toContain('bj-dealer-area');
     expect(card).toContain(TABLE_UX.tableZoneBottom);
     expect(card).toContain(TABLE_UX.cardsAreaHero);
     expect(card).toContain(BLACKJACK_TABLE_LAYOUT.chipTrayWrap);

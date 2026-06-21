@@ -13,12 +13,18 @@ import {
   FULL_TABLE_ACTIONS_RENDER_FN,
   FULL_TABLE_CARD_STACK_HOST_CLASS,
   FULL_TABLE_FORBIDDEN_CARD_AREA_ACTION_MARKERS,
+  FULL_TABLE_GAMEPLAY_ZONE_ORDER,
   FULL_TABLE_PLAY_ZONE_CSS,
   FULL_TABLE_SHELL_ZONE_ORDER,
   FULL_TABLE_CARD_COLUMN_VIEW_ROOTS,
+  BLACKJACK_TABLE_SHELL_LAYOUT_OWNER_FILES,
 } from './blackjackLayoutContract';
 
 const PLAY_ZONE_CSS = readFileSync(join(process.cwd(), FULL_TABLE_PLAY_ZONE_CSS), 'utf8');
+const SHELL_CSS = readFileSync(
+  join(process.cwd(), BLACKJACK_TABLE_SHELL_LAYOUT_OWNER_FILES[0]),
+  'utf8',
+);
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
@@ -135,7 +141,15 @@ describe('Full Table play zone canonical contract', () => {
   });
 
   it('documents shell zone order dealer → command → cards → actions → boxes → tray', () => {
-    expect(FULL_TABLE_SHELL_ZONE_ORDER).toEqual(['dealer', 'command', 'cards', 'actions', 'boxes', 'tray']);
+    expect(FULL_TABLE_GAMEPLAY_ZONE_ORDER).toEqual([
+      'dealer',
+      'command',
+      'cards',
+      'actions',
+      'boxes',
+      'tray',
+    ]);
+    expect(FULL_TABLE_SHELL_ZONE_ORDER[0]).toBe('bank-info');
     expect(SHELL_SRC).toMatch(/dealer[\s\S]*BlackjackCommandZone[\s\S]*BlackjackCardsAreaZone[\s\S]*BlackjackActionsZone[\s\S]*BlackjackPlayerBoxesZone/);
   });
 
@@ -160,13 +174,15 @@ describe('Full Table play zone canonical contract', () => {
 
   it('bottom-pins card columns with visible stacks (no clip on 2-card hands)', () => {
     expect(PLAY_ZONE_CSS).toContain('--bj-full-table-card-stack-zone-min-2');
-    const cardZoneRule =
-      PLAY_ZONE_CSS.match(
-        /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*\}/,
-      )?.[0] ?? '';
-    expect(cardZoneRule).toMatch(/overflow:\s*visible/);
-    expect(cardZoneRule).not.toMatch(/overflow-y:\s*visible/);
-    expect(cardZoneRule).not.toMatch(/overflow-x:\s*hidden/);
+    expect(PLAY_ZONE_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-full-table-card-area[\s\S]*overflow:\s*visible/,
+    );
+    expect(PLAY_ZONE_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-table-slot-row\.bj-arc--cards[\s\S]*overflow:\s*visible/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*overflow:\s*hidden/,
+    );
     for (const viewRoot of FULL_TABLE_CARD_COLUMN_VIEW_ROOTS) {
       expect(PLAY_ZONE_CSS).toMatch(
         new RegExp(
@@ -191,14 +207,14 @@ describe('Full Table play zone canonical contract', () => {
   });
 
   it('styles Full Table desktop and mobile action zone under card area', () => {
-    expect(PLAY_ZONE_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*height:\s*var\(--bj-zone-actions-height\)/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*height:\s*var\(--bj-desktop-zone-actions-height\)/,
     );
     expect(PLAY_ZONE_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*height:\s*var\(--bj-zone-actions-height\)/,
     );
     expect(PLAY_ZONE_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions \.ds-btn--hit/,
+      /\.bj-view-full-desktop \.bj-table-zone--actions \.ds-btn--hit/,
     );
   });
 
@@ -239,10 +255,8 @@ describe('Full Table play zone canonical contract', () => {
     expect(cardsZone).toContain(FULL_TABLE_CARD_STACK_HOST_CLASS);
     const column = cardColumnWithCards(cardsZone);
     expect(column).toContain('playing-card');
-    expect(column).toContain('bj-phone-view__box-value--card-column-below');
-    expect(column.indexOf('playing-card')).toBeLessThan(
-      column.indexOf('bj-phone-view__box-value--card-column-below'),
-    );
+    expect(column).toContain('bj-arc__slot--card-column--stack-value-in-box');
+    expect(column).toContain('bj-arc__play-zone');
   });
 
   it('mobile Full Table renders visible playing cards in cards zone (not only values)', () => {

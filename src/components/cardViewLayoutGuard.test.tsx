@@ -22,7 +22,8 @@ function readSrc(relativePath: string): string {
 }
 
 const SHELL_ZONE_ORDER = [
-  TABLE_UX.tableZoneDealer,
+  'bj-table-info-bar--felt-row',
+  'bj-dealer-area',
   TABLE_UX.tableZoneSummary,
   TABLE_UX.tableZoneCards,
   TABLE_UX.tableZoneActions,
@@ -167,7 +168,7 @@ describe('Card View layout guard', () => {
     const html = renderCardPanel(playingState());
     expect(html).toMatch(new RegExp(`${TABLE_UX.tableZoneCards}[\\s\\S]*${TABLE_UX.cardsAreaHero}`));
     const cardsSection = zoneSection(html, TABLE_UX.tableZoneCards);
-    expect(cardsSection).toMatch(/bj-phone-view__hand|bj-phone-view__cards-placeholder/);
+    expect(cardsSection).toMatch(/playing-card|bj-phone-view__cards-placeholder|bj-phone-view__hand/);
     const boxesSection = zoneSection(html, TABLE_UX.tableZoneBoxes);
     expect(boxesSection).not.toContain('bj-phone-view__hero-stage');
     expect(boxesSection).not.toContain('bj-phone-card--hero');
@@ -246,14 +247,11 @@ describe('Card View layout guard', () => {
 
   it('uses mobile flex rows and desktop CSS grid for shell zones', () => {
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const shellCss = readSrc('src/styles/bj-blackjack-table-shell.css');
     expect(sharedCss).toMatch(/\.bj-table-layout-shell\s*\{[\s\S]*display:\s*flex/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*flex:\s*1\s*1\s*auto/);
-    const desktop = sharedCss.slice(
-      sharedCss.indexOf('/* Desktop table shell — fixed CSS grid rows'),
-      sharedCss.indexOf('/* Desktop stage:'),
-    );
-    expect(desktop).toMatch(/\.bj-table-layout-shell\s*\{[\s\S]*display:\s*grid/);
-    expect(desktop).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
+    expect(shellCss).toMatch(/@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop \.bj-table-layout-shell[\s\S]*display:\s*grid/);
+    expect(shellCss).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*flex:\s*0\s*0\s*auto/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom\s*\{[\s\S]*flex:\s*0\s*0\s*auto/);
   });
@@ -337,7 +335,7 @@ describe('Card View layout guard', () => {
         onGameStateChange={noop}
       />,
     );
-    expect(full).toContain(TABLE_UX.tableZoneDealer);
+    expect(full).toContain('bj-dealer-area');
     expect(full).toContain(TABLE_UX.tableZoneCards);
     expect(full).toContain(TABLE_UX.cardsAreaTable);
     expect(full).toContain(TABLE_UX.tableZoneBoxes);

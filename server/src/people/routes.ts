@@ -12,7 +12,11 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
   router.get('/', requireAuth, async (req: AuthedRequest, res) => {
     try {
       await people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'GET /api/people');
-      res.json({ people: await people.listPeople() });
+      const [peopleList, audit] = await Promise.all([
+        people.listPeople(),
+        people.auditPeopleDirectory(),
+      ]);
+      res.json({ people: peopleList, audit });
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
         return;
@@ -70,6 +74,37 @@ export function createPeopleRouter(people: PeopleService, auth: AuthService): Ro
       }
       const status = err instanceof Error && err.message.includes('Root') ? 403 : 400;
       res.status(status).json({ error: err instanceof Error ? err.message : 'Update failed' });
+    }
+  });
+
+  router.post('/repair-email', requireAuth, async (req: AuthedRequest, res) => {
+    try {
+      await people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'POST /api/people/repair-email');
+      const result = await people.repairPersonByEmail(String(req.body?.email ?? ''), req.auth!.email);
+      res.json(result);
+    } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      res.status(400).json({ error: err instanceof Error ? err.message : 'Repair failed' });
+    }
+  });
+
+  router.delete('/:personId', requireAuth, async (req: AuthedRequest, res) => {
+    try {
+      await people.assertPeopleAdmin(req.auth!.userId, req.auth!.email, 'DELETE /api/people/:id');
+      const hard = req.query.hard === 'true' || req.query.hard === '1';
+      const result = await people.removePerson(req.params.personId!, req.auth!.email, { hard });
+      res.json(result);
+    } catch (err) {
+      if (respondPeopleAuthError(res, err)) {
+        return;
+      }
+      const status =
+        err instanceof Error && (err.message.includes('Root') || err.message.includes('admin account'))
+          ? 403
+          : 400;
+      res.status(status).json({ error: err instanceof Error ? err.message : 'Remove failed' });
     }
   });
 

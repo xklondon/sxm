@@ -45,10 +45,12 @@ import {
   FULL_TABLE_PRIMARY_HIT_CLASS,
   FULL_TABLE_SHELL_ZONE_CLASSES,
   FULL_TABLE_SHELL_ZONE_ORDER,
+  FULL_TABLE_GAMEPLAY_ZONE_ORDER,
 } from './blackjackLayoutContract';
 
 const noop = () => {};
 const PLAY_ZONE_CSS = readFileSync(join(process.cwd(), FULL_TABLE_PLAY_ZONE_CSS), 'utf8');
+const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const INSURANCE_OVERLAY_CSS = readFileSync(
   join(process.cwd(), 'src/components/InsuranceDecisionOverlay.css'),
   'utf8',
@@ -193,9 +195,9 @@ describe('Blackjack Full Table layout freeze — contract constants', () => {
     expect(FULL_TABLE_DESKTOP_FROZEN).toBe(true);
     expect(FULL_TABLE_MOBILE_PORTRAIT_FROZEN).toBe(true);
     expect(FULL_TABLE_MOBILE_FROZEN).toBe(true);
-    expect(FULL_TABLE_MOBILE_LANDSCAPE_FROZEN).toBe(false);
+    expect(FULL_TABLE_MOBILE_LANDSCAPE_FROZEN).toBe(true);
     expect(CARD_VIEW_DESKTOP_FROZEN).toBe(true);
-    expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(false);
+    expect(CARD_VIEW_MOBILE_PORTRAIT_FROZEN).toBe(true);
     expect(CARD_VIEW_MOBILE_LANDSCAPE_FROZEN).toBe(false);
     expect(CARD_VIEW_FROZEN).toBe(false);
     expect(FULL_TABLE_DESKTOP_AID_VISIBLE).toBe(false);
@@ -206,7 +208,8 @@ describe('Blackjack Full Table layout freeze — contract constants', () => {
   });
 
   it('exports shell zone order and action row contracts', () => {
-    expect(FULL_TABLE_SHELL_ZONE_ORDER).toEqual(['dealer', 'command', 'cards', 'actions', 'boxes', 'tray']);
+    expect(FULL_TABLE_GAMEPLAY_ZONE_ORDER).toEqual(['dealer', 'command', 'cards', 'actions', 'boxes', 'tray']);
+    expect(FULL_TABLE_SHELL_ZONE_ORDER[0]).toBe('bank-info');
     expect(FULL_TABLE_SHELL_ZONE_CLASSES).toContain('bj-table-zone--cards');
     expect(FULL_TABLE_SHELL_ZONE_CLASSES.indexOf('bj-table-zone--actions')).toBeLessThan(
       FULL_TABLE_SHELL_ZONE_CLASSES.indexOf('bj-table-zone--boxes'),
@@ -219,17 +222,15 @@ describe('Blackjack Full Table layout freeze — contract constants', () => {
 
 describe('Blackjack Full Table layout freeze — desktop regression guards', () => {
   it('does not introduce internal scrollbars on desktop Full Table card zone', () => {
-    const cardZoneRule =
-      PLAY_ZONE_CSS.match(
-        /@media \(min-width: 721px\)[\s\S]*?\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*\}/,
-      )?.[0] ??
-      PLAY_ZONE_CSS.match(
-        /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*\}/,
-      )?.[0] ??
-      '';
-    expect(cardZoneRule).toMatch(/overflow:\s*visible/);
-    expect(cardZoneRule).not.toMatch(/overflow-x:\s*hidden/);
-    expect(cardZoneRule).not.toMatch(/overflow-y:\s*auto/);
+    expect(PLAY_ZONE_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-full-table-card-area[\s\S]*overflow:\s*visible/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*overflow:\s*hidden/,
+    );
+    expect(PLAY_ZONE_CSS).not.toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*overflow-y:\s*auto/,
+    );
   });
 
   it('keeps visible playing cards in card area during play (value in box, not card column)', () => {
@@ -282,7 +283,7 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
     expect(INSURANCE_OVERLAY_CSS).toContain(`.${FULL_TABLE_OPTIONAL_PLAY_BUTTON_CLASS}`);
     const hitRule =
       PLAY_ZONE_CSS.match(
-        /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions \.ds-btn--hit[\s\S]*?\{[^}]*\}/,
+        /\.bj-view-full-desktop \.bj-table-zone--actions \.ds-btn--hit[\s\S]*?\{[^}]*\}/,
       )?.[0] ?? '';
     expect(hitRule).toMatch(/max-height:\s*1\.55rem/);
 
@@ -308,7 +309,8 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
 
   it('scopes desktop polish tokens under min-width 721px bj-view-full-desktop only', () => {
     for (const token of FULL_TABLE_DESKTOP_POLISH_TOKENS) {
-      expect(PLAY_ZONE_CSS).toMatch(
+      const ownerCss = token === '--bj-full-desktop-stack-value-gap' ? PLAY_ZONE_CSS : SHELL_CSS;
+      expect(ownerCss).toMatch(
         new RegExp(`@media \\(min-width: 721px\\)[\\s\\S]*\\.bj-view-full-desktop[\\s\\S]*${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`),
       );
     }
@@ -330,34 +332,34 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
     }
   });
 
-  it('keeps frozen actions-boxes-gap at 0.0625rem so Hit/Stay sits close above box amounts', () => {
-    expect(PLAY_ZONE_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.0625rem/,
+  it('keeps frozen actions-boxes-gap so Hit/Stay sits close above box amounts', () => {
+    expect(SHELL_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*--bj-desktop-actions-boxes-gap:\s*0\.14rem/,
     );
     expect(PLAY_ZONE_CSS).not.toMatch(/--bj-full-desktop-actions-boxes-gap:\s*1\.25rem/);
   });
 
-  it('pins desktop Full Table Hit/Stay to bottom of actions row toward player boxes', () => {
-    expect(PLAY_ZONE_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-end/,
+  it('pins desktop Full Table Hit/Stay toward player boxes via actions-boxes gap', () => {
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*margin-top:\s*var\(--bj-desktop-actions-boxes-gap\)/,
     );
   });
 
   it('keeps positive cards-actions gap between card value band and Hit/Stay row', () => {
-    expect(PLAY_ZONE_CSS).toMatch(/--bj-full-desktop-cards-actions-gap:\s*0\.125rem/);
-    expect(PLAY_ZONE_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell[\s\S]*--bj-cards-actions-gap:\s*var\(--bj-full-desktop-cards-actions-gap\)/,
+    expect(SHELL_CSS).toMatch(/--bj-desktop-actions-zone-padding-top:\s*1\.56rem/);
+    expect(SHELL_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*--bj-cards-actions-gap:\s*var\(--bj-desktop-actions-zone-padding-top\)/,
     );
     expect(PLAY_ZONE_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-full-table-cards-actions-gap\)/,
     );
   });
 
-  it('renders card column values in cards zone and Hit/Stay only in actions zone', () => {
+  it('renders card column stacks in cards zone and Hit/Stay only in actions zone', () => {
     const html = renderFullTableAt(1280);
     const cardsZone = zoneSlice(html, 'bj-table-zone--cards', 'bj-table-zone--actions');
     const actionsZone = zoneSlice(html, 'bj-table-zone--actions', 'bj-table-zone--boxes');
-    expect(cardsZone).toContain(FULL_TABLE_CARD_VALUE_CLASS);
+    expect(cardsZone).toContain('bj-arc__slot--card-column--stack-value-in-box');
     expect(cardsZone).not.toContain(FULL_TABLE_PRIMARY_HIT_CLASS);
     expect(actionsZone).toContain(FULL_TABLE_PRIMARY_HIT_CLASS);
     expect(actionsZone).not.toContain(FULL_TABLE_CARD_VALUE_CLASS);
@@ -440,16 +442,16 @@ describe('Blackjack Full Table layout freeze — source ownership guards', () =>
 
   it('prevents Card View CSS from altering frozen Full Table spacing tokens', () => {
     for (const [path, src] of Object.entries(CARD_VIEW_GUARD_SRC)) {
-      expect(src, path).not.toContain('--bj-full-desktop-actions-boxes-gap');
-      expect(src, path).not.toMatch(/\.bj-view-full-desktop[\s\S]*--bj-full-desktop-/);
-      expect(src, path).not.toMatch(/\.bj-view-full-mobile[\s\S]*--bj-full-desktop-/);
+      expect(src, path).not.toContain('--bj-desktop-actions-boxes-gap');
+      expect(src, path).not.toMatch(/\.bj-view-full-desktop[\s\S]*--bj-desktop-actions-boxes-gap/);
+      expect(src, path).not.toMatch(/\.bj-view-full-mobile[\s\S]*--bj-desktop-actions-boxes-gap/);
     }
     const playerRowCss = GUARDED_CSS['src/styles/bj-player-row-layout.css'];
     const cardDesktopLayoutCss = readFileSync(
       join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
       'utf8',
     );
-    expect(cardDesktopLayoutCss).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand-value/,
     );
     expect(playerRowCss).not.toMatch(
@@ -457,9 +459,6 @@ describe('Blackjack Full Table layout freeze — source ownership guards', () =>
     );
     expect(playerRowCss).not.toMatch(
       /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand-value/,
-    );
-    expect(playerRowCss).not.toMatch(
-      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes \.bj-phone-view__mini-hand-value/,
     );
   });
 

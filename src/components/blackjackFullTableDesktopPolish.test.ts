@@ -15,6 +15,7 @@ import { cardAreaOutcomeStackBadgeText } from './cardAreaOutcomeDisplay';
 
 const noop = () => {};
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
+const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const OPTIONAL_PLAY_CSS = readFileSync(
   join(process.cwd(), 'src/components/OptionalPlayDecisionOverlay.css'),
   'utf8',
@@ -130,17 +131,17 @@ function bustedDesktopState(): GameState {
 
 describe('desktop Full Table layout polish', () => {
   it('tightens Hit/Stay to ~2px above player box amount labels on desktop Full Table only', () => {
-    expect(CARD_AREA_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop[\s\S]*--bj-full-desktop-actions-boxes-gap:\s*0\.125rem/,
+    expect(SHELL_CSS).toMatch(
+      /@media \(min-width: 721px\)[\s\S]*--bj-desktop-actions-boxes-gap:\s*0\.14rem/,
     );
-    expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*padding-bottom:\s*var\(--bj-full-desktop-actions-boxes-gap\)/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*margin-top:\s*var\(--bj-desktop-actions-boxes-gap\)/,
     );
   });
 
   it('adds ~5px gap between card stack bottom and hand value on desktop Full Table', () => {
     expect(CARD_AREA_CSS).toMatch(
-      /--bj-full-desktop-stack-value-gap:\s*0\.3125rem/,
+      /--bj-full-desktop-stack-value-gap:\s*0\.28rem/,
     );
     expect(CARD_AREA_CSS).toMatch(
       /\.bj-view-full-desktop[\s\S]*\.bj-phone-view__box-value--card-column-below[\s\S]*margin-top:\s*var\(--bj-full-desktop-stack-value-gap\)/,
@@ -148,11 +149,11 @@ describe('desktop Full Table layout polish', () => {
   });
 
   it('clears command box ~3px below Deal/New Cards on desktop Full Table', () => {
-    expect(CARD_AREA_CSS).toMatch(
-      /--bj-full-desktop-dealer-command-gap:\s*0\.1875rem/,
+    expect(SHELL_CSS).toMatch(
+      /--bj-desktop-dealer-command-gap:\s*0\.4125rem/,
     );
-    expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*padding-top:\s*var\(--bj-full-desktop-dealer-command-gap\)/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*padding-top:\s*var\(--bj-desktop-dealer-command-gap\)/,
     );
   });
 

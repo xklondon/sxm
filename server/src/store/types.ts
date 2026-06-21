@@ -92,6 +92,7 @@ export interface Store {
   createUser(email: string, displayName: string): MaybePromise<UserRecord>;
   getUserByEmail(email: string): MaybePromise<UserRecord | null>;
   getUserById(id: string): MaybePromise<UserRecord | null>;
+  listUsers(): MaybePromise<UserRecord[]>;
 
   createMagicLink(email: string, token: string, expiresAt: string): MaybePromise<MagicLinkRecord>;
   getMagicLink(token: string): MaybePromise<MagicLinkRecord | null>;
@@ -135,6 +136,9 @@ export interface Store {
   getPersonByUserId(userId: string): MaybePromise<PersonRecord | null>;
   listPeople(): MaybePromise<PersonRecord[]>;
   updatePerson(id: string, patches: Partial<PersonRecord>): MaybePromise<PersonRecord | null>;
+  deletePerson(id: string): MaybePromise<boolean>;
+  revokePendingInvitesForEmail(email: string): MaybePromise<number>;
+  replaceMemberPersonId(oldPersonId: string, newPersonId: string): MaybePromise<number>;
 
   appendAuditLog(entry: AuditLogRecord): MaybePromise<void>;
   listAuditLogs(limit?: number): MaybePromise<AuditLogRecord[]>;

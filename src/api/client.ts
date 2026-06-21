@@ -62,6 +62,22 @@ export interface PersonRecord {
   invitedAt: string | null;
   invitedBy: string | null;
   lastLoginAt: string | null;
+  userId?: string | null;
+}
+
+export interface PersonAuditWarning {
+  type: string;
+  severity: 'warning' | 'error';
+  normalizedEmail: string;
+  message: string;
+  personIds: string[];
+  userIds: string[];
+}
+
+export interface PeopleAuditReport {
+  warnings: PersonAuditWarning[];
+  duplicatePersonEmails: string[];
+  duplicateUserEmails: string[];
 }
 
 export function isSessionCheckConnectivityError(err: unknown): boolean {
@@ -271,13 +287,23 @@ export async function invitePersonToTable(
   return data;
 }
 
-export async function fetchPeople(): Promise<PersonRecord[]> {
+export async function fetchPeople(): Promise<{
+  people: PersonRecord[];
+  audit: PeopleAuditReport;
+}> {
   const res = await apiFetch('/api/people');
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.error ?? 'Could not load people');
   }
-  return data.people as PersonRecord[];
+  return {
+    people: data.people as PersonRecord[],
+    audit: (data.audit as PeopleAuditReport | undefined) ?? {
+      warnings: [],
+      duplicatePersonEmails: [],
+      duplicateUserEmails: [],
+    },
+  };
 }
 
 export async function addPerson(params: {
@@ -322,6 +348,41 @@ export async function updatePerson(
     throw new Error(data.error ?? 'Update failed');
   }
   return data.person as PersonRecord;
+}
+
+export async function removePerson(
+  personId: string,
+  options: { hard?: boolean } = {},
+): Promise<{ mode: 'disabled' | 'deleted'; person?: PersonRecord }> {
+  const query = options.hard ? '?hard=true' : '';
+  const res = await apiFetch(`/api/people/${personId}${query}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error ?? 'Remove failed');
+  }
+  return data as { mode: 'disabled' | 'deleted'; person?: PersonRecord };
+}
+
+export async function repairPersonByEmail(email: string): Promise<{
+  canonicalPerson: PersonRecord;
+  mergedCount: number;
+  revokedInvites: number;
+  membersUpdated: number;
+}> {
+  const res = await apiFetch('/api/people/repair-email', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error ?? 'Repair failed');
+  }
+  return data as {
+    canonicalPerson: PersonRecord;
+    mergedCount: number;
+    revokedInvites: number;
+    membersUpdated: number;
+  };
 }
 
 export async function createServerInvite(

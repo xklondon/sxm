@@ -133,7 +133,7 @@ const FULL_TABLE_PLAYING_SECTIONS = [
   ...FULL_TABLE_SECTIONS,
   'dealer-block__status',
   'bj-table-actions',
-  'bj-phone-view__box-value--active-turn',
+  'bj-phone-view__mini-hand-value',
 ] as const;
 
 const FULL_TABLE_BETTING_SECTIONS = [
@@ -144,36 +144,39 @@ const FULL_TABLE_BETTING_SECTIONS = [
 
 const CARD_VIEW_SECTIONS = [
   'dealer-block',
-  'bj-phone-view',
 ] as const;
 
-const CARD_VIEW_PLAYING_SECTIONS = [
+const CARD_VIEW_PLAYING_SHARED = [
   ...CARD_VIEW_SECTIONS,
   TABLE_UX.tableLayoutShell,
-  'dealer-block__status',
-  'dealer-block__command',
   TABLE_UX.cardLayoutCommand,
   'dealer-block__stack',
   TABLE_UX.cardsAreaHero,
   'bj-table-zone--summary',
   TABLE_UX.tableZoneActions,
   TABLE_UX.tableZoneBoxes,
-  'bj-phone-view__hero-stage',
   'bj-arc--player-boxes',
+  'playing-card',
 ] as const;
 
-const CARD_VIEW_BETTING_SECTIONS = [
+const CARD_VIEW_PLAYING_MOBILE_ONLY = ['bj-phone-view', 'bj-phone-view__hero-stage'] as const;
+const CARD_VIEW_PLAYING_DESKTOP_ONLY = ['bj-card-desktop-hero'] as const;
+
+const CARD_VIEW_BETTING_SHARED = [
   ...CARD_VIEW_SECTIONS,
   TABLE_UX.tableLayoutShell,
   'dealer-block__stack',
   TABLE_UX.cardsAreaHero,
   TABLE_UX.tableZoneBoxes,
-  'bj-phone-view__hand--waiting',
-  'bj-phone-view__cards-placeholder',
   'bj-arc--player-boxes',
   TABLE_UX.tableZoneActions,
   'bj-value-chips',
   'chip-tray',
+] as const;
+
+const CARD_VIEW_BETTING_MOBILE_ONLY = [
+  'bj-phone-view',
+  'bj-phone-view__cards-placeholder',
 ] as const;
 
 function sectionPresence(html: string, marker: string): boolean {
@@ -182,9 +185,28 @@ function sectionPresence(html: string, marker: string): boolean {
 
 function assertSameSections(mobileHtml: string, desktopHtml: string, markers: readonly string[]) {
   for (const marker of markers) {
-    expect(sectionPresence(mobileHtml, marker)).toBe(true);
-    expect(sectionPresence(desktopHtml, marker)).toBe(true);
+    expect(sectionPresence(mobileHtml, marker), `mobile missing ${marker}`).toBe(true);
+    expect(sectionPresence(desktopHtml, marker), `desktop missing ${marker}`).toBe(true);
     expect(sectionPresence(mobileHtml, marker)).toBe(sectionPresence(desktopHtml, marker));
+  }
+}
+
+function assertCardViewParity(
+  mobileHtml: string,
+  desktopHtml: string,
+  shared: readonly string[],
+  mobileOnly: readonly string[] = [],
+  desktopOnly: readonly string[] = [],
+) {
+  for (const marker of shared) {
+    expect(sectionPresence(mobileHtml, marker), `mobile missing ${marker}`).toBe(true);
+    expect(sectionPresence(desktopHtml, marker), `desktop missing ${marker}`).toBe(true);
+  }
+  for (const marker of mobileOnly) {
+    expect(sectionPresence(mobileHtml, marker), `mobile missing ${marker}`).toBe(true);
+  }
+  for (const marker of desktopOnly) {
+    expect(sectionPresence(desktopHtml, marker), `desktop missing ${marker}`).toBe(true);
   }
 }
 
@@ -216,7 +238,13 @@ describe('mobile vs desktop — same canonical Card View sections', () => {
     const state = withView(playingState(), 'card');
     const mobile = renderPanelAt(390, state);
     const desktop = renderPanelAt(1280, state);
-    assertSameSections(mobile, desktop, CARD_VIEW_PLAYING_SECTIONS);
+    assertCardViewParity(
+      mobile,
+      desktop,
+      CARD_VIEW_PLAYING_SHARED,
+      CARD_VIEW_PLAYING_MOBILE_ONLY,
+      CARD_VIEW_PLAYING_DESKTOP_ONLY,
+    );
     expect(mobile).toContain('ds-btn--hit');
   });
 
@@ -224,7 +252,7 @@ describe('mobile vs desktop — same canonical Card View sections', () => {
     const state = withView(bettingState(), 'card');
     const mobile = renderPanelAt(390, state);
     const desktop = renderPanelAt(1280, state);
-    assertSameSections(mobile, desktop, CARD_VIEW_BETTING_SECTIONS);
+    assertCardViewParity(mobile, desktop, CARD_VIEW_BETTING_SHARED, CARD_VIEW_BETTING_MOBILE_ONLY);
     expect(mobile).not.toContain('bj-phone-view__bet-secondary-row');
     expect(desktop).not.toContain('bj-phone-view__bet-secondary-row');
   });

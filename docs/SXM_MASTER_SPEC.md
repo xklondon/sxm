@@ -67,18 +67,23 @@ SXM Casino (SXMCards) is a casual card-and-dice table app for friends. Players u
 
 ### People directory (Postgres)
 
-- **API:** `GET/POST/PATCH /api/people`, `POST …/send-invite`
+- **API:** `GET/POST/PATCH/DELETE /api/people`, `POST …/send-invite`, `POST /api/people/repair-email`
 - **UI:** `PeopleScreen` (root/admin only)
-- **Fields:** `status` (`invited` | `active` | `disabled`), `role`, `canLogin`, `canOwnTables`, `canPlay`, `canInvite`
+- **Fields:** `status` (`invited` | `active` | `disabled`), `role`, `canLogin`, `canOwnTables`, `canPlay`, `canInvite`, optional `userId` link to `User`
 - Creating a person triggers a magic-link invite automatically
+- **Admin audit:** `GET /api/people` includes duplicate/link warnings (duplicate emails, stale `Person.userId`, email/user mismatch)
+- **Safe cleanup:** admin can disable or hard-remove a non-root person (revokes pending table invites for that email; does not delete table history); **Repair** merges duplicate Person rows by normalized email and links canonical Person to canonical User
+- **Runtime repair:** `getPersonForUser` resolves by email when `Person.userId` is missing or mismatched (prevents invite auth failures from stale links)
 
-**Key files:** `server/src/people/service.ts`, `src/screens/PeopleScreen.tsx`
+**Key files:** `server/src/people/service.ts`, `server/src/people/duplicateAudit.ts`, `src/screens/PeopleScreen.tsx`
 
 ### Table invites (online)
 
 - Server: `TableService.createInvite`, `invitePersonByEmail`, `acceptInviteByToken`
 - Persisted: `TableInvite` in Postgres
 - Accept: `GET /api/tables/invites/accept?token=…` → session + redirect `/?table={id}`
+- **Invite resolution:** all emails normalized (`trim` + lowercase). Session must match invite email on join, or accept clears session and provisions invitee. `getPersonForUser` prefers email-canonical Person and repairs stale `userId`. Duplicate Person/User rows block invite creation (`INVITE_DUPLICATE_ACCOUNTS`) until admin repair. Disabled persons cannot join (`INVITE_PERSON_DISABLED`).
+- **Diagnostics:** Railway/server logs tag `[SXM][invite-flow]` on create/accept/join/fail with masked fields (search `invite-flow` or `failureCode=`).
 - Client deep link: `/join-table?…` → `JoinTableCurtain`
 
 ### Table invites (offline)

@@ -22,6 +22,8 @@ import {
 } from '../../../src/engine/session/tokens.js';
 import { ensureTableMember, upsertTableMember } from './membership.js';
 import { TableNotFoundError } from './errors.js';
+import { InviteFlowError } from '../people/inviteErrors.js';
+import { logInviteFlowEvent } from './inviteFlowLog.js';
 
 import type { PeopleService } from '../people/service.js';
 
@@ -117,15 +119,32 @@ export class TableService {
   }): Promise<{ table: TableRecord; memberPersonId: string }> {
     const invite = await this.store.getInvite(params.tableId, params.inviteId);
     if (!invite || invite.token !== params.token) {
-      throw new Error('Invalid invite');
+      throw new InviteFlowError('INVITE_INVALID', 'Invite expired or invalid.');
     }
-    const joined = await this.joinWithInvite({
-      userId: params.userId,
-      displayName: params.displayName,
-      invite,
-      sessionEmail: params.sessionEmail,
-    });
-    return { table: joined.table, memberPersonId: joined.memberPersonId };
+    try {
+      const joined = await this.joinWithInvite({
+        userId: params.userId,
+        displayName: params.displayName,
+        invite,
+        sessionEmail: params.sessionEmail,
+        route: 'POST /api/tables/join',
+      });
+      return { table: joined.table, memberPersonId: joined.memberPersonId };
+    } catch (err) {
+      await logInviteFlowEvent({
+        store: this.store,
+        people: this.people,
+        route: 'POST /api/tables/join',
+        stage: 'fail',
+        tableId: params.tableId,
+        invite,
+        sessionUserId: params.userId,
+        sessionEmail: params.sessionEmail,
+        failureCode: err instanceof InviteFlowError ? err.code : 'ERROR',
+        failureReason: err instanceof Error ? err.message : String(err),
+      });
+      throw err;
+    }
   }
 
   async previewInviteByToken(token: string): Promise<{
@@ -137,8 +156,16 @@ export class TableService {
     const invite = await this.requireValidInvite(token);
     const table = this.store.getTable(invite.tableId);
     if (!table) {
-      throw new Error('Table not found');
+      throw new InviteFlowError('INVITE_INVALID', 'Invite expired or invalid.');
     }
+    await logInviteFlowEvent({
+      store: this.store,
+      people: this.people,
+      route: 'GET /api/tables/invites/preview',
+      stage: 'preview',
+      tableId: invite.tableId,
+      invite,
+    });
     return {
       invitedEmail: invite.invitedEmail,
       invitedName: invite.invitedName,
@@ -154,23 +181,21 @@ export class TableService {
   async acceptInviteByToken(
     token: string,
     sessionUserId?: string,
+    options?: { clearedSession?: boolean; route?: string },
   ): Promise<{
     tableId: string;
     sessionToken: string;
     boxAssigned: boolean;
     spectator: boolean;
   }> {
+    const route = options?.route ?? 'GET /api/tables/invites/accept';
     const invite = await this.requireValidInvite(token);
     const normalizedEmail = invite.invitedEmail.trim().toLowerCase();
 
     let userId = sessionUserId;
     if (userId) {
       try {
-        const user = await this.people.resolveSessionUser(
-          userId,
-          normalizedEmail,
-          'GET /api/tables/invites/accept',
-        );
+        const user = await this.people.resolveSessionUser(userId, normalizedEmail, route);
         userId = user.email === normalizedEmail ? user.id : undefined;
       } catch {
         userId = undefined;
@@ -191,32 +216,76 @@ export class TableService {
       await this.people.ensurePersonOnLogin(normalizedEmail, userId);
     }
 
-    const joined = await this.joinWithInvite({
-      userId,
-      displayName: invite.invitedName || normalizedEmail.split('@')[0]!,
-      invite,
-      sessionEmail: normalizedEmail,
-    });
+    const inviterUser = await this.store.getUserById(invite.inviterUserId);
+    const inviterPerson = inviterUser ? await this.people.getPersonForUser(inviterUser.id) : null;
 
-    const sessionToken = createSessionToken({ userId, email: normalizedEmail });
-    return {
-      tableId: invite.tableId,
-      sessionToken,
-      boxAssigned: joined.boxAssigned,
-      spectator: joined.spectator,
-    };
+    try {
+      const joined = await this.joinWithInvite({
+        userId,
+        displayName: invite.invitedName || normalizedEmail.split('@')[0]!,
+        invite,
+        sessionEmail: normalizedEmail,
+        route,
+      });
+
+      const resolvedUser = await this.store.getUserById(userId);
+      const resolvedPerson = resolvedUser
+        ? await this.people.getPersonForUser(resolvedUser.id)
+        : null;
+      await logInviteFlowEvent({
+        store: this.store,
+        people: this.people,
+        route,
+        stage: 'accept',
+        tableId: invite.tableId,
+        invite,
+        inviterUser,
+        inviterPerson,
+        sessionUserId,
+        sessionEmail: normalizedEmail,
+        resolvedUser,
+        resolvedPerson,
+        clearedSession: options?.clearedSession,
+        membersAfterTableId: invite.tableId,
+      });
+
+      const sessionToken = createSessionToken({ userId, email: normalizedEmail });
+      return {
+        tableId: invite.tableId,
+        sessionToken,
+        boxAssigned: joined.boxAssigned,
+        spectator: joined.spectator,
+      };
+    } catch (err) {
+      await logInviteFlowEvent({
+        store: this.store,
+        people: this.people,
+        route,
+        stage: 'fail',
+        tableId: invite.tableId,
+        invite,
+        inviterUser,
+        inviterPerson,
+        sessionUserId,
+        sessionEmail: normalizedEmail,
+        clearedSession: options?.clearedSession,
+        failureCode: err instanceof InviteFlowError ? err.code : 'ERROR',
+        failureReason: err instanceof Error ? err.message : String(err),
+      });
+      throw err;
+    }
   }
 
   private async requireValidInvite(token: string): Promise<TableInviteRecord> {
     const invite = await this.store.getInviteByToken(token);
     if (!invite) {
-      throw new Error('Invalid invite link');
+      throw new InviteFlowError('INVITE_INVALID', 'Invite expired or invalid.');
     }
     if (invite.status !== 'pending') {
-      throw new Error('Invite already used or revoked');
+      throw new InviteFlowError('INVITE_INVALID', 'Invite expired or invalid.');
     }
     if (new Date(invite.expiresAt).getTime() < Date.now()) {
-      throw new Error('Invite expired');
+      throw new InviteFlowError('INVITE_EXPIRED', 'Invite expired or invalid.');
     }
     return invite;
   }
@@ -226,31 +295,35 @@ export class TableService {
     displayName: string;
     invite: TableInviteRecord;
     sessionEmail?: string;
+    route?: string;
   }): Promise<{
     table: TableRecord;
     boxAssigned: boolean;
     spectator: boolean;
     memberPersonId: string;
   }> {
+    const route = params.route ?? 'POST /api/tables/join';
     const table = this.store.getTable(params.invite.tableId);
     if (!table) {
-      throw new Error('Table not found');
+      throw new InviteFlowError('INVITE_INVALID', 'Invite expired or invalid.');
     }
 
+    const membersBefore = this.store.getMembers(params.invite.tableId).length;
     const user = await this.people.resolveSessionUser(
       params.userId,
       params.sessionEmail,
-      'POST /api/tables/join',
+      route,
     );
-    await this.people.assertCanJoinTable(
+    const person = await this.people.assertCanJoinTable(
       user.id,
       params.invite,
       params.sessionEmail,
-      'POST /api/tables/join',
+      route,
     );
 
     let state = table.state;
-    let personId = this.store.getMember(params.invite.tableId, user.id)?.personId;
+    const existingMember = this.store.getMember(params.invite.tableId, user.id);
+    let personId = existingMember?.personId;
     let boxAssigned = false;
     let spectator = false;
 
@@ -276,7 +349,7 @@ export class TableService {
         tableId: params.invite.tableId,
         userId: user.id,
         sessionEmail: params.sessionEmail,
-        context: 'POST /api/tables/join',
+        context: route,
       });
       personId = repaired.personId;
     }
@@ -286,14 +359,34 @@ export class TableService {
     boxAssigned = joined.boxAssigned;
     spectator = joined.spectator;
 
+    const membersAfter = this.store.getMembers(params.invite.tableId).length;
+
     log.info('inviteJoinComplete', {
       tableId: params.invite.tableId,
       userId: user.id,
       personId,
+      directoryPersonId: person.id,
       boxAssigned,
       spectator,
       assignedSlot: getAssignedSlotForPerson(state, personId),
       tableNotice: state.tableMeta.tableNotice?.message ?? null,
+      membersBefore,
+      membersAfter,
+      existingMember: Boolean(existingMember),
+    });
+
+    await logInviteFlowEvent({
+      store: this.store,
+      people: this.people,
+      route,
+      stage: 'join',
+      tableId: params.invite.tableId,
+      invite: params.invite,
+      sessionUserId: user.id,
+      sessionEmail: params.sessionEmail ?? user.email,
+      resolvedUser: user,
+      resolvedPerson: person,
+      membersAfterTableId: params.invite.tableId,
     });
 
     this.store.updateTable(params.invite.tableId, state, table.version + 1);
@@ -329,6 +422,10 @@ export class TableService {
       }
     }
     const invitedEmail = params.invitedEmail.trim().toLowerCase();
+    await this.people.assertInviteTargetEmailClear(
+      invitedEmail,
+      'POST /api/tables/:id/invites',
+    );
     const inviteId = randomUUID();
     const token = createInviteToken();
     const now = new Date().toISOString();
@@ -343,15 +440,33 @@ export class TableService {
       createdAt: now,
       expiresAt: new Date(Date.now() + config.inviteTtlMs).toISOString(),
     });
+    const inviterPerson = await this.people.getPersonForUser(host.id);
+    const existingPerson = invitedEmail ? await this.store.getPersonByEmail(invitedEmail) : null;
+    await logInviteFlowEvent({
+      store: this.store,
+      people: this.people,
+      route: 'POST /api/tables/:id/invites',
+      stage: 'create',
+      tableId: params.tableId,
+      invite: {
+        id: inviteId,
+        tableId: params.tableId,
+        token,
+        invitedEmail,
+        invitedName: params.invitedName.trim(),
+        inviterUserId: host.id,
+        status: 'pending',
+        createdAt: now,
+        expiresAt: new Date(Date.now() + config.inviteTtlMs).toISOString(),
+      },
+      inviterUser: host,
+      inviterPerson,
+      resolvedPerson: existingPerson,
+    });
     const joinUrl = `${getEffectivePublicOrigin().replace(/\/$/, '')}/api/tables/invites/accept?token=${encodeURIComponent(token)}`;
     const inviter = host;
     let emailSent = false;
     if (invitedEmail) {
-      const existingPerson = await this.store.getPersonByEmail(invitedEmail);
-      // eslint-disable-next-line no-console
-      console.log(
-        `[SXM][tables] createInvite target=${invitedEmail} registered=${Boolean(existingPerson)} status=${existingPerson?.status ?? 'none'}`,
-      );
       await sendTableInviteEmail({
         to: invitedEmail,
         inviterName: inviter?.displayName ?? 'A friend',
@@ -384,6 +499,10 @@ export class TableService {
       'POST /api/tables/:id/invite-person',
     );
     const normalizedEmail = params.email.trim().toLowerCase();
+    await this.people.assertInviteTargetEmailClear(
+      normalizedEmail,
+      'POST /api/tables/:id/invite-person',
+    );
     const person = await this.people.ensureInvitedPersonForTable({
       email: normalizedEmail,
       displayName: params.displayName,

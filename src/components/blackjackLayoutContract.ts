@@ -261,6 +261,16 @@ export const FULL_TABLE_SHELL_ZONE_ORDER = [
   'tray',
 ] as const;
 
+/** Gameplay bands after optional bank-info row — dealer → command → cards → actions → boxes → tray. */
+export const FULL_TABLE_GAMEPLAY_ZONE_ORDER = [
+  'dealer',
+  'command',
+  'cards',
+  'actions',
+  'boxes',
+  'tray',
+] as const;
+
 /** Shell zone CSS classes in DOM order (after bank info header inside felt). */
 export const FULL_TABLE_SHELL_ZONE_CLASSES = [
   'bj-dealer-area',
@@ -343,7 +353,7 @@ export const FULL_TABLE_CARD_COLUMN_VIEW_ROOTS = [
 
 /** Desktop-only polish tokens — must stay under min-width 721px + bj-view-full-desktop. */
 export const FULL_TABLE_DESKTOP_POLISH_TOKENS = [
-  '--bj-full-desktop-actions-boxes-gap',
+  '--bj-desktop-actions-boxes-gap',
   '--bj-full-desktop-stack-value-gap',
-  '--bj-full-desktop-dealer-command-gap',
+  '--bj-desktop-dealer-command-gap',
 ] as const;
