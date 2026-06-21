@@ -58,15 +58,19 @@
     --bj-command-cards-gap: 0.08rem;
   }
 
-  /* Card View — reclaim cards-row height from dealer/actions bands (boxes/tray tokens unchanged). */
+  /* Card View — reclaim cards-row height from actions band (boxes/tray tokens unchanged so the
+   * box/tray baseline matches Full Table). Dealer band keeps enough height for the full stack
+   * (cards + bank label + action) so the dealer is not cropped in Card View. */
   .bj-view-card-desktop {
-    --bj-desktop-zone-dealer-height: 6.05rem;
+    --bj-desktop-zone-dealer-height: 6.7rem;
     --bj-desktop-zone-actions-height: 2.15rem;
     --bj-desktop-actions-zone-padding-top: 1.05rem;
     --bj-card-hero-card-width: min(22vw, 7.25rem);
     --bj-card-hero-card-max-height: min(42vh, 9.75rem);
-    /* Floor so the hero fan always has room — the 1fr cards row cannot collapse to 0. */
-    --bj-zone-cards-min-height: 9rem;
+    /* No rigid cards floor: the shell is height-bounded, so cards (1fr) takes the leftover
+     * space and the hero scales to fit it (container query in bj-card-desktop-hero-area.css).
+     * A floor here would make fixed rows + floor exceed the shell and force a scroll. */
+    --bj-zone-cards-min-height: 0;
   }
 
   /* Full Table betting + playing — center dealer/deal on felt (Card View unchanged). */
@@ -92,8 +96,13 @@
     row-gap: 0;
     column-gap: 0;
     padding-bottom: var(--bj-desktop-bottom-padding);
+    /* Shell owns its own bounding: fit the felt height so the cards (1fr) row absorbs
+     * slack and the fixed rows never force a vertical scroll. */
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
     overflow-x: hidden;
-    overflow-y: visible;
+    overflow-y: hidden;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-info-bar--felt-row,
@@ -230,7 +239,9 @@
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
     padding-top: 0;
-    padding-bottom: 0;
+    /* Lift the bottom-pinned stacks slightly so each sits just above its box value
+     * (within the cards zone only — no movers on actions/boxes/tray). */
+    padding-bottom: var(--bj-full-desktop-cards-lift, 0.5rem);
     justify-content: flex-start;
   }
 
@@ -451,7 +462,9 @@
     min-height: 0;
   }
 
-  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--summary .dealer-block__status {
+  /* Canonical command status formatting — identical for Full Table + Card View. */
+  .bj-view-full-desktop .bj-table-layout-shell .bj-table-zone--summary .dealer-block__status,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-table-zone--summary .dealer-block__status {
     overflow: visible;
     text-overflow: clip;
   }
@@ -545,10 +558,15 @@
     padding: 0.08rem 0.28rem;
   }
 
-  /* Playing — compact command + more cards-row height (boxes/tray unchanged). */
-  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] {
+  /* Playing — compact command (boxes/tray unchanged). Same command formatting in BOTH desktop
+   * modes so the command box is identical and the box/tray baseline stays stable on toggle. */
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'],
+  .bj-view-card-desktop.bj-casino[data-bj-phase='playing'] {
     --bj-desktop-zone-command-height: 4.35rem;
     --bj-desktop-dealer-command-gap: 0.28rem;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] {
     --bj-desktop-actions-zone-padding-top: 0.4rem;
     --bj-desktop-zone-actions-height: 1.85rem;
   }
@@ -560,6 +578,14 @@
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
     .bj-table-layout-shell
     > .bj-table-zone--summary
+    .dealer-block__command,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='playing']
+    .bj-table-layout-shell
+    > .bj-table-zone--summary
+    .bj-card-layout__command,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='playing']
+    .bj-table-layout-shell
+    > .bj-table-zone--summary
     .dealer-block__command {
     padding: 0.2rem 1.25rem;
     gap: 0.06rem;
@@ -567,6 +593,10 @@
   }
 
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-table-layout-shell
+    > .bj-table-zone--summary
+    .dealer-block__status,
+  .bj-view-card-desktop.bj-casino[data-bj-phase='playing']
     .bj-table-layout-shell
     > .bj-table-zone--summary
     .dealer-block__status {

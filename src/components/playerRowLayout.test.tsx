@@ -15,6 +15,7 @@ import {
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const INDEX_CSS = readFileSync(join(process.cwd(), 'src/index.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const DEBUG_SRC = readFileSync(join(process.cwd(), 'src/components/blackjackLayoutDebug.ts'), 'utf8');
@@ -218,18 +219,22 @@ describe('canonical player row layout engine', () => {
   });
 
   it('keeps tray and player row as separate visible flow zones on mobile', () => {
+    // Mobile boxes/tray zone placement + overflow are owned by the shell grid engine
+    // (consolidated from bj-player-row-layout.css in the Table Layout Engine pass).
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--boxes,[\s\S]*?overflow:\s*visible/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--bottom,[\s\S]*?overflow:\s*visible/,
+    );
+    // Boxes + tray are separate grid rows (no overlap), with no zone movers anywhere.
+    expect(SHELL_CSS).toMatch(/> \.bj-table-zone--boxes,[\s\S]*?grid-row:\s*boxes/);
+    expect(SHELL_CSS).toMatch(/> \.bj-table-zone--bottom,[\s\S]*?grid-row:\s*tray/);
+    // bj-player-row-layout.css must not move the boxes/tray zones.
     expect(PLAYER_ROW_CSS).toContain(MOBILE_LAYOUT_MEDIA);
-    expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*overflow:\s*visible/,
-    );
-    expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*overflow:\s*visible/,
-    );
-    expect(PLAYER_ROW_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*position:\s*static/,
-    );
     expect(PLAYER_ROW_CSS).not.toMatch(/translateY\(/);
     expect(PLAYER_ROW_CSS).not.toMatch(/margin-top:\s*-/);
+    expect(PLAYER_ROW_CSS).not.toMatch(/\.bj-table-zone--(?:boxes|bottom)[\s\S]{0,200}margin-top:\s*auto/);
   });
 
   it('uses same slot row class for Full Table cards arc', () => {

@@ -1,72 +1,86 @@
-# Change Summary — Table Layout Engine (Blackjack layout stabilization)
+# Change Summary — Table Layout Engine v1.1 (Blackjack desktop placement/ownership fixes)
 
-**Scope:** Layout architecture only. No gameplay, payout, betting, invite/auth, people, ledger, IOU, Zilch, or table-setup changes.
+**Scope:** Blackjack layout only. No gameplay, betting, IOU, ledger, auth, Zilch, table setup, or
+non-Blackjack routing changes. One shell, one CSS-grid engine owner (`bj-blackjack-table-shell.css`).
 
-## What the audit found
+## Root-cause audit per issue
 
-- **Component layer was already consolidated.** All four views route through one shell:
-  `TableScreen → BlackjackPanel → BlackjackTableLayoutShell → zone wrappers`. Card View only
-  swaps the inner component of the `cards` zone; mobile and desktop share components. The
-  "duplicate" files in git status are Windows path-separator artifacts (single physical files).
-- **The real defect was in CSS: three competing layout engines** positioning the one shell:
-  desktop = CSS grid (`bj-blackjack-table-shell.css`), mobile portrait = bare flex
-  (`bj-table-shared.css`), mobile landscape = grid in two rival files. Plus leaky bare selectors
-  and `margin-top: auto` zone movers, and a mobile boxes/tray override in
-  `bj-player-row-layout.css` that fought the shared fixed heights (cause of the mobile
-  baseline regression).
+1. **Desktop Card View vertical scroll.** The shell grid (`bj-casino__felt-main` + `bj-table-layout-shell`)
+   had no self-bounding; `bj-table-shared.css` set `display:flex; height:100%; overflow:visible` on the
+   same element, and Card View added a rigid `--bj-zone-cards-min-height: 9rem` floor. Fixed rows + the
+   9rem floor exceeded the bounded `.bj-table-desktop-shell` height, so the `cards 1fr` row could not
+   absorb the slack → overflow/scroll. **Fix:** shell owns its own bounding (`height:100%; min-height:0;
+   max-height:100%; overflow-y:hidden`) and Card View floor is `0`, so `cards 1fr` always fits.
+2. **Command box inconsistency.** Component was already single (`BlackjackCommandBox → DealerCommandArea`);
+   the divergence was CSS — status `overflow:visible` and the playing-phase command compaction were scoped
+   to `.bj-view-full-desktop` only. **Fix:** those rules now target both desktop view roots; Card View
+   matches Full Table exactly. The DealerBlock inline command remains the disabled alternate path
+   (`omitCommand` always set by the panel).
+3. **Desktop Full Table card placement.** Stacks sat at the very bottom of the cards zone. **Fix:** added
+   `padding-bottom: var(--bj-full-desktop-cards-lift, 0.5rem)` to the Full Table cards zone only — lifts
+   the bottom-pinned stacks just above the box value with no movers/transforms on actions/boxes/tray.
+4. **Dealer broken in Desktop Card View.** Card View dealer band (`6.05rem`) was shorter than the dealer
+   stack (cards + bank label + action ≈ 6.1rem), and the band is `overflow:hidden; justify-content:flex-end`
+   → top (cards) cropped. **Fix:** Card View dealer band → `6.7rem`. Absorbed by `cards 1fr`, so the
+   box/tray baseline is unchanged. Dealer stays owned by the shell dealer zone (no Card View dealer engine).
+5. **Card View vs Full Table baseline mismatch.** Boxes/tray heights, gaps and bottom padding are already
+   identical across both desktop modes, and the `cards 1fr` row absorbs all dealer/command/actions
+   differences. The 9rem Card View cards floor was the only thing perturbing it. **Fix:** removing the
+   floor (see #1) restores identical box/tray baselines on toggle.
 
-## What changed
+## Files changed
 
-### New canonical contract
-- `src/components/tableLayoutEngine.ts` — neutral engine contract: 7 zones, 4 modes, per-mode
-  stretch zone / fixed zones / boxes + cards baselines / allowed overflow / phase-invariant rows,
-  plus the CSS ownership map and forbidden zone-mover list. `TABLE_LAYOUT_ENGINE_VERSION = table-layout-engine-v1`.
+- `src/styles/bj-blackjack-table-shell.css`
+  - Desktop shell grid: added `height:100%; min-height:0; max-height:100%`, `overflow-y: hidden`.
+  - Card View: `--bj-zone-cards-min-height: 9rem → 0`; dealer band `6.05rem → 6.7rem`.
+  - Full Table cards zone: `padding-bottom: var(--bj-full-desktop-cards-lift, 0.5rem)`.
+  - Command status `overflow:visible` + playing-phase command compaction now cover both desktop roots.
+- `src/styles/bj-table-shared.css`
+  - Desktop `.bj-casino__felt-main` rule: removed competing shell geometry
+    (`display/flex-direction/height/overflow/align/justify`); shell file now owns it.
+- `src/components/productionRouteOwnership.test.ts` — new tests (see below).
+- `src/components/playerRowLayout.test.tsx` — re-baselined the stale mobile boxes/tray assertion to the
+  consolidated shell owner; kept the player-row "no movers" negative checks.
+- `docs/CHANGE_LOG.md`, `docs/ChangeSummary.md` (this file) — updated.
 
-### One shell owner (all four modes use one CSS-grid engine)
-- `bj-blackjack-table-shell.css`: added a **mobile (portrait) grid block** mirroring the desktop
-  grid (same zone rows, `cards` = single stretch row, boxes directly above tray, no movers).
-  Updated header to declare MAY/MUST-NOT ownership.
-- Removed competing mobile zone overrides from `bj-player-row-layout.css` (boxes/tray
-  `height:auto; margin-top:0`) and kept only the outer rail-wrap scroll containers.
-- Scoped the leaky bare `.bj-cards-area--table` selectors in `bj-card-layout.css` under view roots.
-- Added MAY/MUST-NOT ownership headers to: shell, `bj-table-shared.css`, `bj-full-table-card-area.css`,
-  `bj-card-layout.css`, `bj-card-desktop-hero-area.css`, `bj-card-mobile-portrait-layout.css`,
-  `sxm-stitch-visual.css`, `bj-player-row-layout.css`.
+## Routes removed / consolidated
 
-### Targeted bug fixes (via contract, not pixel patches)
-- **Desktop Card View hero cards:** `cards` grid row floored with `--bj-zone-cards-min-height: 9rem`
-  so the `1fr` row can't collapse to zero.
-- **Desktop Full Table clipping:** cards zone `overflow: visible` (shell still clips horizontally —
-  no page scroll) so card tops/values read.
-- **Mobile boxes baseline:** shell now owns mobile boxes/tray placement identically for `mobileFull`
-  and `mobileCard`, so their baselines match; `cards` stretch pins boxes above the tray.
+- **Command:** one component (`BlackjackCommandBox`); DealerBlock inline command path stays disabled via
+  `omitCommand`. No second command style path — the Full-Table-only command CSS now applies to both
+  desktop view roots (single formatting contract).
+- **Shell geometry:** removed from `bj-table-shared.css` `.bj-casino__felt-main` (desktop); single owner
+  is `bj-blackjack-table-shell.css`.
 
-### Debug overlay (`?layoutDebug=1`, hidden by default)
-- Now reports: engine version, resolved mode (desktopFull/desktopCard/mobileFull/mobileCard),
-  active phase, shell display + grid rows, and **per-zone** bounding box, rendered component, and
-  CSS owner file.
+## Tests
 
-### Tests
-- `tableLayoutEngine.test.ts` — contract invariants (same zone names/order all modes, boxes baseline
-  phase-invariant, cards is sole stretch zone, cards can't own boxes/tray, ownership rules).
-- `tableLayoutEngineShell.test.tsx` — rendered zone-order smoke (table + hero modes).
-- `productionRouteOwnership.test.ts` — extended: single shell owner, mobile grid block present,
-  no competing grid rows, header ownership declarations, no bare `--table` selector, player-row no
-  longer moves zones, shell owns mobile boxes/tray.
-- Re-baselined frozen-layout assertions in `blackjackVisualCleanup.test.ts` and
-  `mobileTableViews.test.tsx` to the consolidated engine.
+New (`productionRouteOwnership.test.ts`):
+- Exactly one canonical command route (`BlackjackCommandBox` + dealer `omitCommand`).
+- `desktopFull` and `desktopCard` share one command zone owner + formatting class + playing-phase rule.
+- Desktop Card View shell is height-bounded and clips (no fixed-row scroll); no rigid Card View cards floor.
+- Dealer zone is not re-owned by Card View CSS (card-layout / card-area / hero-area carry no dealer geometry).
+- `bj-player-row-layout.css` does not move boxes/tray (no `margin-top:auto` / transform).
 
-## Validation (targeted only)
-- `npm run test:ownership` → 18 passed
+Results:
+- `npm run test:ownership` → 24 passed
 - `npm run test:layout:target` → 53 passed
 - `npm run test:blackjack:layout` → 205 passed
-- `tableLayoutEngine` + `tableLayoutEngineShell` → 10 passed
-- `npm run build` → success
+- Touched view-parity suites (player-row, mobile parity/composition, felt skin, engine, clip/central,
+  visual cleanup, mobile table views, ux contract, engine shell) → 173 passed
+- `npm run build` → success (tsc + vite)
 
-## Visual confirmation checklist (please verify in browser)
-- [ ] Desktop Card View: hero cards visible, tops readable, total/status legible.
-- [ ] Desktop Full Table: per-box stacks align above box columns; tops/bottoms read; splits stay in column; no clipping.
-- [ ] Mobile Table View: boxes baseline matches Mobile Card View; boxes hug tray every phase; cards above boxes; no horizontal scroll.
-- [ ] All views: one compact command box; stable tray; no duplicate command/game-over route.
+Pre-existing (not introduced here, outside layout-ownership scope; confirmed failing on the baseline
+commit before these edits):
+- `boxBorderVisual.test.ts` — 1 stale assertion wanting `.bj-table-desktop-shell { height: var(--bj-shell-height) }`
+  directly instead of the indirection token `--bj-desktop-table-height`.
+- `cardViewLayoutPolish.test.tsx` — 1 rendered-text assertion ("Box N — your turn.") about command
+  message content, not layout geometry.
+
+## Browser checklist (please verify)
+
+- [ ] **Desktop Card View:** no vertical scroll; dealer cards + bank label centered and fully readable;
+      command box identical to Full Table (typography, border, padding, wrapping).
+- [ ] **Desktop Full Table:** each card stack sits slightly higher, just above its box value;
+      3/4/5+ card hands do not clip and stay in their box column.
+- [ ] **Toggle Full Table ↔ Card View (same phase):** box baseline and tray baseline do not jump.
 
 **Spec discipline:** checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.

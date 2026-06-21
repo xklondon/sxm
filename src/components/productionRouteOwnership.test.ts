@@ -20,6 +20,9 @@ const CARD_LAYOUT_CSS = readFileSync(join(ROOT, 'src/styles/bj-card-layout.css')
 const CARD_VIEW_CSS = readFileSync(join(ROOT, 'src/components/BlackjackCardView.css'), 'utf8');
 const STITCH_CSS = readFileSync(join(ROOT, 'src/styles/sxm-stitch-visual.css'), 'utf8');
 const PLAYER_ROW_CSS = readFileSync(join(ROOT, 'src/styles/bj-player-row-layout.css'), 'utf8');
+const HERO_AREA_CSS = readFileSync(join(ROOT, 'src/styles/bj-card-desktop-hero-area.css'), 'utf8');
+const COMMAND_BOX_SRC = readFileSync(join(ROOT, 'src/components/BlackjackCommandBox.tsx'), 'utf8');
+const DEALER_BLOCK_SRC = readFileSync(join(ROOT, 'src/components/DealerBlock.tsx'), 'utf8');
 
 const PRODUCTION_FORBIDDEN_IMPORT_PATTERNS = [
   /reference-ui/,
@@ -238,5 +241,72 @@ describe('Table Layout Engine — single shell owner (CSS ownership map)', () =>
       'boxes',
       'tray',
     ]);
+  });
+});
+
+describe('Blackjack layout — command box single route + desktop parity', () => {
+  it('mounts exactly one canonical command route (BlackjackCommandBox + dealer omitCommand)', () => {
+    // The only command component is BlackjackCommandBox, delegating to DealerCommandArea.
+    expect(COMMAND_BOX_SRC).toContain('DealerCommandArea');
+    expect((PANEL_SRC.match(/<BlackjackCommandBox/g) ?? []).length).toBe(1);
+    // The DealerBlock inline command is the disabled alternate path: panel always omits it.
+    expect(PANEL_SRC).toContain('omitCommand');
+    expect(DEALER_BLOCK_SRC).toMatch(/!omitCommand \?[\s\S]*DealerCommandArea/);
+  });
+
+  it('desktopFull and desktopCard share one command zone owner + formatting class', () => {
+    // Command zone band is owned for BOTH desktop roots in the same shell rule.
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary,\s*\n\s*\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--summary/,
+    );
+    // Canonical command formatting class (.bj-card-layout__command) styled for both roots.
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop[\s\S]*?\.bj-card-layout__command,\s*\n[\s\S]*?\.bj-view-card-desktop[\s\S]*?\.bj-card-layout__command/,
+    );
+    // Per-phase compaction (playing) applies to BOTH desktop roots — no Full-Table-only divergence.
+    expect(SHELL_CSS).toMatch(/\.bj-view-card-desktop\.bj-casino\[data-bj-phase='playing'\]/);
+    // Status overflow rule shared by both desktop roots.
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop[\s\S]*?\.dealer-block__status,\s*\n\s*\.bj-view-card-desktop[\s\S]*?\.dealer-block__status\s*\{[\s\S]*?overflow:\s*visible/,
+    );
+  });
+});
+
+describe('Blackjack layout — desktop Card View has no fixed-row scroll', () => {
+  it('shell is height-bounded and clips (no vertical scroll from fixed rows)', () => {
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell,\s*\n\s*\.bj-view-card-desktop \.bj-table-layout-shell\s*\{[\s\S]*?max-height:\s*100%[\s\S]*?overflow-y:\s*hidden/,
+    );
+  });
+
+  it('Card View does not add a rigid cards-row floor that exceeds the shell', () => {
+    // The cards row is the single stretch (1fr) row; Card View must not floor it with a fixed
+    // min-height (that would push fixed rows + floor past the shell and force a scroll).
+    const cardBlock = SHELL_CSS.match(
+      /\.bj-view-card-desktop\s*\{[\s\S]*?\}/,
+    );
+    expect(cardBlock).toBeTruthy();
+    expect(SHELL_CSS).toMatch(/\.bj-view-card-desktop[\s\S]*?--bj-zone-cards-min-height:\s*0/);
+    expect(SHELL_CSS).not.toMatch(/\.bj-view-card-desktop[\s\S]{0,400}--bj-zone-cards-min-height:\s*9rem/);
+  });
+});
+
+describe('Blackjack layout — Card View does not re-own dealer/boxes/tray geometry', () => {
+  it('dealer zone is owned by the shell only (not re-owned by Card View CSS)', () => {
+    for (const css of [CARD_LAYOUT_CSS, CARD_AREA_CSS, HERO_AREA_CSS]) {
+      expect(css).not.toMatch(/grid-row:\s*dealer/);
+      expect(css).not.toMatch(/\.bj-dealer-area[\s\S]{0,120}grid-row:/);
+      expect(css).not.toMatch(/--bj-desktop-zone-dealer-height/);
+    }
+    // Dealer band placement + height live in the shell.
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-dealer-area/,
+    );
+  });
+
+  it('player-row CSS never moves boxes/tray (no margin-top:auto / transform zone movers)', () => {
+    expect(PLAYER_ROW_CSS).not.toMatch(/\.bj-table-zone--(?:boxes|bottom)[\s\S]{0,200}margin-top:\s*auto/);
+    expect(PLAYER_ROW_CSS).not.toMatch(/\.bj-table-zone--(?:boxes|bottom)[\s\S]{0,200}transform:/);
+    expect(PLAYER_ROW_CSS).not.toMatch(/\.bj-table-zone--bottom[\s\S]{0,200}margin-top:/);
   });
 });
