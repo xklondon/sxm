@@ -652,6 +652,13 @@
     --bj-table-card-overlap-2: 1.16rem;
     --bj-table-card-overlap-3: 1.48rem;
     --bj-table-card-overlap-4plus: 1.78rem;
+    --bj-full-table-card-stack-zone-min-2: calc(
+      var(--bj-table-card-height) * 2 - var(--bj-table-card-overlap-2)
+    );
+    /* Fixed 4-card ceiling — stable column anchor when hand count or bank phase changes. */
+    --bj-full-table-card-stack-zone-height: calc(
+      2.85rem + 1.55rem * 3
+    );
   }
 
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
@@ -663,8 +670,8 @@
 
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
     .bj-arc__cards-stack[data-bj-card-count='3'] {
-    --bj-table-card-height: 2.95rem;
-    --bj-table-card-overlap-3: 0.98rem;
+    --bj-table-card-height: 2.82rem;
+    --bj-table-card-overlap-3: 1.22rem;
   }
 
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
@@ -673,8 +680,8 @@
     .bj-arc__cards-stack[data-bj-card-count='5'],
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
     .bj-arc__cards-stack[data-bj-card-count='6'] {
-    --bj-table-card-height: 3.1rem;
-    --bj-table-card-overlap-4plus: 1.38rem;
+    --bj-table-card-height: 2.85rem;
+    --bj-table-card-overlap-4plus: 1.55rem;
   }
 }
 

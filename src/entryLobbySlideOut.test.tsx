@@ -36,6 +36,7 @@ vi.mock('./storage/profileStorage', () => ({
   loadProfile: () => ({ name: 'Tester', email: 'tester@example.com' }),
   needsLocalProfileSetup: () => false,
   syncAuthEmailToProfile: vi.fn(),
+  getStoredViewerPersonIdForTable: () => null,
 }));
 
 vi.mock('./design/templates', async (importOriginal) => {

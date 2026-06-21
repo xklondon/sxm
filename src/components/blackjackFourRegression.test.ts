@@ -31,6 +31,7 @@ import { MOBILE_GAME_OVER_OVERLAY_DELAY_MS } from './roundSummaryOverlayTiming';
 const noop = () => {};
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
+const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 
 vi.mock('../storage/profileStorage', async (importOriginal) => {
@@ -217,17 +218,20 @@ function endedFractionalBankBustState(): GameState {
 
 describe('desktop Full Table scrollbar regression', () => {
   it('avoids overflow-y auto on Full Table card zone (visible + hidden axis trap)', () => {
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*overflow:\s*visible/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*overflow:\s*hidden/,
+    );
+    expect(SHELL_CSS).not.toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*overflow-y:\s*auto/,
     );
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*overflow:\s*visible/,
+      /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area[\s\S]*overflow:\s*visible/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*overflow:\s*hidden/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*overflow:\s*hidden/,
     );
-    expect(CARD_AREA_CSS).not.toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*overflow-x:\s*hidden/,
+    expect(SHELL_CSS).not.toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[^\{]*\{[^}]*overflow-y:\s*auto/,
     );
   });
 });

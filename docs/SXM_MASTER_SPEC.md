@@ -196,6 +196,7 @@ Challenge bank plays against boxes; `session.bankPlayerId` is always a seated **
 **Challenge end / settlement:**
 
 - Winner = whoever holds all table chips at end, or ranked survivors when the bank busts.
+- **Non-bank liveness:** After settlement, game ends when the bank ledger is ≤ 0 **or** every **eligible** non-bank player has 0 available, 0 betting, and 0 ledger. The bank seat and anyone sharing the bank chip pot (e.g. challenge bank owner + their person bankroll/boxes) are **not** eligible non-bank players — their separate player box must not keep the table alive.
 - **Fractional (default):** when bank bankruptcy leaves chips with multiple non-bank players, score ledger records each participant’s final total/rank — not a collapsed “Bank won” line. IOU handoff is offered only when a single clear human counterparty pair exists.
 - **Winner takes all:** pre-game Challenge option (`bankBustSettlementMode`). When the bank player busts, the sole highest remaining chip total wins; ledger records one winner. If two or more players tie for the top total, settlement falls back to ranked/fractional with no invented winner.
 - **Setup:** New Table → Challenge → **Bank bust settlement** — **Fractional / Ranked** (default) or **Winner Takes All**. Hidden in Practice.
@@ -497,7 +498,7 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 
 **Engine freeze (2026-06-13):** [BLACKJACK_ENGINE_FREEZE.md](./BLACKJACK_ENGINE_FREEZE.md) — baseline for rules, layout, and new-game gate.
 
-**Full Table play zone:** See **`docs/BLACKJACK_LAYOUT_CONTRACTS.md`** (canonical layout source of truth). Desktop: card stacks aligned to boxes via 1fr grid; actions `flex-end` just above boxes; play-phase hand total in player box only.
+**Full Table play zone:** See **`docs/BLACKJACK_LAYOUT_CONTRACTS.md`** (canonical layout source of truth). Desktop: card stacks aligned to boxes via 1fr grid; actions `flex-end` just above boxes; play-phase hand total in player box only. Playing phase uses count-aware overlap (3+/4+ cards tighter) and a fixed stack-zone height under `[data-bj-phase='playing']` so stacks stay inside `cardsArea` and do not jump when the bank draws.
 
 **No-jump box stability:** `+` add-box and every player box share identical outer dimensions (`--bj-full-table-box-width`, fixed value band + box height). Reserved internal zones: score/value, chip stack (`--bj-full-table-stake-min-height`), logo/label (composition). Active turn uses inset `box-shadow` pulse only — no border-width or layout-affecting highlight changes.
 

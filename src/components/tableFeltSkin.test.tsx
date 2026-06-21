@@ -213,6 +213,7 @@ describe('table felt cloth layer', () => {
 
   it('chip tray zone is bottom-aligned with boxes separation in shared shell CSS', () => {
     const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const shellCss = readSrc('src/styles/bj-blackjack-table-shell.css');
     expect(sharedCss).toContain('--bj-zone-boxes-tray-gap: 1.35rem');
     expect(sharedCss).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*justify-content:\s*flex-end/,
@@ -220,8 +221,12 @@ describe('table felt cloth layer', () => {
     expect(sharedCss).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-zone-boxes-tray-gap\)/,
     );
-    const desktop = sharedCss.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
-    expect(desktop).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*margin-top:\s*0/);
+    expect(shellCss).toMatch(
+      /\.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*margin-top:\s*var\(--bj-desktop-actions-boxes-gap\)/,
+    );
+    expect(shellCss).toMatch(
+      /\.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*padding-top:\s*var\(--bj-desktop-zone-boxes-tray-gap\)/,
+    );
   });
 
   it('Card View player boxes arc does not expand shell scroll', () => {
@@ -244,16 +249,19 @@ describe('table felt cloth layer', () => {
 
   it('classic cloth SVG is centered in CardsArea with proportional sizing', () => {
     const css = readSrc('src/styles/bj-felt-skins.css');
+    const cardAreaCss = readSrc('src/styles/bj-full-table-card-area.css');
     expect(css).toContain('--bj-cloth-svg-width');
     expect(css).toMatch(/\.bj-felt-cloth-layer__svg[\s\S]*width:\s*var\(--bj-cloth-svg-width\)/);
     expect(css).toMatch(/\.bj-felt-cloth-layer\s*\{[\s\S]*align-items:\s*center/);
     expect(css).not.toMatch(/top:\s*calc\(/);
-    const cardDesktopCss = readSrc('src/styles/bj-card-desktop-layout.css');
     expect(css).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
-    expect(cardDesktopCss).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
+    expect(cardAreaCss).toMatch(
+      /\.bj-view-card-desktop[\s\S]*\.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
+    );
+    expect(cardAreaCss).toMatch(
+      /\.bj-felt-cloth-layer__svg[\s\S]*max-height:\s*var\(--bj-cloth-svg-max-height\)/,
     );
   });
 

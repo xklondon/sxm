@@ -266,9 +266,9 @@ describe('Full Table play zone canonical contract', () => {
     expect(cardsZone).toContain('playing-card');
     const column = cardColumnWithCards(cardsZone);
     expect(column).toContain('playing-card');
-    expect(column.indexOf('playing-card')).toBeLessThan(
-      column.indexOf('bj-phone-view__box-value--card-column-below'),
-    );
+    expect(column).toContain('bj-arc__play-zone');
+    expect(column).toContain('bj-arc__slot--card-column--stack-value-in-box');
+    expect(column.indexOf('bj-arc__play-zone')).toBeLessThan(column.indexOf('playing-card'));
   });
 
   it('renders Hit/Stay only in actions zone below card area', () => {

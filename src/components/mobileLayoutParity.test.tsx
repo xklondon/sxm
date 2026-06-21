@@ -180,7 +180,7 @@ describe('mobile layout parity audit — Full Table vs Card View', () => {
 
     const sharedMarkers = [
       TABLE_UX.tableLayoutShell,
-      TABLE_UX.tableZoneDealer,
+      'bj-dealer-area',
       TABLE_UX.tableZoneSummary,
       TABLE_UX.tableZoneActions,
       TABLE_UX.tableZoneBoxes,
@@ -204,7 +204,7 @@ describe('mobile layout parity audit — Full Table vs Card View', () => {
   it('keeps command after dealer and actions after command without overlap selectors', () => {
     const html = renderAt('card');
     const section = shellSection(html);
-    const dealerIdx = zoneIndex(section, TABLE_UX.tableZoneDealer);
+    const dealerIdx = zoneIndex(section, 'bj-dealer-area');
     const commandIdx = zoneIndex(section, 'bj-card-layout__command');
     const actionsIdx = zoneIndex(section, TABLE_UX.tableZoneActions);
     expect(dealerIdx).toBeLessThan(commandIdx);

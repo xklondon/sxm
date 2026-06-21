@@ -305,7 +305,7 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
   it('keeps a busted box visible with BUST in cards area and bet on box', () => {
     const html = renderPanelAt(390, withView(playingState(), 'full'));
     const cardsArea = html.split('bj-arc--cards')[1]?.split('bj-arc--player-boxes')[0] ?? '';
-    expect(cardsArea).toContain('bj-phone-view__box-value--bust');
+    expect(cardsArea).toContain('bj-card-outcome-marker--stack-badge');
     expect(cardsArea).toContain('BUST');
     expect(html).toContain('>10<');
   });

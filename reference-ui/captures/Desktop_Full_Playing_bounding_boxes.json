@@ -1,106 +1,479 @@
 {
-  "dataPhase": "player",
-  "dataBjPhase": "playing",
-  "commandZone": {
-    "top": 283.921875,
-    "bottom": 353.515625,
-    "left": 27.984375,
-    "right": 1044,
-    "width": 1016.015625,
-    "height": 69.59375,
-    "overflow": "visible"
+  "viewport": {
+    "width": 1280,
+    "height": 800
   },
-  "commandPill": {
-    "top": 291.578125,
-    "bottom": 323.3125,
-    "left": 331.984375,
-    "right": 739.984375,
-    "width": 408,
-    "height": 31.734375,
-    "overflow": "visible"
-  },
-  "actionRow": {
-    "top": 492.1875,
-    "bottom": 537.78125,
-    "left": 486.015625,
-    "right": 585.953125,
-    "width": 99.9375,
-    "height": 45.59375,
-    "overflow": "visible"
-  },
-  "cardsArea": {
-    "top": 354.78125,
-    "bottom": 487.0625,
-    "left": 27.984375,
-    "right": 1044,
-    "width": 1016.015625,
-    "height": 132.28125,
-    "overflow": "hidden"
-  },
-  "cards": [
+  "captures": [
     {
-      "i": 0,
-      "top": 426.625,
-      "bottom": 484.53125,
-      "height": 57.90625,
-      "width": 44.46875
+      "scenario": "mixed-234",
+      "dataPhase": "player",
+      "dataBjPhase": "playing",
+      "cardsArea": {
+        "top": 354.78125,
+        "bottom": 487.0625,
+        "left": 27.984375,
+        "right": 1044,
+        "width": 1016.015625,
+        "height": 132.28125
+      },
+      "cards": [
+        {
+          "i": 0,
+          "top": 426.625,
+          "bottom": 484.53125,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 1,
+          "top": 387.265625,
+          "bottom": 445.171875,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 2,
+          "top": 426.625,
+          "bottom": 484.53125,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 3,
+          "top": 387.265625,
+          "bottom": 445.171875,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 4,
+          "top": 426.625,
+          "bottom": 484.53125,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 5,
+          "top": 387.265625,
+          "bottom": 445.171875,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 6,
+          "top": 439.421875,
+          "bottom": 484.53125,
+          "height": 45.109375,
+          "width": 44.46875
+        },
+        {
+          "i": 7,
+          "top": 413.828125,
+          "bottom": 458.9375,
+          "height": 45.109375,
+          "width": 44.46875
+        },
+        {
+          "i": 8,
+          "top": 388.234375,
+          "bottom": 433.34375,
+          "height": 45.109375,
+          "width": 44.46875
+        }
+      ],
+      "stacks": [
+        {
+          "top": 387.265625,
+          "bottom": 484.53125,
+          "centerY": 435.8984375,
+          "cardCount": 2
+        },
+        {
+          "top": 387.265625,
+          "bottom": 484.53125,
+          "centerY": 435.8984375,
+          "cardCount": 2
+        },
+        {
+          "top": 387.265625,
+          "bottom": 484.53125,
+          "centerY": 435.8984375,
+          "cardCount": 2
+        },
+        {
+          "top": 388.234375,
+          "bottom": 484.53125,
+          "centerY": 436.3828125,
+          "cardCount": 3
+        }
+      ],
+      "cardColumnValues": [],
+      "cssTokens": {
+        "cardHeight": "3.62rem",
+        "overlap3": "1.48rem",
+        "overlap4": "1.78rem",
+        "stackZoneHeight": "calc(\r\n      2.85rem + 1.55rem * 3\r\n    )"
+      }
     },
     {
-      "i": 1,
-      "top": 387.265625,
-      "bottom": 445.171875,
-      "height": 57.90625,
-      "width": 44.46875
+      "scenario": "box1-2card",
+      "dataPhase": "player",
+      "dataBjPhase": "playing",
+      "cardsArea": {
+        "top": 354.78125,
+        "bottom": 487.0625,
+        "left": 27.984375,
+        "right": 1044,
+        "width": 1016.015625,
+        "height": 132.28125
+      },
+      "cards": [
+        {
+          "i": 0,
+          "top": 426.625,
+          "bottom": 484.53125,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 1,
+          "top": 387.265625,
+          "bottom": 445.171875,
+          "height": 57.90625,
+          "width": 44.46875
+        }
+      ],
+      "stacks": [
+        {
+          "top": 387.265625,
+          "bottom": 484.53125,
+          "centerY": 435.8984375,
+          "cardCount": 2
+        }
+      ],
+      "cardColumnValues": [
+        {
+          "text": "",
+          "display": "flex"
+        },
+        {
+          "text": "",
+          "display": "flex"
+        },
+        {
+          "text": "",
+          "display": "flex"
+        }
+      ],
+      "cssTokens": {
+        "cardHeight": "3.62rem",
+        "overlap3": "1.48rem",
+        "overlap4": "1.78rem",
+        "stackZoneHeight": "calc(\r\n      2.85rem + 1.55rem * 3\r\n    )"
+      }
     },
     {
-      "i": 2,
-      "top": 426.625,
-      "bottom": 484.53125,
-      "height": 57.90625,
-      "width": 44.46875
+      "scenario": "box1-3card",
+      "dataPhase": "player",
+      "dataBjPhase": "playing",
+      "cardsArea": {
+        "top": 354.78125,
+        "bottom": 487.0625,
+        "left": 27.984375,
+        "right": 1044,
+        "width": 1016.015625,
+        "height": 132.28125
+      },
+      "cards": [
+        {
+          "i": 0,
+          "top": 439.421875,
+          "bottom": 484.53125,
+          "height": 45.109375,
+          "width": 44.46875
+        },
+        {
+          "i": 1,
+          "top": 413.828125,
+          "bottom": 458.9375,
+          "height": 45.109375,
+          "width": 44.46875
+        },
+        {
+          "i": 2,
+          "top": 388.234375,
+          "bottom": 433.34375,
+          "height": 45.109375,
+          "width": 44.46875
+        }
+      ],
+      "stacks": [
+        {
+          "top": 388.234375,
+          "bottom": 484.53125,
+          "centerY": 436.3828125,
+          "cardCount": 3
+        }
+      ],
+      "cardColumnValues": [
+        {
+          "text": "",
+          "display": "flex"
+        },
+        {
+          "text": "",
+          "display": "flex"
+        },
+        {
+          "text": "",
+          "display": "flex"
+        }
+      ],
+      "cssTokens": {
+        "cardHeight": "3.62rem",
+        "overlap3": "1.48rem",
+        "overlap4": "1.78rem",
+        "stackZoneHeight": "calc(\r\n      2.85rem + 1.55rem * 3\r\n    )"
+      }
     },
     {
-      "i": 3,
-      "top": 387.265625,
-      "bottom": 445.171875,
-      "height": 57.90625,
-      "width": 44.46875
+      "scenario": "box1-4card",
+      "dataPhase": "player",
+      "dataBjPhase": "playing",
+      "cardsArea": {
+        "top": 354.78125,
+        "bottom": 487.0625,
+        "left": 27.984375,
+        "right": 1044,
+        "width": 1016.015625,
+        "height": 132.28125
+      },
+      "cards": [
+        {
+          "i": 0,
+          "top": 422.9375,
+          "bottom": 468.53125,
+          "height": 45.59375,
+          "width": 44.46875
+        },
+        {
+          "i": 1,
+          "top": 402.140625,
+          "bottom": 447.734375,
+          "height": 45.59375,
+          "width": 44.46875
+        },
+        {
+          "i": 2,
+          "top": 381.34375,
+          "bottom": 426.9375,
+          "height": 45.59375,
+          "width": 44.46875
+        },
+        {
+          "i": 3,
+          "top": 360.546875,
+          "bottom": 406.140625,
+          "height": 45.59375,
+          "width": 44.46875
+        }
+      ],
+      "stacks": [
+        {
+          "top": 360.546875,
+          "bottom": 468.53125,
+          "centerY": 414.5390625,
+          "cardCount": 4
+        }
+      ],
+      "cardColumnValues": [
+        {
+          "text": "",
+          "display": "flex"
+        },
+        {
+          "text": "",
+          "display": "flex"
+        },
+        {
+          "text": "",
+          "display": "flex"
+        }
+      ],
+      "cssTokens": {
+        "cardHeight": "3.62rem",
+        "overlap3": "1.48rem",
+        "overlap4": "1.78rem",
+        "stackZoneHeight": "calc(\r\n      2.85rem + 1.55rem * 3\r\n    )"
+      }
     },
     {
-      "i": 4,
-      "top": 426.625,
-      "bottom": 484.53125,
-      "height": 57.90625,
-      "width": 44.46875
+      "scenario": "before-bank-draw",
+      "dataPhase": "player",
+      "dataBjPhase": "playing",
+      "cardsArea": {
+        "top": 354.78125,
+        "bottom": 487.0625,
+        "left": 27.984375,
+        "right": 1044,
+        "width": 1016.015625,
+        "height": 132.28125
+      },
+      "cards": [
+        {
+          "i": 0,
+          "top": 426.625,
+          "bottom": 484.53125,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 1,
+          "top": 387.265625,
+          "bottom": 445.171875,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 2,
+          "top": 439.421875,
+          "bottom": 484.53125,
+          "height": 45.109375,
+          "width": 44.46875
+        },
+        {
+          "i": 3,
+          "top": 413.828125,
+          "bottom": 458.9375,
+          "height": 45.109375,
+          "width": 44.46875
+        },
+        {
+          "i": 4,
+          "top": 388.234375,
+          "bottom": 433.34375,
+          "height": 45.109375,
+          "width": 44.46875
+        }
+      ],
+      "stacks": [
+        {
+          "top": 387.265625,
+          "bottom": 484.53125,
+          "centerY": 435.8984375,
+          "cardCount": 2
+        },
+        {
+          "top": 388.234375,
+          "bottom": 484.53125,
+          "centerY": 436.3828125,
+          "cardCount": 3
+        }
+      ],
+      "cardColumnValues": [
+        {
+          "text": "",
+          "display": "flex"
+        },
+        {
+          "text": "",
+          "display": "flex"
+        }
+      ],
+      "cssTokens": {
+        "cardHeight": "3.62rem",
+        "overlap3": "1.48rem",
+        "overlap4": "1.78rem",
+        "stackZoneHeight": "calc(\r\n      2.85rem + 1.55rem * 3\r\n    )"
+      }
     },
     {
-      "i": 5,
-      "top": 387.265625,
-      "bottom": 445.171875,
-      "height": 57.90625,
-      "width": 44.46875
-    },
-    {
-      "i": 6,
-      "top": 437.34375,
-      "bottom": 484.53125,
-      "height": 47.1875,
-      "width": 44.46875
-    },
-    {
-      "i": 7,
-      "top": 405.828125,
-      "bottom": 453.015625,
-      "height": 47.1875,
-      "width": 44.46875
-    },
-    {
-      "i": 8,
-      "top": 374.3125,
-      "bottom": 421.5,
-      "height": 47.1875,
-      "width": 44.46875
+      "scenario": "after-bank-draw",
+      "dataPhase": "bank",
+      "dataBjPhase": "playing",
+      "cardsArea": {
+        "top": 354.78125,
+        "bottom": 487.0625,
+        "left": 27.984375,
+        "right": 1044,
+        "width": 1016.015625,
+        "height": 132.28125
+      },
+      "cards": [
+        {
+          "i": 0,
+          "top": 426.625,
+          "bottom": 484.53125,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 1,
+          "top": 387.265625,
+          "bottom": 445.171875,
+          "height": 57.90625,
+          "width": 44.46875
+        },
+        {
+          "i": 2,
+          "top": 439.421875,
+          "bottom": 484.53125,
+          "height": 45.109375,
+          "width": 44.46875
+        },
+        {
+          "i": 3,
+          "top": 413.828125,
+          "bottom": 458.9375,
+          "height": 45.109375,
+          "width": 44.46875
+        },
+        {
+          "i": 4,
+          "top": 388.234375,
+          "bottom": 433.34375,
+          "height": 45.109375,
+          "width": 44.46875
+        }
+      ],
+      "stacks": [
+        {
+          "top": 387.265625,
+          "bottom": 484.53125,
+          "centerY": 435.8984375,
+          "cardCount": 2
+        },
+        {
+          "top": 388.234375,
+          "bottom": 484.53125,
+          "centerY": 436.3828125,
+          "cardCount": 3
+        }
+      ],
+      "cardColumnValues": [
+        {
+          "text": "",
+          "display": "flex"
+        },
+        {
+          "text": "",
+          "display": "flex"
+        }
+      ],
+      "cssTokens": {
+        "cardHeight": "3.62rem",
+        "overlap3": "1.48rem",
+        "overlap4": "1.78rem",
+        "stackZoneHeight": "calc(\r\n      2.85rem + 1.55rem * 3\r\n    )"
+      }
     }
   ],
-  "cardColumnValues": []
+  "bankDrawStability": {
+    "beforeTop": 387.265625,
+    "afterTop": 387.265625,
+    "topDelta": 0,
+    "beforeCenterY": 435.8984375,
+    "afterCenterY": 435.8984375,
+    "centerDelta": 0
+  }
 }

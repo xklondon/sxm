@@ -88,10 +88,11 @@ function playingState(): GameState {
 
 const CANONICAL_SHELL_ZONES = [
   TABLE_UX.tableLayoutShell,
-  TABLE_UX.tableZoneDealer,
+  'bj-dealer-area',
   TABLE_UX.tableZoneSummary,
-  TABLE_UX.tableZoneActions,
+  TABLE_UX.tableZoneCards,
   TABLE_UX.cardsAreaHero,
+  TABLE_UX.tableZoneActions,
   TABLE_UX.tableZoneBoxes,
   TABLE_UX.tableZoneBottom,
 ] as const;
@@ -109,7 +110,7 @@ describe('mobile Card View composition contract', () => {
       expect(html).toContain(zone);
     }
     const shellIdx = html.indexOf(TABLE_UX.tableLayoutShell);
-    const dealerIdx = html.indexOf(TABLE_UX.tableZoneDealer);
+    const dealerIdx = html.indexOf('bj-dealer-area');
     const summaryIdx = html.indexOf(TABLE_UX.tableZoneSummary);
     const cardsIdx = html.indexOf(TABLE_UX.cardsAreaHero);
     const actionsIdx = html.indexOf(TABLE_UX.tableZoneActions);
@@ -119,7 +120,7 @@ describe('mobile Card View composition contract', () => {
     expect(summaryIdx).toBeGreaterThan(dealerIdx);
     expect(cardsIdx).toBeGreaterThan(summaryIdx);
     expect(actionsIdx).toBeGreaterThan(cardsIdx);
-    expect(boxesIdx).toBeGreaterThan(cardsIdx);
+    expect(boxesIdx).toBeGreaterThan(actionsIdx);
     expect(trayIdx).toBeGreaterThan(boxesIdx);
   });
 
@@ -212,16 +213,16 @@ describe('mobile Card View composition contract', () => {
 
   it('shows classic cloth decor in Card View (desktop + mobile)', () => {
     const feltCss = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
-    const cardDesktopCss = readFileSync(
-      join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
+    const cardAreaCss = readFileSync(
+      join(process.cwd(), 'src/styles/bj-full-table-card-area.css'),
       'utf8',
     );
     expect(feltCss).toContain('--bj-cloth-svg-width');
     expect(feltCss).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
-    expect(cardDesktopCss).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
+    expect(cardAreaCss).toMatch(
+      /\.bj-view-card-desktop[\s\S]*\.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
     expect(feltCss).toMatch(
       /\.bj-view-full-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer__svg[\s\S]*width:\s*min\(96%, 100vw\)/,

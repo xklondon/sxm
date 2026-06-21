@@ -13,6 +13,7 @@ import {
 } from '../test/mobileLayoutMatchMedia';
 
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
+const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const INDEX_CSS = readFileSync(join(process.cwd(), 'src/index.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
@@ -113,28 +114,32 @@ describe('canonical player row layout engine', () => {
     expect(PLAYER_ROW_CSS).toContain(MOBILE_LAYOUT_MEDIA_LANDSCAPE.split(',')[0]!.trim());
   });
 
-  it('desktop compact row uses max-content columns and never equal 1fr stretch', () => {
+  it('desktop compact row uses fixed box-width spread and shell slot alignment (not mobile 1fr stretch)', () => {
     expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*max-content\)/,
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes,\s*\n[\s\S]*?grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*var\(--bj-full-table-box-width\)\)/,
     );
     expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*max-content\)/,
+      /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
     );
-    expect(DESKTOP_MIN_WIDTH_CSS).not.toMatch(
-      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
-    );
+    const spreadPlayerBoxes = DESKTOP_MIN_WIDTH_CSS.match(
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--player-boxes,\s*\n[\s\S]*?grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*var\(--bj-full-table-box-width\)\)/,
+    )?.[0] ?? '';
+    expect(spreadPlayerBoxes).not.toMatch(/minmax\(0,\s*1fr\)/);
   });
 
   it('desktop card columns share Full Table spread grid geometry with player boxes', () => {
     expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--cards[\s\S]*grid-template-columns:\s*repeat\(var\(--slot-count,\s*4\),\s*var\(--bj-full-table-box-width\)\)/,
+      /\.bj-view-full-desktop \.bj-table-slot-row\.bj-arc--cards[\s\S]*var\(--bj-full-table-box-width\)/,
     );
     expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-slot-row--with-add\.bj-arc--cards[\s\S]*var\(--bj-table-slot-add-size\)/,
     );
     expect(DESKTOP_MIN_WIDTH_CSS).toMatch(/\.bj-table-slot-row__lead-spacer/);
-    expect(DESKTOP_MIN_WIDTH_CSS).not.toMatch(
-      /\.bj-table-slot-row\.bj-arc--cards[\s\S]*minmax\(0,\s*1fr\)/,
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-table-layout-shell[\s\S]*\.bj-table-zone--cards[\s\S]*\.bj-table-slot-row\.bj-arc--cards[\s\S]*minmax\(0,\s*1fr\)/,
+    );
+    expect(DESKTOP_MIN_WIDTH_CSS).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
     );
   });
 
@@ -146,7 +151,7 @@ describe('canonical player row layout engine', () => {
       /\.bj-view-full-mobile \.bj-table-slot-row--with-add\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
     );
     expect(DESKTOP_MIN_WIDTH_CSS).not.toMatch(
-      /\.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
+      /\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
     );
   });
 

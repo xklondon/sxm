@@ -1,6 +1,7 @@
 import type { GameState } from '../../types';
 import { resolvePersonEndGameBalances } from '../../components/blackjackAccountingDisplay';
 import { listPersonBankrollOwnerIds } from './bankroll';
+import { personsShareOneChipPot } from './sharedBankroll';
 import { buildGameOverSummary } from '../scoreLedger/scoreLedger';
 import {
   formatBankHolderLabel,
@@ -34,6 +35,18 @@ function bankDisplayName(state: GameState, bankId: string): string {
 function personDisplayName(state: GameState, personId: string): string {
   const person = state.players[personId];
   return person?.controllerName?.trim() || person?.displayName || 'Player';
+}
+
+/** Bank seat + anyone sharing the bank chip pot are not "non-bank players" for liveness. */
+export function isBankLinkedParticipantForGameEnd(state: GameState, participantId: string): boolean {
+  const bankId = state.session.bankPlayerId;
+  if (!bankId) {
+    return false;
+  }
+  if (participantId === bankId) {
+    return true;
+  }
+  return personsShareOneChipPot(state, participantId, bankId);
 }
 
 /** Meaningful end: one side holds all table chips or all players are eliminated. */
@@ -73,13 +86,12 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
     });
   }
 
-  const totalChips = holders.reduce((sum, h) => sum + h.ledger, 0);
-  if (totalChips <= 0 || holders.length === 0) {
+  if (holders.length === 0) {
     return none;
   }
 
   // Bank bankruptcy ends the game outright (bot bank or human banker). Checked
-  // before single-holder so the message reads "Bank is bust", not a player win.
+  // before totalChips guard so a bust bank ends even when ledger totals net to zero.
   if (bankId) {
     const bank = holders.find((h) => h.id === bankId);
     if (bank && bank.ledger <= 0) {
@@ -87,7 +99,7 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
         ? resolveBankBustWinnerId(state)
         : (() => {
             const topPerson = [...holders]
-              .filter((h) => h.id !== bankId)
+              .filter((h) => h.id !== bankId && !isBankLinkedParticipantForGameEnd(state, h.id))
               .sort((a, b) => b.ledger - a.ledger)[0];
             return topPerson && topPerson.ledger > 0 ? topPerson.id : null;
           })();
@@ -102,6 +114,11 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
         reason: 'bank-bust',
       };
     }
+  }
+
+  const totalChips = holders.reduce((sum, h) => sum + h.ledger, 0);
+  if (totalChips <= 0) {
+    return none;
   }
 
   const withChips = holders.filter((h) => h.ledger > 0);
@@ -135,7 +152,9 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
             return topPerson && topPerson.ledger > 0 ? topPerson.id : null;
           })();
       if (isChallengeTable(state) ? listPersonBankrollOwnerIds(state).some(
-          (id) => resolvePersonEndGameBalances(state, id).ledger > 0,
+          (id) =>
+            !isBankLinkedParticipantForGameEnd(state, id) &&
+            resolvePersonEndGameBalances(state, id).ledger > 0,
         ) : winnerId) {
         return {
           ended: true,
@@ -152,10 +171,12 @@ export function evaluateTableGameEnd(state: GameState): TableGameEndEvaluation {
     }
   }
 
-  const nonBankPersons = holders.filter((h) => h.id !== bankId);
+  const eligibleNonBankPersons = holders.filter(
+    (h) => h.id !== bankId && !isBankLinkedParticipantForGameEnd(state, h.id),
+  );
   if (
-    nonBankPersons.length > 0 &&
-    nonBankPersons.every((h) => h.available <= 0 && h.betting <= 0 && h.ledger <= 0)
+    eligibleNonBankPersons.length > 0 &&
+    eligibleNonBankPersons.every((h) => h.available <= 0 && h.betting <= 0 && h.ledger <= 0)
   ) {
     return {
       ended: true,

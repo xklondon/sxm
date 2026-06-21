@@ -15,6 +15,14 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-13 — Full Table 3+/4-card stack containment + bank-owner game-over liveness
+
+- **Desktop Full Table play:** Tighter 3/4-card overlap tokens under `[data-bj-phase='playing']`; fixed playing stack-zone height so columns stay anchored when hand count changes or bank draws.
+- **Game end:** `evaluateTableGameEnd` excludes bank-linked participants (bank seat + shared-pot owner/person) from non-bank player liveness; bank ledger ≤ 0 ends even when ledger totals net to zero.
+- **Tests:** `gameOverEvaluation.test.ts` bank-owner scenarios; capture `scripts/capture-desktop-full-playing-layout.mts` adds 2/3/4-card + before/after bank-draw stability assertions.
+
+---
+
 ## 2026-06-13 — Full Table desktop play clipping + mobile visual regressions
 
 - **Desktop Full Table play:** Card stack tokens scaled by `[data-bj-phase='playing']` and card count; actions band trimmed to keep stacks inside `cardsArea`.
