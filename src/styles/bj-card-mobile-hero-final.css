@@ -1,0 +1,27 @@
+/**
+ * Final mobile Card View hero sizing — imported last in index.css to win component CSS cascade.
+ */
+
+@media (max-width: 720px) and (orientation: portrait),
+  ((max-width: 960px) and (max-height: 520px) and (pointer: coarse) and (orientation: portrait)) {
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards
+    .playing-card.bj-phone-card--hero,
+  .bj-view-card-mobile
+    .bj-table-layout-shell
+    > .bj-table-zone--cards.bj-cards-area--hero
+    .bj-phone-view__cards
+    .playing-card.ds-card--hero {
+    width: min(92vw, 12.5rem, calc(var(--bj-card-hero-card-width, 8.5rem) * var(--bj-card-hero-card-scale, 1))) !important;
+    max-width: min(92vw, 12.5rem, calc(var(--bj-card-hero-card-width, 8.5rem) * var(--bj-card-hero-card-scale, 1))) !important;
+    min-width: 5.3125rem !important;
+    max-height: min(42vh, 20rem, calc(var(--bj-card-hero-card-max-height, 12.5rem) * var(--bj-card-hero-card-scale, 1))) !important;
+    min-height: 7.5rem !important;
+    height: auto !important;
+    aspect-ratio: 5 / 7;
+    flex-shrink: 0;
+    box-sizing: border-box;
+  }
+}

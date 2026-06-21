@@ -845,6 +845,15 @@
     box-sizing: border-box;
   }
 
+  .bj-view-full-mobile[data-phase='insurance'] .bj-table-layout-shell .bj-table-zone--summary,
+  .bj-view-card-mobile[data-phase='insurance'] .bj-table-layout-shell .bj-table-zone--summary {
+    height: auto;
+    min-height: min(42vh, 11.5rem);
+    max-height: min(42vh, 11.5rem);
+    overflow: visible;
+    z-index: 12;
+  }
+
   /* Mobile play phases — one shared command slot (data-phase on .bj-casino; data-bj-phase is desktop-only). */
   .bj-view-full-mobile[data-phase='player'],
   .bj-view-card-mobile[data-phase='player'],

@@ -93,6 +93,16 @@ describe('insurance overlay under command area', () => {
     expect(overlayHtml).toMatch(/Don(&#x27;|&apos;)t Insure/);
   });
 
+  it('mobile insurance phase expands command shell and keeps overlay visible', () => {
+    const css = readFileSync(join(process.cwd(), 'src/components/InsuranceDecisionOverlay.css'), 'utf8');
+    expect(css).toMatch(
+      /\.bj-view-full-mobile\[data-phase='insurance'\][\s\S]*overflow:\s*visible/,
+    );
+    expect(css).toMatch(
+      /\.bj-view-card-mobile\[data-phase='insurance'\][\s\S]*\.bj-insurance-overlay[\s\S]*z-index:\s*14/,
+    );
+  });
+
   it('Ace up-card panel renders insurance overlay in command zone', () => {
     simulatedViewport = { width: 390, height: 844 };
     const html = renderToStaticMarkup(

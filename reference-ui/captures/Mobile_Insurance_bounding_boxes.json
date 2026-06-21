@@ -1,0 +1,98 @@
+{
+  "full": {
+    "view": "full",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "dataPhase": "insurance",
+    "summaryZone": {
+      "top": 239.28125,
+      "bottom": 423.28125,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 184,
+      "display": "flex",
+      "visibility": "visible",
+      "overflow": "visible",
+      "zIndex": "12"
+    },
+    "overlay": {
+      "top": 338.375,
+      "bottom": 439.15625,
+      "left": 64.8125,
+      "right": 325.171875,
+      "width": 260.359375,
+      "height": 100.78125,
+      "display": "block",
+      "visibility": "visible",
+      "overflow": "visible",
+      "zIndex": "auto"
+    },
+    "buttons": [
+      {
+        "i": 0,
+        "label": "Insurance 25",
+        "top": 394.375,
+        "bottom": 439.15625,
+        "height": 44.78125
+      },
+      {
+        "i": 1,
+        "label": "Don't Insure",
+        "top": 394.375,
+        "bottom": 439.15625,
+        "height": 44.78125
+      }
+    ]
+  },
+  "card": {
+    "view": "card",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "dataPhase": "insurance",
+    "summaryZone": {
+      "top": 239.28125,
+      "bottom": 423.28125,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 184,
+      "display": "flex",
+      "visibility": "visible",
+      "overflow": "visible",
+      "zIndex": "12"
+    },
+    "overlay": {
+      "top": 338.375,
+      "bottom": 439.15625,
+      "left": 64.8125,
+      "right": 325.171875,
+      "width": 260.359375,
+      "height": 100.78125,
+      "display": "block",
+      "visibility": "visible",
+      "overflow": "visible",
+      "zIndex": "auto"
+    },
+    "buttons": [
+      {
+        "i": 0,
+        "label": "Insurance 25",
+        "top": 394.375,
+        "bottom": 439.15625,
+        "height": 44.78125
+      },
+      {
+        "i": 1,
+        "label": "Don't Insure",
+        "top": 394.375,
+        "bottom": 439.15625,
+        "height": 44.78125
+      }
+    ]
+  }
+}

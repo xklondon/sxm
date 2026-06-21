@@ -74,10 +74,10 @@ describe('Blackjack targeted fixes', () => {
     expect(TARGETED_CSS).not.toMatch(/data-bj-phase='playing'[\s\S]*overflow-y:\s*auto/);
   });
 
-  it('mobile Card View portrait hero cards fill cards area with 70×100px floor', () => {
-    expect(PORTRAIT_CSS).toContain('min-width: 4.375rem');
-    expect(PORTRAIT_CSS).toContain('min-height: 6.25rem');
-    expect(PORTRAIT_CSS).toMatch(/92cqh|78cqw/);
+  it('mobile Card View portrait hero cards fill cards area with 85×120px floor', () => {
+    expect(PORTRAIT_CSS).toContain('min-width: 5.3125rem');
+    expect(PORTRAIT_CSS).toContain('min-height: 7.5rem');
+    expect(PORTRAIT_CSS).toMatch(/94cqh|90cqw/);
   });
 
   it('mobile Full Table command box is not zero-height in shared CSS', () => {

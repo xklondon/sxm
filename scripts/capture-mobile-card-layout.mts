@@ -101,7 +101,20 @@ async function main() {
       '.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .playing-card.bj-phone-card--hero, .bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .playing-card.ds-card--hero',
     )].map((c, i) => {
       const r = c.getBoundingClientRect();
-      return { i, width: r.width, height: r.height, top: r.top, bottom: r.bottom };
+      const style = getComputedStyle(c);
+      return {
+        i,
+        width: r.width,
+        height: r.height,
+        top: r.top,
+        bottom: r.bottom,
+        computedWidth: style.width,
+        computedHeight: style.height,
+        computedMaxWidth: style.maxWidth,
+        computedMaxHeight: style.maxHeight,
+        computedMinWidth: style.minWidth,
+        computedMinHeight: style.minHeight,
+      };
     });
     return {
       heroCards: rect(q('hero-cards')),
@@ -163,9 +176,9 @@ async function main() {
   if (!heroCard) {
     throw new Error('no visible hero playing cards in mobile Card View');
   }
-  if (heroCard.width < 70 || heroCard.height < 100) {
+  if (heroCard.width < 85 || heroCard.height < 120) {
     throw new Error(
-      `hero playing card too small (${heroCard.width.toFixed(1)}×${heroCard.height.toFixed(1)}px; need ≥70×100)`,
+      `hero playing card too small (${heroCard.width.toFixed(1)}×${heroCard.height.toFixed(1)}px; need ≥85×120)`,
     );
   }
   if (heroCard.top < cardsZone.top - 2 || heroCard.bottom > cardsZone.bottom + 2) {

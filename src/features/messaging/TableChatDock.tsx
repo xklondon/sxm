@@ -217,8 +217,7 @@ export function TableChatDock({
     }
   }
 
-  const toggleLabel =
-    unreadCount > 0 ? `Chat • ${unreadCount > 99 ? '99+' : unreadCount}` : 'Chat';
+  const unreadBadgeLabel = unreadCount > 99 ? '99+' : String(unreadCount);
 
   if (!tableId) {
     return null;
@@ -232,8 +231,14 @@ export function TableChatDock({
           className={`table-chat-toggle${pulseUnread ? ' table-chat-toggle--pulse' : ''}`}
           onClick={handleOpen}
           aria-label={unreadCount > 0 ? `Chat, ${unreadCount} unread messages` : 'Open table chat'}
+          title={unreadCount > 0 ? `${unreadCount} unread messages` : 'Open table chat'}
         >
-          {toggleLabel}
+          <span className="table-chat-toggle__label">Chat</span>
+          {unreadCount > 0 ? (
+            <span className="table-chat-toggle__badge" aria-hidden="true">
+              {unreadBadgeLabel}
+            </span>
+          ) : null}
         </button>
       ) : (
         <div className="table-chat-panel" role="region" aria-label="Table Chat">
