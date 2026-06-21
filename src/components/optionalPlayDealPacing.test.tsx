@@ -168,12 +168,12 @@ describe('optional play overlay under command', () => {
     expect(html).toContain('>Play Hand<');
   });
 
-  it('panel wires overlay in summary on mobile and cards zone on desktop Full Table', () => {
-    expect(PANEL_SRC).toContain('OptionalPlayDecisionOverlay');
-    expect(PANEL_SRC).toContain('renderOptionalPlayDecisionOverlay');
-    expect(PANEL_SRC).toContain('bj-optional-play-overlay-anchor');
-    expect(PANEL_SRC).toContain('showDouble={false}');
-    expect(PANEL_SRC).toContain('showSplit={false}');
+  it('panel routes Split/Double through shared action row with command parity', () => {
+    expect(PANEL_SRC).toContain('resolvePlayerHandActionOptions');
+    expect(PANEL_SRC).toContain('showDouble={showDouble}');
+    expect(PANEL_SRC).toContain('showSplit={showSplit}');
+    expect(PANEL_SRC).not.toContain('renderOptionalPlayDecisionOverlay');
+    expect(PANEL_SRC).not.toContain('bj-optional-play-overlay-anchor');
   });
 
   it('panel renders Double in command zone on mobile Card View for hard 11', () => {

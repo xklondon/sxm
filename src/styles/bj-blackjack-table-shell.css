@@ -532,9 +532,32 @@
     padding: 0.08rem 0.28rem;
   }
 
-  /* Playing — reclaim cards-row height from actions band (boxes/tray unchanged). */
+  /* Playing — compact command + more cards-row height (boxes/tray unchanged). */
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] {
-    --bj-desktop-actions-zone-padding-top: 0.55rem;
-    --bj-desktop-zone-actions-height: 2rem;
+    --bj-desktop-zone-command-height: 4.35rem;
+    --bj-desktop-dealer-command-gap: 0.28rem;
+    --bj-desktop-actions-zone-padding-top: 0.4rem;
+    --bj-desktop-zone-actions-height: 1.85rem;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-table-layout-shell
+    > .bj-table-zone--summary
+    .bj-card-layout__command,
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-table-layout-shell
+    > .bj-table-zone--summary
+    .dealer-block__command {
+    padding: 0.2rem 1.25rem;
+    gap: 0.06rem;
+    min-height: 0;
+  }
+
+  .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
+    .bj-table-layout-shell
+    > .bj-table-zone--summary
+    .dealer-block__status {
+    line-height: 1.28;
+    font-size: 0.58rem;
   }
 }

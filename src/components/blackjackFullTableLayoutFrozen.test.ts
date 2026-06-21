@@ -265,22 +265,22 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
     expect(actionsZone).toContain('>Hit<');
   });
 
-  it('keeps Double/Split in optional overlay — not duplicated in Hit/Stay action row', () => {
-    expect(PANEL_SRC).toContain('showDouble={false}');
-    expect(PANEL_SRC).toContain('showSplit={false}');
+  it('routes Split/Double through shared BlackjackActionRow — command/action parity', () => {
+    expect(PANEL_SRC).toContain('showDouble={showDouble}');
+    expect(PANEL_SRC).toContain('showSplit={showSplit}');
+    expect(PANEL_SRC).not.toContain('renderOptionalPlayDecisionOverlay');
 
     const html = renderFullTableAt(1280, splittableDesktopState());
-    const cardsZone = zoneSlice(html, 'bj-table-zone--cards', 'bj-table-zone--actions');
     const actionsZone = zoneSlice(html, 'bj-table-zone--actions', 'bj-table-zone--boxes');
-    expect(cardsZone).toContain(FULL_TABLE_OPTIONAL_PLAY_OVERLAY_ANCHOR_CLASS);
-    expect(cardsZone).toContain('>Split<');
-    expect(cardsZone).toContain(FULL_TABLE_OPTIONAL_PLAY_BUTTON_CLASS);
-    expect(actionsZone).not.toContain('>Split<');
-    expect(actionsZone).not.toContain('>Double<');
+    expect(actionsZone).toContain('>Split<');
+    expect(actionsZone).toContain('>Hit<');
+    expect(actionsZone).toContain('>Stay<');
+    const cardsZone = zoneSlice(html, 'bj-table-zone--cards', 'bj-table-zone--actions');
+    expect(cardsZone).not.toContain('>Split<');
   });
 
-  it('uses compact overlay button class for Double/Split — not primary Hit/Stay sizing', () => {
-    expect(INSURANCE_OVERLAY_CSS).toContain(`.${FULL_TABLE_OPTIONAL_PLAY_BUTTON_CLASS}`);
+  it('uses action-row button sizing for Split/Double — not optional overlay anchor', () => {
+    expect(PANEL_SRC).not.toContain('bj-optional-play-overlay-anchor');
     const hitRule =
       PLAY_ZONE_CSS.match(
         /\.bj-view-full-desktop \.bj-table-zone--actions \.ds-btn--hit[\s\S]*?\{[^}]*\}/,
@@ -288,10 +288,8 @@ describe('Blackjack Full Table layout freeze — desktop regression guards', () 
     expect(hitRule).toMatch(/max-height:\s*1\.55rem/);
 
     const html = renderFullTableAt(1280, splittableDesktopState());
-    const cardsZone = zoneSlice(html, 'bj-table-zone--cards', 'bj-table-zone--actions');
-    expect(cardsZone).toContain(FULL_TABLE_OPTIONAL_PLAY_BUTTON_CLASS);
-    expect(PANEL_SRC).toContain('showDouble={false}');
-    expect(PANEL_SRC).toContain('showSplit={false}');
+    const actionsZone = zoneSlice(html, 'bj-table-zone--actions', 'bj-table-zone--boxes');
+    expect(actionsZone).toContain('>Split<');
   });
 
   it('does not render AID in desktop Full Table', () => {

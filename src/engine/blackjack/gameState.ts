@@ -51,6 +51,7 @@ import {
 } from './stakes';
 import { bankrollContextFromState } from '../session/bankroll';
 import { applyTableGameEndIfNeeded } from '../session/tableGameEnd';
+import { evaluateBlackjackGameOver } from './gameOverEvaluation';
 import { incrementBlackjackCountsOnSettlement } from '../session/tableBlackjackStats';
 import { syncCallersForDeal } from '../session/playerAssignment';
 import { clearTableUiEphemeral } from '../session/inviteJoin';
@@ -564,6 +565,14 @@ export function completeBankingOnState(state: GameState): GameState {
     },
   };
   next = applyTableGameEndIfNeeded(next);
+  const gameOver = evaluateBlackjackGameOver(next);
+  if (gameOver.isGameOver) {
+    log.info('blackjackGameOver', {
+      reason: gameOver.reason,
+      winnerPersonId: gameOver.winnerPersonId,
+      winnerSide: gameOver.winnerSide,
+    });
+  }
   if (next.tableMeta.gameStatus === 'ended') {
     next = {
       ...next,

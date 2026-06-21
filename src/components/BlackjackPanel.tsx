@@ -114,7 +114,6 @@ import { buildRoundResultSummary } from '../engine/blackjack';
 import { buildRoundSummaryOverlayModel } from '../engine/blackjack/roundSummaryOverlay';
 import { buildBlackjackCommandText } from './tableCommandDisplay';
 import { useHandTransitionHold } from './useHandTransitionHold';
-import { OptionalPlayDecisionOverlay } from './OptionalPlayDecisionOverlay';
 import { RoundSummaryOverlay } from './RoundSummaryOverlay';
 import {
   MOBILE_GAME_OVER_OVERLAY_DELAY_MS,
@@ -296,9 +295,6 @@ export function BlackjackPanel({
   const [roundSummaryDelayReady, setRoundSummaryDelayReady] = useState(false);
   const [gameOverDelayReady, setGameOverDelayReady] = useState(false);
   const [insuranceDecisionPending, setInsuranceDecisionPending] = useState(false);
-  const [optionalPlayDismissedHandKey, setOptionalPlayDismissedHandKey] = useState<string | null>(
-    null,
-  );
   const [expandedVisibleBoxCount, setExpandedVisibleBoxCount] = useState(DEFAULT_VISIBLE_TABLE_BOXES);
   /** Single local chip target — tray pulse and placement both read from here. */
   const [localChipSelection, setLocalChipSelection] = useState<LocalSelectedChipTarget>(() =>
@@ -669,10 +665,6 @@ export function BlackjackPanel({
       setInsuranceDecisionPending(false);
     }
   }, [protocolPhase, round?.insuranceOfferPending]);
-
-  useEffect(() => {
-    setOptionalPlayDismissedHandKey(null);
-  }, [round?.activeHandKey]);
 
   function handleAddToPersonalLedger() {
     setError(null);
@@ -1348,93 +1340,10 @@ export function BlackjackPanel({
     );
   }
 
-  function isOptionalPlayOverlayVisible(): boolean {
-    if (round?.evenMoneyOfferHandKey) {
-      return false;
-    }
-    if (
-      !canShowPlayerDecisionControls(gameState, protocolPhase, {
-        cardRevealComplete,
-        activeHandRevealComplete,
-      })
-    ) {
-      return false;
-    }
-    if (!round?.activeHandKey) {
-      return false;
-    }
-    if (optionalPlayDismissedHandKey === round.activeHandKey) {
-      return false;
-    }
-    const actionPermission = resolveViewerActionPermission(gameState, viewerPersonId);
-    if (!actionPermission.canAct) {
-      return false;
-    }
-    const actionable = actionPermission.actionable!;
-    const handOptions = resolvePlayerHandActionOptions(
-      gameState,
-      actionable.handKey,
-      blackjackSettings,
-      Boolean(deck),
-    );
-    const { canDouble, canSplit, showDouble, showSplit } = handOptions;
-    if (!showDouble && !showSplit) {
-      return false;
-    }
-    return canDouble || canSplit;
-  }
-
-  function renderOptionalPlayDecisionOverlay() {
-    if (!isOptionalPlayOverlayVisible()) {
-      return null;
-    }
-    const actionPermission = resolveViewerActionPermission(gameState, viewerPersonId);
-    const actionable = actionPermission.actionable!;
-    const handOptions = resolvePlayerHandActionOptions(
-      gameState,
-      actionable.handKey,
-      blackjackSettings,
-      Boolean(deck),
-    );
-    const { canDouble, canSplit, showDouble, showSplit } = handOptions;
-    return (
-      <OptionalPlayDecisionOverlay
-        canDouble={canDouble}
-        canSplit={canSplit}
-        showDouble={showDouble}
-        showSplit={showSplit}
-        actionsEnabled={playerDecisionActionsEnabled}
-        onDouble={() =>
-          run((s) => doubleDownBlackjackOnState(s, actionable.handKey), {
-            type: 'double',
-            payload: {},
-          })
-        }
-        onSplit={() =>
-          run((s) => splitBlackjackOnState(s, actionable.handKey), {
-            type: 'split',
-            payload: {},
-          })
-        }
-        onPlayHand={
-          showSplit && canSplit
-            ? () => setOptionalPlayDismissedHandKey(actionable.handKey)
-            : undefined
-        }
-      />
-    );
-  }
-
   function renderSummaryContent() {
     const insurance = renderInsuranceDecisionOverlay();
     if (insurance) {
       return insurance;
-    }
-    if (!isFullTableDesktop) {
-      const optionalPlay = renderOptionalPlayDecisionOverlay();
-      if (optionalPlay) {
-        return optionalPlay;
-      }
     }
     const alert = renderTableAlert();
     return alert ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />;
@@ -1557,7 +1466,7 @@ export function BlackjackPanel({
       blackjackSettings,
       Boolean(deck),
     );
-    const { canHit, canStand, canDouble, canSplit } = handOptions;
+    const { canHit, canStand, canDouble, canSplit, showDouble, showSplit } = handOptions;
 
     function handleTableAid() {
       if (!deck) {
@@ -1578,8 +1487,8 @@ export function BlackjackPanel({
         canStand={canStand}
         canDouble={canDouble}
         canSplit={canSplit}
-        showDouble={false}
-        showSplit={false}
+        showDouble={showDouble}
+        showSplit={showSplit}
         showAid={flowSettings.adviceEnabled && !isFullTableDesktop && !isCardViewDesktop}
         aidInlineWithHit={false}
         onStand={() =>
@@ -2608,13 +2517,7 @@ export function BlackjackPanel({
             actions={renderActionsContent()}
             cardsArea={
               viewMode === 'full' ? (
-                <>
-                  {isFullTableDesktop ? (
-                    <div className="bj-optional-play-overlay-anchor">
-                      {renderOptionalPlayDecisionOverlay()}
-                    </div>
-                  ) : null}
-                  <div
+                <div
                     className={[
                       'bj-table-slot-row',
                       'bj-arc',
@@ -2636,7 +2539,6 @@ export function BlackjackPanel({
                         : renderEmptyCardColumn(slot.slotNumber),
                     )}
                   </div>
-                </>
               ) : isCardViewDesktop ? (
                 <CardViewDesktopHeroArea
                   gameState={tableVisualState}

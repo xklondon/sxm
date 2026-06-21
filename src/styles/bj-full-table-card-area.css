@@ -663,8 +663,8 @@
 
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing']
     .bj-arc__cards-stack[data-bj-card-count='3'] {
-    --bj-table-card-height: 3.34rem;
-    --bj-table-card-overlap-3: 1.24rem;
+    --bj-table-card-height: 2.95rem;
+    --bj-table-card-overlap-3: 0.98rem;
   }
 
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing']

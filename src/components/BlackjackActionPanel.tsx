@@ -81,9 +81,11 @@ export function BlackjackActionPanel({
       ? 'ds-btn ds-btn--ghost bj-table-actions__btn bj-table-actions__btn--sm'
       : `bj-phone-view__action-bar-extra ${TABLE_UX.cardViewActionCompact} bj-phone-view__action-btn--tappable bj-phone-view__action-bar-extra--aid`;
 
+  const tableDoubleVisible = showDouble && canDouble;
+  const tableSplitVisible = showSplit && canSplit;
   const showSecondaryRow =
     variant === 'table'
-      ? showDouble || showSplit || (showAid && !aidInlineWithHit)
+      ? tableDoubleVisible || tableSplitVisible || (showAid && !aidInlineWithHit)
       : showDouble || showSplit || showAid || !aidInlineWithHit;
 
   const standBtnClass =
@@ -163,21 +165,21 @@ export function BlackjackActionPanel({
       {showSecondaryRow ? (
         variant === 'table' ? (
           <div {...sxmSectionProps(SXM_LAYOUT.secondaryActions, secondaryRowClass)}>
-            {showDouble ? (
+            {tableDoubleVisible ? (
               <button
                 type="button"
-                className={extraBtnClass(canDouble)}
-                disabled={!canDouble}
+                className={extraBtnClass(true)}
+                disabled={!actionsEnabled}
                 onClick={onDouble}
               >
                 2×
               </button>
             ) : null}
-            {showSplit ? (
+            {tableSplitVisible ? (
               <button
                 type="button"
-                className={extraBtnClass(canSplit)}
-                disabled={!canSplit}
+                className={extraBtnClass(true)}
+                disabled={!actionsEnabled}
                 onClick={onSplit}
               >
                 Split

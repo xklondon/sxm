@@ -166,25 +166,27 @@ describe('desktop Full Table layout polish', () => {
     );
   });
 
-  it('centers optional split overlay above card stacks in cards zone on desktop Full Table', () => {
-    expect(PANEL_SRC).toContain('bj-optional-play-overlay-anchor');
-    expect(PANEL_SRC).toContain('isFullTableDesktop');
-    expect(OPTIONAL_PLAY_CSS).toMatch(
-      /\.bj-optional-play-overlay-anchor[\s\S]*z-index:\s*25/,
+  it('uses compact playing command zone height on desktop Full Table', () => {
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop\.bj-casino\[data-bj-phase='playing'\][\s\S]*--bj-desktop-zone-command-height:\s*4\.35rem/,
     );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop\.bj-casino\[data-bj-phase='playing'\][\s\S]*padding:\s*0\.2rem 1\.25rem/,
+    );
+  });
 
+  it('routes Split through shared action row with command parity on desktop Full Table', () => {
     simulatedWidth = 1280;
     const html = renderToStaticMarkup(
       createElement(BlackjackPanel, { gameState: splittableDesktopState(), onGameStateChange: noop }),
     );
+    expect(html).toContain('Split available.');
+    const actionsZone =
+      html.split('bj-table-zone--actions')[1]?.split('bj-table-zone--boxes')[0] ?? '';
+    expect(actionsZone).toContain('>Split<');
     const cardsZone =
       html.split('bj-table-zone--cards')[1]?.split('bj-table-zone--actions')[0] ?? '';
-    expect(cardsZone).toContain('bj-optional-play-overlay-anchor');
-    expect(cardsZone).toContain('>Split<');
-    expect(cardsZone).toContain('>Play Hand<');
-    const commandZone =
-      html.split('bj-table-zone--summary')[1]?.split('bj-table-zone--cards')[0] ?? '';
-    expect(commandZone).not.toContain('>Split<');
+    expect(cardsZone).not.toContain('>Split<');
   });
 
   it('renders Split and Play Hand buttons in optional play overlay component', () => {

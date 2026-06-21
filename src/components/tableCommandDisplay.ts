@@ -7,12 +7,6 @@ import {
   resolveViewerPersonId,
   type ViewerIdentityHints,
 } from '../engine/session';
-import {
-  canDoubleBlackjackForState,
-  canHitBlackjack,
-  canSplitBlackjackForState,
-  canStandBlackjack,
-} from '../engine/blackjack';
 import { cardsFromIds, getBlackjackHandValue } from '../engine/blackjack/hand';
 import { parseBlackjackHandKey } from '../engine/blackjack/handKeys';
 import {
@@ -24,6 +18,10 @@ import {
   canCallEvenMoneyForHand,
   formatDecisionOwnerWaitMessage,
 } from './blackjackViewPhase';
+import {
+  resolvePlayerHandActionOptions,
+  resolvePlayerHandCommandLines,
+} from './blackjackActionContract';
 import { formatShortCardLabel } from './cardDisplay';
 import { getCardById } from '../engine/deck';
 
@@ -131,22 +129,17 @@ export function formatPlayerTurnCommand(
   }
 
   if (options?.gameState && options.handKey && options.gameState.blackjack) {
-    const round = options.gameState.blackjack;
-    const allowSplit = options.allowSplit ?? false;
-    const allowDouble = options.allowDouble ?? false;
-    const optionsLine = formatPlayerTurnOptions(
-      canHitBlackjack(round, options.handKey),
-      canStandBlackjack(round, options.handKey),
-      allowDouble && canDoubleBlackjackForState(options.gameState, options.handKey),
-      allowSplit && canSplitBlackjackForState(options.gameState, options.handKey),
+    const handOptions = resolvePlayerHandActionOptions(
+      options.gameState,
+      options.handKey,
+      {
+        allowDoubleDown:
+          options.allowDouble ?? options.gameState.blackjackSettings.allowDoubleDown,
+        allowSplit: options.allowSplit ?? options.gameState.blackjackSettings.allowSplit,
+      },
+      Boolean(options.gameState.deck),
     );
-    if (optionsLine) {
-      for (const line of optionsLine.split('\n')) {
-        if (line.trim()) {
-          lines.push(line);
-        }
-      }
-    }
+    lines.push(...resolvePlayerHandCommandLines(handOptions));
   }
 
   return {

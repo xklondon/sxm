@@ -23,16 +23,16 @@ export function playingFullTableDesktopState(): GameState {
   for (let seat = 1; seat <= 4; seat += 1) {
     const boxId = boxPlayerId(state, seat)!;
     const key = blackjackHandKey(boxId, 0);
-    const pairs: Array<[Rank, Rank]> = [
-      ['K', '8'],
+    const pairs: Array<[Rank, Rank] | [Rank, Rank, Rank]> = [
+      ['K', '8', '3'],
       ['Q', '7'],
       ['K', '7'],
-      ['3', '6'],
+      ['8', '8'],
     ];
-    const [a, b] = pairs[seat - 1]!;
+    const cards = pairs[seat - 1]!;
     hands[key] = {
       ...createBlackjackPlayerHand(boxId, 0),
-      cardIds: [findCardId(deck, a), findCardId(deck, b)],
+      cardIds: cards.map((rank) => findCardId(deck, rank)),
       currentBet: seat === 4 ? 50 : 20,
       actionStatus: seat === 4 ? 'acting' : 'stood',
     };

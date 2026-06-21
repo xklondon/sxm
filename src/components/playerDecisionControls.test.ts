@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import {
   buildBlackjackCommandText,
   formatPlayerTurnOptions,
@@ -8,6 +10,8 @@ import {
   canShowPlayerDecisionControls,
   showPlayerActionControls,
 } from './blackjackViewPhase';
+import { resolvePlayerHandActionOptions } from './blackjackActionContract';
+import { BlackjackPanel } from './BlackjackPanel';
 import {
   actingRound,
   boxPlayerId,
@@ -19,6 +23,8 @@ import { beginInitialDealOnState, shuffleToStartOnState } from '../engine/blackj
 import { addChipToBoxStake } from '../engine/blackjack/stakes';
 import { claimBoxSlot } from '../engine/session/boxOps';
 import { getBlackjackProtocolPhase } from '../engine/blackjack/protocol';
+
+const noop = () => undefined;
 
 describe('table command display', () => {
   it('includes double in options line for hard 10 from 8+2', () => {
@@ -76,6 +82,139 @@ describe('table command display', () => {
     expect(result.commandLines).toContain('Double available.');
     expect(result.commandLines.some((line) => line.startsWith('Options:'))).toBe(false);
     expect(isTableInstructionMessage('Double available.')).toBe(true);
+  });
+});
+
+describe('command and action parity', () => {
+  function splittableFullTableState() {
+    let state = tableWithClaimedBox(1);
+    const boxId = boxPlayerId(state, 1)!;
+    const handKey = blackjackHandKey(boxId, 0);
+    const deck = state.deck!;
+    return {
+      state: {
+        ...state,
+        tableViewMode: 'full' as const,
+        blackjackSettings: { ...state.blackjackSettings, allowDoubleDown: true, allowSplit: true },
+        tableMeta: { ...state.tableMeta, bettingLocked: true },
+        blackjack: {
+          ...actingRound(state, boxId, [findCardId(deck, '8'), findCardId(deck, '8')], 50),
+          status: 'player-turns' as const,
+          activeHandKey: handKey,
+          activePlayerId: boxId,
+          dealerCardIds: [findCardId(deck, '10'), findCardId(deck, '7')],
+          dealerHoleHidden: true,
+        },
+      },
+      handKey,
+    };
+  }
+
+  it('split-eligible hand: command and action row both offer Split', () => {
+    const { state, handKey } = splittableFullTableState();
+    const command = buildBlackjackCommandText({
+      gameState: state,
+      gameEnded: false,
+      gameOverMessage: '',
+      centerStatus: '',
+      protocolPhase: 'player',
+      roundSummaryLines: [],
+      controllerName: 'Alice',
+      viewerPersonId: state.tableMeta.ownerPersonId,
+    });
+    expect(command.commandLines).toContain('Split available.');
+
+    const options = resolvePlayerHandActionOptions(
+      state,
+      handKey,
+      state.blackjackSettings,
+      true,
+    );
+    expect(options.showSplit && options.canSplit).toBe(true);
+
+    const html = renderToStaticMarkup(
+      createElement(BlackjackPanel, { gameState: state, onGameStateChange: noop }),
+    );
+    const actionsZone =
+      html.split('bj-table-zone--actions')[1]?.split('bj-table-zone--boxes')[0] ?? '';
+    expect(actionsZone).toContain('>Split<');
+  });
+
+  it('double-eligible hard 11: command and action row both offer Double', () => {
+    let state = tableWithClaimedBox(1);
+    const boxId = boxPlayerId(state, 1)!;
+    const handKey = blackjackHandKey(boxId, 0);
+    const deck = state.deck!;
+    state = {
+      ...state,
+      tableViewMode: 'full',
+      blackjackSettings: { ...state.blackjackSettings, allowDoubleDown: true, allowSplit: false },
+      tableMeta: { ...state.tableMeta, bettingLocked: true },
+      blackjack: {
+        ...actingRound(state, boxId, [findCardId(deck, '5'), findCardId(deck, '6')], 50),
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: boxId,
+        dealerCardIds: [findCardId(deck, '10'), findCardId(deck, '7')],
+        dealerHoleHidden: true,
+      },
+    };
+    const command = buildBlackjackCommandText({
+      gameState: state,
+      gameEnded: false,
+      gameOverMessage: '',
+      centerStatus: '',
+      protocolPhase: 'player',
+      roundSummaryLines: [],
+      controllerName: 'Alice',
+      viewerPersonId: state.tableMeta.ownerPersonId,
+    });
+    expect(command.commandLines).toContain('Double available.');
+
+    const html = renderToStaticMarkup(
+      createElement(BlackjackPanel, { gameState: state, onGameStateChange: noop }),
+    );
+    const actionsZone =
+      html.split('bj-table-zone--actions')[1]?.split('bj-table-zone--boxes')[0] ?? '';
+    expect(actionsZone).toContain('>2×<');
+  });
+
+  it('non-split hand: no Split command line or button', () => {
+    let state = tableWithClaimedBox(1);
+    const boxId = boxPlayerId(state, 1)!;
+    const handKey = blackjackHandKey(boxId, 0);
+    const deck = state.deck!;
+    state = {
+      ...state,
+      tableViewMode: 'full',
+      blackjackSettings: { ...state.blackjackSettings, allowDoubleDown: true, allowSplit: true },
+      tableMeta: { ...state.tableMeta, bettingLocked: true },
+      blackjack: {
+        ...actingRound(state, boxId, [findCardId(deck, '8'), findCardId(deck, '3')], 50),
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: boxId,
+        dealerCardIds: [findCardId(deck, '10'), findCardId(deck, '7')],
+        dealerHoleHidden: true,
+      },
+    };
+    const command = buildBlackjackCommandText({
+      gameState: state,
+      gameEnded: false,
+      gameOverMessage: '',
+      centerStatus: '',
+      protocolPhase: 'player',
+      roundSummaryLines: [],
+      controllerName: 'Alice',
+      viewerPersonId: state.tableMeta.ownerPersonId,
+    });
+    expect(command.commandLines).not.toContain('Split available.');
+    const html = renderToStaticMarkup(
+      createElement(BlackjackPanel, { gameState: state, onGameStateChange: noop }),
+    );
+    const actionsZone =
+      html.split('bj-table-zone--actions')[1]?.split('bj-table-zone--boxes')[0] ?? '';
+    expect(actionsZone).not.toContain('>Split<');
   });
 });
 

@@ -3,86 +3,102 @@
   "dataBjPhase": "playing",
   "commandZone": {
     "top": 283.921875,
-    "bottom": 377.515625,
+    "bottom": 353.515625,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 93.59375,
+    "height": 69.59375,
+    "overflow": "visible"
+  },
+  "commandPill": {
+    "top": 291.578125,
+    "bottom": 323.3125,
+    "left": 331.984375,
+    "right": 739.984375,
+    "width": 408,
+    "height": 31.734375,
     "overflow": "visible"
   },
   "actionRow": {
     "top": 492.1875,
-    "bottom": 522.6875,
+    "bottom": 537.78125,
     "left": 486.015625,
     "right": 585.953125,
     "width": 99.9375,
-    "height": 30.5,
+    "height": 45.59375,
     "overflow": "visible"
   },
   "cardsArea": {
-    "top": 378.78125,
-    "bottom": 484.65625,
+    "top": 354.78125,
+    "bottom": 487.0625,
     "left": 27.984375,
     "right": 1044,
     "width": 1016.015625,
-    "height": 105.875,
+    "height": 132.28125,
     "overflow": "hidden"
   },
   "cards": [
     {
       "i": 0,
-      "top": 424.21875,
-      "bottom": 482.125,
+      "top": 426.625,
+      "bottom": 484.53125,
       "height": 57.90625,
       "width": 44.46875
     },
     {
       "i": 1,
-      "top": 384.859375,
-      "bottom": 442.765625,
+      "top": 387.265625,
+      "bottom": 445.171875,
       "height": 57.90625,
       "width": 44.46875
     },
     {
       "i": 2,
-      "top": 424.21875,
-      "bottom": 482.125,
+      "top": 426.625,
+      "bottom": 484.53125,
       "height": 57.90625,
       "width": 44.46875
     },
     {
       "i": 3,
-      "top": 384.859375,
-      "bottom": 442.765625,
+      "top": 387.265625,
+      "bottom": 445.171875,
       "height": 57.90625,
       "width": 44.46875
     },
     {
       "i": 4,
-      "top": 424.21875,
-      "bottom": 482.125,
+      "top": 426.625,
+      "bottom": 484.53125,
       "height": 57.90625,
       "width": 44.46875
     },
     {
       "i": 5,
-      "top": 384.859375,
-      "bottom": 442.765625,
+      "top": 387.265625,
+      "bottom": 445.171875,
       "height": 57.90625,
       "width": 44.46875
     },
     {
       "i": 6,
-      "top": 424.21875,
-      "bottom": 482.125,
-      "height": 57.90625,
+      "top": 437.34375,
+      "bottom": 484.53125,
+      "height": 47.1875,
       "width": 44.46875
     },
     {
       "i": 7,
-      "top": 384.859375,
-      "bottom": 442.765625,
-      "height": 57.90625,
+      "top": 405.828125,
+      "bottom": 453.015625,
+      "height": 47.1875,
+      "width": 44.46875
+    },
+    {
+      "i": 8,
+      "top": 374.3125,
+      "bottom": 421.5,
+      "height": 47.1875,
       "width": 44.46875
     }
   ],

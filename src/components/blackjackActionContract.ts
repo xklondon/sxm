@@ -69,6 +69,18 @@ export function resolvePlayerHandActionOptions(
   };
 }
 
+/** Command lines for optional actions — must match action-row visibility. */
+export function resolvePlayerHandCommandLines(options: PlayerHandActionOptions): string[] {
+  const lines: string[] = [];
+  if (options.showDouble && options.canDouble) {
+    lines.push('Double available.');
+  }
+  if (options.showSplit && options.canSplit) {
+    lines.push('Split available.');
+  }
+  return lines;
+}
+
 /** View files that must route action legality through this module. */
 export const ACTION_CONTRACT_VIEW_FILES = [
   'src/components/BlackjackPanel.tsx',

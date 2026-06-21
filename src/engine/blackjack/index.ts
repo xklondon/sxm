@@ -52,6 +52,9 @@ export {
   advanceBlackjackProtocol,
 } from './gameState';
 
+export { evaluateBlackjackGameOver } from './gameOverEvaluation';
+export type { BlackjackGameOverEvaluation, BlackjackGameOverReason } from './gameOverEvaluation';
+
 export { applyShortStackMinBetTopUpOnState } from './shortStackTopUp';
 
 export {

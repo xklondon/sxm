@@ -75,6 +75,7 @@ async function main() {
       dataPhase: document.querySelector('.bj-casino')?.getAttribute('data-phase') ?? null,
       dataBjPhase: document.querySelector('.bj-casino')?.getAttribute('data-bj-phase') ?? null,
       commandZone: rect(document.querySelector('.bj-view-full-desktop .bj-table-zone--summary')),
+      commandPill: rect(document.querySelector('.bj-view-full-desktop .dealer-block__command')),
       actionRow: rect(document.querySelector('[data-layout-band="action-row"]')),
       cardsArea: rect(cardsArea),
       cards,
@@ -104,6 +105,10 @@ async function main() {
   }
   if (!capture.cardsArea || capture.cards.length === 0) {
     throw new Error('expected visible player cards in cardsArea');
+  }
+  const commandPill = (boxes as { commandPill?: { height: number } | null }).commandPill;
+  if (!commandPill || commandPill.height > 78) {
+    throw new Error(`command pill too tall: ${commandPill?.height ?? 'missing'}`);
   }
   for (const card of capture.cards) {
     if (card.top < capture.cardsArea!.top + 2) {
