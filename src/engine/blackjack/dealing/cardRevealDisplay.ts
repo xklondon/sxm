@@ -195,6 +195,25 @@ export function getVisibleHandCardIds(
   return (round?.playerHands[handKey]?.cardIds ?? []).filter(Boolean);
 }
 
+/** True when every dealt card on handKey is present in displayState (paced reveal caught up). */
+export function isHandFullyVisibleInDisplay(
+  authoritative: GameState,
+  display: GameState,
+  handKey: string,
+): boolean {
+  const authHand = authoritative.blackjack?.playerHands[handKey];
+  const visHand = display.blackjack?.playerHands[handKey];
+  if (!authHand || !visHand) {
+    return false;
+  }
+  const target = authHand.cardIds.filter(Boolean).length;
+  if (target === 0) {
+    return false;
+  }
+  const shown = visHand.cardIds.filter(Boolean).length;
+  return shown >= target;
+}
+
 /**
  * Hand total from visible cards only — totals must never lead card reveal.
  * Returns null when no visible cards exist yet.

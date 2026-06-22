@@ -37,8 +37,11 @@ import {
   cardAreaOutcomeMarkerText,
   cardAreaOutcomeStackBadgeText,
   cardAreaOutcomeUsesStackBadge,
-  resolveCardAreaOutcomeMarker,
 } from "./cardAreaOutcomeDisplay";
+import {
+  createUiRevealContext,
+  resolveGatedCardAreaOutcomeMarker,
+} from "./blackjackUiRenderContract";
 import { getDisplayedHandValue } from "./blackjackDealingContract";
 
 import { type DeviceView } from "./tableViewContract";
@@ -168,14 +171,20 @@ export function BlackjackCardView({
   });
   const heroOutcome =
     heroHandKey !== null ? logicalRound?.outcomes?.[heroHandKey] : undefined;
+  const uiRevealContext = createUiRevealContext(
+    logicalGameState,
+    gameState,
+    _cardRevealComplete,
+  );
   const heroOutcomeMarker =
     heroHandKey && logicalHand
-      ? resolveCardAreaOutcomeMarker(
-          showCardAreaResults,
-          heroOutcome,
-          logicalHand.actionStatus,
-          heroDisplayValue,
-        )
+      ? resolveGatedCardAreaOutcomeMarker(uiRevealContext, {
+          showResults: showCardAreaResults,
+          outcome: heroOutcome,
+          actionStatus: logicalHand.actionStatus,
+          handKey: heroHandKey,
+          handTotal: heroDisplayValue,
+        })
       : null;
   const hideHeroValueOnMobile =
     deviceView === "mobile" &&

@@ -1,64 +1,96 @@
-# Change Summary — Table Layout Engine v1.1.1 (desktop cards zone regression fix)
+# Full Work Summary — Blackjack UI Stabilization Pass
 
-**Scope:** Blackjack desktop layout only. No gameplay, betting, IOU, ledger, auth, Zilch, or routing changes.
-v1.1 command/dealer/baseline fixes preserved.
+## Root cause summary
 
-## Root cause
+1. **Reveal sequencing** — Command text, cloth status, and outcome badges read authoritative `gameState` while paced deal still had masked `displayState`. UI rendered blackjack/even-money messaging before both player cards were visually revealed.
+2. **Wrong command styling** — Default `DealerBlock.css` green (`.dealer-block__status`) competed with canonical gold; not scoped to command zone on all views.
+3. **Mobile card overlap** — Mobile Full Table play-zone used `justify-content:flex-start` and `margin-top:auto` on the arc row, pushing stacks into the boxes/tray band.
+4. **Desktop card overlap** — Full Table cards zone had `overflow:visible`, allowing upward stack bleed into the command zone.
+5. **Mobile even-money unreadable** — Ace-decision / insurance buttons below 44px tap target on mobile.
 
-**Both regressions share one failure mode: the `cards` `1fr` row collapsed or mis-pinned.**
+## Structural fixes
 
-1. **Desktop Full Table — vertical card column over box values.** v1.1 set the cards zone to
-   `justify-content: flex-start` and moved lift to shell `padding-bottom`, while also removing `felt-main
-   height:100%`. The `1fr` cards row lost definite height; the bottom-pinned arc lost its overlap band geometry,
-   so per-box stacks rendered as full-height columns extending into the player-box value band instead of tight
-   upward-overlapping stacks above it.
+### A. UI render contract (`src/components/blackjackUiRenderContract.ts`)
+- `createUiRevealContext`, `isHandVisiblyRevealed`, `isBoxVisiblyRevealed`
+- `resolveUiProtocolPhase`, `canShowInsuranceDecisionUi`, `canShowEvenMoneyDecisionUi`
+- `resolveGatedCardAreaOutcomeMarker`, `gateCommandMessageForReveal`, `gateCommandForReveal`
+- `CANONICAL_COMMAND_WRAPPER_CLASS`, `CANONICAL_COMMAND_STATUS_CLASS`
 
-2. **Desktop Card View — hero cards invisible.** With `--bj-zone-cards-min-height: 0` and no definite
-   `felt-main` height, the cards zone computed to ~0. Hero uses `height: 100%` + container-query sizing —
-   100% of 0 = invisible. DOM was present (tests passed) but CSS dimensions collapsed.
+### B. Reveal engine hook
+- `isHandFullyVisibleInDisplay` in `cardRevealDisplay.ts`
+- `getDisplayBlackjackProtocolPhase` defers even-money until offer hand visible
+
+### C. Wired into views
+- `tableCommandDisplay.ts` — even-money + final command gated
+- `BlackjackPanel.tsx` — gated badges, insurance/even-money overlays, debug reveal diagnostics
+- `BlackjackCardView.tsx`, `CardViewDesktopHeroArea.tsx` — gated hero/stack outcome markers
+- `DealerBlock.tsx` — `CANONICAL_COMMAND_STATUS_CLASS` on command status
+
+### D. Layout (cards zone only — no box/tray moves)
+- Desktop Full Table cards zone: `overflow:hidden`, `justify-content:flex-end`
+- Mobile Full Table: cards zone `overflow:hidden`, play-zone `flex-end`, arc row `margin-top:0`
+- Canonical yellow command text in `bj-table-shared.css` command zone
+
+### E. Mobile decision UI
+- Insurance overlay buttons: `min-height:44px` on mobile insurance phase
+- Ace-decision (even-money) buttons: `min-height:44px` in actions zone on mobile
+
+### F. Layout debug (`?layoutDebug=1`)
+- Phase, UI protocol phase, reveal complete, command message + source
+- Per-box game result vs UI-visible result
+- Cards zone overflow, card stack bounds, overlap warnings
+
+## Alternate command route removed/disabled
+- **Disabled path:** inline `DealerBlock` command when panel passes `omitCommand` — command renders only via `BlackjackCommandBox` → `DealerCommandArea` in the summary/command zone.
+- **Removed competing style:** green default `.dealer-block__status` overridden in command zone with gold (`--ds-color-gold`) for all views.
+
+## Reveal-gating selectors added
+- `isHandVisiblyRevealed` / `isBoxVisiblyRevealed`
+- `resolveGatedCardAreaOutcomeMarker`
+- `gateCommandForReveal` / `gateCommandMessageForReveal`
+- `canShowEvenMoneyDecisionUi` / `canShowInsuranceDecisionUi`
+- `resolveUiProtocolPhase`
+
+## Layout overlap tests added
+- `src/components/blackjackUiRenderContract.test.ts` (reveal gating, canonical command, overlap CSS guards)
+- Extended `productionRouteOwnership.test.ts` (yellow command, desktop `overflow:hidden` on cards zone)
 
 ## Files changed
-
+- `src/components/blackjackUiRenderContract.ts` (new)
+- `src/components/blackjackUiRenderContract.test.ts` (new)
+- `src/engine/blackjack/dealing/cardRevealDisplay.ts`
+- `src/engine/blackjack/protocol.ts`
+- `src/components/blackjackDealingContract.ts`
+- `src/components/tableCommandDisplay.ts`
+- `src/components/useBlackjackTableFlow.ts`
+- `src/components/BlackjackPanel.tsx`
+- `src/components/DealerBlock.tsx`
+- `src/components/BlackjackCardView.tsx`
+- `src/components/CardViewDesktopHeroArea.tsx`
+- `src/components/blackjackLayoutDebug.ts`
+- `src/components/BlackjackLayoutDebugPanel.tsx`
+- `src/components/blackjackLayoutDebug.test.ts`
+- `src/components/productionRouteOwnership.test.ts`
+- `src/components/InsuranceDecisionOverlay.css`
+- `src/styles/bj-table-shared.css`
 - `src/styles/bj-blackjack-table-shell.css`
-  - Card View: `--bj-zone-cards-min-height: min(6.5rem, 20%)` (responsive, absorbed by 1fr).
-  - Full Table cards zone: `justify-content: flex-end` (restore bottom-pin); remove shell padding-bottom lift.
-  - Card View: shell stretches `.bj-card-desktop-hero` (`flex:1 1 auto`) inside hero cards zone.
-  - Felt cloth layer: `flex: 0 0 auto` (absolute — must not consume cards-zone flow space).
-- `src/styles/bj-table-shared.css` — restore `height: 100%` on desktop `.bj-casino__felt-main` (definite height
-  for grid `1fr` without re-adding `display:flex` on the shell element).
-- `src/styles/bj-full-table-card-area.css` — lift via `margin-bottom: var(--bj-full-desktop-cards-lift, 0.35rem)`
-  on `.bj-full-table-card-area` (content-only; boxes/tray untouched).
-- `src/styles/bj-card-desktop-hero-area.css` — hero `overflow: visible`; hero cards band
-  `min-height: min(5.5rem, 100%)`.
-- `src/components/productionRouteOwnership.test.ts` — updated Card View floor assertion + 3 regression tests.
-- `docs/CHANGE_LOG.md`, `ChangeSummary.md` (this file).
+- `src/styles/bj-full-table-card-area.css`
+- `package.json`
+- `docs/CHANGE_LOG.md`
 
-## v1.1 fixes confirmed preserved
-
-- Command box: single route (`BlackjackCommandBox`); playing-phase + status overflow rules still cover **both**
-  `.bj-view-full-desktop` and `.bj-view-card-desktop`.
-- Dealer: Card View band `6.7rem` unchanged; shell dealer zone ownership unchanged.
-- Shell bounding: `height:100%; max-height:100%; overflow-y:hidden` unchanged (no vertical scroll restored).
-- Boxes/tray baselines: no changes to boxes/tray/actions zone geometry or movers.
-
-## Tests
-
-- `npm run test:ownership` → **27 passed** (3 new regression tests)
-- `npm run test:layout:target` → **53 passed**
-- `npm run test:blackjack:layout` → **205 passed**
-- `npm run build` → **success**
-
-New regression tests:
-- Card View hero visible (shell stretches hero; hero not `display:none`; responsive cards-row floor).
-- Full Table stack uses `column-reverse` overlap (not plain tall column); cards zone `justify-content:flex-end`.
-- Full Table stacks stay in cards zone (not boxes zone); `felt-main height:100%` restores `1fr` sizing.
+## Test results
+| Command | Result |
+|---------|--------|
+| `npm run test:ownership` | 27 passed |
+| `npm run test:layout:target` | 53 passed |
+| `npm run test:blackjack:layout` | 215 passed |
+| `npm run build` | Success |
 
 ## Browser checklist
+1. **Blackjack reveal timing** — Deal natural BJ on box 1; confirm no blackjack badge, box status, or command text until both cards are visible.
+2. **Mobile Full Table card overlap** — Cards stay in cards band; no overlap with player boxes or chip tray.
+3. **Mobile even-money readability** — Dealer Ace up, player natural; Take 1:1 / Play buttons ≥44px, legible text.
+4. **Canonical yellow command box** — Command text gold/yellow on mobile and desktop Full Table + Card View.
+5. **Desktop Full Table cards** — Stacks bottom-pinned inside cards zone; no overlap with command box or boxes/tray.
 
-- [ ] **Desktop Full Table:** per-box stacks overlap upward, sit just above box amount/value, aligned to columns;
-      3/4/5+ cards do not clip; boxes/tray unmoved.
-- [ ] **Desktop Card View:** hero cards visible in cards zone; no vertical page/table scroll; dealer + command
-      same as v1.1 (readable, identical formatting).
-- [ ] **Toggle Full Table ↔ Card View (same phase):** boxes/tray baseline stable.
-
-**Spec discipline:** checked/updated CHANGE_LOG.md.
+**Spec discipline: checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.**

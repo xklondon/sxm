@@ -23,6 +23,11 @@ export interface BlackjackLayoutDebugPanelProps {
   deviceView: string;
   isMobileViewport: boolean;
   protocolPhase: string;
+  uiProtocolPhase?: string;
+  cardRevealComplete?: boolean;
+  commandMessage?: string | null;
+  commandMessageSource?: string;
+  boxRevealDiagnostics?: string;
   desktopLayoutPhase?: string;
   visibleBoxCount: number;
   selectedBettingBoxId: string | null;
@@ -39,6 +44,11 @@ export function BlackjackLayoutDebugPanel({
   deviceView,
   isMobileViewport,
   protocolPhase,
+  uiProtocolPhase,
+  cardRevealComplete,
+  commandMessage,
+  commandMessageSource,
+  boxRevealDiagnostics,
   desktopLayoutPhase,
   visibleBoxCount,
   selectedBettingBoxId,
@@ -116,9 +126,36 @@ export function BlackjackLayoutDebugPanel({
           <dt>phase</dt>
           <dd>
             {protocolPhase}
+            {uiProtocolPhase && uiProtocolPhase !== protocolPhase
+              ? ` · ui=${uiProtocolPhase}`
+              : ''}
             {desktopLayoutPhase ? ` · data-bj-phase=${desktopLayoutPhase}` : ''}
           </dd>
         </div>
+        {cardRevealComplete !== undefined && (
+          <div>
+            <dt>reveal complete</dt>
+            <dd>{String(cardRevealComplete)}</dd>
+          </div>
+        )}
+        {commandMessage !== undefined && (
+          <div>
+            <dt>command message</dt>
+            <dd>{commandMessage ?? '(null)'}</dd>
+          </div>
+        )}
+        {commandMessageSource && (
+          <div>
+            <dt>command source</dt>
+            <dd>{commandMessageSource}</dd>
+          </div>
+        )}
+        {boxRevealDiagnostics && (
+          <div>
+            <dt>box results (game vs UI)</dt>
+            <dd>{boxRevealDiagnostics}</dd>
+          </div>
+        )}
         <div>
           <dt>CSS route</dt>
           <dd>{formatBlackjackCssImportRoute()}</dd>
@@ -232,6 +269,22 @@ export function BlackjackLayoutDebugPanel({
             <div>
               <dt>tray overflow chain</dt>
               <dd>{computed.trayOverflowChain}</dd>
+            </div>
+            <div>
+              <dt>cards zone overflow</dt>
+              <dd>{computed.cardsZoneOverflow}</dd>
+            </div>
+            <div>
+              <dt>card stack bounds</dt>
+              <dd>{computed.cardStackBounds}</dd>
+            </div>
+            <div>
+              <dt>overlap warnings</dt>
+              <dd>
+                {computed.overlapWarnings.length
+                  ? computed.overlapWarnings.join(', ')
+                  : 'none'}
+              </dd>
             </div>
           </>
         )}

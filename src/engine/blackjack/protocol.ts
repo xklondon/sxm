@@ -17,6 +17,7 @@ import {
   isBettingOpen,
 } from './stakes';
 import { isStagedInitialDeal } from './dealing/dealingModes';
+import { isHandFullyVisibleInDisplay } from './dealing/cardRevealDisplay';
 import { isInitialDealRoundComplete } from './initialDealGuards';
 import {
   getEligibleDealBoxes,
@@ -244,6 +245,7 @@ export function getBlackjackProtocolPhase(state: GameState): BlackjackProtocolPh
 export function getDisplayBlackjackProtocolPhase(
   state: GameState,
   cardRevealComplete: boolean,
+  displayState?: GameState,
 ): BlackjackProtocolPhase {
   const phase = getBlackjackProtocolPhase(state);
   if (!cardRevealComplete && phase === 'insurance') {
@@ -255,6 +257,13 @@ export function getDisplayBlackjackProtocolPhase(
       round.insuranceOfferPending ||
       !isInitialDealRoundComplete(state.session, round)
     ) {
+      return 'dealing';
+    }
+  }
+  const display = displayState ?? state;
+  const evenMoneyKey = state.blackjack?.evenMoneyOfferHandKey;
+  if (evenMoneyKey && !isHandFullyVisibleInDisplay(state, display, evenMoneyKey)) {
+    if (phase === 'player' || phase === 'insurance') {
       return 'dealing';
     }
   }

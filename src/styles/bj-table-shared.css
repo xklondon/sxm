@@ -2009,6 +2009,15 @@
   width: 100%;
 }
 
+@media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
+  .bj-view-full-mobile .bj-table-zone--actions .bj-table-actions--ace-decision .bj-table-actions__btn,
+  .bj-view-card-mobile .bj-table-zone--actions .bj-table-actions--ace-decision .bj-table-actions__btn {
+    min-height: 44px;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.55rem;
+  }
+}
+
 .bj-player-actions {
   display: flex;
   flex-direction: column;
@@ -2337,6 +2346,13 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   max-width: 100%;
+  /* Canonical command text — yellow/gold on all views (one command style path). */
+  color: var(--ds-color-gold, #fbbf24);
+  font-weight: var(--ds-weight-semibold, 600);
+}
+
+.bj-table-layout-shell .bj-table-zone--summary .dealer-block__status--placeholder {
+  color: transparent;
 }
 
 .bj-table-layout-shell .bj-table-zone--actions {

@@ -172,9 +172,15 @@ import {
   cardAreaOutcomeStackBadgeText,
   cardAreaOutcomeToneFromMarker,
   cardAreaOutcomeUsesStackBadge,
-  resolveCardAreaOutcomeMarker,
   type CardAreaOutcomeMarker,
 } from './cardAreaOutcomeDisplay';
+import {
+  canShowEvenMoneyDecisionUi,
+  canShowInsuranceDecisionUi,
+  createUiRevealContext,
+  resolveGatedCardAreaOutcomeMarker,
+  resolveUiProtocolPhase,
+} from './blackjackUiRenderContract';
 import { shouldShowBoxHandResultMarkers } from './boxHandStatusDisplay';
 import { buildBlackjackCountByBoxDisplay } from './blackjackCountByBoxDisplay';
 import { GameOverActionOverlay, type GameOverCompleteOptions, type GameOverIouFeedback } from './GameOverActionOverlay';
@@ -339,7 +345,15 @@ export function BlackjackPanel({
     onlineMode: Boolean(onlineDispatch) || isOnlineModeEnabled(),
   });
   const cardRevealComplete = !isRevealing;
-  const protocolPhaseForHold = getDisplayBlackjackProtocolPhase(gameState, cardRevealComplete);
+  const uiRevealContext = useMemo(
+    () => createUiRevealContext(gameState, tableVisualState, cardRevealComplete),
+    [gameState, tableVisualState, cardRevealComplete],
+  );
+  const protocolPhaseForHold = getDisplayBlackjackProtocolPhase(
+    gameState,
+    cardRevealComplete,
+    tableVisualState,
+  );
   const handTransitionHold = useHandTransitionHold(gameState, protocolPhaseForHold, {
     cardRevealComplete,
     activeHandRevealComplete,
@@ -384,6 +398,7 @@ export function BlackjackPanel({
     canDriveTableAutomation,
     cardRevealComplete,
     handTransitionHold.suppressEngineAutoAdvance,
+    tableVisualState,
   );
 
   // Full Table felt only degrades to the "Use Card View" hint on ultra-narrow
@@ -588,6 +603,35 @@ export function BlackjackPanel({
       viewerHints,
     ],
   );
+
+  const uiProtocolPhase = useMemo(
+    () => resolveUiProtocolPhase(uiRevealContext),
+    [uiRevealContext],
+  );
+
+  const layoutDebugBoxReveal = useMemo(() => {
+    if (!layoutDebug) {
+      return '';
+    }
+    const round = gameState.blackjack;
+    if (!round) {
+      return 'n/a';
+    }
+    return Object.entries(round.playerHands)
+      .map(([handKey, hand]) => {
+        const { playerId } = parseBlackjackHandKey(handKey);
+        const slot = gameState.session.boxSlotNumbers?.[playerId] ?? '?';
+        const gameResult = hand.actionStatus ?? round.outcomes[handKey] ?? '—';
+        const uiMarker = resolveGatedCardAreaOutcomeMarker(uiRevealContext, {
+          showResults: true,
+          outcome: round.outcomes[handKey],
+          actionStatus: hand.actionStatus,
+          handKey,
+        });
+        return `B${slot}:${gameResult}/${uiMarker ?? 'hidden'}`;
+      })
+      .join(' · ');
+  }, [layoutDebug, gameState, uiRevealContext]);
 
   const showGameOverActions =
     gameEnded && !gameOverOverlayDismissed && !gameOverOverlayConfirmed;
@@ -1296,6 +1340,9 @@ export function BlackjackPanel({
   }
 
   function renderInsuranceDecisionOverlay() {
+    if (!canShowInsuranceDecisionUi(uiRevealContext, protocolPhase)) {
+      return null;
+    }
     if (protocolPhase !== 'insurance' || !round?.insuranceOfferPending) {
       return null;
     }
@@ -1387,6 +1434,9 @@ export function BlackjackPanel({
   function renderEvenMoneyActions() {
     const offerKey = round?.evenMoneyOfferHandKey;
     if (!offerKey || protocolPhase !== 'player') {
+      return null;
+    }
+    if (!canShowEvenMoneyDecisionUi(uiRevealContext)) {
       return null;
     }
 
@@ -1560,14 +1610,15 @@ export function BlackjackPanel({
       ? visualRound?.outcomes?.[primaryHandKey]
       : undefined;
     const outcomeMarker = boxParticipated
-      ? resolveCardAreaOutcomeMarker(
-          showBoxHandResultMarkers,
-          primaryOutcome,
-          primaryHand?.actionStatus,
-          primaryHandKey
+      ? resolveGatedCardAreaOutcomeMarker(uiRevealContext, {
+          showResults: showBoxHandResultMarkers,
+          outcome: primaryOutcome,
+          actionStatus: primaryHand?.actionStatus,
+          handKey: primaryHandKey ?? null,
+          handTotal: primaryHandKey
             ? getDisplayedHandValue(visualDeck, visualRound, primaryHandKey)
             : null,
-        )
+        })
       : null;
     const cardColumnValueLabel = valueLabel;
     const isActiveHand =
@@ -1632,12 +1683,13 @@ export function BlackjackPanel({
                 splitHand!.currentBet > 0 &&
                 (splitHand!.cardIds.some(Boolean) || Boolean(splitOutcome));
               const splitMarker = splitParticipated
-                ? resolveCardAreaOutcomeMarker(
-                    showBoxHandResultMarkers,
-                    splitOutcome,
-                    splitHand?.actionStatus,
-                    getDisplayedHandValue(visualDeck, visualRound, handKey),
-                  )
+                ? resolveGatedCardAreaOutcomeMarker(uiRevealContext, {
+                    showResults: showBoxHandResultMarkers,
+                    outcome: splitOutcome,
+                    actionStatus: splitHand?.actionStatus,
+                    handKey,
+                    handTotal: getDisplayedHandValue(visualDeck, visualRound, handKey),
+                  })
                 : null;
               const splitStackBadge =
                 isFullTableView && splitMarker && cardAreaOutcomeUsesStackBadge(splitMarker);
@@ -2551,6 +2603,7 @@ export function BlackjackPanel({
                   heroHandKeyOverride={handTransitionHold.holdActiveHandKey}
                   protocolPhase={protocolPhase}
                   gameEnded={gameEnded}
+                  cardRevealComplete={cardRevealComplete}
                 />
               ) : (
                 <BlackjackCardView
@@ -2603,6 +2656,13 @@ export function BlackjackPanel({
         deviceView={deviceView}
         isMobileViewport={isMobileViewport}
         protocolPhase={protocolPhase}
+        uiProtocolPhase={layoutDebug ? uiProtocolPhase : undefined}
+        cardRevealComplete={layoutDebug ? cardRevealComplete : undefined}
+        commandMessage={layoutDebug ? tableCommand.commandMessage : undefined}
+        commandMessageSource={
+          layoutDebug ? 'buildBlackjackCommandText → gateCommandForReveal' : undefined
+        }
+        boxRevealDiagnostics={layoutDebug ? layoutDebugBoxReveal : undefined}
         desktopLayoutPhase={desktopLayoutPhase}
         visibleBoxCount={effectiveVisibleBoxCount}
         selectedBettingBoxId={selectedBettingBoxIdForUi}

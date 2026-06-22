@@ -24,6 +24,13 @@ import {
 } from './blackjackActionContract';
 import { formatShortCardLabel } from './cardDisplay';
 import { getCardById } from '../engine/deck';
+import {
+  canShowEvenMoneyDecisionUi,
+  createUiRevealContext,
+  gateCommandForReveal,
+  isHandVisiblyRevealed,
+  type UiRevealContext,
+} from './blackjackUiRenderContract';
 
 /** Canonical game command payload — protocol next-step text for the table centre. */
 export interface CommandMessage {
@@ -143,19 +150,34 @@ export function formatPlayerTurnCommand(
     handKey?: string;
     allowSplit?: boolean;
     allowDouble?: boolean;
+    cardRevealComplete?: boolean;
   },
 ): CommandMessage {
   const boxLabel = `Box ${slotNum ?? '?'}`;
   const playerLabel = _callerName?.trim() || 'player';
 
+  const revealCtx: UiRevealContext | null =
+    options?.gameState && options?.displayState
+      ? createUiRevealContext(
+          options.gameState,
+          options.displayState,
+          options.cardRevealComplete ?? true,
+        )
+      : null;
+
   if (
-    options?.actionStatus === 'blackjack' ||
-    (handValue.isBlackjack && options?.actionStatus !== 'busted')
+    (options?.actionStatus === 'blackjack' ||
+      (handValue.isBlackjack && options?.actionStatus !== 'busted')) &&
+    options?.handKey &&
+    revealCtx
   ) {
-    return {
-      commandMessage: `${boxLabel}, Blackjack.`,
-      commandLines: [],
-    };
+    if (isHandVisiblyRevealed(revealCtx, options.handKey)) {
+      return {
+        commandMessage: `${boxLabel}, Blackjack.`,
+        commandLines: [],
+      };
+    }
+    return { commandMessage: 'Dealing…', commandLines: [] };
   }
 
   const splitNote =
@@ -364,6 +386,14 @@ export function buildBlackjackCommandText(params: {
   }
 
   if (round?.evenMoneyOfferHandKey) {
+    const revealCtx = createUiRevealContext(
+      gameState,
+      displayState,
+      cardRevealComplete,
+    );
+    if (!canShowEvenMoneyDecisionUi(revealCtx)) {
+      return { commandMessage: 'Dealing…', commandLines: [] };
+    }
     const { playerId } = parseBlackjackHandKey(round.evenMoneyOfferHandKey);
     const slotNum = gameState.session.boxSlotNumbers?.[playerId];
     const canCall =
@@ -431,6 +461,7 @@ export function buildBlackjackCommandText(params: {
         handKey: turnHandKey,
         allowSplit: gameState.blackjackSettings.allowSplit,
         allowDouble: gameState.blackjackSettings.allowDoubleDown,
+        cardRevealComplete,
       });
     }
 
@@ -440,7 +471,7 @@ export function buildBlackjackCommandText(params: {
     };
   }
 
-  return {
+  const rawCommand: CommandMessage = {
     commandMessage: sanitizeCommandStatusForVisibleBank(
       polishCenterStatusMessage(centerStatus, protocolPhase),
       displayState,
@@ -449,6 +480,12 @@ export function buildBlackjackCommandText(params: {
     ),
     commandLines: [],
   };
+
+  return gateCommandForReveal(
+    createUiRevealContext(gameState, displayState, cardRevealComplete),
+    rawCommand,
+    protocolPhase,
+  );
 }
 
 /** @deprecated Use buildBlackjackCommandText */

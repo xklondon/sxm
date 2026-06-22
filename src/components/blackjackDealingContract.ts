@@ -13,6 +13,7 @@ export {
   getVisibleHandCardIds,
   isActionRevealReady,
   isActiveHandRevealComplete,
+  isHandFullyVisibleInDisplay,
   maxVisibilityForRound,
   resolveRevealScopeTransition,
   shouldSnapCardRevealOnMount,

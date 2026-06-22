@@ -14,8 +14,11 @@ import { shouldShowBoxHandResultMarkers } from './boxHandStatusDisplay';
 import {
   cardAreaOutcomeMarkerClass,
   cardAreaOutcomeMarkerText,
-  resolveCardAreaOutcomeMarker,
 } from './cardAreaOutcomeDisplay';
+import {
+  createUiRevealContext,
+  resolveGatedCardAreaOutcomeMarker,
+} from './blackjackUiRenderContract';
 import { getDisplayedHandValue } from './blackjackDealingContract';
 import { PlayingCard } from './PlayingCard';
 import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
@@ -29,6 +32,7 @@ export interface CardViewDesktopHeroAreaProps {
   heroHandKeyOverride?: string | null;
   protocolPhase: BlackjackProtocolPhase;
   gameEnded: boolean;
+  cardRevealComplete?: boolean;
   viewerPersonId?: string | null;
   onlineTableId?: string | null;
   viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
@@ -46,6 +50,7 @@ export function CardViewDesktopHeroArea({
   heroHandKeyOverride = null,
   protocolPhase,
   gameEnded,
+  cardRevealComplete = true,
   viewerPersonId: _viewerPersonIdProp,
   onlineTableId: _onlineTableId = null,
   viewerAuth: _viewerAuth = null,
@@ -82,14 +87,20 @@ export function CardViewDesktopHeroArea({
   });
   const heroOutcome =
     heroHandKey !== null ? logicalRound?.outcomes?.[heroHandKey] : undefined;
+  const uiRevealContext = createUiRevealContext(
+    logicalGameState,
+    gameState,
+    cardRevealComplete,
+  );
   const heroOutcomeMarker =
     heroHandKey && logicalHand
-      ? resolveCardAreaOutcomeMarker(
-          showCardAreaResults,
-          heroOutcome,
-          logicalHand.actionStatus,
-          heroDisplayValue,
-        )
+      ? resolveGatedCardAreaOutcomeMarker(uiRevealContext, {
+          showResults: showCardAreaResults,
+          outcome: heroOutcome,
+          actionStatus: logicalHand.actionStatus,
+          handKey: heroHandKey,
+          handTotal: heroDisplayValue,
+        })
       : null;
 
   const heroCardsVisible = showHeroPlayerCards(

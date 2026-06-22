@@ -421,6 +421,7 @@ Protected boundaries so protocol, layout, dealing, and accounting cannot drift a
 | Protocol | `blackjackActionContract.ts` | Views use `resolveViewerActionPermission` + `resolvePlayerHandActionOptions`; no direct engine legality imports. |
 | Layout | `tableViewContract.ts`, `blackjackLayoutContract.ts` | **`docs/BLACKJACK_LAYOUT_CONTRACTS.md`** is the single layout source of truth; freeze flags in `blackjackLayoutContract.ts`. |
 | Dealing | `useSequentialCardReveal`, `blackjackDealingContract.ts` | One reveal queue; values via `getDisplayedHandValue`; controls gated until reveal ready. |
+| UI render | `blackjackUiRenderContract.ts` | Badges, command text, cloth-adjacent status, and decision overlays must pass reveal-gated selectors (`isHandVisiblyRevealed`, `resolveGatedCardAreaOutcomeMarker`, `gateCommandForReveal`) — never render raw engine result state before visual reveal. |
 | Accounting | `blackjackAccountingDisplay.ts`, `playerCommittedExposure.ts` | Tray + This Table use `resolvePersonDisplayBalances` / `resolveViewerTrayAvailable`. |
 
 Contract tests: `blackjackStabilityContracts.test.ts`, `blackjackFullTableLayoutFrozen.test.ts`, `blackjackLayoutContractGuards.test.ts`, `dealingRoundRegression.test.ts`.

@@ -62,6 +62,7 @@ export function useBlackjackTableFlow(
   canDriveTableAutomation = true,
   cardRevealComplete = true,
   suppressEngineAutoAdvance = false,
+  displayState?: GameState,
 ) {
   const { blackjack: round, tableMeta } = gameState;
   const flow = gameState.blackjackFlowSettings;
@@ -77,7 +78,11 @@ export function useBlackjackTableFlow(
   const bankRunIdRef = useRef(0);
   const manualBankingRef = useRef(false);
 
-  const protocolPhase = getDisplayBlackjackProtocolPhase(gameState, cardRevealComplete);
+  const protocolPhase = getDisplayBlackjackProtocolPhase(
+    gameState,
+    cardRevealComplete,
+    displayState,
+  );
   const tableMessage = getProtocolTableMessage(gameState);
   const baseCenterStatus = getCenterStatusMessage(gameState, 0);
   const centerStatus = bankUiMessage ?? baseCenterStatus;

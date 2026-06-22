@@ -130,7 +130,8 @@
 
   .bj-view-full-mobile[data-phase='insurance'] .bj-table-layout-shell > .bj-table-zone--summary .bj-insurance-overlay__btn,
   .bj-view-card-mobile[data-phase='insurance'] .bj-table-layout-shell > .bj-table-zone--summary .bj-insurance-overlay__btn {
-    min-height: 2.75rem;
-    font-size: 0.72rem;
+    min-height: 44px;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.5rem;
   }
 }

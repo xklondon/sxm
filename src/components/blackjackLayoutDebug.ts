@@ -42,7 +42,7 @@ export function resolveLayoutModeFromStrings(
 
 export const BLACKJACK_LAYOUT_DEBUG_PARAM = 'layoutDebug';
 /** Build marker — confirms production bundle includes this audit pass. */
-export const BLACKJACK_UI_FIX_VERSION = 'render-route-canonical-1';
+export const BLACKJACK_UI_FIX_VERSION = 'ui-reveal-gate-stabilization-1';
 
 export { BLACKJACK_CSS_LAYOUT_ROUTE_VERSION, BLACKJACK_TABLE_LAYOUT_SHELL_NAME, CANONICAL_BLACKJACK_CSS_IMPORT_ORDER };
 
@@ -104,6 +104,9 @@ export interface LayoutDebugComputedSnapshot {
   playerRowBounds: string;
   trayOverlapsPlayerRow: boolean;
   trayOverflowChain: string;
+  cardsZoneOverflow: string;
+  cardStackBounds: string;
+  overlapWarnings: string[];
 }
 
 function readOverflowChain(el: Element | null): string {
@@ -213,6 +216,46 @@ export function readLayoutDebugComputedSnapshot(root: HTMLElement | null): Layou
 
   const playerRowRect = playerRow?.getBoundingClientRect();
   const trayRect = trayZone?.getBoundingClientRect();
+  const commandZone = root.querySelector('.bj-table-zone--summary');
+  const cardsZone = root.querySelector('.bj-table-zone--cards.bj-cards-area--table');
+  const cardsZoneStyle = styleOf(cardsZone);
+  const commandRect = commandZone?.getBoundingClientRect();
+  const cardsRect = cardsZone?.getBoundingClientRect();
+  const boxesRect = boxesZone?.getBoundingClientRect();
+
+  const cardStacks = root.querySelectorAll(
+    '.bj-arc__cards-stack, .bj-arc__cards--stack-vertical, .bj-card-desktop-hero__cards',
+  );
+  const stackBounds = Array.from(cardStacks)
+    .slice(0, 6)
+    .map((el, i) => `stack${i + 1}:${formatBounds(el.getBoundingClientRect())}`)
+    .join(' · ');
+
+  const overlapWarnings: string[] = [];
+  for (const stack of cardStacks) {
+    const stackRect = stack.getBoundingClientRect();
+    if (commandRect && rectsOverlap(stackRect, commandRect)) {
+      overlapWarnings.push('cards-vs-command');
+      break;
+    }
+  }
+  for (const stack of cardStacks) {
+    const stackRect = stack.getBoundingClientRect();
+    if (boxesRect && rectsOverlap(stackRect, boxesRect)) {
+      overlapWarnings.push('cards-vs-boxes');
+      break;
+    }
+  }
+  for (const stack of cardStacks) {
+    const stackRect = stack.getBoundingClientRect();
+    if (trayRect && rectsOverlap(stackRect, trayRect)) {
+      overlapWarnings.push('cards-vs-tray');
+      break;
+    }
+  }
+  if (cardsRect && commandRect && cardsRect.top < commandRect.bottom - 2) {
+    overlapWarnings.push('cards-zone-top-above-command-bottom');
+  }
 
   const deviceView = root.getAttribute('data-device-view') ?? 'desktop';
   const viewMode = root.getAttribute('data-view-mode') ?? 'full';
@@ -242,6 +285,11 @@ export function readLayoutDebugComputedSnapshot(root: HTMLElement | null): Layou
     playerRowBounds: formatBounds(playerRowRect),
     trayOverlapsPlayerRow: playerRowRect && trayRect ? rectsOverlap(playerRowRect, trayRect) : false,
     trayOverflowChain: readOverflowChain(trayZone),
+    cardsZoneOverflow: cardsZoneStyle
+      ? `ox=${cardsZoneStyle.overflowX} oy=${cardsZoneStyle.overflowY}`
+      : 'n/a',
+    cardStackBounds: stackBounds || 'n/a',
+    overlapWarnings,
   };
 }
 

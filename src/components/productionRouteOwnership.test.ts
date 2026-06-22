@@ -269,6 +269,10 @@ describe('Blackjack layout — command box single route + desktop parity', () =>
     expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop[\s\S]*?\.dealer-block__status,\s*\n\s*\.bj-view-card-desktop[\s\S]*?\.dealer-block__status\s*\{[\s\S]*?overflow:\s*visible/,
     );
+    // Canonical yellow command text in command zone (all views).
+    expect(SHARED_CSS).toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--summary \.dealer-block__status\s*\{[\s\S]*?color:\s*var\(--ds-color-gold/,
+    );
   });
 });
 
@@ -335,6 +339,7 @@ describe('Blackjack layout — desktop cards zone regressions (v1.1 follow-up)',
         /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*\}/,
       )?.[0] ?? '';
     expect(tableCardsRule).toContain('justify-content: flex-end');
+    expect(tableCardsRule).toContain('overflow: hidden');
     expect(tableCardsRule).not.toContain('justify-content: flex-start');
   });
 

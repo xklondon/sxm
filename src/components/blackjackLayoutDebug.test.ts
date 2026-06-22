@@ -27,7 +27,7 @@ const DEBUG_PANEL_SRC = readFileSync(
 describe('blackjack layout debug overlay', () => {
   it('is disabled by default and only enables with ?layoutDebug=1', () => {
     expect(DEBUG_SRC).toContain('BLACKJACK_LAYOUT_DEBUG_FORCE = false');
-    expect(DEBUG_SRC).toContain("BLACKJACK_UI_FIX_VERSION = 'render-route-canonical-1'");
+    expect(DEBUG_SRC).toContain("BLACKJACK_UI_FIX_VERSION = 'ui-reveal-gate-stabilization-1'");
     expect(isBlackjackLayoutDebugEnabled('')).toBe(false);
     expect(isBlackjackLayoutDebugEnabled('?foo=1')).toBe(false);
     expect(isBlackjackLayoutDebugEnabled('?layoutDebug=0')).toBe(false);

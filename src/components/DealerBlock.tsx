@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
 import { isTableInstructionMessage } from './tableCommandDisplay';
+import { CANONICAL_COMMAND_STATUS_CLASS } from './blackjackUiRenderContract';
 import { TABLE_UX } from './tableUxContract';
 import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
 import './DealerBlock.css';
@@ -67,7 +68,7 @@ export function DealerCommandArea({
           {commandMessage ? (
             <p
               className={[
-                'dealer-block__status',
+                CANONICAL_COMMAND_STATUS_CLASS,
                 gameEnded ? 'dealer-block__status--game-over' : '',
                 isTableInstructionMessage(commandMessage) || commandMessage.includes('\n')
                   ? 'dealer-block__status--summary'
@@ -80,7 +81,7 @@ export function DealerCommandArea({
             </p>
           ) : null}
           {commandLines.map((line, i) => (
-            <p key={`${i}-${line}`} className="dealer-block__status dealer-block__status--summary">
+            <p key={`${i}-${line}`} className={`${CANONICAL_COMMAND_STATUS_CLASS} dealer-block__status--summary`}>
               {line}
             </p>
           ))}

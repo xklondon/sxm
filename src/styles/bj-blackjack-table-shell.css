@@ -238,8 +238,9 @@
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
     padding-top: 0;
     padding-bottom: 0;
-    /* Bottom-pin the card arc (stack overlap + column alignment live in bj-full-table-card-area.css). */
+    /* Bottom-pin stacks; clip upward bleed so cards never overlap the command zone. */
     justify-content: flex-end;
+    overflow: hidden;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
@@ -662,13 +663,22 @@
     margin: 0;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards,
-  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--cards {
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
     grid-row: cards;
     grid-column: 1;
     margin: 0;
     min-height: var(--bj-zone-cards-min-height, 0);
-    /* Card tops/fans read outside the band; shell clips horizontally only. */
+    /* Clip stacks inside the cards band — must not overlap boxes/tray. */
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards:not(.bj-cards-area--table),
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--cards:not(.bj-cards-area--table) {
+    grid-row: cards;
+    grid-column: 1;
+    margin: 0;
+    min-height: var(--bj-zone-cards-min-height, 0);
     overflow: visible;
   }
 

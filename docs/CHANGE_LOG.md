@@ -15,6 +15,25 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-22 — Blackjack UI stabilization: reveal gating + layout overlap fixes
+
+Structural stabilization pass (no new features):
+
+- **`blackjackUiRenderContract.ts`** — authoritative UI render contract: `isHandVisiblyRevealed`,
+  `isBoxVisiblyRevealed`, `resolveGatedCardAreaOutcomeMarker`, `gateCommandForReveal`,
+  `canShowEvenMoneyDecisionUi` / `canShowInsuranceDecisionUi`. Game state may know outcomes before UI may show them.
+- **Reveal sequencing fix:** command text, blackjack/bust/win badges, and even-money/insurance overlays
+  gated on paced reveal (`useSequentialCardReveal` display state). Protocol phase defers even-money until
+  offer hand is fully visible.
+- **Canonical command box:** yellow/gold text in command zone via `bj-table-shared.css`; single path
+  `BlackjackCommandBox` → `DealerCommandArea` with `CANONICAL_COMMAND_STATUS_CLASS`.
+- **Layout overlap fixes:** desktop/mobile Full Table cards zone `overflow:hidden`; mobile play-zone
+  bottom-pinned (`justify-content:flex-end`); removed mobile `margin-top:auto` arc push.
+- **Mobile even-money/insurance:** 44px min tap targets on ace-decision + insurance overlay buttons.
+- **`?layoutDebug=1`:** reveal complete, UI protocol phase, command source, per-box game vs UI result,
+  cards zone overflow, card stack bounds, overlap warnings (cards vs command/boxes/tray).
+- **Tests:** `blackjackUiRenderContract.test.ts` + extended `productionRouteOwnership.test.ts`.
+
 ## 2026-06-22 — Table Layout Engine v1.1.1: desktop cards zone regression fix
 
 Follow-up to v1.1 layout pass (desktop only, no gameplay changes):
