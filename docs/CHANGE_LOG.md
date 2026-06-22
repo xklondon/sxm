@@ -17,6 +17,13 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-22 — Blackjack 2× action row + mobile Card View play swipe
+
+- **2× placement:** Primary action row is Stay / Hit / 2× (`BlackjackActionPanel`); Split remains secondary.
+- **Card View variant fix:** `BlackjackPanel` no longer forces `variant="table"` on mobile Card View action row.
+- **Play swipe:** `useMobileCardViewPlaySwipe` — mobile Card View swipe left = Stay, right = Hit; disabled during overlays/insurance/even-money/game-over; never triggers double.
+- **Tests:** `blackjackDoubleAndSwipe.test.ts`, `useMobileCardViewPlaySwipe.test.ts`.
+
 ## 2026-06-22 — Canonical game-over modal (single overlay all views)
 
 - **`blackjackGameOverContract.ts`** — one `GameOverActionOverlay` centered modal for all four modes.

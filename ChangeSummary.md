@@ -1,56 +1,41 @@
-# Full Work Summary — Canonical Game Over Modal
+# Change Summary — Blackjack 2× wiring + mobile Card View swipe restore
 
-## Root cause of duplicate Game Over
+## Root cause (why 2× looked shown but not wired)
 
-Desktop game-end used **three parallel UI paths**:
+1. **Engine and `run()` were already correct** — `doubleDownBlackjackOnState` doubles bet, deals one card, auto-stands; `BlackjackPanel` already dispatched `{ type: 'double' }` on `onDouble`.
+2. **UX made 2× feel dead:**
+   - **2× sat on the secondary action row** below Stay/Hit in `BlackjackActionPanel`, not beside Hit — easy to miss or confuse with a label-only affordance.
+   - **Mobile Card View forced `variant="table"`** on `BlackjackActionRow`, so card-view action styling/layout did not apply; the primary row did not match Card View expectations.
+3. **Stale test expectations** still looked for `>Double<` in the command zone (`OptionalPlayDecisionOverlay` path removed earlier); optional lines now live in the canonical action row as **2×**.
 
-1. **Side-rail dock** — `GameOverActionOverlay` with `layout="inline"` forced into This Table panel (`showGameOverDesktopPanel` hijacked `sideRailPanel`).
-2. **Felt-centre hero overlay** — simplified `bj-game-over-table-overlay` with only winner/summary + Continue (no Start New Game / Exit Table).
-3. **Mobile-only modal** — `showGameOverOverlay` gated on `deviceView === 'mobile'`.
+## What changed
 
-The centre overlay (z-index 90) and side-rail panel competed visually; mobile Card View missed the desktop side-rail content path. Button click failures were caused by overlapping layers and split action surfaces.
+### 1. Wire 2× / Double (action row)
+- **`BlackjackActionPanel.tsx`** — 2× moved to the **primary row** immediately right of Hit: **Stay / Hit / 2×** (Split stays secondary).
+- **`BlackjackPanel.tsx`** — removed hardcoded `variant="table"` so Card View resolves `variant="card"` via `BlackjackActionRow` scale.
+- Double still routes through existing `run((s) => doubleDownBlackjackOnState(...), { type: 'double' })`; bankroll/eligibility unchanged (`canDoubleBlackjackForState`).
 
-## Canonical component
-
-**`GameOverActionOverlay`** via **`blackjackGameOverContract.ts`** (`game-over-canonical-v1`)
-
-- Layout: `overlay` (centered modal) on **all** views
-- Single render: `renderCanonicalGameOverModal()` in `BlackjackPanel`
-- Gated by: `showGameOverModal = showGameOverActions && gameEndRevealReady && gameOverDelayReady`
-
-## Fix
-
-- Removed `showGameOverDesktopPanel`, `showGameOverDesktopTableOverlay`, `gameOverTableOverlayDismissed`, `desktopSideRailPanel` hijack
-- Removed `bj-game-over-table-overlay` felt duplicate
-- Removed inline `layout="inline"` side-rail game over
-- Side rail suppressed while `showGameOverModal` is active
-- Raised modal z-index to 130 + explicit `pointer-events: auto`
-
-## Frozen files — NOT modified
-
-- `tableLayoutEngine.ts`
-- `blackjackCardPlacementContract.ts`
-- `blackjackUiRenderContract.ts`
-- Card reveal/dealing flow
-- Card stack placement CSS
+### 2. Mobile Card View play swipe restore
+- **`useMobileCardViewPlaySwipe.ts`** (new) — swipe **left = Stay**, swipe **right = Hit**; never double/split.
+- **`BlackjackPanel.tsx`** — during actionable Card View player turns, felt uses play-swipe handlers; box-navigation swipe (`useMobileBoxSwipeNavigation`) is disabled for that window.
+- Gated off when: game over modal, insurance, even-money, non-player phase, actions blocked (hold/deal/online in-flight), or viewer cannot act.
 
 ## Files changed
 
-- `src/components/blackjackGameOverContract.ts` (new)
-- `src/components/blackjackGameOverContract.test.ts` (new)
-- `src/components/BlackjackPanel.tsx`
-- `src/components/GameOverActionOverlay.tsx`
-- `src/components/GameOverActionOverlay.css`
-- `src/components/gameEndFlowRegression.test.ts`
-- `src/components/gameEndUi.test.ts`
-- `src/components/blackjackTargetedFixes.test.ts`
-- `src/components/blackjackFourRegression.test.ts`
-- `src/components/blackjackUiResultState.test.tsx`
-- `src/components/blackjackFiveIssueFixes.test.tsx`
-- `package.json`
-- `.cursorrules` (§7a freeze)
-- `docs/SXM_MASTER_SPEC.md`
-- `docs/CHANGE_LOG.md`
+| File | Change |
+|------|--------|
+| `src/components/BlackjackActionPanel.tsx` | 2× on primary row after Hit |
+| `src/components/BlackjackPanel.tsx` | Card variant fix; play-swipe wiring; felt handler merge |
+| `src/hooks/useMobileCardViewPlaySwipe.ts` | **New** — Stay/Hit swipe hook |
+| `src/hooks/useMobileCardViewPlaySwipe.test.ts` | **New** — gesture resolver tests |
+| `src/components/blackjackDoubleAndSwipe.test.ts` | **New** — engine + UI + swipe contract tests |
+| `src/components/optionalPlayDealPacing.test.tsx` | Expect 2×/Split in actions zone |
+| `src/components/cardViewSwipeAffordances.test.tsx` | Expect play-swipe wiring |
+| `package.json` | Include new tests in `test:blackjack:layout` |
+
+## Frozen / untouched (per scope)
+
+**Not modified:** `tableLayoutEngine.ts`, `blackjackCardPlacementContract.ts`, `blackjackUiRenderContract.ts`, Game Over modal, command box styling, card layout CSS, reveal/dealing timing, table setup, IOU, ledger, auth, Zilch.
 
 ## Test results
 
@@ -58,15 +43,15 @@ The centre overlay (z-index 90) and side-rail panel competed visually; mobile Ca
 |---------|--------|
 | `npm run test:ownership` | 27 passed |
 | `npm run test:layout:target` | 53 passed |
-| `npm run test:blackjack:layout` | 234 passed |
+| `npm run test:blackjack:layout` | 252 passed |
 | `npm run build` | Success |
 
 ## Browser checklist
 
-1. **Desktop** — one centered Game Over modal only (full actions)
-2. **Mobile Card View** — same centered modal
-3. **Start New Game** — clickable, calls existing flow
-4. **Exit Table** — clickable, calls existing flow
-5. **No card layout/playflow changes**
+1. **Click 2×** — bet doubles, exactly one card dealt, turn ends (auto-stand).
+2. **2× button** sits immediately right of HIT (Stay / Hit / 2×).
+3. **Mobile Card View swipe left** = Stay.
+4. **Mobile Card View swipe right** = Hit.
+5. **Swipe never triggers 2×** — double only from the action button.
 
-**Spec discipline: checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.**
+Spec discipline: checked/updated `docs/CHANGE_LOG.md` (entry below); `SXM_MASTER_SPEC.md` already describes canonical action row — no structural spec change required.

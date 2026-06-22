@@ -81,12 +81,12 @@ export function BlackjackActionPanel({
       ? 'ds-btn ds-btn--ghost bj-table-actions__btn bj-table-actions__btn--sm'
       : `bj-phone-view__action-bar-extra ${TABLE_UX.cardViewActionCompact} bj-phone-view__action-btn--tappable bj-phone-view__action-bar-extra--aid`;
 
-  const tableDoubleVisible = showDouble && canDouble;
   const tableSplitVisible = showSplit && canSplit;
+  const showDoubleButton = showDouble;
   const showSecondaryRow =
     variant === 'table'
-      ? tableDoubleVisible || tableSplitVisible || (showAid && !aidInlineWithHit)
-      : showDouble || showSplit || showAid || !aidInlineWithHit;
+      ? tableSplitVisible || (showAid && !aidInlineWithHit)
+      : showSplit || (showAid && !aidInlineWithHit);
 
   const standBtnClass =
     variant === 'table'
@@ -132,6 +132,8 @@ export function BlackjackActionPanel({
           .filter(Boolean)
           .join(' ');
 
+  const doubleBtnClass = extraBtnClass(canDouble);
+
   return (
     <div className={rootClass} aria-label="Player actions" aria-live="polite">
       <div {...sxmSectionProps(SXM_LAYOUT.primaryActions, primaryRowClass)}>
@@ -151,6 +153,16 @@ export function BlackjackActionPanel({
         >
           Hit
         </button>
+        {showDoubleButton ? (
+          <button
+            type="button"
+            className={doubleBtnClass}
+            disabled={!actionsEnabled || !canDouble}
+            onClick={onDouble}
+          >
+            2×
+          </button>
+        ) : null}
         {aidInlineWithHit && showAid ? (
           <button
             type="button"
@@ -165,16 +177,6 @@ export function BlackjackActionPanel({
       {showSecondaryRow ? (
         variant === 'table' ? (
           <div {...sxmSectionProps(SXM_LAYOUT.secondaryActions, secondaryRowClass)}>
-            {tableDoubleVisible ? (
-              <button
-                type="button"
-                className={extraBtnClass(true)}
-                disabled={!actionsEnabled}
-                onClick={onDouble}
-              >
-                2×
-              </button>
-            ) : null}
             {tableSplitVisible ? (
               <button
                 type="button"
@@ -198,26 +200,11 @@ export function BlackjackActionPanel({
           </div>
         ) : (
       <div {...sxmSectionProps(SXM_LAYOUT.secondaryActions, secondaryRowClass)}>
-        {showDouble ? (
-          <button
-            type="button"
-            className={extraBtnClass(canDouble)}
-            disabled={!canDouble}
-            onClick={onDouble}
-          >
-            2×
-          </button>
-        ) : (
-          <span
-            className="bj-phone-view__action-bar-extra bj-phone-view__action-bar-extra--placeholder"
-            aria-hidden="true"
-          />
-        )}
         {showSplit ? (
           <button
             type="button"
             className={extraBtnClass(canSplit)}
-            disabled={!canSplit}
+            disabled={!actionsEnabled || !canSplit}
             onClick={onSplit}
           >
             Split

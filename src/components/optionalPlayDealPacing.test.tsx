@@ -176,7 +176,7 @@ describe('optional play overlay under command', () => {
     expect(PANEL_SRC).not.toContain('bj-optional-play-overlay-anchor');
   });
 
-  it('panel renders Double in command zone on mobile Card View for hard 11', () => {
+  it('panel renders 2x in actions zone on mobile Card View for hard 9', () => {
     let state = tableWithClaimedBox(1);
     const box1 = boxPlayerId(state, 1)!;
     const deck = state.deck!;
@@ -187,7 +187,7 @@ describe('optional play overlay under command', () => {
       blackjackSettings: { ...state.blackjackSettings, allowDoubleDown: true, allowSplit: true },
       tableMeta: { ...state.tableMeta, bettingLocked: true },
       blackjack: {
-        ...actingRound(state, box1, [findCardId(deck, '5'), findCardId(deck, '6')], 25),
+        ...actingRound(state, box1, [findCardId(deck, '5'), findCardId(deck, '4')], 25),
         status: 'player-turns',
         activeHandKey: handKey,
         activePlayerId: box1,
@@ -197,16 +197,20 @@ describe('optional play overlay under command', () => {
     };
     simulatedWidth = 390;
     const html = renderToStaticMarkup(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
+    const actionsZone =
+      html.split('bj-table-zone--actions')[1]?.split('bj-table-zone--boxes')[0] ?? '';
+    expect(actionsZone).toContain('>2×<');
     const commandZone = html.split('bj-table-zone--summary')[1]?.split('bj-table-zone--cards')[0] ?? '';
-    expect(commandZone).toContain('>Double<');
+    expect(commandZone).not.toContain('>Double<');
   });
 
-  it('panel renders split offer under command zone on mobile Full Table when legal', () => {
+  it('panel renders split in actions zone on mobile Full Table when legal', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={splittableState()} onGameStateChange={noop} />,
     );
-    const commandZone = html.split('bj-table-zone--summary')[1]?.split('bj-table-zone--cards')[0] ?? '';
-    expect(commandZone).toContain('>Split<');
+    const actionsZone =
+      html.split('bj-table-zone--actions')[1]?.split('bj-table-zone--boxes')[0] ?? '';
+    expect(actionsZone).toContain('>Split<');
   });
 });
 

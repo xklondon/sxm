@@ -84,6 +84,7 @@ import {
 import { InsuranceDecisionOverlay } from './InsuranceDecisionOverlay';
 import { bindTapSelect, createTapSelectHandler } from './tapSelect';
 import { useMobileBoxSwipeNavigation } from '../hooks/useMobileBoxSwipeNavigation';
+import { useMobileCardViewPlaySwipe } from '../hooks/useMobileCardViewPlaySwipe';
 import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
 import { TABLE_UX } from './tableUxContract';
 import { TableInfoBar } from './TableInfoBar';
@@ -1131,12 +1132,62 @@ export function BlackjackPanel({
       }),
     [inBetting, bettingOpen],
   );
+  const viewerActionPermissionForSwipe = useMemo(
+    () => resolveViewerActionPermission(gameState, viewerPersonId),
+    [gameState, viewerPersonId],
+  );
+  const cardViewSwipeHandOptions = useMemo(() => {
+    if (!viewerActionPermissionForSwipe.canAct || !viewerActionPermissionForSwipe.actionable) {
+      return null;
+    }
+    return resolvePlayerHandActionOptions(
+      gameState,
+      viewerActionPermissionForSwipe.actionable.handKey,
+      blackjackSettings,
+      hasDeck,
+    );
+  }, [gameState, viewerActionPermissionForSwipe, blackjackSettings, hasDeck]);
+  const cardViewPlaySwipeEnabled =
+    isCardViewMobile &&
+    !gameEnded &&
+    !showGameOverModal &&
+    protocolPhase !== 'insurance' &&
+    !round?.evenMoneyOfferHandKey &&
+    !round?.insuranceOfferPending &&
+    playerDecisionActionsEnabled &&
+    viewerActionPermissionForSwipe.canAct &&
+    canShowPlayerDecisionControls(gameState, protocolPhase, {
+      cardRevealComplete,
+      activeHandRevealComplete,
+    });
   const mobileBoxSwipe = useMobileBoxSwipeNavigation({
-    enabled: deviceView === 'mobile' && !gameEnded,
+    enabled: deviceView === 'mobile' && !gameEnded && !cardViewPlaySwipeEnabled,
     displaySlots,
     currentSlotNumber: selectedBettingSlotNumber,
     onSelectSlot: selectLocalTarget,
   });
+  const mobileCardViewPlaySwipe = useMobileCardViewPlaySwipe({
+    enabled: cardViewPlaySwipeEnabled,
+    canHit: cardViewSwipeHandOptions?.canHit ?? false,
+    canStand: cardViewSwipeHandOptions?.canStand ?? false,
+    onStand: () => {
+      const actionable = viewerActionPermissionForSwipe.actionable;
+      if (!actionable) {
+        return;
+      }
+      run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} });
+    },
+    onHit: () => {
+      const actionable = viewerActionPermissionForSwipe.actionable;
+      if (!actionable) {
+        return;
+      }
+      run((s) => hitBlackjackOnState(s, actionable.handKey), { type: 'hit', payload: {} });
+    },
+  });
+  const mobileFeltTouchHandlers = cardViewPlaySwipeEnabled
+    ? mobileCardViewPlaySwipe
+    : mobileBoxSwipe;
   const displayError = error ?? flowError;
   const activeBoxStakeMessage = selectedBettingBoxIdForUi
     ? getStakeBetValidationMessage(gameState, selectedBettingBoxIdForUi)
@@ -1513,7 +1564,6 @@ export function BlackjackPanel({
     return (
       <BlackjackActionRow
         scale={isCardViewMobile ? 'card-view' : 'full-table'}
-        variant="table"
         actionsEnabled={playerDecisionActionsEnabled}
         canHit={canHit}
         canStand={canStand}
@@ -2475,7 +2525,7 @@ export function BlackjackPanel({
       <div className={`bj-casino__rail ${TABLE_UX.rail}`}>
           <div
             className={`bj-casino__felt ${TABLE_UX.surface}${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''} ${feltSkinModifierClass(resolveTableFeltSkin(tableMeta))}`}
-            {...mobileBoxSwipe}
+            {...mobileFeltTouchHandlers}
           >
           <Magic8Ball
             variant="table"
