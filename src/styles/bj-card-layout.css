@@ -112,14 +112,6 @@
   justify-content: flex-start;
 }
 
-/* Table card row pins to the bottom of the cards zone (content alignment INSIDE the zone). */
-.bj-view-full-desktop .bj-table-zone--cards.bj-cards-area--table,
-.bj-view-card-desktop .bj-table-zone--cards.bj-cards-area--table,
-.bj-view-full-mobile .bj-table-zone--cards.bj-cards-area--table,
-.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--table {
-  justify-content: flex-end;
-}
-
 .bj-view-full-desktop .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area,
 .bj-view-full-desktop .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__hand-meta,
 .bj-view-full-mobile .bj-table-zone--cards.bj-cards-area--hero .bj-phone-view__play-area,

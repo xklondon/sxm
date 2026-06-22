@@ -9,6 +9,7 @@ import {
 } from './zilchTableKind';
 import { applyZilchTableStakeSetup } from './zilchTableSetup';
 import { DEFAULT_TABLE_CHIPS } from './table';
+import { listPlayableZilchPlayerIds } from '../dice/zilch/zilchTurnAuthority';
 
 describe('tableKind', () => {
   it('explicit blackjack tableGame wins over stale dice meta', () => {
@@ -75,6 +76,39 @@ describe('tableKind', () => {
     expect(isZilchTable(state)).toBe(true);
     expect(isBlackjackTable(state)).toBe(false);
     expect(state.blackjack).toBeNull();
+  });
+
+  it('practice zilch stake setup sets canonical dice identity and host plus virtuals', () => {
+    let state = applyZilchTableStakeSetup(createNewZilchTable(), {
+      stakeDescription: 'Practice',
+      seatChips: DEFAULT_TABLE_CHIPS,
+      bankChips: DEFAULT_TABLE_CHIPS,
+      bankerMode: 'bot',
+      bankerName: '',
+      controllerName: 'xk',
+      controllerEmail: '',
+      protocolId: 'zilch',
+      naturalDealing: false,
+      dealSpeedPreset: 'normal',
+      cardTimerPreset: 0,
+      bankDrawAuto: true,
+      tableMode: 'practice',
+      virtualPlayerCount: 2,
+      zilchMode: 'target_points',
+      targetPoints: 1000,
+      roundLimit: 10,
+      diceAnimationMode: 'fixed',
+      diceAnimationMs: 400,
+      diceAnimationRandomMinMs: 400,
+      diceAnimationRandomMaxMs: 400,
+    });
+    expect(state.tableMeta.gameCategory).toBe('dice');
+    expect(state.tableMeta.diceGame).toBe('zilch');
+    expect(state.tableMeta.tableMode).toBe('practice');
+    expect(state.tableGame).toBe('zilch');
+    expect(state.session.gameType).toBe('zilch');
+    expect(listPlayableZilchPlayerIds(state)).toHaveLength(3);
+    expect(state.zilch?.players).toHaveLength(3);
   });
 
   it('normalizeLoadedGameState repairs stuck zilch starter phase', () => {

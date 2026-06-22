@@ -142,6 +142,7 @@ export function applyZilchTableStakeSetup(
       for (let i = 0; i < count; i++) {
         const spl = addVirtualPlayer(next.session, next.players, next.ledger, {
           virtualStyle: 'normal',
+          displayName: `Virtual Player ${i + 2}`,
         });
         next = mergeSessionUpdate(next, spl);
       }

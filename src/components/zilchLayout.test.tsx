@@ -45,9 +45,11 @@ describe('Zilch visual layout', () => {
     expect(html).toContain('Invite to table');
   });
 
-  it('dice throw animation uses short visual duration and reduced-motion fallback', () => {
+  it('dice throw animation uses compact die tokens and 3D cube spin', () => {
     expect(ZILCH_CSS).toContain('--zilch-roll-visual-ms');
+    expect(ZILCH_CSS).toContain('--zilch-die-size');
     expect(ZILCH_CSS).toContain('@keyframes zilch-die-throw');
+    expect(ZILCH_CSS).toContain('@keyframes zilch-die-cube-spin');
     expect(ZILCH_CSS).toContain('@media (prefers-reduced-motion: reduce)');
     expect(ZILCH_CSS).toContain('zilch-die-throw-reduced');
   });

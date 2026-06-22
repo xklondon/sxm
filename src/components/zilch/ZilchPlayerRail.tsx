@@ -23,6 +23,9 @@ function renderSeat(
   return (
     <div
       key={playerId}
+      data-testid={`zilch-seat-${playerId}`}
+      data-player-id={playerId}
+      data-active={isActive ? 'true' : 'false'}
       className={`zilch-seat${
         isActive ? ' zilch-seat--active' : ''
       }${isHighlighted ? ' zilch-seat--highlight' : ''}${

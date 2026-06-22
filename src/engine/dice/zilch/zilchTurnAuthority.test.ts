@@ -81,12 +81,24 @@ describe('zilchTurnAuthority', () => {
     expect(canPersonActOnZilchTurn(state, hostId)).toBe(true);
   });
 
-  it('randomiser picks only playable virtual players', () => {
+  it('randomiser picks playable practice players including host box', () => {
     const { state: base } = practiceTable();
     let state = applyZilchActionToState(base, 'zilchRandomiseStarter', {});
     const starterId = state.zilch!.starterPlayerId!;
-    expect(listPlayableZilchPlayerIds(state)).toContain(starterId);
+    const playable = listPlayableZilchPlayerIds(state);
+    expect(playable).toHaveLength(3);
+    expect(playable).toContain(starterId);
     expect(state.players[starterId]?.role).not.toBe('bank');
+  });
+
+  it('practice playable list includes host box and virtual players only', () => {
+    const { state, hostId } = practiceTable();
+    const playable = listPlayableZilchPlayerIds(state);
+    expect(playable).toHaveLength(3);
+    expect(playable).not.toContain(hostId);
+    const hostBox = playable.find((id) => state.players[id]?.role === 'box');
+    expect(hostBox).toBeTruthy();
+    expect(playable.filter((id) => state.players[id]?.playerType === 'virtual')).toHaveLength(2);
   });
 
   it('reload preserves valid current player identity for host control', () => {

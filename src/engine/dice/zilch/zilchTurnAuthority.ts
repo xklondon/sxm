@@ -21,6 +21,30 @@ function isOwnerBankrollShell(state: GameState, playerId: string): boolean {
   return Boolean(ownerId && player.bankrollOwnerId === ownerId);
 }
 
+function orderPlayableZilchPlayerIds(state: GameState, ids: string[]): string[] {
+  const isPractice = state.tableMeta.tableMode !== 'challenge';
+  if (!isPractice) {
+    return ids;
+  }
+  const hostBoxId = ids.find((id) => isOwnerBankrollShell(state, id));
+  const virtuals = ids.filter((id) => state.players[id]?.playerType === 'virtual');
+  const ordered: string[] = [];
+  if (hostBoxId) {
+    ordered.push(hostBoxId);
+  }
+  for (const id of virtuals) {
+    if (!ordered.includes(id)) {
+      ordered.push(id);
+    }
+  }
+  for (const id of ids) {
+    if (!ordered.includes(id)) {
+      ordered.push(id);
+    }
+  }
+  return ordered;
+}
+
 /** Zilch seats that can take turns — excludes bank bot, owner shell, and duplicate box aliases. */
 export function listPlayableZilchPlayerIds(state: GameState): string[] {
   const bankId = state.session.bankPlayerId;
@@ -32,7 +56,7 @@ export function listPlayableZilchPlayerIds(state: GameState): string[] {
           .map((slot) => slot.playerId)
           .filter((id): id is string => Boolean(id));
 
-  return rawIds.filter((id) => {
+  const playable = rawIds.filter((id) => {
     if (!id || id === bankId) {
       return false;
     }
@@ -51,7 +75,7 @@ export function listPlayableZilchPlayerIds(state: GameState): string[] {
       return true;
     }
     if (isPractice) {
-      return false;
+      return isOwnerBankrollShell(state, id);
     }
     if (player.role === 'box') {
       if (isVirtualBackedBoxShell(state, id)) {
@@ -67,6 +91,8 @@ export function listPlayableZilchPlayerIds(state: GameState): string[] {
     }
     return player.playerType === 'real';
   });
+
+  return orderPlayableZilchPlayerIds(state, playable);
 }
 
 export function isVirtualZilchPlayer(state: GameState, playerId: string): boolean {

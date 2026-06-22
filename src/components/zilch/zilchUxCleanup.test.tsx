@@ -155,7 +155,7 @@ describe('Zilch UX cleanup', () => {
     expect(html).not.toContain('IOU');
   });
 
-  it('randomiser renders central spinner arrow', () => {
+  it('randomiser renders compact central spinner arrow', () => {
     const html = renderToStaticMarkup(
       <ZilchStarterSpinner
         players={[{ playerId: 'a', name: 'A', boxLabel: null, isVirtual: true }]}
@@ -168,17 +168,37 @@ describe('Zilch UX cleanup', () => {
     );
     expect(html).toContain('zilch-starter-spinner');
     expect(html).toContain('zilch-starter-spinner__arrow');
+    expect(ZILCH_CSS).toContain('width: 5rem');
   });
 
-  it('practice table renders one player box per visible player', () => {
-    let state = applyZilchTableStakeSetup(createNewZilchTable(), practiceSetup(3));
+  it('randomise starter button is enabled in setup and moves to player-turn', () => {
+    let state = applyZilchTableStakeSetup(createNewZilchTable(), practiceSetup(2));
+    const onChange = vi.fn();
+    render(<ZilchPanel gameState={state} onGameStateChange={onChange} />);
+    const btn = screen.getByRole('button', { name: 'Randomise starter' }) as HTMLButtonElement;
+    expect(btn.disabled).toBe(false);
+    fireEvent.click(btn);
+    expect(onChange).toHaveBeenCalled();
+    const next = onChange.mock.calls[0]![0] as typeof state;
+    expect(next.zilch?.phase).toBe('player-turn');
+    expect(next.zilch?.starterPlayerId).toBeTruthy();
+    expect(next.zilch?.currentPlayerId).toBe(next.zilch?.starterPlayerId);
+  });
+
+  it('practice table renders host and virtual player boxes without duplicates', () => {
+    let state = applyZilchTableStakeSetup(createNewZilchTable(), practiceSetup(2));
     state = beginZilchPlay(state);
     const visible = getVisibleZilchPlayers(state);
+    expect(visible.length).toBe(3);
     const html = renderToStaticMarkup(
       <ZilchPanel gameState={state} onGameStateChange={() => {}} />,
     );
     const seatCount = (html.match(/class="zilch-seat(?![\w-])/g) ?? []).length;
     expect(seatCount).toBe(visible.length);
+    expect(html).toContain('Host');
+    expect(html).toContain('Virtual Player 2');
+    expect(html).toContain('Virtual Player 3');
+    expect(html).toContain('Player 1');
   });
 });
 

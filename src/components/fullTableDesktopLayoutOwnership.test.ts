@@ -94,7 +94,9 @@ describe('Desktop Full Table layout ownership', () => {
 
   it('shell owner uses flexible cards grid row for Full Table desktop', () => {
     const shell = readFileSync(join(process.cwd(), SHELL_OWNER), 'utf8');
-    expect(shell).toMatch(/--bj-desktop-grid-row-cards:\s*minmax\(0,\s*1fr\)/);
+    expect(shell).toMatch(
+      /--bj-desktop-grid-row-cards:\s*minmax\(var\(--bj-zone-cards-min-height,\s*0\),\s*1fr\)/,
+    );
   });
 
   it('card-area owner uses 1fr card column grid', () => {

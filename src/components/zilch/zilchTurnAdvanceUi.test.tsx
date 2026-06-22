@@ -9,6 +9,8 @@ import {
   DEFAULT_TABLE_CHIPS,
 } from '../../engine/session';
 import { applyZilchActionToState } from '../../engine/zilch';
+import { listPlayableZilchPlayerIds } from '../../engine/dice/zilch/zilchTurnAuthority';
+import { getVisibleZilchPlayers } from '../../engine/dice/zilch/zilchVisiblePlayers';
 import { ZilchPanel } from './ZilchPanel';
 
 const ZILCH_CSS = readFileSync(join(process.cwd(), 'src/styles/zilch-table.css'), 'utf8');
@@ -39,6 +41,20 @@ function practiceState() {
   });
 }
 
+function activeSeatPlayerId(html: string): string | null {
+  const match =
+    html.match(/data-player-id="([^"]+)"[^>]*data-active="true"/) ??
+    html.match(/data-active="true"[^>]*data-player-id="([^"]+)"/);
+  return match?.[1] ?? null;
+}
+
+function seatMarkup(html: string, playerId: string): string | null {
+  const match = html.match(
+    new RegExp(`<div[^>]*data-testid="zilch-seat-${playerId}"[^>]*>[\\s\\S]*?</div>\\s*(?=<div[^>]*data-testid="zilch-seat-|<div class="zilch-table__seats|$)`),
+  );
+  return match?.[0] ?? null;
+}
+
 describe('Zilch panel UI', () => {
   it('ledger is hidden until Table ledger is toggled', () => {
     const html = renderToStaticMarkup(
@@ -51,7 +67,11 @@ describe('Zilch panel UI', () => {
 
   it('highlights next player after bank', () => {
     let state = applyZilchActionToState(practiceState(), 'zilchRandomiseStarter', {});
-    const firstName = state.players[state.zilch!.currentPlayerId!]?.displayName;
+    const playableOrder = listPlayableZilchPlayerIds(state);
+    const currentBefore = state.zilch!.currentPlayerId!;
+    const beforeIndex = playableOrder.indexOf(currentBefore);
+    expect(beforeIndex).toBeGreaterThanOrEqual(0);
+
     state = applyZilchActionToState(
       {
         ...state,
@@ -60,13 +80,36 @@ describe('Zilch panel UI', () => {
       'zilchBankTurn',
       {},
     );
-    const nextName = state.players[state.zilch!.currentPlayerId!]?.displayName;
+
+    const currentAfter = state.zilch!.currentPlayerId!;
+    const expectedNextId = playableOrder[(beforeIndex + 1) % playableOrder.length]!;
+    expect(currentAfter).toBe(expectedNextId);
+    expect(currentAfter).not.toBe(currentBefore);
+
+    const visible = getVisibleZilchPlayers(state);
+    const nextVisible = visible.find((player) => player.playerId === currentAfter);
+    expect(nextVisible).toBeTruthy();
+
     const html = renderToStaticMarkup(
       <ZilchPanel gameState={state} onGameStateChange={() => {}} />,
     );
+
+    expect(activeSeatPlayerId(html)).toBe(currentAfter);
     expect(html).toContain('zilch-seat--active');
-    expect(html).toContain(nextName ?? '');
-    expect(firstName).not.toEqual(nextName);
+    expect(html).toContain(`data-testid="zilch-seat-${currentAfter}"`);
+
+    const activeSeat = seatMarkup(html, currentAfter);
+    expect(activeSeat).toBeTruthy();
+    expect(activeSeat).toContain('zilch-seat--active');
+    expect(activeSeat).toContain(nextVisible!.name);
+    if (nextVisible!.boxLabel) {
+      expect(activeSeat).toContain(nextVisible!.boxLabel);
+    }
+
+    const previousSeat = seatMarkup(html, currentBefore);
+    expect(previousSeat).toBeTruthy();
+    expect(previousSeat).not.toContain('zilch-seat--active');
+    expect(previousSeat).toContain('data-active="false"');
   });
 
   it('seat ring uses non-overlapping grid contract', () => {

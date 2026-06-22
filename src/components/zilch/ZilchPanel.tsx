@@ -136,12 +136,20 @@ export function ZilchPanel({
   }
 
   function onRandomiseStarter() {
+    if (onlineActionInFlight || visiblePlayers.length === 0 || starterSpinActive) {
+      return;
+    }
     pendingStarterSpinRef.current = true;
     startStarterSpinPresentation(null);
     const starterId = handleRandomiseStarter();
     if (starterId) {
       pendingStarterSpinRef.current = false;
       startStarterSpinPresentation(starterId);
+      return;
+    }
+    if (!onlineDispatch) {
+      pendingStarterSpinRef.current = false;
+      stopStarterSpin();
     }
   }
 
@@ -218,6 +226,11 @@ export function ZilchPanel({
     starterSpinActive || zilch?.phase === 'setup'
       ? playerOrder[randomiserIndex] ?? null
       : zilch?.starterPlayerId ?? null;
+  const randomiserDisabled =
+    onlineActionInFlight ||
+    visiblePlayers.length === 0 ||
+    starterSpinActive ||
+    Boolean(zilch?.starterPlayerId && zilch.phase === 'player-turn');
 
   return (
     <div className="zilch-panel zilch-panel--compact" data-game="zilch">
@@ -313,7 +326,7 @@ export function ZilchPanel({
                   activeIndex={randomiserIndex}
                   spinning={starterSpinActive}
                   starterPlayerId={zilch.starterPlayerId}
-                  disabled={onlineActionInFlight || !canAct}
+                  disabled={randomiserDisabled}
                   onRandomiseStarter={onRandomiseStarter}
                 />
               ) : (

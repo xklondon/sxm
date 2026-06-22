@@ -33,11 +33,12 @@ function isExcludedZilchSeat(state: GameState, playerId: string): boolean {
 function resolveSeatLabels(state: GameState, playerId: string): Omit<ZilchVisiblePlayer, 'playerId'> {
   const player = state.players[playerId]!;
   const slot = state.tableMeta.boxSlots.find((s) => s.playerId === playerId);
-  const boxLabel = slot?.slotNumber ? `Box ${slot.slotNumber}` : null;
+  const boxLabel = slot?.slotNumber ? `Player ${slot.slotNumber}` : null;
   const isVirtual = player.playerType === 'virtual';
   let name = player.displayName.trim() || playerId;
-
-  if (boxLabel && name === boxLabel && player.controllerName?.trim()) {
+  if (player.role === 'box' && player.controllerName?.trim()) {
+    name = player.controllerName.trim();
+  } else if (boxLabel && name === boxLabel && player.controllerName?.trim()) {
     name = player.controllerName.trim();
   }
 

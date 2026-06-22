@@ -59,8 +59,8 @@
   }
 
   .zilch-panel--compact .zilch-die {
-    width: 2.85rem;
-    height: 2.85rem;
+    width: var(--zilch-die-size, 2.75rem);
+    height: var(--zilch-die-size, 2.75rem);
   }
 
   .zilch-panel--compact .zilch-table__combos {
@@ -145,6 +145,8 @@
   width: 100%;
   margin: 0.35rem 0 0;
   min-height: 0;
+  --zilch-die-size: 2.75rem;
+  --zilch-pip-size: 0.48rem;
 }
 
 .zilch-table__felt--canvas {
@@ -184,6 +186,8 @@
   border-radius: 12px;
   background: rgb(0 0 0 / 0.14);
   box-shadow: inset 0 0 24px rgb(0 0 0 / 0.22);
+  position: relative;
+  z-index: 1;
 }
 
 .zilch-table__seat-ring {
@@ -233,19 +237,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   width: 100%;
-  max-width: 16rem;
+  max-width: 10rem;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
 }
 
 .zilch-starter-spinner__dial {
   position: relative;
-  width: 9rem;
-  height: 9rem;
+  width: 5rem;
+  height: 5rem;
   border-radius: 50%;
   background: rgb(0 0 0 / 0.28);
   border: 2px solid rgb(212 175 55 / 0.55);
-  box-shadow: inset 0 0 20px rgb(0 0 0 / 0.35);
+  box-shadow: inset 0 0 14px rgb(0 0 0 / 0.35);
+  pointer-events: none;
 }
 
 .zilch-starter-spinner--spinning .zilch-starter-spinner__dial {
@@ -255,12 +263,12 @@
 .zilch-starter-spinner__hub {
   position: absolute;
   inset: 50%;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 0.85rem;
+  height: 0.85rem;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: var(--accent, #d4af37);
-  box-shadow: 0 0 10px rgb(212 175 55 / 0.65);
+  box-shadow: 0 0 8px rgb(212 175 55 / 0.65);
   z-index: 2;
 }
 
@@ -268,39 +276,39 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 0.35rem;
-  height: 3.25rem;
-  margin-left: -0.175rem;
-  margin-top: -3rem;
-  transform-origin: 50% calc(100% - 0.35rem);
+  width: 0.28rem;
+  height: 1.85rem;
+  margin-left: -0.14rem;
+  margin-top: -1.65rem;
+  transform-origin: 50% calc(100% - 0.25rem);
   transform: rotate(var(--pointer-angle, -90deg));
   background: linear-gradient(to top, #f0d060 0%, #c89830 100%);
   border-radius: 999px;
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.45);
+  box-shadow: 0 2px 5px rgb(0 0 0 / 0.45);
   z-index: 3;
 }
 
 .zilch-starter-spinner__arrow::after {
   content: '';
   position: absolute;
-  top: -0.35rem;
+  top: -0.28rem;
   left: 50%;
   transform: translateX(-50%);
-  border-left: 0.45rem solid transparent;
-  border-right: 0.45rem solid transparent;
-  border-bottom: 0.65rem solid #f0d060;
+  border-left: 0.35rem solid transparent;
+  border-right: 0.35rem solid transparent;
+  border-bottom: 0.5rem solid #f0d060;
 }
 
 .zilch-starter-spinner__marker {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 0.55rem;
-  height: 0.55rem;
-  margin: -0.275rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin: -0.2rem;
   border-radius: 50%;
   background: rgb(255 255 255 / 0.45);
-  transform: rotate(var(--marker-angle, 0deg)) translateY(-3.75rem);
+  transform: rotate(var(--marker-angle, 0deg)) translateY(-2.15rem);
   transform-origin: center center;
 }
 
@@ -316,9 +324,16 @@
 
 .zilch-starter-spinner__label {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   text-align: center;
+}
+
+.zilch-starter-spinner button {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+  max-width: fit-content;
 }
 
 @keyframes zilch-spinner-spin {
@@ -381,13 +396,16 @@
 .zilch-table__roll-zone {
   position: relative;
   width: 100%;
-  max-width: 24rem;
-  min-height: 8rem;
+  max-width: 22rem;
+  min-height: 6.5rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
+  gap: 0.45rem;
+  perspective: 520px;
+  transform-style: preserve-3d;
+  overflow: hidden;
 }
 
 .zilch-table__hint {
@@ -617,18 +635,19 @@
 
 /* Dice — 3D pip faces */
 .zilch-die {
-  width: 3.25rem;
-  height: 3.25rem;
+  width: var(--zilch-die-size, 2.75rem);
+  height: var(--zilch-die-size, 2.75rem);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background: transparent;
   position: relative;
   flex-shrink: 0;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transform-style: preserve-3d;
 }
 
 button.zilch-die {
@@ -646,7 +665,7 @@ button.zilch-die {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 12px;
+  border-radius: 10px;
   background: linear-gradient(145deg, #faf8f2 0%, #e8e4d8 45%, #d4cfc0 100%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.85),
@@ -654,12 +673,14 @@ button.zilch-die {
     0 4px 10px rgb(0 0 0 / 0.45),
     0 1px 0 rgb(0 0 0 / 0.2);
   border: 1px solid rgb(180 170 150 / 0.55);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
 }
 
 .zilch-die-face__pip {
   position: absolute;
-  width: 0.55rem;
-  height: 0.55rem;
+  width: var(--zilch-pip-size, 0.48rem);
+  height: var(--zilch-pip-size, 0.48rem);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #444 0%, #111 70%);
   transform: translate(-50%, -50%);
@@ -722,46 +743,73 @@ button.zilch-die {
 .zilch-die--throw {
   animation: zilch-die-throw var(--zilch-roll-visual-ms, 700ms) cubic-bezier(0.28, 0.85, 0.42, 1)
     forwards;
-  animation-delay: calc(var(--die-index, 0) * 70ms);
+  animation-delay: calc(var(--die-index, 0) * 65ms);
   will-change: transform, filter;
 }
 
 .zilch-die--throw .zilch-die-face__cube {
-  filter: blur(0.55px);
+  animation: zilch-die-cube-spin var(--zilch-roll-visual-ms, 700ms) linear forwards;
+  animation-delay: calc(var(--die-index, 0) * 65ms);
+  filter: blur(0.45px);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.85),
     0 8px 16px rgb(0 0 0 / 0.55),
     0 2px 0 rgb(0 0 0 / 0.25);
 }
 
-@keyframes zilch-die-throw {
+@keyframes zilch-die-cube-spin {
   0% {
-    transform: translate(var(--start-x, 0), var(--start-y, 40px)) rotate(0deg) scale(0.82);
-    opacity: 0.65;
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
   }
 
-  22% {
-    transform: translate(var(--mid-x, 0), calc(var(--mid-y, -20px) - 6px)) rotate(210deg) scale(1.12);
-    opacity: 1;
+  25% {
+    transform: rotateX(180deg) rotateY(120deg) rotateZ(90deg);
   }
 
-  48% {
-    transform: translate(calc(var(--end-x, 0) * 0.55), calc(var(--end-y, 0) * 0.55 - 8px))
-      rotate(480deg) scale(1.06);
+  50% {
+    transform: rotateX(360deg) rotateY(240deg) rotateZ(200deg);
   }
 
-  72% {
-    transform: translate(calc(var(--end-x, 0) * 0.88), calc(var(--end-y, 0) * 0.88 - 5px))
-      rotate(640deg) scale(1.02);
-  }
-
-  86% {
-    transform: translate(calc(var(--end-x, 0) * 0.96), calc(var(--end-y, 0) * 0.96 + 3px))
-      rotate(700deg) scale(0.98);
+  75% {
+    transform: rotateX(540deg) rotateY(320deg) rotateZ(300deg);
   }
 
   100% {
-    transform: translate(var(--end-x, 0), var(--end-y, 0)) rotate(720deg) scale(1);
+    transform: rotateX(720deg) rotateY(420deg) rotateZ(360deg);
+  }
+}
+
+@keyframes zilch-die-throw {
+  0% {
+    transform: translate3d(var(--start-x, 0), var(--start-y, 40px), 24px) rotateX(18deg)
+      rotateY(-24deg) rotateZ(0deg) scale(0.78);
+    opacity: 0.6;
+  }
+
+  18% {
+    transform: translate3d(var(--mid-x, 0), calc(var(--mid-y, -20px) - 10px), 36px) rotateX(140deg)
+      rotateY(80deg) rotateZ(180deg) scale(1.08);
+    opacity: 1;
+  }
+
+  42% {
+    transform: translate3d(calc(var(--end-x, 0) * 0.5), calc(var(--end-y, 0) * 0.5 - 12px), 18px)
+      rotateX(260deg) rotateY(200deg) rotateZ(320deg) scale(1.04);
+  }
+
+  68% {
+    transform: translate3d(calc(var(--end-x, 0) * 0.9), calc(var(--end-y, 0) * 0.9 - 4px), 8px)
+      rotateX(340deg) rotateY(280deg) rotateZ(400deg) scale(1.01);
+  }
+
+  84% {
+    transform: translate3d(calc(var(--end-x, 0) * 0.98), calc(var(--end-y, 0) * 0.98 + 4px), 2px)
+      rotateX(355deg) rotateY(350deg) rotateZ(410deg) scale(0.97);
+  }
+
+  100% {
+    transform: translate3d(var(--end-x, 0), var(--end-y, 0), 0) rotateX(360deg) rotateY(360deg)
+      rotateZ(360deg) scale(1);
     opacity: 1;
   }
 }
@@ -785,6 +833,7 @@ button.zilch-die {
   }
 
   .zilch-die--throw .zilch-die-face__cube {
+    animation: none;
     filter: none;
   }
 
@@ -857,6 +906,8 @@ button.zilch-die {
 
 @media (max-width: 720px) {
   .zilch-table--play {
+    --zilch-die-size: 2.375rem;
+    --zilch-pip-size: 0.42rem;
     grid-template-columns: minmax(5.5rem, 1fr) minmax(0, 2fr) minmax(5.5rem, 1fr);
     grid-template-rows: auto minmax(16rem, 1fr) auto;
     min-height: 28rem;
@@ -875,13 +926,13 @@ button.zilch-die {
   }
 
   .zilch-die {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: var(--zilch-die-size, 2.375rem);
+    height: var(--zilch-die-size, 2.375rem);
   }
 
   .zilch-die-face__pip {
-    width: 0.6rem;
-    height: 0.6rem;
+    width: var(--zilch-pip-size, 0.42rem);
+    height: var(--zilch-pip-size, 0.42rem);
   }
 
   .zilch-seat {

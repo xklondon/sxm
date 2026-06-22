@@ -193,12 +193,12 @@ export function dieThrowStyle(
   seed: number,
 ): Record<string, string> {
   const angle = (index / 6) * Math.PI * 2 + seed * 0.7;
-  const startX = Math.cos(angle) * 42;
-  const startY = Math.sin(angle) * 28 + 36;
-  const endX = (index % 3) * 52 - 52 + (seed % 17) - 8;
-  const endY = (Math.floor(index / 3) % 2) * 40 - 12 + (seed % 11);
-  const midX = (startX + endX) / 2 + (seed % 23) - 11;
-  const midY = (startY + endY) / 2 - 28 - (seed % 13);
+  const startX = Math.cos(angle) * 34;
+  const startY = Math.sin(angle) * 22 + 28;
+  const endX = (index % 3) * 44 - 44 + (seed % 13) - 6;
+  const endY = (Math.floor(index / 3) % 2) * 34 - 10 + (seed % 9);
+  const midX = (startX + endX) / 2 + (seed % 19) - 9;
+  const midY = (startY + endY) / 2 - 22 - (seed % 11);
   return {
     '--die-index': String(index),
     '--start-x': `${startX}px`,

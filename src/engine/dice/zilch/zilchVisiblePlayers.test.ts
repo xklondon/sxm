@@ -4,18 +4,34 @@ import {
   createNewZilchTable,
   DEFAULT_TABLE_CHIPS,
 } from '../../session';
+import { listPlayableZilchPlayerIds } from './zilchTurnAuthority';
 import { getVisibleZilchPlayers } from './zilchVisiblePlayers';
 
 describe('getVisibleZilchPlayers', () => {
-  it('returns unique playable players without duplicates', () => {
-    let state = applyZilchTableStakeSetup(createNewZilchTable(), practiceSetup(3));
+  it('practice with 2 virtual players includes host plus virtuals without duplicates', () => {
+    let state = applyZilchTableStakeSetup(createNewZilchTable(), practiceSetup(2));
     const visible = getVisibleZilchPlayers(state);
     const ids = visible.map((p) => p.playerId);
     expect(new Set(ids).size).toBe(ids.length);
     expect(visible.length).toBe(3);
+
+    const hostBox = visible.find((p) => !p.isVirtual);
+    expect(hostBox).toBeTruthy();
+    expect(hostBox!.name).toBe('Host');
+    expect(hostBox!.boxLabel).toBe('Player 1');
+
+    const virtualNames = visible.filter((p) => p.isVirtual).map((p) => p.name);
+    expect(virtualNames).toEqual(['Virtual Player 2', 'Virtual Player 3']);
   });
 
-  it('excludes bank bot from visible seats', () => {
+  it('host box is first in playable order', () => {
+    const state = applyZilchTableStakeSetup(createNewZilchTable(), practiceSetup(2));
+    const playable = listPlayableZilchPlayerIds(state);
+    const visible = getVisibleZilchPlayers(state);
+    expect(playable[0]).toBe(visible.find((p) => !p.isVirtual)?.playerId);
+  });
+
+  it('excludes bank bot and owner person bankroll shell', () => {
     let state = applyZilchTableStakeSetup(createNewZilchTable(), {
       ...practiceSetup(1),
       tableMode: 'challenge',
@@ -24,7 +40,9 @@ describe('getVisibleZilchPlayers', () => {
     });
     const visible = getVisibleZilchPlayers(state);
     const bankId = state.session.bankPlayerId;
+    const ownerId = state.tableMeta.ownerPersonId;
     expect(visible.every((p) => p.playerId !== bankId)).toBe(true);
+    expect(visible.every((p) => p.playerId !== ownerId)).toBe(true);
   });
 });
 
