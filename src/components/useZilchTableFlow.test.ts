@@ -62,3 +62,71 @@ describe('useZilchTableFlow action errors', () => {
     expect(onlineDispatch).toHaveBeenCalledWith('zilchRollDice', {});
   });
 });
+
+function zilchRevealTable() {
+  const base = readyTable();
+  let zilch = base.zilch!;
+  zilch = {
+    ...zilch,
+    phase: 'zilch-reveal',
+    currentPlayerId: zilch.starterPlayerId ?? zilch.players[0]?.playerId ?? null,
+    zilchRevealUntil: Date.now() + 3000,
+    turnScore: 0,
+    dice: [{ id: 'd0', value: 2, isAvailable: true, isKept: false }],
+    diceAnimation: { isRolling: false },
+    availableCombinations: [],
+  };
+  return { ...base, zilch };
+}
+
+describe('useZilchTableFlow zilch reveal timer', () => {
+  it('auto-advances once after reveal window and cleans up on unmount', async () => {
+    vi.useFakeTimers();
+    const gameState = zilchRevealTable();
+    const onGameStateChange = vi.fn();
+
+    const { unmount } = renderHook(() =>
+      useZilchTableFlow({
+        gameState,
+        onGameStateChange,
+        canRunZilchRevealTimer: true,
+      }),
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(3100);
+    });
+    expect(onGameStateChange).toHaveBeenCalledTimes(1);
+    expect(onGameStateChange.mock.calls[0]![0].zilch?.currentPlayerId).not.toBe(
+      gameState.zilch?.currentPlayerId,
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
+    expect(onGameStateChange).toHaveBeenCalledTimes(1);
+
+    unmount();
+    vi.useRealTimers();
+  });
+
+  it('does not auto-advance when canRunZilchRevealTimer is false', async () => {
+    vi.useFakeTimers();
+    const gameState = zilchRevealTable();
+    const onGameStateChange = vi.fn();
+
+    renderHook(() =>
+      useZilchTableFlow({
+        gameState,
+        onGameStateChange,
+        canRunZilchRevealTimer: false,
+      }),
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
+    expect(onGameStateChange).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+});

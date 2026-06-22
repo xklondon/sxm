@@ -127,6 +127,7 @@ export function assertActionAuthorized(state: GameState, ctx: ActionContext): vo
     case 'zilchKeepCombination':
     case 'zilchBankTurn':
     case 'zilchQuitTurn':
+    case 'zilchAdvanceAfterReveal':
       assertZilchPlayerTurn(state, ctx);
       return;
 

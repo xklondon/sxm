@@ -75,7 +75,13 @@ export function ZilchPanel({
     handleKeepAndRoll,
     handleBank,
     actionError,
-  } = useZilchTableFlow({ gameState, onGameStateChange, onlineDispatch });
+    zilchRevealCountdown,
+  } = useZilchTableFlow({
+    gameState,
+    onGameStateChange,
+    onlineDispatch,
+    canRunZilchRevealTimer: canAct,
+  });
 
   const [starterSpinActive, setStarterSpinActive] = useState(false);
   const [randomiserIndex, setRandomiserIndex] = useState(0);
@@ -212,7 +218,11 @@ export function ZilchPanel({
   const rollMs = zilch?.diceAnimation.durationMs ?? gameState.zilchSettings.diceAnimation.diceAnimationMs;
   const visualRollMs = Math.min(900, Math.max(500, rollMs));
   const showValues = Boolean(zilch && !rolling);
-  const controlsDisabled = rolling || onlineActionInFlight || !canAct;
+  const controlsDisabled =
+    rolling ||
+    onlineActionInFlight ||
+    !canAct ||
+    zilch?.phase === 'zilch-reveal';
   const showPracticeEnd = Boolean(
     isPracticeTable && zilch?.phase === 'completed' && zilch.winnerPlayerId,
   );
@@ -281,6 +291,7 @@ export function ZilchPanel({
         playerNames={playerNames}
         canAct={canAct}
         actionError={actionError}
+        zilchRevealCountdown={zilchRevealCountdown}
       />
 
       {!zilch && playerOrder.length > 0 && (
@@ -336,6 +347,7 @@ export function ZilchPanel({
                   showValues={showValues}
                   animSeed={animSeed}
                   controlsDisabled={controlsDisabled}
+                  zilchRevealCountdown={zilchRevealCountdown}
                   onKeepAndRoll={handleKeepAndRoll}
                   onRollDice={handleRollDice}
                   onBank={handleBank}

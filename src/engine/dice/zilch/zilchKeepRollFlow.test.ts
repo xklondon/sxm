@@ -11,6 +11,7 @@ import {
   randomiseStarter,
   rollDice,
   startTurn,
+  advanceAfterZilchReveal,
 } from './zilchEngine';
 import { detectZilchCombinations, isDieScoringSelectable } from './zilchRules';
 import {
@@ -161,7 +162,7 @@ describe('Zilch keep/roll flow', () => {
     expect(triple?.diceIds).toHaveLength(3);
   });
 
-  it('zilch after a later roll resets turnScore to 0 and advances turn', () => {
+  it('zilch after a later roll resets turnScore to 0 and advances turn after reveal', () => {
     let state = createZilchGame([P1, 'p2'], DEFAULT_ZILCH_SETTINGS);
     state = randomiseStarter(state, () => 0);
     state = rollAndReveal(state, [1, 2, 3, 4, 5, 6]);
@@ -173,7 +174,11 @@ describe('Zilch keep/roll flow', () => {
       ...state,
       diceAnimation: { isRolling: true, pendingValues: [2, 3, 4, 6, 2] },
     });
+    expect(state.phase).toBe('zilch-reveal');
+    expect(state.currentPlayerId).toBe(P1);
     expect(state.turnScore).toBe(0);
+    expect(state.dice.length).toBeGreaterThan(0);
+    state = advanceAfterZilchReveal(state, state.zilchRevealUntil ?? Date.now());
     expect(state.currentPlayerId).toBe('p2');
     expect(state.history.some((event) => event.type === 'zilch' && event.playerId === P1)).toBe(true);
   });

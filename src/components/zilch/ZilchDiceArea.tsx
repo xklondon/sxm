@@ -18,6 +18,7 @@ interface ZilchDiceAreaProps {
   showValues: boolean;
   animSeed: number;
   controlsDisabled: boolean;
+  zilchRevealCountdown?: number;
   onKeepAndRoll: (combinationId: string) => void;
   onRollDice: () => void;
   onBank: () => void;
@@ -42,6 +43,7 @@ export function ZilchDiceArea({
   showValues,
   animSeed,
   controlsDisabled,
+  zilchRevealCountdown = 0,
   onKeepAndRoll,
   onRollDice,
   onBank,
@@ -63,7 +65,8 @@ export function ZilchDiceArea({
 
   const activeDice = diceToRender.filter((die) => !die.isKept);
   const keptOnTable = diceToRender.filter((die) => die.isKept);
-  const canSelect = canKeepCombination(zilch) && showValues && !controlsDisabled;
+  const isZilchReveal = zilch.phase === 'zilch-reveal';
+  const canSelect = canKeepCombination(zilch) && showValues && !controlsDisabled && !isZilchReveal;
   const canKeepSelected = canKeepSelectedDice(zilch, selectedDiceIds);
   const turnover = isTurnoverRoll(zilch);
 
@@ -103,37 +106,43 @@ export function ZilchDiceArea({
     const isSelected = selectedKey === selectionKey([die.id]) || selectedDiceIds.includes(die.id);
     const scoringSelectable = isDieScoringSelectable(die, zilch.availableCombinations);
     const invalidSelected = isSelected && selectedDiceIds.length > 0 && !canKeepSelected;
+    const dieCount = activeDice.length || 6;
+    const pathStyle = rolling
+      ? (dieThrowStyle(index, animSeed + index, dieCount) as CSSProperties)
+      : undefined;
     return (
-      <button
+      <div
         key={die.id}
-        type="button"
-        className={`zilch-die${rolling ? ' zilch-die--throw' : ''}${
-          die.isKept ? ' zilch-die--kept' : ''
-        }${isSelected ? ' zilch-die--selected' : ''}${
-          invalidSelected ? ' zilch-die--invalid' : ''
-        }${selectable && scoringSelectable && !die.isKept ? ' zilch-die--selectable' : ''}${
-          selectable && !die.isKept && !scoringSelectable ? ' zilch-die--non-scoring' : ''
+        className={`zilch-die__path${
+          rolling ? ' zilch-die__path--throw' : ' zilch-die__path--settled'
         }`}
-        style={
-          rolling
-            ? (dieThrowStyle(index, animSeed + index) as CSSProperties)
-            : undefined
-        }
-        onClick={() => toggleDieSelection(die)}
-        disabled={!selectable || die.isKept || !scoringSelectable}
-        aria-pressed={isSelected}
-        aria-label={
-          rolling
-            ? 'Rolling'
-            : die.isKept
-              ? `Kept die ${die.value}`
-              : scoringSelectable
-                ? `Select die ${die.value}`
-                : `Die ${die.value}, not scoring`
-        }
+        style={pathStyle}
       >
-        <DieFace value={die.value} rolling={rolling || !showValues} />
-      </button>
+        <button
+          type="button"
+          className={`zilch-die${rolling ? ' zilch-die--throw' : ''}${
+            die.isKept ? ' zilch-die--kept' : ''
+          }${isSelected ? ' zilch-die--selected' : ''}${
+            invalidSelected ? ' zilch-die--invalid' : ''
+          }${selectable && scoringSelectable && !die.isKept ? ' zilch-die--selectable' : ''}${
+            selectable && !die.isKept && !scoringSelectable ? ' zilch-die--non-scoring' : ''
+          }`}
+          onClick={() => toggleDieSelection(die)}
+          disabled={!selectable || die.isKept || !scoringSelectable}
+          aria-pressed={isSelected}
+          aria-label={
+            rolling
+              ? 'Rolling'
+              : die.isKept
+                ? `Kept die ${die.value}`
+                : scoringSelectable
+                  ? `Select die ${die.value}`
+                  : `Die ${die.value}, not scoring`
+          }
+        >
+          <DieFace value={die.value} rolling={rolling || !showValues} />
+        </button>
+      </div>
     );
   }
 
@@ -145,7 +154,24 @@ export function ZilchDiceArea({
         </p>
       )}
 
-      <div className="zilch-table__roll-zone" aria-label="Dice on table">
+      {isZilchReveal && (
+        <p className="zilch-table__zilch-reveal" role="status">
+          <strong>ZILCH</strong> — no scoring dice. Turn score lost.
+          {zilchRevealCountdown > 0 && (
+            <span className="zilch-table__zilch-reveal-countdown">
+              {' '}
+              Next player in {zilchRevealCountdown}…
+            </span>
+          )}
+        </p>
+      )}
+
+      <div
+        className={`zilch-table__roll-zone${
+          !rolling && activeDice.length > 0 ? ' zilch-table__roll-zone--settled' : ''
+        }`}
+        aria-label="Dice on table"
+      >
         {activeDice.map((die, index) => renderDie(die, index, canSelect))}
         {activeDice.length === 0 && zilch.phase === 'player-turn' && !rolling && !turnover && (
           <span className="zilch-table__hint">Press Roll to throw dice</span>

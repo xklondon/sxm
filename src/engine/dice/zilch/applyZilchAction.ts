@@ -7,6 +7,7 @@ import {
   completeDiceRoll,
   confirmStarter,
   createInitialZilchState,
+  advanceAfterZilchReveal,
   keepCombination,
   randomiseStarter,
   rollDice,
@@ -40,6 +41,7 @@ export const ZILCH_GAMEPLAY_ACTIONS = [
   'zilchKeepCombination',
   'zilchBankTurn',
   'zilchQuitTurn',
+  'zilchAdvanceAfterReveal',
 ] as const;
 
 export type ZilchGameplayAction = (typeof ZILCH_GAMEPLAY_ACTIONS)[number];
@@ -83,6 +85,9 @@ export function applyZilchActionToState(
       break;
     case 'zilchQuitTurn':
       zilch = bankTurn(zilch);
+      break;
+    case 'zilchAdvanceAfterReveal':
+      zilch = advanceAfterZilchReveal(zilch);
       break;
     default:
       throw new Error(`Unknown Zilch action: ${action}`);

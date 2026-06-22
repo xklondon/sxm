@@ -191,8 +191,10 @@ describe('zilchEngine', () => {
       dice: dice([1, 1, 1, 1, 1, 1]),
     };
     state = completeDiceRoll(state);
+    expect(state.phase).toBe('zilch-reveal');
     expect(state.turnScore).toBe(0);
     expect(state.totalScoresByPlayerId[P1]).toBe(0);
+    expect(state.dice.length).toBeGreaterThan(0);
   });
 
   it('dice animation duration fixed and random', () => {

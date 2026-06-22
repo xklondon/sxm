@@ -13,15 +13,21 @@ interface UseZilchTableFlowOptions {
   gameState: GameState;
   onGameStateChange: (state: GameState) => void;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
+  /** When true, this client may dispatch zilch-reveal auto-advance (controller/host). */
+  canRunZilchRevealTimer?: boolean;
 }
 
 export function useZilchTableFlow({
   gameState,
   onGameStateChange,
   onlineDispatch,
+  canRunZilchRevealTimer = true,
 }: UseZilchTableFlowOptions) {
   const rollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const zilchRevealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const zilchRevealDispatchKeyRef = useRef<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [zilchRevealCountdown, setZilchRevealCountdown] = useState(0);
 
   const dispatch = useCallback(
     async (type: string, payload?: Record<string, unknown>) => {
@@ -83,6 +89,61 @@ export function useZilchTableFlow({
     gameState.zilch?.diceAnimation.startedAt,
     onGameStateChange,
     onlineDispatch,
+  ]);
+
+  useEffect(() => {
+    const zilch = gameState.zilch;
+    if (zilch?.phase !== 'zilch-reveal') {
+      setZilchRevealCountdown(0);
+      return;
+    }
+    const until = zilch.zilchRevealUntil ?? Date.now();
+    const tick = () => {
+      setZilchRevealCountdown(Math.max(0, Math.ceil((until - Date.now()) / 1000)));
+    };
+    tick();
+    const interval = setInterval(tick, 200);
+    return () => clearInterval(interval);
+  }, [gameState.zilch?.phase, gameState.zilch?.zilchRevealUntil]);
+
+  useEffect(() => {
+    const zilch = gameState.zilch;
+    if (zilchRevealTimerRef.current) {
+      clearTimeout(zilchRevealTimerRef.current);
+      zilchRevealTimerRef.current = null;
+    }
+    if (zilch?.phase !== 'zilch-reveal' || !canRunZilchRevealTimer) {
+      if (zilch?.phase !== 'zilch-reveal') {
+        zilchRevealDispatchKeyRef.current = null;
+      }
+      return;
+    }
+
+    const dispatchKey = `${zilch.gameId}:${zilch.zilchRevealUntil}:${zilch.currentPlayerId}`;
+    if (zilchRevealDispatchKeyRef.current === dispatchKey) {
+      return;
+    }
+
+    const until = zilch.zilchRevealUntil ?? Date.now() + 3000;
+    const delay = Math.max(0, until - Date.now());
+    zilchRevealTimerRef.current = setTimeout(() => {
+      zilchRevealDispatchKeyRef.current = dispatchKey;
+      void dispatch('zilchAdvanceAfterReveal', {});
+    }, delay);
+
+    return () => {
+      if (zilchRevealTimerRef.current) {
+        clearTimeout(zilchRevealTimerRef.current);
+        zilchRevealTimerRef.current = null;
+      }
+    };
+  }, [
+    canRunZilchRevealTimer,
+    dispatch,
+    gameState.zilch?.phase,
+    gameState.zilch?.zilchRevealUntil,
+    gameState.zilch?.currentPlayerId,
+    gameState.zilch?.gameId,
   ]);
 
   const handleStartGame = useCallback(() => {
@@ -181,5 +242,6 @@ export function useZilchTableFlow({
     handleQuitTurn,
     actionError,
     clearActionError,
+    zilchRevealCountdown,
   };
 }

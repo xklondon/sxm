@@ -28,6 +28,7 @@ export const TABLE_ACTIONS = [
   'zilchKeepCombination',
   'zilchBankTurn',
   'zilchQuitTurn',
+  'zilchAdvanceAfterReveal',
   'zilchStartGame',
 ] as const;
 

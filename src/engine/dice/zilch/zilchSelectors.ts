@@ -44,7 +44,7 @@ export function checkZilchGameEnd(state: ZilchGameState): ZilchGameState {
 }
 
 export function canRollDice(state: ZilchGameState): boolean {
-  if (state.diceAnimation.isRolling) {
+  if (state.diceAnimation.isRolling || state.phase === 'zilch-reveal') {
     return false;
   }
   return isActiveZilchTurnPhase(state);
@@ -78,7 +78,11 @@ export function canKeepSelectedDice(state: ZilchGameState, selectedDiceIds: stri
 }
 
 export function canBank(state: ZilchGameState): boolean {
-  if (state.phase === 'zilch' || state.phase === 'completed') {
+  if (
+    state.phase === 'zilch' ||
+    state.phase === 'zilch-reveal' ||
+    state.phase === 'completed'
+  ) {
     return false;
   }
   return (
@@ -158,6 +162,16 @@ export function selectionHintForDice(
   return 'Selected dice are not a valid scoring set.';
 }
 
+export function zilchRevealSecondsRemaining(
+  state: ZilchGameState,
+  now: number = Date.now(),
+): number {
+  if (state.phase !== 'zilch-reveal' || !state.zilchRevealUntil) {
+    return 0;
+  }
+  return Math.max(0, Math.ceil((state.zilchRevealUntil - now) / 1000));
+}
+
 export function commandStatusForPhase(
   state: ZilchGameState,
   names: Record<string, string>,
@@ -177,6 +191,8 @@ export function commandStatusForPhase(
     }
     case 'zilch':
       return 'ZILCH — turn score lost.';
+    case 'zilch-reveal':
+      return 'ZILCH — no scoring dice. Turn score lost.';
     case 'awaiting-keep-selection':
       return 'Select scoring dice to keep.';
     default:

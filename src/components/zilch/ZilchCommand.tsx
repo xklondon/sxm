@@ -6,6 +6,7 @@ interface ZilchCommandProps {
   playerNames: Record<string, string>;
   canAct: boolean;
   actionError?: string | null;
+  zilchRevealCountdown?: number;
   className?: string;
 }
 
@@ -14,6 +15,7 @@ export function ZilchCommand({
   playerNames,
   canAct,
   actionError = null,
+  zilchRevealCountdown = 0,
   className = '',
 }: ZilchCommandProps) {
   const message = zilch
@@ -21,7 +23,7 @@ export function ZilchCommand({
     : 'Invite players, then start the Zilch game.';
 
   const bannerClass =
-    zilch?.phase === 'zilch' || zilch?.lastZilchPlayerId
+    zilch?.phase === 'zilch-reveal' || zilch?.phase === 'zilch' || zilch?.lastZilchPlayerId
       ? ' zilch-panel__banner--zilch'
       : zilch?.phase === 'final-round'
         ? ' zilch-panel__banner--final'
@@ -38,6 +40,12 @@ export function ZilchCommand({
       )}
       <p className={`zilch-panel__banner${bannerClass}${className}`} role="status">
         {message}
+        {zilch?.phase === 'zilch-reveal' && zilchRevealCountdown > 0 && (
+          <span className="zilch-panel__banner-countdown">
+            {' '}
+            Next player in {zilchRevealCountdown}…
+          </span>
+        )}
       </p>
     </>
   );

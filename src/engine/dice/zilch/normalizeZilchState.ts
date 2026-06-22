@@ -1,5 +1,9 @@
 import type { ZilchGameState } from './zilchTypes';
-import { advanceToNextPlayer, startTurn } from './zilchEngine';
+import {
+  advanceToNextPlayer,
+  advanceAfterZilchReveal,
+  startTurn,
+} from './zilchEngine';
 
 /** Repair stuck or legacy Zilch phases after load/hydration. */
 export function normalizeZilchState(zilch: ZilchGameState): ZilchGameState {
@@ -44,6 +48,13 @@ export function normalizeZilchState(zilch: ZilchGameState): ZilchGameState {
         diceAnimation: { isRolling: false },
       };
     }
+  }
+
+  if (next.phase === 'zilch-reveal') {
+    if (next.zilchRevealUntil && Date.now() >= next.zilchRevealUntil) {
+      return advanceAfterZilchReveal(next);
+    }
+    return next;
   }
 
   if (next.phase === 'zilch') {

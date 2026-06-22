@@ -72,6 +72,7 @@ export function createInitialZilchState(
     playersRemainingFinalTurn: null,
     winnerPlayerId: null,
     diceAnimation: { isRolling: false },
+    zilchRevealUntil: null,
     history: [],
     wagerMetadata: options.wagerMetadata,
   };

@@ -46,6 +46,9 @@ export function playerBoxStatus(
   if (!zilch) {
     return 'setup';
   }
+  if (zilch.phase === 'zilch-reveal' && zilch.currentPlayerId === playerId) {
+    return 'zilch';
+  }
   if (zilch.phase === 'completed' && zilch.winnerPlayerId === playerId) {
     return 'winner';
   }
@@ -187,18 +190,32 @@ export function seatPositionClass(index: number, total: number): string {
   return seatGridSlot(index, total);
 }
 
-/** Per-die throw trajectory (visual only). */
+/** Per-die throw trajectory (visual only) — paths land on a non-overlapping grid. */
 export function dieThrowStyle(
   index: number,
   seed: number,
+  count = 6,
 ): Record<string, string> {
-  const angle = (index / 6) * Math.PI * 2 + seed * 0.7;
-  const startX = Math.cos(angle) * 34;
-  const startY = Math.sin(angle) * 22 + 28;
-  const endX = (index % 3) * 44 - 44 + (seed % 13) - 6;
-  const endY = (Math.floor(index / 3) % 2) * 34 - 10 + (seed % 9);
-  const midX = (startX + endX) / 2 + (seed % 19) - 9;
-  const midY = (startY + endY) / 2 - 22 - (seed % 11);
+  const cols = Math.min(3, Math.max(1, count));
+  const rows = Math.ceil(count / cols);
+  const gap = 9;
+  const size = 40;
+  const col = index % cols;
+  const row = Math.floor(index / cols);
+  const gridW = cols * size + (cols - 1) * gap;
+  const gridH = rows * size + (rows - 1) * gap;
+  const endX = col * (size + gap) - gridW / 2 + size / 2;
+  const endY = row * (size + gap) - gridH / 2 + size / 2;
+
+  const angle = (index / Math.max(count, 1)) * Math.PI * 2 + seed * 0.55;
+  const startX = Math.cos(angle) * 52;
+  const startY = Math.sin(angle) * 34 + 38;
+  const midX = (startX + endX) / 2 + ((seed + index * 7) % 15) - 7;
+  const midY = (startY + endY) / 2 - 26 - ((seed + index * 5) % 11);
+  const rotX = 300 + ((index * 47 + seed) % 420);
+  const rotY = 260 + ((index * 61 + seed * 2) % 380);
+  const rotZ = 220 + ((index * 53 + seed * 3) % 460);
+
   return {
     '--die-index': String(index),
     '--start-x': `${startX}px`,
@@ -207,5 +224,10 @@ export function dieThrowStyle(
     '--mid-y': `${midY}px`,
     '--end-x': `${endX}px`,
     '--end-y': `${endY}px`,
+    '--die-path-x': `${endX}px`,
+    '--die-path-y': `${endY}px`,
+    '--die-rot-x': `${rotX}deg`,
+    '--die-rot-y': `${rotY}deg`,
+    '--die-rot-z': `${rotZ}deg`,
   };
 }

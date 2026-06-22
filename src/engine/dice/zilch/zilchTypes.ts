@@ -12,6 +12,7 @@ export type ZilchPhase =
   | 'randomising-starter'
   | 'player-turn'
   | 'awaiting-keep-selection'
+  | 'zilch-reveal'
   | 'zilch'
   | 'final-round'
   | 'completed';
@@ -33,6 +34,7 @@ export function mapZilchPhaseToProtocol(phase: ZilchPhase): ZilchProtocolPhase {
     case 'awaiting-keep-selection':
       return 'selecting';
     case 'zilch':
+    case 'zilch-reveal':
       return 'zilched';
     case 'player-turn':
       return 'banking';
@@ -129,6 +131,8 @@ export interface ZilchGameState {
   playersRemainingFinalTurn: string[] | null;
   winnerPlayerId: string | null;
   diceAnimation: ZilchDiceAnimationState;
+  /** Wall-clock ms when zilch-reveal auto-advance is allowed (visual beat before next player). */
+  zilchRevealUntil: number | null;
   history: ZilchHistoryEvent[];
   wagerMetadata?: Record<string, unknown>;
 }

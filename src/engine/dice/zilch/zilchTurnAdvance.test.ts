@@ -14,6 +14,7 @@ import {
   randomiseStarter,
   rollDice,
   startTurn,
+  advanceAfterZilchReveal,
 } from './zilchEngine';
 import { DEFAULT_ZILCH_SETTINGS } from './settings';
 import {
@@ -77,7 +78,7 @@ describe('Zilch turn advancement', () => {
     expect(canRollDice(state)).toBe(true);
   });
 
-  it('zilch roll advances to next player', () => {
+  it('zilch roll enters reveal then advances to next player', () => {
     let state = createZilchGame(['p1', 'p2'], DEFAULT_ZILCH_SETTINGS);
     state = randomiseStarter(state, () => 0);
     state = startTurn(state, 'p1');
@@ -87,6 +88,10 @@ describe('Zilch turn advancement', () => {
       diceAnimation: { isRolling: true, pendingValues: [2, 3, 4, 6, 2, 3] },
       dice: dice([2, 3, 4, 6, 2, 3]),
     });
+    expect(state.phase).toBe('zilch-reveal');
+    expect(state.currentPlayerId).toBe('p1');
+    expect(state.dice.length).toBeGreaterThan(0);
+    state = advanceAfterZilchReveal(state, state.zilchRevealUntil ?? Date.now());
     expect(state.currentPlayerId).toBe('p2');
     expect(state.turnScore).toBe(0);
     expect(canRollDice(state)).toBe(true);

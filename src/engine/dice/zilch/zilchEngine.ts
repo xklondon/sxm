@@ -8,6 +8,8 @@ import type {
 import { detectZilchCombinations } from './zilchRules';
 import { appendEvent, generateId } from './zilchState';
 import { getZilchWinnerId } from './zilchSelectors';
+
+export const ZILCH_REVEAL_MS = 3000;
 import { resolveDiceAnimationDurationMs } from './settings';
 
 export { createZilchGame, createInitialZilchState, resetTurn, startZilchGame } from './zilchState';
@@ -143,7 +145,7 @@ export function completeDiceRoll(state: ZilchGameState): ZilchGameState {
 
   const combinations = detectZilchCombinations(dice);
   if (combinations.length === 0) {
-    return resolveZilch({
+    return beginZilchReveal({
       ...state,
       dice,
       diceAnimation: { isRolling: false },
@@ -357,10 +359,14 @@ export function passTurn(state: ZilchGameState): ZilchGameState {
 }
 
 export function endTurnWithZilch(state: ZilchGameState): ZilchGameState {
-  return resolveZilch(state);
+  return beginZilchReveal(state);
 }
 
-export function resolveZilch(state: ZilchGameState): ZilchGameState {
+/** Show zilch dice and hold current player highlighted until reveal timer elapses. */
+export function beginZilchReveal(
+  state: ZilchGameState,
+  now: number = Date.now(),
+): ZilchGameState {
   const playerId = state.currentPlayerId;
   if (!playerId) {
     throw new Error('No active player');
@@ -371,14 +377,13 @@ export function resolveZilch(state: ZilchGameState): ZilchGameState {
   const next = incrementRoundsPlayed(
     {
       ...state,
-      phase: 'zilch',
+      phase: 'zilch-reveal',
       turnScore: 0,
-      dice: [],
-      keptDice: [],
       availableCombinations: [],
       keptThisRoll: false,
       diceAnimation: { isRolling: false },
       lastZilchPlayerId: playerId,
+      zilchRevealUntil: now + ZILCH_REVEAL_MS,
       history: appendEvent(state, 'zilch', playerId),
     },
     playerId,
@@ -388,17 +393,49 @@ export function resolveZilch(state: ZilchGameState): ZilchGameState {
     throw new Error('Zilch must not change total game score');
   }
 
+  return next;
+}
+
+/** After reveal beat — clear dice and pass turn to the next player. */
+export function advanceAfterZilchReveal(
+  state: ZilchGameState,
+  now: number = Date.now(),
+): ZilchGameState {
+  if (state.phase !== 'zilch-reveal') {
+    return state;
+  }
+  if (state.zilchRevealUntil && now < state.zilchRevealUntil) {
+    return state;
+  }
+
+  const playerId = state.currentPlayerId;
+  let next: ZilchGameState = {
+    ...state,
+    phase: 'zilch',
+    zilchRevealUntil: null,
+    dice: [],
+    keptDice: [],
+    availableCombinations: [],
+    diceAnimation: { isRolling: false },
+  };
+
   if (next.mode === 'fixed_rounds' && allPlayersReachedRoundLimit(next)) {
     return {
       ...next,
       phase: 'completed',
       winnerPlayerId: getZilchWinnerId(next),
       currentPlayerId: null,
-      history: appendEvent(next, 'game-completed', playerId),
+      history: appendEvent(next, 'game-completed', playerId ?? undefined),
     };
   }
 
   return advanceToNextPlayer(next);
+}
+
+/** @deprecated use beginZilchReveal — kept for legacy callers/tests. */
+export function resolveZilch(state: ZilchGameState): ZilchGameState {
+  const revealed = beginZilchReveal(state);
+  return advanceAfterZilchReveal(revealed, revealed.zilchRevealUntil ?? Date.now());
 }
 
 function incrementRoundsPlayed(state: ZilchGameState, playerId: string): ZilchGameState {
