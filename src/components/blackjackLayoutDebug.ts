@@ -7,6 +7,9 @@ import {
   FULL_TABLE_SHELL_ZONE_ORDER,
 } from './blackjackLayoutContract';
 import {
+  formatCardPlacementContractLabel,
+} from './blackjackCardPlacementContract';
+import {
   CSS_OWNERSHIP,
   LAYOUT_ZONES,
   LAYOUT_ZONE_CLASS,
@@ -42,7 +45,7 @@ export function resolveLayoutModeFromStrings(
 
 export const BLACKJACK_LAYOUT_DEBUG_PARAM = 'layoutDebug';
 /** Build marker — confirms production bundle includes this audit pass. */
-export const BLACKJACK_UI_FIX_VERSION = 'ui-reveal-gate-stabilization-1';
+export const BLACKJACK_UI_FIX_VERSION = 'card-placement-lock-v1';
 
 export { BLACKJACK_CSS_LAYOUT_ROUTE_VERSION, BLACKJACK_TABLE_LAYOUT_SHELL_NAME, CANONICAL_BLACKJACK_CSS_IMPORT_ORDER };
 
@@ -107,6 +110,11 @@ export interface LayoutDebugComputedSnapshot {
   cardsZoneOverflow: string;
   cardStackBounds: string;
   overlapWarnings: string[];
+  cardPlacementContract: string;
+  cardsZoneBounds: string;
+  commandZoneBounds: string;
+  boxAmountBounds: string;
+  heroCardsBounds: string;
 }
 
 function readOverflowChain(el: Element | null): string {
@@ -217,14 +225,28 @@ export function readLayoutDebugComputedSnapshot(root: HTMLElement | null): Layou
   const playerRowRect = playerRow?.getBoundingClientRect();
   const trayRect = trayZone?.getBoundingClientRect();
   const commandZone = root.querySelector('.bj-table-zone--summary');
-  const cardsZone = root.querySelector('.bj-table-zone--cards.bj-cards-area--table');
+  const cardsZone =
+    root.querySelector('.bj-table-zone--cards.bj-cards-area--table') ??
+    root.querySelector('.bj-table-zone--cards.bj-cards-area--hero') ??
+    root.querySelector('.bj-table-zone--cards');
   const cardsZoneStyle = styleOf(cardsZone);
   const commandRect = commandZone?.getBoundingClientRect();
   const cardsRect = cardsZone?.getBoundingClientRect();
   const boxesRect = boxesZone?.getBoundingClientRect();
 
+  const boxAmounts = root.querySelectorAll(
+    '.bj-phone-view__box-value--card-column-below, .bj-phone-view__mini-hand-value',
+  );
+  const boxAmountBounds = Array.from(boxAmounts)
+    .slice(0, 6)
+    .map((el, i) => `amt${i + 1}:${formatBounds(el.getBoundingClientRect())}`)
+    .join(' · ');
+
+  const heroCards = root.querySelector('.bj-card-desktop-hero__cards, .bj-phone-view__cards');
+  const heroCardsRect = heroCards?.getBoundingClientRect();
+
   const cardStacks = root.querySelectorAll(
-    '.bj-arc__cards-stack, .bj-arc__cards--stack-vertical, .bj-card-desktop-hero__cards',
+    '.bj-arc__cards-stack, .bj-arc__cards--stack-vertical, .bj-card-desktop-hero__cards, .bj-phone-view__cards',
   );
   const stackBounds = Array.from(cardStacks)
     .slice(0, 6)
@@ -234,22 +256,32 @@ export function readLayoutDebugComputedSnapshot(root: HTMLElement | null): Layou
   const overlapWarnings: string[] = [];
   for (const stack of cardStacks) {
     const stackRect = stack.getBoundingClientRect();
+    if (cardsRect && stackRect.top < cardsRect.top - 2) {
+      overlapWarnings.push('stack-clipped-top');
+      break;
+    }
+  }
+  if (heroCardsRect && heroCardsRect.height < 4) {
+    overlapWarnings.push('hero-cards-height-zero');
+  }
+  for (const stack of cardStacks) {
+    const stackRect = stack.getBoundingClientRect();
     if (commandRect && rectsOverlap(stackRect, commandRect)) {
-      overlapWarnings.push('cards-vs-command');
+      overlapWarnings.push('stack-overlaps-command');
       break;
     }
   }
   for (const stack of cardStacks) {
     const stackRect = stack.getBoundingClientRect();
     if (boxesRect && rectsOverlap(stackRect, boxesRect)) {
-      overlapWarnings.push('cards-vs-boxes');
+      overlapWarnings.push('stack-overlaps-box');
       break;
     }
   }
   for (const stack of cardStacks) {
     const stackRect = stack.getBoundingClientRect();
     if (trayRect && rectsOverlap(stackRect, trayRect)) {
-      overlapWarnings.push('cards-vs-tray');
+      overlapWarnings.push('stack-overlaps-tray');
       break;
     }
   }
@@ -259,7 +291,9 @@ export function readLayoutDebugComputedSnapshot(root: HTMLElement | null): Layou
 
   const deviceView = root.getAttribute('data-device-view') ?? 'desktop';
   const viewMode = root.getAttribute('data-view-mode') ?? 'full';
-  const layoutMode = resolveLayoutModeFromStrings(deviceView, viewMode);
+  const layoutMode = resolveLayoutModeFromStrings(deviceView, viewMode) as LayoutMode;
+  const placementAttr =
+    cardsZone instanceof HTMLElement ? cardsZone.getAttribute('data-card-placement') : null;
 
   return {
     layoutMode,
@@ -290,6 +324,11 @@ export function readLayoutDebugComputedSnapshot(root: HTMLElement | null): Layou
       : 'n/a',
     cardStackBounds: stackBounds || 'n/a',
     overlapWarnings,
+    cardPlacementContract: `${formatCardPlacementContractLabel(layoutMode)}${placementAttr ? ` · attr=${placementAttr}` : ''}`,
+    cardsZoneBounds: formatBounds(cardsRect),
+    commandZoneBounds: formatBounds(commandRect),
+    boxAmountBounds: boxAmountBounds || 'n/a',
+    heroCardsBounds: formatBounds(heroCardsRect),
   };
 }
 

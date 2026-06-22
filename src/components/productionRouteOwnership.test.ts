@@ -339,7 +339,9 @@ describe('Blackjack layout — desktop cards zone regressions (v1.1 follow-up)',
         /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*\}/,
       )?.[0] ?? '';
     expect(tableCardsRule).toContain('justify-content: flex-end');
-    expect(tableCardsRule).toContain('overflow: hidden');
+    expect(tableCardsRule).toContain('overflow-x: clip');
+    expect(tableCardsRule).toContain('overflow-y: visible');
+    expect(tableCardsRule).not.toContain('overflow: hidden');
     expect(tableCardsRule).not.toContain('justify-content: flex-start');
   });
 

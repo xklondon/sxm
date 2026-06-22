@@ -19,6 +19,7 @@ export interface BlackjackTableLayoutShellProps {
   actions: ReactNode;
   cardsArea: ReactNode;
   cardsAreaMode: BlackjackCardsAreaMode;
+  deviceView?: 'desktop' | 'mobile';
   playerBoxes: ReactNode;
   chipTray: ReactNode;
   layoutDebug?: boolean;
@@ -37,6 +38,7 @@ export function BlackjackTableLayoutShell({
   actions,
   cardsArea,
   cardsAreaMode,
+  deviceView = 'desktop',
   playerBoxes,
   chipTray,
   layoutDebug = false,
@@ -60,7 +62,7 @@ export function BlackjackTableLayoutShell({
         {summaryExtras}
       </BlackjackCommandZone>
 
-      <BlackjackCardsAreaZone mode={cardsAreaMode}>
+      <BlackjackCardsAreaZone mode={cardsAreaMode} deviceView={deviceView}>
         {feltClothLayer}
         {cardsArea}
       </BlackjackCardsAreaZone>

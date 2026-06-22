@@ -2613,6 +2613,7 @@ export function BlackjackPanel({
               )
             }
             cardsAreaMode={viewMode === 'full' ? 'table' : 'hero'}
+            deviceView={deviceView}
             playerBoxes={renderPlayerBoxesArc()}
             chipTray={renderTrayInner()}
           />

@@ -177,26 +177,23 @@ describe('blackjackUiRenderContract — views use gated outcome markers', () => 
 });
 
 describe('blackjackUiRenderContract — layout overlap guards', () => {
-  it('desktop Full Table cards zone clips stacks (no bleed into command zone)', () => {
+  it('desktop Full Table cards zone uses clip-x (not overflow:hidden clipping workaround)', () => {
     const rule =
       SHELL_CSS.match(
         /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*\}/,
       )?.[0] ?? '';
-    expect(rule).toContain('overflow: hidden');
+    expect(rule).toContain('overflow-x: clip');
+    expect(rule).toContain('overflow-y: visible');
+    expect(rule).not.toContain('overflow: hidden');
     expect(rule).toContain('justify-content: flex-end');
   });
 
-  it('mobile Full Table cards zone clips stacks and does not margin-push arc into boxes', () => {
+  it('mobile Full Table cards zone uses clip-x and bottom-pins stacks', () => {
     expect(SHELL_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*?overflow:\s*hidden/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*overflow-x:\s*clip/,
     );
-    const mobileArcRule =
-      CARD_AREA_CSS.match(
-        /@media[\s\S]*?\.bj-view-full-mobile[\s\S]*?\.bj-table-slot-row\.bj-arc--cards\s*\{[^}]*\}/,
-      )?.[0] ?? '';
-    expect(mobileArcRule).toContain('margin-top: 0');
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile[\s\S]*?\.bj-arc__play-zone[\s\S]*?justify-content:\s*flex-end/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[\s\S]*justify-content:\s*flex-end/,
     );
   });
 

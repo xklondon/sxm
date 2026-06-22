@@ -47,9 +47,9 @@
     justify-content: center;
     width: 100%;
     max-width: 100%;
-    min-height: 0;
+    min-height: min(5.5rem, 100%);
     max-height: 100%;
-    overflow: hidden;
+    overflow: visible;
     gap: 0;
   }
 
@@ -65,12 +65,12 @@
   }
 
   .bj-view-card-desktop .bj-card-desktop-hero__card.ds-card--hero {
-    width: auto;
+    width: min(var(--bj-card-hero-card-width), 100%);
     max-width: min(var(--bj-card-hero-card-width), 100%);
-    max-height: min(var(--bj-card-hero-card-max-height), 100%);
+    max-height: var(--bj-card-hero-card-max-height);
     min-width: 5.625rem;
-    min-height: 0;
-    height: min(var(--bj-card-hero-card-max-height), 100%);
+    min-height: min(5.5rem, var(--bj-card-hero-card-max-height));
+    height: auto;
     aspect-ratio: var(--bj-card-hero-card-aspect-ratio, 5 / 7);
     flex: 0 0 auto;
     box-sizing: border-box;

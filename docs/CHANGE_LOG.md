@@ -15,6 +15,21 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-22 — Card placement contract lock (per-mode cards zone)
+
+Structural layout lock — no gameplay/reveal/command changes:
+
+- **`blackjackCardPlacementContract.ts`** — per-mode placement inside the cards zone:
+  `desktopFull`/`mobileFull` = box-column anchored just above box value;
+  `desktopCard`/`mobileCard` = centered hero.
+- **Removed `overflow:hidden` clipping workaround** on Full Table cards zones — replaced with
+  `overflow-x: clip; overflow-y: visible` so stack tops are not clipped; stacks sized/overlapped to fit.
+- **Desktop Full Table:** `align-self:flex-end` replaces `margin-top:auto` on card area; taller stack zone formula.
+- **Mobile Full Table:** cards zone `justify-content:flex-end`; compact mobile card scale tokens.
+- **Desktop Card View:** hero min-heights restored (`min(5.5rem,…)`); fan `overflow:visible`; card height no longer collapses to 0%.
+- **Cards zone** exposes `data-card-placement` + `data-placement-overflow` for debug/tests.
+- **Tests:** `blackjackCardPlacementContract.test.ts`.
+
 ## 2026-06-22 — Blackjack UI stabilization: reveal gating + layout overlap fixes
 
 Structural stabilization pass (no new features):

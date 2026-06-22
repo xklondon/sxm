@@ -271,6 +271,26 @@ export function BlackjackLayoutDebugPanel({
               <dd>{computed.trayOverflowChain}</dd>
             </div>
             <div>
+              <dt>card placement</dt>
+              <dd>{computed.cardPlacementContract}</dd>
+            </div>
+            <div>
+              <dt>cards zone bounds</dt>
+              <dd>{computed.cardsZoneBounds}</dd>
+            </div>
+            <div>
+              <dt>command bounds</dt>
+              <dd>{computed.commandZoneBounds}</dd>
+            </div>
+            <div>
+              <dt>box amount bounds</dt>
+              <dd>{computed.boxAmountBounds}</dd>
+            </div>
+            <div>
+              <dt>hero cards bounds</dt>
+              <dd>{computed.heroCardsBounds}</dd>
+            </div>
+            <div>
               <dt>cards zone overflow</dt>
               <dd>{computed.cardsZoneOverflow}</dd>
             </div>

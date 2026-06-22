@@ -2,6 +2,11 @@ import type { ReactNode } from 'react';
 import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
 import { TABLE_UX } from './tableUxContract';
 import type { BlackjackCardsAreaMode } from './BlackjackTableLayoutShell';
+import {
+  cardPlacementDataAttribute,
+  getCardPlacementSpecFor,
+} from './blackjackCardPlacementContract';
+import { resolveLayoutMode, type LayoutMode } from './tableLayoutEngine';
 
 /** Shared command/status zone — same slot in Full Table and Card View. */
 export function BlackjackCommandZone({ children }: { children: ReactNode }) {
@@ -57,12 +62,22 @@ export function BlackjackPlayerBoxesZone({ children }: { children: ReactNode }) 
 /** View-specific cards area — table arc stacks or Card View hero fan. */
 export function BlackjackCardsAreaZone({
   mode,
+  deviceView = 'desktop',
   children,
 }: {
   mode: BlackjackCardsAreaMode;
+  deviceView?: 'desktop' | 'mobile';
   children: ReactNode;
 }) {
   const modeClass = mode === 'hero' ? TABLE_UX.cardsAreaHero : TABLE_UX.cardsAreaTable;
+  const layoutMode: LayoutMode = resolveLayoutMode(
+    deviceView === 'mobile' ? 'mobile' : 'desktop',
+    mode === 'hero' ? 'card' : 'full',
+  );
+  const placement = getCardPlacementSpecFor(
+    deviceView === 'mobile' ? 'mobile' : 'desktop',
+    mode === 'hero' ? 'card' : 'full',
+  );
   return (
     <div
       {...sxmSectionProps(
@@ -70,6 +85,8 @@ export function BlackjackCardsAreaZone({
         `bj-table-zone ${TABLE_UX.tableZoneCards}`,
         modeClass,
       )}
+      data-card-placement={cardPlacementDataAttribute(layoutMode)}
+      data-placement-overflow={placement.allowedOverflow}
     >
       {children}
     </div>

@@ -238,24 +238,35 @@
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
     padding-top: 0;
     padding-bottom: 0;
-    /* Bottom-pin stacks; clip upward bleed so cards never overlap the command zone. */
+    /* Bottom-pin box-column stacks; clip-x prevents horizontal bleed only. */
     justify-content: flex-end;
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
     padding-top: 0;
     justify-content: stretch;
     align-items: stretch;
-    /* Hero is the sole flow child (cloth is absolute); stretch so it fills the 1fr row. */
-    min-height: 0;
+    min-height: var(--bj-zone-cards-min-height, min(6.5rem, 20%));
+    overflow: visible;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero > .bj-card-desktop-hero {
     flex: 1 1 auto;
     align-self: stretch;
-    min-height: 0;
+    min-height: min(5.5rem, 100%);
     width: 100%;
+  }
+
+  /* Card placement contract — overflow mode from data-placement-overflow on cards zone. */
+  .bj-table-zone--cards[data-placement-overflow='clip-x'] {
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  .bj-table-zone--cards[data-placement-overflow='visible'] {
+    overflow: visible;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards .bj-felt-cloth-layer,
@@ -669,8 +680,9 @@
     grid-column: 1;
     margin: 0;
     min-height: var(--bj-zone-cards-min-height, 0);
-    /* Clip stacks inside the cards band — must not overlap boxes/tray. */
-    overflow: hidden;
+    /* Full Table: clip-x only — stacks size/overlap inside the band (no vertical clip). */
+    overflow-x: clip;
+    overflow-y: visible;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards:not(.bj-cards-area--table),

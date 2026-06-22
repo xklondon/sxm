@@ -1,96 +1,73 @@
-# Full Work Summary — Blackjack UI Stabilization Pass
+# Full Work Summary — Card Placement Contract Lock
 
-## Root cause summary
+## Root cause
 
-1. **Reveal sequencing** — Command text, cloth status, and outcome badges read authoritative `gameState` while paced deal still had masked `displayState`. UI rendered blackjack/even-money messaging before both player cards were visually revealed.
-2. **Wrong command styling** — Default `DealerBlock.css` green (`.dealer-block__status`) competed with canonical gold; not scoped to command zone on all views.
-3. **Mobile card overlap** — Mobile Full Table play-zone used `justify-content:flex-start` and `margin-top:auto` on the arc row, pushing stacks into the boxes/tray band.
-4. **Desktop card overlap** — Full Table cards zone had `overflow:visible`, allowing upward stack bleed into the command zone.
-5. **Mobile even-money unreadable** — Ace-decision / insurance buttons below 44px tap target on mobile.
+The cards zone was treated as one fluid area with shared rules (`overflow:hidden`, `justify-content:flex-start`, `margin-top:auto`, `height: min(..., 100%)`). That caused:
 
-## Structural fixes
+| Mode | Symptom | Cause |
+|------|---------|-------|
+| Desktop Full Table | Stack tops clipped | `overflow:hidden` on cards zone band |
+| Mobile Full Table | Cards too high | `justify-content:flex-start` floated arc away from box value band |
+| Desktop Card View | Hero invisible | Hero card `height: min(max-height, 100%)` collapsed when parent height was indefinite; fan `overflow:hidden` |
+| Mobile Card View | (was OK) | Needed regression protection only |
 
-### A. UI render contract (`src/components/blackjackUiRenderContract.ts`)
-- `createUiRevealContext`, `isHandVisiblyRevealed`, `isBoxVisiblyRevealed`
-- `resolveUiProtocolPhase`, `canShowInsuranceDecisionUi`, `canShowEvenMoneyDecisionUi`
-- `resolveGatedCardAreaOutcomeMarker`, `gateCommandMessageForReveal`, `gateCommandForReveal`
-- `CANONICAL_COMMAND_WRAPPER_CLASS`, `CANONICAL_COMMAND_STATUS_CLASS`
+## New card placement contract
 
-### B. Reveal engine hook
-- `isHandFullyVisibleInDisplay` in `cardRevealDisplay.ts`
-- `getDisplayBlackjackProtocolPhase` defers even-money until offer hand visible
+**`src/components/blackjackCardPlacementContract.ts`** (`card-placement-v1`)
 
-### C. Wired into views
-- `tableCommandDisplay.ts` — even-money + final command gated
-- `BlackjackPanel.tsx` — gated badges, insurance/even-money overlays, debug reveal diagnostics
-- `BlackjackCardView.tsx`, `CardViewDesktopHeroArea.tsx` — gated hero/stack outcome markers
-- `DealerBlock.tsx` — `CANONICAL_COMMAND_STATUS_CLASS` on command status
+| Mode | Anchor | Vertical anchor | Overflow |
+|------|--------|---------------|----------|
+| desktopFull | boxColumn | justAboveBoxValue | clip-x |
+| mobileFull | boxColumn | justAboveBoxValue | clip-x |
+| desktopCard | heroCenter | centerHero | visible |
+| mobileCard | heroCenter | centerHero | visible |
 
-### D. Layout (cards zone only — no box/tray moves)
-- Desktop Full Table cards zone: `overflow:hidden`, `justify-content:flex-end`
-- Mobile Full Table: cards zone `overflow:hidden`, play-zone `flex-end`, arc row `margin-top:0`
-- Canonical yellow command text in `bj-table-shared.css` command zone
+Wired via `data-card-placement` + `data-placement-overflow` on `BlackjackCardsAreaZone`.
 
-### E. Mobile decision UI
-- Insurance overlay buttons: `min-height:44px` on mobile insurance phase
-- Ace-decision (even-money) buttons: `min-height:44px` in actions zone on mobile
+## Structural fixes (no gameplay/reveal/command changes)
 
-### F. Layout debug (`?layoutDebug=1`)
-- Phase, UI protocol phase, reveal complete, command message + source
-- Per-box game result vs UI-visible result
-- Cards zone overflow, card stack bounds, overlap warnings
-
-## Alternate command route removed/disabled
-- **Disabled path:** inline `DealerBlock` command when panel passes `omitCommand` — command renders only via `BlackjackCommandBox` → `DealerCommandArea` in the summary/command zone.
-- **Removed competing style:** green default `.dealer-block__status` overridden in command zone with gold (`--ds-color-gold`) for all views.
-
-## Reveal-gating selectors added
-- `isHandVisiblyRevealed` / `isBoxVisiblyRevealed`
-- `resolveGatedCardAreaOutcomeMarker`
-- `gateCommandForReveal` / `gateCommandMessageForReveal`
-- `canShowEvenMoneyDecisionUi` / `canShowInsuranceDecisionUi`
-- `resolveUiProtocolPhase`
-
-## Layout overlap tests added
-- `src/components/blackjackUiRenderContract.test.ts` (reveal gating, canonical command, overlap CSS guards)
-- Extended `productionRouteOwnership.test.ts` (yellow command, desktop `overflow:hidden` on cards zone)
+- **Shell** — Full Table cards zones: `overflow-x:clip; overflow-y:visible` (not `overflow:hidden`). Hero zones: `overflow:visible` + deterministic `min-height`.
+- **Full Table card area** — Desktop: `align-self:flex-end` (removed `margin-top:auto`). Mobile: `justify-content:flex-end`, compact card scale tokens. Taller stack-zone formula for 3–5 card overlap.
+- **Desktop hero** — `min-height:min(5.5rem,…)` on hero/cards/fan; card `height:auto`; fan `overflow:visible`.
+- **Debug** — `?layoutDebug=1` shows placement contract, zone/stack/amount/command/tray bboxes, overlap warnings (`stack-clipped-top`, `stack-overlaps-*`, `hero-cards-height-zero`).
 
 ## Files changed
-- `src/components/blackjackUiRenderContract.ts` (new)
-- `src/components/blackjackUiRenderContract.test.ts` (new)
-- `src/engine/blackjack/dealing/cardRevealDisplay.ts`
-- `src/engine/blackjack/protocol.ts`
-- `src/components/blackjackDealingContract.ts`
-- `src/components/tableCommandDisplay.ts`
-- `src/components/useBlackjackTableFlow.ts`
+
+- `src/components/blackjackCardPlacementContract.ts` (new)
+- `src/components/blackjackCardPlacementContract.test.ts` (new)
+- `src/components/blackjackViewZones.tsx`
+- `src/components/BlackjackTableLayoutShell.tsx`
 - `src/components/BlackjackPanel.tsx`
-- `src/components/DealerBlock.tsx`
-- `src/components/BlackjackCardView.tsx`
-- `src/components/CardViewDesktopHeroArea.tsx`
 - `src/components/blackjackLayoutDebug.ts`
 - `src/components/BlackjackLayoutDebugPanel.tsx`
 - `src/components/blackjackLayoutDebug.test.ts`
 - `src/components/productionRouteOwnership.test.ts`
-- `src/components/InsuranceDecisionOverlay.css`
-- `src/styles/bj-table-shared.css`
+- `src/components/blackjackUiRenderContract.test.ts`
 - `src/styles/bj-blackjack-table-shell.css`
 - `src/styles/bj-full-table-card-area.css`
+- `src/styles/bj-card-desktop-hero-area.css`
 - `package.json`
 - `docs/CHANGE_LOG.md`
+- `docs/SXM_MASTER_SPEC.md`
+
+## Tests added
+
+`blackjackCardPlacementContract.test.ts` — per-mode contract, clip-x vs hidden, mobile bottom-pin, desktop hero min-height, mobile Card View protection, zone ownership.
 
 ## Test results
+
 | Command | Result |
 |---------|--------|
 | `npm run test:ownership` | 27 passed |
 | `npm run test:layout:target` | 53 passed |
-| `npm run test:blackjack:layout` | 215 passed |
+| `npm run test:blackjack:layout` | 227 passed |
 | `npm run build` | Success |
 
-## Browser checklist
-1. **Blackjack reveal timing** — Deal natural BJ on box 1; confirm no blackjack badge, box status, or command text until both cards are visible.
-2. **Mobile Full Table card overlap** — Cards stay in cards band; no overlap with player boxes or chip tray.
-3. **Mobile even-money readability** — Dealer Ace up, player natural; Take 1:1 / Play buttons ≥44px, legible text.
-4. **Canonical yellow command box** — Command text gold/yellow on mobile and desktop Full Table + Card View.
-5. **Desktop Full Table cards** — Stacks bottom-pinned inside cards zone; no overlap with command box or boxes/tray.
+## Confirmation checklist (browser)
+
+1. **Mobile Card View** — unchanged/working (hero visible, no scroll regression)
+2. **Mobile Full Table** — cards sit just above amount/value on each box; no tray overlap
+3. **Desktop Full Table** — 2–5 card stacks not clipped at top; no command/box overlap
+4. **Desktop Card View** — hero cards visible with non-zero height; no vertical scroll
 
 **Spec discipline: checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.**

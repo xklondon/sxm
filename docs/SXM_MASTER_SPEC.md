@@ -422,6 +422,7 @@ Protected boundaries so protocol, layout, dealing, and accounting cannot drift a
 | Layout | `tableViewContract.ts`, `blackjackLayoutContract.ts` | **`docs/BLACKJACK_LAYOUT_CONTRACTS.md`** is the single layout source of truth; freeze flags in `blackjackLayoutContract.ts`. |
 | Dealing | `useSequentialCardReveal`, `blackjackDealingContract.ts` | One reveal queue; values via `getDisplayedHandValue`; controls gated until reveal ready. |
 | UI render | `blackjackUiRenderContract.ts` | Badges, command text, cloth-adjacent status, and decision overlays must pass reveal-gated selectors (`isHandVisiblyRevealed`, `resolveGatedCardAreaOutcomeMarker`, `gateCommandForReveal`) — never render raw engine result state before visual reveal. |
+| Card placement | `blackjackCardPlacementContract.ts` | Per-mode placement inside the cards zone only: Full Table = box-column stacks anchored just above box value; Card View = centered hero. Shell owns zone geometry; inner card CSS must not use one generic rule for all modes or `overflow:hidden` as a clipping workaround. |
 | Accounting | `blackjackAccountingDisplay.ts`, `playerCommittedExposure.ts` | Tray + This Table use `resolvePersonDisplayBalances` / `resolveViewerTrayAvailable`. |
 
 Contract tests: `blackjackStabilityContracts.test.ts`, `blackjackFullTableLayoutFrozen.test.ts`, `blackjackLayoutContractGuards.test.ts`, `dealingRoundRegression.test.ts`.
