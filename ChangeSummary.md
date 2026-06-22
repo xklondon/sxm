@@ -1,41 +1,44 @@
-# Change Summary — Blackjack 2× wiring + mobile Card View swipe restore
+# Change Summary — New Table modal + desktop player boxes scroll
 
-## Root cause (why 2× looked shown but not wired)
+## Root cause
 
-1. **Engine and `run()` were already correct** — `doubleDownBlackjackOnState` doubles bet, deals one card, auto-stands; `BlackjackPanel` already dispatched `{ type: 'double' }` on `onDouble`.
-2. **UX made 2× feel dead:**
-   - **2× sat on the secondary action row** below Stay/Hit in `BlackjackActionPanel`, not beside Hit — easy to miss or confuse with a label-only affordance.
-   - **Mobile Card View forced `variant="table"`** on `BlackjackActionRow`, so card-view action styling/layout did not apply; the primary row did not match Card View expectations.
-3. **Stale test expectations** still looked for `>Double<` in the command zone (`OptionalPlayDecisionOverlay` path removed earlier); optional lines now live in the canonical action row as **2×**.
+### New Table popup
+1. **`mobile-modals.css` scrolled the entire panel** (`overflow-y: auto` on `.new-table-overlay__panel`), so header, close X, and footer nav scrolled together with ugly native scrollbars.
+2. **`TableStakePanel` embedded mode** used `overflow: visible` and a **768px+ two-column grid**, wider than the ~22rem modal — causing horizontal overflow.
+3. **Back / Start Table** lived inside the scrollable body with no sticky footer, so long forms could push buttons partially off-screen.
+
+### Desktop player boxes scroll
+1. **Box tiles used `overflow: visible`** with **2× value scale** and fixed stake bands, so content exceeded the shell’s fixed **boxes zone** (~6.1rem).
+2. **Desktop felt had `overflow-y: visible`** — spill from boxes increased shell height and caused page/table vertical scroll.
+3. **Prior fix in `bj-blackjack-targeted-fixes.css`** only covered Full Table during deal/play — not betting, not Card View desktop.
 
 ## What changed
 
-### 1. Wire 2× / Double (action row)
-- **`BlackjackActionPanel.tsx`** — 2× moved to the **primary row** immediately right of Hit: **Stay / Hit / 2×** (Split stays secondary).
-- **`BlackjackPanel.tsx`** — removed hardcoded `variant="table"` so Card View resolves `variant="card"` via `BlackjackActionRow` scale.
-- Double still routes through existing `run((s) => doubleDownBlackjackOnState(...), { type: 'double' })`; bankroll/eligibility unchanged (`canDoubleBlackjackForState`).
+### New Table modal
+- **`NewTableOverlay.css`** — panel `overflow: hidden`; body-only vertical scroll with thin scrollbar; fixed header; safe-area padding; capped width `24rem`.
+- **`TableStakePanel.css`** — embedded overlay: flex column, single-column form, full-width inputs, **sticky nav footer** (Back / Start Table) with gradient backdrop.
+- **`mobile-modals.css`** — New Table panel no longer scrolls as a whole; body scrolls inside overlay.
 
-### 2. Mobile Card View play swipe restore
-- **`useMobileCardViewPlaySwipe.ts`** (new) — swipe **left = Stay**, swipe **right = Hit**; never double/split.
-- **`BlackjackPanel.tsx`** — during actionable Card View player turns, felt uses play-swipe handlers; box-navigation swipe (`useMobileBoxSwipeNavigation`) is disabled for that window.
-- Gated off when: game over modal, insurance, even-money, non-player phase, actions blocked (hold/deal/online in-flight), or viewer cannot act.
+### Desktop player boxes
+- **`bj-blackjack-targeted-fixes.css`** — desktop Full + Card View: felt/shell/boxes zone `overflow: hidden`.
+- **`bj-player-row-layout.css`** — boxes-zone-only tile scale (`--bj-desktop-box-value-scale: 1.55`), `max-height: 100%`, `overflow: hidden` on tiles.
 
 ## Files changed
 
 | File | Change |
 |------|--------|
-| `src/components/BlackjackActionPanel.tsx` | 2× on primary row after Hit |
-| `src/components/BlackjackPanel.tsx` | Card variant fix; play-swipe wiring; felt handler merge |
-| `src/hooks/useMobileCardViewPlaySwipe.ts` | **New** — Stay/Hit swipe hook |
-| `src/hooks/useMobileCardViewPlaySwipe.test.ts` | **New** — gesture resolver tests |
-| `src/components/blackjackDoubleAndSwipe.test.ts` | **New** — engine + UI + swipe contract tests |
-| `src/components/optionalPlayDealPacing.test.tsx` | Expect 2×/Split in actions zone |
-| `src/components/cardViewSwipeAffordances.test.tsx` | Expect play-swipe wiring |
-| `package.json` | Include new tests in `test:blackjack:layout` |
+| `src/components/NewTableOverlay.css` | Header/body split, body scroll, safe-area |
+| `src/components/TableStakePanel.css` | Embedded overlay layout + sticky nav |
+| `src/styles/mobile-modals.css` | Panel overflow hidden (body scrolls) |
+| `src/styles/bj-blackjack-targeted-fixes.css` | Desktop boxes zone containment |
+| `src/styles/bj-player-row-layout.css` | Boxes-zone tile sizing clamp |
+| `src/components/newTableModalLayout.test.tsx` | **New** layout contract tests |
+| `src/components/newTableOverlay.test.tsx` | Updated width/sticky assertions |
+| `package.json` | Added test to `test:blackjack:layout` |
 
-## Frozen / untouched (per scope)
+## Frozen / untouched
 
-**Not modified:** `tableLayoutEngine.ts`, `blackjackCardPlacementContract.ts`, `blackjackUiRenderContract.ts`, Game Over modal, command box styling, card layout CSS, reveal/dealing timing, table setup, IOU, ledger, auth, Zilch.
+**Not modified:** `tableLayoutEngine.ts`, `blackjackCardPlacementContract.ts`, `blackjackUiRenderContract.ts`, card layout CSS, reveal/play flow, Game Over modal, 2×/swipe, command box, gameplay, IOU/ledger/auth/Zilch.
 
 ## Test results
 
@@ -43,15 +46,14 @@
 |---------|--------|
 | `npm run test:ownership` | 27 passed |
 | `npm run test:layout:target` | 53 passed |
-| `npm run test:blackjack:layout` | 252 passed |
+| `npm run test:blackjack:layout` | 259 passed |
 | `npm run build` | Success |
 
 ## Browser checklist
 
-1. **Click 2×** — bet doubles, exactly one card dealt, turn ends (auto-stand).
-2. **2× button** sits immediately right of HIT (Stay / Hit / 2×).
-3. **Mobile Card View swipe left** = Stay.
-4. **Mobile Card View swipe right** = Hit.
-5. **Swipe never triggers 2×** — double only from the action button.
+1. **New Table popup** — no horizontal scrollbar  
+2. **Header / close X** — fixed at top, always visible  
+3. **Start Table / Back** — fixed at bottom, always clickable  
+4. **Desktop player boxes** — no page/table vertical scroll from boxes row  
 
-Spec discipline: checked/updated `docs/CHANGE_LOG.md` (entry below); `SXM_MASTER_SPEC.md` already describes canonical action row — no structural spec change required.
+Spec discipline: checked/updated `docs/CHANGE_LOG.md`; `SXM_MASTER_SPEC.md` unchanged (modal/boxes CSS-only).

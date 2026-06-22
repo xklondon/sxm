@@ -3,32 +3,41 @@
  * Full Table scrollbar, desktop game-over table overlay.
  */
 
-/* 1 — Full Table: no internal scrollbars on felt / box row during deal & play */
+/* 1 — Desktop: player boxes must not grow the shell or cause page scroll */
+@media (min-width: 721px) {
+  .bj-view-full-desktop.bj-casino .bj-casino__felt,
+  .bj-view-card-desktop.bj-casino .bj-casino__felt {
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell,
+  .bj-view-card-desktop .bj-table-layout-shell {
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes {
+    overflow: hidden;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes .bj-player-boxes-wrap,
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes .bj-player-box-row,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes .bj-player-boxes-wrap,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes .bj-player-box-row {
+    max-height: 100%;
+    overflow: hidden;
+  }
+}
+
+/* Legacy Full Table play-phase band bump — kept for felt parity during deal/play */
 @media (min-width: 721px) {
   .bj-view-full-desktop.bj-casino[data-bj-phase='dealing'],
   .bj-view-full-desktop.bj-casino[data-bj-phase='playing'],
   .bj-view-full-desktop.bj-casino[data-bj-phase='resolved'] {
     --bj-desktop-zone-boxes-height: 6.35rem;
-  }
-
-  .bj-view-full-desktop.bj-casino[data-bj-phase='dealing'] .bj-casino__felt,
-  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] .bj-casino__felt,
-  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved'] .bj-casino__felt {
-    overflow: hidden;
-  }
-
-  .bj-view-full-desktop.bj-casino[data-bj-phase='dealing'] .bj-table-layout-shell,
-  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] .bj-table-layout-shell,
-  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved'] .bj-table-layout-shell {
-    overflow: hidden;
-  }
-
-  .bj-view-full-desktop.bj-casino[data-bj-phase='dealing'] .bj-table-layout-shell > .bj-table-zone--boxes,
-  .bj-view-full-desktop.bj-casino[data-bj-phase='playing'] .bj-table-layout-shell > .bj-table-zone--boxes,
-  .bj-view-full-desktop.bj-casino[data-bj-phase='resolved'] .bj-table-layout-shell > .bj-table-zone--boxes {
-    overflow: hidden;
-    overflow-y: hidden;
-    scrollbar-width: none;
   }
 
   .bj-view-full-desktop.bj-casino[data-bj-phase='dealing']

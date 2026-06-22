@@ -17,6 +17,12 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-22 — New Table modal layout + desktop player boxes scroll guard
+
+- **New Table modal:** Body-only vertical scroll; fixed header/close; sticky Back/Start Table footer; full-width embedded form; no horizontal overflow (`NewTableOverlay.css`, `TableStakePanel.css`, `mobile-modals.css`).
+- **Desktop boxes:** Contain player-box row inside shell zone — felt/shell overflow hidden; boxes-zone tile scale clamp (`bj-blackjack-targeted-fixes.css`, `bj-player-row-layout.css`).
+- **Tests:** `newTableModalLayout.test.tsx`.
+
 ## 2026-06-22 — Blackjack 2× action row + mobile Card View play swipe
 
 - **2× placement:** Primary action row is Stay / Hit / 2× (`BlackjackActionPanel`); Split remains secondary.

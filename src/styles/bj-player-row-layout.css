@@ -528,6 +528,43 @@
   }
 }
 
+/* Desktop boxes zone — fit tiles inside fixed shell band (no vertical page scroll). */
+@media (min-width: 721px) {
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes {
+    max-height: 100%;
+    align-items: flex-end;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes
+    .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes
+    .bj-table-slot-row.bj-arc--player-boxes .bj-player-box-mobile,
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes
+    .bj-table-slot-row.bj-arc--player-boxes .bj-bet-zone,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes
+    .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes
+    .bj-table-slot-row.bj-arc--player-boxes .bj-player-box-mobile,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes
+    .bj-table-slot-row.bj-arc--player-boxes .bj-bet-zone {
+    --bj-desktop-box-value-scale: 1.55;
+    height: min(var(--bj-full-table-box-height), 100%);
+    max-height: 100%;
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--boxes
+    .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot,
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--boxes
+    .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-stake-slot {
+    flex: 0 0 min(var(--bj-full-table-stake-min-height, 1.2rem), 28%);
+    min-height: 0;
+    max-height: min(var(--bj-full-table-stake-min-height, 1.2rem), 28%);
+    height: min(var(--bj-full-table-stake-min-height, 1.2rem), 28%);
+  }
+}
+
 /* CONTRACT D — mobile landscape compact horizontal row (sync MOBILE_LAYOUT_MEDIA_LANDSCAPE). */
 @media (max-width: 720px) and (orientation: landscape),
   ((max-width: 960px) and (max-height: 520px) and (pointer: coarse) and (orientation: landscape)) {

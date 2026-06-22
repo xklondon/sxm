@@ -6,15 +6,21 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   background: rgb(0 0 0 / 0.55);
   pointer-events: auto;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .new-table-overlay__panel {
   display: flex;
   flex-direction: column;
-  width: min(100%, 22rem);
+  width: min(100%, 24rem);
   max-height: min(88dvh, 40rem);
+  min-width: 0;
+  box-sizing: border-box;
   border-radius: 12px;
   border: 1px solid rgb(255 255 255 / 0.16);
   background: linear-gradient(180deg, rgb(12 28 22 / 0.98) 0%, rgb(6 16 12 / 0.99) 100%);
@@ -27,9 +33,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  flex: 0 0 auto;
   padding: 0.75rem 0.85rem 0.55rem;
   border-bottom: 1px solid rgb(255 255 255 / 0.1);
-  flex: 0 0 auto;
+  background: linear-gradient(180deg, rgb(12 28 22 / 0.98) 0%, rgb(8 20 15 / 0.98) 100%);
+  z-index: 2;
 }
 
 .new-table-overlay__title {
@@ -37,6 +45,7 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--ds-color-gold, #fbbf24);
+  min-width: 0;
 }
 
 .new-table-overlay__close {
@@ -49,11 +58,27 @@
 }
 
 .new-table-overlay__body {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
   overflow-y: auto;
-  padding: 0.85rem 0.9rem 1rem;
+  overscroll-behavior: contain;
+  padding: 0.85rem 0.9rem 0.5rem;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.28) transparent;
+}
+
+.new-table-overlay__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.new-table-overlay__body::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.28);
+  border-radius: 999px;
 }
 
 @media (max-width: 720px) {
@@ -65,12 +90,12 @@
   }
 
   .new-table-overlay__panel {
-    width: min(100%, 22rem);
-    max-height: min(90dvh, calc(100dvh - 2rem));
+    width: min(100%, 24rem);
+    max-height: min(90dvh, calc(100dvh - 1.25rem));
     border-radius: 12px 12px 0 0;
   }
 
   .new-table-overlay__body {
-    padding: 0.75rem 0.8rem 0.9rem;
+    padding: 0.75rem 0.8rem 0.35rem;
   }
 }

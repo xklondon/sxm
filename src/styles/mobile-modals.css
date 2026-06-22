@@ -20,19 +20,24 @@
     overscroll-behavior: contain;
   }
 
+  .new-table-overlay__panel,
+  .ds-modal-panel,
+  .custom-protocol-modal {
+    width: min(calc(100vw - 1rem), 24rem);
+    max-height: min(90dvh, calc(100dvh - 2rem));
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+
   .invite-modal,
   .local-profile__panel,
   .bj-flow-settings__panel,
   .banker-setup-panel,
-  .new-table-overlay__panel,
   .ds-modal-panel,
   .custom-protocol-modal {
-    width: min(calc(100vw - 1rem), 22rem);
-    max-height: min(90dvh, calc(100dvh - 2rem));
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
     padding-bottom: max(var(--ds-space-3, 0.75rem), env(safe-area-inset-bottom, 0px));
   }
 

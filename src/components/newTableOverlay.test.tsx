@@ -23,7 +23,14 @@ describe('NewTableOverlay shared shell', () => {
   });
 
   it('uses a compact centered panel on desktop', () => {
-    expect(OVERLAY_CSS).toMatch(/\.new-table-overlay__panel[\s\S]*width:\s*min\(100%,\s*22rem\)/);
+    expect(OVERLAY_CSS).toMatch(/\.new-table-overlay__panel[\s\S]*width:\s*min\(100%,\s*24rem\)/);
+  });
+
+  it('scrolls form in body with sticky nav footer in embedded stake panel', () => {
+    expect(OVERLAY_CSS).toMatch(/\.new-table-overlay__body[\s\S]*overflow-y:\s*auto/);
+    expect(PANEL_CSS).toMatch(
+      /\.new-table-overlay__body \.table-stake-panel--embedded \.table-stake-panel__nav[\s\S]*position:\s*sticky/,
+    );
   });
 
   it('renders dialog markup with overlay class', () => {
