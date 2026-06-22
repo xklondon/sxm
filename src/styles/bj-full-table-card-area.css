@@ -574,6 +574,8 @@
     justify-content: stretch;
     flex: 0 0 auto;
     margin-top: auto;
+    /* Lift stacks slightly above the player-box value band (content-only; boxes/tray unchanged). */
+    margin-bottom: var(--bj-full-desktop-cards-lift, 0.35rem);
   }
 
   /* Card columns — same 1fr grid as player boxes (slot-aligned). */

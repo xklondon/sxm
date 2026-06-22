@@ -2697,11 +2697,12 @@
   }
 
   /* Shell grid geometry (display/height/overflow/flow) is owned by bj-blackjack-table-shell.css.
-   * This file only contributes the flex sizing of felt-main within the felt column. */
+   * Felt-main is also .bj-table-layout-shell — keep flex sizing + definite height for the 1fr row. */
   .bj-view-full-desktop .bj-casino__felt-main,
   .bj-view-card-desktop .bj-casino__felt-main {
     flex: 1 1 auto;
     min-height: 0;
+    height: 100%;
     width: 100%;
     max-width: none;
     padding-top: 0;

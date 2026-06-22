@@ -67,10 +67,8 @@
     --bj-desktop-actions-zone-padding-top: 1.05rem;
     --bj-card-hero-card-width: min(22vw, 7.25rem);
     --bj-card-hero-card-max-height: min(42vh, 9.75rem);
-    /* No rigid cards floor: the shell is height-bounded, so cards (1fr) takes the leftover
-     * space and the hero scales to fit it (container query in bj-card-desktop-hero-area.css).
-     * A floor here would make fixed rows + floor exceed the shell and force a scroll. */
-    --bj-zone-cards-min-height: 0;
+    /* Responsive cards-row floor: scales with shell height, absorbed by 1fr (no rigid overflow). */
+    --bj-zone-cards-min-height: min(6.5rem, 20%);
   }
 
   /* Full Table betting + playing — center dealer/deal on felt (Card View unchanged). */
@@ -239,21 +237,30 @@
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
     padding-top: 0;
-    /* Lift the bottom-pinned stacks slightly so each sits just above its box value
-     * (within the cards zone only — no movers on actions/boxes/tray). */
-    padding-bottom: var(--bj-full-desktop-cards-lift, 0.5rem);
-    justify-content: flex-start;
+    padding-bottom: 0;
+    /* Bottom-pin the card arc (stack overlap + column alignment live in bj-full-table-card-area.css). */
+    justify-content: flex-end;
   }
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero {
     padding-top: 0;
     justify-content: stretch;
     align-items: stretch;
+    /* Hero is the sole flow child (cloth is absolute); stretch so it fills the 1fr row. */
+    min-height: 0;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--hero > .bj-card-desktop-hero {
+    flex: 1 1 auto;
+    align-self: stretch;
+    min-height: 0;
+    width: 100%;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-table-zone--cards .bj-felt-cloth-layer,
   .bj-view-card-desktop .bj-table-layout-shell > .bj-table-zone--cards .bj-felt-cloth-layer {
-    flex: 1 1 auto;
+    /* Cloth is position:absolute (bj-felt-skins.css) — no flex growth in the cards zone flow. */
+    flex: 0 0 auto;
     min-height: 0;
     width: 100%;
   }

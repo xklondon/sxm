@@ -279,14 +279,10 @@ describe('Blackjack layout — desktop Card View has no fixed-row scroll', () =>
     );
   });
 
-  it('Card View does not add a rigid cards-row floor that exceeds the shell', () => {
-    // The cards row is the single stretch (1fr) row; Card View must not floor it with a fixed
-    // min-height (that would push fixed rows + floor past the shell and force a scroll).
-    const cardBlock = SHELL_CSS.match(
-      /\.bj-view-card-desktop\s*\{[\s\S]*?\}/,
+  it('Card View uses a responsive cards-row floor (not a rigid 9rem overflow)', () => {
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop[\s\S]*?--bj-zone-cards-min-height:\s*min\(6\.5rem,\s*20%\)/,
     );
-    expect(cardBlock).toBeTruthy();
-    expect(SHELL_CSS).toMatch(/\.bj-view-card-desktop[\s\S]*?--bj-zone-cards-min-height:\s*0/);
     expect(SHELL_CSS).not.toMatch(/\.bj-view-card-desktop[\s\S]{0,400}--bj-zone-cards-min-height:\s*9rem/);
   });
 });
@@ -308,5 +304,52 @@ describe('Blackjack layout — Card View does not re-own dealer/boxes/tray geome
     expect(PLAYER_ROW_CSS).not.toMatch(/\.bj-table-zone--(?:boxes|bottom)[\s\S]{0,200}margin-top:\s*auto/);
     expect(PLAYER_ROW_CSS).not.toMatch(/\.bj-table-zone--(?:boxes|bottom)[\s\S]{0,200}transform:/);
     expect(PLAYER_ROW_CSS).not.toMatch(/\.bj-table-zone--bottom[\s\S]{0,200}margin-top:/);
+  });
+});
+
+describe('Blackjack layout — desktop cards zone regressions (v1.1 follow-up)', () => {
+  it('Desktop Card View hero is visible: cards zone stretches hero and hero is not height:0 / display:none', () => {
+    // Shell stretches the hero to fill the 1fr cards row.
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero > \.bj-card-desktop-hero/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /> \.bj-card-desktop-hero\s*\{[\s\S]*?flex:\s*1\s+1\s+auto/,
+    );
+    // Hero content must not collapse to zero or hide.
+    expect(HERO_AREA_CSS).toMatch(/\.bj-view-card-desktop \.bj-card-desktop-hero[\s\S]*?height:\s*100%/);
+    expect(HERO_AREA_CSS).toMatch(/\.bj-view-card-desktop \.bj-card-desktop-hero__cards[\s\S]*?min-height:\s*min\(5\.5rem,\s*100%\)/);
+    expect(HERO_AREA_CSS).not.toMatch(/\.bj-view-card-desktop \.bj-card-desktop-hero[\s\S]*?display:\s*none/);
+  });
+
+  it('Desktop Full Table per-box stack uses overlap layout (column-reverse), not a tall plain column', () => {
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__cards--stack-vertical \.bj-arc__cards-stack[\s\S]*?flex-direction:\s*column-reverse/,
+    );
+    expect(CARD_AREA_CSS).toMatch(
+      /data-bj-card-count='2'[\s\S]*?margin-bottom:\s*calc\(-1 \* var\(--bj-table-card-overlap-2\)\)/,
+    );
+    // Shell bottom-pins the arc row; overlap geometry stays in the card-area owner.
+    const tableCardsRule =
+      SHELL_CSS.match(
+        /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[^}]*\}/,
+      )?.[0] ?? '';
+    expect(tableCardsRule).toContain('justify-content: flex-end');
+    expect(tableCardsRule).not.toContain('justify-content: flex-start');
+  });
+
+  it('Full Table card stacks stay inside the cards zone (not the boxes zone)', () => {
+    expect(PANEL_SRC).toMatch(/bj-arc--cards[\s\S]*FULL_TABLE_CARD_AREA_CLASS/);
+    expect(PANEL_SRC).not.toMatch(/bj-table-zone--boxes[\s\S]*bj-arc--cards/);
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-desktop[\s\S]*\.bj-table-zone--cards\.bj-cards-area--table[\s\S]*\.bj-full-table-card-area/,
+    );
+    expect(CARD_AREA_CSS).not.toMatch(
+      /\.bj-table-zone--boxes[\s\S]*\.bj-arc__cards--stack-vertical/,
+    );
+    // Felt-main keeps a definite height so the cards (1fr) row does not collapse.
+    expect(SHARED_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-desktop \.bj-casino__felt-main[\s\S]*?height:\s*100%/,
+    );
   });
 });

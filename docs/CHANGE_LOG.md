@@ -15,6 +15,22 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-22 — Table Layout Engine v1.1.1: desktop cards zone regression fix
+
+Follow-up to v1.1 layout pass (desktop only, no gameplay changes):
+
+- **Root cause:** v1.1 removed `felt-main` `height:100%`, zeroed Card View `--bj-zone-cards-min-height`, and set
+  Full Table cards zone to `justify-content:flex-start` + shell `padding-bottom` lift. That collapsed the `cards`
+  `1fr` row and/or mis-pinned the Full Table arc — stacks rendered as tall columns over box values; Card View hero
+  sized to 0-height parent (`height:100%` of collapsed zone).
+- **Full Table fix:** restore cards-zone `justify-content:flex-end` (bottom-pin arc); move lift to
+  `margin-bottom` on `.bj-full-table-card-area` (content-only); restore `felt-main height:100%` for definite
+  `1fr` sizing; stop growing absolute cloth layer in flex flow (`flex:0`).
+- **Card View fix:** responsive cards-row floor `min(6.5rem, 20%)` (absorbed by 1fr, no scroll); shell stretches
+  `.bj-card-desktop-hero` to fill cards row; hero `overflow:visible` + `min-height:min(5.5rem,100%)` on cards band.
+- **v1.1 preserved:** command box parity (both desktop roots), dealer band 6.7rem, shell bounding (`overflow-y:hidden`).
+- **Tests:** 3 new regression tests in `productionRouteOwnership.test.ts` (hero visibility, stack overlap, stacks in cards zone).
+
 ## 2026-06-22 — Table Layout Engine v1.1: desktop scroll / command / dealer fixes
 
 Follow-up placement + ownership fixes on top of the v1 consolidation (layout only — no gameplay,
