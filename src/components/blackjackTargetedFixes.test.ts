@@ -125,9 +125,10 @@ describe('Blackjack targeted fixes', () => {
     expect(src).toContain('isHandTerminalBeforeBankDraw');
   });
 
-  it('desktop game-over table overlay is wired in BlackjackPanel', () => {
-    expect(PANEL_SRC).toContain('bj-game-over-table-overlay');
-    expect(PANEL_SRC).toContain('showGameOverDesktopTableOverlay');
+  it('canonical centered game-over modal is wired in BlackjackPanel', () => {
+    expect(PANEL_SRC).toContain('renderCanonicalGameOverModal');
+    expect(PANEL_SRC).toContain('showGameOverModal');
+    expect(PANEL_SRC).not.toContain('bj-game-over-table-overlay');
   });
 
   it('mobile landscape layout uses isolated 900px landscape media query', () => {

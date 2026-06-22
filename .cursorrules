@@ -300,6 +300,12 @@ Import order: `CANONICAL_BLACKJACK_CSS_IMPORT_ORDER` in `blackjackLayoutContract
 
 Ownership smoke: `npm run test:ownership`. Layout patch: `npm run test:layout:target`.
 
+## 7a. Blackjack layout / playflow freeze (2026-06)
+
+Blackjack cards layout and reveal/play flow are **frozen**. Do not modify `tableLayoutEngine.ts`, `blackjackCardPlacementContract.ts`, `blackjackUiRenderContract.ts`, card reveal/dealing flow, or card stack placement CSS unless the user explicitly asks.
+
+For end-game fixes, only touch game-over rendering/routing/actions (`GameOverActionOverlay`, `blackjackGameOverContract.ts`, `BlackjackPanel` game-over branch).
+
 ## 8. Layer architecture
 
 **App level** — users/auth/session, people, invites, ledger, saved/open tables (`App.tsx`, `screens/`, `server/src/auth`, `features/messaging`).

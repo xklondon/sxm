@@ -247,19 +247,20 @@ describe('game end presentation', () => {
     expect(REVEAL_HOOK_SRC).toMatch(/gameStatus === 'ended'[\s\S]*hydrateInstant/);
   });
 
-  it('waits for reveal completion before desktop game summary panel', () => {
+  it('waits for reveal completion before canonical game-over modal', () => {
     expect(PANEL_SRC).toMatch(
-      /showGameOverDesktopPanel[\s\S]*gameEndRevealReady/,
+      /showGameOverModal[\s\S]*gameEndRevealReady[\s\S]*gameOverDelayReady/,
     );
     expect(PANEL_SRC).toMatch(/gameEndRevealReady = cardRevealComplete \|\| gameEnded/);
   });
 
-  it('renders desktop game summary after ended state with instant dealing', () => {
+  it('marks ended table for canonical game-over modal (delay-gated in runtime)', () => {
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={endedState()} onGameStateChange={noop} />,
     );
-    expect(html).toContain('Game Over');
-    expect(html).toContain('bj-game-over--inline');
+    expect(html).toContain('data-game-over-ui="true"');
+    expect(PANEL_SRC).toContain('renderCanonicalGameOverModal');
+    expect(PANEL_SRC).not.toContain('bj-game-over--inline');
   });
 
   it('uses the same delay constant for mobile game-over overlay', () => {

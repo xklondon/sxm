@@ -258,12 +258,11 @@ describe('player natural blackjack reveal order', () => {
 });
 
 describe('game end visibility regression', () => {
-  it('opens desktop This Table game-over panel even when side rail was closed', () => {
-    expect(PANEL_SRC).toContain('desktopSideRailPanel');
-    expect(PANEL_SRC).toMatch(
-      /showGameOverDesktopPanel \? 'thisTable' : sideRailPanel/,
-    );
-    expect(PANEL_SRC).toMatch(/thisTableInline && desktopSideRailPanel && renderSideRailPanel\('dock'\)/);
+  it('uses one centered game-over modal instead of desktop side-rail hijack', () => {
+    expect(PANEL_SRC).toContain('showGameOverModal');
+    expect(PANEL_SRC).toContain('renderCanonicalGameOverModal');
+    expect(PANEL_SRC).not.toContain('showGameOverDesktopPanel');
+    expect(PANEL_SRC).toMatch(/thisTableInline && sideRailPanel && renderSideRailPanel\('dock'\)/);
   });
 
   it('renders desktop game summary for practice ended', () => {

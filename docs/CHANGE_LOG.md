@@ -15,6 +15,18 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+---
+
+## 2026-06-22 — Canonical game-over modal (single overlay all views)
+
+- **`blackjackGameOverContract.ts`** — one `GameOverActionOverlay` centered modal for all four modes.
+- Removed duplicate desktop paths: side-rail inline game over + `bj-game-over-table-overlay` hero.
+- Side rail suppressed while game-over modal is active; buttons use existing `completeGameOverAction` handlers.
+
+## 2026-06-22 — Blackjack layout/playflow frozen
+
+Blackjack cards layout and reveal/play flow frozen after `card-placement-v1` and UI-render-contract stabilization. See `.cursorrules` §7a.
+
 ## 2026-06-22 — Card placement contract lock (per-mode cards zone)
 
 Structural layout lock — no gameplay/reveal/command changes:

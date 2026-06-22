@@ -7,14 +7,14 @@ const OVERLAY_SRC = readFileSync(join(process.cwd(), 'src/components/GameOverAct
 const STAKE_SRC = readFileSync(join(process.cwd(), 'src/components/TableStakePanel.tsx'), 'utf8');
 
 describe('game end UI wiring', () => {
-  it('routes game-end actions through GameOverActionOverlay instead of table buttons', () => {
+  it('routes game-end actions through canonical centered GameOverActionOverlay', () => {
     expect(PANEL_SRC).toContain('GameOverActionOverlay');
     expect(PANEL_SRC).not.toContain('bj-game-end-actions');
     expect(PANEL_SRC).toContain('runGameOverCompleteAction');
     expect(PANEL_SRC).toContain('gameOverActionFlow');
-    expect(PANEL_SRC).toContain("deviceView === 'mobile'");
-    expect(PANEL_SRC).toContain('showGameOverDesktopPanel');
-    expect(PANEL_SRC).toContain('layout="inline"');
+    expect(PANEL_SRC).toContain('showGameOverModal');
+    expect(PANEL_SRC).toContain('BLACKJACK_GAME_OVER_LAYOUT');
+    expect(PANEL_SRC).not.toContain('layout="inline"');
     expect(OVERLAY_SRC).toContain('bj-game-over-overlay');
     expect(OVERLAY_SRC).toContain('Add to Ledger');
     expect(OVERLAY_SRC).toContain('Open Ledger');

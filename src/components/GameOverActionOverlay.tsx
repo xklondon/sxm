@@ -20,7 +20,7 @@ export type GameOverCompleteOptions = {
 
 export interface GameOverActionOverlayProps {
   open: boolean;
-  /** Mobile: centered overlay. Desktop: inline in This Table side panel. */
+  /** Centered modal overlay — canonical layout for all device/view modes. */
   layout?: 'overlay' | 'inline';
   presentation: GameOverPresentationModel;
   canSaveToLedger: boolean;

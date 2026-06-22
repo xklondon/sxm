@@ -184,6 +184,7 @@ import {
 import { shouldShowBoxHandResultMarkers } from './boxHandStatusDisplay';
 import { buildBlackjackCountByBoxDisplay } from './blackjackCountByBoxDisplay';
 import { GameOverActionOverlay, type GameOverCompleteOptions, type GameOverIouFeedback } from './GameOverActionOverlay';
+import { BLACKJACK_GAME_OVER_LAYOUT } from './blackjackGameOverContract';
 import { runGameOverCompleteAction } from './gameOverActionFlow';
 import { buildGameOverPresentationModel } from './gameOverPresentation';
 import { AceDecisionButtonRow } from './blackjackAceDecisionActions';
@@ -288,7 +289,6 @@ export function BlackjackPanel({
   const setProfileOpen = onProfileOpenChange ?? setProfileOpenInternal;
   const [personalLedgerAdded, setPersonalLedgerAdded] = useState(false);
   const [gameOverOverlayDismissed, setGameOverOverlayDismissed] = useState(false);
-  const [gameOverTableOverlayDismissed, setGameOverTableOverlayDismissed] = useState(false);
   const [gameOverOverlayConfirmed, setGameOverOverlayConfirmed] = useState(false);
   const [iouPending, setIouPending] = useState(false);
   const [gameOverActionPending, setGameOverActionPending] = useState(false);
@@ -636,17 +636,8 @@ export function BlackjackPanel({
   const showGameOverActions =
     gameEnded && !gameOverOverlayDismissed && !gameOverOverlayConfirmed;
   const gameEndRevealReady = cardRevealComplete || gameEnded;
-  const showGameOverOverlay =
-    showGameOverActions &&
-    deviceView === 'mobile' &&
-    gameEndRevealReady &&
-    gameOverDelayReady;
-  const showGameOverDesktopPanel =
-    showGameOverActions && deviceView === 'desktop' && gameEndRevealReady;
-  const showGameOverDesktopTableOverlay =
-    showGameOverDesktopPanel && !gameOverTableOverlayDismissed;
-  const desktopSideRailPanel: SideRailPanel =
-    showGameOverDesktopPanel ? 'thisTable' : sideRailPanel;
+  const showGameOverModal =
+    showGameOverActions && gameEndRevealReady && gameOverDelayReady;
 
   const gameOverPresentation = useMemo(
     () => buildGameOverPresentationModel(gameState, gameOverMessage, viewerPersonId, magic8Answer),
@@ -656,7 +647,6 @@ export function BlackjackPanel({
   useEffect(() => {
     if (!gameEnded) {
       setGameOverOverlayDismissed(false);
-      setGameOverTableOverlayDismissed(false);
       setGameOverOverlayConfirmed(false);
       setPersonalLedgerAdded(false);
       setIouFeedback(null);
@@ -664,12 +654,6 @@ export function BlackjackPanel({
       setGameOverActionPending(false);
     }
   }, [gameEnded, gameState.session.id]);
-
-  useEffect(() => {
-    if (showGameOverDesktopPanel && sideRailPanel !== 'thisTable') {
-      setSideRailPanel('thisTable');
-    }
-  }, [showGameOverDesktopPanel, sideRailPanel]);
 
   useEffect(() => {
     if (!awaitingNextRound) {
@@ -2231,11 +2215,14 @@ export function BlackjackPanel({
     }
   }
 
-  function renderGameOverSummaryContent() {
+  function renderCanonicalGameOverModal() {
+    if (!showGameOverModal) {
+      return null;
+    }
     return (
       <GameOverActionOverlay
-        layout="inline"
         open
+        layout={BLACKJACK_GAME_OVER_LAYOUT}
         presentation={gameOverPresentation}
         canSaveToLedger={canSaveToLedger}
         ledgerAlreadyAdded={personalLedgerAdded}
@@ -2260,31 +2247,23 @@ export function BlackjackPanel({
   }
 
   function closeSideRailPanel() {
-    if (showGameOverDesktopPanel) {
-      handleGameOverDismiss();
-      return;
-    }
     setSideRailPanel(null);
   }
 
   function renderSideRailPanel(variant: 'dock' | 'overlay') {
-    const activePanel = variant === 'dock' ? desktopSideRailPanel : sideRailPanel;
-    if (!activePanel) {
+    const activePanel = variant === 'dock' ? sideRailPanel : sideRailPanel;
+    if (!activePanel || showGameOverModal) {
       return null;
     }
     const isOverlay = variant === 'overlay';
     const title =
-      showGameOverDesktopPanel && !isOverlay
-        ? 'Game Over'
-        : mobileSidePanelTab === 'playLedger'
-          ? 'Play Ledger'
-          : mobileSidePanelTab === 'settings'
-            ? 'Settings'
-            : 'This Table';
+      mobileSidePanelTab === 'playLedger'
+        ? 'Play Ledger'
+        : mobileSidePanelTab === 'settings'
+          ? 'Settings'
+          : 'This Table';
     const panelContent = isOverlay ? (
       renderMobileSidePanelBody()
-    ) : showGameOverDesktopPanel ? (
-      renderGameOverSummaryContent()
     ) : (
       <TableAccountsPanel
         gameState={gameState}
@@ -2417,30 +2396,7 @@ export function BlackjackPanel({
         />
       )}
 
-      {showGameOverOverlay && (
-        <GameOverActionOverlay
-          open
-          presentation={gameOverPresentation}
-          canSaveToLedger={canSaveToLedger}
-          ledgerAlreadyAdded={personalLedgerAdded}
-          canCreateIou={canAddIou}
-          iouPending={iouPending}
-          iouFeedback={iouFeedback}
-          iouDisabledReason={iouDisabledReason}
-          pending={gameOverActionPending}
-          canStartNewGame={canResetTable}
-          newGameDisabledReason={
-            !canResetTable
-              ? 'Only the table owner can start a new game.'
-              : !onBeginTableReset
-                ? 'New game setup is unavailable on this table.'
-                : null
-          }
-          onOpenLedger={() => setActiveTablePanel('playLedger')}
-          onComplete={completeGameOverAction}
-          onDismiss={handleGameOverDismiss}
-        />
-      )}
+      {renderCanonicalGameOverModal()}
 
       {showRoundSummaryOverlay && roundSummaryOverlayModel && (
         <RoundSummaryOverlay
@@ -2501,7 +2457,7 @@ export function BlackjackPanel({
       <div
         className={[
           deviceView === 'desktop' ? TABLE_UX.desktopStage : '',
-          deviceView === 'desktop' && sideRailPanel
+          deviceView === 'desktop' && sideRailPanel && !showGameOverModal
             ? 'bj-casino__desktop-stage--with-rail'
             : '',
         ]
@@ -2617,36 +2573,11 @@ export function BlackjackPanel({
             playerBoxes={renderPlayerBoxesArc()}
             chipTray={renderTrayInner()}
           />
-          {showGameOverDesktopTableOverlay ? (
-            <div
-              className="bj-game-over-table-overlay"
-              role="dialog"
-              aria-labelledby="bj-game-over-table-title"
-            >
-              <div className="bj-game-over-table-overlay__panel">
-                <span className="bj-game-over-table-overlay__glyph" aria-hidden="true">
-                  {gameOverPresentation.visual.glyph}
-                </span>
-                <h2 id="bj-game-over-table-title" className="bj-game-over-table-overlay__title">
-                  Game Over
-                </h2>
-                <p className="bj-game-over-table-overlay__winner">{gameOverPresentation.winnerLine}</p>
-                <p className="bj-game-over-table-overlay__summary">{gameOverPresentation.resultLine}</p>
-                <button
-                  type="button"
-                  className="ds-btn ds-btn--secondary bj-game-over-table-overlay__dismiss"
-                  onClick={() => setGameOverTableOverlayDismissed(true)}
-                >
-                  Continue
-                </button>
-              </div>
-            </div>
-          ) : null}
         </div>
         </div>
       </div>
       {deviceView === 'mobile' && sideRailPanel && renderSideRailPanel('overlay')}
-      {thisTableInline && desktopSideRailPanel && renderSideRailPanel('dock')}
+      {thisTableInline && sideRailPanel && renderSideRailPanel('dock')}
       </div>
       )}
       <BlackjackLayoutDebugPanel

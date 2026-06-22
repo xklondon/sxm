@@ -1,5 +1,10 @@
 .bj-game-over-overlay {
-  z-index: 120;
+  z-index: 130;
+  pointer-events: auto;
+}
+
+.bj-game-over-overlay .bj-game-over {
+  pointer-events: auto;
 }
 
 .bj-game-over {

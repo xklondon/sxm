@@ -251,12 +251,12 @@ describe('blackjack five-issue fixes', () => {
     expect(metaIdx).toBeGreaterThan(cardsIdx);
   });
 
-  it('waits for mobile game-over overlay until reveal completes and delay elapses', () => {
+  it('waits for game-over modal until reveal completes and delay elapses', () => {
     expect(PANEL_SRC).toContain('MOBILE_GAME_OVER_OVERLAY_DELAY_MS');
     expect(PANEL_SRC).toContain('gameOverDelayReady');
     expect(PANEL_SRC).toMatch(/gameEndRevealReady = cardRevealComplete \|\| gameEnded/);
     expect(PANEL_SRC).toMatch(
-      /showGameOverOverlay[\s\S]*gameEndRevealReady[\s\S]*gameOverDelayReady/,
+      /showGameOverModal[\s\S]*gameEndRevealReady[\s\S]*gameOverDelayReady/,
     );
     expect(MOBILE_GAME_OVER_OVERLAY_DELAY_MS).toBe(ROUND_SUMMARY_OVERLAY_DELAY_MS);
   });

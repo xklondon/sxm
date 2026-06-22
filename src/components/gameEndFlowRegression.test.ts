@@ -13,20 +13,19 @@ describe('game end flow regression guards', () => {
     expect(PANEL_SRC).toMatch(/const showGameOverActions =\s*\n\s*gameEnded && !gameOverOverlayDismissed/);
     expect(PANEL_SRC).not.toMatch(/const showGameOverActions[\s\S]*winnerId/);
     expect(PANEL_SRC).toMatch(
-      /const showGameOverDesktopPanel =\s*\n\s*showGameOverActions && deviceView === 'desktop' && gameEndRevealReady/,
+      /const showGameOverModal =\s*\n\s*showGameOverActions && gameEndRevealReady && gameOverDelayReady/,
     );
   });
 
-  it('re-opens desktop This Table panel while game-over UI is active', () => {
-    expect(PANEL_SRC).toMatch(
-      /showGameOverDesktopPanel && sideRailPanel !== 'thisTable'[\s\S]*setSideRailPanel\('thisTable'\)/,
-    );
-    expect(PANEL_SRC).toMatch(/desktopSideRailPanel[\s\S]*showGameOverDesktopPanel \? 'thisTable'/);
+  it('does not open a duplicate desktop side-rail game-over panel', () => {
+    expect(PANEL_SRC).not.toContain('showGameOverDesktopPanel');
+    expect(PANEL_SRC).not.toMatch(/showGameOverDesktopPanel && sideRailPanel !== 'thisTable'/);
+    expect(PANEL_SRC).not.toMatch(/showGameOverDesktopPanel \? 'thisTable'/);
   });
 
-  it('routes desktop game-over dismiss through handleGameOverDismiss', () => {
+  it('routes game-over dismiss through handleGameOverDismiss on canonical modal', () => {
     expect(PANEL_SRC).toContain('onDismiss={handleGameOverDismiss}');
-    expect(PANEL_SRC).toMatch(/closeSideRailPanel[\s\S]*handleGameOverDismiss/);
+    expect(PANEL_SRC).toMatch(/function handleGameOverDismiss\(\)[\s\S]*setGameOverOverlayDismissed\(true\)/);
   });
 
   it('gates Start New Game on owner only, not panel visibility', () => {
