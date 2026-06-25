@@ -17,6 +17,116 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+---
+
+---
+
+## 2026-06-23 — Poker beta hardening pass
+
+- **Heads-up blinds:** dealer/button = SB, other = BB; preflop actor = SB; postflop = BB (`helpers.ts` + tests).
+- **Server IOU dedup:** poker challenge nonce includes table + hand + parties + amount; idempotent retry; practice blocked server-side.
+- **Challenge join policy:** new players blocked after participant snapshot (`holdemChallengeJoin.ts` + server join guard).
+- **Layout QA:** `pokerStabilization.test.tsx` shell render contract (6-seat, actions + chat + pot lines).
+- **Docs:** audit + spec updated; remaining risks narrowed.
+
+## 2026-06-23 — Poker final stabilization audit (Phases A–D2)
+
+- **Audit:** `docs/POKER_FINAL_STABILIZATION_AUDIT.md` — PASS WITH RISKS.
+- **Fix:** challenge participant snapshot deferred to first hand (not table setup).
+- **Fix:** `validatePokerBlinds` at holdem setup + `TableStakePanel` confirm.
+- **Fix:** game-over overlay shows blocking reason when IOU settlement fails.
+- **Fix:** ALL IN / WIN badge CSS.
+- **Tests:** `holdemTableSetup.test.ts`, `pokerStabilization.test.tsx`.
+
+## 2026-06-23 — Poker Phase D2: challenge participant accounting and IOU safety
+
+- **`challengeParticipants.ts`** — canonical participant helper; excludes bank/box/virtual practice seats.
+- **`pokerConfig.challengeParticipants`** — frozen snapshot at challenge setup / first hand start.
+- **Settlement** — `validatePokerChallengeSettlement`; IOU count and stake use `participantCount` only.
+- **UI** — game-over overlay shows participants, stake per participant, missing-email blockers.
+
+## 2026-06-23 — Poker Phase D1: authoritative challenge winner
+
+- **`challengeWinner.ts`** — elimination helpers, automatic last-player-standing winner, host early-end chip leader (tie blocked).
+- **`pokerConfig`** — `challengeStatus`, `challengeWinnerSeatId`, `challengeEndReason`, `challengeEndedAt`.
+- **Auto end** after hand payout via `maybeAutoEndHoldemChallenge` in `applyHoldemUpdate`.
+- **Server action** `endHoldemChallenge` (host-only, no active hand).
+- **UI:** End Challenge button; game-over overlay uses authoritative winner; IOUs blocked without winner.
+- **IOU math unchanged** — winner source only.
+
+## 2026-06-23 — Poker Phase C2: side-pot payout and uncalled bet return
+
+- **`uncalledBetReturn.ts`** — returns unmatched excess to sole remaining player before payout.
+- **`sidePotPayout.ts`** — per-pot winner selection, tie splits, remainder by seat order.
+- **`showdownPayout.ts`** — side-pot-aware ledger payout replaces single-pot split.
+- **UI:** payout summary + winning hand in pot area; WIN seat badge.
+- **Challenge/IOU:** unchanged — settlement still based on challenge result, not chip stack.
+
+## 2026-06-23 — Poker Phase C1: all-in and side-pot foundations
+
+- **`holdemAllIn` TABLE_ACTION** + canonical `{ type: 'all-in' }` — commits full stack, marks seat `all-in`, advances action.
+- **`buildHoldemSidePots`** — deterministic side-pot construction from `playerTotalCommitted`; stored on `holdem.sidePots`.
+- **Betting completion** — all-in players skipped in turn order; auto runout when all remaining players are all-in.
+- **UI:** All In button (online + offline), seat all-in badge, side-pot count label when >1 pot.
+- **Deferred:** per-side-pot showdown payout; challenge settlement unchanged.
+
+## 2026-06-23 — Poker Phase B completion: server-authoritative blind edits
+
+- **`updateHoldemBlinds` TABLE_ACTION:** host-only; blocked mid-hand; validates `smallBlind`/`bigBlind` server-side.
+- **Reducer:** `updatePokerBlindsOnState` updates `tableMeta.pokerConfig` + `holdemSettings` mirror; persist + broadcast on success.
+- **PokerPanel:** online dispatches `updateHoldemBlinds` (no local mutation); offline keeps `updatePokerBlindsOnState`.
+- **Tests:** `holdemTableActions.test.ts`, `holdemTurnAuthority.test.ts`, `PokerPanel.test.tsx` blind edit coverage.
+
+## 2026-06-24 — Poker Phase B: server-authoritative Hold'em actions
+
+- **TABLE_ACTIONS:** `startHoldemHand`, `holdemFold`, `holdemCheck`, `holdemCall`, `holdemBet`, `holdemRaise`, `holdemShuffleDeck`.
+- **Server:** `applyHoldemTableActionToState`, `holdemTurnAuthority.ts`, authority + applyAction wiring.
+- **Client:** `PokerPanel` online → `onlineDispatch`; offline → local wrapper unchanged.
+- **Deferred:** all-in, side pots, showdown rewrite, challenge winner authority.
+
+## 2026-06-23 — Poker Phase A completion: PokerPanel wired to canonical wrapper
+
+- **PokerPanel:** All offline gameplay (start-hand, fold, check, call, bet, raise) routes through `pokerHoldemDispatch` → `applyHoldemActionToState()`.
+- **Errors:** Failed actions do not mutate state; all-in surfaces “Action unavailable: all-in is not implemented yet.”
+- **Tests:** `PokerPanel.test.tsx`, `pokerHoldemDispatch.test.ts`.
+- **Deferred:** Server `TABLE_ACTIONS` (Phase B); all-in / side pots / showdown (Phase C).
+
+## 2026-06-23 — Poker Phase A: canonical Hold'em state foundations
+
+- **Shared types:** `PokerTableConfig` moved to `src/types/poker.ts`; engine/setup import shared types (no `src/games/poker` in engine).
+- **Canonical holdem types:** `holdemState.ts`, `holdemActions.ts` — target phase/player/hand shapes (legacy `HoldemRound` still runtime).
+- **Strangler wrapper:** `applyHoldemActionToState()` delegates to existing `*OnState` helpers; returns `{ ok, state, error? }`.
+- **Selectors:** `holdemSelectors.ts` — dealer/SB/BB/acting/phase/blind-edit priority documented; `mapPokerTableViewModel` uses selectors.
+- **Tests:** `holdemSelectors.test.ts`, `applyHoldemActionToState.test.ts`.
+- **Deferred:** Server `TABLE_ACTIONS` (Phase B); PokerPanel still calls legacy `*OnState` directly.
+
+## 2026-06-23 — Texas Hold'em Phase 1 pre-flight audit (docs only)
+
+- **Inventory:** `docs/POKER_ENGINE_INVENTORY.md` — existing holdem files, reducers, actions, state models, betting/dealer/blind/winner logic, multiplayer sync; each item tagged SAFE TO REUSE / REPLACE / UNKNOWN.
+- **State machine plan:** `docs/POKER_STATE_MACHINE_PLAN.md` — state ownership diagram, multiplayer authority audit, canonical type proposals (`HoldemPhase`, `HoldemHandState`, `SidePotState`, `DealerRotationState`), migration phases A–D, compatibility with `PokerTableShell` / mapper / chat / IOU.
+- **No code changes** — preparation only; holdem engine not implemented.
+
+## 2026-06-23 — Poker architecture audit + corrective patches
+
+- **Audit:** `docs/POKER_ARCHITECTURE_AUDIT.md` — isolation, state authority, risks before real engine.
+- **Fixes:** Removed mock view-model fallback; game-over overlay only on challenge end; blind validation in engine; block new game after IOU error.
+- **Tests:** Global chat hidden on poker tables; blind validation; no mock seat injection.
+
+## 2026-06-23 — Poker wired into table flow (Texas Hold'em)
+
+- **New Table setup:** Cards category → card-game step (Blackjack / Poker Texas Hold'em) → Practice or Challenge.
+- **Poker challenge:** wager label, total challenge value, invites, starting stack, small/big blind; winner-takes-all IOU handoff per loser.
+- **Production route:** `TableScreen` renders isolated `PokerPanel` + `PokerTableShell` (legacy `HoldemPanel` no longer routed).
+- **Engine setup:** `holdemTableSetup.ts`, `createNewHoldemTable()`, `tableMeta.pokerConfig`, online `configureTable`/`resetTable` branches.
+- **Table UX:** owner blind edit before hand, dealer/SB/BB badges, embedded table chat, challenge game-over IOU overlay.
+- **Unchanged:** Blackjack and Zilch layout/gameplay paths.
+
+## 2026-06-23 — Poker table UI scaffold (`src/games/poker/`)
+
+- **New module:** Casino-style Hold'em table shell — elliptical felt, seat ring, community board, pot area, action panel, chat dock.
+- **State:** `pokerTypes.ts` view models + `pokerMockState.ts` for offline preview; not yet mapped from `GameState` / `HoldemPanel`.
+- **Production route unchanged:** `TableScreen` still renders legacy `HoldemPanel`.
+
 ## 2026-06-22 — New Table modal layout + desktop player boxes scroll guard
 
 - **New Table modal:** Body-only vertical scroll; fixed header/close; sticky Back/Start Table footer; full-width embedded form; no horizontal overflow (`NewTableOverlay.css`, `TableStakePanel.css`, `mobile-modals.css`).

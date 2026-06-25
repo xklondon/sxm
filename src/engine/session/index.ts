@@ -12,6 +12,7 @@ export {
   addSeatAtTable,
   confirmTableAgreement,
   createNewBlackjackTable,
+  createNewHoldemTable,
   createNewZilchTable,
   defaultBlackjackSeatId,
   nextBoxDisplayName,
@@ -38,7 +39,16 @@ export {
   type ZilchTableStakeSetupInput,
 } from './zilchTableSetup';
 export {
+  applyHoldemTableResetSetup,
+  applyHoldemTableStakeSetup,
+  parseHoldemTableStakePayload,
+  rotatePokerDealerOnState,
+  updatePokerBlindsOnState,
+  type HoldemTableStakeSetupInput,
+} from './holdemTableSetup';
+export {
   ensureBlackjackTableIdentity,
+  ensureHoldemTableIdentity,
   ensureZilchTableIdentity,
   isBlackjackTable,
   isHoldemTable,

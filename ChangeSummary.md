@@ -1,59 +1,63 @@
-# Change Summary — New Table modal + desktop player boxes scroll
+# Change Summary — Poker Staging QA
 
-## Root cause
+## QA status
 
-### New Table popup
-1. **`mobile-modals.css` scrolled the entire panel** (`overflow-y: auto` on `.new-table-overlay__panel`), so header, close X, and footer nav scrolled together with ugly native scrollbars.
-2. **`TableStakePanel` embedded mode** used `overflow: visible` and a **768px+ two-column grid**, wider than the ~22rem modal — causing horizontal overflow.
-3. **Back / Start Table** lived inside the scrollable body with no sticky footer, so long forms could push buttons partially off-screen.
+**Automated gate: PASS** | **Manual browser: PENDING human sign-off** | **Production: NO** | **Friend-table beta: YES**
 
-### Desktop player boxes scroll
-1. **Box tiles used `overflow: visible`** with **2× value scale** and fixed stake bands, so content exceeded the shell’s fixed **boxes zone** (~6.1rem).
-2. **Desktop felt had `overflow-y: visible`** — spill from boxes increased shell height and caused page/table vertical scroll.
-3. **Prior fix in `bj-blackjack-targeted-fixes.css`** only covered Full Table during deal/play — not betting, not Card View desktop.
+Full report: `docs/POKER_STAGING_QA_REPORT.md`
 
-## What changed
+## Local app
 
-### New Table modal
-- **`NewTableOverlay.css`** — panel `overflow: hidden`; body-only vertical scroll with thin scrollbar; fixed header; safe-area padding; capped width `24rem`.
-- **`TableStakePanel.css`** — embedded overlay: flex column, single-column form, full-width inputs, **sticky nav footer** (Back / Start Table) with gradient backdrop.
-- **`mobile-modals.css`** — New Table panel no longer scrolls as a whole; body scrolls inside overlay.
+| Check | Result |
+|-------|--------|
+| `npm run dev` | Running — `http://localhost:5173`, LAN `http://192.168.0.43:5173`, API `127.0.0.1:3017` |
+| Health (proxy + direct) | PASS (dev self-check) |
 
-### Desktop player boxes
-- **`bj-blackjack-targeted-fixes.css`** — desktop Full + Card View: felt/shell/boxes zone `overflow: hidden`.
-- **`bj-player-row-layout.css`** — boxes-zone-only tile scale (`--bj-desktop-box-value-scale: 1.55`), `max-height: 100%`, `overflow: hidden` on tiles.
+## Automated test matrix (checklist coverage)
 
-## Files changed
+| Checklist item | Coverage |
+|----------------|----------|
+| Practice setup / no IOU | `pokerIntegration`, `pokerStabilization`, `holdemTableSetup` |
+| Challenge settlement / roster | `pokerChallengeSettlement.test.ts`, `challengeParticipants.test.ts` |
+| Invalid blinds | `validatePokerBlinds`, `holdemTableSetup.test.ts` |
+| Join after first hand blocked | `holdemChallengeJoin.test.ts` (engine + server) |
+| IOU dedup / practice block | `iouHandoff.test.ts` |
+| Heads-up blinds | `headsUpBlinds.test.ts`, `holdemSelectors.test.ts` |
+| Online authority | `holdemTableActions.test.ts`, `holdemTurnAuthority.test.ts` |
+| Layout shell (6-seat, chat, actions, pots) | `pokerStabilization.test.tsx` |
+| BJ/Zilch regression smoke | `pokerIntegration` smoke block |
+| Global vs embedded chat | `pokerStabilization` TableScreen test |
 
-| File | Change |
+**171** holdem/poker/server + **29** integration/setup + **27** ownership + **2** BJ/Zilch smoke — all passed.
+
+## Bugs found / fixed
+
+| Bug | Fix |
+|-----|-----|
+| `devLink` was relative path → `test-local-flow` threw `Invalid URL` | `server/src/auth/service.ts` — return full `verifyUrl` in dev |
+
+No gameplay/layout bugs found in automated pass.
+
+## Manual QA (you must run)
+
+Open host + guest/incognito at **http://192.168.0.43:5173** and walk sections 2–7 in `docs/POKER_STAGING_QA_REPORT.md`.
+
+## Deployment
+
+| Item | Status |
 |------|--------|
-| `src/components/NewTableOverlay.css` | Header/body split, body scroll, safe-area |
-| `src/components/TableStakePanel.css` | Embedded overlay layout + sticky nav |
-| `src/styles/mobile-modals.css` | Panel overflow hidden (body scrolls) |
-| `src/styles/bj-blackjack-targeted-fixes.css` | Desktop boxes zone containment |
-| `src/styles/bj-player-row-layout.css` | Boxes-zone tile sizing clamp |
-| `src/components/newTableModalLayout.test.tsx` | **New** layout contract tests |
-| `src/components/newTableOverlay.test.tsx` | Updated width/sticky assertions |
-| `package.json` | Added test to `test:blackjack:layout` |
+| Deploy URL | `https://sxm-production.up.railway.app` |
+| Health smoke | PASS (`/health`, `/api/health`) |
+| Full live flow | Blocked by magic-link rate limit during automated run — retry after cooldown or use SMTP inbox |
+| Commit / push | **Not done** — pending your manual QA sign-off (large uncommitted Poker tree) |
 
-## Frozen / untouched
+## Production blockers (unchanged)
 
-**Not modified:** `tableLayoutEngine.ts`, `blackjackCardPlacementContract.ts`, `blackjackUiRenderContract.ts`, card layout CSS, reveal/play flow, Game Over modal, 2×/swipe, command box, gameplay, IOU/ledger/auth/Zilch.
+1. Manual mobile QA
+2. Persistent server IOU dedup store
+3. Double-click action dispatch guard
+4. Real multi-user challenge E2E on staging
 
-## Test results
+**Blackjack / Zilch:** not modified.
 
-| Command | Result |
-|---------|--------|
-| `npm run test:ownership` | 27 passed |
-| `npm run test:layout:target` | 53 passed |
-| `npm run test:blackjack:layout` | 259 passed |
-| `npm run build` | Success |
-
-## Browser checklist
-
-1. **New Table popup** — no horizontal scrollbar  
-2. **Header / close X** — fixed at top, always visible  
-3. **Start Table / Back** — fixed at bottom, always clickable  
-4. **Desktop player boxes** — no page/table vertical scroll from boxes row  
-
-Spec discipline: checked/updated `docs/CHANGE_LOG.md`; `SXM_MASTER_SPEC.md` unchanged (modal/boxes CSS-only).
+**Spec discipline:** QA report added; no spec change required for QA-only pass.

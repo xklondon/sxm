@@ -20,12 +20,23 @@ import {
   parseTableStakeSetupPayload,
 } from '../../../src/engine/session/tableSetup.js';
 import {
+  applyHoldemTableResetSetup,
+  applyHoldemTableStakeSetup,
+  parseHoldemTableStakePayload,
+  updatePokerBlindsOnState,
+} from '../../../src/engine/session/holdemTableSetup.js';
+import { endHoldemChallengeEarlyOnState } from '../../../src/engine/holdem/challengeWinner.js';
+import {
   applyZilchTableResetSetup,
   applyZilchTableStakeSetup,
   beginZilchPlay,
   parseZilchTableStakePayload,
 } from '../../../src/engine/session/zilchTableSetup.js';
 import { isZilchTable } from '../../../src/engine/session/zilchTableKind.js';
+import {
+  applyHoldemTableActionToState,
+  isHoldemGameplayAction,
+} from '../../../src/engine/holdem/applyHoldemTableAction.js';
 import {
   applyZilchActionToState,
   isZilchGameplayAction,
@@ -108,6 +119,14 @@ export function applyTableAction(
         const zilchInput = parseZilchTableStakePayload(payload, controllerName);
         return applyZilchTableStakeSetup(state, zilchInput);
       }
+      if (
+        payload.gameType === 'texas-holdem' ||
+        payload.cardGame === 'holdem' ||
+        payload.protocolId === 'texas-holdem'
+      ) {
+        const holdemInput = parseHoldemTableStakePayload(payload, controllerName);
+        return applyHoldemTableStakeSetup(state, holdemInput);
+      }
       const input = parseTableStakeSetupPayload(payload, controllerName);
       return applyTableStakeSetup(state, input);
     }
@@ -123,11 +142,26 @@ export function applyTableAction(
         const zilchInput = parseZilchTableStakePayload(payload, controllerName);
         return applyZilchTableResetSetup(state, zilchInput, personId);
       }
+      if (
+        payload.gameType === 'texas-holdem' ||
+        payload.cardGame === 'holdem' ||
+        payload.protocolId === 'texas-holdem'
+      ) {
+        const holdemInput = parseHoldemTableStakePayload(payload, controllerName);
+        return applyHoldemTableResetSetup(state, holdemInput, personId);
+      }
       const input = parseTableStakeSetupPayload(payload, controllerName);
       return applyTableResetSetup(state, input, personId);
     }
     case 'zilchStartGame':
       return beginZilchPlay(state);
+    case 'updateHoldemBlinds': {
+      const smallBlind = Number(payload.smallBlind);
+      const bigBlind = Number(payload.bigBlind);
+      return updatePokerBlindsOnState(state, smallBlind, bigBlind);
+    }
+    case 'endHoldemChallenge':
+      return endHoldemChallengeEarlyOnState(state);
     case 'assignChips': {
       const recipientId = payload.recipientId as string;
       const amount = Number(payload.amount);
@@ -161,6 +195,9 @@ export function applyTableAction(
       }
       if (isZilchGameplayAction(action)) {
         return applyZilchActionToState(state, action, payload);
+      }
+      if (isHoldemGameplayAction(action)) {
+        return applyHoldemTableActionToState(state, action, personId, payload);
       }
       throw new Error(`Action not applied on state: ${action}`);
   }

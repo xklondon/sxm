@@ -6,11 +6,14 @@ import type { BankBustSettlementMode } from '../types/table';
 import {
   applyTableResetSetup,
   applyTableStakeSetup,
+  applyHoldemTableResetSetup,
+  applyHoldemTableStakeSetup,
   applyZilchTableResetSetup,
   applyZilchTableStakeSetup,
   DEFAULT_TABLE_CHIPS,
   type TableBankerSetupMode,
   type TableStakeSetupInput,
+  type HoldemTableStakeSetupInput,
   type ZilchTableStakeSetupInput,
 } from '../engine/session';
 import {
@@ -26,6 +29,7 @@ import { invitePersonToTable } from '../api/client';
 import type { InvitedTablePlayerSetup } from '../features/messaging/tableMessagingTypes';
 import { isOnlineModeEnabled } from '../api/config';
 import { createTableInvite } from '../engine/table/invites';
+import { validatePokerBlinds } from '../types/poker';
 
 import { DEFAULT_PRACTICE_TABLE_NAME } from '../types/tableFeltSkin';
 
@@ -37,10 +41,13 @@ import {
 } from './tableStakeSetupDirty';
 import {
   createFreshSetupDraft,
+  goBackFromCardGame,
   goBackFromMode,
   goBackFromSettings,
+  isHoldemSetupDraft,
   isZilchSetupDraft,
   prepareTableStateForSetupConfirm,
+  selectCardGame,
   selectCategoryCards,
   selectCategoryDice,
   selectMode,
@@ -63,7 +70,7 @@ interface TableStakePanelProps {
   resetSetupVariant?: TableResetSetupVariant;
   onConfirm: (state: GameState) => void;
   /** When set with mode `new`, confirm creates a fresh table instead of mutating the current one. */
-  onConfirmNewTable?: (input: TableStakeSetupInput | ZilchTableStakeSetupInput) => void | Promise<void>;
+  onConfirmNewTable?: (input: TableStakeSetupInput | ZilchTableStakeSetupInput | HoldemTableStakeSetupInput) => void | Promise<void>;
   /** Called after online reset dispatches (state arrives via socket). */
   onFinished?: () => void;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
@@ -172,7 +179,11 @@ export function TableStakePanel({
   const [bankDrawAuto, setBankDrawAuto] = useState(flow.bankDrawMode === 'auto');
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
+  const [smallBlind, setSmallBlind] = useState(String(gameState.holdemSettings.smallBlind ?? 5));
+  const [bigBlind, setBigBlind] = useState(String(gameState.holdemSettings.bigBlind ?? 10));
+  const [totalChallengeValue, setTotalChallengeValue] = useState('');
   const isZilchStakeFlow = isZilchSetupDraft(draft);
+  const isHoldemStakeFlow = isHoldemSetupDraft(draft);
   const initialSetupSnapshotRef = useRef<TableStakeSetupSnapshot | null>(null);
   if (!initialSetupSnapshotRef.current) {
     initialSetupSnapshotRef.current = createInitialTableStakeSetupSnapshot(gameState);
@@ -200,6 +211,48 @@ export function TableStakePanel({
     const bankAmount = Number.parseInt(bankChips, 10) || seatAmount;
 
     if (setupCategory === 'cards') {
+      if (draft.cardGame === 'holdem') {
+        if (tableMode === 'practice') {
+          return {
+            stakeDescription: 'Practice',
+            tableName: tableName.trim() || DEFAULT_PRACTICE_TABLE_NAME,
+            seatChips: seatAmount,
+            bankChips: seatAmount,
+            bankerMode: 'self',
+            bankerName: controller,
+            controllerName: controller,
+            controllerEmail: profile.email,
+            protocolId: 'texas-holdem',
+            naturalDealing: false,
+            dealSpeedPreset: 'normal',
+            cardTimerPreset: 0,
+            bankDrawAuto: true,
+            tableMode: 'practice',
+            invitedEmails: [],
+          };
+        }
+        return {
+          stakeDescription: stake.trim() || 'Friendly wager',
+          tableName: tableName.trim() || stake.trim() || 'Poker Challenge',
+          seatChips: seatAmount,
+          bankChips: seatAmount,
+          bankerMode: 'self',
+          bankerName: controller,
+          controllerName: controller,
+          controllerEmail: profile.email,
+          protocolId: 'texas-holdem',
+          naturalDealing: false,
+          dealSpeedPreset: 'normal',
+          cardTimerPreset: 0,
+          bankDrawAuto: true,
+          tableMode: 'challenge',
+          invitedEmails,
+          invitedPlayers: invitedPlayers.map((player) => ({
+            email: player.email,
+            inviteMessage: player.inviteMessage?.trim() || undefined,
+          })),
+        };
+      }
       if (tableMode === 'practice') {
         return {
           stakeDescription: 'Practice',
@@ -304,6 +357,22 @@ export function TableStakePanel({
     };
   }
 
+  function buildHoldemSetupInput(): HoldemTableStakeSetupInput {
+    const base = buildSetupInput();
+    const sb = Number.parseInt(smallBlind, 10) || 5;
+    const bb = Number.parseInt(bigBlind, 10) || 10;
+    const challengeValue =
+      tableMode === 'challenge' ? Number.parseFloat(totalChallengeValue.replace(/[^0-9.]/g, '')) : undefined;
+    return {
+      ...base,
+      smallBlind: sb,
+      bigBlind: bb,
+      totalChallengeValue: challengeValue,
+      currency: '$',
+      virtualPlayerCount: tableMode === 'practice' ? virtualPlayerCount : undefined,
+    };
+  }
+
   function buildZilchSetupInput(): ZilchTableStakeSetupInput {
     const base = buildSetupInput();
     return {
@@ -358,7 +427,52 @@ export function TableStakePanel({
   async function handleConfirm() {
     setSetupError(null);
 
-    if (setupCategory === 'cards' && tableMode === 'challenge') {
+    if (setupCategory === 'cards' && draft.cardGame === 'holdem' && tableMode === 'challenge') {
+      if (!stake.trim()) {
+        setSetupError('Enter what you are playing for.');
+        return;
+      }
+      const challengeValue = Number.parseFloat(totalChallengeValue.replace(/[^0-9.]/g, ''));
+      if (!Number.isFinite(challengeValue) || challengeValue <= 0) {
+        setSetupError('Enter the total challenge value (e.g. $100).');
+        return;
+      }
+      const sb = Number.parseInt(smallBlind, 10);
+      const bb = Number.parseInt(bigBlind, 10);
+      if (!Number.isFinite(sb) || sb <= 0 || !Number.isFinite(bb) || bb <= 0) {
+        setSetupError('Enter valid small and big blind amounts.');
+        return;
+      }
+      const blindRuleError = validatePokerBlinds(sb, bb);
+      if (blindRuleError) {
+        setSetupError(blindRuleError);
+        return;
+      }
+      if (invitedEmails.length === 0) {
+        setSetupError('Add at least one invited email.');
+        return;
+      }
+    }
+
+    if (setupCategory === 'cards' && draft.cardGame === 'holdem' && tableMode === 'practice') {
+      if (virtualPlayerCount < 1) {
+        setSetupError('Add at least one virtual player.');
+        return;
+      }
+      const sb = Number.parseInt(smallBlind, 10);
+      const bb = Number.parseInt(bigBlind, 10);
+      if (!Number.isFinite(sb) || sb <= 0 || !Number.isFinite(bb) || bb <= 0) {
+        setSetupError('Enter valid small and big blind amounts.');
+        return;
+      }
+      const blindRuleError = validatePokerBlinds(sb, bb);
+      if (blindRuleError) {
+        setSetupError(blindRuleError);
+        return;
+      }
+    }
+
+    if (setupCategory === 'cards' && draft.cardGame === 'blackjack' && tableMode === 'challenge') {
       if (!stake.trim()) {
         setSetupError('Enter what you are playing for.');
         return;
@@ -411,13 +525,21 @@ export function TableStakePanel({
               diceGame: 'zilch',
               inviteNote: inviteNote.trim() || undefined,
             }
-          : {
-              ...input,
-              gameCategory: 'cards',
-              gameType: 'blackjack',
-              cardGame: 'blackjack',
-              inviteNote: inviteNote.trim() || undefined,
-            };
+          : isHoldemStakeFlow
+            ? {
+                ...buildHoldemSetupInput(),
+                gameCategory: 'cards',
+                gameType: 'texas-holdem',
+                cardGame: 'holdem',
+                inviteNote: inviteNote.trim() || undefined,
+              }
+            : {
+                ...input,
+                gameCategory: 'cards',
+                gameType: 'blackjack',
+                cardGame: 'blackjack',
+                inviteNote: inviteNote.trim() || undefined,
+              };
         await onlineDispatch('resetTable', resetPayload);
         onFinished?.();
       } catch (err) {
@@ -445,12 +567,19 @@ export function TableStakePanel({
               gameType: 'zilch',
               diceGame: 'zilch',
             }
-          : {
-              ...input,
-              gameCategory: 'cards',
-              gameType: 'blackjack',
-              cardGame: 'blackjack',
-            };
+          : isHoldemStakeFlow
+            ? {
+                ...buildHoldemSetupInput(),
+                gameCategory: 'cards',
+                gameType: 'texas-holdem',
+                cardGame: 'holdem',
+              }
+            : {
+                ...input,
+                gameCategory: 'cards',
+                gameType: 'blackjack',
+                cardGame: 'blackjack',
+              };
         await onlineDispatch('configureTable', payload as unknown as Record<string, unknown>);
         if (
           onlineTableId &&
@@ -478,7 +607,11 @@ export function TableStakePanel({
       setSubmitting(true);
       try {
         await onConfirmNewTable(
-          isZilchStakeFlow ? buildZilchSetupInput() : input,
+          isZilchStakeFlow
+            ? buildZilchSetupInput()
+            : isHoldemStakeFlow
+              ? buildHoldemSetupInput()
+              : input,
         );
         onFinished?.();
       } finally {
@@ -494,9 +627,13 @@ export function TableStakePanel({
         ? isReset
           ? applyZilchTableResetSetup(base, buildZilchSetupInput(), base.tableMeta.ownerPersonId)
           : applyZilchTableStakeSetup(base, buildZilchSetupInput())
-        : isReset
-          ? applyTableResetSetup(base, input, base.tableMeta.ownerPersonId)
-          : applyTableStakeSetup(base, input);
+        : isHoldemStakeFlow
+          ? isReset
+            ? applyHoldemTableResetSetup(base, buildHoldemSetupInput(), base.tableMeta.ownerPersonId ?? '')
+            : applyHoldemTableStakeSetup(base, buildHoldemSetupInput())
+          : isReset
+            ? applyTableResetSetup(base, input, base.tableMeta.ownerPersonId)
+            : applyTableStakeSetup(base, input);
     if (!isReset && input.invitedPlayers?.length) {
       for (const player of input.invitedPlayers) {
         ({ state: next } = createTableInvite(
@@ -511,6 +648,9 @@ export function TableStakePanel({
   }
 
   function mapDraftStepToSnapshotStage(step: SetupDraft['step']): 'category' | 'mode' | 'settings' {
+    if (step === 'cardGame') {
+      return 'category';
+    }
     return step;
   }
 
@@ -768,6 +908,237 @@ export function TableStakePanel({
     );
   }
 
+  function renderCardGameStage() {
+    return (
+      <>
+        <fieldset className="table-stake-panel__banker">
+          <legend>Game / protocol</legend>
+          <p className="table-stake-panel__hint">Choose a card game under the Cards category.</p>
+          <div className="table-stake-panel__tabs" role="group" aria-label="Card game">
+            <button
+              type="button"
+              className="table-stake-panel__select-btn"
+              onClick={() => setDraft((prev) => selectCardGame(prev, 'blackjack'))}
+            >
+              Blackjack
+            </button>
+            <button
+              type="button"
+              className="table-stake-panel__select-btn"
+              onClick={() => setDraft((prev) => selectCardGame(prev, 'holdem'))}
+            >
+              Poker — Texas Hold&apos;em
+            </button>
+          </div>
+        </fieldset>
+        <div className="table-stake-panel__nav">
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setDraft((prev) => goBackFromCardGame(prev))}
+          >
+            Back
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  function renderHoldemPracticeConfigure() {
+    return (
+      <>
+        <p className="table-stake-panel__hint">
+          Practice poker with virtual players. No wager or IOU settlement — default stacks and blinds are fine.
+        </p>
+        <label className="table-stake-panel__field">
+          <span>Table name</span>
+          <input
+            type="text"
+            className="table-stake-panel__input"
+            placeholder={DEFAULT_PRACTICE_TABLE_NAME}
+            value={tableName}
+            onChange={(e) => setTableName(e.target.value)}
+            maxLength={48}
+          />
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Virtual players</span>
+          <input
+            type="number"
+            min={1}
+            max={8}
+            className="table-stake-panel__input table-stake-panel__input--short"
+            value={virtualPlayerCount}
+            onChange={(e) => setVirtualPlayerCount(Number.parseInt(e.target.value, 10) || 1)}
+          />
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Starting stack per player</span>
+          <input
+            type="number"
+            min={1}
+            className="table-stake-panel__input table-stake-panel__input--short"
+            value={seatChips}
+            onChange={(e) => handleSeatChipsChange(e.target.value)}
+          />
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Small blind</span>
+          <input
+            type="number"
+            min={1}
+            className="table-stake-panel__input table-stake-panel__input--short"
+            value={smallBlind}
+            onChange={(e) => setSmallBlind(e.target.value)}
+          />
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Big blind</span>
+          <input
+            type="number"
+            min={1}
+            className="table-stake-panel__input table-stake-panel__input--short"
+            value={bigBlind}
+            onChange={(e) => setBigBlind(e.target.value)}
+          />
+        </label>
+        <div className="table-stake-panel__nav">
+          <button type="button" className="secondary" onClick={() => setDraft((prev) => goBackFromSettings(prev))}>
+            Back
+          </button>
+          <button
+            type="button"
+            className="table-stake-panel__confirm table-stake-panel__select-btn"
+            onClick={() => void handleConfirm()}
+            disabled={submitting}
+          >
+            {confirmButtonLabel()}
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  function renderHoldemChallengeConfigure() {
+    return (
+      <>
+        <label className="table-stake-panel__field">
+          <span>Table name</span>
+          <input
+            type="text"
+            className="table-stake-panel__input"
+            placeholder="Friday Night Poker"
+            value={tableName}
+            onChange={(e) => setTableName(e.target.value)}
+            maxLength={48}
+          />
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Play for what</span>
+          <input
+            type="text"
+            className="table-stake-panel__input"
+            placeholder='e.g. "Dinner", "$100", "Loser buys drinks"'
+            value={stake}
+            onChange={(e) => setStake(e.target.value)}
+            list="stake-examples-holdem"
+          />
+          <datalist id="stake-examples-holdem">
+            {STAKE_EXAMPLES.map((ex) => (
+              <option key={ex} value={ex} />
+            ))}
+          </datalist>
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Total challenge value</span>
+          <input
+            type="text"
+            className="table-stake-panel__input table-stake-panel__input--short"
+            placeholder="$100"
+            value={totalChallengeValue}
+            onChange={(e) => setTotalChallengeValue(e.target.value)}
+          />
+        </label>
+        <fieldset className="table-stake-panel__banker">
+          <legend>Invite players by email</legend>
+          <div className="table-stake-panel__invite-row">
+            <input
+              type="email"
+              className="table-stake-panel__input"
+              placeholder="friend@example.com"
+              value={inviteEmailInput}
+              onChange={(e) => setInviteEmailInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addInvitedEmail())}
+            />
+            <button type="button" className="secondary" onClick={addInvitedEmail}>
+              Add
+            </button>
+          </div>
+          {invitedPlayers.length > 0 && (
+            <ul className="table-stake-panel__invite-list">
+              {invitedPlayers.map((player) => (
+                <li key={player.email}>
+                  <div className="table-stake-panel__invite-item">
+                    <span>{player.email}</span>
+                    <button type="button" className="secondary" onClick={() => removeInvitedEmail(player.email)}>
+                      Remove
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </fieldset>
+        <label className="table-stake-panel__field">
+          <span>Starting stack per player</span>
+          <input
+            type="number"
+            min={1}
+            className="table-stake-panel__input table-stake-panel__input--short"
+            value={seatChips}
+            onChange={(e) => handleSeatChipsChange(e.target.value)}
+          />
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Small blind</span>
+          <input
+            type="number"
+            min={1}
+            className="table-stake-panel__input table-stake-panel__input--short"
+            value={smallBlind}
+            onChange={(e) => setSmallBlind(e.target.value)}
+          />
+        </label>
+        <label className="table-stake-panel__field">
+          <span>Big blind</span>
+          <input
+            type="number"
+            min={1}
+            className="table-stake-panel__input table-stake-panel__input--short"
+            value={bigBlind}
+            onChange={(e) => setBigBlind(e.target.value)}
+          />
+        </label>
+        <p className="table-stake-panel__hint">
+          Winner takes all — each losing player owes the winner an equal share of the total challenge value.
+        </p>
+        <div className="table-stake-panel__nav">
+          <button type="button" className="secondary" onClick={() => setDraft((prev) => goBackFromSettings(prev))}>
+            Back
+          </button>
+          <button
+            type="button"
+            className="table-stake-panel__confirm table-stake-panel__select-btn"
+            onClick={() => void handleConfirm()}
+            disabled={submitting}
+          >
+            {confirmButtonLabel()}
+          </button>
+        </div>
+      </>
+    );
+  }
+
   function renderCategoryStage() {
     return (
       <>
@@ -799,7 +1170,7 @@ export function TableStakePanel({
 
   function renderStagedModeStage() {
     const isDice = setupCategory === 'dice';
-    const gameLabel = isDice ? 'Zilch' : 'Blackjack';
+    const gameLabel = isDice ? 'Zilch' : isHoldemStakeFlow ? "Texas Hold'em" : 'Blackjack';
     return (
       <>
         {isReset && (
@@ -812,7 +1183,9 @@ export function TableStakePanel({
           <p className="table-stake-panel__hint table-stake-panel__hint--mode">
             {isDice
               ? 'Practice uses virtual players you control. Challenge is for real players with a wager and email invites.'
-              : 'Practice is a quick solo game with the dealer as bank. Challenge adds a wager, invited players, and a player bank.'}
+              : isHoldemStakeFlow
+                ? 'Practice uses virtual players with no IOU settlement. Challenge adds a wager, invites, and winner-takes-all IOUs.'
+                : 'Practice is a quick solo game with the dealer as bank. Challenge adds a wager, invited players, and a player bank.'}
           </p>
           <div className="table-stake-panel__tabs" role="group" aria-label="Table mode">
             <button
@@ -1228,6 +1601,12 @@ export function TableStakePanel({
       }
       return renderZilchChallengeConfigure();
     }
+    if (isHoldemStakeFlow) {
+      if (tableMode === 'practice') {
+        return renderHoldemPracticeConfigure();
+      }
+      return renderHoldemChallengeConfigure();
+    }
     if (tableMode === 'practice') {
       return renderPracticeConfigure();
     }
@@ -1248,11 +1627,11 @@ export function TableStakePanel({
   function confirmButtonLabel(): string {
     if (isReset) {
       if (isNewGameSetup) {
-        return isZilchStakeFlow ? 'Start new Zilch game' : 'Start new game';
+        return isZilchStakeFlow ? 'Start new Zilch game' : isHoldemStakeFlow ? 'Start new Poker game' : 'Start new game';
       }
-      return isZilchStakeFlow ? 'Start Zilch' : 'Start new game';
+      return isZilchStakeFlow ? 'Start Zilch' : isHoldemStakeFlow ? 'Start Poker' : 'Start new game';
     }
-    return isZilchStakeFlow ? 'Start Zilch' : 'Start Table';
+    return isZilchStakeFlow ? 'Start Zilch' : isHoldemStakeFlow ? 'Start Poker' : 'Start Table';
   }
 
   return (
@@ -1285,6 +1664,7 @@ export function TableStakePanel({
       )}
 
       {draft.step === 'category' && renderCategoryStage()}
+      {draft.step === 'cardGame' && renderCardGameStage()}
       {draft.step === 'mode' && renderStagedModeStage()}
       {draft.step === 'settings' && (
         <>

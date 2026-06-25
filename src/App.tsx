@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GameState } from './types';
 import {
+  applyHoldemTableStakeSetup,
   applyTableStakeSetup,
   applyZilchTableStakeSetup,
   createNewBlackjackTable,
+  createNewHoldemTable,
   createNewZilchTable,
   normalizeLoadedGameState,
 } from './engine/session';
 import type { InvitedTablePlayerSetup } from './features/messaging/tableMessagingTypes';
 import type { TableStakeSetupInput } from './engine/session/tableSetup';
 import type { ZilchTableStakeSetupInput } from './engine/session/zilchTableSetup';
+import type { HoldemTableStakeSetupInput } from './engine/session/holdemTableSetup';
 import { applySettingsToGameState, loadSettings } from './storage/settingsStorage';
 import { loadArchivedGame } from './storage/gameStorage';
 import { applyTableVisualPrefs } from './types/tableFeltSkin';
@@ -388,8 +391,9 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
   }, []);
 
   const handleConfirmNavNewTable = useCallback(
-    async (input: TableStakeSetupInput | ZilchTableStakeSetupInput) => {
+    async (input: TableStakeSetupInput | ZilchTableStakeSetupInput | HoldemTableStakeSetupInput) => {
       const isZilchInput = 'zilchMode' in input;
+      const isHoldemInput = input.protocolId === 'texas-holdem';
       if (onlineMode) {
         const profile = loadProfile();
         const displayName = profile.name.trim() || user?.email.split('@')[0] || 'Host';
@@ -402,12 +406,19 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
               gameType: 'zilch',
               diceGame: 'zilch',
             }
-          : {
-              ...input,
-              gameCategory: 'cards',
-              gameType: 'blackjack',
-              cardGame: 'blackjack',
-            };
+          : isHoldemInput
+            ? {
+                ...input,
+                gameCategory: 'cards',
+                gameType: 'texas-holdem',
+                cardGame: 'holdem',
+              }
+            : {
+                ...input,
+                gameCategory: 'cards',
+                gameType: 'blackjack',
+                cardGame: 'blackjack',
+              };
         const actionResult = await sendTableAction(
           result.tableId,
           'configureTable',
@@ -416,6 +427,7 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
         );
         if (
           !isZilchInput &&
+          !isHoldemInput &&
           input.tableMode === 'challenge' &&
           ((input.invitedPlayers?.length ?? 0) > 0 || (input.invitedEmails?.length ?? 0) > 0)
         ) {
@@ -423,6 +435,13 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
         }
         if (
           isZilchInput &&
+          input.tableMode === 'challenge' &&
+          ((input.invitedPlayers?.length ?? 0) > 0 || (input.invitedEmails?.length ?? 0) > 0)
+        ) {
+          await sendChallengeInvites(result.tableId, input);
+        }
+        if (
+          isHoldemInput &&
           input.tableMode === 'challenge' &&
           ((input.invitedPlayers?.length ?? 0) > 0 || (input.invitedEmails?.length ?? 0) > 0)
         ) {
@@ -445,17 +464,24 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
       }
       let state = isZilchInput
         ? createNewZilchTable()
-        : createTableWithSettings();
+        : isHoldemInput
+          ? createNewHoldemTable()
+          : createTableWithSettings();
       state = isZilchInput
         ? applyZilchTableStakeSetup(
             { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
             input,
           )
-        : applyTableStakeSetup(
-            { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
-            input,
-          );
-      if (!isZilchInput && input.invitedPlayers?.length) {
+        : isHoldemInput
+          ? applyHoldemTableStakeSetup(
+              { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
+              input as HoldemTableStakeSetupInput,
+            )
+          : applyTableStakeSetup(
+              { ...state, tableMeta: { ...state.tableMeta, showStakeSetup: false } },
+              input,
+            );
+      if (!isZilchInput && !isHoldemInput && input.invitedPlayers?.length) {
         for (const player of input.invitedPlayers) {
           const inviteResult = createTableInvite(
             state,
@@ -475,7 +501,17 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
           );
           state = inviteResult.state;
         }
-      } else if (!isZilchInput && input.invitedEmails?.length) {
+      } else if (isHoldemInput && input.tableMode === 'challenge' && input.invitedPlayers?.length) {
+        for (const player of input.invitedPlayers) {
+          const inviteResult = createTableInvite(
+            state,
+            player.email.split('@')[0] || 'Guest',
+            player.email,
+            player.inviteMessage ?? '',
+          );
+          state = inviteResult.state;
+        }
+      } else if (!isZilchInput && !isHoldemInput && input.invitedEmails?.length) {
         for (const email of input.invitedEmails) {
           const inviteResult = createTableInvite(state, email.split('@')[0] || 'Guest', email);
           state = inviteResult.state;

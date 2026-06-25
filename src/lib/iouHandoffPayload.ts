@@ -64,6 +64,10 @@ export interface IouHandoffCreateRequestBody {
   gameType?: string;
   title?: string;
   message?: string;
+  /** Poker challenge: hand index for server idempotency (pairs with settlementAmount). */
+  challengeHandNumber?: number;
+  /** Poker challenge: per-loser stake in major currency units. */
+  settlementAmount?: number;
 }
 
 export interface IouHandoffCreateSuccessResponse {
@@ -151,6 +155,29 @@ export function buildIouHandoffNonceMaterial(parts: {
     parts.debtorEmail.trim().toLowerCase(),
     parts.creditorEmail.trim().toLowerCase(),
     parts.wager.trim(),
+  ].join(':');
+}
+
+/** Stable game id for a completed poker challenge hand settlement batch. */
+export function buildPokerChallengeIouGameId(tableId: string, handNumber: number): string {
+  return `${tableId.trim()}-poker-challenge-h${handNumber}`;
+}
+
+/** Poker challenge IOU idempotency material (table + challenge hand + parties + amount). */
+export function buildPokerChallengeIouNonceMaterial(parts: {
+  tableId: string;
+  gameId: string;
+  debtorEmail: string;
+  creditorEmail: string;
+  settlementAmount: string;
+}): string {
+  return [
+    'sxm-poker-challenge',
+    parts.tableId.trim(),
+    parts.gameId.trim(),
+    parts.debtorEmail.trim().toLowerCase(),
+    parts.creditorEmail.trim().toLowerCase(),
+    parts.settlementAmount.trim(),
   ].join(':');
 }
 

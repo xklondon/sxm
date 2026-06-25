@@ -14,7 +14,21 @@ export type HoldemPlayerActionStatus =
   | 'waiting'
   | 'active'
   | 'acted'
-  | 'folded';
+  | 'folded'
+  | 'all-in';
+
+export interface HoldemSidePotSnapshot {
+  id: string;
+  amount: number;
+  eligibleSeatIds: string[];
+  threshold: number;
+}
+
+export interface HoldemSidePotPayoutSnapshot {
+  potId: string;
+  amount: number;
+  winnerSeatIds: string[];
+}
 
 export interface HoldemPlayerState {
   holeCardIds: string[];
@@ -41,6 +55,10 @@ export interface HoldemRound {
   winners: string[];
   resultSummary: string;
   lastRaiseSize: number;
+  sidePots?: HoldemSidePotSnapshot[];
+  winningHandLabel?: string;
+  payoutSummary?: string[];
+  sidePotPayouts?: HoldemSidePotPayoutSnapshot[];
 }
 
 export interface CreateHoldemRoundOptions {
@@ -73,6 +91,7 @@ export function createEmptyHoldemRound(
     winners: [],
     resultSummary: '',
     lastRaiseSize: bigBlind,
+    sidePots: [],
   };
 }
 

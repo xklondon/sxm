@@ -30,6 +30,16 @@ export const TABLE_ACTIONS = [
   'zilchQuitTurn',
   'zilchAdvanceAfterReveal',
   'zilchStartGame',
+  'startHoldemHand',
+  'holdemFold',
+  'holdemCheck',
+  'holdemCall',
+  'holdemBet',
+  'holdemRaise',
+  'holdemAllIn',
+  'holdemShuffleDeck',
+  'updateHoldemBlinds',
+  'endHoldemChallenge',
 ] as const;
 
 export type TableActionType = (typeof TABLE_ACTIONS)[number];

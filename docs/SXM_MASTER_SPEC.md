@@ -21,7 +21,7 @@ SXM Casino (SXMCards) is a casual card-and-dice table app for friends. Players u
 
 | Category | Games | Creation UX | Online multiplayer |
 |----------|-------|-------------|-------------------|
-| **Cards** | Blackjack (default), Texas Hold'em | Blackjack via `TableStakePanel` Cards tab | Blackjack ✅ · Hold'em ❌ |
+| **Cards** | Blackjack (default), Texas Hold'em | Blackjack via `TableStakePanel` Cards tab | Blackjack ✅ · Hold'em ✅ (online gameplay Phase B) |
 | **Dice** | Zilch | `TableStakePanel` Dice tab | Zilch ✅ |
 
 **Hard prohibitions:** No payments, wallets, deposits, cash-out, or real-money language.
@@ -292,15 +292,26 @@ Server resolves `activeHandKey`; client-sent `handKey` on hit/stand/double/split
 
 ## 9. Texas Hold'em Protocol
 
-### Status: offline engine + UI only
+### Status: offline engine + online gameplay (Phase B)
 
 | Component | Status |
 |-----------|--------|
-| Engine | `src/engine/holdem/` — betting, streets, hand evaluation |
-| UI | `HoldemPanel` in `TableScreen` when `isHoldemTable` |
-| Creation | Only via saved state with `gameType: 'texas-holdem'` |
-| Online | **No holdem actions** in `TABLE_ACTIONS` or `authority.ts` |
-| `TableStakePanel` | **Not offered** |
+| Engine | `src/engine/holdem/` — betting, streets, hand evaluation; canonical wrapper `applyHoldemActionToState()` |
+| UI (production route) | `PokerPanel` → `PokerTableShell` in `TableScreen` when `isHoldemTable` |
+| UI module | `src/games/poker/` — isolated table shell, mapper, chat hook, game-over IOU |
+| Setup | `TableStakePanel` — Cards → **Blackjack** or **Poker (Texas Hold'em)**; Practice / Challenge |
+| Config | `tableMeta.pokerConfig` in `src/types/poker.ts` — blinds, starting stack, challenge value, dealer rotation |
+| Creation | `createNewHoldemTable()` + `applyHoldemTableStakeSetup()` (local + online `configureTable`) |
+| Online gameplay | **Server-authoritative** — `startHoldemHand`, `holdemFold/Check/Call/Bet/Raise`, `holdemShuffleDeck` via `applyHoldemTableActionToState()` |
+| Client dispatch | Offline: local wrapper; Online: `onlineDispatch` → server action (no local holdem mutation) |
+| Chat | Embedded `PokerChatDock` via `usePokerTableChat` → shared `tableChatService` API |
+| Challenge settlement | Winner-takes-all IOUs — `totalChallengeValue / participantCount` per losing **challenge participant** (canonical roster snapshot; bank/box/session artifacts excluded); **winner** from `pokerConfig.challengeWinnerSeatId` |
+| Challenge end | **Auto:** one non-eliminated player after hand payout; **Host:** `endHoldemChallenge` when no active hand (chip leader, no ties) |
+| Challenge join | **Blocked** after first-hand participant snapshot (`isHoldemChallengeJoinLocked`) — new invite joins rejected with clear message; practice tables unchanged |
+| IOU idempotency | Server nonce = `tableId` + `poker-challenge-h{handNumber}` + debtor + creditor + `settlementAmount`; duplicate POST returns `alreadySubmitted`; practice IOUs rejected server-side |
+| Blinds | Owner may edit small/big blind **before** a hand starts only; **online:** server action `updateHoldemBlinds` (host-only); **offline:** `updatePokerBlindsOnState` |
+| Heads-up blinds | **2 players:** dealer/button = SB, other = BB; preflop action starts on dealer/SB; postflop on BB. **3+:** seat-after-dealer SB/BB unchanged |
+| Dealer button | Circular `D` badge + `SB`/`BB` seat badges; rotates clockwise each new hand |
 
 Hold'em has its own Full/Card view toggle in `TableScreen` (separate from blackjack view contract).
 
@@ -571,7 +582,7 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 
 - `isBlackjackTable` → `BlackjackPanel`
 - `isZilchTable` → `ZilchPanel`
-- `isHoldemTable` → `HoldemPanel`
+- `isHoldemTable` → `PokerPanel` (`src/games/poker/components/PokerPanel.tsx`)
 - `TableStakePanel` in `NewTableOverlay` when `showStakeSetup || resetSetupOpen` (sibling of layout — not inside `.table-felt`)
 
 ---
@@ -659,7 +670,7 @@ Enforced in `server/src/tables/authority.ts` before `applyTableAction`:
 | assignChips | `canUserAssignChips` (table admin + owner rules) |
 | Personal ledger | Game ended, not already added |
 
-**Not implemented:** Hold'em authority (no actions exist).
+**Hold'em online:** Server-authoritative gameplay, blind edits, all-in, side-pot construction and **showdown payout** (Phase C2); **challenge winner authority** (Phase D1).
 
 ---
 
@@ -671,7 +682,7 @@ Tracked future work — **not yet implemented:**
 |------|-------|
 | **Admin game activation** | Global toggle to enable/disable games (e.g. Zilch on/off). Today Zilch is always in `TableStakePanel` Dice tab; Hold'em is effectively off (no creation path). Target: People/root admin or deployment config. |
 | **Join request host UI** | Approve/deny API exists; no host-facing UI |
-| **Texas Hold'em online** | Engine offline-only; needs `TABLE_ACTIONS`, authority, creation UX |
+| **Texas Hold'em online** | Gameplay + blinds + all-in + side-pot payout (C2) + challenge winner authority (D1) |
 | **`leaveTable` server action** | Listed in `TABLE_ACTIONS` but not applied in `applyAction.ts` |
 | **Table admin toggles online** | Most `AdminPanel` settings UI-only; only `assignChips` fully server-enforced |
 | **`GameSetupScreen`** | Dead route — remove or repurpose |
@@ -701,6 +712,7 @@ before the work is considered complete. See `.cursorrules`.
 | BJ stability contracts | `docs/BLACKJACK_STABILITY_CONTRACTS.md`, `src/components/blackjackActionContract.ts` |
 | Zilch engine | `src/engine/dice/zilch/` |
 | Hold'em engine | `src/engine/holdem/` |
+| Poker table UI scaffold | `src/games/poker/` |
 | Server actions | `server/src/tables/applyAction.ts`, `authority.ts` |
 | Auth | `server/src/auth/` |
 | People | `server/src/people/` |

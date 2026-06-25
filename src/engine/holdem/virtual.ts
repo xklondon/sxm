@@ -8,7 +8,8 @@ export type VirtualHoldemAction =
   | { type: 'call' }
   | { type: 'fold' }
   | { type: 'bet'; amount: number }
-  | { type: 'raise'; amount: number };
+  | { type: 'raise'; amount: number }
+  | { type: 'all-in' };
 
 const RAISE_THRESHOLD_MULTIPLIER = 3;
 
@@ -37,7 +38,7 @@ export function getVirtualHoldemAction(
   }
 
   if (toCall > balance) {
-    return { type: 'fold' };
+    return { type: 'all-in' };
   }
 
   if (conservative && round.currentBet > raiseThreshold) {

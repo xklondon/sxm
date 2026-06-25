@@ -104,11 +104,44 @@ export function isHoldemTable(state: GameState): boolean {
   if (isZilchTable(state)) {
     return false;
   }
-  return state.tableGame === 'texas-holdem' || state.session.gameType === 'texas-holdem';
+  if (state.tableGame === 'blackjack') {
+    return false;
+  }
+  return (
+    state.tableGame === 'texas-holdem' ||
+    state.session.gameType === 'texas-holdem' ||
+    state.tableMeta.cardGame === 'holdem'
+  );
+}
+
+/** Align tableGame, session.gameType, and table meta for Hold'em poker tables. */
+export function ensureHoldemTableIdentity(state: GameState): GameState {
+  if (!isHoldemTable(state)) {
+    return state;
+  }
+  return {
+    ...state,
+    tableGame: 'texas-holdem',
+    session: {
+      ...state.session,
+      gameType: 'texas-holdem',
+    },
+    tableMeta: {
+      ...state.tableMeta,
+      gameCategory: 'cards',
+      cardGame: 'holdem',
+      diceGame: undefined,
+    },
+    blackjack: null,
+    zilch: null,
+  };
 }
 
 /** Normalize loaded/saved/hydrated state before render. */
 export function normalizeLoadedGameState(state: GameState): GameState {
+  if (isHoldemTable(state)) {
+    return ensureHoldemTableIdentity(state);
+  }
   if (state.tableGame === 'blackjack') {
     return ensureBlackjackTableIdentity(state);
   }

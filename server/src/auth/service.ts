@@ -60,7 +60,7 @@ export class AuthService {
 
     return {
       ok: true,
-      devLink: config.isProduction ? undefined : verifyPath,
+      devLink: config.isProduction ? undefined : verifyUrl,
     };
   }
 

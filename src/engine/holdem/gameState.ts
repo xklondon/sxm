@@ -7,6 +7,7 @@ import {
   checkHoldemPlayer,
   foldHoldemPlayer,
   raiseHoldemPlayer,
+  allInHoldemPlayer,
 } from './betting';
 import {
   afterHoldemAction,
@@ -16,6 +17,7 @@ import {
   type HoldemEngineUpdate,
 } from './round';
 import { getVirtualHoldemAction, isVirtualHoldemPlayer } from './virtual';
+import { maybeAutoEndHoldemChallenge } from './challengeWinner';
 
 function requireHoldemState(
   state: GameState,
@@ -30,7 +32,7 @@ function requireHoldemState(
 }
 
 export function applyHoldemUpdate(state: GameState, update: HoldemEngineUpdate): GameState {
-  return {
+  const withHoldem: GameState = {
     ...state,
     session: update.session,
     players: update.players,
@@ -38,6 +40,7 @@ export function applyHoldemUpdate(state: GameState, update: HoldemEngineUpdate):
     deck: update.deck,
     holdem: update.round,
   };
+  return maybeAutoEndHoldemChallenge(withHoldem);
 }
 
 export function createHoldemRoundOnState(
@@ -136,6 +139,10 @@ export function raiseHoldemOnState(state: GameState, amount: number): GameState 
   return applyHoldemAction(state, (ctx) => raiseHoldemPlayer({ ...ctx, amount }));
 }
 
+export function allInHoldemOnState(state: GameState): GameState {
+  return applyHoldemAction(state, (ctx) => allInHoldemPlayer(ctx));
+}
+
 export function processVirtualHoldemTurns(state: GameState): GameState {
   if (!state.holdem || !state.deck || state.session.gameType !== 'texas-holdem') {
     return state;
@@ -174,6 +181,9 @@ export function processVirtualHoldemTurns(state: GameState): GameState {
         break;
       case 'raise':
         next = raiseHoldemOnState(next, action.amount);
+        break;
+      case 'all-in':
+        next = allInHoldemOnState(next);
         break;
       default:
         return next;

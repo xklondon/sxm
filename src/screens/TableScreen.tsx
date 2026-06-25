@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { GameState } from '../types';
-import { deriveAllBalancesFromLedger } from '../engine/ledger';
 import {
   drawTestCard,
   getDealtCards,
@@ -22,6 +21,7 @@ import {
 } from '../engine/session';
 import type { TableStakeSetupInput } from '../engine/session/tableSetup';
 import type { ZilchTableStakeSetupInput } from '../engine/session/zilchTableSetup';
+import type { HoldemTableStakeSetupInput } from '../engine/session/holdemTableSetup';
 import { log } from '../utils/logger';
 import {
   loadCurrentGame,
@@ -30,7 +30,7 @@ import {
 import { LedgerPanel } from '../components/LedgerPanel';
 import { PlayingCard } from '../components/PlayingCard';
 import { BlackjackPanel } from '../components/BlackjackPanel';
-import { HoldemPanel } from '../components/HoldemPanel';
+import { PokerPanel } from '../games/poker/components/PokerPanel';
 import { ZilchPanel } from '../components/ZilchPanel';
 import {
   TableStakePanel,
@@ -65,20 +65,7 @@ interface TableScreenProps {
   onProfileOpenChange?: (open: boolean) => void;
   onRegisterNavHandlers?: (handlers: TableNavHandlers | null) => void;
   /** When set, confirming New Table setup creates a fresh table (online or local). */
-  onConfirmNavNewTable?: (input: TableStakeSetupInput | ZilchTableStakeSetupInput) => void | Promise<void>;
-}
-
-function dealingStatusLabel(status: GameState['session']['dealingStatus']): string {
-  switch (status) {
-    case 'no-deck':
-      return 'No deck';
-    case 'ready':
-      return 'Ready';
-    case 'depleted':
-      return 'Depleted';
-    default:
-      return status;
-  }
+  onConfirmNavNewTable?: (input: TableStakeSetupInput | ZilchTableStakeSetupInput | HoldemTableStakeSetupInput) => void | Promise<void>;
 }
 
 export function TableScreen({
@@ -96,11 +83,8 @@ export function TableScreen({
 }: TableScreenProps) {
   const {
     session,
-    players,
-    ledger,
+    ledger: _ledger,
     deck,
-    tableViewMode,
-    selectedSeatId,
     tableMeta,
   } = gameState;
 
@@ -117,7 +101,6 @@ export function TableScreen({
   const [newTableSetupDirty, setNewTableSetupDirty] = useState(false);
   const [setupFlowKey, setSetupFlowKey] = useState(0);
 
-  const balances = deriveAllBalancesFromLedger(session, ledger);
   const remaining = deck ? getRemainingCardCount(deck) : 0;
   const lastDealt = deck ? getLastDealtCard(deck) : null;
   const dealtHistory = deck ? getDealtCards(deck) : [];
@@ -129,18 +112,6 @@ export function TableScreen({
     session.gameType === 'texas-holdem'
       ? session.dealerButtonPlayerId
       : session.bankPlayerId;
-
-  function setViewMode(mode: typeof tableViewMode) {
-    onGameStateChange({ ...gameState, tableViewMode: mode });
-  }
-
-  function setSelectedSeat(seatId: string) {
-    onGameStateChange({
-      ...gameState,
-      selectedSeatId: seatId,
-      tableViewMode: 'card',
-    });
-  }
 
   function handleJoinTable() {
     const name = joinName.trim();
@@ -164,7 +135,7 @@ export function TableScreen({
   }
 
   function handleRecordOutcome() {
-    const winnerId = selectedSeatId ?? defaultBlackjackSeatId(gameState);
+    const winnerId = gameState.selectedSeatId ?? defaultBlackjackSeatId(gameState);
     const loserId = bankId && bankId !== winnerId ? bankId : session.playerIds.find((id) => id !== winnerId) ?? null;
     if (!winnerId) {
       return;
@@ -173,6 +144,7 @@ export function TableScreen({
   }
 
   function handleLeaveBox() {
+    const selectedSeatId = gameState.selectedSeatId;
     if (!selectedSeatId || selectedSeatId === bankId) {
       return;
     }
@@ -234,7 +206,7 @@ export function TableScreen({
     }
   }
 
-  const stakeSetupOpen = (isBlackjack || isZilch) && (tableMeta.showStakeSetup || resetSetupOpen);
+  const stakeSetupOpen = (isBlackjack || isZilch || isHoldem) && (tableMeta.showStakeSetup || resetSetupOpen);
   const stagedNewTableOpen = stakeSetupOpen && !resetSetupOpen;
   const stakeSetupTitle = resetSetupOpen
     ? resetSetupVariant === 'newGame'
@@ -299,7 +271,7 @@ export function TableScreen({
     <main className="table-screen table-screen--casino">
       <InviteModal
         gameState={gameState}
-        open={inviteOpen && (isBlackjack || isZilch)}
+        open={inviteOpen && (isBlackjack || isZilch || isHoldem)}
         onClose={() => setInviteOpen(false)}
         onInvite={onGameStateChange}
         onInviteSent={(sentEmail) => {
@@ -337,26 +309,9 @@ export function TableScreen({
         </div>
       )}
 
-      {isHoldem && (
-        <div className="table-screen__view-bar">
-          <div className="table-screen__view-toggle">
-            <button type="button" className={tableViewMode === 'full' ? '' : 'secondary'} onClick={() => setViewMode('full')}>Full Table</button>
-            <button type="button" className={tableViewMode === 'card' ? '' : 'secondary'} onClick={() => setViewMode('card')}>Card View</button>
-          </div>
-          {tableViewMode === 'card' && (
-            <select className="table-screen__seat-select" value={selectedSeatId ?? ''} onChange={(e) => setSelectedSeat(e.target.value)}>
-              <option value="" disabled>Select box…</option>
-              {session.playerIds.map((id) => (
-                <option key={id} value={id}>{players[id].displayName}</option>
-              ))}
-            </select>
-          )}
-        </div>
-      )}
-
       <div
         className={`table-screen__layout table-screen__layout--wide${
-          isBlackjack || isZilch ? ' table-screen__layout--full' : ''
+          isBlackjack || isZilch || isHoldem ? ' table-screen__layout--full' : ''
         }`}
       >
         <section className="table-felt table-felt--casino" aria-label="Table">
@@ -397,28 +352,18 @@ export function TableScreen({
           )}
 
           {isHoldem && (
-            <>
-              <div className="table-felt__deck-area table-felt__deck-area--compact">
-                <p className="table-felt__deck-meta">{remaining} cards · {dealingStatusLabel(session.dealingStatus)}</p>
-                <button type="button" onClick={handleShuffle}>Shuffle</button>
-              </div>
-              <HoldemPanel
-                gameState={gameState}
-                onGameStateChange={onGameStateChange}
-                viewMode={tableViewMode}
-                selectedSeatId={selectedSeatId}
-              />
-              {(tableViewMode === 'full' || !selectedSeatId) && (
-                <ul className="table-felt__players">
-                  {session.playerIds.map((id) => (
-                    <li key={id} className="table-felt__player">
-                      <span>{players[id].displayName}</span>
-                      <span>{balances[id] ?? 0}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
+            <PokerPanel
+              gameState={gameState}
+              onGameStateChange={onGameStateChange}
+              onlineTableId={onlineTableId}
+              onlineDispatch={onlineDispatch}
+              viewerAuth={viewerAuth}
+              onInviteTable={() => setInviteOpen(true)}
+              onBeginTableReset={(variant = 'resetTable') => {
+                openSetupFlow({ reset: true, variant });
+              }}
+              onExitTable={onLeave}
+            />
           )}
 
           {!isBlackjack && !isHoldem && !isZilch && (
@@ -434,7 +379,7 @@ export function TableScreen({
           )}
         </section>
 
-        {!isBlackjack && !isZilch && (
+        {!isBlackjack && !isZilch && !isHoldem && (
           <aside className="table-screen__sidebar">
             <LedgerPanel
               gameState={gameState}
@@ -481,12 +426,14 @@ export function TableScreen({
           />
         </NewTableOverlay>
       )}
-      <TableChatDock
-        tableId={chatTableId}
-        currentUserEmail={chatUserEmail}
-        currentUserName={chatUserName}
-        preferServer={Boolean(onlineTableId)}
-      />
+      {!isHoldem && (
+        <TableChatDock
+          tableId={chatTableId}
+          currentUserEmail={chatUserEmail}
+          currentUserName={chatUserName}
+          preferServer={Boolean(onlineTableId)}
+        />
+      )}
     </main>
   );
 }

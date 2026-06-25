@@ -17,14 +17,17 @@ import {
   isZilchTable,
   normalizeLoadedGameState,
 } from '../engine/session';
-import { prepareTableStateForSetupConfirm } from './tableSetupFlow';
 import {
   createFreshSetupDraft,
+  goBackFromCardGame,
+  prepareTableStateForSetupConfirm,
+  selectCardGame,
   selectCategoryCards,
   selectCategoryDice,
   selectMode,
   goBackFromMode,
 } from './tableSetupFlow';
+import { validatePokerBlinds } from '../types/poker';
 import type { ZilchTableStakeSetupInput } from '../engine/session/zilchTableSetup';
 
 const noop = () => {};
@@ -59,12 +62,21 @@ function clickCategory(label: 'Cards' | 'Dice') {
   fireEvent.click(screen.getByRole('button', { name: label }));
 }
 
+function clickCardGame(label: 'Blackjack' | 'Poker') {
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: label === 'Blackjack' ? 'Blackjack' : /Poker.*Texas Hold/i,
+    }),
+  );
+}
+
 function clickMode(label: 'Practice' | 'Challenge') {
   fireEvent.click(screen.getByRole('button', { name: label }));
 }
 
 function navigateToBlackjackPractice() {
   clickCategory('Cards');
+  clickCardGame('Blackjack');
   clickMode('Practice');
 }
 
@@ -87,6 +99,42 @@ describe('canonical table setup routing', () => {
     navigateToBlackjackPractice();
     expect(screen.getByText('Rule protocol')).toBeTruthy();
     expect(screen.queryByText('Play to point goal')).toBeNull();
+  });
+
+  it('root flow: Cards → Poker → Practice shows holdem settings', () => {
+    render(
+      <TableStakePanel
+        gameState={createNewBlackjackTable()}
+        mode="new"
+        entryPoint="root"
+        setupFlowKey="poker-practice"
+        onConfirm={noop}
+      />,
+    );
+    clickCategory('Cards');
+    clickCardGame('Poker');
+    clickMode('Practice');
+    expect(screen.getByText('Small blind')).toBeTruthy();
+    expect(screen.getByText('Big blind')).toBeTruthy();
+    expect(screen.getByText('Virtual players')).toBeTruthy();
+  });
+
+  it('root flow: Cards → Poker → Challenge shows challenge value and blinds', () => {
+    render(
+      <TableStakePanel
+        gameState={createNewBlackjackTable()}
+        mode="new"
+        entryPoint="root"
+        setupFlowKey="poker-challenge"
+        onConfirm={noop}
+      />,
+    );
+    clickCategory('Cards');
+    clickCardGame('Poker');
+    clickMode('Challenge');
+    expect(screen.getByText('Total challenge value')).toBeTruthy();
+    expect(screen.getByText('Small blind')).toBeTruthy();
+    expect(screen.getByText('Big blind')).toBeTruthy();
   });
 
   it('root flow: Dice → Practice shows zilch settings', () => {
@@ -142,7 +190,10 @@ describe('canonical table setup routing', () => {
     });
     state = mergeSessionUpdate(state, spl);
     state = applyZilchTableStakeSetup(state, zilchSetup);
-    const draft = selectMode(selectCategoryCards(createFreshSetupDraft('reset-table')), 'practice');
+    const draft = selectMode(
+      selectCardGame(selectCategoryCards(createFreshSetupDraft('reset-table')), 'blackjack'),
+      'practice',
+    );
     const base = prepareTableStateForSetupConfirm(state, draft);
     const reset = applyTableResetSetup(
       base,
@@ -205,13 +256,14 @@ describe('canonical table setup routing', () => {
     let draft = selectCategoryDice(createFreshSetupDraft('root'));
     draft = goBackFromMode(draft);
     draft = selectCategoryCards(draft);
+    draft = selectCardGame(draft, 'blackjack');
     expect(draft.diceGame).toBeNull();
     expect(draft.cardGame).toBe('blackjack');
   });
 
   it('switching Cards then Dice clears card game from draft', () => {
     let draft = selectCategoryCards(createFreshSetupDraft('root'));
-    draft = goBackFromMode(draft);
+    draft = goBackFromCardGame(draft);
     draft = selectCategoryDice(draft);
     expect(draft.cardGame).toBeNull();
     expect(draft.diceGame).toBe('zilch');
@@ -228,8 +280,14 @@ describe('canonical table setup routing', () => {
       />,
     );
     clickCategory('Cards');
+    clickCardGame('Blackjack');
     clickMode('Practice');
     expect(screen.getByText('Rule protocol')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Continue' })).toBeNull();
+  });
+
+  it('holdem blind validation rejects big blind <= small blind', () => {
+    expect(validatePokerBlinds(10, 10)).toMatch(/greater/i);
+    expect(validatePokerBlinds(20, 10)).toMatch(/greater/i);
   });
 });

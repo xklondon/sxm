@@ -24,6 +24,10 @@ import { ensureTableMember, upsertTableMember } from './membership.js';
 import { TableNotFoundError } from './errors.js';
 import { InviteFlowError } from '../people/inviteErrors.js';
 import { logInviteFlowEvent } from './inviteFlowLog.js';
+import {
+  HOLDEM_CHALLENGE_JOIN_BLOCKED_MESSAGE,
+  isHoldemChallengeJoinLocked,
+} from '../../../src/engine/holdem/holdemChallengeJoin.js';
 
 import type { PeopleService } from '../people/service.js';
 
@@ -328,6 +332,12 @@ export class TableService {
     let spectator = false;
 
     if (!personId) {
+      if (isHoldemChallengeJoinLocked(state)) {
+        throw new InviteFlowError(
+          'INVITE_JOIN_DENIED',
+          HOLDEM_CHALLENGE_JOIN_BLOCKED_MESSAGE,
+        );
+      }
       state = addSeatAtTable(state, {
         displayName: params.displayName,
         controllerName: params.displayName,
@@ -720,6 +730,12 @@ export class TableService {
     let personId = this.store.getMember(params.tableId, params.userId)?.personId;
     let state = table.state;
     if (!personId) {
+      if (isHoldemChallengeJoinLocked(state)) {
+        throw new InviteFlowError(
+          'INVITE_JOIN_DENIED',
+          HOLDEM_CHALLENGE_JOIN_BLOCKED_MESSAGE,
+        );
+      }
       state = addSeatAtTable(state, {
         displayName: params.displayName,
         controllerName: params.displayName,

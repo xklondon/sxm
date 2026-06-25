@@ -138,7 +138,9 @@ export interface TableMeta {
     | 'bank-has-all-chips'
     | 'bank-empty'
     | 'all-players-eliminated'
-    | 'zilch-completed';
+    | 'zilch-completed'
+    | 'last-player-standing'
+    | 'chip-leader';
   /** Effective settlement applied at game end (may fall back to fractional on tie). */
   settlementMode?: BankBustSettlementMode;
   endedAt: string | null;
@@ -151,7 +153,9 @@ export interface TableMeta {
   /** Active dice game when gameCategory is dice. */
   diceGame?: 'zilch';
   /** Active card game when gameCategory is cards. */
-  cardGame?: 'blackjack';
+  cardGame?: 'blackjack' | 'holdem';
+  /** Texas Hold'em poker table config (isolated from blackjack/zilch). */
+  pokerConfig?: import('./poker').PokerTableConfig;
   /** Brief table-wide message in the command area (e.g. player joined). */
   tableNotice?: {
     message: string;

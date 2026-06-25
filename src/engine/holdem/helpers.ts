@@ -1,6 +1,21 @@
 import type { GameSession } from '../../types/session';
 import type { HoldemRound, HoldemPlayerState } from '../../types/holdem';
 import { computeHoldemPot } from '../../types/holdem';
+import { buildHoldemSidePots, type HoldemContribution } from './sidePots';
+
+export function isPlayerAllIn(ps: HoldemPlayerState | undefined): boolean {
+  return ps?.actionStatus === 'all-in';
+}
+
+export function isPlayerInHand(ps: HoldemPlayerState | undefined): boolean {
+  return Boolean(ps && ps.actionStatus !== 'folded');
+}
+
+export function getBettingEligiblePlayers(round: HoldemRound): string[] {
+  return Object.entries(round.playerStates)
+    .filter(([, ps]) => isPlayerInHand(ps) && !isPlayerAllIn(ps))
+    .map(([id]) => id);
+}
 
 export function getHoldemPlayerOrder(session: GameSession): string[] {
   return [...session.playerIds];
@@ -19,18 +34,41 @@ export function getSeatAfter(
   return order[(index + steps) % order.length];
 }
 
+function isHeadsUp(session: GameSession): boolean {
+  return session.playerIds.length === 2;
+}
+
+/** Heads-up: dealer/button posts small blind. 3+: seat after dealer. */
 export function getSmallBlindSeat(session: GameSession, dealerId: string): string {
+  if (isHeadsUp(session)) {
+    return dealerId;
+  }
   return getSeatAfter(session, dealerId, 1);
 }
 
+/** Heads-up: non-dealer posts big blind. 3+: two seats after dealer. */
 export function getBigBlindSeat(session: GameSession, dealerId: string): string {
+  if (isHeadsUp(session)) {
+    const other = session.playerIds.find((id) => id !== dealerId);
+    if (!other) {
+      throw new Error('Heads-up requires two distinct seats');
+    }
+    return other;
+  }
   return getSeatAfter(session, dealerId, 2);
 }
 
+/**
+ * Preflop first actor: heads-up dealer/SB acts first; 3+ UTG (seat after BB).
+ */
 export function getFirstPreflopActor(
   session: GameSession,
   bigBlindId: string,
+  dealerId?: string,
 ): string {
+  if (isHeadsUp(session)) {
+    return dealerId ?? getSmallBlindSeat(session, bigBlindId);
+  }
   return getSeatAfter(session, bigBlindId, 1);
 }
 
@@ -44,7 +82,7 @@ export function getFirstPostflopActor(
   for (let i = 1; i <= order.length; i += 1) {
     const id = order[(dealerIndex + i) % order.length];
     const ps = round.playerStates[id];
-    if (ps && ps.actionStatus !== 'folded') {
+    if (ps && isPlayerInHand(ps) && !isPlayerAllIn(ps)) {
       return id;
     }
   }
@@ -53,8 +91,23 @@ export function getFirstPostflopActor(
 
 export function getActivePlayers(round: HoldemRound): string[] {
   return Object.entries(round.playerStates)
-    .filter(([, ps]) => ps.actionStatus !== 'folded')
+    .filter(([, ps]) => isPlayerInHand(ps))
     .map(([id]) => id);
+}
+
+export function contributionsFromRound(round: HoldemRound): HoldemContribution[] {
+  return Object.entries(round.playerStates).map(([seatId, ps]) => ({
+    seatId,
+    amount: ps.playerTotalCommitted,
+    isFolded: ps.actionStatus === 'folded',
+  }));
+}
+
+export function recomputeHoldemSidePots(round: HoldemRound): HoldemRound {
+  return {
+    ...round,
+    sidePots: buildHoldemSidePots(contributionsFromRound(round)),
+  };
 }
 
 export function initHoldemPlayerStates(
@@ -74,7 +127,8 @@ export function initHoldemPlayerStates(
 }
 
 export function syncHoldemPot(round: HoldemRound): HoldemRound {
-  return { ...round, pot: computeHoldemPot(round) };
+  const withSidePots = recomputeHoldemSidePots(round);
+  return { ...withSidePots, pot: computeHoldemPot(round) };
 }
 
 export function resetStreetBets(round: HoldemRound): HoldemRound {
@@ -84,7 +138,12 @@ export function resetStreetBets(round: HoldemRound): HoldemRound {
       ...ps,
       playerBetsThisStreet: 0,
       hasActedThisStreet: false,
-      actionStatus: ps.actionStatus === 'folded' ? 'folded' : 'active',
+      actionStatus:
+        ps.actionStatus === 'folded'
+          ? 'folded'
+          : ps.actionStatus === 'all-in'
+            ? 'all-in'
+            : 'active',
     };
   }
   return syncHoldemPot({

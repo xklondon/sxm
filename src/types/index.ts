@@ -45,6 +45,8 @@ export {
 } from './holdem';
 
 export type { TableAgreement, TableOutcome, TableMeta, TableMode, TableSessionStatus, BankBustSettlementMode } from './table';
+export type { PokerProtocol, PokerTableMode, PokerTableConfig } from './poker';
+export { createDefaultPokerTableConfig, validatePokerBlinds } from './poker';
 export type { TableInviteRecord, InviteStatus, JoinTableParams } from './invites';
 export type { TableAdminSettings } from './admin';
 export { createDefaultTableMeta, resolveShowRoundSummaryOverlay } from './table';

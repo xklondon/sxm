@@ -21,6 +21,13 @@ import {
   canPersonDecideInsuranceForBox,
   getPendingInsuranceBoxIdsForPerson,
 } from '../../../src/engine/blackjack/insurance.js';
+import {
+  assertHoldemHostAction,
+  assertHoldemPlayerGameplayAction,
+  assertHoldemAllInAuthorized,
+  assertUpdateHoldemBlindsAuthorized,
+} from '../../../src/engine/holdem/holdemTurnAuthority.js';
+import { assertEndHoldemChallengeAuthorized } from '../../../src/engine/holdem/challengeWinner.js';
 
 export interface ActionContext {
   tableId: string;
@@ -129,6 +136,47 @@ export function assertActionAuthorized(state: GameState, ctx: ActionContext): vo
     case 'zilchQuitTurn':
     case 'zilchAdvanceAfterReveal':
       assertZilchPlayerTurn(state, ctx);
+      return;
+
+    case 'startHoldemHand':
+      assertHoldemHostAction(state, ctx.personId, { blockMidHandStart: true });
+      return;
+
+    case 'holdemShuffleDeck':
+      assertHoldemHostAction(state, ctx.personId, { blockMidHandShuffle: true });
+      return;
+
+    case 'updateHoldemBlinds':
+      assertUpdateHoldemBlindsAuthorized(
+        state,
+        ctx.personId,
+        Number(ctx.payload.smallBlind),
+        Number(ctx.payload.bigBlind),
+      );
+      return;
+
+    case 'endHoldemChallenge':
+      assertEndHoldemChallengeAuthorized(state, ctx.personId);
+      return;
+
+    case 'holdemFold':
+    case 'holdemCheck':
+    case 'holdemCall':
+      assertHoldemPlayerGameplayAction(state, ctx.personId, ctx.payload);
+      return;
+
+    case 'holdemBet':
+    case 'holdemRaise': {
+      assertHoldemPlayerGameplayAction(state, ctx.personId, ctx.payload);
+      const amount = Number(ctx.payload.amount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error('amount must be a positive number');
+      }
+      return;
+    }
+
+    case 'holdemAllIn':
+      assertHoldemAllInAuthorized(state, ctx.personId, ctx.payload);
       return;
 
     case 'leaveTable':

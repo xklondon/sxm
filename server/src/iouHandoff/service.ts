@@ -56,7 +56,7 @@ export class IouHandoffService {
 
     const resolved = resolveHandoffParties(body, tableState);
     try {
-      validateHandoffParties(resolved, normalizedViewer);
+      validateHandoffParties(resolved, normalizedViewer, tableState, body);
     } catch (err) {
       logHandoffRejection({
         tableId: resolved.tableId,
@@ -82,6 +82,8 @@ export class IouHandoffService {
       gameId: resolved.sessionId,
       gameType: resolved.gameType,
       message: body.message?.trim() || undefined,
+      challengeHandNumber: body.challengeHandNumber,
+      settlementAmount: body.settlementAmount,
     });
 
     const cached = this.submittedByNonce.get(payload.nonce);
@@ -200,12 +202,32 @@ function resolveHandoffParties(
 function validateHandoffParties(
   parties: ResolvedHandoffParties,
   viewerEmail: string,
+  tableState?: GameState | null,
+  body?: IouHandoffCreateRequestBody,
 ): void {
   if (!parties.debtorEmail || !parties.creditorEmail) {
     throw new Error('Debtor and creditor emails are required');
   }
   if (parties.debtorEmail === parties.creditorEmail) {
     throw new Error('Debtor and creditor must be different people');
+  }
+
+  const gameType = parties.gameType.trim().toLowerCase();
+  if (gameType === 'texas-holdem' && tableState?.tableMeta.pokerConfig) {
+    const config = tableState.tableMeta.pokerConfig;
+    if (config.mode === 'practice') {
+      throw new Error('Practice poker tables cannot send IOUs');
+    }
+    if (config.mode === 'challenge' && config.challengeStatus !== 'ended') {
+      throw new Error('Poker challenge must be ended before sending IOUs');
+    }
+    if (
+      config.mode === 'challenge' &&
+      body?.challengeHandNumber === undefined &&
+      body?.settlementAmount === undefined
+    ) {
+      throw new Error('Poker challenge IOUs require challengeHandNumber and settlementAmount');
+    }
   }
 
   const participants = new Set([

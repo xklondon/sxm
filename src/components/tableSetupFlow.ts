@@ -3,11 +3,11 @@ import { switchGameType } from '../engine/session/table';
 
 export type SetupEntryPoint = 'root' | 'menu-new-table' | 'reset-table';
 
-export type SetupStep = 'category' | 'mode' | 'settings';
+export type SetupStep = 'category' | 'cardGame' | 'mode' | 'settings';
 
 export type GameCategory = 'cards' | 'dice';
 export type GameMode = 'practice' | 'challenge';
-export type CardGame = 'blackjack';
+export type CardGame = 'blackjack' | 'holdem';
 export type DiceGame = 'zilch';
 
 export type SetupDraft = {
@@ -34,9 +34,9 @@ export function selectCategoryCards(draft: SetupDraft): SetupDraft {
   return {
     ...draft,
     category: 'cards',
-    cardGame: 'blackjack',
+    cardGame: null,
     diceGame: null,
-    step: 'mode',
+    step: 'cardGame',
   };
 }
 
@@ -50,6 +50,14 @@ export function selectCategoryDice(draft: SetupDraft): SetupDraft {
   };
 }
 
+export function selectCardGame(draft: SetupDraft, cardGame: CardGame): SetupDraft {
+  return {
+    ...draft,
+    cardGame,
+    step: 'mode',
+  };
+}
+
 export function selectMode(draft: SetupDraft, mode: GameMode): SetupDraft {
   return {
     ...draft,
@@ -58,7 +66,23 @@ export function selectMode(draft: SetupDraft, mode: GameMode): SetupDraft {
   };
 }
 
+export function goBackFromCardGame(draft: SetupDraft): SetupDraft {
+  return {
+    ...draft,
+    step: 'category',
+    category: null,
+    cardGame: null,
+  };
+}
+
 export function goBackFromMode(draft: SetupDraft): SetupDraft {
+  if (draft.category === 'cards') {
+    return {
+      ...draft,
+      step: 'cardGame',
+      mode: null,
+    };
+  }
   return {
     ...draft,
     step: 'category',
@@ -79,12 +103,15 @@ export function goBackFromSettings(draft: SetupDraft): SetupDraft {
 
 export function resolveSetupGameType(
   draft: SetupDraft,
-): 'blackjack' | 'zilch' | null {
+): 'blackjack' | 'zilch' | 'texas-holdem' | null {
   if (draft.category === 'dice' && draft.diceGame === 'zilch') {
     return 'zilch';
   }
   if (draft.category === 'cards' && draft.cardGame === 'blackjack') {
     return 'blackjack';
+  }
+  if (draft.category === 'cards' && draft.cardGame === 'holdem') {
+    return 'texas-holdem';
   }
   return null;
 }
@@ -95,6 +122,10 @@ export function isZilchSetupDraft(draft: SetupDraft): boolean {
 
 export function isBlackjackSetupDraft(draft: SetupDraft): boolean {
   return resolveSetupGameType(draft) === 'blackjack';
+}
+
+export function isHoldemSetupDraft(draft: SetupDraft): boolean {
+  return resolveSetupGameType(draft) === 'texas-holdem';
 }
 
 /** Strip opposing game identity before applying setup confirm. */
@@ -114,6 +145,7 @@ export function prepareTableStateForSetupConfirm(
         gameCategory: 'dice',
         diceGame: 'zilch',
         cardGame: undefined,
+        pokerConfig: undefined,
       },
     };
   }
@@ -127,6 +159,21 @@ export function prepareTableStateForSetupConfirm(
         gameCategory: 'cards',
         cardGame: 'blackjack',
         diceGame: undefined,
+        pokerConfig: undefined,
+      },
+    };
+  }
+  if (gameType === 'texas-holdem') {
+    return {
+      ...switchGameType(state, 'texas-holdem'),
+      blackjack: null,
+      zilch: null,
+      holdem: null,
+      tableMeta: {
+        ...state.tableMeta,
+        gameCategory: 'cards',
+        cardGame: 'holdem',
+        diceGame: undefined,
       },
     };
   }
@@ -137,7 +184,9 @@ export function setupPayloadGameCategory(draft: SetupDraft): GameCategory | unde
   return draft.category ?? undefined;
 }
 
-export function setupPayloadGameType(draft: SetupDraft): 'blackjack' | 'zilch' | undefined {
+export function setupPayloadGameType(
+  draft: SetupDraft,
+): 'blackjack' | 'zilch' | 'texas-holdem' | undefined {
   const resolved = resolveSetupGameType(draft);
   return resolved ?? undefined;
 }

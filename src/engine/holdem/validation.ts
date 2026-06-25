@@ -11,7 +11,7 @@ export function canCheckHoldem(round: HoldemRound, playerId: string): boolean {
     return false;
   }
   const ps = round.playerStates[playerId];
-  if (!ps || ps.actionStatus === 'folded') {
+  if (!ps || ps.actionStatus === 'folded' || ps.actionStatus === 'all-in') {
     return false;
   }
   return round.currentBet - ps.playerBetsThisStreet === 0;
@@ -26,7 +26,7 @@ export function canCallHoldem(
     return false;
   }
   const ps = round.playerStates[playerId];
-  if (!ps || ps.actionStatus === 'folded') {
+  if (!ps || ps.actionStatus === 'folded' || ps.actionStatus === 'all-in') {
     return false;
   }
   const toCall = round.currentBet - ps.playerBetsThisStreet;
@@ -73,8 +73,34 @@ export function canRaiseHoldem(
 }
 
 export function canFoldHoldem(round: HoldemRound, playerId: string): boolean {
-  return round.activePlayerId === playerId &&
-    round.playerStates[playerId]?.actionStatus !== 'folded';
+  const ps = round.playerStates[playerId];
+  return (
+    round.activePlayerId === playerId &&
+    ps?.actionStatus !== 'folded' &&
+    ps?.actionStatus !== 'all-in'
+  );
+}
+
+export function canAllInHoldem(
+  ledger: Ledger,
+  round: HoldemRound,
+  playerId: string,
+): boolean {
+  if (round.activePlayerId !== playerId) {
+    return false;
+  }
+  const ps = round.playerStates[playerId];
+  if (!ps || ps.actionStatus === 'folded' || ps.actionStatus === 'all-in') {
+    return false;
+  }
+  return derivePlayerBalanceFromLedger(playerId, ledger) > 0;
+}
+
+export function allInAmountForPlayer(
+  ledger: Ledger,
+  playerId: string,
+): number {
+  return Math.max(0, derivePlayerBalanceFromLedger(playerId, ledger));
 }
 
 export function hasEnoughCardsForHoldemStart(

@@ -10,14 +10,13 @@ import type {
 import {
   createEmptyHoldemRound,
   nextBettingStreet,
-  computeHoldemPot,
 } from '../../types/holdem';
 import { drawCards } from '../deck/deck';
-import { getCardById } from '../deck/deck';
 import {
   appendActionLog,
   assertMinHoldemPlayers,
   getActivePlayers,
+  getBettingEligiblePlayers,
   getBigBlindSeat,
   getFirstPostflopActor,
   getFirstPreflopActor,
@@ -32,12 +31,10 @@ import {
   postBlind,
   type HoldemActionContext,
 } from './betting';
-import { payPotToWinner } from './ledgerEntries';
-import { cardsFromIds } from '../blackjack/hand';
 import {
-  compareHoldemHands,
-  evaluateBestHoldemHand,
-} from './handEvaluator';
+  evaluateShowdownHands,
+  executeHoldemPayout,
+} from './showdownPayout';
 
 export interface HoldemEngineUpdate {
   session: GameSession;
@@ -67,7 +64,11 @@ function syncPlayersFromRound(
         ...next[id],
         currentBet: ps.playerBetsThisStreet,
         cardIds: ps.holeCardIds,
-        status: ps.actionStatus === 'folded' ? 'folded' : 'active',
+        status: ps.actionStatus === 'folded'
+          ? 'folded'
+          : ps.actionStatus === 'all-in'
+            ? 'all-in'
+            : 'active',
       };
     }
   }
@@ -216,7 +217,11 @@ export function dealHoleCards(
   }
 
   let result = dealToAll(session, players, ledger, deck, round, 2);
-  const firstActor = getFirstPreflopActor(session, round.bigBlindPlayerId);
+  const firstActor = getFirstPreflopActor(
+    session,
+    round.bigBlindPlayerId,
+    round.dealerButtonPlayerId,
+  );
 
   result = {
     ...result,
@@ -302,7 +307,12 @@ function streetBettingComplete(_session: GameSession, round: HoldemRound): boole
     return true;
   }
 
-  return active.every((id) => {
+  const bettingEligible = getBettingEligiblePlayers(round);
+  if (bettingEligible.length === 0) {
+    return true;
+  }
+
+  return bettingEligible.every((id) => {
     const ps = round.playerStates[id];
     return (
       ps.hasActedThisStreet &&
@@ -324,6 +334,7 @@ function findNextActor(
     if (
       ps &&
       ps.actionStatus !== 'folded' &&
+      ps.actionStatus !== 'all-in' &&
       (!ps.hasActedThisStreet || ps.playerBetsThisStreet < round.currentBet)
     ) {
       return id;
@@ -350,29 +361,16 @@ export function awardPotToSingleWinner(
   winnerId: string,
   reason: string,
 ): HoldemEngineUpdate {
-  const pot = computeHoldemPot(round);
-  const paid = payPotToWinner(
-    session,
-    ledger,
-    winnerId,
-    pot,
-    `${reason} — pot ${pot} chips`,
-  );
-
-  const nextRound: HoldemRound = {
-    ...round,
-    status: 'resolved',
-    activePlayerId: null,
-    winners: [winnerId],
-    resultSummary: `${players[winnerId]?.displayName ?? winnerId} wins ${pot} chips (${reason})`,
-  };
+  const payout = executeHoldemPayout(session, players, ledger, round, [winnerId], {
+    reason,
+  });
 
   return {
-    session: { ...paid.session, status: 'round-complete' },
+    session: payout.session,
     players,
-    ledger: paid.ledger,
+    ledger: payout.ledger,
     deck,
-    round: syncHoldemPot(nextRound),
+    round: payout.round,
   };
 }
 
@@ -390,60 +388,23 @@ export function resolveHoldemShowdown(
     throw new Error('Showdown requires 5 community cards');
   }
 
-  const community = round.communityCardIds
-    .map((id) => getCardById(deck, id))
-    .filter(Boolean) as import('../../types/deck').Card[];
-
   const active = getActivePlayers(round);
   if (active.length === 0) {
     throw new Error('No active players at showdown');
   }
 
-  const ranked = active.map((playerId) => {
-    const hole = cardsFromIds(deck, round.playerStates[playerId].holeCardIds);
-    const hand = evaluateBestHoldemHand(hole, community);
-    return { playerId, hand };
+  const rankedHands = evaluateShowdownHands(round, deck);
+  const payout = executeHoldemPayout(session, players, ledger, round, active, {
+    reason: 'showdown',
+    rankedHands,
   });
 
-  ranked.sort((a, b) => compareHoldemHands(b.hand, a.hand));
-  const best = ranked[0];
-  const winners = ranked.filter((r) => compareHoldemHands(r.hand, best.hand) === 0);
-  const pot = computeHoldemPot(round);
-  const share = Math.floor(pot / winners.length);
-
-  let nextSession = session;
-  let nextLedger = ledger;
-
-  for (const winner of winners) {
-    const paid = payPotToWinner(
-      nextSession,
-      nextLedger,
-      winner.playerId,
-      share,
-      `Showdown win (${winner.hand.label}) — ${share} chips`,
-    );
-    nextSession = paid.session;
-    nextLedger = paid.ledger;
-  }
-
-  const names = winners
-    .map((w) => players[w.playerId]?.displayName ?? w.playerId)
-    .join(', ');
-
-  const nextRound: HoldemRound = {
-    ...round,
-    status: 'resolved',
-    activePlayerId: null,
-    winners: winners.map((w) => w.playerId),
-    resultSummary: `${names} win ${share} each at showdown (${best.hand.label})`,
-  };
-
   return {
-    session: { ...nextSession, status: 'round-complete' },
+    session: payout.session,
     players,
-    ledger: nextLedger,
+    ledger: payout.ledger,
     deck,
-    round: syncHoldemPot(nextRound),
+    round: payout.round,
   };
 }
 
@@ -499,6 +460,36 @@ export function advanceHoldemStreet(
   throw new Error('Unable to advance street');
 }
 
+/** Auto-deal remaining streets when all active players are all-in or betting is closed. */
+function runOutLockedStreets(
+  session: GameSession,
+  players: Record<string, Player>,
+  deck: Deck,
+  ledger: Ledger,
+  round: HoldemRound,
+): HoldemEngineUpdate {
+  let update: HoldemEngineUpdate = { session, players, ledger, deck, round };
+  let guard = 0;
+
+  while (
+    ['preflop', 'flop', 'turn', 'river'].includes(update.round.status) &&
+    getActivePlayers(update.round).length > 1 &&
+    streetBettingComplete(session, update.round) &&
+    guard < 5
+  ) {
+    guard += 1;
+    update = advanceHoldemStreet(
+      update.session,
+      update.players,
+      update.deck,
+      update.ledger,
+      update.round,
+    );
+  }
+
+  return update;
+}
+
 export function afterHoldemAction(
   session: GameSession,
   players: Record<string, Player>,
@@ -523,18 +514,39 @@ export function afterHoldemAction(
   }
 
   if (streetBettingComplete(session, nextRound)) {
-    return advanceHoldemStreet(session, players, deck, ledger, nextRound);
+    return runOutLockedStreets(
+      session,
+      players,
+      deck,
+      ledger,
+      nextRound,
+    );
   }
 
   nextRound = setNextActor(session, nextRound, actingPlayerId);
 
-  return {
+  const afterActor = {
     session,
     players: syncPlayersFromRound(players, nextRound),
     ledger,
     deck,
     round: syncHoldemPot(nextRound),
   };
+
+  if (
+    streetBettingComplete(session, afterActor.round) &&
+    getActivePlayers(afterActor.round).length > 1
+  ) {
+    return runOutLockedStreets(
+      afterActor.session,
+      afterActor.players,
+      afterActor.deck,
+      afterActor.ledger,
+      afterActor.round,
+    );
+  }
+
+  return afterActor;
 }
 
 export function resetHoldemRound(

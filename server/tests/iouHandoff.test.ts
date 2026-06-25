@@ -154,4 +154,156 @@ describe('IouHandoffService', () => {
     expect(second.alreadySubmitted).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
+  it('poker challenge IOU deduplicates by table + hand + parties + amount', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        iouId: 'poker-iou-1',
+        status: 'pending',
+        message: 'IOU created and sent.',
+      }),
+    });
+
+    const body = {
+      tableId: 't-poker',
+      sessionId: 't-poker-poker-challenge-h3',
+      wagerDescription: '$100 challenge',
+      debtorEmail: 'loser@example.com',
+      creditorEmail: 'winner@example.com',
+      gameType: 'texas-holdem',
+      challengeHandNumber: 3,
+      settlementAmount: 25,
+    };
+
+    const svc = service();
+    const first = await svc.createFromRequest('loser@example.com', body);
+    expect(first.ok).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const retry = await svc.createFromRequest('loser@example.com', body);
+    expect(retry.alreadySubmitted).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('failed poker IOU submission is not cached; retry after success is idempotent', async () => {
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ ok: false, error: 'upstream offline' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          iouId: 'poker-iou-2',
+          status: 'pending',
+          message: 'IOU created and sent.',
+        }),
+      });
+
+    const body = {
+      tableId: 't-poker-2',
+      sessionId: 't-poker-2-poker-challenge-h1',
+      wagerDescription: '$50 challenge',
+      debtorEmail: 'l1@example.com',
+      creditorEmail: 'w@example.com',
+      gameType: 'texas-holdem',
+      challengeHandNumber: 1,
+      settlementAmount: 12.5,
+    };
+
+    const svc = service();
+    await expect(svc.createFromRequest('l1@example.com', body)).rejects.toThrow(/upstream offline/i);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const success = await svc.createFromRequest('l1@example.com', body);
+    expect(success.ok).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const retry = await svc.createFromRequest('l1@example.com', body);
+    expect(retry.alreadySubmitted).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('partial poker IOU batch failure does not mark unrelated losers as submitted', async () => {
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          iouId: 'iou-a',
+          status: 'pending',
+          message: 'IOU created and sent.',
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({ ok: false, error: 'upstream offline' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          iouId: 'iou-b',
+          status: 'pending',
+          message: 'IOU created and sent.',
+        }),
+      });
+
+    const svc = service();
+    const firstBody = {
+      tableId: 't-batch',
+      sessionId: 't-batch-poker-challenge-h2',
+      wagerDescription: '$100',
+      debtorEmail: 'l1@example.com',
+      creditorEmail: 'w@example.com',
+      gameType: 'texas-holdem',
+      challengeHandNumber: 2,
+      settlementAmount: 25,
+    };
+    const secondBody = {
+      ...firstBody,
+      debtorEmail: 'l2@example.com',
+    };
+
+    await svc.createFromRequest('l1@example.com', firstBody);
+    await expect(svc.createFromRequest('l2@example.com', secondBody)).rejects.toThrow(/upstream offline/i);
+
+    const retryFirst = await svc.createFromRequest('l1@example.com', firstBody);
+    expect(retryFirst.alreadySubmitted).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const retrySecond = await svc.createFromRequest('l2@example.com', secondBody);
+    expect(retrySecond.ok).toBe(true);
+    expect(retrySecond.iouId).toBe('iou-b');
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('rejects practice poker IOU when table state is present', async () => {
+    const practiceState = {
+      session: { id: 't-practice', gameType: 'texas-holdem', playerIds: ['p1'] },
+      tableMeta: {
+        pokerConfig: { mode: 'practice' },
+      },
+    } as Parameters<IouHandoffService['createFromRequest']>[2];
+
+    await expect(
+      service().createFromRequest(
+        'l@example.com',
+        {
+          tableId: 't-practice',
+          sessionId: 't-practice-poker-challenge-h0',
+          wagerDescription: '$5',
+          debtorEmail: 'l@example.com',
+          creditorEmail: 'w@example.com',
+          gameType: 'texas-holdem',
+          challengeHandNumber: 0,
+          settlementAmount: 5,
+        },
+        practiceState,
+      ),
+    ).rejects.toThrow(/practice poker/i);
+  });
 });

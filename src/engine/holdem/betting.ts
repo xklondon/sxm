@@ -25,7 +25,7 @@ export function validateHoldemAction(ctx: HoldemActionContext): HoldemActionType
   const { round, playerId, amount } = ctx;
   const ps = round.playerStates[playerId];
 
-  if (!ps || ps.actionStatus === 'folded') {
+  if (!ps || ps.actionStatus === 'folded' || ps.actionStatus === 'all-in') {
     throw new Error('Player is not active in this hand');
   }
   if (round.activePlayerId !== playerId) {
@@ -106,7 +106,7 @@ function commitChips(
 function resetOthersActed(round: HoldemRound, exceptPlayerId: string): HoldemRound {
   const playerStates: HoldemRound['playerStates'] = {};
   for (const [id, ps] of Object.entries(round.playerStates)) {
-    if (ps.actionStatus === 'folded') {
+    if (ps.actionStatus === 'folded' || ps.actionStatus === 'all-in') {
       playerStates[id] = ps;
     } else {
       playerStates[id] = {
@@ -246,6 +246,75 @@ export function foldHoldemPlayer(ctx: HoldemActionContext): HoldemActionResult {
     },
     `${ctx.playerId} folds`,
   );
+
+  return {
+    session: ledgerResult.session,
+    ledger: ledgerResult.ledger,
+    round,
+  };
+}
+
+export function allInHoldemPlayer(ctx: HoldemActionContext): HoldemActionResult {
+  const ps = ctx.round.playerStates[ctx.playerId];
+  if (!ps || ps.actionStatus === 'folded' || ps.actionStatus === 'all-in') {
+    throw new Error('Player is not active in this hand');
+  }
+  if (ctx.round.activePlayerId !== ctx.playerId) {
+    throw new Error('Not this player\'s turn');
+  }
+
+  const balance = derivePlayerBalanceFromLedger(ctx.playerId, ctx.ledger);
+  if (balance <= 0) {
+    throw new Error('No chips remaining to go all-in');
+  }
+
+  const chipAmount = balance;
+  const newStreetBet = ps.playerBetsThisStreet + chipAmount;
+  const isRaise = newStreetBet > ctx.round.currentBet;
+
+  const ledgerResult = appendHoldemLedgerEntry(
+    ctx.session,
+    ctx.ledger,
+    ctx.playerId,
+    'side-pot-contribution',
+    -chipAmount,
+    `All-in ${chipAmount} chips`,
+  );
+
+  const updatedPs = {
+    ...ps,
+    playerBetsThisStreet: newStreetBet,
+    playerTotalCommitted: ps.playerTotalCommitted + chipAmount,
+    hasActedThisStreet: true,
+    actionStatus: 'all-in' as const,
+  };
+
+  let round = syncHoldemPot({
+    ...ctx.round,
+    playerStates: {
+      ...ctx.round.playerStates,
+      [ctx.playerId]: updatedPs,
+    },
+  });
+
+  round = appendActionLog(round, `${ctx.playerId} all-in ${chipAmount}`);
+
+  if (isRaise) {
+    const raiseSize = newStreetBet - ctx.round.currentBet;
+    round = resetOthersActed(
+      {
+        ...round,
+        currentBet: newStreetBet,
+        lastRaiseSize: Math.max(raiseSize, ctx.round.bigBlind),
+      },
+      ctx.playerId,
+    );
+    round.playerStates[ctx.playerId] = {
+      ...round.playerStates[ctx.playerId],
+      actionStatus: 'all-in',
+      hasActedThisStreet: true,
+    };
+  }
 
   return {
     session: ledgerResult.session,

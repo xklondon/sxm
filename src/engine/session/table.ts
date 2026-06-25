@@ -105,6 +105,45 @@ export function createNewZilchTable(): GameState {
   return state;
 }
 
+/** Open a new Texas Hold'em poker table — same session/ledger shell as cards. */
+export function createNewHoldemTable(): GameState {
+  const id = generateId();
+  const state: GameState = {
+    session: {
+      ...createEmptySession(id),
+      gameType: 'texas-holdem',
+      status: 'active',
+      currentRound: 1,
+      boxSlotNumbers: {},
+    },
+    players: {},
+    deck: null,
+    ledger: createEmptyLedger(id),
+    blackjack: null,
+    holdem: null,
+    zilch: null,
+    blackjackSettings: { ...DEFAULT_BLACKJACK_SETTINGS },
+    holdemSettings: { ...DEFAULT_HOLDEM_SETTINGS },
+    zilchSettings: { ...DEFAULT_ZILCH_SETTINGS },
+    tableGame: 'texas-holdem',
+    tableViewMode: 'full',
+    selectedSeatId: null,
+    tableMeta: {
+      ...createDefaultTableMeta(),
+      gameCategory: 'cards',
+      cardGame: 'holdem',
+    },
+    blackjackFlowSettings: { ...DEFAULT_BLACKJACK_FLOW_SETTINGS },
+    blackjackProtocolId: DEFAULT_BLACKJACK_PROTOCOL_ID,
+    tableAdminSettings: { ...DEFAULT_TABLE_ADMIN_SETTINGS },
+    designTemplateId: DEFAULT_DESIGN_TEMPLATE_ID,
+    blackjackTableTheme: null,
+  };
+
+  log.info('Holdem table created', { sessionId: id });
+  return state;
+}
+
 /** Fresh table ledger for the same seats — balances reset via canonical allocation. */
 export function startNewTable(state: GameState): GameState {
   const sessionId = state.session.id;
