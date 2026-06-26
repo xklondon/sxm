@@ -653,9 +653,7 @@ export function startNextRoundOnState(state: GameState): GameState {
       boxStakes: {},
       bettingLocked: false,
       awaitingNextRound: false,
-      boxSlots: topped.tableMeta.boxSlots.map((slot) =>
-        slot.nativeAssignedPersonId ? slot : { ...slot, callerPersonId: null },
-      ),
+      boxSlots: topped.tableMeta.boxSlots.map((slot) => ({ ...slot, callerPersonId: null })),
     },
   };
 }

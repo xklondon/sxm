@@ -8,6 +8,7 @@ import {
   recordZilchGameEnd,
 } from '../../engine/session';
 import { canRollDice } from '../../engine/dice/zilch';
+import { canBeginZilchChallenge } from '../../engine/dice/zilch/zilchTurnAuthority';
 import { getVisibleZilchPlayers } from '../../engine/dice/zilch/zilchVisiblePlayers';
 import { useIsMobileViewport } from '../../hooks/useIsMobileViewport';
 import { useDeviceShake } from '../../hooks/useDeviceShake';
@@ -236,10 +237,12 @@ export function ZilchPanel({
     starterSpinActive || zilch?.phase === 'setup'
       ? playerOrder[randomiserIndex] ?? null
       : zilch?.starterPlayerId ?? null;
+  const challengeNeedsOpponent = !isPracticeTable && !canBeginZilchChallenge(gameState);
   const randomiserDisabled =
     onlineActionInFlight ||
     visiblePlayers.length === 0 ||
     starterSpinActive ||
+    challengeNeedsOpponent ||
     Boolean(zilch?.starterPlayerId && zilch.phase === 'player-turn');
 
   return (
@@ -292,6 +295,8 @@ export function ZilchPanel({
         canAct={canAct}
         actionError={actionError}
         zilchRevealCountdown={zilchRevealCountdown}
+        isChallengeTable={!isPracticeTable}
+        challengeNeedsOpponent={challengeNeedsOpponent}
       />
 
       {!zilch && playerOrder.length > 0 && (
@@ -301,7 +306,11 @@ export function ZilchPanel({
       )}
 
       {!zilch && playerOrder.length === 0 && (
-        <p className="zilch-panel__hint">Add at least one player to start Zilch.</p>
+        <p className="zilch-panel__hint">
+          {isPracticeTable
+            ? 'Add at least one player to start Zilch.'
+            : 'Invite at least one player to start Challenge.'}
+        </p>
       )}
 
       {zilch && showPracticeEnd && (

@@ -176,10 +176,13 @@ export function commandStatusForPhase(
   state: ZilchGameState,
   names: Record<string, string>,
   canAct: boolean,
+  options: { challengeNeedsOpponent?: boolean } = {},
 ): string {
   switch (state.phase) {
     case 'setup':
-      return 'Randomise who starts.';
+      return options.challengeNeedsOpponent
+        ? 'Invite at least one player to start Challenge.'
+        : 'Randomise who starts.';
     case 'randomising-starter':
       return 'Starting…';
     case 'final-round':

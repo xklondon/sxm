@@ -24,7 +24,11 @@ function isOwnerBankrollShell(state: GameState, playerId: string): boolean {
 function orderPlayableZilchPlayerIds(state: GameState, ids: string[]): string[] {
   const isPractice = state.tableMeta.tableMode !== 'challenge';
   if (!isPractice) {
-    return ids;
+    const ownerId = state.tableMeta.ownerPersonId;
+    if (!ownerId || !ids.includes(ownerId)) {
+      return ids;
+    }
+    return [ownerId, ...ids.filter((id) => id !== ownerId)];
   }
   const hostBoxId = ids.find((id) => isOwnerBankrollShell(state, id));
   const virtuals = ids.filter((id) => state.players[id]?.playerType === 'virtual');
@@ -50,9 +54,9 @@ export function listPlayableZilchPlayerIds(state: GameState): string[] {
   const bankId = state.session.bankPlayerId;
   const isPractice = state.tableMeta.tableMode !== 'challenge';
   const rawIds =
-    state.session.playerIds.length > 0
+    (state.session?.playerIds?.length ?? 0) > 0
       ? state.session.playerIds
-      : state.tableMeta.boxSlots
+      : (state.tableMeta?.boxSlots ?? [])
           .map((slot) => slot.playerId)
           .filter((id): id is string => Boolean(id));
 
@@ -68,31 +72,44 @@ export function listPlayableZilchPlayerIds(state: GameState): string[] {
       return false;
     }
     const ownerId = state.tableMeta.ownerPersonId;
-    if (ownerId && id === ownerId && player.role !== 'box') {
-      return false;
-    }
     if (player.playerType === 'virtual') {
-      return true;
+      return isPractice;
     }
     if (isPractice) {
-      return isOwnerBankrollShell(state, id);
-    }
-    if (player.role === 'box') {
-      if (isVirtualBackedBoxShell(state, id)) {
+      if (ownerId && id === ownerId && player.role !== 'box') {
         return false;
       }
-      if (isOwnerBankrollShell(state, id)) {
-        return false;
+      if (player.role === 'box') {
+        return (
+          isOwnerBankrollShell(state, id) && !isVirtualBackedBoxShell(state, id)
+        );
       }
-      return true;
-    }
-    if (player.role === 'person' && player.playerType === 'real') {
       return false;
     }
-    return player.playerType === 'real';
+    if (player.role === 'box') {
+      return false;
+    }
+    return player.role === 'person' && player.playerType === 'real';
   });
 
   return orderPlayableZilchPlayerIds(state, playable);
+}
+
+/** Joined real opponents in challenge (excludes host). Pending invites do not count. */
+export function countZilchChallengeOpponents(state: GameState): number {
+  if (state.tableMeta.tableMode !== 'challenge') {
+    return 0;
+  }
+  const ownerId = state.tableMeta.ownerPersonId;
+  return listPlayableZilchPlayerIds(state).filter((id) => id !== ownerId).length;
+}
+
+/** Challenge needs host plus at least one joined real opponent before randomising starter. */
+export function canBeginZilchChallenge(state: GameState): boolean {
+  if (state.tableMeta.tableMode !== 'challenge') {
+    return true;
+  }
+  return countZilchChallengeOpponents(state) >= 1;
 }
 
 export function isVirtualZilchPlayer(state: GameState, playerId: string): boolean {

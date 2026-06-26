@@ -53,15 +53,18 @@ describe('zilchTurnAuthority', () => {
     state = applyZilchTableStakeSetup(state, {
       ...practiceSetup,
       tableMode: 'challenge',
-      bankerMode: 'bot',
+      bankerMode: 'self',
+      bankerName: 'Host',
       virtualPlayerCount: 0,
     });
     const bankId = state.session.bankPlayerId;
     expect(bankId).toBeTruthy();
     const playable = listPlayableZilchPlayerIds(state);
     expect(playable).not.toContain(bankId);
+    expect(playable).toHaveLength(1);
+    expect(playable[0]).toBe(state.tableMeta.ownerPersonId);
     for (const id of playable) {
-      expect(state.players[id]?.role).not.toBe('bank');
+      expect(state.players[id]?.role).toBe('person');
     }
   });
 

@@ -1,12 +1,11 @@
 import type { GameState } from '../../types';
 import type { ZilchMode } from '../zilch/zilchTypes';
-import { listPlayableZilchPlayerIds } from '../dice/zilch/zilchTurnAuthority';
 import { DEFAULT_ZILCH_DICE_ANIMATION } from '../zilch/settings';
 import { addVirtualPlayer, mergeSessionUpdate } from './session';
 import {
   ensureZilchGameOnState,
-  startZilchGameOnState,
 } from '../zilch/applyZilchAction';
+import { reconcileZilchRoster } from '../dice/zilch/zilchRoster';
 import { getZilchWinnerId } from '../dice/zilch/zilchSelectors';
 import {
   assignBankBot,
@@ -156,20 +155,12 @@ export function applyZilchTableStakeSetup(
 
   next = switchGameType(next, 'zilch');
   next = ensureZilchTableIdentity(next);
-  return initializeZilchPlayState(next);
+  return reconcileZilchRoster(next);
 }
 
-function resolveZilchPlayerIds(state: GameState): string[] {
-  return listPlayableZilchPlayerIds(state);
-}
-
-/** Create fresh zilch engine state in setup phase (ready for random starter). */
+/** @deprecated use reconcileZilchRoster */
 export function initializeZilchPlayState(state: GameState): GameState {
-  const playerIds = resolveZilchPlayerIds(state);
-  if (playerIds.length === 0) {
-    return state;
-  }
-  return startZilchGameOnState(state, playerIds, state.zilchSettings);
+  return reconcileZilchRoster(state);
 }
 
 export function beginZilchPlay(state: GameState): GameState {

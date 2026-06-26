@@ -23,8 +23,9 @@ function isExcludedZilchSeat(state: GameState, playerId: string): boolean {
   if (player.role === 'bank') {
     return true;
   }
+  const isChallenge = state.tableMeta.tableMode === 'challenge';
   const ownerId = state.tableMeta.ownerPersonId;
-  if (ownerId && playerId === ownerId && player.role !== 'box') {
+  if (!isChallenge && ownerId && playerId === ownerId && player.role !== 'box') {
     return true;
   }
   return false;
@@ -57,14 +58,17 @@ export function getVisibleZilchPlayers(state: GameState): ZilchVisiblePlayer[] {
   const seen = new Set<string>();
   const visible: ZilchVisiblePlayer[] = [];
 
-  for (const playerId of playableIds) {
+  for (let index = 0; index < playableIds.length; index += 1) {
+    const playerId = playableIds[index]!;
     if (seen.has(playerId) || isExcludedZilchSeat(state, playerId)) {
       continue;
     }
     seen.add(playerId);
+    const labels = resolveSeatLabels(state, playerId);
     visible.push({
       playerId,
-      ...resolveSeatLabels(state, playerId),
+      ...labels,
+      boxLabel: labels.boxLabel ?? `Player ${index + 1}`,
     });
   }
 

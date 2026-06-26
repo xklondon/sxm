@@ -48,37 +48,49 @@ function twoPlayerSeated() {
 }
 
 describe('box ownership / allocation rules', () => {
-  it('P1 owns Box 1 and P2 owns Box 2 after join sync', () => {
+  it('P1 owns Box 1 and P2 owns Box 2 after join sync — commander only with stake', () => {
     const { state, p1, p2 } = twoPlayerSeated();
     expect(getAssignedSlotForPerson(state, p1)).toBe(1);
     expect(getAssignedSlotForPerson(state, p2)).toBe(2);
     const box1 = boxPlayerId(state, 1)!;
     const box2 = boxPlayerId(state, 2)!;
-    expect(getCallerPersonIdForBox(state, box1)).toBe(p1);
-    expect(getCallerPersonIdForBox(state, box2)).toBe(p2);
+    expect(getCallerPersonIdForBox(state, box1)).toBeNull();
+    expect(getCallerPersonIdForBox(state, box2)).toBeNull();
+    const staked2 = addChipToBoxStake(state, box2, 10, p2);
+    expect(getCallerPersonIdForBox(staked2, box2)).toBe(p2);
   });
 
-  it('P1 betting on Box 2 does not take caller from P2', () => {
+  it('P1 betting on Box 2 commands when P2 has not staked', () => {
     const { state, p1, p2 } = twoPlayerSeated();
     const box2 = boxPlayerId(state, 2)!;
     const next = addChipToBoxStake(state, box2, 10, p1);
-    expect(getCallerPersonIdForBox(next, box2)).toBe(p2);
+    expect(getCallerPersonIdForBox(next, box2)).toBe(p1);
     expect(getActionableHandForView(
       {
         ...next,
+        tableMeta: { ...next.tableMeta, bettingLocked: true },
         blackjack: actingRound(next, box2, [findCardId(next.deck!, '6'), findCardId(next.deck!, '7')], 10),
       },
       p1,
       true,
-    )).toBeNull();
+    )).not.toBeNull();
     expect(getActionableHandForView(
       {
         ...next,
+        tableMeta: { ...next.tableMeta, bettingLocked: true },
         blackjack: actingRound(next, box2, [findCardId(next.deck!, '6'), findCardId(next.deck!, '7')], 10),
       },
       p2,
       true,
-    )).not.toBeNull();
+    )).toBeNull();
+  });
+
+  it('P1 betting on Box 2 is co-bettor when P2 also staked', () => {
+    const { state, p1, p2 } = twoPlayerSeated();
+    const box2 = boxPlayerId(state, 2)!;
+    let next = addChipToBoxStake(state, box2, 10, p2);
+    next = addChipToBoxStake(next, box2, 5, p1);
+    expect(getCallerPersonIdForBox(next, box2)).toBe(p2);
   });
 
   it('first bettor on free Box 3 becomes caller; second bettor does not', () => {
@@ -119,7 +131,7 @@ describe('box ownership / allocation rules', () => {
     expect(getCallerPersonIdForBox(next, box3)).toBeNull();
   });
 
-  it('new joiner assigned Box 3 wins caller over prior-round first bettor', () => {
+  it('native assignment on free box does not steal caller from prior first staker', () => {
     let { state, p1 } = twoPlayerSeated();
     state = claimBoxSlot(state, 3);
     const box3 = boxPlayerId(state, 3)!;
@@ -153,7 +165,8 @@ describe('box ownership / allocation rules', () => {
     };
     state = syncPlayerOrderAndAssignments(state);
     state = ensureBoxPositionForPerson(state, 3, p3);
-    expect(getCallerPersonIdForBox(state, box3)).toBe(p3);
+    expect(getCallerPersonIdForBox(state, box3)).toBe(p1);
+    expect(getAssignedSlotForPerson(state, p3)).toBe(3);
   });
 
   it('invite join assigns natural box via player order', () => {
@@ -171,7 +184,7 @@ describe('box ownership / allocation rules', () => {
     const joined = finalizeInviteJoinAtTable(state, guestId, 'Guest');
     expect(getAssignedSlotForPerson(joined.state, guestId)).toBe(2);
     const box2 = boxPlayerId(joined.state, 2)!;
-    expect(getCallerPersonIdForBox(joined.state, box2)).toBe(guestId);
+    expect(getCallerPersonIdForBox(joined.state, box2)).toBeNull();
     void ownerId;
   });
 });

@@ -85,17 +85,29 @@ describe('This Table box display — stake-based ownership', () => {
     expect(personRow(state, p1).assignedBox).toBe(1);
   });
 
-  it('placing chips on another player native box adds Co-boxes, not Running', () => {
+  it('staking on another player native box adds Running when native owner has not staked', () => {
     let { state, p1, p2 } = twoPlayerTable();
     const box2 = boxPlayerId(state, 2)!;
     state = addChipToBoxStake(state, box2, 10, p1);
+
+    expect(getRunningBoxSlotsForPerson(state, p1)).toEqual([2]);
+    expect(getCoBoxSlotsForPerson(state, p1)).toEqual([]);
+    expect(personRow(state, p1).runningBoxSlots).toEqual([2]);
+    expect(personRow(state, p1).coBoxSlots).toEqual([]);
+    expect(personRow(state, p2).assignedBox).toBe(2);
+    expect(personRow(state, p2).coBoxSlots).toEqual([]);
+  });
+
+  it('co-bettor when native owner also staked on their box', () => {
+    let { state, p1, p2 } = twoPlayerTable();
+    const box2 = boxPlayerId(state, 2)!;
+    state = addChipToBoxStake(state, box2, 10, p2);
+    state = addChipToBoxStake(state, box2, 5, p1);
 
     expect(getCoBoxSlotsForPerson(state, p1)).toEqual([2]);
     expect(getRunningBoxSlotsForPerson(state, p1)).toEqual([]);
     expect(personRow(state, p1).coBoxSlots).toEqual([2]);
     expect(personRow(state, p1).runningBoxSlots).toEqual([]);
-    expect(personRow(state, p2).assignedBox).toBe(2);
-    expect(personRow(state, p2).coBoxSlots).toEqual([]);
   });
 
   it('native box remains Assigned only when staked by native owner', () => {

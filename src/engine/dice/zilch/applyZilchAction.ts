@@ -1,5 +1,5 @@
 import type { GameState } from '../../../types';
-import { listPlayableZilchPlayerIds } from './zilchTurnAuthority';
+import { listPlayableZilchPlayerIds, canBeginZilchChallenge } from './zilchTurnAuthority';
 import type { ZilchGameSettings, ZilchTableMode } from './zilchTypes';
 import { isZilchTable } from '../../session/zilchTableKind';
 import {
@@ -61,6 +61,9 @@ export function applyZilchActionToState(
 
   switch (action) {
     case 'zilchRandomiseStarter':
+      if (!canBeginZilchChallenge(ready)) {
+        throw new Error('Invite at least one player to start Challenge.');
+      }
       zilch = randomiseStarter(zilch);
       break;
     case 'zilchConfirmStarter':

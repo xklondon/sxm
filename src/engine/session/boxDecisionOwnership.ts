@@ -70,8 +70,8 @@ export function formatDecisionOwnerWaitMessage(
 }
 
 /**
- * First bettor on a free (non-native) box owns decisions for that betting round.
- * Native assignment always wins over stake order.
+ * First bettor on a box without designated-owner stake owns decisions for this round.
+ * Designated owner staking (before or after others) always becomes commander.
  */
 export function assignTemporaryBoxOwnerOnFirstBet(
   state: GameState,
@@ -79,25 +79,35 @@ export function assignTemporaryBoxOwnerOnFirstBet(
   bettorPersonId: string,
   existing?: BoxStakeEntry,
 ): string {
+  const slot = slotForBox(state, boxPlayerId);
+  let designatedOwnerPersonId = slot?.nativeAssignedPersonId ?? null;
+  if (!designatedOwnerPersonId) {
+    const slotNum = state.session.boxSlotNumbers?.[boxPlayerId];
+    if (slotNum) {
+      designatedOwnerPersonId = getNativeAssignedPersonForSlot(state, slotNum);
+    }
+  }
+
+  const priorStakers = existing?.stakerPersonIds ?? [];
+
+  if (
+    designatedOwnerPersonId &&
+    (bettorPersonId === designatedOwnerPersonId || priorStakers.includes(designatedOwnerPersonId))
+  ) {
+    if (designatedOwnerPersonId !== bettorPersonId) {
+      log.info('designatedOwnerTookCommand', {
+        boxPlayerId,
+        designatedOwner: designatedOwnerPersonId,
+        priorCaller: existing?.callerPersonId,
+      });
+    }
+    return designatedOwnerPersonId;
+  }
+
   if (existing?.callerPersonId) {
     return existing.callerPersonId;
   }
-  const slot = slotForBox(state, boxPlayerId);
-  if (slot?.nativeAssignedPersonId) {
-    log.info('temporaryBoxOwnerSkippedNative', {
-      boxPlayerId,
-      nativeOwner: slot.nativeAssignedPersonId,
-      bettorPersonId,
-    });
-    return slot.nativeAssignedPersonId;
-  }
-  const slotNum = state.session.boxSlotNumbers?.[boxPlayerId];
-  if (slotNum) {
-    const native = getNativeAssignedPersonForSlot(state, slotNum);
-    if (native) {
-      return native;
-    }
-  }
+
   log.info('temporaryBoxOwnerAssigned', { boxPlayerId, bettorPersonId });
   return bettorPersonId;
 }

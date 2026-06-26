@@ -238,6 +238,12 @@ Blackjack / Zilch gameplay, layout, and CSS **not modified** (shared `TableChatD
 - **State:** `pokerTypes.ts` view models + `pokerMockState.ts` for offline preview; not yet mapped from `GameState` / `HoldemPanel`.
 - **Production route unchanged:** `TableScreen` still renders legacy `HoldemPanel`.
 
+## 2026-06-22 — Per-round box commander (stake-based decisions)
+
+- **`resolveBoxRoundCommander`** — designated owner commands only when they stake; otherwise first staker commands for the round.
+- Wired through `getCallerPersonIdForBox`, `syncCallersForDeal`, insurance, action permission, command text, This Table Running/Co-boxes.
+- Tests: `boxRoundCommander.test.ts`; updated ownership suites.
+
 ## 2026-06-22 — New Table modal layout + desktop player boxes scroll guard
 
 - **New Table modal:** Body-only vertical scroll; fixed header/close; sticky Back/Start Table footer; full-width embedded form; no horizontal overflow (`NewTableOverlay.css`, `TableStakePanel.css`, `mobile-modals.css`).

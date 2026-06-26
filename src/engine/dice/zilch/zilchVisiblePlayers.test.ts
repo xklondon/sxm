@@ -31,7 +31,21 @@ describe('getVisibleZilchPlayers', () => {
     expect(playable[0]).toBe(visible.find((p) => !p.isVirtual)?.playerId);
   });
 
-  it('excludes bank bot and owner person bankroll shell', () => {
+  it('challenge setup includes host person as playable Player 1', () => {
+    let state = applyZilchTableStakeSetup(createNewZilchTable(), challengeSetup());
+    const ownerId = state.tableMeta.ownerPersonId;
+    expect(ownerId).toBeTruthy();
+    const playable = listPlayableZilchPlayerIds(state);
+    expect(playable).toHaveLength(1);
+    expect(playable[0]).toBe(ownerId);
+    const visible = getVisibleZilchPlayers(state);
+    expect(visible).toHaveLength(1);
+    expect(visible[0]!.name).toBe('xk');
+    expect(visible[0]!.boxLabel).toBe('Player 1');
+    expect(state.zilch?.phase).toBe('setup');
+  });
+
+  it('excludes bank bot and owner person shell duplicate in practice challenge-style bank', () => {
     let state = applyZilchTableStakeSetup(createNewZilchTable(), {
       ...practiceSetup(1),
       tableMode: 'challenge',
@@ -40,11 +54,36 @@ describe('getVisibleZilchPlayers', () => {
     });
     const visible = getVisibleZilchPlayers(state);
     const bankId = state.session.bankPlayerId;
-    const ownerId = state.tableMeta.ownerPersonId;
     expect(visible.every((p) => p.playerId !== bankId)).toBe(true);
-    expect(visible.every((p) => p.playerId !== ownerId)).toBe(true);
+    expect(visible).toHaveLength(1);
+    expect(visible[0]!.boxLabel).toBe('Player 1');
   });
 });
+
+function challengeSetup() {
+  return {
+    stakeDescription: 'Dinner',
+    seatChips: DEFAULT_TABLE_CHIPS,
+    bankChips: DEFAULT_TABLE_CHIPS,
+    bankerMode: 'self' as const,
+    bankerName: 'xk',
+    controllerName: 'xk',
+    controllerEmail: 'host@example.com',
+    protocolId: 'zilch',
+    naturalDealing: false,
+    dealSpeedPreset: 'normal' as const,
+    cardTimerPreset: 0 as const,
+    bankDrawAuto: true,
+    tableMode: 'challenge' as const,
+    zilchMode: 'target_points' as const,
+    targetPoints: 1000,
+    roundLimit: 10,
+    diceAnimationMode: 'fixed' as const,
+    diceAnimationMs: 400,
+    diceAnimationRandomMinMs: 400,
+    diceAnimationRandomMaxMs: 400,
+  };
+}
 
 function practiceSetup(virtualPlayerCount: number) {
   return {

@@ -62,7 +62,7 @@ function playerTurnState(base: ReturnType<typeof twoPlayerSeated>['state'], boxI
 }
 
 describe('boxDecisionOwnership — assignment rules', () => {
-  it('P1 native box 1, P2 native box 2', () => {
+  it('P1 native box 1, P2 native box 2 — no commander until stake', () => {
     const { state, p1, p2 } = twoPlayerSeated();
     expect(getCanonicalBoxAssignment(state)).toEqual([
       { personId: p1, nativeSlot: 1 },
@@ -70,15 +70,18 @@ describe('boxDecisionOwnership — assignment rules', () => {
     ]);
     const box1 = boxPlayerId(state, 1)!;
     const box2 = boxPlayerId(state, 2)!;
-    expect(getBoxDecisionOwner(state, box1)).toBe(p1);
-    expect(getBoxDecisionOwner(state, box2)).toBe(p2);
+    expect(getBoxDecisionOwner(state, box1)).toBeNull();
+    expect(getBoxDecisionOwner(state, box2)).toBeNull();
+    const staked1 = addChipToBoxStake(state, box1, 10, p1);
+    expect(getBoxDecisionOwner(staked1, box1)).toBe(p1);
   });
 
-  it('P1 chips on P2 native box — P2 remains decision owner', () => {
+  it('P1 chips on P2 native box — P1 commands when P2 has not staked', () => {
     const { state, p1, p2 } = twoPlayerSeated();
     const box2 = boxPlayerId(state, 2)!;
     const next = addChipToBoxStake(state, box2, 10, p1);
-    expect(getBoxDecisionOwner(next, box2)).toBe(p2);
+    expect(getBoxDecisionOwner(next, box2)).toBe(p1);
+    expect(getAssignedSlotForPerson(next, p2)).toBe(2);
   });
 
   it('first bettor on free box 3 gets temporary ownership', () => {
@@ -160,15 +163,16 @@ describe('boxDecisionOwnership — assignment rules', () => {
     const joined = finalizeInviteJoinAtTable(state, guestId, 'Guest');
     expect(getAssignedSlotForPerson(joined.state, guestId)).toBe(2);
     const box2 = boxPlayerId(joined.state, 2)!;
-    expect(getBoxDecisionOwner(joined.state, box2)).toBe(guestId);
+    expect(getBoxDecisionOwner(joined.state, box2)).toBeNull();
   });
 });
 
 describe('boxDecisionOwnership — viewer action permission', () => {
-  it('P2 native box active: P2 can act, P1 cannot', () => {
+  it('P2 native box active: P2 can act after staking, P1 cannot', () => {
     const { state, p1, p2 } = twoPlayerSeated();
     const box2 = boxPlayerId(state, 2)!;
-    const playing = playerTurnState(state, box2);
+    const staked = addChipToBoxStake(state, box2, 10, p2);
+    const playing = playerTurnState(staked, box2);
 
     expect(getViewerCanActOnActiveHand(playing, p2)).toEqual({
       handKey: playing.blackjack!.activeHandKey!,
@@ -207,7 +211,11 @@ describe('boxDecisionOwnership — viewer action permission', () => {
   it('Full Table and Card View share permission — Card View adds hero-box gate', () => {
     const { state, p2 } = twoPlayerSeated();
     const box2 = boxPlayerId(state, 2)!;
-    const playing = playerTurnState(state, box2);
+    const staked = addChipToBoxStake(state, box2, 10, p2);
+    const playing = playerTurnState(staked, box2);
+    playing.tableMeta.boxSlots = playing.tableMeta.boxSlots.map((slot) =>
+      slot.playerId === box2 ? { ...slot, callerPersonId: p2 } : slot,
+    );
 
     const fullTable = resolveViewerActionPermission(playing, p2);
     const cardViewHero = resolveViewerActionPermission(playing, p2, {

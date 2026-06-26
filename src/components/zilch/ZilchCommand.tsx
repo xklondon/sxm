@@ -7,6 +7,8 @@ interface ZilchCommandProps {
   canAct: boolean;
   actionError?: string | null;
   zilchRevealCountdown?: number;
+  isChallengeTable?: boolean;
+  challengeNeedsOpponent?: boolean;
   className?: string;
 }
 
@@ -16,11 +18,17 @@ export function ZilchCommand({
   canAct,
   actionError = null,
   zilchRevealCountdown = 0,
+  isChallengeTable = false,
+  challengeNeedsOpponent = false,
   className = '',
 }: ZilchCommandProps) {
   const message = zilch
-    ? commandStatusForPhase(zilch, playerNames, canAct)
-    : 'Invite players, then start the Zilch game.';
+    ? commandStatusForPhase(zilch, playerNames, canAct, { challengeNeedsOpponent })
+    : isChallengeTable
+      ? challengeNeedsOpponent
+        ? 'Invite at least one player to start Challenge.'
+        : 'Invite players, then start the Zilch game.'
+      : 'Invite players, then start the Zilch game.';
 
   const bannerClass =
     zilch?.phase === 'zilch-reveal' || zilch?.phase === 'zilch' || zilch?.lastZilchPlayerId

@@ -50,7 +50,7 @@ function unassignedBoxWithStake(
 }
 
 describe('multiplayer box ownership', () => {
-  it('assigned box: native owner is decision owner even when another player bets', () => {
+  it('assigned box: first bettor commands when native owner has not staked', () => {
     let state = tableAfterStartPlaying(500);
     const ownerId = state.tableMeta.ownerPersonId!;
     state = claimBoxSlot(state, 1);
@@ -72,9 +72,37 @@ describe('multiplayer box ownership', () => {
     });
 
     state = addChipToBoxStake(state, boxId, 10, bobId);
+    expect(getCallerPersonIdForBox(state, boxId)).toBe(bobId);
+    expect(isCallerForBox(state, boxId, bobId)).toBe(true);
+    expect(isCallerForBox(state, boxId, ownerId)).toBe(false);
+  });
+
+  it('assigned box: native owner commands once they stake', () => {
+    let state = tableAfterStartPlaying(500);
+    const ownerId = state.tableMeta.ownerPersonId!;
+    state = claimBoxSlot(state, 1);
+    const boxId = boxPlayerId(state, 1)!;
+
+    const guestSpl = addPlayer(state.session, state.players, state.ledger, {
+      displayName: 'Bob',
+      controllerName: 'Bob',
+      role: 'person',
+      startingChips: 500,
+    });
+    state = mergeSessionUpdate(state, guestSpl);
+    const bobId = guestSpl.session.playerIds[guestSpl.session.playerIds.length - 1]!;
+    state = allocateChipsToBankrollOwner(state, {
+      bankrollOwnerId: bobId,
+      amount: 500,
+      reason: 'initial-player',
+      source: 'setup',
+    });
+
+    state = addChipToBoxStake(state, boxId, 10, bobId);
+    state = addChipToBoxStake(state, boxId, 5, ownerId);
     expect(getCallerPersonIdForBox(state, boxId)).toBe(ownerId);
-    expect(isCallerForBox(state, boxId, bobId)).toBe(false);
     expect(isCallerForBox(state, boxId, ownerId)).toBe(true);
+    expect(isCallerForBox(state, boxId, bobId)).toBe(false);
   });
 
   it('unassigned box: first bettor becomes decision owner', () => {
@@ -135,7 +163,7 @@ describe('multiplayer box ownership', () => {
     expect(next.tableMeta.boxSlots.find((s) => s.playerId === boxId)?.callerPersonId).toBeNull();
   });
 
-  it('assigned box: non-owner cannot get actionable hand during player turns', () => {
+  it('assigned box: first bettor can get actionable hand when native owner has not staked', () => {
     let state = tableAfterStartPlaying(500);
     const ownerId = state.tableMeta.ownerPersonId!;
     state = claimBoxSlot(state, 1);
@@ -149,13 +177,29 @@ describe('multiplayer box ownership', () => {
     });
     state = mergeSessionUpdate(state, guestSpl);
     const bobId = guestSpl.session.playerIds[guestSpl.session.playerIds.length - 1]!;
+    state = allocateChipsToBankrollOwner(state, {
+      bankrollOwnerId: bobId,
+      amount: 500,
+      reason: 'initial-player',
+      source: 'setup',
+    });
 
     const deck = state.deck!;
     const round = actingRound(state, boxId, [findCardId(deck, '6'), findCardId(deck, '5')], 25);
-    state = { ...state, blackjack: round };
+    state = {
+      ...addChipToBoxStake(state, boxId, 10, bobId),
+      tableMeta: {
+        ...state.tableMeta,
+        bettingLocked: true,
+        boxSlots: state.tableMeta.boxSlots.map((slot) =>
+          slot.playerId === boxId ? { ...slot, callerPersonId: bobId } : slot,
+        ),
+      },
+      blackjack: round,
+    };
 
-    expect(getActionableHandForView(state, ownerId, true)).not.toBeNull();
-    expect(getActionableHandForView(state, bobId, true)).toBeNull();
+    expect(getActionableHandForView(state, bobId, true)).not.toBeNull();
+    expect(getActionableHandForView(state, ownerId, true)).toBeNull();
   });
 
   it('invite join assigns next free box slot', () => {

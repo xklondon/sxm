@@ -10,6 +10,8 @@ import {
   syncPlayerOrderAndAssignments,
 } from './playerAssignment';
 import { addSeatAtTable } from './table';
+import { isZilchTable } from './zilchTableKind';
+import { reconcileZilchRoster } from '../dice/zilch/zilchRoster';
 
 export interface TableJoinNotice {
   message: string;
@@ -192,6 +194,10 @@ export function finalizeInviteJoinAtTable(
 
   if (boxResult.boxAssigned && boxResult.slotNumber !== null) {
     next = setJoinTableUiState(next, personId, displayName, boxResult.slotNumber);
+  }
+
+  if (isZilchTable(next)) {
+    next = reconcileZilchRoster(next);
   }
 
   return {

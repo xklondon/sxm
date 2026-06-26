@@ -1,6 +1,8 @@
 import type { GameState } from '../../types';
 import type { BoxSlotState } from '../../types/table';
 import { log } from '../../utils/logger';
+import { getStakeForBox } from '../blackjack/stakes';
+import { resolveBoxRoundCommander } from './boxRoundCommander';
 import { addPlayer, mergeSessionUpdate } from './session';
 import { listPersonBankrollOwnerIds } from './bankroll';
 import { MAX_TABLE_BOXES } from '../../types/table';
@@ -216,22 +218,15 @@ export function isSeatedPersonAtTable(state: GameState, personId: string): boole
 
 /** Decision owner for hit/stand/split/double/insurance on a box. */
 export function getCallerPersonIdForBox(state: GameState, boxPlayerId: string): string | null {
+  const commander = resolveBoxRoundCommander(state, boxPlayerId).commanderPersonId;
+  if (commander) {
+    return commander;
+  }
+
   const slot = findSlotByBoxPlayerId(state, boxPlayerId);
-  // Native seat assignment always owns decisions on assigned boxes.
-  if (slot?.nativeAssignedPersonId) {
-    return slot.nativeAssignedPersonId;
-  }
-  // Unassigned: locked caller from deal lock, or first bettor during betting.
-  if (slot?.callerPersonId) {
-    return slot.callerPersonId;
-  }
-  const stake = state.tableMeta.boxStakes[boxPlayerId];
-  if (stake?.callerPersonId) {
-    return stake.callerPersonId;
-  }
   // Solo play: one person may call every box on their bankroll during betting or play.
   if (isSinglePlayerTable(state) && slot?.bankrollOwnerId) {
-    const hasStake = (stake?.amount ?? 0) > 0;
+    const hasStake = getStakeForBox(state, boxPlayerId) > 0;
     const inPlay =
       state.blackjack?.status === 'player-turns' ||
       state.blackjack?.insuranceOfferPending === true;
@@ -405,25 +400,22 @@ export function resolveControllerPersonId(
   return null;
 }
 
-/** Lock caller on each eligible box when bets lock for deal. */
+/** Lock commander on each eligible box when bets lock for deal. */
 export function syncCallersForDeal(state: GameState, boxPlayerIds: string[]): GameState {
   const boxSlots = state.tableMeta.boxSlots.map((slot) => {
     if (!slot.playerId || !boxPlayerIds.includes(slot.playerId)) {
       return slot;
     }
-    const caller =
-      slot.nativeAssignedPersonId ??
-      state.tableMeta.boxStakes[slot.playerId]?.callerPersonId ??
-      null;
-    if (caller && caller !== slot.callerPersonId) {
+    const { commanderPersonId, reason } = resolveBoxRoundCommander(state, slot.playerId);
+    if (commanderPersonId && commanderPersonId !== slot.callerPersonId) {
       log.info('dealCallerLocked', {
         boxPlayerId: slot.playerId,
         slotNumber: slot.slotNumber,
-        callerPersonId: caller,
-        native: Boolean(slot.nativeAssignedPersonId),
+        callerPersonId: commanderPersonId,
+        reason,
       });
     }
-    return caller ? { ...slot, callerPersonId: caller } : slot;
+    return commanderPersonId ? { ...slot, callerPersonId: commanderPersonId } : slot;
   });
   return { ...state, tableMeta: { ...state.tableMeta, boxSlots } };
 }

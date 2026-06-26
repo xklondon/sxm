@@ -159,7 +159,7 @@ describe('Zilch reset and new-table UI routing', () => {
     expect(onConfirmNewTable.mock.calls[0][0]).toMatchObject({
       zilchMode: 'target_points',
       tableMode: 'practice',
-      virtualPlayerCount: 2,
+      virtualPlayerCount: 1,
     });
   });
 });

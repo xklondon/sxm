@@ -104,7 +104,7 @@ describe('multiplayer ownership (server authority)', () => {
     expect(bet.state.tableMeta.boxStakes[boxId]?.amount).toBe(10);
   });
 
-  it('assigned box: non-owner can bet but cannot hit', async () => {
+  it('assigned box: guest who bet first can hit when host did not stake', async () => {
     const host = await seedHostUser(store);
     const table = await tables.createTable(host.id, 'Host');
     const hostPersonId = store.getMember(table.id, host.id)!.personId;
@@ -143,7 +143,7 @@ describe('multiplayer ownership (server authority)', () => {
       table.version,
     );
     expect(betResult.state.tableMeta.boxStakes[hostBoxId]?.amount).toBe(10);
-    expect(getCallerPersonIdForBox(betResult.state, hostBoxId)).toBe(hostPersonId);
+    expect(getCallerPersonIdForBox(betResult.state, hostBoxId)).toBe(guestPersonId);
 
     const handKey = `${hostBoxId}:0`;
     const playerTurnState = {
@@ -171,6 +171,9 @@ describe('multiplayer ownership (server authority)', () => {
         ...betResult.state.tableMeta,
         bettingLocked: true,
         shoeStarted: true,
+        boxSlots: betResult.state.tableMeta.boxSlots.map((slot) =>
+          slot.playerId === hostBoxId ? { ...slot, callerPersonId: guestPersonId } : slot,
+        ),
       },
     } as typeof betResult.state;
 
@@ -178,8 +181,9 @@ describe('multiplayer ownership (server authority)', () => {
     const updated = store.getTable(table.id)!;
 
     expect(getBlackjackProtocolPhase(updated.state)).toBe('player');
+    expect(getCallerPersonIdForBox(updated.state, hostBoxId)).toBe(guestPersonId);
 
-    await expect(tables.applyAction(table.id, guest.id, 'hit', {}, updated.version)).rejects.toThrow(
+    await expect(tables.applyAction(table.id, host.id, 'hit', {}, updated.version)).rejects.toThrow(
       /Not box owner/i,
     );
   });

@@ -148,6 +148,11 @@ export {
   type ViewerActionPermission,
 } from './boxDecisionOwnership';
 export {
+  resolveBoxRoundCommander,
+  type BoxRoundCommanderReason,
+  type BoxRoundCommanderResult,
+} from './boxRoundCommander';
+export {
   getBoxIdsWithCommittedExposureForPerson,
   getInRoundBetExposureForPerson,
   getOpenStakeExposureForPerson,

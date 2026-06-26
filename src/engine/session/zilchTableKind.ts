@@ -2,6 +2,7 @@ import type { GameState } from '../../types';
 import type { ZilchGameState } from '../dice/zilch/zilchTypes';
 import { normalizeZilchState } from '../dice/zilch/normalizeZilchState';
 import { pruneHoldemSessionForPlay } from '../holdem/holdemPlayableSeats';
+import { reconcileZilchRoster } from '../dice/zilch/zilchRoster';
 
 export function repairStuckRandomisingStarter(zilch: ZilchGameState): ZilchGameState {
   if (zilch.phase !== 'randomising-starter' || !zilch.starterPlayerId) {
@@ -155,13 +156,14 @@ export function normalizeLoadedGameState(state: GameState): GameState {
   if (!isZilchTable(state)) {
     return state;
   }
-  const withIdentity = ensureZilchTableIdentity(state);
+  let withIdentity = ensureZilchTableIdentity(state);
   const zilch = withIdentity.zilch;
   if (!zilch) {
-    return withIdentity;
+    return reconcileZilchRoster(withIdentity);
   }
-  return {
+  const normalized = {
     ...withIdentity,
     zilch: normalizeLoadedZilch(zilch),
   };
+  return reconcileZilchRoster(normalized);
 }
