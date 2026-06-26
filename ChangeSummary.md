@@ -1,63 +1,47 @@
-# Change Summary — Poker Staging QA
+# Change Summary — Poker High Roller Visual Template + Start Flow Fix
 
-## QA status
+## Reference files used
 
-**Automated gate: PASS** | **Manual browser: PENDING human sign-off** | **Production: NO** | **Friend-table beta: YES**
+- `reference-ui/Poker/stitch_professional_casino_poker_redesign/DESIGN.md` — High Roller Protocol tokens, typography, layout, component rules
+- `reference-ui/Poker/stitch_professional_casino_poker_redesign/screen.png` — visual target screenshot
 
-Full report: `docs/POKER_STAGING_QA_REPORT.md`
+## Root cause (start flow)
 
-## Local app
+After offline shuffle, `handleStartHand` updated parent state but `gameStateRef` still pointed at the pre-shuffle state, so the subsequent `start-hand` dispatch failed silently. Fixed by syncing `gameStateRef` after shuffle.
 
-| Check | Result |
-|-------|--------|
-| `npm run dev` | Running — `http://localhost:5173`, LAN `http://192.168.0.43:5173`, API `127.0.0.1:3017` |
-| Health (proxy + direct) | PASS (dev self-check) |
+## Files changed
 
-## Automated test matrix (checklist coverage)
+**Template / UI (`src/games/poker/`)**
+- `pokerTemplateContract.ts` — NEW: template class contract + reference path
+- `styles/poker-table.css` — rewritten for High Roller tokens (dark shell, oval felt, sharp gold/red buttons)
+- `components/PokerTableShell.tsx` — `poker-hr-*` shell, **Deal Cards**, waiting copy in top bar only
+- `components/PokerTableLayout.tsx` — stage/table/center structure
+- `components/PokerSeat.tsx` — circular avatars, D/SB/BB badges
+- `components/PokerActionPanel.tsx` — chip presets + casino action bar
+- `components/PokerPotArea.tsx` — compact centered pot
+- `components/PokerSeatRing.tsx`, `PokerFeltClothLayer.tsx` — template classes
+- `components/PokerPanel.tsx` — ref sync after shuffle; challenge waiting in status bar
+- `pokerTemplate.test.tsx` — NEW: template + start-flow UI tests
 
-| Checklist item | Coverage |
-|----------------|----------|
-| Practice setup / no IOU | `pokerIntegration`, `pokerStabilization`, `holdemTableSetup` |
-| Challenge settlement / roster | `pokerChallengeSettlement.test.ts`, `challengeParticipants.test.ts` |
-| Invalid blinds | `validatePokerBlinds`, `holdemTableSetup.test.ts` |
-| Join after first hand blocked | `holdemChallengeJoin.test.ts` (engine + server) |
-| IOU dedup / practice block | `iouHandoff.test.ts` |
-| Heads-up blinds | `headsUpBlinds.test.ts`, `holdemSelectors.test.ts` |
-| Online authority | `holdemTableActions.test.ts`, `holdemTurnAuthority.test.ts` |
-| Layout shell (6-seat, chat, actions, pots) | `pokerStabilization.test.tsx` |
-| BJ/Zilch regression smoke | `pokerIntegration` smoke block |
-| Global vs embedded chat | `pokerStabilization` TableScreen test |
+**Docs**
+- `docs/POKER_STAGING_QA_REPORT.md`, `docs/POKER_FINAL_STABILIZATION_AUDIT.md`, `docs/CHANGE_LOG.md`, `docs/SXM_MASTER_SPEC.md`
 
-**171** holdem/poker/server + **29** integration/setup + **27** ownership + **2** BJ/Zilch smoke — all passed.
+## Tests run
 
-## Bugs found / fixed
+| Tier | Command | Result |
+|------|---------|--------|
+| Poker template + UI | `vitest run src/games/poker` + `holdemStartHand.test.ts` | **PASS** |
+| Server holdem | `vitest run server/tests/holdemTableActions.test.ts` | **PASS** (23) |
+| Ownership | `npm run test:ownership` | **PASS** (28) |
+| Build | `npx tsc -b` + `npx vite build` | **PASS** |
+| Full `npm run build` | — | **Skipped** (Prisma EPERM on Windows) |
 
-| Bug | Fix |
-|-----|-----|
-| `devLink` was relative path → `test-local-flow` threw `Invalid URL` | `server/src/auth/service.ts` — return full `verifyUrl` in dev |
+## Confirmations
 
-No gameplay/layout bugs found in automated pass.
+- **Practice** starts immediately: host + 1 virtual, Deal Cards enabled, no “Waiting for invited player” in center
+- **One click Deal Cards**: shuffle → post SB/BB (pot 15) → deal 2 hole cards → preflop actor set
+- **Visual shell** follows High Roller reference (`poker-hr-shell`, oval felt, avatars, action bar below)
+- **No permanent chat rail** — chat in This Table panel
+- **Blackjack/Zilch** not modified
 
-## Manual QA (you must run)
-
-Open host + guest/incognito at **http://192.168.0.43:5173** and walk sections 2–7 in `docs/POKER_STAGING_QA_REPORT.md`.
-
-## Deployment
-
-| Item | Status |
-|------|--------|
-| Deploy URL | `https://sxm-production.up.railway.app` |
-| Health smoke | PASS (`/health`, `/api/health`) |
-| Full live flow | Blocked by magic-link rate limit during automated run — retry after cooldown or use SMTP inbox |
-| Commit / push | **Not done** — pending your manual QA sign-off (large uncommitted Poker tree) |
-
-## Production blockers (unchanged)
-
-1. Manual mobile QA
-2. Persistent server IOU dedup store
-3. Double-click action dispatch guard
-4. Real multi-user challenge E2E on staging
-
-**Blackjack / Zilch:** not modified.
-
-**Spec discipline:** QA report added; no spec change required for QA-only pass.
+**Spec discipline: checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.**

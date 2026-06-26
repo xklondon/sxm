@@ -319,6 +319,10 @@
 /* Embedded in NewTableOverlay — single-column form, sticky footer nav, no horizontal bleed */
 .new-table-overlay__body .table-stake-panel--embedded {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
 }
 
 .new-table-overlay__body .table-stake-panel--embedded .table-stake-panel__grid {
@@ -368,4 +372,39 @@
     rgb(6 16 12 / 0.9) 28%,
     rgb(6 16 12 / 0.99) 100%
   );
+}
+
+.new-table-overlay__body .table-stake-panel--embedded .table-stake-panel__body--scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  max-height: min(52vh, calc(100dvh - 12rem));
+  padding-right: 0.15rem;
+  margin-bottom: 0.35rem;
+}
+
+.table-stake-panel--holdem-settings .table-stake-panel__field {
+  margin-bottom: 0.45rem;
+}
+
+.table-stake-panel--holdem-settings .table-stake-panel__banker {
+  margin-bottom: 0.45rem;
+  padding: 0.5rem 0.6rem;
+}
+
+.table-stake-panel--holdem-settings .table-stake-panel__hint {
+  margin: 0.35rem 0 0.5rem;
+}
+
+.table-stake-panel--holdem-challenge .table-stake-panel__field {
+  margin-bottom: 0.35rem;
+}
+
+.table-stake-panel--holdem-challenge .table-stake-panel__banker {
+  margin-bottom: 0.35rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.new-table-overlay__body .table-stake-panel--embedded.table-stake-panel--holdem-challenge .table-stake-panel__body--scroll {
+  max-height: min(58vh, calc(100dvh - 10rem));
 }

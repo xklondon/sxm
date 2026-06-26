@@ -158,7 +158,7 @@ describe('Poker final stabilization', () => {
       <TableScreen gameState={state} onGameStateChange={() => {}} onLeave={() => {}} />,
     );
     expect(html).not.toContain('table-chat-dock');
-    expect(html).toContain('poker-chat-dock');
+    expect(html).not.toContain('data-testid="poker-chat-dock"');
   });
 
   it('seat ring renders for 6 and 9 players without throwing', () => {
@@ -174,7 +174,7 @@ describe('Poker final stabilization', () => {
     }
   });
 
-  it('table shell keeps action panel, chat dock, pot lines, and hero cards', () => {
+  it('table shell keeps action panel, pot lines, and hero cards — chat in This Table panel only', () => {
     const ids = ['hero', 'p2', 'p3', 'p4', 'p5', 'p6'];
     const state = {
       ...createNewHoldemTable(),
@@ -224,6 +224,7 @@ describe('Poker final stabilization', () => {
     const vm = mapPokerTableViewModel(state, 'hero');
     const html = renderToStaticMarkup(
       <PokerTableShell
+        gameState={state}
         viewModel={vm}
         tableId="layout-qa"
         chatMessages={[{ id: 'm1', author: 'Host', body: 'gl', timestamp: 0 }]}
@@ -232,12 +233,11 @@ describe('Poker final stabilization', () => {
       />,
     );
 
-    expect(html).toContain('poker-table-layout__controls');
     expect(html).toContain('poker-actions');
-    expect(html).toContain('poker-chat-dock');
+    expect(html).not.toContain('data-testid="poker-chat-dock"');
     expect(html).toContain('poker-pot__payouts');
-    expect(html).toContain('poker-pot__side-count');
+    expect(html).toContain('poker-hr-pot__side');
     expect(html).toContain('poker-seat--viewer');
-    expect(html).not.toMatch(/poker-chat-dock[^>]*poker-actions/);
+    expect(html).toContain('This Table');
   });
 });

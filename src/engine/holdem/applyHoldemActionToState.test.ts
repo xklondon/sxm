@@ -49,18 +49,12 @@ function fundSeatedPlayers(state: GameState, amount = 500): GameState {
 describe('applyHoldemActionToState', () => {
   it('supports all-in via canonical action when player has chips', () => {
     let state = fundSeatedPlayers(shuffleGameDeck(practiceTable()));
-    const created = applyHoldemActionToState(state, { type: 'start-hand' });
-    expect(created.ok).toBe(true);
-    if (!created.ok) {
+    const started = applyHoldemActionToState(state, { type: 'start-hand' });
+    expect(started.ok).toBe(true);
+    if (!started.ok) {
       return;
     }
-    state = created.state;
-    const dealt = applyHoldemActionToState(state, { type: 'start-hand' });
-    expect(dealt.ok).toBe(true);
-    if (!dealt.ok) {
-      return;
-    }
-    state = dealt.state;
+    state = started.state;
     const actor = state.holdem?.activePlayerId;
     if (!actor) {
       return;
@@ -81,19 +75,13 @@ describe('applyHoldemActionToState', () => {
     expect(unsupported.ok).toBe(false);
   });
 
-  it('start-hand creates a setup round then deals on second call', () => {
-    let state = fundSeatedPlayers(shuffleGameDeck(practiceTable()));
-    const created = applyHoldemActionToState(state, { type: 'start-hand' });
-    expect(created.ok).toBe(true);
-    if (created.ok) {
-      expect(created.state.holdem?.status).toBe('setup');
-      state = created.state;
-    }
-
-    const dealt = applyHoldemActionToState(state, { type: 'start-hand' });
-    expect(dealt.ok).toBe(true);
-    if (dealt.ok) {
-      expect(dealt.state.holdem?.status).toBe('preflop');
+  it('start-hand reaches preflop in a single call (blinds + deal)', () => {
+    const state = fundSeatedPlayers(shuffleGameDeck(practiceTable()));
+    const started = applyHoldemActionToState(state, { type: 'start-hand' });
+    expect(started.ok).toBe(true);
+    if (started.ok) {
+      expect(started.state.holdem?.status).toBe('preflop');
+      expect(started.state.holdem?.pot).toBeGreaterThan(0);
     }
   });
 
@@ -120,6 +108,7 @@ describe('applyHoldemActionToState', () => {
     if (result.ok) {
       expect(result.state.session.dealerButtonPlayerId).toBe(dealerId);
       expect(result.state.holdem?.dealerButtonPlayerId).toBe(dealerId);
+      expect(result.state.holdem?.status).toBe('preflop');
     }
   });
 

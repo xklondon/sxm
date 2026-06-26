@@ -1,40 +1,46 @@
 import type { ReactNode } from 'react';
+import {
+  POKER_TEMPLATE_CENTER,
+  POKER_TEMPLATE_STAGE,
+  POKER_TEMPLATE_TABLE,
+} from '../pokerTemplateContract';
 
 interface PokerTableLayoutProps {
-  toolbar?: ReactNode;
+  topBar?: ReactNode;
   seatRing: ReactNode;
   communityBoard: ReactNode;
   potArea: ReactNode;
   actionPanel: ReactNode;
-  chatDock?: ReactNode;
+  feltHeader?: ReactNode;
+  feltCenterOverlay?: ReactNode;
 }
 
 export function PokerTableLayout({
-  toolbar,
+  topBar,
   seatRing,
   communityBoard,
   potArea,
   actionPanel,
-  chatDock,
+  feltHeader,
+  feltCenterOverlay,
 }: PokerTableLayoutProps) {
   return (
-    <div className="poker-table-layout">
-      {toolbar}
+    <div className="poker-table-layout poker-hr-layout">
+      {topBar}
 
-      <div className="poker-table-layout__main">
-        <div className="poker-table-layout__felt" aria-label="Poker table felt">
+      <div className={`poker-table-layout__stage ${POKER_TEMPLATE_STAGE}`}>
+        <div className={`poker-table-layout__felt ${POKER_TEMPLATE_TABLE}`} aria-label="Poker table felt">
+          {feltHeader}
           {seatRing}
-          <div className="poker-table-layout__center">
+          <div className={`poker-table-layout__center ${POKER_TEMPLATE_CENTER}`}>
             {potArea}
             {communityBoard}
+            {feltCenterOverlay}
           </div>
         </div>
-
-        <div className="poker-table-layout__controls">
-          {actionPanel}
-          {chatDock}
-        </div>
       </div>
+
+      <div className="poker-table-layout__actions poker-hr-layout__actions">{actionPanel}</div>
     </div>
   );
 }

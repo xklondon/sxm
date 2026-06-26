@@ -5,6 +5,8 @@ interface PokerBlindsControlProps {
   bigBlind: number;
   editable: boolean;
   onSave?: (smallBlind: number, bigBlind: number) => void;
+  /** Hide duplicate blinds label when parent already shows blinds on the felt. */
+  hideLabel?: boolean;
 }
 
 export function PokerBlindsControl({
@@ -12,6 +14,7 @@ export function PokerBlindsControl({
   bigBlind,
   editable,
   onSave,
+  hideLabel = false,
 }: PokerBlindsControlProps) {
   const [open, setOpen] = useState(false);
   const [sbInput, setSbInput] = useState(String(smallBlind));
@@ -36,10 +39,12 @@ export function PokerBlindsControl({
 
   return (
     <div className="poker-blinds">
-      <span className="poker-blinds__label">
-        Blinds {smallBlind}/{bigBlind}
-      </span>
-      {editable && (
+      {!hideLabel && (
+        <span className="poker-blinds__label">
+          Blinds {smallBlind}/{bigBlind}
+        </span>
+      )}
+      {editable && !hideLabel && (
         <>
           <button
             type="button"
@@ -84,6 +89,36 @@ export function PokerBlindsControl({
             </div>
           )}
         </>
+      )}
+      {editable && hideLabel && (
+        <div className="poker-blinds__panel poker-blinds__panel--menu">
+          <label className="poker-blinds__field">
+            Small blind
+            <input
+              type="number"
+              min={1}
+              value={sbInput}
+              onChange={(e) => setSbInput(e.target.value)}
+            />
+          </label>
+          <label className="poker-blinds__field">
+            Big blind
+            <input
+              type="number"
+              min={1}
+              value={bbInput}
+              onChange={(e) => setBbInput(e.target.value)}
+            />
+          </label>
+          <button type="button" onClick={handleSave}>
+            Save for next hand
+          </button>
+          {error && (
+            <p className="poker-blinds__error" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

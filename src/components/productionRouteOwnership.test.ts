@@ -86,6 +86,12 @@ describe('production route ownership — Blackjack shell', () => {
     expect(PANEL_SRC).toContain('<BlackjackTableLayoutShell');
     expect(SHELL_SRC).toContain(`export function ${BLACKJACK_TABLE_LAYOUT_SHELL_NAME}`);
   });
+
+  it('TableScreen routes holdem to PokerPanel and never legacy HoldemPanel', () => {
+    expect(TABLE_SCREEN_SRC).toContain('PokerPanel');
+    expect(TABLE_SCREEN_SRC).toMatch(/isHoldem\s*\?/);
+    expect(TABLE_SCREEN_SRC).not.toContain('HoldemPanel');
+  });
 });
 
 describe('production route ownership — forbidden imports', () => {

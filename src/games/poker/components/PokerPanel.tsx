@@ -6,6 +6,7 @@ import {
   endHoldemChallengeEarlyOnState,
   getAuthoritativeChallengeWinnerId,
 } from '../../../engine/holdem/challengeWinner';
+import { validateHoldemStartHand } from '../../../engine/holdem/holdemStartValidation';
 import { loadProfile } from '../../../storage/profileStorage';
 import type { GameOverIouFeedback } from '../../../components/GameOverActionOverlay';
 import type { TableResetSetupVariant } from '../../../components/TableStakePanel';
@@ -32,6 +33,7 @@ import {
 } from '../state/pokerHoldemDispatch';
 import { usePokerTableChat } from '../hooks/usePokerTableChat';
 import { PokerGameOverOverlay } from './PokerGameOverOverlay';
+import { addPokerPracticeChips } from '../state/pokerChipAdjust';
 import type { PokerPlayerAction } from '../state/pokerTypes';
 
 export interface PokerPanelProps {
@@ -81,7 +83,7 @@ export function PokerPanel({
   const chatTableId = onlineTableId ?? gameState.session.id;
   const chatUserEmail = viewerAuth?.email ?? profile.email ?? null;
   const chatUserName = viewerAuth?.displayName ?? profile.name ?? null;
-  const { messages, unreadCount, sending, sendMessage } = usePokerTableChat({
+  const { messages, sending, sendMessage } = usePokerTableChat({
     tableId: chatTableId,
     currentUserEmail: chatUserEmail,
     currentUserName: chatUserName,
@@ -95,6 +97,9 @@ export function PokerPanel({
   const isChallenge = gameState.tableMeta.pokerConfig?.mode === 'challenge';
   const isPractice = !isChallenge;
   const challengeEnded = gameState.tableMeta.pokerConfig?.challengeStatus === 'ended';
+  const handResolved = gameState.holdem?.status === 'resolved';
+  const needsShuffle = !gameState.deck;
+  const canStartHand = isOwner && !handInProgress && !challengeEnded;
 
   const authoritativeWinnerId = getAuthoritativeChallengeWinnerId(gameState);
 
@@ -146,6 +151,46 @@ export function PokerPanel({
 
   const iouFailed = iouFeedback?.tone === 'error';
   const isOnlineTable = Boolean(onlineTableId && onlineDispatch);
+
+  const startHandBlockReason = useMemo(() => {
+    if (!canStartHand) {
+      return null;
+    }
+    return validateHoldemStartHand(gameState);
+  }, [canStartHand, gameState]);
+
+  const statusHint = useMemo(() => {
+    if (handInProgress) {
+      switch (viewModel.street) {
+        case 'preflop':
+          return 'Pre-flop betting';
+        case 'flop':
+          return 'Flop';
+        case 'turn':
+          return 'Turn';
+        case 'river':
+          return 'River';
+        case 'showdown':
+          return 'Showdown';
+        default:
+          return 'Hand in progress';
+      }
+    }
+    if (handResolved && gameState.holdem?.resultSummary) {
+      return gameState.holdem.resultSummary;
+    }
+    if (isChallenge && startHandBlockReason === 'Waiting for invited player') {
+      return startHandBlockReason;
+    }
+    return 'Ready to deal';
+  }, [
+    gameState.holdem?.resultSummary,
+    handInProgress,
+    handResolved,
+    isChallenge,
+    startHandBlockReason,
+    viewModel.street,
+  ]);
 
   const dispatchHoldemAction = useCallback(
     (holdemAction: ReturnType<typeof mapPokerUiActionToHoldemAction>) => {
@@ -240,12 +285,39 @@ export function PokerPanel({
   }
 
   function handleStartHand() {
-    const current = gameStateRef.current;
-    if (!current.deck) {
-      void dispatchShuffle();
+    void (async () => {
+      let current = gameStateRef.current;
+      if (!current.deck) {
+        if (isOnlineTable && onlineDispatch) {
+          try {
+            await onlineDispatch(HOLDEM_SHUFFLE_SERVER_ACTION, {});
+            setError(null);
+          } catch (err) {
+            const message = err instanceof Error ? err.message : 'Shuffle failed';
+            setError(formatPokerHoldemActionError(message));
+            return;
+          }
+        } else {
+          const shuffleResult = runPokerShuffleDeck(current);
+          if (!shuffleResult.ok) {
+            setError(formatPokerHoldemActionError(shuffleResult.error));
+            return;
+          }
+          current = shuffleResult.state;
+          gameStateRef.current = current;
+          onGameStateChange(shuffleResult.state);
+          setError(null);
+        }
+      }
+      await dispatchUiAction('start-hand');
+    })();
+  }
+
+  function handleAddChips(playerId: string, amount: number) {
+    if (!isPractice) {
       return;
     }
-    void dispatchUiAction('start-hand');
+    runSetup(() => addPokerPracticeChips(gameStateRef.current, playerId, amount));
   }
 
   async function handleEndChallenge() {
@@ -306,61 +378,38 @@ export function PokerPanel({
   }
 
   return (
-    <div className="poker-panel" data-game="poker">
-      {!gameState.holdem && (
-        <div className="poker-panel__prehand">
-          <p className="poker-panel__hint">
-            {gameState.deck ? 'Ready to deal.' : 'Shuffle the deck, then start a hand.'}
-          </p>
-          <div className="poker-panel__prehand-actions">
-            {!gameState.deck && (
-              <button type="button" onClick={() => void dispatchShuffle()}>
-                Shuffle deck
-              </button>
-            )}
-            <button type="button" className="table-stake-panel__confirm" onClick={handleStartHand}>
-              Start Hold&apos;em hand
-            </button>
-            {onInviteTable && (
-              <button type="button" className="secondary" onClick={onInviteTable}>
-                Invite to table
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {gameState.holdem?.status === 'resolved' && (
-        <div className="poker-panel__resolved">
-          <p>{gameState.holdem.resultSummary}</p>
-          {challengeEnded && authoritativeWinnerId && (
-            <p className="poker-panel__challenge-ended">
-              Challenge ended — Winner:{' '}
-              {gameState.players[authoritativeWinnerId]?.displayName ?? 'Player'}
-            </p>
-          )}
-          <button type="button" onClick={handleStartHand} disabled={challengeEnded}>
-            Start new hand
-          </button>
-          {canEndChallengeEarly && (
-            <button type="button" className="secondary" onClick={() => void handleEndChallenge()}>
-              End challenge
-            </button>
-          )}
-        </div>
-      )}
-
+    <div className="poker-panel poker-panel--compact" data-game="poker">
       <PokerTableShell
+        gameState={gameState}
         viewModel={viewModel}
         actionAvailability={actionAvailability}
         chatMessages={messages}
-        unreadCount={unreadCount}
         chatSending={sending}
         disabled={false}
-        onAction={gameState.holdem ? handleAction : undefined}
-        onSendChat={(body) => void sendMessage(body)}
+        statusHint={statusHint}
+        startHandBlockReason={startHandBlockReason}
+        handActive={handInProgress}
+        handResolved={handResolved}
+        challengeEnded={challengeEnded}
+        needsShuffle={needsShuffle}
+        canStartHand={canStartHand}
         canEditBlinds={canEditBlinds}
+        canAddChips={isPractice && isOwner && !handInProgress}
+        canResetTable={isOwner && Boolean(onBeginTableReset)}
+        isPractice={isPractice}
+        isChallenge={isChallenge}
+        showInvite={Boolean(onInviteTable)}
+        showEndChallenge={canEndChallengeEarly}
+        onAction={gameState.holdem && handInProgress ? handleAction : undefined}
+        onSendChat={(body) => void sendMessage(body)}
         onSaveBlinds={handleSaveBlinds}
+        onInviteTable={onInviteTable}
+        onLeaveTable={onExitTable}
+        onEndChallenge={() => void handleEndChallenge()}
+        onStartHand={handleStartHand}
+        onShuffleDeck={() => void dispatchShuffle()}
+        onBeginTableReset={onBeginTableReset}
+        onAddChips={handleAddChips}
         tableId={chatTableId}
       />
 

@@ -91,6 +91,12 @@ export {
   isHoldemChallengeJoinLocked,
   HOLDEM_CHALLENGE_JOIN_BLOCKED_MESSAGE,
 } from './holdemChallengeJoin';
+export {
+  isHoldemPlayableSeat,
+  listHoldemPlayableSeatIds,
+  pruneHoldemSessionForPlay,
+} from './holdemPlayableSeats';
+export { validateHoldemStartHand } from './holdemStartValidation';
 export type { HoldemChallengeParticipant } from './challengeParticipants';
 export type {
   HoldemChallengeWinnerResult,

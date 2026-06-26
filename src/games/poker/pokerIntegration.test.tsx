@@ -113,7 +113,7 @@ describe('PokerTableShell routing', () => {
     );
     expect(html).toContain('poker-panel');
     expect(html).not.toContain('table-chat-dock');
-    expect(html).toContain('data-testid="poker-chat-dock"');
+    expect(html).not.toContain('data-testid="poker-chat-dock"');
   });
 });
 
@@ -339,17 +339,37 @@ describe('Poker challenge IOU settlement', () => {
   });
 });
 
-describe('Poker chat dock', () => {
-  it('renders chat dock with table id attribute', () => {
+describe('Poker This Table panel', () => {
+  it('opens slide panel with table id attribute — chat lives in panel only', () => {
+    const state = applyHoldemTableStakeSetup(createNewHoldemTable(), {
+      stakeDescription: 'Practice',
+      seatChips: 500,
+      bankChips: 500,
+      bankerMode: 'self',
+      bankerName: 'Alex',
+      controllerName: 'Alex',
+      controllerEmail: 'alex@example.com',
+      protocolId: 'texas-holdem',
+      naturalDealing: false,
+      dealSpeedPreset: 'normal',
+      cardTimerPreset: 0,
+      bankDrawAuto: true,
+      tableMode: 'practice',
+      smallBlind: 5,
+      bigBlind: 10,
+      virtualPlayerCount: 1,
+    });
     const html = renderToStaticMarkup(
       <PokerTableShell
-        viewModel={mapPokerTableViewModel(createNewHoldemTable())}
+        gameState={state}
+        viewModel={mapPokerTableViewModel(state, state.session.playerIds[0]!)}
         tableId="table-123"
         chatMessages={[]}
       />,
     );
     expect(html).toContain('data-table-id="table-123"');
-    expect(html).toContain('data-testid="poker-chat-dock"');
+    expect(html).not.toContain('data-testid="poker-chat-dock"');
+    expect(html).toContain('This Table');
   });
 });
 

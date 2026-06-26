@@ -1,11 +1,48 @@
 # Poker Final Stabilization Audit
 
-**Date:** 2026-06-23 (updated after beta hardening pass)  
+**Date:** 2026-06-23 (updated after High Roller visual template pass)  
 **Scope:** Phases A–D2 complete — setup, practice, challenge, online authority, hold'em engine, UI, regression safety.
 
 ## Status
 
-**PASS WITH RISKS** (beta hardening applied 2026-06-23)
+**PASS WITH RISKS** (High Roller visual template applied 2026-06-23)
+
+## High Roller visual template (reference implementation)
+
+**Source:** `reference-ui/Poker/stitch_professional_casino_poker_redesign/DESIGN.md` + `screen.png`
+
+| Element | Implementation |
+|---------|----------------|
+| Dark premium session shell | `poker-hr-shell` + CSS tokens from DESIGN.md |
+| Oval felt table | `poker-hr-table` |
+| Cloth title + blinds once | `poker-hr-cloth` (`PokerFeltClothLayer`) |
+| Seat avatars + D/SB/BB | `poker-hr-seat__avatar` + badges |
+| Centered pot / community | `poker-hr-center` |
+| Deal / start on felt | `poker-hr-deal-btn` — label **Deal Cards** |
+| Casino action bar below | `poker-hr-action-bar` — chip presets + sharp buttons |
+| This Table panel (not rail) | `PokerTablePanel` — invite, blinds, stacks, chat |
+| Practice playable immediately | host + 1 virtual, funded; no center waiting copy |
+| Start flow one click | atomic `start-hand` → blinds + deal + preflop |
+
+**Manual QA still required:** compare live UI to reference screenshot on phone + desktop, 2-browser challenge invite.
+
+## UI integration fix (live QA → patches)
+
+Live browser QA reported Poker using a tall Zilch-like header, triple blind labels, dominant off-felt start/invite controls, unreachable setup fields, 4-seat challenge (bank/box counted), and chip funding gaps.
+
+| Issue | Fix |
+|-------|-----|
+| Zilch-like tall header | Compact `poker-table-shell__topbar` + `PokerTableMenu` |
+| Start hand / invite dominating page | Start on felt; invite in **This Table** menu |
+| Blinds shown 3× | Single `poker-felt__blinds` on cloth |
+| Table name not on cloth | `poker-felt__title` in felt header |
+| Setup form too tall | Scroll body + tighter holdem challenge spacing |
+| Challenge 4 players (bank/box) | `holdemPlayableSeats` + `pruneHoldemSessionForPlay` |
+| Virtual players in challenge | Excluded in challenge mode |
+| Double stack funding | `allocateStartingStacks` skips seats with ledger balance |
+| Separate poker chat | `useTableChat` shared hook; no duplicate backend |
+
+**Manual QA still required:** mobile device pass, real 2-browser invite, production deploy smoke.
 
 ## Summary
 
@@ -57,7 +94,10 @@ Blackjack and Zilch were **not modified** (gameplay, layout, or CSS).
 | **6. UI/layout** | D / SB / BB badges | PASS — `PokerSeat` + integration test |
 | | ALL IN / WIN badges | PASS — patched CSS |
 | | Pot / side-pot summary | PASS — `PokerPotArea` |
-| | Chat dock visible/collapsible | PASS — `PokerChatDock` |
+| | Chat dock visible/collapsible | PASS — `PokerChatDock` + shared `useTableChat` |
+| | Compact header / felt start / menu | PASS — `pokerUiLayout.test.tsx` (automated) |
+| | Single blinds on cloth | PASS — `pokerUiLayout.test.tsx` |
+| | 2-player challenge seat ring | PASS — `holdemTableSetup.players.test.ts` |
 | | Desktop page scroll | NOT AUDITED (manual) |
 | | Mobile action panel vs cards | NOT AUDITED (manual) |
 | | 6/7/8/9 seat rings | PASS — smoke render test |
@@ -76,6 +116,7 @@ Blackjack and Zilch were **not modified** (gameplay, layout, or CSS).
 | B2 | **Medium** | Setup allowed `bigBlind <= smallBlind` (panel + engine) | **Fixed** — `validatePokerBlinds` at confirm + `applyHoldemTableStakeSetup` |
 | B3 | **Medium** | Game-over overlay hidden when challenge ended but settlement validation failed | **Fixed** — fallback settlement view with `blockingReason` |
 | B4 | **Low** | ALL IN / WIN badge classes had no CSS rules | **Fixed** — `poker-table.css` |
+| B5 | **High** | Live QA: Zilch-like header, triple blinds, 4-seat challenge, unfunded virtuals | **Fixed** — UI integration pass (see above) |
 
 ---
 
@@ -100,7 +141,27 @@ Blackjack and Zilch were **not modified** (gameplay, layout, or CSS).
 | `server/tests/holdemChallengeJoin.test.ts` | Server invite join policy |
 | `server/tests/iouHandoff.test.ts` | Poker IOU dedup, partial failure, practice block |
 
-### Beta hardening patches (2026-06-23)
+### UI integration patches (2026-06-23)
+
+| File | Change |
+|------|--------|
+| `PokerPanel.tsx`, `PokerTableShell.tsx`, `PokerTableLayout.tsx` | Compact header, felt title/blinds/start |
+| `PokerTableMenu.tsx` | **This Table** menu (invite, blinds, shuffle, start, end, leave) |
+| `PokerPotArea.tsx` | Removed duplicate blinds from pot meta |
+| `poker-table.css` | Topbar, menu, felt header/start styles |
+| `holdemPlayableSeats.ts`, `holdemTableSetup.ts` | Prune bank/box; fund playable seats once |
+| `mapPokerTableViewModel.ts` | Seat ring from playable seats only |
+| `TableStakePanel.tsx` + CSS | Holdem setup scroll / compact fields |
+| `useTableChat.ts`, `usePokerTableChat.ts`, `TableChatDock.tsx` | Shared table chat hook |
+
+### Tests added (UI pass)
+
+| File | Coverage |
+|------|----------|
+| `pokerUiLayout.test.tsx` | Compact header, cloth blinds once, menu, shared chat |
+| `holdemTableSetup.players.test.ts` | 2-player challenge, practice virtuals, blind posting |
+
+---
 
 | File | Change |
 |------|--------|

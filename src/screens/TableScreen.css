@@ -119,6 +119,18 @@
   position: relative;
 }
 
+.table-felt--poker {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  min-height: auto;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 .table-screen__game-select select {
   font-size: 0.8rem;
   padding: 0.35rem 0.55rem;

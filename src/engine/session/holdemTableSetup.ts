@@ -18,6 +18,8 @@ import {
 import { ensureHoldemTableIdentity } from './zilchTableKind';
 import { createDefaultPokerTableConfig, validatePokerBlinds } from '../../types/poker';
 import { allocateChipsToBankrollOwner } from './allocation';
+import { listHoldemPlayableSeatIds, pruneHoldemSessionForPlay } from '../holdem/holdemPlayableSeats';
+import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 
 export interface HoldemTableStakeSetupInput extends TableStakeSetupInput {
   smallBlind: number;
@@ -65,19 +67,23 @@ export function parseHoldemTableStakePayload(
         : undefined,
     currency: payload.currency ? String(payload.currency) : undefined,
     virtualPlayerCount:
-      tableMode === 'practice' ? Number(payload.virtualPlayerCount) || 2 : undefined,
+      tableMode === 'practice' ? Number(payload.virtualPlayerCount) || 1 : undefined,
   };
 }
 
 function allocateStartingStacks(state: GameState, startingStack: number): GameState {
   let next = state;
-  for (const playerId of next.session.playerIds) {
+  for (const playerId of listHoldemPlayableSeatIds(next)) {
     const player = next.players[playerId];
-    if (!player?.bankrollOwnerId) {
+    if (!player) {
+      continue;
+    }
+    const bankrollOwnerId = player.bankrollOwnerId ?? playerId;
+    if (derivePlayerBalanceFromLedger(playerId, next.ledger) > 0) {
       continue;
     }
     next = allocateChipsToBankrollOwner(next, {
-      bankrollOwnerId: player.bankrollOwnerId,
+      bankrollOwnerId,
       amount: startingStack,
       reason: 'initial-player',
       source: 'setup',
@@ -137,7 +143,7 @@ export function applyHoldemTableStakeSetup(
   next = ensureTableOwnerPersonBankroll(next);
 
   if (isPractice) {
-    const count = Math.max(1, input.virtualPlayerCount ?? 2);
+    const count = Math.max(1, input.virtualPlayerCount ?? 1);
     for (let i = 0; i < count; i++) {
       const spl = addVirtualPlayer(next.session, next.players, next.ledger, {
         virtualStyle: 'normal',
@@ -148,6 +154,7 @@ export function applyHoldemTableStakeSetup(
     }
   }
 
+  next = pruneHoldemSessionForPlay(next);
   next = allocateStartingStacks(next, startingStack);
   logLedgerAfterAllocation(next, 'holdem-start');
   logDerivedBalances(next, 'holdem-start');

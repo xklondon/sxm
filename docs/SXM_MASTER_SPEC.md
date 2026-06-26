@@ -297,17 +297,21 @@ Server resolves `activeHandKey`; client-sent `handKey` on hit/stand/double/split
 | Component | Status |
 |-----------|--------|
 | Engine | `src/engine/holdem/` — betting, streets, hand evaluation; canonical wrapper `applyHoldemActionToState()` |
-| UI (production route) | `PokerPanel` → `PokerTableShell` in `TableScreen` when `isHoldemTable` |
-| UI module | `src/games/poker/` — isolated table shell, mapper, chat hook, game-over IOU |
+| UI (production route) | `PokerPanel` → `PokerTableShell` → `PokerTableLayout` in `TableScreen` when `isHoldemTable` |
+| UI module | `src/games/poker/` — **High Roller Protocol** template (`poker-hr-*` classes); reference `reference-ui/Poker/stitch_professional_casino_poker_redesign`; compact top bar, **This Table** slide panel, oval felt, seat avatars, casino action bar |
 | Setup | `TableStakePanel` — Cards → **Blackjack** or **Poker (Texas Hold'em)**; Practice / Challenge |
 | Config | `tableMeta.pokerConfig` in `src/types/poker.ts` — blinds, starting stack, challenge value, dealer rotation |
 | Creation | `createNewHoldemTable()` + `applyHoldemTableStakeSetup()` (local + online `configureTable`) |
 | Online gameplay | **Server-authoritative** — `startHoldemHand`, `holdemFold/Check/Call/Bet/Raise`, `holdemShuffleDeck` via `applyHoldemTableActionToState()` |
 | Client dispatch | Offline: local wrapper; Online: `onlineDispatch` → server action (no local holdem mutation) |
-| Chat | Embedded `PokerChatDock` via `usePokerTableChat` → shared `tableChatService` API |
+| Chat | **This Table** slide panel (`PokerTablePanel`) via `usePokerTableChat` → shared `useTableChat` / `tableChatService` (same backend as BJ/Zilch); no permanent felt-side chat rail |
+| Start hand | Single `start-hand` / `startHoldemHand` — shuffle if needed, auto-post blinds, deal hole cards, enter preflop in one action |
+| Practice default | Host + **1 virtual opponent** (minimum 2 playable seats); starting stacks funded at setup |
 | Challenge settlement | Winner-takes-all IOUs — `totalChallengeValue / participantCount` per losing **challenge participant** (canonical roster snapshot; bank/box/session artifacts excluded); **winner** from `pokerConfig.challengeWinnerSeatId` |
 | Challenge end | **Auto:** one non-eliminated player after hand payout; **Host:** `endHoldemChallenge` when no active hand (chip leader, no ties) |
 | Challenge join | **Blocked** after first-hand participant snapshot (`isHoldemChallengeJoinLocked`) — new invite joins rejected with clear message; practice tables unchanged |
+| Challenge seats | **Challenge:** only real invited players (host + guests); bank/box pruned at setup; no virtual players. **Practice:** virtual players allowed |
+| Starting stacks | `allocateStartingStacks` funds each playable seat once (host, guests, practice virtuals); bank/box excluded |
 | IOU idempotency | Server nonce = `tableId` + `poker-challenge-h{handNumber}` + debtor + creditor + `settlementAmount`; duplicate POST returns `alreadySubmitted`; practice IOUs rejected server-side |
 | Blinds | Owner may edit small/big blind **before** a hand starts only; **online:** server action `updateHoldemBlinds` (host-only); **offline:** `updatePokerBlindsOnState` |
 | Heads-up blinds | **2 players:** dealer/button = SB, other = BB; preflop action starts on dealer/SB; postflop on BB. **3+:** seat-after-dealer SB/BB unchanged |

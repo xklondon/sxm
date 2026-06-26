@@ -314,8 +314,26 @@ export function TableScreen({
           isBlackjack || isZilch || isHoldem ? ' table-screen__layout--full' : ''
         }`}
       >
-        <section className="table-felt table-felt--casino" aria-label="Table">
-          {isZilch && (
+        <section
+          className={`table-felt${
+            isHoldem ? ' table-felt--poker' : isBlackjack || isZilch ? ' table-felt--casino' : ''
+          }`}
+          aria-label="Table"
+        >
+          {isHoldem ? (
+            <PokerPanel
+              gameState={gameState}
+              onGameStateChange={onGameStateChange}
+              onlineTableId={onlineTableId}
+              onlineDispatch={onlineDispatch}
+              viewerAuth={viewerAuth}
+              onInviteTable={() => setInviteOpen(true)}
+              onBeginTableReset={(variant = 'resetTable') => {
+                openSetupFlow({ reset: true, variant });
+              }}
+              onExitTable={onLeave}
+            />
+          ) : isZilch ? (
             <ZilchPanel
               gameState={gameState}
               onGameStateChange={onGameStateChange}
@@ -328,9 +346,7 @@ export function TableScreen({
                 openSetupFlow({ reset: true, variant });
               }}
             />
-          )}
-
-          {isBlackjack && (
+          ) : isBlackjack ? (
             <BlackjackPanel
               gameState={gameState}
               onGameStateChange={onGameStateChange}
@@ -349,24 +365,7 @@ export function TableScreen({
                 openSetupFlow({ reset: true, variant });
               }}
             />
-          )}
-
-          {isHoldem && (
-            <PokerPanel
-              gameState={gameState}
-              onGameStateChange={onGameStateChange}
-              onlineTableId={onlineTableId}
-              onlineDispatch={onlineDispatch}
-              viewerAuth={viewerAuth}
-              onInviteTable={() => setInviteOpen(true)}
-              onBeginTableReset={(variant = 'resetTable') => {
-                openSetupFlow({ reset: true, variant });
-              }}
-              onExitTable={onLeave}
-            />
-          )}
-
-          {!isBlackjack && !isHoldem && !isZilch && (
+          ) : (
             <div className="table-felt__deck-area">
               <button type="button" onClick={handleShuffle}>Shuffle</button>
               <button type="button" onClick={handleDealTest} disabled={!canDeal}>Deal test</button>

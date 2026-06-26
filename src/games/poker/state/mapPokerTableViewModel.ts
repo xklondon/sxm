@@ -18,6 +18,7 @@ import {
   getHoldemSmallBlindSeatId,
   isHoldemHandInProgress,
 } from '../../../engine/holdem/holdemSelectors';
+import { listHoldemPlayableSeatIds } from '../../../engine/holdem/holdemPlayableSeats';
 import type {
   PokerActionAvailability,
   PokerHoleCards,
@@ -55,8 +56,9 @@ function buildSeatsFromState(
   const bigBlindId = getHoldemBigBlindSeatId(state);
   const actingId = getHoldemActingSeatId(state);
   const winnerIds = new Set(holdem?.winners ?? []);
+  const seatOrder = listHoldemPlayableSeatIds(state);
 
-  return session.playerIds.map((playerId, seatIndex) => {
+  return seatOrder.map((playerId, seatIndex) => {
     const player = players[playerId];
     const ps = holdem?.playerStates[playerId];
     const isViewer = viewerSeatId === playerId;

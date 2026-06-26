@@ -81,9 +81,7 @@ describe('holdemTableSetup stabilization', () => {
     }
     const started = applyHoldemActionToState(state, { type: 'start-hand' });
     expect(started.ok).toBe(true);
-    const dealt = applyHoldemActionToState(started.state, { type: 'start-hand' });
-    expect(dealt.ok).toBe(true);
-    expect(dealt.state.tableMeta.pokerConfig?.challengeParticipants?.map((p) => p.seatId)).toEqual([
+    expect(started.state.tableMeta.pokerConfig?.challengeParticipants?.map((p) => p.seatId)).toEqual([
       hostId,
       'guest',
     ]);

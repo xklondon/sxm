@@ -21,6 +21,95 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+---
+
+## 2026-06-23 — Poker High Roller visual template + start flow
+
+**Reference:** `reference-ui/Poker/stitch_professional_casino_poker_redesign` (DESIGN.md + screen.png — High Roller Protocol).
+
+**Visual (`src/games/poker/`)**
+- `pokerTemplateContract.ts` — template class contract tied to reference path
+- `poker-hr-*` shell: dark premium felt, oval table, seat avatars, centered pot/community, casino action bar below
+- Sharp gold/red bordered buttons; chip amount presets; **Deal Cards** on felt
+- Waiting-for-guest copy in top bar only (not center); no permanent chat rail
+
+**Start flow (unchanged engine fix)**
+- Single click: shuffle if needed → post SB/BB → deal hole cards → preflop
+- Practice default: host + 1 virtual, both funded, Deal enabled immediately
+
+**Tests:** `pokerTemplate.test.tsx`; updated poker UI tests. BJ/Zilch untouched.
+
+---
+
+## 2026-06-23 — Poker start flow + This Table panel
+
+**Root cause:** `start-hand` required two engine calls (create round → deal); UI dispatched once, leaving table in `setup` with no blinds/cards.
+
+**Engine**
+- `applyHoldemActionToState` — atomic start: validate seats/chips → create round → `startHoldemHandOnState` → preflop in one call
+- `holdemStartValidation.ts` — block start when &lt;2 playable seats or zero-chip seat
+
+**UI (`src/games/poker/`)**
+- Removed permanent felt-side chat rail; **This Table** opens `PokerTablePanel` (stacks, invite, blinds, add chips, chat, action log, leave/reset)
+- `PokerFeltClothLayer` — arc table name + blinds on cloth (Blackjack-style)
+- Community board hides generic "Setup" label; street text only during active hand
+- Practice default: host + 1 virtual; challenge add-chips disabled with fixed-stack copy
+
+**Tests:** `holdemStartHand.test.ts`, updated server/UI poker tests; Blackjack/Zilch untouched.
+
+---
+
+## 2026-06-23 — Poker live UI route fix (critical)
+
+Live browser QA showed tall pre-hand header (Shuffle/Start/Invite), duplicate blinds, and Zilch/Blackjack-like shell — **root cause:** `isHoldemTable()` returned false when `tableGame` was still `blackjack` after online `createTable` + holdem `configureTable`, so **BlackjackPanel** rendered instead of **PokerPanel**.
+
+**Routing**
+- `isHoldemTable` now wins on `cardGame === 'holdem'` / `pokerConfig` before blackjack rejection.
+- `isBlackjackTable` excludes holdem identity.
+- `TableScreen` exclusive route: holdem → `PokerPanel` first; `table-felt--poker` wrapper.
+- `normalizeLoadedGameState` prunes bank/box for holdem challenges on load.
+
+**UI**
+- Removed felt shuffle button (shuffle in This Table menu only); start hand on felt.
+- `poker-table.css` imported from `PokerPanel` for guaranteed load.
+
+**Setup**
+- Removed Total Challenge Value field; optional numeric parse from Play for what.
+- Holdem challenge invite message per guest (Blackjack parity).
+- Scroll/sticky footer for holdem challenge modal.
+
+**Settlement**
+- Non-numeric wagers allowed; cash IOUs gated when no parseable amount.
+
+**Tests:** `pokerLiveRoute.test.tsx`, `zilchTableKind.test.ts`, ownership guard.
+
+---
+
+## 2026-06-23 — Poker UI integration fix pass
+
+Live QA found Poker inheriting a tall Zilch-like header, triple blind display, oversized invite/start controls, setup form overflow, 4-player challenge roster (bank/box), and duplicate chat wiring.
+
+**UI**
+- Compact `poker-table-shell__topbar` with status + **This Table** menu (`PokerTableMenu`).
+- Table name + single blinds line on felt (`poker-felt__header`); start hand on felt center.
+- Invite, edit blinds, shuffle, start hand, end challenge, leave — in menu (not large header buttons).
+- Hold'em setup form scrolls (`table-stake-panel__body--scroll`); tighter challenge field spacing.
+
+**Gameplay/setup**
+- `holdemPlayableSeats` — challenge excludes bank/box/virtual; practice allows virtuals only.
+- `allocateStartingStacks` funds all playable seats once (skip if ledger balance already set).
+
+**Chat**
+- `useTableChat` shared hook; `PokerChatDock` / `TableChatDock` use same `tableChatService`.
+
+**Tests:** `pokerUiLayout.test.tsx`, `holdemTableSetup.players.test.ts`, updated `PokerPanel` / stabilization tests.
+
+**Manual QA still required:** mobile felt layout, real 2-browser challenge invite flow, setup scroll on phone.
+
+Blackjack / Zilch gameplay, layout, and CSS **not modified** (shared `TableChatDock` hook refactor + generic setup scroll shell only).
+
+---
+
 ## 2026-06-23 — Poker beta hardening pass
 
 - **Heads-up blinds:** dealer/button = SB, other = BB; preflop actor = SB; postflop = BB (`helpers.ts` + tests).

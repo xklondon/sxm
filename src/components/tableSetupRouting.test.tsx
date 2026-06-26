@@ -119,7 +119,7 @@ describe('canonical table setup routing', () => {
     expect(screen.getByText('Virtual players')).toBeTruthy();
   });
 
-  it('root flow: Cards → Poker → Challenge shows challenge value and blinds', () => {
+  it('root flow: Cards → Poker → Challenge shows play-for-what, invites, and blinds', () => {
     render(
       <TableStakePanel
         gameState={createNewBlackjackTable()}
@@ -132,7 +132,8 @@ describe('canonical table setup routing', () => {
     clickCategory('Cards');
     clickCardGame('Poker');
     clickMode('Challenge');
-    expect(screen.getByText('Total challenge value')).toBeTruthy();
+    expect(screen.queryByText('Total challenge value')).toBeNull();
+    expect(screen.getByText('Play for what')).toBeTruthy();
     expect(screen.getByText('Small blind')).toBeTruthy();
     expect(screen.getByText('Big blind')).toBeTruthy();
   });

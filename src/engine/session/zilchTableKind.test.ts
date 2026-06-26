@@ -4,6 +4,7 @@ import { createZilchGame } from '../dice/zilch';
 import {
   ensureZilchTableIdentity,
   isBlackjackTable,
+  isHoldemTable,
   isZilchTable,
   normalizeLoadedGameState,
 } from './zilchTableKind';
@@ -12,6 +13,23 @@ import { DEFAULT_TABLE_CHIPS } from './table';
 import { listPlayableZilchPlayerIds } from '../dice/zilch/zilchTurnAuthority';
 
 describe('tableKind', () => {
+  it('holdem cardGame wins over blackjack tableGame for routing', () => {
+    const bj = createNewBlackjackTable();
+    const hybrid = {
+      ...bj,
+      tableMeta: {
+        ...bj.tableMeta,
+        cardGame: 'holdem' as const,
+        gameCategory: 'cards' as const,
+      },
+    };
+    expect(isHoldemTable(hybrid)).toBe(true);
+    expect(isBlackjackTable(hybrid)).toBe(false);
+    const normalized = normalizeLoadedGameState(hybrid);
+    expect(normalized.tableGame).toBe('texas-holdem');
+    expect(normalized.session.gameType).toBe('texas-holdem');
+  });
+
   it('explicit blackjack tableGame wins over stale dice meta', () => {
     const bj = createNewBlackjackTable();
     const hybrid = {

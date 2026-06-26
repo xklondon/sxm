@@ -189,12 +189,8 @@ describe('holdem table actions', () => {
     expect(shuffled.state.deck).toBeTruthy();
     v = shuffled.version;
 
-    const created = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
-    expect(created.state.holdem?.status).toBe('setup');
-    v = created.version;
-
-    const dealt = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
-    expect(dealt.state.holdem?.status).toBe('preflop');
+    const started = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
+    expect(started.state.holdem?.status).toBe('preflop');
   });
 
   it('start hand blocked while hand active', async () => {
@@ -203,11 +199,10 @@ describe('holdem table actions', () => {
     let configured = await configureHoldemTable(host.id, table.id, table.version);
     let v = configured.version;
     v = (await tables.applyAction(table.id, host.id, 'holdemShuffleDeck', {}, v)).version;
-    v = (await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v)).version;
-    const dealt = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
+    const started = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
 
     await expect(
-      tables.applyAction(table.id, host.id, 'startHoldemHand', {}, dealt.version),
+      tables.applyAction(table.id, host.id, 'startHoldemHand', {}, started.version),
     ).rejects.toThrow(/already in progress/i);
   });
 
@@ -256,12 +251,11 @@ describe('holdem table actions', () => {
     let configured = await configureHoldemTable(host.id, table.id, table.version);
     let v = configured.version;
     v = (await tables.applyAction(table.id, host.id, 'holdemShuffleDeck', {}, v)).version;
-    v = (await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v)).version;
-    const dealt = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
+    const started = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
     const before = store.getTable(table.id)!;
 
     await expect(
-      tables.applyAction(table.id, host.id, 'holdemBet', { amount: 0 }, dealt.version),
+      tables.applyAction(table.id, host.id, 'holdemBet', { amount: 0 }, started.version),
     ).rejects.toThrow(/amount must be a positive number/i);
 
     const after = store.getTable(table.id)!;
@@ -323,8 +317,7 @@ describe('holdem table actions', () => {
     let configured = await configureHoldemTable(host.id, table.id, table.version);
     let v = configured.version;
     v = (await tables.applyAction(table.id, host.id, 'holdemShuffleDeck', {}, v)).version;
-    v = (await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v)).version;
-    const dealt = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
+    const started = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
 
     await expect(
       tables.applyAction(
@@ -332,7 +325,7 @@ describe('holdem table actions', () => {
         host.id,
         'updateHoldemBlinds',
         { smallBlind: 10, bigBlind: 20 },
-        dealt.version,
+        started.version,
       ),
     ).rejects.toThrow(/before a hand starts/i);
   });
@@ -435,12 +428,11 @@ describe('holdem table actions', () => {
     let configured = await configureHoldemTable(host.id, table.id, table.version);
     let v = configured.version;
     v = (await tables.applyAction(table.id, host.id, 'holdemShuffleDeck', {}, v)).version;
-    v = (await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v)).version;
-    const dealt = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
-    const actor = dealt.state.holdem?.activePlayerId;
+    const started = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
+    const actor = started.state.holdem?.activePlayerId;
     expect(actor).toBeTruthy();
 
-    const allIn = await tables.applyAction(table.id, host.id, 'holdemAllIn', {}, dealt.version);
+    const allIn = await tables.applyAction(table.id, host.id, 'holdemAllIn', {}, started.version);
     expect(allIn.state.holdem?.playerStates[actor!]?.actionStatus).toBe('all-in');
     expect(allIn.state.holdem?.sidePots?.length).toBeGreaterThan(0);
   });
@@ -451,12 +443,11 @@ describe('holdem table actions', () => {
     let configured = await configureHoldemTable(host.id, table.id, table.version);
     let v = configured.version;
     v = (await tables.applyAction(table.id, host.id, 'holdemShuffleDeck', {}, v)).version;
-    v = (await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v)).version;
-    const dealt = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
+    const started = await tables.applyAction(table.id, host.id, 'startHoldemHand', {}, v);
     const before = store.getTable(table.id)!;
 
     expect(() =>
-      assertActionAuthorized(dealt.state, {
+      assertActionAuthorized(started.state, {
         tableId: table.id,
         userId: 'guest-user',
         personId: 'guest-person',

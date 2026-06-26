@@ -169,7 +169,7 @@ describe('PokerPanel holdem dispatch', () => {
         onlineDispatch={onlineDispatch}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /Start Hold'em hand/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Deal Cards/i }));
     await Promise.resolve();
     expect(onlineDispatch).toHaveBeenCalledWith(
       'startHoldemHand',
@@ -186,7 +186,7 @@ describe('PokerPanel holdem dispatch', () => {
     });
 
     render(<PokerPanel gameState={state} onGameStateChange={onGameStateChange} />);
-    fireEvent.click(screen.getByRole('button', { name: /Start Hold'em hand/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Deal Cards/i }));
 
     expect(runSpy).toHaveBeenCalledWith(
       state,
@@ -243,7 +243,7 @@ describe('PokerPanel holdem dispatch', () => {
     });
 
     render(<PokerPanel gameState={state} onGameStateChange={onGameStateChange} />);
-    fireEvent.click(screen.getByRole('button', { name: /Start Hold'em hand/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Deal Cards/i }));
 
     expect(onGameStateChange).not.toHaveBeenCalled();
     expect(screen.getByRole('alert').textContent).toMatch(/Hand already in progress/i);
@@ -339,19 +339,21 @@ describe('PokerPanel holdem dispatch', () => {
       });
 
     render(<PokerPanel gameState={state} onGameStateChange={onGameStateChange} />);
-    fireEvent.click(screen.getByRole('button', { name: /Start Hold'em hand/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Deal Cards/i }));
     expect(screen.getByRole('alert').textContent).toMatch(/Hand already in progress/i);
 
-    fireEvent.click(screen.getByRole('button', { name: /Start Hold'em hand/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Deal Cards/i }));
     expect(onGameStateChange).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('alert')).toBeNull();
     runSpy.mockRestore();
   });
 
-  it('still renders poker chat dock', () => {
+  it('does not render permanent table chat rail — chat opens in This Table panel', () => {
     const state = practiceTableWithDeck();
     render(<PokerPanel gameState={state} onGameStateChange={() => {}} />);
-    expect(screen.getByTestId('poker-chat-dock')).toBeTruthy();
+    expect(screen.queryByTestId('poker-chat-dock')).toBeNull();
+    fireEvent.click(screen.getAllByRole('button', { name: 'This Table' })[0]!);
+    expect(screen.getByText('Chat')).toBeTruthy();
   });
 
   it('hides blind edit when hand is in progress', () => {
@@ -383,6 +385,7 @@ describe('PokerPanel holdem dispatch', () => {
   });
 
   async function saveBlindsViaUi(smallBlind: string, bigBlind: string) {
+    fireEvent.click(screen.getAllByRole('button', { name: 'This Table' })[0]!);
     fireEvent.click(screen.getByRole('button', { name: /Edit blinds/i }));
     fireEvent.change(screen.getByLabelText(/Small blind/i), { target: { value: smallBlind } });
     fireEvent.change(screen.getByLabelText(/Big blind/i), { target: { value: bigBlind } });
@@ -452,7 +455,7 @@ describe('PokerPanel holdem dispatch', () => {
       />,
     );
 
-    expect(document.querySelector('.poker-blinds__label')?.textContent).toMatch(/Blinds 5\/10/);
+    expect(document.querySelector('.poker-felt-cloth-layer__blinds')?.textContent).toMatch(/Blinds 5\/10/);
 
     const updated = updatePokerBlindsOnState(state, 10, 20);
     rerender(
@@ -464,7 +467,7 @@ describe('PokerPanel holdem dispatch', () => {
       />,
     );
 
-    expect(document.querySelector('.poker-blinds__label')?.textContent).toMatch(/Blinds 10\/20/);
+    expect(document.querySelector('.poker-felt-cloth-layer__blinds')?.textContent).toMatch(/Blinds 10\/20/);
   });
 
   it('surfaces server blind update errors in panel error area', async () => {
@@ -568,9 +571,10 @@ describe('PokerPanel challenge winner UI', () => {
     );
   });
 
-  it('17. host sees End Challenge button in challenge mode between hands', () => {
+  it('17. host sees End Challenge in This Table menu between hands', () => {
     const state = challengeTableResolved();
     render(<PokerPanel gameState={state} onGameStateChange={() => {}} />);
+    fireEvent.click(screen.getAllByRole('button', { name: 'This Table' })[0]!);
     expect(screen.getByRole('button', { name: /End challenge/i })).toBeTruthy();
   });
 

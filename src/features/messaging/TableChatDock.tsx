@@ -1,13 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { addTableMessage, getTableMessages } from './tableChatService';
-import {
-  countUnreadTableChatMessages,
-  latestTableChatMessageTimestamp,
-  mergeTableMessagesById,
-  readTableChatLastSeenAt,
-  writeTableChatLastSeenAt,
-  type TableChatMessage,
-} from './tableMessagingTypes';
+import { useEffect, useRef, useState } from 'react';
+import { useTableChat } from './useTableChat';
+import type { TableChatMessage } from './tableMessagingTypes';
 import './TableChatDock.css';
 
 const CHAT_EMOJIS = [
@@ -29,8 +22,6 @@ const CHAT_EMOJIS = [
   '🍀',
 ];
 
-const OPEN_POLL_MS = 2000;
-const CLOSED_POLL_MS = 5000;
 const UNREAD_PULSE_MS = 1200;
 
 export interface TableChatDockProps {
@@ -66,95 +57,26 @@ export function TableChatDock({
   preferServer = false,
 }: TableChatDockProps) {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<TableChatMessage[]>([]);
   const [draft, setDraft] = useState('');
-  const [lastSeenAt, setLastSeenAt] = useState<string | null>(() =>
-    tableId ? readTableChatLastSeenAt(tableId, currentUserEmail ?? 'guest@local') : null,
-  );
-  const [sending, setSending] = useState(false);
   const [pulseUnread, setPulseUnread] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const bootstrapDoneRef = useRef(false);
   const prevUnreadRef = useRef(0);
   const normalizedEmail = (currentUserEmail ?? 'guest@local').trim().toLowerCase() || 'guest@local';
-  const displayName = currentUserName?.trim() || 'Guest';
 
-  const unreadCount = useMemo(() => {
-    if (open) {
-      return 0;
-    }
-    return countUnreadTableChatMessages(messages, lastSeenAt, normalizedEmail);
-  }, [open, messages, lastSeenAt, normalizedEmail]);
-
-  const markMessagesSeen = useCallback(
-    (messageList: TableChatMessage[]) => {
-      if (!tableId) {
-        return;
-      }
-      const seenAt = latestTableChatMessageTimestamp(messageList) ?? new Date().toISOString();
-      writeTableChatLastSeenAt(tableId, normalizedEmail, seenAt);
-      setLastSeenAt(seenAt);
-    },
-    [tableId, normalizedEmail],
-  );
-
-  const refreshMessages = useCallback(async () => {
-    if (!tableId) {
-      return;
-    }
-    const fetched = await getTableMessages(tableId, { preferServer });
-    setMessages((current) => mergeTableMessagesById(current, fetched));
-  }, [tableId, preferServer]);
-
-  useEffect(() => {
-    if (!tableId) {
-      return;
-    }
-    bootstrapDoneRef.current = false;
-    setLastSeenAt(readTableChatLastSeenAt(tableId, normalizedEmail));
-  }, [tableId, normalizedEmail]);
-
-  useEffect(() => {
-    if (!tableId || bootstrapDoneRef.current) {
-      return;
-    }
-    const stored = readTableChatLastSeenAt(tableId, normalizedEmail);
-    if (stored) {
-      setLastSeenAt(stored);
-      bootstrapDoneRef.current = true;
-      return;
-    }
-    const bootstrapAt = latestTableChatMessageTimestamp(messages) ?? new Date().toISOString();
-    writeTableChatLastSeenAt(tableId, normalizedEmail, bootstrapAt);
-    setLastSeenAt(bootstrapAt);
-    bootstrapDoneRef.current = true;
-  }, [tableId, normalizedEmail, messages]);
-
-  useEffect(() => {
-    if (!tableId) {
-      return;
-    }
-    void refreshMessages();
-  }, [tableId, preferServer, refreshMessages]);
-
-  useEffect(() => {
-    if (!tableId) {
-      return;
-    }
-    const intervalMs = open ? OPEN_POLL_MS : CLOSED_POLL_MS;
-    const timer = window.setInterval(() => {
-      void refreshMessages();
-    }, intervalMs);
-    return () => window.clearInterval(timer);
-  }, [tableId, open, refreshMessages]);
+  const { messages, unreadCount, sending, sendMessage, refreshMessages, markSeen } = useTableChat({
+    tableId,
+    currentUserEmail,
+    currentUserName,
+    preferServer,
+    open,
+  });
 
   useEffect(() => {
     if (!open) {
       return;
     }
-    markMessagesSeen(messages);
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [open, messages, markMessagesSeen]);
+  }, [open, messages]);
 
   useEffect(() => {
     if (open) {
@@ -178,7 +100,7 @@ export function TableChatDock({
 
   function handleClose() {
     setOpen(false);
-    markMessagesSeen(messages);
+    markSeen(messages);
   }
 
   function appendEmoji(emoji: string) {
@@ -190,23 +112,11 @@ export function TableChatDock({
     if (!trimmed || sending) {
       return;
     }
-    setSending(true);
     try {
-      await addTableMessage(
-        {
-          tableId,
-          senderEmail: normalizedEmail,
-          senderName: displayName,
-          body: trimmed,
-        },
-        { preferServer },
-      );
+      await sendMessage(trimmed);
       setDraft('');
-      await refreshMessages();
     } catch {
       // Validation errors are ignored in UI — empty sends are blocked client-side.
-    } finally {
-      setSending(false);
     }
   }
 

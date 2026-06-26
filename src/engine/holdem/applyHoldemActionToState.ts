@@ -17,6 +17,7 @@ import {
 import { ensureHoldemChallengeParticipantSnapshot } from './challengeParticipants';
 import type { HoldemAction } from './holdemActions';
 import { getHoldemActingSeatId } from './holdemSelectors';
+import { validateHoldemStartHand } from './holdemStartValidation';
 
 export type HoldemActionApplyResult =
   | { ok: true; state: GameState }
@@ -93,30 +94,29 @@ function applyStartHand(state: GameState): HoldemActionApplyResult {
 
     let next = withDealerFromPokerConfig(state);
 
-    if (!next.holdem) {
-      next = createHoldemRoundOnState(next);
-      return success(next);
+    if (next.holdem && next.holdem.status !== 'setup' && next.holdem.status !== 'resolved') {
+      return failure(state, 'Hand already in progress');
     }
 
-    if (next.holdem.status === 'setup') {
-      next = startHoldemHandOnState(next);
-      if (next.holdem?.status === 'preflop') {
-        next = ensureHoldemChallengeParticipantSnapshot(next);
-      }
-      return success(next);
+    const startError = validateHoldemStartHand(next);
+    if (startError) {
+      return failure(state, startError);
     }
 
-    if (next.holdem.status === 'resolved') {
+    if (next.holdem?.status === 'resolved') {
       next = rotatePokerDealerOnState(newHoldemRoundOnState(next));
-      next = createHoldemRoundOnState(withDealerFromPokerConfig(next));
-      next = startHoldemHandOnState(next);
-      if (next.holdem?.status === 'preflop') {
-        next = ensureHoldemChallengeParticipantSnapshot(next);
-      }
-      return success(next);
+      next = withDealerFromPokerConfig(next);
     }
 
-    return failure(state, 'Hand already in progress');
+    if (!next.holdem || next.holdem.status === 'resolved') {
+      next = createHoldemRoundOnState(next);
+    }
+
+    next = startHoldemHandOnState(next);
+    if (next.holdem?.status === 'preflop') {
+      next = ensureHoldemChallengeParticipantSnapshot(next);
+    }
+    return success(next);
   } catch (err) {
     return failure(state, err instanceof Error ? err.message : 'Start hand failed');
   }

@@ -40,6 +40,19 @@ function findWinnerParticipant(
   );
 }
 
+function resolveChallengeCashAmount(state: GameState): number {
+  const config = state.tableMeta.pokerConfig;
+  if (!config) {
+    return 0;
+  }
+  if (config.totalChallengeValue != null && config.totalChallengeValue > 0) {
+    return config.totalChallengeValue;
+  }
+  const label = config.wagerLabel ?? state.tableMeta.agreement?.stakeDescription ?? '';
+  const match = label.match(/\$?\s*(\d+(?:\.\d+)?)/);
+  return match ? Number.parseFloat(match[1]!) : 0;
+}
+
 export function validatePokerChallengeSettlement(
   state: GameState,
   winnerSeatOrPlayerId: string | null,
@@ -53,10 +66,8 @@ export function validatePokerChallengeSettlement(
     return { ok: false, error: 'No authoritative challenge winner — cannot settle IOUs.' };
   }
 
-  const totalChallengeValue = config.totalChallengeValue ?? 0;
-  if (totalChallengeValue <= 0) {
-    return { ok: false, error: 'Challenge value must be greater than zero.' };
-  }
+  const totalChallengeValue = resolveChallengeCashAmount(state);
+  const cashSettlementAvailable = totalChallengeValue > 0;
 
   const participants = getHoldemChallengeParticipants(state);
   const participantCount = participants.length;
@@ -84,7 +95,7 @@ export function validatePokerChallengeSettlement(
     };
   }
 
-  const stakePerParticipant = totalChallengeValue / participantCount;
+  const stakePerParticipant = cashSettlementAvailable ? totalChallengeValue / participantCount : 0;
   const losers = participants
     .filter((participant) => participant.playerId !== winnerParticipant.playerId)
     .map((participant) => ({
@@ -130,8 +141,15 @@ export function validatePokerChallengeSettlement(
     stakePerParticipant,
     participants,
     losers,
-    canSendIous: true,
+    canSendIous: cashSettlementAvailable,
+    blockingReason: cashSettlementAvailable
+      ? undefined
+      : 'No cash amount configured — describe a numeric stake in Play for what to enable IOUs.',
   };
+
+  if (!cashSettlementAvailable) {
+    return { ok: false, error: settlement.blockingReason!, settlement };
+  }
 
   return { ok: true, settlement };
 }

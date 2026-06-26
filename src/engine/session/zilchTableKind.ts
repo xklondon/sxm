@@ -1,6 +1,7 @@
 import type { GameState } from '../../types';
 import type { ZilchGameState } from '../dice/zilch/zilchTypes';
 import { normalizeZilchState } from '../dice/zilch/normalizeZilchState';
+import { pruneHoldemSessionForPlay } from '../holdem/holdemPlayableSeats';
 
 export function repairStuckRandomisingStarter(zilch: ZilchGameState): ZilchGameState {
   if (zilch.phase !== 'randomising-starter' || !zilch.starterPlayerId) {
@@ -90,28 +91,30 @@ export function ensureZilchTableIdentity(state: GameState): GameState {
   };
 }
 
-export function isBlackjackTable(state: GameState): boolean {
-  if (isZilchTable(state)) {
-    return false;
-  }
-  if (state.tableGame === 'blackjack') {
-    return true;
-  }
-  return state.session.gameType === 'blackjack';
+function hasHoldemTableIdentity(state: GameState): boolean {
+  return (
+    state.tableGame === 'texas-holdem' ||
+    state.session.gameType === 'texas-holdem' ||
+    state.tableMeta.cardGame === 'holdem' ||
+    state.tableMeta.pokerConfig != null
+  );
 }
 
 export function isHoldemTable(state: GameState): boolean {
   if (isZilchTable(state)) {
     return false;
   }
-  if (state.tableGame === 'blackjack') {
+  return hasHoldemTableIdentity(state);
+}
+
+export function isBlackjackTable(state: GameState): boolean {
+  if (isZilchTable(state) || isHoldemTable(state)) {
     return false;
   }
-  return (
-    state.tableGame === 'texas-holdem' ||
-    state.session.gameType === 'texas-holdem' ||
-    state.tableMeta.cardGame === 'holdem'
-  );
+  if (state.tableGame === 'blackjack') {
+    return true;
+  }
+  return state.session.gameType === 'blackjack';
 }
 
 /** Align tableGame, session.gameType, and table meta for Hold'em poker tables. */
@@ -140,7 +143,11 @@ export function ensureHoldemTableIdentity(state: GameState): GameState {
 /** Normalize loaded/saved/hydrated state before render. */
 export function normalizeLoadedGameState(state: GameState): GameState {
   if (isHoldemTable(state)) {
-    return ensureHoldemTableIdentity(state);
+    let next = ensureHoldemTableIdentity(state);
+    if (next.tableMeta.pokerConfig?.mode === 'challenge') {
+      next = pruneHoldemSessionForPlay(next);
+    }
+    return next;
   }
   if (state.tableGame === 'blackjack') {
     return ensureBlackjackTableIdentity(state);

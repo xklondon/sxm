@@ -149,7 +149,7 @@ export function TableStakePanel({
   const [bankChipsCustom, setBankChipsCustom] = useState(false);
   const bankerMode: TableBankerSetupMode = initialBankerMode(gameState);
   const bankerName = gameState.tableMeta.bankerSetup.displayName ?? '';
-  const [virtualPlayerCount, setVirtualPlayerCount] = useState(2);
+  const [virtualPlayerCount, setVirtualPlayerCount] = useState(1);
   const [protocolId, setProtocolId] = useState(
     gameState.blackjackProtocolId ?? listBlackjackProtocolPresets()[0]?.protocolId ?? 'las-vegas-house',
   );
@@ -181,7 +181,6 @@ export function TableStakePanel({
   const [setupError, setSetupError] = useState<string | null>(null);
   const [smallBlind, setSmallBlind] = useState(String(gameState.holdemSettings.smallBlind ?? 5));
   const [bigBlind, setBigBlind] = useState(String(gameState.holdemSettings.bigBlind ?? 10));
-  const [totalChallengeValue, setTotalChallengeValue] = useState('');
   const isZilchStakeFlow = isZilchSetupDraft(draft);
   const isHoldemStakeFlow = isHoldemSetupDraft(draft);
   const initialSetupSnapshotRef = useRef<TableStakeSetupSnapshot | null>(null);
@@ -357,12 +356,17 @@ export function TableStakePanel({
     };
   }
 
+  function parseOptionalChallengeAmountFromStake(stakeText: string): number | undefined {
+    const parsed = Number.parseFloat(stakeText.replace(/[^0-9.]/g, ''));
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  }
+
   function buildHoldemSetupInput(): HoldemTableStakeSetupInput {
     const base = buildSetupInput();
     const sb = Number.parseInt(smallBlind, 10) || 5;
     const bb = Number.parseInt(bigBlind, 10) || 10;
     const challengeValue =
-      tableMode === 'challenge' ? Number.parseFloat(totalChallengeValue.replace(/[^0-9.]/g, '')) : undefined;
+      tableMode === 'challenge' ? parseOptionalChallengeAmountFromStake(stake) : undefined;
     return {
       ...base,
       smallBlind: sb,
@@ -430,11 +434,6 @@ export function TableStakePanel({
     if (setupCategory === 'cards' && draft.cardGame === 'holdem' && tableMode === 'challenge') {
       if (!stake.trim()) {
         setSetupError('Enter what you are playing for.');
-        return;
-      }
-      const challengeValue = Number.parseFloat(totalChallengeValue.replace(/[^0-9.]/g, ''));
-      if (!Number.isFinite(challengeValue) || challengeValue <= 0) {
-        setSetupError('Enter the total challenge value (e.g. $100).');
         return;
       }
       const sb = Number.parseInt(smallBlind, 10);
@@ -947,9 +946,10 @@ export function TableStakePanel({
   function renderHoldemPracticeConfigure() {
     return (
       <>
-        <p className="table-stake-panel__hint">
-          Practice poker with virtual players. No wager or IOU settlement — default stacks and blinds are fine.
-        </p>
+        <div className="table-stake-panel__body table-stake-panel__body--scroll">
+          <p className="table-stake-panel__hint">
+            Practice poker with virtual players. No wager or IOU settlement — default stacks and blinds are fine.
+          </p>
         <label className="table-stake-panel__field">
           <span>Table name</span>
           <input
@@ -1002,6 +1002,7 @@ export function TableStakePanel({
             onChange={(e) => setBigBlind(e.target.value)}
           />
         </label>
+        </div>
         <div className="table-stake-panel__nav">
           <button type="button" className="secondary" onClick={() => setDraft((prev) => goBackFromSettings(prev))}>
             Back
@@ -1022,6 +1023,7 @@ export function TableStakePanel({
   function renderHoldemChallengeConfigure() {
     return (
       <>
+        <div className="table-stake-panel__body table-stake-panel__body--scroll table-stake-panel__body--holdem-challenge">
         <label className="table-stake-panel__field">
           <span>Table name</span>
           <input
@@ -1049,16 +1051,6 @@ export function TableStakePanel({
             ))}
           </datalist>
         </label>
-        <label className="table-stake-panel__field">
-          <span>Total challenge value</span>
-          <input
-            type="text"
-            className="table-stake-panel__input table-stake-panel__input--short"
-            placeholder="$100"
-            value={totalChallengeValue}
-            onChange={(e) => setTotalChallengeValue(e.target.value)}
-          />
-        </label>
         <fieldset className="table-stake-panel__banker">
           <legend>Invite players by email</legend>
           <div className="table-stake-panel__invite-row">
@@ -1084,10 +1076,26 @@ export function TableStakePanel({
                       Remove
                     </button>
                   </div>
+                  <label className="table-stake-panel__field table-stake-panel__invite-message">
+                    <span>Message for invite</span>
+                    <input
+                      type="text"
+                      className="table-stake-panel__input"
+                      placeholder="Add a short note to this player's invite…"
+                      value={player.inviteMessage ?? ''}
+                      onChange={(e) => updateInviteMessage(player.email, e.target.value)}
+                      maxLength={500}
+                    />
+                  </label>
                 </li>
               ))}
             </ul>
           )}
+          <p className="table-stake-panel__hint">
+            {onlineMode
+              ? 'Invites are sent when the table starts.'
+              : 'Invite links are created when the table starts.'}
+          </p>
         </fieldset>
         <label className="table-stake-panel__field">
           <span>Starting stack per player</span>
@@ -1120,8 +1128,9 @@ export function TableStakePanel({
           />
         </label>
         <p className="table-stake-panel__hint">
-          Winner takes all — each losing player owes the winner an equal share of the total challenge value.
+          Winner takes all — use Play for what to describe the stake (dinner, drinks, cash, etc.). Cash IOUs require a numeric amount in the wager text.
         </p>
+        </div>
         <div className="table-stake-panel__nav">
           <button type="button" className="secondary" onClick={() => setDraft((prev) => goBackFromSettings(prev))}>
             Back
@@ -1638,6 +1647,12 @@ export function TableStakePanel({
     <div
       className={`table-stake-panel table-stake-panel--compact${
         embeddedInOverlay ? ' table-stake-panel--embedded' : ''
+      }${
+        isHoldemStakeFlow && draft.step === 'settings'
+          ? tableMode === 'challenge'
+            ? ' table-stake-panel--holdem-settings table-stake-panel--holdem-challenge'
+            : ' table-stake-panel--holdem-settings'
+          : ''
       }`}
     >
       {!embeddedInOverlay && (
