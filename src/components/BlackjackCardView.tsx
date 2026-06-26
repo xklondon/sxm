@@ -45,6 +45,7 @@ import {
 import { getDisplayedHandValue } from "./blackjackDealingContract";
 
 import { type DeviceView } from "./tableViewContract";
+import { isVerboseDevLogging } from "../utils/devFlags";
 
 import { PlayingCard } from "./PlayingCard";
 
@@ -246,7 +247,7 @@ export function BlackjackCardView({
   const disabledReason = getActionDisabledReason();
 
   useEffect(() => {
-    if (!import.meta.env.DEV) {
+    if (!isVerboseDevLogging()) {
       return;
     }
 

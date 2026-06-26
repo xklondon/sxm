@@ -6,8 +6,6 @@ import { getRemainingCardCount } from '../deck/deck';
 
 import { isBankerReady } from '../session/boxOps';
 
-import { getCallerPersonIdForBox } from '../session/playerAssignment';
-
 import { log } from '../../utils/logger';
 
 import { blackjackHandKey } from './handKeys';
@@ -144,8 +142,6 @@ function buildStakesByBox(state: GameState) {
 
     confirmed: isBoxStakeConfirmed(state, boxId),
 
-    callerPersonId: getCallerPersonIdForBox(state, boxId),
-
   }));
 
 }
@@ -156,7 +152,9 @@ function buildStakesByBox(state: GameState) {
 
  * Single source of truth for which boxes receive cards on Deal Cards.
 
- * Playable box · confirmed stake >= minimum · valid caller · round not in play.
+ * Playable box · confirmed stake >= minimum · round not in play.
+
+ * Caller/box-commander ownership is resolved after deal for player turns only.
 
  */
 
@@ -172,8 +170,13 @@ export function getEligibleDealBoxes(state: GameState): string[] {
 
   const minBet = getTableMinimumBet(state);
 
+  const bankId = state.session.bankPlayerId;
+
   const eligible = getPlayableBoxPlayerIds(state).filter((boxPlayerId) => {
     if (!state.players[boxPlayerId]) {
+      return false;
+    }
+    if (boxPlayerId === bankId || state.players[boxPlayerId]?.role === 'bank') {
       return false;
     }
     if (!isBoxStakeConfirmed(state, boxPlayerId)) {
@@ -183,7 +186,7 @@ export function getEligibleDealBoxes(state: GameState): string[] {
     if (stake < minBet) {
       return false;
     }
-    return Boolean(getCallerPersonIdForBox(state, boxPlayerId));
+    return true;
   });
 
   const eligibleSet = new Set(eligible);

@@ -16,7 +16,6 @@ import {
 } from '../engine/blackjack';
 import { sleepMs } from '../engine/blackjack/dealPacing';
 import {
-  canStartCards,
   getDisplayBlackjackProtocolPhase,
   getProtocolTableMessage,
   getCenterStatusMessage,
@@ -26,6 +25,10 @@ import {
   hasEligibleDealBoxes,
   logDealCardsAudit,
 } from '../engine/blackjack/protocol';
+import {
+  canStartBlackjackDeal,
+  DEAL_CARDS_HOST_ONLY_MESSAGE,
+} from '../engine/session/tableDealPermission';
 import type { CardTimerPreset } from '../engine/blackjack/flowSettings';
 import { isNaturalInitialDeal, isStagedInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import {
@@ -63,6 +66,7 @@ export function useBlackjackTableFlow(
   cardRevealComplete = true,
   suppressEngineAutoAdvance = false,
   displayState?: GameState,
+  viewerPersonId: string | null = null,
 ) {
   const { blackjack: round, tableMeta } = gameState;
   const flow = gameState.blackjackFlowSettings;
@@ -94,7 +98,7 @@ export function useBlackjackTableFlow(
     protocolPhase === 'betting' &&
     !tableMeta.bettingLocked &&
     Boolean(tableMeta.shoeStarted) &&
-    canStartCards(gameState) &&
+    canStartBlackjackDeal(gameState, viewerPersonId) &&
     !actionPending;
 
   const reportFlowError = useCallback((msg: string) => {
@@ -118,8 +122,10 @@ export function useBlackjackTableFlow(
     const state = gameStateRef.current;
     logDealCardsAudit(state);
 
-    if (!canStartCards(state)) {
-      const reason = getCardsBlockReason(state) ?? 'Cannot deal';
+    if (!canStartBlackjackDeal(state, viewerPersonId)) {
+      const reason = !state.tableMeta.ownerPersonId || viewerPersonId !== state.tableMeta.ownerPersonId
+        ? DEAL_CARDS_HOST_ONLY_MESSAGE
+        : getCardsBlockReason(state) ?? 'Cannot deal';
       logDealCardsAudit(state, { blockReason: reason });
       log.info('Deal Cards blocked', { reason });
       logDealSanity(state, { dealResult: `blocked: ${reason}` });
@@ -156,7 +162,7 @@ export function useBlackjackTableFlow(
       logDealSanity(state, { dealResult: `error: ${msg}` });
       reportFlowError(msg);
     }
-  }, [actionPending, clearFlowError, onGameStateChange, onlineDispatch, reportFlowError]);
+  }, [actionPending, clearFlowError, onGameStateChange, onlineDispatch, reportFlowError, viewerPersonId]);
 
   const handlePrimaryDealAction = useCallback(
     (options: {

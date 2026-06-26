@@ -806,11 +806,11 @@
     color: rgb(251 191 36 / 0.98);
     border: 1px solid rgb(251 191 36 / 0.62);
     box-shadow: none;
-    min-height: 2.34rem;
-    max-height: 2.34rem;
-    min-width: 4.68rem;
-    padding: 0.24rem 0.72rem;
-    font-size: 0.78rem;
+    min-height: 2.75rem;
+    max-height: 2.75rem;
+    min-width: 5.5rem;
+    padding: 0.28rem 0.84rem;
+    font-size: 0.82rem;
     border-radius: 0.45rem;
   }
 
@@ -819,11 +819,11 @@
     background: rgb(0 0 0 / 0.28);
     color: rgb(235 245 240 / 0.95);
     border: 1px solid rgb(255 255 255 / 0.22);
-    min-height: 2.34rem;
-    max-height: 2.34rem;
-    min-width: 4.68rem;
-    padding: 0.24rem 0.72rem;
-    font-size: 0.78rem;
+    min-height: 2.75rem;
+    max-height: 2.75rem;
+    min-width: 5.5rem;
+    padding: 0.28rem 0.84rem;
+    font-size: 0.82rem;
     border-radius: 0.45rem;
   }
 

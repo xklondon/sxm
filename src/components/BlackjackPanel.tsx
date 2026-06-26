@@ -400,6 +400,7 @@ export function BlackjackPanel({
     cardRevealComplete,
     handTransitionHold.suppressEngineAutoAdvance,
     tableVisualState,
+    viewerPersonId,
   );
 
   // Full Table felt only degrades to the "Use Card View" hint on ultra-narrow

@@ -222,7 +222,7 @@ function assertHostDealAction(
       throw new Error('No eligible bets to deal');
     }
   }
-  assertTableHost(state, ctx.personId);
+  assertTableHost(state, ctx.personId, 'Only the table host can deal cards.');
 }
 
 function assertZilchPlayerTurn(state: GameState, ctx: ActionContext): void {
@@ -234,12 +234,16 @@ function assertZilchPlayerTurn(state: GameState, ctx: ActionContext): void {
   }
 }
 
-function assertTableHost(state: GameState, personId: string): void {
+function assertTableHost(
+  state: GameState,
+  personId: string,
+  message = 'Only the table host may perform this action',
+): void {
   const ownerId = state.tableMeta.ownerPersonId;
   if (ownerId && personId === ownerId) {
     return;
   }
-  throw new Error('Only the table host may perform this action');
+  throw new Error(message);
 }
 
 function slotByNumber(state: GameState, slotNumber: number) {

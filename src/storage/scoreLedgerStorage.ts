@@ -4,6 +4,17 @@ import { log } from '../utils/logger';
 
 const STORAGE_KEY = 'sxmcards:score-ledger:v1';
 
+function getScoreLedgerStorage(): Storage | null {
+  try {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+    return localStorage;
+  } catch {
+    return null;
+  }
+}
+
 /** Display-only filter: hide score rows for a table while its game is still in progress. */
 export function loadScoreLedgerDisplayEntries(options?: {
   activeTableId?: string | null;
@@ -17,8 +28,12 @@ export function loadScoreLedgerDisplayEntries(options?: {
 }
 
 export function loadScoreLedgerEntries(): ScoreLedgerEntry[] {
+  const storage = getScoreLedgerStorage();
+  if (!storage) {
+    return [];
+  }
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = storage.getItem(STORAGE_KEY);
     if (!raw) {
       return [];
     }
@@ -30,8 +45,12 @@ export function loadScoreLedgerEntries(): ScoreLedgerEntry[] {
 }
 
 export function saveScoreLedgerEntries(entries: ScoreLedgerEntry[]): void {
+  const storage = getScoreLedgerStorage();
+  if (!storage) {
+    return;
+  }
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    storage.setItem(STORAGE_KEY, JSON.stringify(entries));
   } catch (err) {
     log.warn('Failed to save score ledger', { err });
   }

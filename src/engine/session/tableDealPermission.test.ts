@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { GameState } from '../../types';
 import { tableAfterStartPlaying, tableWithClaimedBox } from '../blackjack/sanity/fixtures';
-import { canCurrentUserDealTable } from './tableDealPermission';
+import { canCurrentUserDealTable, canStartBlackjackDeal } from './tableDealPermission';
 
 function withOwner(
   state: GameState,
@@ -74,6 +74,13 @@ describe('canCurrentUserDealTable', () => {
   it('denies spectators with no viewer person id', () => {
     const state = tableAfterStartPlaying(500);
     expect(canCurrentUserDealTable(state, null)).toBe(false);
+  });
+
+  it('canStartBlackjackDeal requires host and eligible stakes', () => {
+    const state = tableAfterStartPlaying(500);
+    const ownerId = state.tableMeta.ownerPersonId!;
+    expect(canStartBlackjackDeal(state, ownerId)).toBe(false);
+    expect(canStartBlackjackDeal(state, null)).toBe(false);
   });
 });
 

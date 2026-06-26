@@ -1,6 +1,9 @@
 import type { GameState } from '../../types';
 import { log } from '../../utils/logger';
 import { isVerboseDevLogging } from '../../utils/devFlags';
+import { canStartCards } from '../blackjack/protocol';
+
+export const DEAL_CARDS_HOST_ONLY_MESSAGE = 'Only the table host can deal cards.';
 
 /**
  * True when the current viewer is the table owner/host and may run deal controls.
@@ -31,4 +34,15 @@ export function canCurrentUserDealTable(
     });
   }
   return canDeal;
+}
+
+/** Canonical deal-start authority: table host + betting-phase engine readiness + eligible stakes. */
+export function canStartBlackjackDeal(
+  state: GameState,
+  viewerPersonId: string | null | undefined,
+): boolean {
+  if (!canCurrentUserDealTable(state, viewerPersonId)) {
+    return false;
+  }
+  return canStartCards(state);
 }

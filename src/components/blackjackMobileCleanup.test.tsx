@@ -107,15 +107,15 @@ describe('targeted mobile cleanup — card area + actions', () => {
     );
   });
 
-  it('reduces mobile HIT/STAY sizing by ~15%', () => {
+  it('uses touch-friendly HIT/STAY sizing on mobile', () => {
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--hit[\s\S]*min-height:\s*2\.34rem/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--hit[\s\S]*min-height:\s*2\.75rem/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--stand[\s\S]*min-height:\s*2\.34rem/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--stand[\s\S]*min-height:\s*2\.75rem/,
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--hit[\s\S]*font-size:\s*0\.78rem/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--hit[\s\S]*font-size:\s*0\.82rem/,
     );
   });
 

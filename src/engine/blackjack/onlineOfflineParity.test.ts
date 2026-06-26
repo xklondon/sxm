@@ -18,8 +18,8 @@ import {
 } from './gameState';
 import { applyBlackjackActionToState, type BlackjackActorContext } from './applyBlackjackAction';
 
-const ctx = (resolveBankAuto: boolean): BlackjackActorContext => ({
-  personId: 'host',
+const ctx = (state: GameState, resolveBankAuto: boolean): BlackjackActorContext => ({
+  personId: state.tableMeta.ownerPersonId ?? 'host',
   payload: {},
   resolveBankAuto,
 });
@@ -89,7 +89,7 @@ function readyToDeal(): GameState {
 describe('online/offline blackjack action parity', () => {
   it('deal: server reducer result equals the offline engine pipeline', () => {
     const base = readyToDeal();
-    const online = applyBlackjackActionToState(base, 'dealCards', ctx(true));
+    const online = applyBlackjackActionToState(base, 'dealCards', ctx(base, true));
     // Offline = deal + post-deal auto-stand effect + bank animation final frame.
     const offline = resolveBankTurnAuto(
       syncBankPhaseOnState(
@@ -100,39 +100,42 @@ describe('online/offline blackjack action parity', () => {
   });
 
   it('stand (server, no handKey) equals offline stand on the active hand', () => {
-    const dealt = applyBlackjackActionToState(readyToDeal(), 'dealCards', ctx(false));
+    const base = readyToDeal();
+    const dealt = applyBlackjackActionToState(base, 'dealCards', ctx(base, false));
     if (dealt.blackjack?.status !== 'player-turns' || !dealt.blackjack.activeHandKey) {
       return; // round auto-resolved (all naturals/auto-stand) — nothing to compare
     }
     const activeKey = dealt.blackjack.activeHandKey;
-    const online = applyBlackjackActionToState(dealt, 'stand', ctx(false));
+    const online = applyBlackjackActionToState(dealt, 'stand', ctx(dealt, false));
     const offline = standBlackjackOnState(dealt, activeKey);
     expect(projectParity(online)).toEqual(projectParity(offline));
   });
 
   it('hit (server, no handKey) equals offline hit on the active hand', () => {
-    const dealt = applyBlackjackActionToState(readyToDeal(), 'dealCards', ctx(false));
+    const base = readyToDeal();
+    const dealt = applyBlackjackActionToState(base, 'dealCards', ctx(base, false));
     if (dealt.blackjack?.status !== 'player-turns' || !dealt.blackjack.activeHandKey) {
       return;
     }
     const activeKey = dealt.blackjack.activeHandKey;
-    const online = applyBlackjackActionToState(dealt, 'hit', ctx(false));
+    const online = applyBlackjackActionToState(dealt, 'hit', ctx(dealt, false));
     const offline = hitBlackjackOnState(dealt, activeKey);
     expect(projectParity(online)).toEqual(projectParity(offline));
   });
 
   it('full round settles server-side and nextRound resets stakes/bets', () => {
-    let s = applyBlackjackActionToState(readyToDeal(), 'dealCards', ctx(true));
+    const base = readyToDeal();
+    let s = applyBlackjackActionToState(base, 'dealCards', ctx(base, true));
     let guard = 0;
     while (s.blackjack?.status === 'player-turns' && guard < 30) {
       guard += 1;
-      s = applyBlackjackActionToState(s, 'stand', ctx(true));
+      s = applyBlackjackActionToState(s, 'stand', ctx(s, true));
     }
     // Auto bank + settlement resolved within the action chain.
     expect(s.blackjack?.status).toBe('resolved');
     expect(s.tableMeta.awaitingNextRound).toBe(true);
 
-    const reset = applyBlackjackActionToState(s, 'nextRound', ctx(true));
+    const reset = applyBlackjackActionToState(s, 'nextRound', ctx(s, true));
     expect(reset.tableMeta.awaitingNextRound).toBe(false);
     expect(reset.tableMeta.bettingLocked).toBe(false);
     expect(reset.tableMeta.boxStakes).toEqual({});
@@ -142,11 +145,11 @@ describe('online/offline blackjack action parity', () => {
     const base = readyToDeal();
 
     const runChain = (resolveBankAuto: boolean): GameState => {
-      let s = applyBlackjackActionToState(base, 'dealCards', ctx(resolveBankAuto));
+      let s = applyBlackjackActionToState(base, 'dealCards', ctx(base, resolveBankAuto));
       let guard = 0;
       while (s.blackjack?.status === 'player-turns' && guard < 30) {
         guard += 1;
-        s = applyBlackjackActionToState(s, 'stand', ctx(resolveBankAuto));
+        s = applyBlackjackActionToState(s, 'stand', ctx(s, resolveBankAuto));
       }
       // Offline animates the bank; fast-forward to the same final frame.
       return resolveBankAuto ? s : resolveBankTurnAuto(s);
