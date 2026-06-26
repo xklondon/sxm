@@ -126,19 +126,22 @@ export function mapPokerActionAvailability(state: GameState): PokerActionAvailab
   const callAmount = Math.max(0, round.currentBet - (round.playerStates[activeId]?.playerBetsThisStreet ?? 0));
   const allInAmount = allInAmountForPlayer(state.ledger, activeId);
   const canAllIn = canAllInHoldem(state.ledger, round, activeId);
+  const minRaiseSize = round.lastRaiseSize ?? minBet;
+  const minRaiseTo = round.currentBet + minRaiseSize;
 
   return {
     canCheck: canCheckHoldem(round, activeId),
     canCall: canCallHoldem(state.ledger, round, activeId),
     canBet: canBetHoldem(state.ledger, round, activeId, minBet),
-    canRaise: canRaiseHoldem(state.ledger, round, activeId, minRaise),
+    canRaise:
+      round.currentBet > 0 && canRaiseHoldem(state.ledger, round, activeId, minRaiseTo),
     canFold: canFoldHoldem(round, activeId),
     canAllIn,
     callAmount,
     allInAmount,
     allInDisabledReason: canAllIn ? undefined : 'No chips to go all-in',
     minBet,
-    minRaise,
+    minRaise: minRaiseTo,
   };
 }
 

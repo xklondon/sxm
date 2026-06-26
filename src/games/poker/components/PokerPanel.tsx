@@ -7,6 +7,11 @@ import {
   getAuthoritativeChallengeWinnerId,
 } from '../../../engine/holdem/challengeWinner';
 import { validateHoldemStartHand } from '../../../engine/holdem/holdemStartValidation';
+import {
+  canPersonControlHoldemSeat,
+  getHoldemActingSeatId,
+  processVirtualHoldemTurns,
+} from '../../../engine/holdem';
 import { loadProfile } from '../../../storage/profileStorage';
 import type { GameOverIouFeedback } from '../../../components/GameOverActionOverlay';
 import type { TableResetSetupVariant } from '../../../components/TableStakePanel';
@@ -35,6 +40,7 @@ import { usePokerTableChat } from '../hooks/usePokerTableChat';
 import { PokerGameOverOverlay } from './PokerGameOverOverlay';
 import { addPokerPracticeChips } from '../state/pokerChipAdjust';
 import type { PokerPlayerAction } from '../state/pokerTypes';
+import { assertHoldemUsesPokerPanel, logHoldemPokerPanelMounted } from '../pokerRouteGuard';
 
 export interface PokerPanelProps {
   gameState: GameState;
@@ -79,6 +85,11 @@ export function PokerPanel({
     () => mapPokerActionAvailability(gameState),
     [gameState],
   );
+
+  useEffect(() => {
+    assertHoldemUsesPokerPanel(gameState);
+    logHoldemPokerPanelMounted(gameState);
+  }, [gameState]);
 
   const chatTableId = onlineTableId ?? gameState.session.id;
   const chatUserEmail = viewerAuth?.email ?? profile.email ?? null;
@@ -151,6 +162,48 @@ export function PokerPanel({
 
   const iouFailed = iouFeedback?.tone === 'error';
   const isOnlineTable = Boolean(onlineTableId && onlineDispatch);
+
+  const actorSeatId = useMemo(() => {
+    const activeId = getHoldemActingSeatId(gameState);
+    const personId = gameState.tableMeta.ownerPersonId ?? viewerSeatId;
+    if (activeId && personId && canPersonControlHoldemSeat(gameState, personId, activeId)) {
+      return activeId;
+    }
+    return viewerSeatId;
+  }, [gameState, viewerSeatId]);
+
+  const canActOnTurn = useMemo(() => {
+    const activeId = getHoldemActingSeatId(gameState);
+    const personId = gameState.tableMeta.ownerPersonId ?? viewerSeatId;
+    return Boolean(
+      activeId && personId && canPersonControlHoldemSeat(gameState, personId, activeId),
+    );
+  }, [gameState, viewerSeatId]);
+
+  const waitingForPlayerName = useMemo(() => {
+    if (!handInProgress || canActOnTurn) {
+      return null;
+    }
+    const activeId = viewModel.activePlayerId;
+    if (!activeId) {
+      return null;
+    }
+    return viewModel.seats.find((seat) => seat.playerId === activeId)?.displayName ?? 'player';
+  }, [canActOnTurn, handInProgress, viewModel.activePlayerId, viewModel.seats]);
+
+  useEffect(() => {
+    if (isOnlineTable || !handInProgress || !isPractice) {
+      return;
+    }
+    const activeId = getHoldemActingSeatId(gameState);
+    if (!activeId || gameState.players[activeId]?.playerType !== 'virtual') {
+      return;
+    }
+    const next = processVirtualHoldemTurns(gameState);
+    if (next !== gameState) {
+      onGameStateChange(next);
+    }
+  }, [gameState, handInProgress, isOnlineTable, isPractice, onGameStateChange]);
 
   const startHandBlockReason = useMemo(() => {
     if (!canStartHand) {
@@ -229,9 +282,9 @@ export function PokerPanel({
         await dispatchOnlineGameplay(uiAction, amount);
         return;
       }
-      dispatchHoldemAction(mapPokerUiActionToHoldemAction(uiAction, viewerSeatId, amount));
+      dispatchHoldemAction(mapPokerUiActionToHoldemAction(uiAction, actorSeatId, amount));
     },
-    [dispatchHoldemAction, dispatchOnlineGameplay, isOnlineTable, viewerSeatId],
+    [dispatchHoldemAction, dispatchOnlineGameplay, isOnlineTable, actorSeatId],
   );
 
   const dispatchShuffle = useCallback(async () => {
@@ -400,7 +453,9 @@ export function PokerPanel({
         isChallenge={isChallenge}
         showInvite={Boolean(onInviteTable)}
         showEndChallenge={canEndChallengeEarly}
-        onAction={gameState.holdem && handInProgress ? handleAction : undefined}
+        waitingForPlayerName={waitingForPlayerName}
+        canActOnTurn={canActOnTurn}
+        onAction={handInProgress && canActOnTurn ? handleAction : undefined}
         onSendChat={(body) => void sendMessage(body)}
         onSaveBlinds={handleSaveBlinds}
         onInviteTable={onInviteTable}

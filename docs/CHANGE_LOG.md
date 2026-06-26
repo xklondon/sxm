@@ -23,6 +23,18 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-23 — Poker route, betting flow, responsive layout stabilization
+
+**Route:** Single path `TableScreen → PokerPanel → PokerTableShell → PokerTableLayout`; dev guard `pokerRouteGuard.ts`. Legacy `HoldemPanel` not routed (file remains unused).
+
+**Betting UI:** Separate Fold/Check/Call/Bet/Raise/All In buttons; never "Stay". Preflop facing blind hides Check/Bet. Practice virtual auto-advance via `processVirtualHoldemTurns` effect. Host proxy uses `canPersonControlHoldemSeat` + `actorSeatId`.
+
+**Layout:** Responsive CSS grid — `clamp()` felt height, `overflow: visible` on table, sticky action bar with safe-area, portrait/landscape media queries.
+
+**Tests:** `pokerBettingFlow.test.tsx`, `pokerResponsiveLayout.test.tsx`, expanded route tests.
+
+---
+
 ## 2026-06-23 — Poker High Roller visual template + start flow
 
 **Reference:** `reference-ui/Poker/stitch_professional_casino_poker_redesign` (DESIGN.md + screen.png — High Roller Protocol).

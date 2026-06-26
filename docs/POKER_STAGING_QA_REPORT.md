@@ -36,6 +36,20 @@
 
 **Remaining manual QA:** 2-browser challenge invite, mobile device pass on new template, production deploy smoke.
 
+## Manual QA checklist (pre-deploy)
+
+| Device / flow | Verify |
+|---------------|--------|
+| Desktop 2-seat | Deal → blinds → Call/Raise; no overlap |
+| Desktop 6/9-seat | All seats visible; pot centered |
+| Mobile portrait | Sticky action bar visible; safe-area |
+| Mobile landscape | Felt compresses; buttons not clipped |
+| Preflop | Fold / Call / Raise only (no Check/Bet facing blind) |
+| Postflop | Check/Bet when no bet; Call/Raise when facing bet |
+| All-in | All In works |
+| Practice virtual | Virtual turns auto-advance |
+| This Table | Panel only — no permanent chat rail |
+
 ---
 
 ## Visual template (2026-06-23)

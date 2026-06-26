@@ -53,11 +53,13 @@ describe('Poker live route — no legacy shell', () => {
       <TableScreen gameState={state} onGameStateChange={() => {}} onLeave={() => {}} />,
     );
     expect(html).toContain('poker-panel');
-    expect(html).toContain('poker-table-shell');
+    expect(html).toContain('poker-hr-shell');
+    expect(html.match(/poker-hr-shell/g)?.length).toBe(1);
     expect(html).not.toContain('HoldemPanel');
     expect(html).not.toContain('bj-casino');
-    expect(html).not.toContain('Shuffle the deck, then start');
     expect(html).not.toContain('holdem-panel');
+    expect(html).not.toContain('data-testid="poker-chat-dock"');
+    expect(html).not.toContain('table-chat-dock');
   });
 
   it('normalizeLoadedGameState repairs hybrid blackjack shell into texas-holdem', () => {

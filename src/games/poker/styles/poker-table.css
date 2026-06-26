@@ -15,17 +15,21 @@
   --poker-hr-red-bright: #ffb3ae;
   --poker-hr-primary: #95d4b3;
   --poker-hr-outline: #8a938c;
+  --poker-felt-height: clamp(12rem, 48vh, 19rem);
+  --poker-seat-width: clamp(4.75rem, 17vw, 7.25rem);
 
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0.45rem;
   width: 100%;
-  max-width: 42rem;
+  max-width: min(100%, 44rem);
+  min-height: 0;
+  max-height: 100dvh;
   margin: 0 auto;
-  padding: 0.35rem 0.5rem 0.75rem;
+  padding: 0.35rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
   color: var(--poker-hr-on-surface);
   background: var(--poker-hr-bg);
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .poker-panel--compact {
@@ -79,21 +83,29 @@
 .poker-table-layout {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  min-height: 0;
+  flex: 1;
+  gap: 0.4rem;
 }
 
 .poker-hr-stage,
 .poker-table-layout__stage {
-  padding: 0.25rem 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0;
+  overflow: visible;
 }
 
 .poker-hr-table,
 .poker-table-layout__felt {
   position: relative;
-  min-height: 18.5rem;
-  max-height: 22rem;
-  aspect-ratio: 5 / 3;
-  padding: 0.85rem;
+  width: min(100%, 36rem);
+  height: var(--poker-felt-height);
+  max-height: min(52vh, 19rem);
+  padding: clamp(0.55rem, 2vw, 0.85rem);
   border-radius: 50% / 38%;
   background:
     radial-gradient(ellipse 78% 62% at 50% 44%, rgb(45 106 79 / 0.55) 0%, transparent 58%),
@@ -102,21 +114,27 @@
   box-shadow:
     inset 0 0 48px rgb(0 0 0 / 0.55),
     0 6px 20px rgb(0 0 0 / 0.45);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .poker-hr-center,
 .poker-table-layout__center {
   position: absolute;
   left: 50%;
-  top: 48%;
+  top: 50%;
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  width: min(14rem, 68%);
+  gap: 0.3rem;
+  width: min(12rem, 62%);
   z-index: 2;
+  pointer-events: none;
+}
+
+.poker-hr-center > *,
+.poker-table-layout__center > * {
+  pointer-events: auto;
 }
 
 .poker-hr-cloth,
@@ -163,7 +181,7 @@
 .poker-seat-ring__slot {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: min(7.5rem, 24vw);
+  width: var(--poker-seat-width);
   z-index: 3;
 }
 
@@ -385,7 +403,13 @@
 
 .poker-hr-layout__actions,
 .poker-table-layout__actions {
+  flex-shrink: 0;
   width: 100%;
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: linear-gradient(180deg, rgb(4 23 16 / 0) 0%, rgb(4 23 16 / 0.92) 28%);
 }
 
 .poker-hr-action-bar,
@@ -466,7 +490,7 @@
 
 .poker-hr-action-bar__buttons {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
   gap: 0.35rem;
 }
 
@@ -661,25 +685,39 @@
 }
 
 @media (max-width: 720px) {
-  .poker-hr-table,
-  .poker-table-layout__felt {
-    min-height: 16.5rem;
-    max-height: none;
-    border-radius: 50% / 34%;
-    aspect-ratio: 4 / 3;
+  .poker-hr-shell,
+  .poker-table-shell {
+    --poker-felt-height: clamp(11rem, 38vh, 15rem);
+    --poker-seat-width: clamp(4.25rem, 22vw, 6rem);
+    max-width: 100%;
+    padding-inline: 0.35rem;
   }
 
-  .poker-seat-ring__slot {
-    width: min(6.75rem, 30vw);
+  .poker-hr-table,
+  .poker-table-layout__felt {
+    border-radius: 50% / 34%;
+    max-height: min(42vh, 15rem);
+  }
+
+  .poker-hr-center,
+  .poker-table-layout__center {
+    width: min(10.5rem, 58%);
   }
 
   .poker-hr-action-bar__buttons {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
-  .poker-hr-center,
-  .poker-table-layout__center {
-    top: 46%;
-    width: min(12rem, 72%);
+@media (max-height: 520px) and (orientation: landscape) {
+  .poker-hr-shell,
+  .poker-table-shell {
+    --poker-felt-height: clamp(9rem, 58vh, 12rem);
+    --poker-seat-width: clamp(3.75rem, 14vw, 5.5rem);
+  }
+
+  .poker-hr-table,
+  .poker-table-layout__felt {
+    max-height: min(58vh, 12rem);
   }
 }

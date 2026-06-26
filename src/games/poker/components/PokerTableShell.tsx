@@ -32,6 +32,8 @@ export interface PokerTableShellProps {
   tableId?: string;
   statusHint?: string;
   startHandBlockReason?: string | null;
+  waitingForPlayerName?: string | null;
+  canActOnTurn?: boolean;
   handActive?: boolean;
   handResolved?: boolean;
   challengeEnded?: boolean;
@@ -67,6 +69,8 @@ export function PokerTableShell({
   tableId,
   statusHint,
   startHandBlockReason = null,
+  waitingForPlayerName = null,
+  canActOnTurn = false,
   handActive = false,
   handResolved = false,
   challengeEnded = false,
@@ -93,7 +97,7 @@ export function PokerTableShell({
 }: PokerTableShellProps) {
   const [tablePanelOpen, setTablePanelOpen] = useState(false);
   const activeSeat = viewModel.seats.find((seat) => seat.playerId === viewModel.activePlayerId);
-  const activePlayerName = activeSeat?.displayName ?? null;
+  const actingName = canActOnTurn ? activeSeat?.displayName ?? null : null;
   const availability = actionAvailability ?? {
     canCheck: false,
     canCall: false,
@@ -180,11 +184,12 @@ export function PokerTableShell({
         }
         actionPanel={
           <PokerActionPanel
-            activePlayerName={activePlayerName}
+            activePlayerName={actingName}
+            waitingForPlayerName={waitingForPlayerName}
             availability={availability}
             pot={viewModel.pot}
             bigBlind={viewModel.bigBlind}
-            disabled={disabled || !handActive}
+            disabled={disabled || !handActive || !canActOnTurn}
             onAction={onAction}
           />
         }

@@ -4,6 +4,7 @@ import type { PokerActionAvailability, PokerPlayerAction } from '../state/pokerT
 
 interface PokerActionPanelProps {
   activePlayerName: string | null;
+  waitingForPlayerName?: string | null;
   availability: PokerActionAvailability;
   pot?: number;
   bigBlind?: number;
@@ -22,6 +23,7 @@ function chipPresets(availability: PokerActionAvailability, pot: number, bigBlin
 
 export function PokerActionPanel({
   activePlayerName,
+  waitingForPlayerName = null,
   availability,
   pot = 0,
   bigBlind = 10,
@@ -31,10 +33,19 @@ export function PokerActionPanel({
   const defaultAmount = availability.minRaise || availability.minBet || bigBlind;
   const [betInput, setBetInput] = useState(String(defaultAmount));
   const presets = useMemo(() => chipPresets(availability, pot, bigBlind), [availability, pot, bigBlind]);
+  const chipsEnabled = availability.canBet || availability.canRaise;
 
   useEffect(() => {
     setBetInput(String(defaultAmount));
   }, [defaultAmount, activePlayerName]);
+
+  if (waitingForPlayerName) {
+    return (
+      <section className={`poker-actions poker-actions--idle ${POKER_TEMPLATE_ACTION_BAR}`} aria-label="Player actions">
+        <p className="poker-hr-action-bar__hint">Waiting for {waitingForPlayerName}</p>
+      </section>
+    );
+  }
 
   if (!activePlayerName) {
     return (
@@ -45,62 +56,57 @@ export function PokerActionPanel({
   }
 
   const betAmount = Number.parseInt(betInput, 10) || defaultAmount;
+  const raiseTarget = Math.max(betAmount, availability.minRaise);
 
   function dispatch(action: PokerPlayerAction, amount?: number) {
     if (disabled || !onAction) {
       return;
     }
     if (action === 'bet' || action === 'raise') {
-      onAction(action, amount ?? betAmount);
+      onAction(action, amount ?? (action === 'raise' ? raiseTarget : betAmount));
       return;
     }
     onAction(action);
   }
 
-  const primaryAction = availability.canRaise ? 'raise' : availability.canBet ? 'bet' : null;
-  const primaryLabel = availability.canRaise ? 'Raise' : availability.canBet ? 'Bet' : 'Bet';
-  const callLabel =
-    availability.canCall && availability.callAmount > 0
-      ? `Call ${availability.callAmount}`
-      : 'Call';
-
   return (
     <section className={`poker-actions ${POKER_TEMPLATE_ACTION_BAR}`} aria-label="Player actions">
       <p className="poker-hr-action-bar__turn">
-        <span className="poker-hr-action-bar__turn-label">Acting</span>
+        <span className="poker-hr-action-bar__turn-label">Your turn</span>
         {activePlayerName}
       </p>
 
-      <div className="poker-hr-action-bar__chips" role="group" aria-label="Bet amounts">
-        {presets.map((amount) => (
-          <button
-            key={amount}
-            type="button"
-            className={`poker-hr-chip-btn${betAmount === amount ? ' poker-hr-chip-btn--active' : ''}`}
-            disabled={disabled || (!availability.canBet && !availability.canRaise)}
-            onClick={() => {
-              setBetInput(String(amount));
-              if (primaryAction) {
-                dispatch(primaryAction, amount);
-              }
-            }}
-          >
-            {amount}
-          </button>
-        ))}
-      </div>
+      {chipsEnabled && (
+        <div className="poker-hr-action-bar__chips" role="group" aria-label="Bet amounts">
+          {presets.map((amount) => (
+            <button
+              key={amount}
+              type="button"
+              className={`poker-hr-chip-btn${betAmount === amount ? ' poker-hr-chip-btn--active' : ''}`}
+              disabled={disabled}
+              onClick={() => setBetInput(String(amount))}
+            >
+              {amount}
+            </button>
+          ))}
+        </div>
+      )}
 
-      <label className="poker-hr-action-bar__amount">
-        <span className="poker-hr-action-bar__amount-label">Amount</span>
-        <input
-          type="number"
-          min={availability.minBet}
-          className="poker-hr-action-bar__amount-input"
-          value={betInput}
-          disabled={disabled}
-          onChange={(event) => setBetInput(event.target.value)}
-        />
-      </label>
+      {(availability.canBet || availability.canRaise) && (
+        <label className="poker-hr-action-bar__amount">
+          <span className="poker-hr-action-bar__amount-label">
+            {availability.canRaise ? 'Raise to' : 'Bet'}
+          </span>
+          <input
+            type="number"
+            min={availability.canRaise ? availability.minRaise : availability.minBet}
+            className="poker-hr-action-bar__amount-input"
+            value={betInput}
+            disabled={disabled}
+            onChange={(event) => setBetInput(event.target.value)}
+          />
+        </label>
+      )}
 
       <div className="poker-hr-action-bar__buttons">
         <button
@@ -111,22 +117,44 @@ export function PokerActionPanel({
         >
           Fold
         </button>
-        <button
-          type="button"
-          className="poker-hr-btn poker-hr-btn--check"
-          disabled={disabled || (!availability.canCheck && !availability.canCall)}
-          onClick={() => dispatch(availability.canCheck ? 'check' : 'call')}
-        >
-          {availability.canCheck ? 'Check' : callLabel}
-        </button>
-        {primaryAction && (
+        {availability.canCheck && (
+          <button
+            type="button"
+            className="poker-hr-btn poker-hr-btn--check"
+            disabled={disabled}
+            onClick={() => dispatch('check')}
+          >
+            Check
+          </button>
+        )}
+        {availability.canCall && (
+          <button
+            type="button"
+            className="poker-hr-btn poker-hr-btn--call"
+            disabled={disabled}
+            onClick={() => dispatch('call')}
+          >
+            {availability.callAmount > 0 ? `Call ${availability.callAmount}` : 'Call'}
+          </button>
+        )}
+        {availability.canBet && (
           <button
             type="button"
             className="poker-hr-btn poker-hr-btn--bet"
             disabled={disabled}
-            onClick={() => dispatch(primaryAction, betAmount)}
+            onClick={() => dispatch('bet', betAmount)}
           >
-            {primaryLabel} {betAmount}
+            Bet {betAmount}
+          </button>
+        )}
+        {availability.canRaise && (
+          <button
+            type="button"
+            className="poker-hr-btn poker-hr-btn--raise"
+            disabled={disabled}
+            onClick={() => dispatch('raise', raiseTarget)}
+          >
+            Raise {raiseTarget}
           </button>
         )}
         <button

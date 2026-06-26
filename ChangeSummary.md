@@ -1,47 +1,61 @@
-# Change Summary — Poker High Roller Visual Template + Start Flow Fix
+# Change Summary — Poker Route, Betting Flow, Responsive Layout Stabilization
 
-## Reference files used
+## Duplicate / legacy paths found
 
-- `reference-ui/Poker/stitch_professional_casino_poker_redesign/DESIGN.md` — High Roller Protocol tokens, typography, layout, component rules
-- `reference-ui/Poker/stitch_professional_casino_poker_redesign/screen.png` — visual target screenshot
+| Path | Status |
+|------|--------|
+| `HoldemPanel.tsx` | **Not routed** — `TableScreen` uses `PokerPanel` only; ownership test guards |
+| `BlackjackPanel` for holdem | **Blocked** — `isBlackjackTable` excludes `isHoldemTable` |
+| Permanent `TableChatDock` on poker | **Hidden** — `!isHoldem` guard in `TableScreen` |
+| `poker-table-layout__controls` chat rail | **Removed** — chat in `PokerTablePanel` only |
+| Zilch-like tall header | **Not used** on poker route |
 
-## Root cause (start flow)
+**Canonical route:** `TableScreen → PokerPanel → PokerTableShell → PokerTableLayout`
 
-After offline shuffle, `handleStartHand` updated parent state but `gameStateRef` still pointed at the pre-shuffle state, so the subsequent `start-hand` dispatch failed silently. Fixed by syncing `gameStateRef` after shuffle.
+## Root causes fixed
+
+### Betting (Raise unavailable / confusing actions)
+- `mapPokerActionAvailability` passed `lastRaiseSize` to `canRaiseHoldem` as **target total** — should be `currentBet + lastRaiseSize`
+- `canRaise` now requires `currentBet > 0` (Bet vs Raise separation)
+- Action panel merged Check+Call on one button — now **separate** Fold / Check / Call / Bet / Raise / All In
+- No “Stay” in poker UI (blackjack term)
+
+### Practice virtual blocking
+- Offline practice: `useEffect` runs `processVirtualHoldemTurns` when virtual is actor
+- Host acts via `canPersonControlHoldemSeat` + `actorSeatId` for virtual proxy
+
+### Layout overlap / clipping
+- Felt used `overflow: hidden` + fixed heights — seats/cards clipped
+- **New model:** CSS grid shell, `clamp()` felt height, `overflow: visible` on table, sticky action bar with `safe-area-inset-bottom`, portrait/landscape media queries
 
 ## Files changed
 
-**Template / UI (`src/games/poker/`)**
-- `pokerTemplateContract.ts` — NEW: template class contract + reference path
-- `styles/poker-table.css` — rewritten for High Roller tokens (dark shell, oval felt, sharp gold/red buttons)
-- `components/PokerTableShell.tsx` — `poker-hr-*` shell, **Deal Cards**, waiting copy in top bar only
-- `components/PokerTableLayout.tsx` — stage/table/center structure
-- `components/PokerSeat.tsx` — circular avatars, D/SB/BB badges
-- `components/PokerActionPanel.tsx` — chip presets + casino action bar
-- `components/PokerPotArea.tsx` — compact centered pot
-- `components/PokerSeatRing.tsx`, `PokerFeltClothLayer.tsx` — template classes
-- `components/PokerPanel.tsx` — ref sync after shuffle; challenge waiting in status bar
-- `pokerTemplate.test.tsx` — NEW: template + start-flow UI tests
-
-**Docs**
-- `docs/POKER_STAGING_QA_REPORT.md`, `docs/POKER_FINAL_STABILIZATION_AUDIT.md`, `docs/CHANGE_LOG.md`, `docs/SXM_MASTER_SPEC.md`
+- `src/games/poker/pokerRouteGuard.ts` — NEW dev route guard
+- `src/games/poker/state/mapPokerTableViewModel.ts` — raise availability fix
+- `src/games/poker/components/PokerActionPanel.tsx` — separate poker action buttons
+- `src/games/poker/components/PokerPanel.tsx` — virtual auto-advance, turn authority, route guard
+- `src/games/poker/components/PokerTableShell.tsx` — waiting/canAct props
+- `src/games/poker/styles/poker-table.css` — responsive layout contract
+- `src/games/poker/pokerBettingFlow.test.tsx` — NEW
+- `src/games/poker/pokerResponsiveLayout.test.tsx` — NEW
+- `src/games/poker/pokerLiveRoute.test.tsx` — single shell + no chat rail
+- `docs/POKER_STAGING_QA_REPORT.md`, `docs/CHANGE_LOG.md`
 
 ## Tests run
 
-| Tier | Command | Result |
-|------|---------|--------|
-| Poker template + UI | `vitest run src/games/poker` + `holdemStartHand.test.ts` | **PASS** |
-| Server holdem | `vitest run server/tests/holdemTableActions.test.ts` | **PASS** (23) |
-| Ownership | `npm run test:ownership` | **PASS** (28) |
-| Build | `npx tsc -b` + `npx vite build` | **PASS** |
-| Full `npm run build` | — | **Skipped** (Prisma EPERM on Windows) |
+| Tier | Result |
+|------|--------|
+| Poker UI/start/action/layout (92) | **PASS** |
+| Server holdem actions (23) | **PASS** |
+| Ownership + live route smoke | **PASS** |
+| `tsc -b` + `vite build` | **PASS** |
 
 ## Confirmations
 
-- **Practice** starts immediately: host + 1 virtual, Deal Cards enabled, no “Waiting for invited player” in center
-- **One click Deal Cards**: shuffle → post SB/BB (pot 15) → deal 2 hole cards → preflop actor set
-- **Visual shell** follows High Roller reference (`poker-hr-shell`, oval felt, avatars, action bar below)
-- **No permanent chat rail** — chat in This Table panel
-- **Blackjack/Zilch** not modified
+- Single `poker-hr-shell` per holdem table; no HoldemPanel / BlackjackPanel / permanent chat rail
+- Preflop: Call + Raise (not Check/Bet facing blind); postflop: Check/Bet or Call/Raise as appropriate
+- No “Stay” in poker action UI
+- Action bar outside felt clipping (`poker-hr-layout__actions` sticky)
+- Blackjack/Zilch not modified
 
-**Spec discipline: checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.**
+**Spec discipline: checked/updated docs/CHANGE_LOG.md and POKER_STAGING_QA_REPORT.md.**
