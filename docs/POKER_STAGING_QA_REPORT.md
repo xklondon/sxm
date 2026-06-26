@@ -33,15 +33,18 @@
 | U8 | Generic flat felt / wrong visual shell | **Fixed** — High Roller template (`poker-hr-*`) from stitch reference |
 | U9 | Start required two clicks / no auto blinds+deal | **Fixed** — atomic `start-hand`; **Deal Cards** one click |
 | U10 | Practice shows "Waiting for invited player" | **Fixed** — host + 1 virtual default; waiting only in challenge |
+| U11 | Host does not see guest join without reload | **Fixed** — `table:update` on join/approve/accept |
+| U12 | Pot/Deal overlap felt center | **Fixed** — header metrics row; felt = community + showdown only |
+| U13 | Felt asymmetric / scroll clipping | **Partial** — symmetric oval + aspect-ratio CSS; manual device QA pending |
 
-**Remaining manual QA:** 2-browser challenge invite, mobile device pass on new template, production deploy smoke.
+**Remaining manual QA:** 2-browser challenge invite (verify host live seat update), mobile device pass on new template, production deploy smoke.
 
 ## Manual QA checklist (pre-deploy)
 
 | Device / flow | Verify |
 |---------------|--------|
 | Desktop 2-seat | Deal → blinds → Call/Raise; no overlap |
-| Desktop 6/9-seat | All seats visible; pot centered |
+| Desktop 6/9-seat | All seats visible; pot in header |
 | Mobile portrait | Sticky action bar visible; safe-area |
 | Mobile landscape | Felt compresses; buttons not clipped |
 | Preflop | Fold / Call / Raise only (no Check/Bet facing blind) |

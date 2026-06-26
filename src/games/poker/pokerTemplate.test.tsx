@@ -56,8 +56,8 @@ function practiceState(virtualPlayerCount = 1) {
   });
 }
 
-describe('Poker High Roller template shell', () => {
-  it('uses template shell classes from reference contract', () => {
+describe('Poker 0 template shell', () => {
+  it('uses Poker 0 shell classes from reference contract', () => {
     const state = practiceState();
     const html = renderToStaticMarkup(
       <PokerTableShell
@@ -74,7 +74,8 @@ describe('Poker High Roller template shell', () => {
     expect(html).toContain(POKER_TEMPLATE_CLOTH);
     expect(html).toContain(POKER_TEMPLATE_DEAL_BTN);
     expect(html).toContain(POKER_TEMPLATE_ACTION_BAR);
-    expect(html).toContain('data-template="high-roller-protocol"');
+    expect(html).toContain('data-template="poker0"');
+    expect(html).toContain('poker0-cloth__title');
     expect(html).toContain('poker-hr-seat__avatar');
   });
 
@@ -204,8 +205,9 @@ describe('Poker High Roller template shell', () => {
     );
     expect(html).not.toContain('data-testid="poker-chat-dock"');
     expect(html).toContain('High Roller Table');
-    expect(html).toContain('poker-hr-cloth');
-    expect(html.match(/Blinds 5\/10/g)?.length).toBe(1);
+    expect(html).toContain('poker0-cloth');
+    expect(html).toContain('data-testid="poker-header-blinds"');
+    expect(html).toContain('5/10');
     expect(html).toContain(POKER_TEMPLATE_ACTION_BAR);
   });
 

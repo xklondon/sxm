@@ -150,7 +150,8 @@ describe('Poker live route — no legacy shell', () => {
     );
     expect(html).toContain('Poker StarWars');
     expect(html).toContain('poker-felt-cloth-layer');
-    expect(html.match(/Blinds 1\/2/g)?.length).toBe(1);
+    expect(html).toContain('data-testid="poker-header-blinds"');
+    expect(html).toContain('1/2');
     expect(html).not.toContain('data-testid="poker-chat-dock"');
     expect(html).not.toContain('Setup');
   });

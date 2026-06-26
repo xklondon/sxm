@@ -75,6 +75,10 @@ export class TableService {
     return record;
   }
 
+  getTableRecord(tableId: string): TableRecord | undefined {
+    return this.store.getTable(tableId);
+  }
+
   async getTableForUser(
     tableId: string,
     userId: string,

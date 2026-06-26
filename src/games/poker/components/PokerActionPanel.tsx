@@ -42,7 +42,7 @@ export function PokerActionPanel({
   if (waitingForPlayerName) {
     return (
       <section className={`poker-actions poker-actions--idle ${POKER_TEMPLATE_ACTION_BAR}`} aria-label="Player actions">
-        <p className="poker-hr-action-bar__hint">Waiting for {waitingForPlayerName}</p>
+        <p className="poker0-action-bar__hint">Waiting for {waitingForPlayerName}</p>
       </section>
     );
   }
@@ -50,7 +50,7 @@ export function PokerActionPanel({
   if (!activePlayerName) {
     return (
       <section className={`poker-actions poker-actions--idle ${POKER_TEMPLATE_ACTION_BAR}`} aria-label="Player actions">
-        <p className="poker-hr-action-bar__hint">Waiting for the next hand.</p>
+        <p className="poker0-action-bar__hint">Waiting for the next hand.</p>
       </section>
     );
   }
@@ -71,18 +71,78 @@ export function PokerActionPanel({
 
   return (
     <section className={`poker-actions ${POKER_TEMPLATE_ACTION_BAR}`} aria-label="Player actions">
-      <p className="poker-hr-action-bar__turn">
-        <span className="poker-hr-action-bar__turn-label">Your turn</span>
+      <p className="poker0-action-bar__turn">
+        <span className="poker0-action-bar__turn-label">Your turn</span>
         {activePlayerName}
       </p>
 
+      <div className="poker0-action-bar__buttons">
+        <button
+          type="button"
+          className="poker0-btn poker0-btn--fold"
+          disabled={disabled || !availability.canFold}
+          onClick={() => dispatch('fold')}
+        >
+          Fold
+        </button>
+        {availability.canCheck && (
+          <button
+            type="button"
+            className="poker0-btn poker0-btn--check"
+            disabled={disabled}
+            onClick={() => dispatch('check')}
+          >
+            Check
+          </button>
+        )}
+        {availability.canCall && (
+          <button
+            type="button"
+            className="poker0-btn poker0-btn--call"
+            disabled={disabled}
+            onClick={() => dispatch('call')}
+          >
+            {availability.callAmount > 0 ? `Call ${availability.callAmount}` : 'Call'}
+          </button>
+        )}
+        {availability.canBet && (
+          <button
+            type="button"
+            className="poker0-btn poker0-btn--bet"
+            disabled={disabled}
+            onClick={() => dispatch('bet', betAmount)}
+          >
+            Bet {betAmount}
+          </button>
+        )}
+        {availability.canRaise && (
+          <button
+            type="button"
+            className="poker0-btn poker0-btn--raise"
+            disabled={disabled}
+            onClick={() => dispatch('raise', raiseTarget)}
+          >
+            Raise {raiseTarget}
+          </button>
+        )}
+        <button
+          type="button"
+          className="poker0-btn poker0-btn--all-in"
+          disabled={disabled || !availability.canAllIn}
+          title={availability.allInDisabledReason}
+          onClick={() => dispatch('all-in')}
+        >
+          All In{availability.allInAmount > 0 ? ` ${availability.allInAmount}` : ''}
+        </button>
+      </div>
+
       {chipsEnabled && (
-        <div className="poker-hr-action-bar__chips" role="group" aria-label="Bet amounts">
+        <div className="poker0-action-bar__chips" role="group" aria-label="Bet amounts">
           {presets.map((amount) => (
             <button
               key={amount}
               type="button"
-              className={`poker-hr-chip-btn${betAmount === amount ? ' poker-hr-chip-btn--active' : ''}`}
+              className={`poker0-chip-btn${betAmount === amount ? ' poker0-chip-btn--active' : ''}`}
               disabled={disabled}
               onClick={() => setBetInput(String(amount))}
             >
@@ -93,80 +153,20 @@ export function PokerActionPanel({
       )}
 
       {(availability.canBet || availability.canRaise) && (
-        <label className="poker-hr-action-bar__amount">
-          <span className="poker-hr-action-bar__amount-label">
+        <label className="poker0-action-bar__amount">
+          <span className="poker0-action-bar__amount-label">
             {availability.canRaise ? 'Raise to' : 'Bet'}
           </span>
           <input
             type="number"
             min={availability.canRaise ? availability.minRaise : availability.minBet}
-            className="poker-hr-action-bar__amount-input"
+            className="poker0-action-bar__amount-input"
             value={betInput}
             disabled={disabled}
             onChange={(event) => setBetInput(event.target.value)}
           />
         </label>
       )}
-
-      <div className="poker-hr-action-bar__buttons">
-        <button
-          type="button"
-          className="poker-hr-btn poker-hr-btn--fold"
-          disabled={disabled || !availability.canFold}
-          onClick={() => dispatch('fold')}
-        >
-          Fold
-        </button>
-        {availability.canCheck && (
-          <button
-            type="button"
-            className="poker-hr-btn poker-hr-btn--check"
-            disabled={disabled}
-            onClick={() => dispatch('check')}
-          >
-            Check
-          </button>
-        )}
-        {availability.canCall && (
-          <button
-            type="button"
-            className="poker-hr-btn poker-hr-btn--call"
-            disabled={disabled}
-            onClick={() => dispatch('call')}
-          >
-            {availability.callAmount > 0 ? `Call ${availability.callAmount}` : 'Call'}
-          </button>
-        )}
-        {availability.canBet && (
-          <button
-            type="button"
-            className="poker-hr-btn poker-hr-btn--bet"
-            disabled={disabled}
-            onClick={() => dispatch('bet', betAmount)}
-          >
-            Bet {betAmount}
-          </button>
-        )}
-        {availability.canRaise && (
-          <button
-            type="button"
-            className="poker-hr-btn poker-hr-btn--raise"
-            disabled={disabled}
-            onClick={() => dispatch('raise', raiseTarget)}
-          >
-            Raise {raiseTarget}
-          </button>
-        )}
-        <button
-          type="button"
-          className="poker-hr-btn poker-hr-btn--all-in"
-          disabled={disabled || !availability.canAllIn}
-          title={availability.allInDisabledReason}
-          onClick={() => dispatch('all-in')}
-        >
-          All In{availability.allInAmount > 0 ? ` ${availability.allInAmount}` : ''}
-        </button>
-      </div>
     </section>
   );
 }

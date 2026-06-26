@@ -4,43 +4,49 @@ import {
   POKER_TEMPLATE_STAGE,
   POKER_TEMPLATE_TABLE,
 } from '../pokerTemplateContract';
+import { POKER0_CENTER_GRID_AREA } from '../poker0SeatLayout';
 
 interface PokerTableLayoutProps {
   topBar?: ReactNode;
   seatRing: ReactNode;
   communityBoard: ReactNode;
-  potArea: ReactNode;
+  feltShowdown?: ReactNode;
   actionPanel: ReactNode;
-  feltHeader?: ReactNode;
-  feltCenterOverlay?: ReactNode;
+  feltCloth?: ReactNode;
 }
 
 export function PokerTableLayout({
   topBar,
   seatRing,
   communityBoard,
-  potArea,
+  feltShowdown,
   actionPanel,
-  feltHeader,
-  feltCenterOverlay,
+  feltCloth,
 }: PokerTableLayoutProps) {
   return (
-    <div className="poker-table-layout poker-hr-layout">
+    <div className="poker-table-layout poker0-layout">
       {topBar}
 
       <div className={`poker-table-layout__stage ${POKER_TEMPLATE_STAGE}`}>
-        <div className={`poker-table-layout__felt ${POKER_TEMPLATE_TABLE}`} aria-label="Poker table felt">
-          {feltHeader}
+        <div
+          className={`poker-table-layout__felt ${POKER_TEMPLATE_TABLE}`}
+          aria-label="Poker table felt"
+          data-testid="poker0-felt"
+        >
+          {feltCloth}
           {seatRing}
-          <div className={`poker-table-layout__center ${POKER_TEMPLATE_CENTER}`}>
-            {potArea}
+          <div
+            className={`poker-table-layout__center ${POKER_TEMPLATE_CENTER}`}
+            style={{ gridArea: POKER0_CENTER_GRID_AREA }}
+            data-testid="poker-felt-center"
+          >
             {communityBoard}
-            {feltCenterOverlay}
+            {feltShowdown}
           </div>
         </div>
       </div>
 
-      <div className="poker-table-layout__actions poker-hr-layout__actions">{actionPanel}</div>
+      <div className="poker-table-layout__actions poker0-layout__actions">{actionPanel}</div>
     </div>
   );
 }

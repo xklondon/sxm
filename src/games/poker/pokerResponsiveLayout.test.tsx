@@ -63,7 +63,12 @@ function shellWithSeats(seatCount: number) {
     isViewer: id === 'hero',
   }));
   return renderToStaticMarkup(
-    <PokerTableShell gameState={state} viewModel={vm} handActive canActOnTurn />,
+    <PokerTableShell
+      gameState={state}
+      viewModel={vm}
+      canStartHand
+      onStartHand={() => {}}
+    />,
   );
 }
 
@@ -72,18 +77,19 @@ describe('Poker responsive layout contract', () => {
     expect(POKER_CSS).toContain('--poker-felt-height: clamp(');
     expect(POKER_CSS).toContain('--poker-seat-width: clamp(');
     expect(POKER_CSS).toContain('env(safe-area-inset-bottom');
-    expect(POKER_CSS).toContain('.poker-hr-layout__actions');
+    expect(POKER_CSS).toContain('.poker0-layout__actions');
     expect(POKER_CSS).toMatch(/overflow:\s*visible/);
     expect(POKER_CSS).not.toMatch(/poker-table-layout__controls/);
   });
 
-  it('desktop render includes community cards, pot, action bar, seats', () => {
+  it('desktop render includes header metrics, community cards, action bar, seats — no felt pot/deal', () => {
     const html = shellWithSeats(2);
     expect(html).toContain(POKER_TEMPLATE_SHELL);
-    expect(html).toContain('poker-community');
-    expect(html).toContain('poker-hr-pot');
-    expect(html).toContain(POKER_TEMPLATE_ACTION_BAR);
-    expect(html).toContain('poker-hr-seat-ring');
+    expect(html).toContain('data-testid="poker-header-metrics"');
+    expect(html).toContain('data-testid="poker-header-pot"');
+    expect(html).toContain('data-testid="poker-header-deal"');
+    expect(html).toContain('poker0-community');
+    expect(html).toContain('poker0-seat-ring');
   });
 
   it('2-seat layout renders both seats', () => {
@@ -101,18 +107,29 @@ describe('Poker responsive layout contract', () => {
     expect(html.match(/data-testid="poker-seat-/g)?.length).toBe(9);
   });
 
+  it('felt center contains community board only (no pot or deal button)', () => {
+    const html = shellWithSeats(2);
+    const centerStart = html.indexOf('data-testid="poker-felt-center"');
+    expect(centerStart).toBeGreaterThan(-1);
+    const centerSlice = html.slice(centerStart, centerStart + 600);
+    expect(centerSlice).toContain('poker-community');
+    expect(centerSlice).not.toContain('poker0-header__pot');
+    expect(centerSlice).not.toContain('poker0-header__deal');
+  });
+
   it('action bar is sibling below stage, not inside felt overflow', () => {
     const html = shellWithSeats(2);
     const feltClose = html.indexOf('poker-hr-table');
-    const actionsIndex = html.indexOf('poker-hr-layout__actions');
-    const stageClose = html.indexOf('poker-hr-layout__actions', feltClose);
+    const actionsIndex = html.indexOf('poker0-layout__actions');
     expect(actionsIndex).toBeGreaterThan(feltClose);
-    expect(html).toContain('poker-hr-layout__actions');
+    expect(html).toContain('poker0-layout__actions');
     expect(html).not.toContain('data-testid="poker-chat-dock"');
   });
 
-  it('includes portrait and landscape media queries', () => {
+  it('includes portrait, landscape, and desktop media queries', () => {
     expect(POKER_CSS).toContain('@media (max-width: 720px)');
+    expect(POKER_CSS).toContain('orientation: portrait');
     expect(POKER_CSS).toContain('orientation: landscape');
+    expect(POKER_CSS).toContain('min-width: 721px');
   });
 });

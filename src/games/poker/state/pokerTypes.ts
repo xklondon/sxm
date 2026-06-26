@@ -84,11 +84,11 @@ export interface PokerSeatPosition {
 export function pokerSeatPosition(seatIndex: number, totalSeats: number): PokerSeatPosition {
   const safeTotal = Math.max(totalSeats, 1);
   const angle = Math.PI / 2 + (2 * Math.PI * seatIndex) / safeTotal;
-  const rx = 42;
-  const ry = 38;
+  const rx = 44;
+  const ry = 40;
   const left = 50 + rx * Math.cos(angle);
   const top = 50 + ry * Math.sin(angle);
-  return { left: `${left}%`, top: `${top}%` };
+  return { left: `${left.toFixed(2)}%`, top: `${top.toFixed(2)}%` };
 }
 
 /** Rotate seats so the viewer (when set) renders at the bottom of the ring. */

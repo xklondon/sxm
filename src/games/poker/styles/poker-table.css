@@ -1,5 +1,6 @@
-/* High Roller Protocol — reference-ui/Poker/stitch_professional_casino_poker_redesign/DESIGN.md */
+/* Poker 0 — reference-ui/Poker/Poker 0/Poker0Cannonical_Layout.png */
 
+.poker0-shell,
 .poker-hr-shell,
 .poker-table-shell {
   --poker-hr-bg: #041710;
@@ -15,8 +16,11 @@
   --poker-hr-red-bright: #ffb3ae;
   --poker-hr-primary: #95d4b3;
   --poker-hr-outline: #8a938c;
-  --poker-felt-height: clamp(12rem, 48vh, 19rem);
-  --poker-seat-width: clamp(4.75rem, 17vw, 7.25rem);
+  --poker-felt-aspect: 2.15;
+  --poker-felt-height: clamp(11rem, 44vh, 18rem);
+  --poker-seat-width: clamp(4.5rem, 16vw, 7rem);
+  --poker-seat-rx: 44%;
+  --poker-seat-ry: 40%;
 
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
@@ -40,22 +44,111 @@
   background: var(--poker-hr-bg);
 }
 
+.poker0-header,
 .poker-hr-topbar,
 .poker-table-shell__topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  min-height: 2rem;
-  padding: 0.2rem 0.15rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  gap: 0.25rem 0.65rem;
+  align-items: start;
+  padding: 0.3rem 0.2rem 0.4rem;
   border-bottom: 1px solid rgb(233 195 73 / 0.22);
 }
 
-.poker-hr-topbar__status {
+.poker0-header__identity {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.poker0-header__table-name {
+  margin: 0;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-size: clamp(0.72rem, 2.2vw, 0.88rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--poker-hr-gold);
+}
+
+.poker0-header__playing-for {
+  margin: 0.12rem 0 0;
+  font-size: clamp(0.62rem, 1.8vw, 0.72rem);
+  letter-spacing: 0.04em;
+  color: var(--poker-hr-on-surface-dim);
+}
+
+.poker0-header__controls {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.55rem;
+  min-width: 0;
+}
+
+.poker0-header__pot,
+.poker0-header__blinds {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-family: 'Space Mono', ui-monospace, monospace;
+  font-size: clamp(0.58rem, 1.6vw, 0.66rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--poker-hr-on-surface-dim);
+  white-space: nowrap;
+}
+
+.poker0-header__label {
+  color: var(--poker-hr-on-surface-dim);
+}
+
+.poker0-header__value {
+  color: var(--poker-hr-gold);
+  font-weight: 700;
+}
+
+.poker0-header__divider {
+  color: rgb(233 195 73 / 0.35);
+  font-weight: 300;
+}
+
+.poker0-header__deal {
+  padding: 0.32rem 0.6rem;
+  border: 2px solid var(--poker-hr-gold);
+  background: transparent;
+  color: var(--poker-hr-gold);
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(0.62rem, 1.8vw, 0.68rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.poker0-header__deal:hover:not(:disabled) {
+  background: rgb(233 195 73 / 0.14);
+}
+
+.poker0-header__deal:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.poker0-header__menu,
+.poker-table-shell__this-table {
+  margin-left: auto;
+}
+
+.poker0-header__status {
+  grid-column: 1 / -1;
   margin: 0;
   font-family: 'Space Mono', ui-monospace, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--poker-hr-on-surface-dim);
 }
@@ -79,6 +172,7 @@
   background: rgb(233 195 73 / 0.12);
 }
 
+.poker0-layout,
 .poker-hr-layout,
 .poker-table-layout {
   display: flex;
@@ -88,6 +182,7 @@
   gap: 0.4rem;
 }
 
+.poker0-stage,
 .poker-hr-stage,
 .poker-table-layout__stage {
   flex: 1;
@@ -99,37 +194,45 @@
   overflow: visible;
 }
 
+.poker0-felt,
 .poker-hr-table,
 .poker-table-layout__felt {
-  position: relative;
-  width: min(100%, 36rem);
-  height: var(--poker-felt-height);
-  max-height: min(52vh, 19rem);
-  padding: clamp(0.55rem, 2vw, 0.85rem);
-  border-radius: 50% / 38%;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(7, minmax(0, 1fr));
+  width: min(100%, 38rem);
+  aspect-ratio: var(--poker-felt-aspect) / 1;
+  min-height: var(--poker-felt-height);
+  max-height: min(48vh, 17.5rem);
+  padding: clamp(0.35rem, 1.5vw, 0.65rem);
+  border-radius: 50% / 42%;
   background:
-    radial-gradient(ellipse 78% 62% at 50% 44%, rgb(45 106 79 / 0.55) 0%, transparent 58%),
-    radial-gradient(ellipse at center, rgb(14 81 56 / 0.95) 0%, rgb(4 23 16 / 0.98) 72%);
+    radial-gradient(ellipse 84% 70% at 50% 46%, rgb(45 106 79 / 0.52) 0%, transparent 62%),
+    radial-gradient(ellipse at center, rgb(14 81 56 / 0.97) 0%, rgb(4 23 16 / 0.98) 76%);
   border: 2px solid var(--poker-hr-gold-dim);
   box-shadow:
-    inset 0 0 48px rgb(0 0 0 / 0.55),
+    inset 0 0 56px rgb(0 0 0 / 0.58),
+    inset 0 0 0 1px rgb(233 195 73 / 0.14),
     0 6px 20px rgb(0 0 0 / 0.45);
   overflow: visible;
+  isolation: isolate;
 }
 
+.poker0-center,
 .poker-hr-center,
 .poker-table-layout__center {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
-  width: min(12rem, 62%);
+  justify-content: center;
+  gap: 0.15rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   z-index: 2;
   pointer-events: none;
+  align-self: center;
+  justify-self: center;
 }
 
 .poker-hr-center > *,
@@ -137,52 +240,163 @@
   pointer-events: auto;
 }
 
+.poker0-cloth,
 .poker-hr-cloth,
 .poker-felt-cloth-layer {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.poker0-cloth__title,
+.poker-felt-cloth-layer .poker0-cloth__title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  max-width: 62%;
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-size: clamp(0.55rem, 2.4vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+  color: rgb(233 195 73 / 0.22);
+  text-shadow:
+    0 1px 0 rgb(255 255 255 / 0.08),
+    0 -1px 0 rgb(0 0 0 / 0.45);
+  pointer-events: none;
+  word-break: break-word;
+}
+
+.poker-felt-cloth-layer__inner-rail {
+  position: absolute;
+  inset: 14% 10%;
+  border-radius: 50%;
+  border: 1px solid rgb(233 195 73 / 0.38);
+  box-shadow:
+    inset 0 0 24px rgb(0 0 0 / 0.35),
+    0 0 0 1px rgb(233 195 73 / 0.08);
+  pointer-events: none;
+}
+
+.poker-felt-cloth-layer__texture {
   position: absolute;
   inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgb(255 255 255 / 0.04) 0%, transparent 55%),
+    repeating-linear-gradient(
+      125deg,
+      rgb(255 255 255 / 0.015) 0 2px,
+      transparent 2px 6px
+    );
+  opacity: 0.65;
+  mix-blend-mode: soft-light;
   pointer-events: none;
-  z-index: 1;
 }
 
-.poker-felt-cloth-layer__svg {
-  width: 100%;
-  height: auto;
-  display: block;
+.poker-hr-showdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  text-align: center;
 }
 
-.poker-felt-cloth-layer__title {
-  fill: rgb(233 195 73 / 0.95);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+.poker-hr-showdown__hand,
+.poker-hr-showdown__side {
+  margin: 0;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  color: var(--poker-hr-on-surface-dim);
 }
 
-.poker-felt-cloth-layer__wager {
-  fill: rgb(209 232 220 / 0.72);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+.poker-hr-showdown__payouts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.58rem;
+  color: var(--poker-hr-primary);
 }
 
-.poker-felt-cloth-layer__blinds {
-  fill: rgb(233 195 73 / 0.75);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
+.poker0-seat-ring,
 .poker-hr-seat-ring,
 .poker-seat-ring {
-  position: absolute;
-  inset: 0;
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(7, minmax(0, 1fr));
+  z-index: 3;
+  pointer-events: none;
 }
 
+.poker0-seat-cell,
 .poker-seat-ring__slot {
-  position: absolute;
-  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  pointer-events: auto;
   width: var(--poker-seat-width);
-  z-index: 3;
+  max-width: 100%;
+  justify-self: center;
+  align-self: center;
+}
+
+.poker0-seat__chip-bars {
+  display: flex;
+  gap: 0.12rem;
+  justify-content: center;
+}
+
+.poker0-seat__chip-bar {
+  display: block;
+  width: 0.55rem;
+  height: 0.18rem;
+  border-radius: 1px;
+  background: linear-gradient(180deg, var(--poker-hr-gold) 0%, var(--poker-hr-gold-dim) 100%);
+  opacity: 0.85;
+}
+
+.poker0-community {
+  width: 100%;
+  min-width: 0;
+}
+
+.poker0-community__street {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.25rem 0.35rem;
+}
+
+.poker0-community__label {
+  font-family: 'Space Mono', ui-monospace, monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  color: var(--poker-hr-on-surface-dim);
+  white-space: nowrap;
+}
+
+.poker0-community__cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.12rem;
+  min-height: 1.5rem;
+  align-items: center;
+}
+
+.poker0-community__placeholder {
+  font-size: 0.55rem;
+  opacity: 0.45;
 }
 
 .poker-hr-seat,
@@ -401,6 +615,7 @@
   cursor: not-allowed;
 }
 
+.poker0-layout__actions,
 .poker-hr-layout__actions,
 .poker-table-layout__actions {
   flex-shrink: 0;
@@ -412,6 +627,7 @@
   background: linear-gradient(180deg, rgb(4 23 16 / 0) 0%, rgb(4 23 16 / 0.92) 28%);
 }
 
+.poker0-action-bar,
 .poker-hr-action-bar,
 .poker-actions {
   display: flex;
@@ -427,12 +643,15 @@
   opacity: 0.75;
 }
 
+.poker0-action-bar__hint,
+.poker0-action-bar__turn,
 .poker-hr-action-bar__hint,
 .poker-hr-action-bar__turn {
   margin: 0;
   font-size: 0.72rem;
 }
 
+.poker0-action-bar__turn-label,
 .poker-hr-action-bar__turn-label {
   display: block;
   font-family: 'Space Mono', ui-monospace, monospace;
@@ -442,12 +661,23 @@
   color: var(--poker-hr-on-surface-dim);
 }
 
+.poker0-action-bar__buttons,
+.poker-hr-action-bar__buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+  gap: 0.35rem;
+  order: 1;
+}
+
+.poker0-action-bar__chips,
 .poker-hr-action-bar__chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+  order: 2;
 }
 
+.poker0-chip-btn,
 .poker-hr-chip-btn {
   min-width: 2.5rem;
   padding: 0.35rem 0.45rem;
@@ -460,17 +690,21 @@
   font-weight: 700;
 }
 
+.poker0-chip-btn--active,
 .poker-hr-chip-btn--active {
   background: rgb(233 195 73 / 0.18);
 }
 
+.poker0-action-bar__amount,
 .poker-hr-action-bar__amount {
   display: flex;
   align-items: center;
   gap: 0.45rem;
   font-size: 0.68rem;
+  order: 3;
 }
 
+.poker0-action-bar__amount-label,
 .poker-hr-action-bar__amount-label {
   font-family: 'Space Mono', ui-monospace, monospace;
   letter-spacing: 0.08em;
@@ -478,6 +712,7 @@
   color: var(--poker-hr-on-surface-dim);
 }
 
+.poker0-action-bar__amount-input,
 .poker-hr-action-bar__amount-input {
   width: 5rem;
   font: inherit;
@@ -488,12 +723,7 @@
   color: var(--poker-hr-on-surface);
 }
 
-.poker-hr-action-bar__buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
-  gap: 0.35rem;
-}
-
+.poker0-btn,
 .poker-hr-btn {
   padding: 0.55rem 0.35rem;
   border-radius: 0;
@@ -515,15 +745,18 @@
   opacity: 0.4;
 }
 
+.poker0-btn--fold,
 .poker-hr-btn--fold {
   border-color: var(--poker-hr-red);
   color: var(--poker-hr-red-bright);
 }
 
+.poker0-btn--fold:hover:not(:disabled),
 .poker-hr-btn--fold:hover:not(:disabled) {
   background: rgb(149 7 23 / 0.25);
 }
 
+.poker0-btn--all-in,
 .poker-hr-btn--all-in {
   border-color: var(--poker-hr-primary);
   color: var(--poker-hr-primary);
@@ -684,40 +917,67 @@
   color: var(--poker-hr-on-surface);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 720px) and (orientation: portrait) {
+  .poker0-shell,
   .poker-hr-shell,
   .poker-table-shell {
-    --poker-felt-height: clamp(11rem, 38vh, 15rem);
-    --poker-seat-width: clamp(4.25rem, 22vw, 6rem);
+    --poker-felt-height: clamp(9.5rem, 34vh, 13rem);
+    --poker-seat-width: clamp(3.85rem, 20vw, 5.25rem);
     max-width: 100%;
     padding-inline: 0.35rem;
   }
 
+  .poker0-felt,
   .poker-hr-table,
   .poker-table-layout__felt {
-    border-radius: 50% / 34%;
-    max-height: min(42vh, 15rem);
+    max-height: min(38vh, 13rem);
+    border-radius: 50% / 36%;
   }
 
-  .poker-hr-center,
-  .poker-table-layout__center {
-    width: min(10.5rem, 58%);
-  }
-
+  .poker0-action-bar__buttons,
   .poker-hr-action-bar__buttons {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .poker0-table-panel,
+  .poker-table-panel {
+    top: auto;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: min(88dvh, 100%);
+    border-left: none;
+    border-top: 2px solid rgb(233 195 73 / 0.35);
+    border-radius: 0.75rem 0.75rem 0 0;
+    box-shadow: 0 -8px 28px rgb(0 0 0 / 0.55);
+  }
 }
 
-@media (max-height: 520px) and (orientation: landscape) {
+@media (max-width: 720px) and (orientation: landscape) {
+  .poker0-shell,
   .poker-hr-shell,
   .poker-table-shell {
-    --poker-felt-height: clamp(9rem, 58vh, 12rem);
-    --poker-seat-width: clamp(3.75rem, 14vw, 5.5rem);
+    --poker-felt-height: clamp(8.5rem, 52vh, 11rem);
+    --poker-seat-width: clamp(3.5rem, 12vw, 4.75rem);
   }
 
+  .poker0-felt,
   .poker-hr-table,
   .poker-table-layout__felt {
-    max-height: min(58vh, 12rem);
+    max-height: min(52vh, 11rem);
+  }
+
+  .poker0-header__controls {
+    gap: 0.25rem 0.4rem;
+  }
+}
+
+@media (min-width: 721px) {
+  .poker0-shell,
+  .poker-hr-shell,
+  .poker-table-shell {
+    --poker-felt-height: clamp(11rem, 42vh, 17rem);
   }
 }

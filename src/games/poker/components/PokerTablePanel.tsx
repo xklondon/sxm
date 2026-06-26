@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { POKER0_TABLE_PANEL } from '../poker0LayoutContract';
 import { PokerBlindsControl } from './PokerBlindsControl';
 import type { PokerChatMessage, PokerSeatViewModel } from '../state/pokerTypes';
 import type { TableResetSetupVariant } from '../../../components/TableStakePanel';
@@ -89,7 +90,7 @@ export function PokerTablePanel({
         aria-label="Close This Table panel"
         onClick={onClose}
       />
-      <aside className="poker-table-panel" role="dialog" aria-label="This Table">
+      <aside className={`poker-table-panel ${POKER0_TABLE_PANEL}`} role="dialog" aria-label="This Table">
         <header className="poker-table-panel__head">
           <h2 className="poker-table-panel__title">This Table</h2>
           <button type="button" className="secondary poker-table-panel__close" onClick={onClose}>

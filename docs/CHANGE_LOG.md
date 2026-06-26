@@ -23,6 +23,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-23 — Poker multiplayer sync + symmetric cloth layout
+
+**Host join sync:** `POST /api/tables/join`, invite accept, and join-request approve now emit `table:update` (same channel as table actions). Root cause: guest join updated server state but host socket never received broadcast.
+
+**Layout:** Pot, current bet, blinds, table name, and **Deal Cards** moved to compact `PokerTableHeader` metrics row; felt center reserved for community cards + showdown copy only. Symmetric oval cloth with inner gold rail + texture (`PokerFeltClothLayer`).
+
+**Tests:** `pokerJoinSync.test.tsx`, `holdemJoinBroadcast.test.ts`, updated layout/template tests. Blackjack/Zilch untouched.
+
+---
+
 ## 2026-06-23 — Poker route, betting flow, responsive layout stabilization
 
 **Route:** Single path `TableScreen → PokerPanel → PokerTableShell → PokerTableLayout`; dev guard `pokerRouteGuard.ts`. Legacy `HoldemPanel` not routed (file remains unused).
@@ -960,3 +970,14 @@ These shipped before this changelog was created. Dates approximate from git hist
 | Zilch | Dice engine, online actions, `ZilchPanel`, shake-to-roll mobile |
 | Challenge mode | Wager, invites, personal score ledger |
 | Join requests | Knock / Pending client UI; approve API without host UI |
+
+## 2026-06-23 — Poker 0 canonical layout
+
+**Reference:** `reference-ui/Poker/Poker 0/Poker0Cannonical_Layout.png` (sole Poker visual spec). Deprecated stitch High Roller layout.
+
+**Layout:** Poker 0 header (identity + POT | BLINDS | Deal | This Table), 7x7 grid felt with embossed table name, FLOP/TURN/RIVER community rows, grid seat ring (2/4/6/9), action bar order (buttons → chips → amount), mobile bottom-sheet This Table panel.
+
+**Docs:** `docs/POKER0_CANONICAL_LAYOUT.md`. Snapshot: `dist/poker0-captures/poker0-layout-desktop.html`.
+
+Blackjack/Zilch untouched.
+

@@ -1,16 +1,13 @@
 import { useState } from 'react';
 import { resolveTableClothWager } from '../../../types/tableFeltSkin';
 import type { GameState } from '../../../types';
-import {
-  POKER_TEMPLATE_DEAL_BTN,
-  POKER_TEMPLATE_SHELL,
-  POKER_TEMPLATE_TOPBAR,
-} from '../pokerTemplateContract';
+import { POKER_TEMPLATE_SHELL, POKER_HR_SHELL_ALIAS } from '../pokerTemplateContract';
 import { PokerActionPanel } from './PokerActionPanel';
 import { PokerCommunityBoard } from './PokerCommunityBoard';
 import { PokerFeltClothLayer } from './PokerFeltClothLayer';
-import { PokerPotArea } from './PokerPotArea';
 import { PokerSeatRing } from './PokerSeatRing';
+import { PokerShowdownCopy } from './PokerShowdownCopy';
+import { PokerTableHeader } from './PokerTableHeader';
 import { PokerTableLayout } from './PokerTableLayout';
 import { PokerTablePanel } from './PokerTablePanel';
 import type {
@@ -60,7 +57,7 @@ export interface PokerTableShellProps {
 }
 
 export function PokerTableShell({
-  gameState,
+  gameState: _gameState,
   viewModel,
   actionAvailability,
   chatMessages = [],
@@ -111,75 +108,53 @@ export function PokerTableShell({
     minRaise: viewModel.bigBlind,
   };
 
-  const showFeltDeal =
+  const showHeaderDeal =
     canStartHand && !challengeEnded && (!handActive || handResolved) && Boolean(onStartHand);
   const startDisabled = Boolean(startHandBlockReason);
-  const topBarStatus =
-    !handActive && startHandBlockReason
-      ? startHandBlockReason
-      : statusHint ?? 'Virtual chips only';
-  const blindsText = `Blinds ${viewModel.smallBlind}/${viewModel.bigBlind}`;
-  const wagerText = resolveTableClothWager(gameState.tableMeta);
   const dealLabel = handResolved ? 'Deal next hand' : startHandLabel;
+  const wagerRaw = resolveTableClothWager(_gameState.tableMeta);
+  const playingForText = wagerRaw ? `Playing for ${wagerRaw}` : undefined;
 
   return (
     <section
-      className={`poker-table-shell ${POKER_TEMPLATE_SHELL}`}
+      className={`poker-table-shell ${POKER_TEMPLATE_SHELL} ${POKER_HR_SHELL_ALIAS}`}
       data-game="poker"
       data-table-id={tableId}
-      data-template="high-roller-protocol"
+      data-template="poker0"
       aria-label={viewModel.tableName}
     >
       <PokerTableLayout
         topBar={
-          <header className={`poker-table-shell__topbar ${POKER_TEMPLATE_TOPBAR}`}>
-            <p className="poker-hr-topbar__status">{topBarStatus}</p>
-            <button
-              type="button"
-              className={`poker-table-shell__this-table poker-hr-topbar__menu${tablePanelOpen ? ' poker-table-shell__this-table--active' : ''}`}
-              aria-expanded={tablePanelOpen}
-              onClick={() => setTablePanelOpen((open) => !open)}
-            >
-              This Table
-            </button>
-          </header>
-        }
-        feltHeader={
-          <PokerFeltClothLayer
+          <PokerTableHeader
             tableName={viewModel.tableName}
-            wagerText={wagerText ? `Playing for ${wagerText}` : undefined}
-            blindsText={blindsText}
-          />
-        }
-        feltCenterOverlay={
-          showFeltDeal ? (
-            <div className="poker-hr-deal">
-              <button
-                type="button"
-                className={`poker-felt__start-btn ${POKER_TEMPLATE_DEAL_BTN}`}
-                disabled={startDisabled}
-                onClick={onStartHand}
-              >
-                {dealLabel}
-              </button>
-            </div>
-          ) : null
-        }
-        seatRing={<PokerSeatRing seats={viewModel.seats} />}
-        potArea={
-          <PokerPotArea
+            playingForText={playingForText}
+            smallBlind={viewModel.smallBlind}
+            bigBlind={viewModel.bigBlind}
             pot={viewModel.pot}
-            currentBet={viewModel.currentBet}
-            sidePotCount={viewModel.sidePotCount}
-            payoutSummary={viewModel.payoutSummary}
-            winningHandLabel={viewModel.winningHandLabel}
+            statusHint={statusHint}
+            startHandBlockReason={startHandBlockReason}
+            dealLabel={dealLabel}
+            showDeal={showHeaderDeal}
+            dealDisabled={startDisabled}
+            tablePanelOpen={tablePanelOpen}
+            onToggleTablePanel={() => setTablePanelOpen((open) => !open)}
+            onStartHand={onStartHand}
           />
         }
+        feltCloth={<PokerFeltClothLayer tableName={viewModel.tableName} />}
+        seatRing={<PokerSeatRing seats={viewModel.seats} />}
         communityBoard={
           <PokerCommunityBoard
             street={viewModel.street}
             communityCards={viewModel.communityCards}
             handActive={handActive}
+          />
+        }
+        feltShowdown={
+          <PokerShowdownCopy
+            winningHandLabel={viewModel.winningHandLabel}
+            payoutSummary={viewModel.payoutSummary}
+            sidePotCount={viewModel.sidePotCount}
           />
         }
         actionPanel={
@@ -206,7 +181,7 @@ export function PokerTableShell({
         canResetTable={canResetTable}
         showInvite={showInvite}
         showEndChallenge={showEndChallenge}
-        showStartHand={showFeltDeal}
+        showStartHand={showHeaderDeal}
         showShuffleDeck={needsShuffle && Boolean(onShuffleDeck)}
         startHandLabel={dealLabel}
         smallBlind={viewModel.smallBlind}

@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 describe('Poker UI layout integration', () => {
-  it('renders compact top bar with This Table menu and cloth title/blinds', () => {
+  it('renders compact header with metrics, cloth rail, and header deal control', () => {
     const state = applyHoldemTableStakeSetup(createNewHoldemTable(), {
       stakeDescription: 'Practice',
       tableName: 'Poker StarWars',
@@ -56,17 +56,22 @@ describe('Poker UI layout integration', () => {
     );
 
     expect(html).toContain('poker-table-shell__topbar');
+    expect(html).toContain('poker0-header__controls');
     expect(html).toContain('This Table');
     expect(html).toContain('Poker StarWars');
-    expect(html).toContain('poker-felt-cloth-layer');
-    expect(html).toContain('Blinds 1/2');
-    expect(html).toContain('poker-hr-shell');
-    expect(html).toContain('poker-hr-deal-btn');
+    expect(html).toContain('poker-felt-cloth-layer__inner-rail');
+    expect(html).toContain('poker0-cloth__title');
+    expect(html).toContain('data-testid="poker-header-blinds"');
+    expect(html).toContain('poker0-shell');
+    expect(html).toContain('poker0-header__deal');
+    expect(html).toContain('data-testid="poker-header-pot"');
     expect(html).not.toContain('poker-table-shell__subtitle');
     expect(html).not.toContain('poker-blinds__label');
     expect(html).not.toContain('data-testid="poker-chat-dock"');
     expect(html).not.toContain('TABLE CHAT');
-    expect(html.match(/Blinds 1\/2/g)?.length).toBe(1);
+    expect(html).toContain('data-testid="poker-header-blinds"');
+    expect(html).toContain('1/2');
+    expect(html).toContain('data-testid="poker-community-flop"');
   });
 
   it('does not render permanent table chat rail on felt layout', () => {

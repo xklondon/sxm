@@ -1,39 +1,54 @@
 /**
  * Visual contract for Poker production UI.
- * Source: reference-ui/Poker/stitch_professional_casino_poker_redesign (DESIGN.md + screen.png)
- * — "High Roller Protocol" stitch professional casino poker redesign.
+ * Source: reference-ui/Poker/Poker 0/Poker0Cannonical_Layout.png — Poker 0 canonical layout.
  */
-export const POKER_TEMPLATE_REFERENCE_PATH =
-  'reference-ui/Poker/stitch_professional_casino_poker_redesign';
+import {
+  POKER0_ACTION_BAR,
+  POKER0_CLOTH,
+  POKER0_FELT,
+  POKER0_HEADER,
+  POKER0_HEADER_CONTROLS,
+  POKER0_HEADER_DEAL,
+  POKER0_CENTER,
+  POKER0_REFERENCE_IMAGE,
+  POKER0_SEAT_RING,
+  POKER0_SHELL,
+  POKER0_STAGE,
+} from './poker0LayoutContract';
 
-export const POKER_TEMPLATE_REFERENCE_FILES = [
-  `${POKER_TEMPLATE_REFERENCE_PATH}/DESIGN.md`,
-  `${POKER_TEMPLATE_REFERENCE_PATH}/screen.png`,
-] as const;
+export const POKER_TEMPLATE_REFERENCE_PATH = POKER0_REFERENCE_IMAGE.replace(/\/[^/]+$/, '');
 
-/** Root shell — dark premium session wrapper. */
-export const POKER_TEMPLATE_SHELL = 'poker-hr-shell';
+export const POKER_TEMPLATE_REFERENCE_FILES = [POKER0_REFERENCE_IMAGE] as const;
 
-/** Compact live-session header. */
-export const POKER_TEMPLATE_TOPBAR = 'poker-hr-topbar';
+/** Root shell — Poker 0 session wrapper. */
+export const POKER_TEMPLATE_SHELL = POKER0_SHELL;
 
-/** Oval felt stage containing seats + center play area. */
-export const POKER_TEMPLATE_STAGE = 'poker-hr-stage';
+/** Poker 0 header row. */
+export const POKER_TEMPLATE_TOPBAR = POKER0_HEADER;
 
-/** Rounded/oval table surface. */
-export const POKER_TEMPLATE_TABLE = 'poker-hr-table';
+/** Oval felt stage. */
+export const POKER_TEMPLATE_STAGE = POKER0_STAGE;
 
-/** Arc cloth title integrated into felt. */
-export const POKER_TEMPLATE_CLOTH = 'poker-hr-cloth';
+/** Oval table surface (7×7 grid). */
+export const POKER_TEMPLATE_TABLE = POKER0_FELT;
 
-/** Seat ring around the oval. */
-export const POKER_TEMPLATE_SEAT_RING = 'poker-hr-seat-ring';
+/** Embossed table name on cloth. */
+export const POKER_TEMPLATE_CLOTH = POKER0_CLOTH;
 
-/** Center stack: pot, community, deal control. */
-export const POKER_TEMPLATE_CENTER = 'poker-hr-center';
+/** Grid seat ring. */
+export const POKER_TEMPLATE_SEAT_RING = POKER0_SEAT_RING;
 
-/** Table-integrated deal / start control. */
-export const POKER_TEMPLATE_DEAL_BTN = 'poker-hr-deal-btn';
+/** Community + showdown center. */
+export const POKER_TEMPLATE_CENTER = POKER0_CENTER;
 
-/** Casino action bar below the table. */
-export const POKER_TEMPLATE_ACTION_BAR = 'poker-hr-action-bar';
+/** Header controls band (pot, blinds, deal). */
+export const POKER_TEMPLATE_HEADER_METRICS = POKER0_HEADER_CONTROLS;
+
+/** Header deal / start control. */
+export const POKER_TEMPLATE_DEAL_BTN = POKER0_HEADER_DEAL;
+
+/** Action bar below felt. */
+export const POKER_TEMPLATE_ACTION_BAR = POKER0_ACTION_BAR;
+
+/** @deprecated High Roller alias — use POKER0_SHELL */
+export const POKER_HR_SHELL_ALIAS = 'poker-hr-shell';

@@ -33,7 +33,8 @@ describe('PokerTableShell', () => {
     );
 
     expect(html).toContain('Texas Hold');
-    expect(html).toContain('poker-pot');
+    expect(html).toContain('data-testid="poker-header-pot"');
+    expect(html).not.toContain('poker-hr-pot');
     expect(html).not.toContain('data-testid="poker-chat-dock"');
     expect(html).toContain('This Table');
   });

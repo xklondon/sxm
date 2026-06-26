@@ -36,8 +36,22 @@ function seatBadges(seat: PokerSeatViewModel): Array<{ key: string; label: strin
   return badges;
 }
 
+function chipBarCount(chipCount: number): number {
+  if (chipCount >= 1000) {
+    return 4;
+  }
+  if (chipCount >= 500) {
+    return 3;
+  }
+  if (chipCount >= 200) {
+    return 2;
+  }
+  return 1;
+}
+
 export function PokerSeat({ seat }: PokerSeatProps) {
   const badges = seatBadges(seat);
+  const bars = chipBarCount(seat.chipCount);
 
   return (
     <article
@@ -72,12 +86,18 @@ export function PokerSeat({ seat }: PokerSeatProps) {
         )}
       </header>
 
-      <p className="poker-seat__chips poker-hr-seat__stack">
+      <p className="poker-seat__chips poker-hr-seat__stack poker0-seat__stack">
         {seat.chipCount.toLocaleString()}
         {seat.streetBet > 0 && (
           <span className="poker-seat__street-bet"> · {seat.streetBet}</span>
         )}
       </p>
+
+      <div className="poker0-seat__chip-bars" aria-hidden="true" data-testid={`poker-chip-bars-${seat.playerId}`}>
+        {Array.from({ length: bars }, (_, index) => (
+          <span key={index} className="poker0-seat__chip-bar" />
+        ))}
+      </div>
 
       {seat.holeCards && seat.holeCards.cards.length > 0 && (
         <div className="poker-seat__cards poker-hr-seat__cards" aria-label={seat.holeCards.faceDown ? 'Hidden hole cards' : 'Hole cards'}>

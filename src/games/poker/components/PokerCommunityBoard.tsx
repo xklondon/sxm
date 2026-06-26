@@ -1,6 +1,7 @@
 import { PlayingCard } from '../../../components/PlayingCard';
 import type { Card } from '../../../types/deck';
 import type { PokerStreet } from '../state/pokerTypes';
+import { POKER0_COMMUNITY } from '../poker0LayoutContract';
 
 interface PokerCommunityBoardProps {
   street: PokerStreet;
@@ -8,37 +9,50 @@ interface PokerCommunityBoardProps {
   handActive?: boolean;
 }
 
-const STREET_LABEL: Partial<Record<PokerStreet, string>> = {
-  preflop: 'Pre-flop betting',
-  flop: 'Flop',
-  turn: 'Turn',
-  river: 'River',
-  showdown: 'Showdown',
-  resolved: 'Hand complete',
-};
+function StreetRow({
+  label,
+  cards,
+  placeholder,
+}: {
+  label: string;
+  cards: Card[];
+  placeholder?: string;
+}) {
+  return (
+    <div className="poker0-community__street" data-testid={`poker-community-${label.toLowerCase()}`}>
+      <span className="poker0-community__label">{label}</span>
+      <div className="poker0-community__cards">
+        {cards.length === 0 ? (
+          placeholder ? <span className="poker0-community__placeholder">{placeholder}</span> : null
+        ) : (
+          cards.map((card) => (
+            <PlayingCard key={card.id} card={card} compact animationMode="slide" />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function PokerCommunityBoard({
   street,
   communityCards,
   handActive = false,
 }: PokerCommunityBoardProps) {
-  const streetLabel = STREET_LABEL[street];
-  const showStreet = handActive && streetLabel;
+  const flop = communityCards.slice(0, 3);
+  const turn = communityCards.slice(3, 4);
+  const river = communityCards.slice(4, 5);
+  const waitingFlop = handActive && street !== 'preflop' && flop.length === 0;
 
   return (
-    <section className="poker-community" aria-label="Community board">
-      {showStreet && <p className="poker-community__street">{streetLabel}</p>}
-      <div className="poker-community__cards">
-        {communityCards.length === 0 ? (
-          handActive && street !== 'preflop' ? (
-            <span className="poker-community__placeholder">Waiting for the flop</span>
-          ) : null
-        ) : (
-          communityCards.map((card) => (
-            <PlayingCard key={card.id} card={card} compact animationMode="slide" />
-          ))
-        )}
-      </div>
+    <section className={`poker-community ${POKER0_COMMUNITY}`} aria-label="Community board">
+      <StreetRow
+        label="FLOP"
+        cards={flop}
+        placeholder={waitingFlop ? '—' : undefined}
+      />
+      <StreetRow label="TURN" cards={turn} />
+      <StreetRow label="RIVER" cards={river} />
     </section>
   );
 }

@@ -10,6 +10,7 @@ import { respondPeopleAuthError } from '../people/httpErrors.js';
 import { respondInviteOrPeopleError } from './inviteHttpErrors.js';
 import { TableForbiddenError, TableMembershipError, TableNotFoundError } from './errors.js';
 import { addTableChatMessage, listTableChatMessages } from './tableChatStore.js';
+import { broadcastTableUpdate } from './broadcast.js';
 
 function respondTableServiceError(res: import('express').Response, err: unknown): boolean {
   if (err instanceof TableNotFoundError) {
@@ -67,6 +68,10 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         clearedSession,
         route: 'GET /api/tables/invites/accept',
       });
+      const joinedTable = tables.getTableRecord(result.tableId);
+      if (joinedTable) {
+        broadcastTableUpdate(io, joinedTable.id, joinedTable.version, joinedTable.state);
+      }
       setSessionCookie(res, result.sessionToken, { req });
       const spectator = result.spectator ? '&spectator=1' : '';
       res.redirect(`${origin}/?table=${encodeURIComponent(result.tableId)}${spectator}`);
@@ -252,6 +257,7 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         token: String(req.body?.token ?? ''),
         sessionEmail: req.auth!.email,
       });
+      broadcastTableUpdate(io, joined.table.id, joined.table.version, joined.table.state);
       res.json({
         tableId: joined.table.id,
         version: joined.table.version,
@@ -294,6 +300,10 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         userId: req.auth!.userId,
         sessionEmail: req.auth!.email,
       });
+      const approvedTable = tables.getTableRecord(req.params.tableId!);
+      if (approvedTable) {
+        broadcastTableUpdate(io, approvedTable.id, approvedTable.version, approvedTable.state);
+      }
       res.json(result);
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
@@ -334,11 +344,7 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         expectedVersion,
         req.auth!.email,
       );
-      io.to(`table:${req.params.tableId}`).emit('table:update', {
-        tableId: req.params.tableId,
-        version: result.version,
-        state: result.state,
-      });
+      broadcastTableUpdate(io, req.params.tableId!, result.version, result.state);
       res.json(result);
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {

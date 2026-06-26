@@ -218,7 +218,7 @@ describe('Poker action bar placement', () => {
       />,
     );
     expect(html).toContain(POKER_TEMPLATE_ACTION_BAR);
-    expect(html).toContain('poker-hr-layout__actions');
+    expect(html).toContain('poker0-layout__actions');
     expect(html).not.toContain('data-testid="poker-chat-dock"');
   });
 });

@@ -1,11 +1,22 @@
 # Poker Final Stabilization Audit
 
-**Date:** 2026-06-23 (updated after High Roller visual template pass)  
+**Date:** 2026-06-23 (updated after multiplayer sync + header layout pass)  
 **Scope:** Phases A–D2 complete — setup, practice, challenge, online authority, hold'em engine, UI, regression safety.
 
 ## Status
 
 **PASS WITH RISKS** (High Roller visual template applied 2026-06-23)
+
+## Multiplayer sync + header layout (2026-06-23)
+
+| Issue | Fix |
+|-------|-----|
+| Host table stale after guest invite join | `broadcastTableUpdate` on `POST /join`, invite accept, join approve |
+| Pot / Deal in felt center overlapping cards | `PokerTableHeader` metrics row — pot, bet, blinds, deal |
+| Felt center clutter | Community board + `PokerShowdownCopy` only |
+| Cloth symmetry | Oval `aspect-ratio`, inner gold rail, normalized seat ring |
+
+**Manual QA still required:** 2-browser host/guest join without reload, phone portrait/landscape full-table visibility.
 
 ## High Roller visual template (reference implementation)
 
@@ -15,10 +26,11 @@
 |---------|----------------|
 | Dark premium session shell | `poker-hr-shell` + CSS tokens from DESIGN.md |
 | Oval felt table | `poker-hr-table` |
-| Cloth title + blinds once | `poker-hr-cloth` (`PokerFeltClothLayer`) |
+| Cloth inner rail + texture | `poker-felt-cloth-layer__inner-rail` |
+| Header metrics (name, blinds, pot, bet, deal) | `PokerTableHeader` / `poker-hr-topbar__metrics` |
 | Seat avatars + D/SB/BB | `poker-hr-seat__avatar` + badges |
-| Centered pot / community | `poker-hr-center` |
-| Deal / start on felt | `poker-hr-deal-btn` — label **Deal Cards** |
+| Felt center: community + showdown | `poker-hr-center` |
+| Deal / start in header | `poker-hr-topbar__deal` — label **Deal Cards** |
 | Casino action bar below | `poker-hr-action-bar` — chip presets + sharp buttons |
 | This Table panel (not rail) | `PokerTablePanel` — invite, blinds, stacks, chat |
 | Practice playable immediately | host + 1 virtual, funded; no center waiting copy |

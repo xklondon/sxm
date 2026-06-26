@@ -455,7 +455,7 @@ describe('PokerPanel holdem dispatch', () => {
       />,
     );
 
-    expect(document.querySelector('.poker-felt-cloth-layer__blinds')?.textContent).toMatch(/Blinds 5\/10/);
+    expect(screen.getByTestId('poker-header-blinds')?.textContent).toMatch(/5\/10/);
 
     const updated = updatePokerBlindsOnState(state, 10, 20);
     rerender(
@@ -467,7 +467,7 @@ describe('PokerPanel holdem dispatch', () => {
       />,
     );
 
-    expect(document.querySelector('.poker-felt-cloth-layer__blinds')?.textContent).toMatch(/Blinds 10\/20/);
+    expect(screen.getByTestId('poker-header-blinds')?.textContent).toMatch(/10\/20/);
   });
 
   it('surfaces server blind update errors in panel error area', async () => {

@@ -235,8 +235,8 @@ describe('Poker final stabilization', () => {
 
     expect(html).toContain('poker-actions');
     expect(html).not.toContain('data-testid="poker-chat-dock"');
-    expect(html).toContain('poker-pot__payouts');
-    expect(html).toContain('poker-hr-pot__side');
+    expect(html).toContain('poker-hr-showdown__payouts');
+    expect(html).toContain('poker-hr-showdown__side');
     expect(html).toContain('poker-seat--viewer');
     expect(html).toContain('This Table');
   });
