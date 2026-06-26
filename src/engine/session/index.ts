@@ -148,6 +148,10 @@ export {
   type ViewerActionPermission,
 } from './boxDecisionOwnership';
 export {
+  hasNoRoundBoxOwnershipResidue,
+  resetBlackjackRoundOwnership,
+} from './resetBlackjackRoundOwnership';
+export {
   resolveBoxRoundCommander,
   type BoxRoundCommanderReason,
   type BoxRoundCommanderResult,

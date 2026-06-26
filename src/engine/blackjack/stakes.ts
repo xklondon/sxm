@@ -10,6 +10,7 @@ import { assignTemporaryBoxOwnerOnFirstBet } from '../session/boxDecisionOwnersh
 import {
   resolveControllerPersonId,
 } from '../session/playerAssignment';
+import { resetBlackjackRoundOwnership } from '../session/resetBlackjackRoundOwnership';
 import { formatInsufficientChipsMessage } from './playFlow';
 import { getBlackjackProtocolForState } from './protocolState';
 import {
@@ -235,12 +236,5 @@ export function clearBoxStake(state: GameState, boxPlayerId: string): GameState 
 }
 
 export function unlockBettingForNextRound(state: GameState): GameState {
-  return {
-    ...state,
-    tableMeta: {
-      ...state.tableMeta,
-      boxStakes: {},
-      bettingLocked: false,
-    },
-  };
+  return resetBlackjackRoundOwnership(state);
 }

@@ -31,14 +31,22 @@ function designatedOwnerPersonId(state: GameState, boxPlayerId: string): string 
   return null;
 }
 
+/** True only when the box has a dealt/in-play hand — not betting placeholders. */
 function boxHasInRoundHand(state: GameState, boxPlayerId: string): boolean {
   const round = state.blackjack;
   if (!round) {
     return false;
   }
-  return Object.keys(round.playerHands).some(
-    (handKey) => parseBlackjackHandKey(handKey).playerId === boxPlayerId,
-  );
+  const status = round.status;
+  if (status === 'betting' || status === 'resolved') {
+    return false;
+  }
+  return Object.entries(round.playerHands).some(([handKey, hand]) => {
+    if (parseBlackjackHandKey(handKey).playerId !== boxPlayerId) {
+      return false;
+    }
+    return hand.cardIds.length > 0 || hand.currentBet > 0;
+  });
 }
 
 function reasonForCommander(

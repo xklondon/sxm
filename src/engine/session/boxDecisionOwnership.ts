@@ -104,7 +104,7 @@ export function assignTemporaryBoxOwnerOnFirstBet(
     return designatedOwnerPersonId;
   }
 
-  if (existing?.callerPersonId) {
+  if (existing?.callerPersonId && (existing.amount ?? 0) > 0) {
     return existing.callerPersonId;
   }
 

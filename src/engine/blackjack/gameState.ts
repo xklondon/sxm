@@ -54,6 +54,7 @@ import { applyTableGameEndIfNeeded } from '../session/tableGameEnd';
 import { evaluateBlackjackGameOver } from './gameOverEvaluation';
 import { incrementBlackjackCountsOnSettlement } from '../session/tableBlackjackStats';
 import { syncCallersForDeal } from '../session/playerAssignment';
+import { resetBlackjackRoundOwnership } from '../session/resetBlackjackRoundOwnership';
 import { clearTableUiEphemeral } from '../session/inviteJoin';
 import { settleBustHandOnState } from './bustSettlement';
 import { shuffleGameDeck } from '../deck';
@@ -642,7 +643,7 @@ export function startNextRoundOnState(state: GameState): GameState {
   const cleared = clearTableUiEphemeral(settled);
   const topped = applyShortStackMinBetTopUpOnState(cleared);
   const reset = resetBlackjackRound(topped.session, topped.players, topped.deck);
-  return {
+  const ownershipReset = resetBlackjackRoundOwnership({
     ...topped,
     session: reset.session,
     players: reset.players,
@@ -650,12 +651,10 @@ export function startNextRoundOnState(state: GameState): GameState {
     blackjack: reset.round,
     tableMeta: {
       ...topped.tableMeta,
-      boxStakes: {},
-      bettingLocked: false,
       awaitingNextRound: false,
-      boxSlots: topped.tableMeta.boxSlots.map((slot) => ({ ...slot, callerPersonId: null })),
     },
-  };
+  });
+  return ownershipReset;
 }
 
 export function takeInsuranceOnState(state: GameState, playerId: string): GameState {
