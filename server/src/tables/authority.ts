@@ -10,9 +10,8 @@ import {
 import { hasPersonalLedgerEntryForTable } from '../../../src/engine/scoreLedger/scoreLedger.js';
 import { canUserAssignChips } from '../../../src/engine/table/adminControls.js';
 import {
-  getDealBlockReason,
-  hasEligibleDealBoxes,
-} from '../../../src/engine/blackjack/dealEligibility.js';
+  getBlackjackDealBlockReason,
+} from '../../../src/engine/session/tableDealPermission.js';
 import { hasAnyStakes } from '../../../src/engine/blackjack/stakes.js';
 import { isBankerReady } from '../../../src/engine/session/boxOps.js';
 import { canPersonActOnZilchTurn } from '../../../src/engine/dice/zilch/zilchTurnAuthority.js';
@@ -214,13 +213,11 @@ function assertHostDealAction(
     throw new Error('Place at least one bet before shuffling');
   }
   if (opts.requireShoeStarted) {
-    const reason = getDealBlockReason(state);
+    const reason = getBlackjackDealBlockReason(state, ctx.personId);
     if (reason) {
       throw new Error(reason);
     }
-    if (!hasEligibleDealBoxes(state)) {
-      throw new Error('No eligible bets to deal');
-    }
+    return;
   }
   assertTableHost(state, ctx.personId, 'Only the table host can deal cards.');
 }

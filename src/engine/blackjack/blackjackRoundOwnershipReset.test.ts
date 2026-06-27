@@ -16,10 +16,12 @@ import {
 import { getCoBoxSlotsForPerson, getRunningBoxSlotsForPerson } from '../session/tableBoxDisplay';
 import {
   canStartBlackjackDeal,
+  getBlackjackDealBlockReason,
 } from '../session/tableDealPermission';
 import { addChipToBoxStake } from './stakes';
 import { getEligibleDealBoxes } from './dealEligibility';
 import { applyBlackjackActionToState, type BlackjackActorContext } from './applyBlackjackAction';
+import { blackjackHandKey } from './handKeys';
 import { shuffleToStartOnState, resolveBankTurnAuto, startNextRoundOnState } from './gameState';
 import { boxPlayerId, tableAfterStartPlaying } from './sanity/fixtures';
 
@@ -104,8 +106,21 @@ describe('blackjack round ownership reset', () => {
     expect(getRunningBoxSlotsForPerson(state, p1)).toContain(3);
     expect(getRunningBoxSlotsForPerson(state, p2)).toContain(1);
 
-    const settled = settleRound(state);
-    const betting = startBettingRound(settled);
+    state = {
+      ...state,
+      tableMeta: {
+        ...state.tableMeta,
+        awaitingNextRound: true,
+        bettingLocked: true,
+        boxSlots: state.tableMeta.boxSlots.map((s) => {
+          if (s.playerId === box1) return { ...s, callerPersonId: p2 };
+          if (s.playerId === box3) return { ...s, callerPersonId: p1 };
+          return s;
+        }),
+      },
+      blackjack: { ...state.blackjack!, isSettled: true, status: 'resolved' },
+    };
+    const betting = startBettingRound(state);
 
     expect(getAssignedSlotForPerson(betting, p1)).toBe(1);
     expect(getAssignedSlotForPerson(betting, p2)).toBe(2);
@@ -206,6 +221,61 @@ describe('blackjack round ownership reset', () => {
     expect(betting.tableMeta.boxStakes).toEqual({});
     expect(getCallerPersonIdForBox(betting, box1)).toBeNull();
     expect(getCallerPersonIdForBox(betting, box3)).toBeNull();
+    void p2;
+  });
+
+  it('round 2 mixed ownership: host dealCards accepts and deals all staked boxes', () => {
+    let { state, p1, p2 } = twoPlayerSeated();
+    state = claimBoxSlot(state, 3);
+    const box1 = boxPlayerId(state, 1)!;
+    const box2 = boxPlayerId(state, 2)!;
+    const box3 = boxPlayerId(state, 3)!;
+
+    state = addChipToBoxStake(state, box3, 50, p1);
+    state = addChipToBoxStake(state, box1, 50, p2);
+    state = addChipToBoxStake(state, box2, 50, p2);
+    let betting = startBettingRound(settleRound(state));
+
+    betting = addChipToBoxStake(betting, box1, 50, p2);
+    betting = addChipToBoxStake(betting, box2, 50, p1);
+    betting = addChipToBoxStake(betting, box3, 50, p2);
+
+    expect(getCallerPersonIdForBox(betting, box1)).toBe(p2);
+    expect(getCallerPersonIdForBox(betting, box2)).toBe(p1);
+    expect(getCallerPersonIdForBox(betting, box3)).toBe(p2);
+    expect(getRunningBoxSlotsForPerson(betting, p2)).toEqual(expect.arrayContaining([1, 3]));
+    expect(getRunningBoxSlotsForPerson(betting, p1)).toContain(2);
+
+    expect(canStartBlackjackDeal(betting, p1)).toBe(true);
+    expect(getBlackjackDealBlockReason(betting, p1)).toBeNull();
+    expect(getEligibleDealBoxes(betting).sort()).toEqual([box1, box2, box3].sort());
+
+    const beforeStatus = betting.blackjack?.status;
+    const dealt = applyBlackjackActionToState(betting, 'dealCards', ctx(betting));
+    expect(beforeStatus).toBe('betting');
+    expect(dealt.blackjack?.status).not.toBe('betting');
+    expect(['initial-deal', 'player-turns', 'insurance']).toContain(dealt.blackjack?.status ?? '');
+    expect(dealt.tableMeta.bettingLocked).toBe(true);
+    for (const boxId of [box1, box2, box3]) {
+      expect(dealt.blackjack?.playerHands[blackjackHandKey(boxId, 0)]?.currentBet ?? 0).toBeGreaterThan(0);
+    }
+  });
+
+  it('invariant: enabled canStartBlackjackDeal must not no-op on dealCards action', () => {
+    let { state, p1, p2 } = twoPlayerSeated();
+    state = claimBoxSlot(state, 3);
+    const box1 = boxPlayerId(state, 1)!;
+    const box3 = boxPlayerId(state, 3)!;
+    state = addChipToBoxStake(state, box3, 50, p1);
+    state = addChipToBoxStake(state, box1, 50, p2);
+    let betting = startBettingRound(settleRound(state));
+    betting = addChipToBoxStake(betting, box1, 50, p2);
+    betting = addChipToBoxStake(betting, box3, 50, p1);
+
+    expect(canStartBlackjackDeal(betting, p1)).toBe(true);
+    expect(() => applyBlackjackActionToState(betting, 'dealCards', ctx(betting))).not.toThrow();
+    const dealt = applyBlackjackActionToState(betting, 'dealCards', ctx(betting));
+    expect(dealt.blackjack?.status).not.toBe('betting');
     void p2;
   });
 });

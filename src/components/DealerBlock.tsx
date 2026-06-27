@@ -189,7 +189,7 @@ export function DealerBlock({
 
     return {
       label: dealActionPending ? 'Dealing…' : 'Deal Cards',
-      disabled: !canUserDealTable || !canDeal || !bettingOpen || !bankerReady || dealActionPending,
+      disabled: !canDeal || !bettingOpen || !bankerReady || dealActionPending,
       onClick: onDealCards,
       cardsVariant: true,
     };

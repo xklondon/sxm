@@ -108,7 +108,7 @@ export function useOnlineTable(
       throw new Error('No online table');
     }
     if (actionInFlight) {
-      return null;
+      throw new Error('Previous table action still in progress — try again.');
     }
     setActionInFlight(true);
     try {

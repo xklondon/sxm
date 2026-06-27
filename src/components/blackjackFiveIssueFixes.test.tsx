@@ -21,6 +21,8 @@ import {
 } from './roundSummaryOverlayTiming';
 
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+const FLOW_SRC = readFileSync(join(process.cwd(), 'src/components/useBlackjackTableFlow.ts'), 'utf8');
+const DEALER_SRC = readFileSync(join(process.cwd(), 'src/components/DealerBlock.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
 const noop = () => {};
 
@@ -159,8 +161,9 @@ describe('blackjack five-issue fixes', () => {
 
   it('keeps Deal Cards enabled for table host', () => {
     expect(PANEL_SRC).toContain('canCurrentUserDealTable');
-    expect(PANEL_SRC).toContain('canUserDealTable');
-    expect(PANEL_SRC).toMatch(/function handlePrimaryDealAction\(\) \{[\s\S]*if \(!canUserDealTable\)/);
+    expect(FLOW_SRC).toContain('canStartBlackjackDeal');
+    expect(FLOW_SRC).toContain('getBlackjackDealBlockReason');
+    expect(DEALER_SRC).toMatch(/disabled: !canDeal \|\| !bettingOpen/);
   });
 
   it('does not fire deal action when non-host handler is guarded', () => {

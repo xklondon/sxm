@@ -1300,9 +1300,6 @@ export function BlackjackPanel({
   };
 
   function handlePrimaryDealAction() {
-    if (!canUserDealTable) {
-      return;
-    }
     runPrimaryDealAction({
       firstStartShuffleDelayMs: tableMeta.shoeStarted ? 0 : SHUFFLE_ANIM_DURATION_MS,
       onFirstStartShuffleAnimationStart: () => {
