@@ -162,7 +162,11 @@ export function canPersonControlZilchPlayer(
   return false;
 }
 
-export function canPersonActOnZilchTurn(state: GameState, personId: string | null): boolean {
+/** Whether `personId` may dispatch Zilch actions for the current turn. */
+export function canControlZilchTurn(
+  state: GameState,
+  viewerPersonId: string | null,
+): boolean {
   const currentId = state.zilch?.currentPlayerId;
   if (!currentId) {
     return false;
@@ -171,17 +175,17 @@ export function canPersonActOnZilchTurn(state: GameState, personId: string | nul
   if (playable.length <= 1) {
     return true;
   }
-  if (!personId) {
+  if (!viewerPersonId) {
     return false;
   }
-
-  const ownerId = state.tableMeta.ownerPersonId;
-  const isPractice = state.tableMeta.tableMode !== 'challenge';
-  if (isPractice && ownerId && personId === ownerId && playable.includes(currentId)) {
+  if (isTableHostPerson(state, viewerPersonId) && playable.includes(currentId)) {
     return true;
   }
+  return canPersonControlZilchPlayer(state, viewerPersonId, currentId);
+}
 
-  return canPersonControlZilchPlayer(state, personId, currentId);
+export function canPersonActOnZilchTurn(state: GameState, personId: string | null): boolean {
+  return canControlZilchTurn(state, personId);
 }
 
 /** Offline/local fallback when only controller display name is known. */

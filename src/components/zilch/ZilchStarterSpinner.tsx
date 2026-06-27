@@ -8,6 +8,7 @@ interface ZilchStarterSpinnerProps {
   starterPlayerId: string | null;
   disabled: boolean;
   onRandomiseStarter: () => void;
+  setupHint?: string;
 }
 
 export function ZilchStarterSpinner({
@@ -17,6 +18,7 @@ export function ZilchStarterSpinner({
   starterPlayerId,
   disabled,
   onRandomiseStarter,
+  setupHint,
 }: ZilchStarterSpinnerProps) {
   const count = Math.max(players.length, 1);
   const pointerAngle = spinning
@@ -65,6 +67,9 @@ export function ZilchStarterSpinner({
       <button type="button" onClick={onRandomiseStarter} disabled={disabled || players.length === 0}>
         Randomise starter
       </button>
+      {setupHint && (
+        <p className="zilch-starter-spinner__hint">{setupHint}</p>
+      )}
     </div>
   );
 }

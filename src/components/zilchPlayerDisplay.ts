@@ -1,9 +1,9 @@
 import type { GameState } from '../types';
 import type { ZilchGameState } from '../engine/zilch/zilchTypes';
 import {
-  canControllerActOnZilchTurn,
-  canPersonActOnZilchTurn,
+  canControlZilchTurn,
 } from '../engine/dice/zilch/zilchTurnAuthority';
+import { resolveControllerPersonId } from '../engine/session/playerAssignment';
 import { getVisibleZilchPlayers } from '../engine/dice/zilch/zilchVisiblePlayers';
 import { loadProfile } from '../storage/profileStorage';
 
@@ -28,10 +28,12 @@ export function canActOnZilchTurn(
   if (order.length <= 1) {
     return true;
   }
-  if (viewerPersonId && canPersonActOnZilchTurn(gameState, viewerPersonId)) {
-    return true;
-  }
-  return canControllerActOnZilchTurn(gameState, controllerName);
+  const personId =
+    viewerPersonId ??
+    resolveControllerPersonId(gameState, controllerName) ??
+    gameState.tableMeta.ownerPersonId ??
+    null;
+  return canControlZilchTurn(gameState, personId);
 }
 
 export function resolveZilchController(gameState: GameState): string {

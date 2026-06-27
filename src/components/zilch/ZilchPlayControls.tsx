@@ -7,6 +7,7 @@ interface ZilchPlayControlsProps {
   controlsDisabled: boolean;
   canKeepSelected: boolean;
   diceUiPhase: 'idle' | 'rolling' | 'landed' | 'ordered';
+  actionError?: string | null;
   onKeepSelected: () => void;
   onRollDice: () => void;
   onBank: () => void;
@@ -18,6 +19,7 @@ export function ZilchPlayControls({
   controlsDisabled,
   canKeepSelected,
   diceUiPhase,
+  actionError = null,
   onKeepSelected,
   onRollDice,
   onBank,
@@ -55,6 +57,11 @@ export function ZilchPlayControls({
 
   return (
     <div className="zilch-table__control-row" data-testid="zilch-control-row">
+      {actionError && (
+        <p className="zilch-table__inline-error" role="alert">
+          {actionError}
+        </p>
+      )}
       <div className="zilch-table__info-block" aria-label="Round and target">
         <span className="zilch-table__info-line">{roundLabel}</span>
         <span className="zilch-table__info-line zilch-table__info-line--muted">{targetLabel}</span>

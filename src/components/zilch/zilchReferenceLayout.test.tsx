@@ -17,7 +17,6 @@ import {
 } from '../../engine/dice/zilch/zilchEngine';
 import {
   canKeepSelectedDice,
-  commandStatusForPhase,
 } from '../../engine/dice/zilch/zilchSelectors';
 import {
   isValidKeep,
@@ -85,10 +84,10 @@ describe('Zilch reference layout', () => {
         currentPlayerId: state.session.playerIds[1] ?? state.session.playerIds[0]!,
       },
     };
-    expect(commandStatusForPhase(state.zilch!, { p1: 'Host' }, false)).toBeNull();
     const html = renderToStaticMarkup(
       <ZilchPanel gameState={state} onGameStateChange={() => {}} />,
     );
+    expect(html).not.toContain('zilch-panel__banner');
     expect(html).not.toContain('Not your turn');
     expect(html).not.toContain('Waiting for another player');
   });
@@ -259,6 +258,14 @@ describe('Zilch play flow', () => {
     const ones = zilch.dice.filter((d) => d.value === 1).map((d) => d.id);
     expect(onKeep).toHaveBeenCalledWith(ones);
     vi.useRealTimers();
+  });
+
+  it('no legacy ZilchActions component path', () => {
+    expect(ZILCH_CSS).not.toContain('.zilch-table__combo-btn');
+    expect(ZILCH_CSS).not.toContain('.zilch-panel__banner');
+    const panelSrc = readFileSync(join(process.cwd(), 'src/components/zilch/ZilchPanel.tsx'), 'utf8');
+    expect(panelSrc).not.toContain('ZilchActions');
+    expect(panelSrc).not.toContain('ZilchCommand');
   });
 });
 

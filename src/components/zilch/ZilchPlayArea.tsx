@@ -12,6 +12,8 @@ interface ZilchPlayAreaProps {
   showValues: boolean;
   animSeed: number;
   controlsDisabled: boolean;
+  actionError?: string | null;
+  onDismissError?: () => void;
   zilchRevealCountdown?: number;
   onKeepSelected: (diceIds: string[]) => void;
   onRollDice: () => void;
@@ -24,6 +26,8 @@ export function ZilchPlayArea({
   showValues,
   animSeed,
   controlsDisabled,
+  actionError = null,
+  onDismissError,
   zilchRevealCountdown = 0,
   onKeepSelected,
   onRollDice,
@@ -37,6 +41,14 @@ export function ZilchPlayArea({
   useEffect(() => {
     setSelectedDiceIds([]);
   }, [selectionResetKey]);
+
+  useEffect(() => {
+    if (!actionError || !onDismissError) {
+      return;
+    }
+    const timer = window.setTimeout(onDismissError, 2800);
+    return () => window.clearTimeout(timer);
+  }, [actionError, onDismissError]);
 
   useEffect(() => {
     if (rolling) {
@@ -83,6 +95,7 @@ export function ZilchPlayArea({
         controlsDisabled={controlsDisabled}
         canKeepSelected={canKeepSelected}
         diceUiPhase={diceUiPhase}
+        actionError={actionError}
         onKeepSelected={handleKeepSelected}
         onRollDice={onRollDice}
         onBank={onBank}

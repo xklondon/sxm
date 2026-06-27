@@ -7,15 +7,13 @@ import {
   mergeSessionUpdate,
   recordZilchGameEnd,
 } from '../../engine/session';
-import { canRollDice } from '../../engine/dice/zilch';
+import { canRollDice, canControlZilchTurn } from '../../engine/dice/zilch';
 import { canBeginZilchChallenge } from '../../engine/dice/zilch/zilchTurnAuthority';
 import { getVisibleZilchPlayers } from '../../engine/dice/zilch/zilchVisiblePlayers';
 import { useIsMobileViewport } from '../../hooks/useIsMobileViewport';
 import { useDeviceShake } from '../../hooks/useDeviceShake';
 import { useZilchTableFlow } from '../useZilchTableFlow';
-import { canActOnZilchTurn, resolveZilchController } from '../zilchPlayerDisplay';
 import { resolveViewerPersonIdForTable } from '../viewerIdentity';
-import { ZilchCommand } from './ZilchCommand';
 import { ZilchPlayerRail } from './ZilchPlayerRail';
 import { ZilchPlayArea } from './ZilchPlayArea';
 import { ZilchStarterSpinner } from './ZilchStarterSpinner';
@@ -59,9 +57,11 @@ export function ZilchPanel({
 }: ZilchPanelProps) {
   const { session, zilch, tableMeta } = gameState;
   const isMobile = useIsMobileViewport();
-  const controller = resolveZilchController(gameState);
-  const viewerPersonId = resolveViewerPersonIdForTable(gameState, onlineTableId, viewerAuth);
-  const canAct = zilch ? canActOnZilchTurn(gameState, controller, viewerPersonId) : true;
+  const viewerPersonId =
+    resolveViewerPersonIdForTable(gameState, onlineTableId, viewerAuth) ??
+    gameState.tableMeta.ownerPersonId ??
+    null;
+  const canAct = zilch ? canControlZilchTurn(gameState, viewerPersonId) : true;
   const isPracticeTable = tableMeta.tableMode !== 'challenge';
   const shakeReady = useDeviceShake(
     isMobile && Boolean(zilch && (zilch.phase === 'player-turn' || zilch.phase === 'final-round') && canAct),
@@ -76,6 +76,7 @@ export function ZilchPanel({
     handleKeepSelected,
     handleBank,
     actionError,
+    clearActionError,
     zilchRevealCountdown,
   } = useZilchTableFlow({
     gameState,
@@ -94,14 +95,6 @@ export function ZilchPanel({
     () => visiblePlayers.map((player) => player.playerId),
     [visiblePlayers],
   );
-
-  const playerNames = useMemo(() => {
-    const names: Record<string, string> = {};
-    for (const player of visiblePlayers) {
-      names[player.playerId] = player.name;
-    }
-    return names;
-  }, [visiblePlayers]);
 
   const tableModeLabel =
     tableMeta.tableMode === 'challenge' ? 'Challenge' : 'Practice';
@@ -233,10 +226,10 @@ export function ZilchPanel({
         zilch.phase === 'randomising-starter' ||
         starterSpinActive),
   );
-  const highlightStarterId =
-    starterSpinActive || zilch?.phase === 'setup'
+  const highlightPlayerId =
+    showStarterSpinner || zilch?.phase === 'setup'
       ? playerOrder[randomiserIndex] ?? null
-      : zilch?.starterPlayerId ?? null;
+      : zilch?.currentPlayerId ?? zilch?.starterPlayerId ?? null;
   const challengeNeedsOpponent = !isPracticeTable && !canBeginZilchChallenge(gameState);
   const randomiserDisabled =
     onlineActionInFlight ||
@@ -289,15 +282,9 @@ export function ZilchPanel({
         </div>
       </div>
 
-      <ZilchCommand
-        zilch={zilch}
-        playerNames={playerNames}
-        canAct={canAct}
-        actionError={actionError}
-        zilchRevealCountdown={zilchRevealCountdown}
-        isChallengeTable={!isPracticeTable}
-        challengeNeedsOpponent={challengeNeedsOpponent}
-      />
+      {challengeNeedsOpponent && (
+        <p className="zilch-panel__setup-hint">Invite at least one player to start Challenge.</p>
+      )}
 
       {!zilch && playerOrder.length > 0 && (
         <button type="button" onClick={handleStartGame} disabled={onlineActionInFlight}>
@@ -337,7 +324,7 @@ export function ZilchPanel({
             <ZilchPlayerRail
               zilch={zilch}
               visiblePlayers={visiblePlayers}
-              highlightPlayerId={highlightStarterId}
+              highlightPlayerId={highlightPlayerId}
             />
             <div className="zilch-table__play-column">
               {showStarterSpinner ? (
@@ -349,6 +336,11 @@ export function ZilchPanel({
                     starterPlayerId={zilch.starterPlayerId}
                     disabled={randomiserDisabled}
                     onRandomiseStarter={onRandomiseStarter}
+                    setupHint={
+                      challengeNeedsOpponent
+                        ? 'Invite at least one player to start Challenge.'
+                        : undefined
+                    }
                   />
                 </div>
               ) : (
@@ -358,6 +350,8 @@ export function ZilchPanel({
                   showValues={showValues}
                   animSeed={animSeed}
                   controlsDisabled={controlsDisabled}
+                  actionError={actionError}
+                  onDismissError={clearActionError}
                   zilchRevealCountdown={zilchRevealCountdown}
                   onKeepSelected={handleKeepSelected}
                   onRollDice={handleRollDice}

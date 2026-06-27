@@ -14,7 +14,7 @@ import {
 } from '../../../src/engine/session/tableDealPermission.js';
 import { hasAnyStakes } from '../../../src/engine/blackjack/stakes.js';
 import { isBankerReady } from '../../../src/engine/session/boxOps.js';
-import { canPersonActOnZilchTurn } from '../../../src/engine/dice/zilch/zilchTurnAuthority.js';
+import { canControlZilchTurn } from '../../../src/engine/dice/zilch/zilchTurnAuthority.js';
 import {
   getInsuranceDecisionPersonIdForBox,
   canPersonDecideInsuranceForBox,
@@ -226,7 +226,7 @@ function assertZilchPlayerTurn(state: GameState, ctx: ActionContext): void {
   if (state.tableGame !== 'zilch' || !state.zilch) {
     throw new Error('Not a Zilch table');
   }
-  if (!canPersonActOnZilchTurn(state, ctx.personId)) {
+  if (!canControlZilchTurn(state, ctx.personId)) {
     throw new Error('Not your turn');
   }
 }

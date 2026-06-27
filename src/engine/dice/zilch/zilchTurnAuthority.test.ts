@@ -6,7 +6,11 @@ import {
 } from '../../session';
 import { setTableOwner } from '../../session/invites';
 import { applyZilchActionToState } from '../../zilch';
+import { setTableOwner } from '../../session/invites';
+import { finalizeInviteJoinAtTable } from '../../session/inviteJoin';
+import { beginZilchPlay } from '../../session/zilchTableSetup';
 import {
+  canControlZilchTurn,
   canPersonActOnZilchTurn,
   canPersonControlZilchPlayer,
   listPlayableZilchPlayerIds,
@@ -77,7 +81,25 @@ describe('zilchTurnAuthority', () => {
     expect(canPersonControlZilchPlayer(state, hostId, currentId)).toBe(true);
   });
 
-  it('non-host cannot act on virtual player turn', () => {
+  it('host can act when guest is current after randomiser in challenge', () => {
+    let state = setTableOwner(createNewZilchTable(), 'Host', 'host@example.com');
+    state = applyZilchTableStakeSetup(state, {
+      ...practiceSetup,
+      tableMode: 'challenge',
+      bankerMode: 'self',
+      bankerName: 'Host',
+      virtualPlayerCount: 0,
+    } as never);
+    state = beginZilchPlay(state);
+    state = finalizeInviteJoinAtTable(state, 'guest-person', 'Guest').state;
+    state = applyZilchActionToState(state, 'zilchRandomiseStarter', {});
+    const hostId = state.tableMeta.ownerPersonId!;
+    const currentId = state.zilch!.currentPlayerId!;
+    expect(currentId).toBeTruthy();
+    expect(canControlZilchTurn(state, hostId)).toBe(true);
+  });
+
+  it('non-host cannot act on another player turn in challenge', () => {
     const { state: base, hostId } = practiceTable();
     let state = applyZilchActionToState(base, 'zilchRandomiseStarter', {});
     expect(canPersonActOnZilchTurn(state, 'guest-person')).toBe(false);
