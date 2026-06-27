@@ -288,6 +288,17 @@ Protocol-driven phases via `getBlackjackProtocolPhase`. Betting → deal → pla
 
 Server resolves `activeHandKey`; client-sent `handKey` on hit/stand/double/split is **ignored** online.
 
+### Deal authority (canonical)
+
+Two separate systems — never mixed:
+
+| Concern | Helper | Rules |
+|---------|--------|-------|
+| **Box ownership** | `resolvePlayableBoxes(state)` | Per box: designated native owner, active round commander (staker), passive co-bettors. Used for hit/stand/split/double and This Table display — **not** for deal. |
+| **Deal authority** | `canDealBlackjack(state, viewerPersonId)` | Table **host only** + betting phase + banker ready + eligible confirmed stakes ≥ min. Box commander / native assignment do **not** gate deal. |
+
+All paths (DealerBlock click handler, offline reducer, server `assertHostDealAction`) call `canDealBlackjack`. `[DEAL AUDIT]` logs viewer, owner, phase, playable boxes, allowed, reason on every deal attempt.
+
 ---
 
 ## 9. Texas Hold'em Protocol

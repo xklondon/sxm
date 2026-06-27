@@ -1,14 +1,16 @@
-import { type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import type { ZilchDie, ZilchGameState } from '../../engine/dice/zilch';
+import { canKeepCombination, getSelectableDiceIds, isTurnoverRoll } from '../../engine/dice/zilch';
 import {
-  canKeepCombination,
-  isDieScoringSelectable,
-  isTurnoverRoll,
-} from '../../engine/dice/zilch';
-import { dieThrowStyle, landedScatterStyle } from '../zilchPlayerDisplay';
+  dieThrowStyle,
+  landedScatterStyle,
+  orderedRowStyle,
+} from '../zilchPlayerDisplay';
+import {
+  selectionEnabledForPhase,
+  type ZilchDiceUiPhase,
+} from './zilchDiceAnimation';
 import { DieFace } from './DieFace';
-
-export type ZilchDiceUiPhase = 'idle' | 'rolling' | 'landed' | 'ordered';
 
 interface ZilchDiceAreaProps {
   zilch: ZilchGameState;
@@ -42,10 +44,14 @@ export function ZilchDiceArea({
   onSelectedDiceIdsChange,
   zilchRevealCountdown = 0,
 }: ZilchDiceAreaProps) {
+  const [gatherActive, setGatherActive] = useState(false);
+  const selectableIds = useMemo(() => new Set(getSelectableDiceIds(zilch)), [zilch]);
+
+  const visualThrowing = diceUiPhase === 'throwing' || rolling;
   const diceToRender =
-    rolling && zilch.dice.length > 0
+    visualThrowing && zilch.dice.length > 0
       ? zilch.dice
-      : rolling
+      : visualThrowing
         ? placeholderDice()
         : zilch.dice;
 
@@ -57,14 +63,23 @@ export function ZilchDiceArea({
     showValues &&
     !controlsDisabled &&
     !isZilchReveal &&
-    diceUiPhase === 'ordered';
+    selectionEnabledForPhase(diceUiPhase);
   const turnover = isTurnoverRoll(zilch);
 
-  function toggleDieSelection(die: ZilchDie) {
-    if (!canSelect || die.isKept) {
+  useEffect(() => {
+    if (diceUiPhase !== 'gather') {
+      setGatherActive(false);
       return;
     }
-    if (!isDieScoringSelectable(die, zilch.availableCombinations)) {
+    setGatherActive(false);
+    const raf = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setGatherActive(true));
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [diceUiPhase, zilch.rollNumberInTurn]);
+
+  function toggleDieSelection(die: ZilchDie) {
+    if (!canSelect || die.isKept || !selectableIds.has(die.id)) {
       return;
     }
     onSelectedDiceIdsChange(
@@ -74,67 +89,94 @@ export function ZilchDiceArea({
     );
   }
 
-  function renderDie(die: ZilchDie, index: number, selectable: boolean) {
+  function renderDie(die: ZilchDie, index: number, interactive: boolean) {
+    const isSelectable = selectableIds.has(die.id);
     const isSelected = selectedDiceIds.includes(die.id);
-    const scoringSelectable = isDieScoringSelectable(die, zilch.availableCombinations);
     const dieCount = activeDice.length || 6;
-    const scattered = diceUiPhase === 'landed';
-    const ordered = diceUiPhase === 'ordered';
+    const showFaceValues = !visualThrowing && showValues;
 
     let pathStyle: CSSProperties | undefined;
-    if (rolling) {
+    if (visualThrowing) {
       pathStyle = dieThrowStyle(index, animSeed + index, dieCount) as CSSProperties;
-    } else if (scattered) {
-      pathStyle = landedScatterStyle(index, animSeed + index, dieCount) as CSSProperties;
+    } else if (diceUiPhase === 'landed' || diceUiPhase === 'gather' || diceUiPhase === 'ordered') {
+      pathStyle = {
+        ...(landedScatterStyle(index, animSeed + index, dieCount) as CSSProperties),
+        ...(diceUiPhase === 'gather' || diceUiPhase === 'ordered'
+          ? (orderedRowStyle(index, dieCount) as CSSProperties)
+          : {}),
+      };
+    }
+
+    const pathClass = [
+      'zilch-die__path',
+      visualThrowing ? 'zilch-die__path--throw' : '',
+      diceUiPhase === 'landed' ? 'zilch-die__path--landed' : '',
+      diceUiPhase === 'gather' ? 'zilch-die__path--gather' : '',
+      diceUiPhase === 'gather' && gatherActive ? 'zilch-die__path--gathering' : '',
+      diceUiPhase === 'ordered' ? 'zilch-die__path--ordered' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    const dieClass = [
+      'zilch-die',
+      visualThrowing ? 'zilch-die--throw' : '',
+      die.isKept ? 'zilch-die--kept' : '',
+      isSelected ? 'zilch-die--selected' : '',
+      interactive && isSelectable ? 'zilch-die--selectable' : 'zilch-die--frozen',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    const face = (
+      <DieFace value={die.value} rolling={visualThrowing || !showFaceValues} />
+    );
+
+    if (interactive && isSelectable) {
+      return (
+        <div key={die.id} className={pathClass} style={pathStyle}>
+          <button
+            type="button"
+            className={dieClass}
+            onClick={() => toggleDieSelection(die)}
+            aria-pressed={isSelected}
+            aria-label={`Select die ${die.value}`}
+          >
+            {face}
+          </button>
+        </div>
+      );
     }
 
     return (
-      <div
-        key={die.id}
-        className={`zilch-die__path${
-          rolling ? ' zilch-die__path--throw' : scattered ? ' zilch-die__path--landed' : ' zilch-die__path--settled'
-        }${ordered ? ' zilch-die__path--ordered' : ''}`}
-        style={pathStyle}
-      >
-        <button
-          type="button"
-          className={`zilch-die${rolling ? ' zilch-die--throw' : ''}${
-            die.isKept ? ' zilch-die--kept' : ''
-          }${isSelected ? ' zilch-die--selected' : ''}${
-            selectable && scoringSelectable && !die.isKept ? ' zilch-die--selectable' : ''
-          }${selectable && !die.isKept && !scoringSelectable ? ' zilch-die--non-scoring' : ''}`}
-          onClick={() => toggleDieSelection(die)}
-          disabled={!selectable || die.isKept || !scoringSelectable}
-          aria-pressed={isSelected}
-          aria-label={
-            rolling
-              ? 'Rolling'
-              : die.isKept
-                ? `Kept die ${die.value}`
-                : scoringSelectable
-                  ? `Select die ${die.value}`
-                  : `Die ${die.value}, not scoring`
-          }
+      <div key={die.id} className={pathClass} style={pathStyle}>
+        <div
+          className={dieClass}
+          role="img"
+          aria-label={die.isKept ? `Kept die ${die.value}` : `Die ${die.value}, not scoring`}
         >
-          <DieFace value={die.value} rolling={rolling || !showValues} />
-        </button>
+          {face}
+        </div>
       </div>
     );
   }
 
   const rollZoneClass = [
     'zilch-table__roll-zone',
-    rolling ? 'zilch-table__roll-zone--throwing' : '',
+    visualThrowing ? 'zilch-table__roll-zone--throwing' : '',
     diceUiPhase === 'landed' ? 'zilch-table__roll-zone--landed' : '',
+    diceUiPhase === 'gather' ? 'zilch-table__roll-zone--gather' : '',
     diceUiPhase === 'ordered' ? 'zilch-table__roll-zone--ordered' : '',
-    !rolling && activeDice.length > 0 && diceUiPhase === 'idle' ? 'zilch-table__roll-zone--settled' : '',
+    !visualThrowing && activeDice.length > 0 && diceUiPhase === 'idle'
+      ? 'zilch-table__roll-zone--settled'
+      : '',
   ]
     .filter(Boolean)
     .join(' ');
 
   return (
     <div className="zilch-felt-center zilch-felt-center--play" data-testid="zilch-felt-center">
-      {turnover && !rolling && (
+      {turnover && !visualThrowing && (
         <p className="zilch-table__turnover" role="status">
           Turnover — roll all 6 dice again
         </p>
@@ -159,7 +201,7 @@ export function ZilchDiceArea({
       >
         <div className={rollZoneClass} aria-label="Dice on table">
           {activeDice.map((die, index) => renderDie(die, index, canSelect))}
-          {activeDice.length === 0 && zilch.phase === 'player-turn' && !rolling && !turnover && (
+          {activeDice.length === 0 && zilch.phase === 'player-turn' && !visualThrowing && !turnover && (
             <span className="zilch-table__hint">Press Roll Dice to throw</span>
           )}
         </div>
@@ -181,3 +223,5 @@ export function ZilchDiceArea({
     </div>
   );
 }
+
+export type { ZilchDiceUiPhase };

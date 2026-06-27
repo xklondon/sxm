@@ -4,7 +4,7 @@
  *
  * Display scale: single 1 = 100, single 5 = 50 (×100 from fractional rules).
  */
-import type { ZilchCombination, ZilchDie } from './zilchTypes';
+import type { ZilchCombination, ZilchDie, ZilchGameState } from './zilchTypes';
 import {
   detectZilchCombinations,
   findCombinationForExactDiceIds,
@@ -45,6 +45,11 @@ export function getValidKeeps(dice: ZilchDie[]): ZilchCombination[] {
 /** Dice the player may toggle during selection (scoring, unkept, current roll). */
 export function getSelectableDice(dice: ZilchDie[], combinations: ZilchCombination[]): ZilchDie[] {
   return currentRollDice(dice).filter((die) => rulesIsDieScoringSelectable(die, combinations));
+}
+
+/** Canonical ids of dice the player may select on the current roll. */
+export function getSelectableDiceIds(state: ZilchGameState): string[] {
+  return getSelectableDice(state.dice, state.availableCombinations).map((die) => die.id);
 }
 
 function scoreSinglesCombination(selected: ZilchDie[]): ZilchCombination | null {

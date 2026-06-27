@@ -1,10 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ZilchGameState } from '../../engine/dice/zilch';
 import { canKeepSelectedDice } from '../../engine/dice/zilch';
-import { ZilchDiceArea, type ZilchDiceUiPhase } from './ZilchDiceArea';
+import { ZilchDiceArea } from './ZilchDiceArea';
 import { ZilchPlayControls } from './ZilchPlayControls';
-
-const ORDER_DELAY_MS = 3000;
+import {
+  ZILCH_GATHER_MS,
+  ZILCH_LANDED_MS,
+  ZILCH_THROW_MS,
+  type ZilchDiceUiPhase,
+} from './zilchDiceAnimation';
 
 interface ZilchPlayAreaProps {
   zilch: ZilchGameState;
@@ -35,6 +39,7 @@ export function ZilchPlayArea({
 }: ZilchPlayAreaProps) {
   const [selectedDiceIds, setSelectedDiceIds] = useState<string[]>([]);
   const [diceUiPhase, setDiceUiPhase] = useState<ZilchDiceUiPhase>('idle');
+  const throwStartedAtRef = useRef<number | null>(null);
 
   const selectionResetKey = `${zilch.rollNumberInTurn}:${zilch.phase}:${zilch.dice.map((d) => `${d.id}:${d.isKept}`).join('|')}`;
 
@@ -52,15 +57,47 @@ export function ZilchPlayArea({
 
   useEffect(() => {
     if (rolling) {
-      setDiceUiPhase('rolling');
+      throwStartedAtRef.current = Date.now();
+      setDiceUiPhase('throwing');
       return;
     }
-    if (zilch.phase === 'awaiting-keep-selection' && showValues) {
-      setDiceUiPhase('landed');
-      const timer = window.setTimeout(() => setDiceUiPhase('ordered'), ORDER_DELAY_MS);
-      return () => window.clearTimeout(timer);
+
+    if (zilch.phase !== 'awaiting-keep-selection' || !showValues) {
+      throwStartedAtRef.current = null;
+      setDiceUiPhase('idle');
+      return;
     }
-    setDiceUiPhase('idle');
+
+    if (throwStartedAtRef.current === null) {
+      setDiceUiPhase('landed');
+      const tGather = window.setTimeout(() => setDiceUiPhase('gather'), ZILCH_LANDED_MS);
+      const tOrdered = window.setTimeout(() => {
+        setDiceUiPhase('ordered');
+      }, ZILCH_LANDED_MS + ZILCH_GATHER_MS);
+      return () => {
+        window.clearTimeout(tGather);
+        window.clearTimeout(tOrdered);
+      };
+    }
+
+    const startedAt = throwStartedAtRef.current;
+    const throwRemaining = Math.max(0, ZILCH_THROW_MS - (Date.now() - startedAt));
+
+    const tLanded = window.setTimeout(() => setDiceUiPhase('landed'), throwRemaining);
+    const tGather = window.setTimeout(
+      () => setDiceUiPhase('gather'),
+      throwRemaining + ZILCH_LANDED_MS,
+    );
+    const tOrdered = window.setTimeout(() => {
+      setDiceUiPhase('ordered');
+      throwStartedAtRef.current = null;
+    }, throwRemaining + ZILCH_LANDED_MS + ZILCH_GATHER_MS);
+
+    return () => {
+      window.clearTimeout(tLanded);
+      window.clearTimeout(tGather);
+      window.clearTimeout(tOrdered);
+    };
   }, [rolling, showValues, selectionResetKey, zilch.phase]);
 
   const canKeepSelected = useMemo(

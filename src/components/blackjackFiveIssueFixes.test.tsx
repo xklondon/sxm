@@ -161,8 +161,8 @@ describe('blackjack five-issue fixes', () => {
 
   it('keeps Deal Cards enabled for table host', () => {
     expect(PANEL_SRC).toContain('canCurrentUserDealTable');
-    expect(FLOW_SRC).toContain('canStartBlackjackDeal');
-    expect(FLOW_SRC).toContain('getBlackjackDealBlockReason');
+    expect(FLOW_SRC).toContain('canDealBlackjack');
+    expect(FLOW_SRC).toContain('logDealAudit');
     expect(DEALER_SRC).toMatch(/disabled: !canDeal \|\| !bettingOpen/);
   });
 

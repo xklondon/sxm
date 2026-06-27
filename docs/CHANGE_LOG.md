@@ -23,7 +23,22 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-23 — Poker multiplayer sync + symmetric cloth layout
+## 2026-06-22 — Blackjack deal authority: single canonical path
+
+**Problem:** Deal Cards could show while click no-opped — split permission helpers (`canCurrentUserDealTable`, `canStartBlackjackDeal`, `getDealBlockReason`, `canStartCards`, server `assertHostDealAction`) disagreed; eligible boxes could be dropped when not in `getBettingPlayerIds` order.
+
+**Fix:**
+- `resolvePlayableBoxes(state)` — canonical box ownership (designated owner / active staker / passive); separate from deal.
+- `canDealBlackjack(state, viewerPersonId)` — canonical deal authority (host + engine + eligible stakes only).
+- `logDealAudit` — `[DEAL AUDIT]` on every deal click.
+- Client, server, and engine reducer all call `canDealBlackjack`; first-start path uses `allowPreShuffle`.
+- `getEligibleDealBoxes` includes all staked eligible boxes regardless of session player order.
+
+**Tests:** `canDealBlackjack.test.ts`; existing `dealStartAuthority` / `blackjackRoundOwnershipReset` still pass.
+
+**Unchanged:** `DealerBlock` button visibility wiring, layouts, Zilch, ledger, setup.
+
+---
 
 **Host join sync:** `POST /api/tables/join`, invite accept, and join-request approve now emit `table:update` (same channel as table actions). Root cause: guest join updated server state but host socket never received broadcast.
 

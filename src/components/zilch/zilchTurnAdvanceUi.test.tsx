@@ -1,5 +1,7 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from 'vitest';
+// @vitest-environment happy-dom
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -14,6 +16,8 @@ import { getVisibleZilchPlayers } from '../../engine/dice/zilch/zilchVisiblePlay
 import { ZilchPanel } from './ZilchPanel';
 
 const ZILCH_CSS = readFileSync(join(process.cwd(), 'src/styles/zilch-table.css'), 'utf8');
+
+afterEach(() => cleanup());
 
 function practiceState() {
   return applyZilchTableStakeSetup(createNewZilchTable(), {
@@ -56,13 +60,13 @@ function seatMarkup(html: string, playerId: string): string | null {
 }
 
 describe('Zilch panel UI', () => {
-  it('ledger is hidden until Table ledger is toggled', () => {
-    const html = renderToStaticMarkup(
-      <ZilchPanel gameState={practiceState()} onGameStateChange={() => {}} />,
-    );
-    expect(html).toContain('Table ledger');
-    expect(html).not.toContain('ledger-panel__title');
-    expect(html).not.toContain('zilch-panel__ledger--open');
+  it('ledger is hidden until Show ledger is toggled in This Table panel', () => {
+    render(<ZilchPanel gameState={practiceState()} onGameStateChange={() => {}} />);
+    fireEvent.click(screen.getByTestId('zilch-this-table-toggle'));
+    expect(screen.getByRole('button', { name: 'Show ledger' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Table Ledger' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Show ledger' }));
+    expect(screen.getByRole('heading', { name: 'Table Ledger' })).toBeTruthy();
   });
 
   it('highlights next player after bank', () => {

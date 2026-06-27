@@ -1,5 +1,4 @@
 import type { GameState } from '../../types';
-import { isTableGameActive } from '../session/tableGameEnd';
 import type { GameSession } from '../../types/session';
 import type { BlackjackRound } from '../../types/blackjack';
 import { createBlackjackPlayerHand } from '../../types/blackjack';
@@ -21,9 +20,9 @@ import { isHandFullyVisibleInDisplay } from './dealing/cardRevealDisplay';
 import { isInitialDealRoundComplete } from './initialDealGuards';
 import {
   getEligibleDealBoxes,
-  getDealBlockReason,
   getTableMinimumBet,
   hasEligibleDealBoxes,
+  evaluateBlackjackDealEngine,
 } from './dealEligibility';
 
 /** High-level Blackjack protocol phases for UI and action gating. */
@@ -91,49 +90,14 @@ export function hasAnyConfirmedBetsFromState(state: GameState): boolean {
 }
 
 export function canStartCards(state: GameState): boolean {
-  if (state.tableMeta.gameStatus === 'ended' || !isTableGameActive(state)) {
-    log.info('canStartCards', { ok: false, reason: 'game ended' });
-    return false;
-  }
-  if (state.tableMeta.awaitingNextRound) {
-    log.info('canStartCards', { ok: false, reason: 'awaiting next round' });
-    return false;
-  }
-  if (!isBankerReady(state)) {
-    log.info('canStartCards', { ok: false, reason: 'banker not ready' });
-    return false;
-  }
-  if (!state.deck) {
-    log.info('canStartCards', { ok: false, reason: 'no shoe' });
-    return false;
-  }
-  if (state.tableMeta.bettingLocked) {
-    log.info('canStartCards', { ok: false, reason: 'bets already locked' });
-    return false;
-  }
-  const phase = getBlackjackProtocolPhase(state);
-  if (phase !== 'betting') {
-    log.info('canStartCards', { ok: false, reason: 'not betting phase', phase });
-    return false;
-  }
-  const roundStatus = state.blackjack?.status;
-  if (
-    roundStatus &&
-    roundStatus !== 'betting' &&
-    roundStatus !== 'resolved'
-  ) {
-    log.info('canStartCards', { ok: false, reason: 'round in play', roundStatus });
-    return false;
-  }
-  const boxes = getEligibleDealBoxes(state);
-  const ok = boxes.length > 0;
+  const result = evaluateBlackjackDealEngine(state);
   log.info('canStartCards', {
-    ok,
+    ok: result.allowed,
+    reason: result.allowed ? null : result.reason,
     minBet: getTableMinimumBet(state),
-    eligibleBoxes: boxes,
-    stakes: boxes.map((id) => ({ id, stake: getStakeForBox(state, id) })),
+    eligibleBoxes: getEligibleDealBoxes(state),
   });
-  return ok;
+  return result.allowed;
 }
 
 /** @deprecated Use canStartCards */
@@ -142,7 +106,7 @@ export function canDealCards(state: GameState): boolean {
 }
 
 export function getCardsBlockReason(state: GameState): string | null {
-  return getDealBlockReason(state);
+  return evaluateBlackjackDealEngine(state).message;
 }
 
 export function logPendingBet(boxId: string, amount: number, total: number): void {

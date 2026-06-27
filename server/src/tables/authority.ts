@@ -9,9 +9,7 @@ import {
 } from '../../../src/engine/session/playerAssignment.js';
 import { hasPersonalLedgerEntryForTable } from '../../../src/engine/scoreLedger/scoreLedger.js';
 import { canUserAssignChips } from '../../../src/engine/table/adminControls.js';
-import {
-  getBlackjackDealBlockReason,
-} from '../../../src/engine/session/tableDealPermission.js';
+import { canDealBlackjack } from '../../../src/engine/session/canDealBlackjack.js';
 import { hasAnyStakes } from '../../../src/engine/blackjack/stakes.js';
 import { isBankerReady } from '../../../src/engine/session/boxOps.js';
 import { canControlZilchTurn } from '../../../src/engine/dice/zilch/zilchTurnAuthority.js';
@@ -213,9 +211,9 @@ function assertHostDealAction(
     throw new Error('Place at least one bet before shuffling');
   }
   if (opts.requireShoeStarted) {
-    const reason = getBlackjackDealBlockReason(state, ctx.personId);
-    if (reason) {
-      throw new Error(reason);
+    const authority = canDealBlackjack(state, ctx.personId);
+    if (!authority.allowed) {
+      throw new Error(authority.message ?? 'Cannot deal');
     }
     return;
   }

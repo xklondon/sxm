@@ -107,7 +107,7 @@ describe('Zilch reset and new-table UI routing', () => {
       <TableScreen gameState={state} onGameStateChange={noop} onLeave={noop} />,
     );
     expect(html).toContain('data-game="zilch"');
-    expect(html).not.toContain('bj-casino');
+    expect(html).not.toContain('Deal Cards');
   });
 
   it('new table Dice step leads directly to mode after category click', () => {

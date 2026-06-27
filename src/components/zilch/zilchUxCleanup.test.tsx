@@ -25,6 +25,7 @@ import {
   createNewZilchTable,
   DEFAULT_TABLE_CHIPS,
 } from '../../engine/session';
+import { ZILCH_GATHER_MS, ZILCH_LANDED_MS } from './zilchDiceAnimation';
 import { ZilchPlayArea } from './ZilchPlayArea';
 import { ZilchPanel } from './ZilchPanel';
 import { ZilchStarterSpinner } from './ZilchStarterSpinner';
@@ -88,7 +89,7 @@ describe('Zilch UX cleanup', () => {
       />,
     );
     act(() => {
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(ZILCH_LANDED_MS + ZILCH_GATHER_MS);
     });
     fireEvent.click(screen.getByRole('button', { name: 'Select die 1' }));
     const keepBtn = screen.getByRole('button', { name: 'Keep selected' }) as HTMLButtonElement;

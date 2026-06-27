@@ -8,6 +8,7 @@ import {
   randomiseStarter,
   rollDice,
 } from '../../engine/dice/zilch/zilchEngine';
+import { ZILCH_GATHER_MS, ZILCH_LANDED_MS } from './zilchDiceAnimation';
 import { ZilchPlayArea } from './ZilchPlayArea';
 
 afterEach(() => cleanup());
@@ -47,7 +48,7 @@ describe('Zilch manual die selection', () => {
     );
 
     act(() => {
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(ZILCH_LANDED_MS + ZILCH_GATHER_MS);
     });
     fireEvent.click(screen.getByRole('button', { name: 'Select die 1' }));
     fireEvent.click(screen.getByRole('button', { name: 'Keep selected' }));
@@ -74,7 +75,7 @@ describe('Zilch manual die selection', () => {
     );
 
     act(() => {
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(ZILCH_LANDED_MS + ZILCH_GATHER_MS);
     });
     expect((screen.getByRole('button', { name: 'Keep selected' }) as HTMLButtonElement).disabled).toBe(
       true,

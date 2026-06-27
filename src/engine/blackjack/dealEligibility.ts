@@ -6,6 +6,8 @@ import { getRemainingCardCount } from '../deck/deck';
 
 import { isBankerReady } from '../session/boxOps';
 
+import { isTableGameActive } from '../session/tableGameEnd';
+
 import { log } from '../../utils/logger';
 
 import { blackjackHandKey } from './handKeys';
@@ -14,44 +16,106 @@ import { getBettingPlayerIds } from './helpers';
 
 import { getStakeForBox, hasAnyStakes, isBoxStakeConfirmed } from './stakes';
 
+import { resolvePlayableBoxes } from '../session/playableBoxes';
 
+export type CanDealBlackjackReason =
+  | 'allowed'
+  | 'owner_not_hydrated'
+  | 'viewer_unknown'
+  | 'not_table_host'
+  | 'game_ended'
+  | 'awaiting_next_round'
+  | 'banker_not_ready'
+  | 'no_shoe'
+  | 'betting_locked'
+  | 'wrong_phase'
+  | 'round_in_play'
+  | 'no_playable_boxes'
+  | 'place_bets_first';
 
-function getOccupiedBoxPlayerIds(state: GameState): string[] {
-
-  return state.tableMeta.boxSlots
-
-    .map((s) => s.playerId)
-
-    .filter((id): id is string => id !== null);
-
+export interface CanDealBlackjackResult {
+  allowed: boolean;
+  reason: CanDealBlackjackReason;
+  message: string | null;
 }
 
+export interface CanDealBlackjackOptions {
+  /** First shoe start may shuffle before a deck exists. */
+  allowPreShuffle?: boolean;
+}
 
+const ENGINE_REASON_MESSAGES: Record<Exclude<CanDealBlackjackReason, 'allowed'>, string> = {
+  owner_not_hydrated: 'Table owner not loaded yet.',
+  viewer_unknown: 'Cannot identify viewer — only the table host can deal cards.',
+  not_table_host: 'Only the table host can deal cards.',
+  game_ended: 'Game has ended.',
+  awaiting_next_round: 'Start the next round first.',
+  banker_not_ready: 'Choose banker first.',
+  no_shoe: 'Shuffle the shoe first.',
+  betting_locked: 'Dealing in progress.',
+  wrong_phase: 'Deal is only allowed during betting.',
+  round_in_play: 'Round is already in play.',
+  no_playable_boxes: 'Place at least minimum bet to deal.',
+  place_bets_first: 'Place bets first.',
+};
 
-/** All box player ids with a table position or open stake. */
+function engineFail(
+  reason: Exclude<CanDealBlackjackReason, 'allowed'>,
+  message?: string,
+): CanDealBlackjackResult {
+  return {
+    allowed: false,
+    reason,
+    message: message ?? ENGINE_REASON_MESSAGES[reason],
+  };
+}
 
-function getPlayableBoxPlayerIds(state: GameState): string[] {
-
-  const ids = new Set<string>();
-
-  for (const id of getOccupiedBoxPlayerIds(state)) {
-
-    ids.add(id);
-
+/** Engine-only deal readiness (host-agnostic). */
+export function evaluateBlackjackDealEngine(
+  state: GameState,
+  options?: CanDealBlackjackOptions,
+): CanDealBlackjackResult {
+  if (state.tableMeta.gameStatus === 'ended' || !isTableGameActive(state)) {
+    return engineFail('game_ended');
   }
-
-  for (const boxId of Object.keys(state.tableMeta.boxStakes)) {
-
-    if (state.players[boxId]) {
-
-      ids.add(boxId);
-
+  if (state.tableMeta.awaitingNextRound) {
+    return engineFail('awaiting_next_round');
+  }
+  if (!isBankerReady(state)) {
+    return engineFail('banker_not_ready');
+  }
+  const requireDeck = Boolean(state.tableMeta.shoeStarted) || !options?.allowPreShuffle;
+  if (requireDeck && !state.deck) {
+    return engineFail(
+      'no_shoe',
+      state.tableMeta.shoeStarted ? 'Shuffle the shoe first.' : 'Press Shuffle to start first.',
+    );
+  }
+  if (state.tableMeta.bettingLocked) {
+    return engineFail('betting_locked');
+  }
+  const phase = getProtocolPhase(state);
+  if (phase !== 'betting') {
+    return engineFail('wrong_phase');
+  }
+  if (isRoundInPlay(state)) {
+    return engineFail('round_in_play');
+  }
+  if (!hasEligibleDealBoxes(state)) {
+    if (hasAnyStakes(state)) {
+      return engineFail('no_playable_boxes');
     }
-
+    return engineFail('place_bets_first');
   }
+  return { allowed: true, reason: 'allowed', message: null };
+}
 
-  return [...ids];
-
+/** @deprecated Use evaluateBlackjackDealEngine().message */
+export function getDealBlockReason(
+  state: GameState,
+  options?: CanDealBlackjackOptions,
+): string | null {
+  return evaluateBlackjackDealEngine(state, options).message;
 }
 
 
@@ -132,15 +196,19 @@ function isRoundInPlay(state: GameState): boolean {
 
 function buildStakesByBox(state: GameState) {
 
-  return getPlayableBoxPlayerIds(state).map((boxId) => ({
+  return resolvePlayableBoxes(state).map((box) => ({
 
-    boxId,
+    boxId: box.boxId,
 
-    slot: state.session.boxSlotNumbers?.[boxId] ?? null,
+    slot: state.session.boxSlotNumbers?.[box.boxId] ?? null,
 
-    stake: getStakeForBox(state, boxId),
+    stake: getStakeForBox(state, box.boxId),
 
-    confirmed: isBoxStakeConfirmed(state, boxId),
+    confirmed: isBoxStakeConfirmed(state, box.boxId),
+
+    activePlayer: box.activePlayer,
+
+    designatedOwner: box.designatedOwner,
 
   }));
 
@@ -172,7 +240,9 @@ export function getEligibleDealBoxes(state: GameState): string[] {
 
   const bankId = state.session.bankPlayerId;
 
-  const eligible = getPlayableBoxPlayerIds(state).filter((boxPlayerId) => {
+  const eligible = resolvePlayableBoxes(state)
+    .map((box) => box.boxId)
+    .filter((boxPlayerId) => {
     if (!state.players[boxPlayerId]) {
       return false;
     }
@@ -190,7 +260,13 @@ export function getEligibleDealBoxes(state: GameState): string[] {
   });
 
   const eligibleSet = new Set(eligible);
-  return getBettingPlayerIds(state.session).filter((id) => eligibleSet.has(id));
+  const ordered = getBettingPlayerIds(state.session).filter((id) => eligibleSet.has(id));
+  for (const id of eligible) {
+    if (!ordered.includes(id)) {
+      ordered.push(id);
+    }
+  }
+  return ordered;
 }
 
 
@@ -295,7 +371,7 @@ export function logDealBlockedAudit(
 
     minBet: getTableMinimumBet(state),
 
-    boxes: getOccupiedBoxPlayerIds(state),
+    playableBoxes: resolvePlayableBoxes(state),
 
     stakesByBox: buildStakesByBox(state),
 
@@ -310,62 +386,6 @@ export function logDealBlockedAudit(
 
 
 
-export function getDealBlockReason(state: GameState): string | null {
-
-  if (!isBankerReady(state)) {
-
-    return 'Choose banker first.';
-
-  }
-
-  if (!state.deck) {
-
-    return state.tableMeta.shoeStarted
-
-      ? 'Shuffle the shoe first.'
-
-      : 'Press Shuffle to start first.';
-
-  }
-
-  if (state.tableMeta.bettingLocked) {
-
-    return 'Dealing in progress.';
-
-  }
-
-  const phase = getProtocolPhase(state);
-
-  if (phase !== 'betting') {
-
-    return null;
-
-  }
-
-  if (isRoundInPlay(state)) {
-
-    return null;
-
-  }
-
-  if (!hasEligibleDealBoxes(state)) {
-
-    if (hasAnyStakes(state)) {
-
-      return 'Place at least minimum bet to deal.';
-
-    }
-
-    return 'Place bets first.';
-
-  }
-
-  return null;
-
-}
-
-
-
 export function logDealCardsAudit(
 
   state: GameState,
@@ -374,9 +394,7 @@ export function logDealCardsAudit(
 
 ): void {
 
-  const reason = extra?.blockReason ?? getDealBlockReason(state);
-
-  const occupied = getOccupiedBoxPlayerIds(state);
+  const occupied = resolvePlayableBoxes(state).map((box) => box.boxId);
 
   const stakesByBox = buildStakesByBox(state);
 
@@ -398,7 +416,7 @@ export function logDealCardsAudit(
 
     eligibleBoxes,
 
-    blockReason: reason,
+    blockReason: extra?.blockReason ?? null,
 
     dealPlan: eligibleBoxes.map((id) => blackjackHandKey(id, 0)),
 
@@ -408,12 +426,11 @@ export function logDealCardsAudit(
 
   log.info('dealCardsAudit', payload);
 
-  if (reason) {
+  if (extra?.blockReason) {
 
-    logDealBlockedAudit(state, reason);
+    logDealBlockedAudit(state, extra.blockReason);
 
   }
 
 }
-
 

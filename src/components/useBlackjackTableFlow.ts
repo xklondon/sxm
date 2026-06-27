@@ -25,10 +25,9 @@ import {
   logDealCardsAudit,
 } from '../engine/blackjack/protocol';
 import {
-  canStartBlackjackDeal,
-  getBlackjackDealBlockReason,
-  logBlackjackDealPermissionAudit,
-} from '../engine/session/tableDealPermission';
+  canDealBlackjack,
+  logDealAudit,
+} from '../engine/session/canDealBlackjack';
 import type { CardTimerPreset } from '../engine/blackjack/flowSettings';
 import { isNaturalInitialDeal, isStagedInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import {
@@ -98,7 +97,7 @@ export function useBlackjackTableFlow(
     protocolPhase === 'betting' &&
     Boolean(tableMeta.shoeStarted) &&
     bettingOpen &&
-    canStartBlackjackDeal(gameState, viewerPersonId) &&
+    canDealBlackjack(gameState, viewerPersonId).allowed &&
     !actionPending &&
     !onlineActionInFlight;
 
@@ -120,7 +119,7 @@ export function useBlackjackTableFlow(
       const reason = onlineActionInFlight
         ? 'Previous table action still in progress — wait and try Deal Cards again.'
         : 'Deal already in progress.';
-      logBlackjackDealPermissionAudit(gameStateRef.current, viewerPersonId, {
+      logDealAudit(gameStateRef.current, viewerPersonId, {
         source: 'handleDealCards-busy',
       });
       reportFlowError(reason);
@@ -129,10 +128,10 @@ export function useBlackjackTableFlow(
     clearFlowError();
     const state = gameStateRef.current;
     logDealCardsAudit(state);
-    logBlackjackDealPermissionAudit(state, viewerPersonId, { source: 'handleDealCards' });
+    const authority = logDealAudit(state, viewerPersonId, { source: 'handleDealCards' });
 
-    const reason = getBlackjackDealBlockReason(state, viewerPersonId);
-    if (reason) {
+    if (!authority.allowed) {
+      const reason = authority.message ?? 'Cannot deal';
       logDealCardsAudit(state, { blockReason: reason });
       log.info('Deal Cards blocked', { reason });
       logDealSanity(state, { dealResult: `blocked: ${reason}` });
@@ -188,7 +187,12 @@ export function useBlackjackTableFlow(
       onFirstStartShuffleAnimationStart?: () => void;
       onFirstStartShuffleAnimationEnd?: () => void;
     } = {}) => {
-      if (actionPending) {
+      if (actionPending || onlineActionInFlight) {
+        reportFlowError(
+          onlineActionInFlight
+            ? 'Previous table action still in progress — wait and try Deal Cards again.'
+            : 'Deal already in progress.',
+        );
         return;
       }
       clearFlowError();
@@ -200,8 +204,12 @@ export function useBlackjackTableFlow(
         return;
       }
 
-      if (!hasAnyStakes(state)) {
-        reportFlowError('Place bets first.');
+      const authority = logDealAudit(state, viewerPersonId, {
+        source: 'handlePrimaryDealAction-firstStart',
+        allowPreShuffle: true,
+      });
+      if (!authority.allowed) {
+        reportFlowError(authority.message ?? 'Cannot deal');
         return;
       }
 

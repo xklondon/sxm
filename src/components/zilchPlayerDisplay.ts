@@ -192,44 +192,63 @@ export function seatPositionClass(index: number, total: number): string {
   return seatGridSlot(index, total);
 }
 
+/** Shared scatter landing position for throw end + landed freeze. */
+export function diceScatterPosition(
+  index: number,
+  seed: number,
+  count = 6,
+): { x: number; y: number; rot: number } {
+  const angle = (index / Math.max(count, 1)) * Math.PI * 2 + seed * 0.62;
+  const radiusX = 22 + ((seed + index * 11) % 28);
+  const radiusY = 14 + ((seed + index * 7) % 18);
+  return {
+    x: Math.cos(angle) * radiusX,
+    y: Math.sin(angle) * radiusY,
+    rot: ((seed + index * 37) % 72) - 36,
+  };
+}
+
 /** Per-die landed scatter position inside oval felt (visual only). */
 export function landedScatterStyle(
   index: number,
   seed: number,
   count = 6,
 ): Record<string, string> {
-  const angle = (index / Math.max(count, 1)) * Math.PI * 2 + seed * 0.62;
-  const radiusX = 22 + ((seed + index * 11) % 28);
-  const radiusY = 14 + ((seed + index * 7) % 18);
+  const { x, y, rot } = diceScatterPosition(index, seed, count);
   return {
-    '--scatter-x': `${Math.cos(angle) * radiusX}px`,
-    '--scatter-y': `${Math.sin(angle) * radiusY}px`,
-    '--scatter-rot': `${((seed + index * 37) % 72) - 36}deg`,
+    '--scatter-x': `${x}px`,
+    '--scatter-y': `${y}px`,
+    '--scatter-rot': `${rot}deg`,
   };
 }
 
-/** Per-die throw trajectory (visual only) — paths land on a non-overlapping grid. */
+/** Target row position for gather → ordered selection layout. */
+export function orderedRowStyle(
+  index: number,
+  count = 6,
+): Record<string, string> {
+  const dieSize = 37.6;
+  const gap = 7;
+  const totalW = count * dieSize + Math.max(0, count - 1) * gap;
+  const x = index * (dieSize + gap) - totalW / 2 + dieSize / 2;
+  return {
+    '--order-x': `${x}px`,
+    '--order-y': '0px',
+  };
+}
+
+/** Per-die throw trajectory — starts center, lands at scatter position. */
 export function dieThrowStyle(
   index: number,
   seed: number,
   count = 6,
 ): Record<string, string> {
-  const cols = Math.min(3, Math.max(1, count));
-  const rows = Math.ceil(count / cols);
-  const gap = 9;
-  const size = 40;
-  const col = index % cols;
-  const row = Math.floor(index / cols);
-  const gridW = cols * size + (cols - 1) * gap;
-  const gridH = rows * size + (rows - 1) * gap;
-  const endX = col * (size + gap) - gridW / 2 + size / 2;
-  const endY = row * (size + gap) - gridH / 2 + size / 2;
-
+  const { x, y, rot } = diceScatterPosition(index, seed, count);
   const angle = (index / Math.max(count, 1)) * Math.PI * 2 + seed * 0.55;
-  const startX = Math.cos(angle) * 52;
-  const startY = Math.sin(angle) * 34 + 38;
-  const midX = (startX + endX) / 2 + ((seed + index * 7) % 15) - 7;
-  const midY = (startY + endY) / 2 - 26 - ((seed + index * 5) % 11);
+  const startX = Math.cos(angle) * 8;
+  const startY = Math.sin(angle) * 6 + 12;
+  const midX = (startX + x) / 2 + ((seed + index * 7) % 18) - 9;
+  const midY = (startY + y) / 2 - 22 - ((seed + index * 5) % 14);
   const rotX = 300 + ((index * 47 + seed) % 420);
   const rotY = 260 + ((index * 61 + seed * 2) % 380);
   const rotZ = 220 + ((index * 53 + seed * 3) % 460);
@@ -240,10 +259,9 @@ export function dieThrowStyle(
     '--start-y': `${startY}px`,
     '--mid-x': `${midX}px`,
     '--mid-y': `${midY}px`,
-    '--end-x': `${endX}px`,
-    '--end-y': `${endY}px`,
-    '--die-path-x': `${endX}px`,
-    '--die-path-y': `${endY}px`,
+    '--end-x': `${x}px`,
+    '--end-y': `${y}px`,
+    '--scatter-rot': `${rot}deg`,
     '--die-rot-x': `${rotX}deg`,
     '--die-rot-y': `${rotY}deg`,
     '--die-rot-z': `${rotZ}deg`,

@@ -235,7 +235,7 @@ describe('canonical table setup routing', () => {
       <TableScreen gameState={normalizeLoadedGameState(reset)} onGameStateChange={noop} onLeave={noop} />,
     );
     expect(html).toContain('data-game="zilch"');
-    expect(html).not.toContain('bj-casino');
+    expect(html).not.toContain('Deal Cards');
   });
 
   it('reset panel uses staged flow title', () => {

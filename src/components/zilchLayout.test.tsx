@@ -31,7 +31,7 @@ describe('Zilch visual layout', () => {
     expect(ZILCH_CSS).toContain('overflow-x: hidden');
   });
 
-  it('ZilchPanel renders compact shell with reset and invite controls', () => {
+  it('ZilchPanel renders This Table toggle in toolbar', () => {
     const html = renderToStaticMarkup(
       <ZilchPanel
         gameState={zilchPracticeState()}
@@ -41,8 +41,9 @@ describe('Zilch visual layout', () => {
       />,
     );
     expect(html).toContain('zilch-panel--compact');
-    expect(html).toContain('Reset table');
-    expect(html).toContain('Invite to table');
+    expect(html).toContain('This Table');
+    expect(html).not.toContain('Reset table');
+    expect(html).not.toContain('Invite to table');
   });
 
   it('dice throw animation uses compact die tokens and 3D cube spin', () => {
@@ -55,15 +56,15 @@ describe('Zilch visual layout', () => {
     expect(ZILCH_CSS).toContain('zilch-die-path-throw-reduced');
   });
 
-  it('ledger toggle is present but panel is collapsed by default', () => {
+  it('ledger lives in This Table panel not footer drawer', () => {
     const html = renderToStaticMarkup(
       <ZilchPanel
         gameState={zilchPracticeState()}
         onGameStateChange={() => {}}
       />,
     );
-    expect(html).toContain('Table ledger');
-    expect(html).not.toContain('ledger-panel__title');
+    expect(html).not.toContain('Table ledger');
+    expect(html).not.toContain('zilch-panel__ledger-drawer');
   });
 });
 

@@ -14,11 +14,16 @@ import { useIsMobileViewport } from '../../hooks/useIsMobileViewport';
 import { useDeviceShake } from '../../hooks/useDeviceShake';
 import { useZilchTableFlow } from '../useZilchTableFlow';
 import { resolveViewerPersonIdForTable } from '../viewerIdentity';
+import { toggleSideRailPanel, type SideRailPanel } from '../sideRailPanel';
+import { TableSideRailShell } from '../TableSideRailShell';
+import { TABLE_UX } from '../tableUxContract';
+import { ZILCH_THROW_MS } from './zilchDiceAnimation';
 import { ZilchPlayerRail } from './ZilchPlayerRail';
 import { ZilchPlayArea } from './ZilchPlayArea';
 import { ZilchStarterSpinner } from './ZilchStarterSpinner';
 import { ZilchPracticeEndScreen } from './ZilchPracticeEndScreen';
-import { ZilchLedgerDrawer } from './ZilchLedgerDrawer';
+import { ZilchThisTablePanel } from './ZilchThisTablePanel';
+import '../../styles/bj-table-shared.css';
 import '../../styles/zilch-table.css';
 
 import type { TableResetSetupVariant } from '../TableStakePanel';
@@ -37,13 +42,6 @@ interface ZilchPanelProps {
 const RANDOMISER_SPIN_MS = 2400;
 const RANDOMISER_TICK_MS = 120;
 const RANDOMISER_FALLBACK_MS = 3200;
-
-const VIRTUAL_STYLES: VirtualPlayerStyle[] = [
-  'conservative',
-  'normal',
-  'aggressive',
-  'random',
-];
 
 export function ZilchPanel({
   gameState,
@@ -68,6 +66,7 @@ export function ZilchPanel({
   );
   const [virtualStyle, setVirtualStyle] = useState<VirtualPlayerStyle>('normal');
   const [animSeed] = useState(() => Math.floor(Math.random() * 1000));
+  const [sideRailPanel, setSideRailPanel] = useState<SideRailPanel>(null);
 
   const {
     handleStartGame,
@@ -210,7 +209,7 @@ export function ZilchPanel({
 
   const rolling = zilch?.diceAnimation.isRolling ?? false;
   const rollMs = zilch?.diceAnimation.durationMs ?? gameState.zilchSettings.diceAnimation.diceAnimationMs;
-  const visualRollMs = Math.min(900, Math.max(500, rollMs));
+  const visualRollMs = ZILCH_THROW_MS;
   const showValues = Boolean(zilch && !rolling);
   const controlsDisabled =
     rolling ||
@@ -238,6 +237,67 @@ export function ZilchPanel({
     challengeNeedsOpponent ||
     Boolean(zilch?.starterPlayerId && zilch.phase === 'player-turn');
 
+  function renderThisTablePanel(onClose?: () => void) {
+    return (
+      <ZilchThisTablePanel
+        gameState={gameState}
+        isPractice={isPracticeTable}
+        virtualStyle={virtualStyle}
+        onVirtualStyleChange={setVirtualStyle}
+        onResetTable={onBeginTableReset ? () => onBeginTableReset('resetTable') : undefined}
+        onInviteTable={onInviteTable}
+        onAddVirtual={handleAddVirtual}
+        onClose={onClose}
+      />
+    );
+  }
+
+  function renderSideRail(variant: 'dock' | 'overlay') {
+    if (!sideRailPanel) {
+      return null;
+    }
+    const shell = (
+      <div
+        className={`${TABLE_UX.sideRailPlacement} ${
+          variant === 'overlay'
+            ? 'zilch-panel__this-table--overlay'
+            : 'zilch-panel__this-table--dock'
+        } zilch-panel__this-table-rail`}
+        data-panel-placement={variant}
+        data-side-panel={sideRailPanel}
+        data-testid="zilch-this-table-rail"
+      >
+        <TableSideRailShell
+          title="This Table"
+          onClose={() => setSideRailPanel(null)}
+        >
+          {renderThisTablePanel(() => setSideRailPanel(null))}
+        </TableSideRailShell>
+      </div>
+    );
+
+    if (variant === 'overlay') {
+      return (
+        <div
+          className={`${TABLE_UX.mobileSidePanelOverlay} zilch-panel__side-overlay`}
+          role="presentation"
+          onClick={() => setSideRailPanel(null)}
+        >
+          <div
+            className={`${TABLE_UX.mobileSidePanelSheet} zilch-panel__side-sheet`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="This Table"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {shell}
+          </div>
+        </div>
+      );
+    }
+    return shell;
+  }
+
   return (
     <div className="zilch-panel zilch-panel--compact" data-game="zilch">
       <div className="zilch-panel__toolbar">
@@ -246,39 +306,19 @@ export function ZilchPanel({
           <span className="zilch-panel__mode-label">{tableModeLabel}</span>
         </div>
         <div className="zilch-panel__toolbar-actions">
-          {onBeginTableReset && (
-            <button
-              type="button"
-              className="secondary"
-              onClick={() => onBeginTableReset('resetTable')}
-            >
-              Reset table
-            </button>
-          )}
-          {onInviteTable && (
-            <button type="button" onClick={onInviteTable}>
-              Invite to table
-            </button>
-          )}
-          {isPracticeTable && (
-            <>
-              <select
-                className="secondary"
-                value={virtualStyle}
-                onChange={(e) => setVirtualStyle(e.target.value as VirtualPlayerStyle)}
-                aria-label="Virtual player style"
-              >
-                {VIRTUAL_STYLES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              <button type="button" className="secondary" onClick={handleAddVirtual}>
-                Add virtual player
-              </button>
-            </>
-          )}
+          <button
+            type="button"
+            className={
+              sideRailPanel === 'thisTable'
+                ? 'zilch-panel__this-table-btn zilch-panel__this-table-btn--active'
+                : 'zilch-panel__this-table-btn'
+            }
+            onClick={() => setSideRailPanel((current) => toggleSideRailPanel(current, 'thisTable'))}
+            aria-expanded={sideRailPanel === 'thisTable'}
+            data-testid="zilch-this-table-toggle"
+          >
+            This Table
+          </button>
         </div>
       </div>
 
@@ -311,65 +351,71 @@ export function ZilchPanel({
       )}
 
       {zilch && !showPracticeEnd && (
-        <div
-          className="zilch-table zilch-table--play"
-          style={
-            {
-              '--zilch-roll-ms': `${rollMs}ms`,
-              '--zilch-roll-visual-ms': `${visualRollMs}ms`,
-            } as CSSProperties
-          }
-        >
-          <div className="zilch-table__felt zilch-table__felt--canvas">
-            <ZilchPlayerRail
-              zilch={zilch}
-              visiblePlayers={visiblePlayers}
-              highlightPlayerId={highlightPlayerId}
-            />
-            <div className="zilch-table__play-column">
-              {showStarterSpinner ? (
-                <div className="zilch-table__felt-center">
-                  <ZilchStarterSpinner
-                    players={visiblePlayers}
-                    activeIndex={randomiserIndex}
-                    spinning={starterSpinActive}
-                    starterPlayerId={zilch.starterPlayerId}
-                    disabled={randomiserDisabled}
-                    onRandomiseStarter={onRandomiseStarter}
-                    setupHint={
-                      challengeNeedsOpponent
-                        ? 'Invite at least one player to start Challenge.'
-                        : undefined
-                    }
-                  />
-                </div>
-              ) : (
-                <ZilchPlayArea
+        <div className="zilch-panel__stage">
+          <div className="zilch-panel__main">
+            <div
+              className="zilch-table zilch-table--play"
+              style={
+                {
+                  '--zilch-roll-ms': `${rollMs}ms`,
+                  '--zilch-roll-visual-ms': `${visualRollMs}ms`,
+                  '--zilch-gather-ms': '500ms',
+                } as CSSProperties
+              }
+            >
+              <div className="zilch-table__felt zilch-table__felt--canvas">
+                <ZilchPlayerRail
                   zilch={zilch}
-                  rolling={rolling}
-                  showValues={showValues}
-                  animSeed={animSeed}
-                  controlsDisabled={controlsDisabled}
-                  actionError={actionError}
-                  onDismissError={clearActionError}
-                  zilchRevealCountdown={zilchRevealCountdown}
-                  onKeepSelected={handleKeepSelected}
-                  onRollDice={handleRollDice}
-                  onBank={handleBank}
+                  visiblePlayers={visiblePlayers}
+                  highlightPlayerId={highlightPlayerId}
                 />
-              )}
+                <div className="zilch-table__play-column">
+                  {showStarterSpinner ? (
+                    <div className="zilch-table__felt-center">
+                      <ZilchStarterSpinner
+                        players={visiblePlayers}
+                        activeIndex={randomiserIndex}
+                        spinning={starterSpinActive}
+                        starterPlayerId={zilch.starterPlayerId}
+                        disabled={randomiserDisabled}
+                        onRandomiseStarter={onRandomiseStarter}
+                        setupHint={
+                          challengeNeedsOpponent
+                            ? 'Invite at least one player to start Challenge.'
+                            : undefined
+                        }
+                      />
+                    </div>
+                  ) : (
+                    <ZilchPlayArea
+                      zilch={zilch}
+                      rolling={rolling}
+                      showValues={showValues}
+                      animSeed={animSeed}
+                      controlsDisabled={controlsDisabled}
+                      actionError={actionError}
+                      onDismissError={clearActionError}
+                      zilchRevealCountdown={zilchRevealCountdown}
+                      onKeepSelected={handleKeepSelected}
+                      onRollDice={handleRollDice}
+                      onBank={handleBank}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
+          {!isMobile && sideRailPanel && renderSideRail('dock')}
         </div>
       )}
+
+      {isMobile && sideRailPanel && renderSideRail('overlay')}
 
       {isMobile && zilch && (zilch.phase === 'player-turn' || zilch.phase === 'final-round') && canAct && (
         <p className="zilch-panel__shake-hint">
           Shake your phone for 3+ seconds to roll.
         </p>
       )}
-
-      {!showPracticeEnd && <ZilchLedgerDrawer gameState={gameState} />}
     </div>
   );
 }

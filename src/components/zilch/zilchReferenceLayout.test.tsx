@@ -32,6 +32,7 @@ import {
 } from '../../engine/session';
 import { ZilchPlayArea } from './ZilchPlayArea';
 import { ZilchPanel } from './ZilchPanel';
+import { ZILCH_GATHER_MS, ZILCH_LANDED_MS } from './zilchDiceAnimation';
 
 const ZILCH_CSS = readFileSync(join(process.cwd(), 'src/styles/zilch-table.css'), 'utf8');
 
@@ -131,7 +132,7 @@ describe('Zilch reference layout', () => {
     expect(ZILCH_CSS).toContain('width: 6.75rem');
   });
 
-  it('progresses dice UI phases rolling → landed → ordered', () => {
+  it('progresses dice UI phases landed → gather → ordered', () => {
     vi.useFakeTimers();
     const zilch = awaitingKeepState();
     render(
@@ -149,7 +150,11 @@ describe('Zilch reference layout', () => {
     const oval = screen.getByTestId('zilch-throw-oval');
     expect(oval.getAttribute('data-dice-ui-phase')).toBe('landed');
     act(() => {
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(ZILCH_LANDED_MS);
+    });
+    expect(oval.getAttribute('data-dice-ui-phase')).toBe('gather');
+    act(() => {
+      vi.advanceTimersByTime(ZILCH_GATHER_MS);
     });
     expect(oval.getAttribute('data-dice-ui-phase')).toBe('ordered');
     vi.useRealTimers();
@@ -249,7 +254,7 @@ describe('Zilch play flow', () => {
       />,
     );
     act(() => {
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(ZILCH_LANDED_MS + ZILCH_GATHER_MS);
     });
     const selectButtons = screen.getAllByRole('button', { name: 'Select die 1' });
     fireEvent.click(selectButtons[0]!);

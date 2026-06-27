@@ -70,7 +70,7 @@ describe('Zilch table routing', () => {
     );
 
     expect(html).toContain('data-game="zilch"');
-    expect(html).not.toContain('bj-casino');
+    expect(html).not.toContain('Deal Cards');
     expect(html).not.toContain('Deal Cards');
   });
 

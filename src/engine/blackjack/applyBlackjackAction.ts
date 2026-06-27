@@ -1,5 +1,5 @@
 import type { GameState } from '../../types';
-import { getBlackjackDealBlockReason } from '../session/tableDealPermission';
+import { canDealBlackjack } from '../session/canDealBlackjack';
 import {
   shuffleToStartOnState,
   completeStepwiseInitialDealIfNeeded,
@@ -78,9 +78,9 @@ export function applyBlackjackActionToState(
       next = shuffleToStartOnState(state);
       break;
     case 'dealCards': {
-      const blockReason = getBlackjackDealBlockReason(state, ctx.personId);
-      if (blockReason) {
-        throw new Error(blockReason);
+      const authority = canDealBlackjack(state, ctx.personId);
+      if (!authority.allowed) {
+        throw new Error(authority.message ?? 'Cannot deal');
       }
       next = syncBankPhaseOnState(
         processPlayFlowAutoStands(completeStepwiseInitialDealIfNeeded(dealCardsButtonOnState(state))),

@@ -110,7 +110,7 @@ describe('Zilch Challenge setup', () => {
       <TableScreen gameState={state} onGameStateChange={() => {}} onLeave={() => {}} />,
     );
     expect(html).toContain('data-game="zilch"');
-    expect(html).not.toContain('bj-casino');
+    expect(html).not.toContain('Deal Cards');
   });
 
   it('reconcileZilchRoster adds joined guest during setup without duplicate ids', () => {

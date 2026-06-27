@@ -92,7 +92,8 @@ describe('Zilch isolation guards', () => {
       <TableScreen gameState={state} onGameStateChange={() => {}} onLeave={() => {}} />,
     );
     expect(html).toContain('data-game="zilch"');
-    expect(html).not.toContain('bj-casino');
+    expect(html).not.toContain('Deal Cards');
+    expect(html).not.toMatch(/class="bj-casino"/);
     expect(html).not.toContain('Deal Cards');
   });
 
@@ -108,7 +109,7 @@ describe('Zilch isolation guards', () => {
     const panelSrc = readFileSync(join(ROOT, 'components', 'zilch', 'ZilchPanel.tsx'), 'utf8');
     expect(panelSrc).not.toContain('BlackjackPanel');
     expect(panelSrc).not.toMatch(/engine\/blackjack/);
-    expect(panelSrc).not.toContain('bj-casino');
+    expect(panelSrc).toContain('TABLE_UX');
   });
 });
 

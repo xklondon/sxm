@@ -1,12 +1,17 @@
 import type { ZilchGameState } from '../../engine/dice/zilch';
 import { canBank, canInitialRollAllDice, canRollAvailableDice } from '../../engine/dice/zilch';
+import {
+  controlsLockedForDicePhase,
+  selectionEnabledForPhase,
+  type ZilchDiceUiPhase,
+} from './zilchDiceAnimation';
 
 interface ZilchPlayControlsProps {
   zilch: ZilchGameState;
   rolling: boolean;
   controlsDisabled: boolean;
   canKeepSelected: boolean;
-  diceUiPhase: 'idle' | 'rolling' | 'landed' | 'ordered';
+  diceUiPhase: ZilchDiceUiPhase;
   actionError?: string | null;
   onKeepSelected: () => void;
   onRollDice: () => void;
@@ -36,13 +41,17 @@ export function ZilchPlayControls({
   const initialRoll = canInitialRollAllDice(zilch);
   const rollAvailable = canRollAvailableDice(zilch);
   const selectionPhase = zilch.phase === 'awaiting-keep-selection';
+  const diceLocked = controlsLockedForDicePhase(diceUiPhase);
   const rollDisabled =
     controlsDisabled ||
     rolling ||
-    diceUiPhase === 'landed' ||
+    diceLocked ||
     !(initialRoll || rollAvailable);
   const keepDisabled =
-    controlsDisabled || !canKeepSelected || diceUiPhase !== 'ordered' || !selectionPhase;
+    controlsDisabled ||
+    !canKeepSelected ||
+    !selectionEnabledForPhase(diceUiPhase) ||
+    !selectionPhase;
 
   const roundLabel =
     zilch.mode === 'fixed_rounds' && zilch.roundLimit
@@ -90,7 +99,7 @@ export function ZilchPlayControls({
           type="button"
           className="zilch-table__action-btn zilch-table__action-btn--bank"
           onClick={onBank}
-          disabled={!canBank(zilch) || controlsDisabled || diceUiPhase === 'landed'}
+          disabled={!canBank(zilch) || controlsDisabled || diceLocked}
         >
           Bank
         </button>
