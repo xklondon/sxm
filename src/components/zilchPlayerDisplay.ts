@@ -190,6 +190,22 @@ export function seatPositionClass(index: number, total: number): string {
   return seatGridSlot(index, total);
 }
 
+/** Per-die landed scatter position inside oval felt (visual only). */
+export function landedScatterStyle(
+  index: number,
+  seed: number,
+  count = 6,
+): Record<string, string> {
+  const angle = (index / Math.max(count, 1)) * Math.PI * 2 + seed * 0.62;
+  const radiusX = 22 + ((seed + index * 11) % 28);
+  const radiusY = 14 + ((seed + index * 7) % 18);
+  return {
+    '--scatter-x': `${Math.cos(angle) * radiusX}px`,
+    '--scatter-y': `${Math.sin(angle) * radiusY}px`,
+    '--scatter-rot': `${((seed + index * 37) % 72) - 36}deg`,
+  };
+}
+
 /** Per-die throw trajectory (visual only) — paths land on a non-overlapping grid. */
 export function dieThrowStyle(
   index: number,

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, act } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -25,7 +25,7 @@ import {
   createNewZilchTable,
   DEFAULT_TABLE_CHIPS,
 } from '../../engine/session';
-import { ZilchDiceArea } from './ZilchDiceArea';
+import { ZilchPlayArea } from './ZilchPlayArea';
 import { ZilchPanel } from './ZilchPanel';
 import { ZilchStarterSpinner } from './ZilchStarterSpinner';
 import { getVisibleZilchPlayers } from '../../engine/dice/zilch/zilchVisiblePlayers';
@@ -46,49 +46,54 @@ function awaitingKeepState(values: number[] = [1, 2, 3, 4, 6, 2]) {
 }
 
 describe('Zilch UX cleanup', () => {
-  it('CSS places dice/actions inside felt canvas structure', () => {
+  it('CSS places dice inside oval throw area within felt canvas', () => {
     expect(ZILCH_CSS).toContain('.zilch-table__felt--canvas');
-    expect(ZILCH_CSS).toContain('felt-center');
+    expect(ZILCH_CSS).toContain('.zilch-table__throw-oval');
     expect(ZILCH_CSS).toContain('.zilch-felt-center');
     expect(ZILCH_CSS).toContain('.zilch-starter-spinner');
   });
 
   it('does not render scoring combination pill buttons', () => {
+    vi.useFakeTimers();
     const zilch = awaitingKeepState();
     render(
-      <ZilchDiceArea
+      <ZilchPlayArea
         zilch={zilch}
         rolling={false}
         showValues
         animSeed={1}
         controlsDisabled={false}
-        onKeepAndRoll={vi.fn()}
+        onKeepSelected={vi.fn()}
         onRollDice={vi.fn()}
         onBank={vi.fn()}
       />,
     );
     expect(screen.queryByRole('button', { name: /Single 1 \(100\)/ })).toBeNull();
-    expect(screen.queryByText('Keep selected dice')).toBeNull();
+    vi.useRealTimers();
   });
 
-  it('clicking valid scoring die enables Keep and roll', () => {
+  it('clicking valid scoring die enables Keep selected after ordered phase', () => {
+    vi.useFakeTimers();
     const zilch = awaitingKeepState([1, 2, 3, 4, 6, 2]);
     render(
-      <ZilchDiceArea
+      <ZilchPlayArea
         zilch={zilch}
         rolling={false}
         showValues
         animSeed={1}
         controlsDisabled={false}
-        onKeepAndRoll={vi.fn()}
+        onKeepSelected={vi.fn()}
         onRollDice={vi.fn()}
         onBank={vi.fn()}
       />,
     );
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Select die 1' }));
-    const keepBtn = screen.getByRole('button', { name: 'Keep and roll' }) as HTMLButtonElement;
+    const keepBtn = screen.getByRole('button', { name: 'Keep selected' }) as HTMLButtonElement;
     expect(keepBtn.disabled).toBe(false);
-    expect(screen.getByText(/Selected: Single 1 = 100/)).toBeTruthy();
+    vi.useRealTimers();
   });
 
   it('keep and roll locks dice then rolls remaining dice', () => {

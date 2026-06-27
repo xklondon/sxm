@@ -12,14 +12,14 @@ import {
   fourOfAKindScore,
   fiveOfAKindScore,
   isZilchRoll,
-  scoreDieValues,
   sixOfAKindScore,
   SINGLE_FIVE_SCORE,
   SINGLE_ONE_SCORE,
   STRAIGHT_SCORE,
   threeOfAKindScore,
   THREE_PAIRS_SCORE,
-} from './zilchRules';
+} from './zilchProtocol';
+import { scoreDieValues } from './zilchRules';
 import type { ZilchDie } from './zilchTypes';
 
 function dice(values: number[]): ZilchDie[] {

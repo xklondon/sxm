@@ -143,7 +143,6 @@ describe('ZilchPanel UI smoke', () => {
     );
     expect(html).toContain('Zilch');
     expect(html).toContain('zilch-table');
-    expect(html).toContain('zilch-panel__banner');
     expect(html).toContain('zilch-seat');
     expect(html).toContain('Randomise starter');
   });

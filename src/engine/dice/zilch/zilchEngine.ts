@@ -5,7 +5,8 @@ import type {
   ZilchGameState,
   ZilchKeptGroup,
 } from './zilchTypes';
-import { detectZilchCombinations } from './zilchRules';
+import { detectZilchCombinations } from './zilchProtocol';
+import { resolveKeepForSelectedDice } from './zilchProtocol';
 import { appendEvent, generateId } from './zilchState';
 import { getZilchWinnerId } from './zilchSelectors';
 
@@ -192,21 +193,38 @@ export function holdScoringDice(
   state: ZilchGameState,
   combinationId: string,
 ): ZilchGameState {
-  if (
-    state.phase !== 'awaiting-keep-selection' &&
-    !((state.phase === 'player-turn' || state.phase === 'final-round') && state.keptThisRoll)
-  ) {
-    throw new Error('Cannot keep a combination in the current phase');
-  }
-
   const combo = findCombination(state, combinationId);
   if (!combo) {
     throw new Error(`Unknown combination ${combinationId}`);
   }
+  return applyKeepCombination(state, combo);
+}
+
+/** Keep scoring dice by id — supports multiple singles and exact combinations. */
+export function holdSelectedDice(
+  state: ZilchGameState,
+  selectedDiceIds: string[],
+): ZilchGameState {
+  if (
+    state.phase !== 'awaiting-keep-selection' &&
+    !((state.phase === 'player-turn' || state.phase === 'final-round') && state.keptThisRoll)
+  ) {
+    throw new Error('Cannot keep dice in the current phase');
+  }
+  const combo = resolveKeepForSelectedDice(state.dice, selectedDiceIds);
+  if (!combo) {
+    throw new Error('Selected dice are not a valid scoring set');
+  }
+  return applyKeepCombination(state, combo);
+}
+
+function applyKeepCombination(
+  state: ZilchGameState,
+  combo: ZilchCombination,
+): ZilchGameState {
   if (!combinationDiceAvailable(state, combo)) {
     throw new Error('Combination dice are not available');
   }
-
   const groupId = generateId();
   const keptGroup: ZilchKeptGroup = {
     id: groupId,

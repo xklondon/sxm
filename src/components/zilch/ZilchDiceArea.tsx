@@ -1,16 +1,14 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { type CSSProperties } from 'react';
 import type { ZilchDie, ZilchGameState } from '../../engine/dice/zilch';
 import {
   canKeepCombination,
-  canKeepSelectedDice,
-  findCombinationForSelection,
   isDieScoringSelectable,
   isTurnoverRoll,
-  selectionHintForDice,
 } from '../../engine/dice/zilch';
-import { dieThrowStyle } from '../zilchPlayerDisplay';
+import { dieThrowStyle, landedScatterStyle } from '../zilchPlayerDisplay';
 import { DieFace } from './DieFace';
-import { ZilchActions } from './ZilchActions';
+
+export type ZilchDiceUiPhase = 'idle' | 'rolling' | 'landed' | 'ordered';
 
 interface ZilchDiceAreaProps {
   zilch: ZilchGameState;
@@ -18,10 +16,10 @@ interface ZilchDiceAreaProps {
   showValues: boolean;
   animSeed: number;
   controlsDisabled: boolean;
+  diceUiPhase: ZilchDiceUiPhase;
+  selectedDiceIds: string[];
+  onSelectedDiceIdsChange: (ids: string[]) => void;
   zilchRevealCountdown?: number;
-  onKeepAndRoll: (combinationId: string) => void;
-  onRollDice: () => void;
-  onBank: () => void;
 }
 
 function placeholderDice(): ZilchDie[] {
@@ -33,29 +31,17 @@ function placeholderDice(): ZilchDie[] {
   }));
 }
 
-function selectionKey(ids: string[]): string {
-  return [...ids].sort().join(',');
-}
-
 export function ZilchDiceArea({
   zilch,
   rolling,
   showValues,
   animSeed,
   controlsDisabled,
+  diceUiPhase,
+  selectedDiceIds,
+  onSelectedDiceIdsChange,
   zilchRevealCountdown = 0,
-  onKeepAndRoll,
-  onRollDice,
-  onBank,
 }: ZilchDiceAreaProps) {
-  const [selectedDiceIds, setSelectedDiceIds] = useState<string[]>([]);
-
-  const selectionResetKey = `${zilch.rollNumberInTurn}:${zilch.phase}:${zilch.dice.map((d) => `${d.id}:${d.isKept}`).join('|')}`;
-
-  useEffect(() => {
-    setSelectedDiceIds([]);
-  }, [selectionResetKey]);
-
   const diceToRender =
     rolling && zilch.dice.length > 0
       ? zilch.dice
@@ -66,11 +52,13 @@ export function ZilchDiceArea({
   const activeDice = diceToRender.filter((die) => !die.isKept);
   const keptOnTable = diceToRender.filter((die) => die.isKept);
   const isZilchReveal = zilch.phase === 'zilch-reveal';
-  const canSelect = canKeepCombination(zilch) && showValues && !controlsDisabled && !isZilchReveal;
-  const canKeepSelected = canKeepSelectedDice(zilch, selectedDiceIds);
+  const canSelect =
+    canKeepCombination(zilch) &&
+    showValues &&
+    !controlsDisabled &&
+    !isZilchReveal &&
+    diceUiPhase === 'ordered';
   const turnover = isTurnoverRoll(zilch);
-
-  const selectedKey = useMemo(() => selectionKey(selectedDiceIds), [selectedDiceIds]);
 
   function toggleDieSelection(die: ZilchDie) {
     if (!canSelect || die.isKept) {
@@ -79,43 +67,33 @@ export function ZilchDiceArea({
     if (!isDieScoringSelectable(die, zilch.availableCombinations)) {
       return;
     }
-    setSelectedDiceIds((prev) => {
-      const next = prev.includes(die.id)
-        ? prev.filter((id) => id !== die.id)
-        : [...prev, die.id];
-      const match = findCombinationForSelection(zilch, next);
-      if (match) {
-        return [...match.diceIds];
-      }
-      return next;
-    });
+    onSelectedDiceIdsChange(
+      selectedDiceIds.includes(die.id)
+        ? selectedDiceIds.filter((id) => id !== die.id)
+        : [...selectedDiceIds, die.id],
+    );
   }
-
-  function handleKeepAndRollClick() {
-    const combo = findCombinationForSelection(zilch, selectedDiceIds);
-    if (!combo) {
-      return;
-    }
-    onKeepAndRoll(combo.id);
-    setSelectedDiceIds([]);
-  }
-
-  const selectionHint = selectionHintForDice(zilch, selectedDiceIds, canSelect);
 
   function renderDie(die: ZilchDie, index: number, selectable: boolean) {
-    const isSelected = selectedKey === selectionKey([die.id]) || selectedDiceIds.includes(die.id);
+    const isSelected = selectedDiceIds.includes(die.id);
     const scoringSelectable = isDieScoringSelectable(die, zilch.availableCombinations);
-    const invalidSelected = isSelected && selectedDiceIds.length > 0 && !canKeepSelected;
     const dieCount = activeDice.length || 6;
-    const pathStyle = rolling
-      ? (dieThrowStyle(index, animSeed + index, dieCount) as CSSProperties)
-      : undefined;
+    const scattered = diceUiPhase === 'landed';
+    const ordered = diceUiPhase === 'ordered';
+
+    let pathStyle: CSSProperties | undefined;
+    if (rolling) {
+      pathStyle = dieThrowStyle(index, animSeed + index, dieCount) as CSSProperties;
+    } else if (scattered) {
+      pathStyle = landedScatterStyle(index, animSeed + index, dieCount) as CSSProperties;
+    }
+
     return (
       <div
         key={die.id}
         className={`zilch-die__path${
-          rolling ? ' zilch-die__path--throw' : ' zilch-die__path--settled'
-        }`}
+          rolling ? ' zilch-die__path--throw' : scattered ? ' zilch-die__path--landed' : ' zilch-die__path--settled'
+        }${ordered ? ' zilch-die__path--ordered' : ''}`}
         style={pathStyle}
       >
         <button
@@ -123,10 +101,8 @@ export function ZilchDiceArea({
           className={`zilch-die${rolling ? ' zilch-die--throw' : ''}${
             die.isKept ? ' zilch-die--kept' : ''
           }${isSelected ? ' zilch-die--selected' : ''}${
-            invalidSelected ? ' zilch-die--invalid' : ''
-          }${selectable && scoringSelectable && !die.isKept ? ' zilch-die--selectable' : ''}${
-            selectable && !die.isKept && !scoringSelectable ? ' zilch-die--non-scoring' : ''
-          }`}
+            selectable && scoringSelectable && !die.isKept ? ' zilch-die--selectable' : ''
+          }${selectable && !die.isKept && !scoringSelectable ? ' zilch-die--non-scoring' : ''}`}
           onClick={() => toggleDieSelection(die)}
           disabled={!selectable || die.isKept || !scoringSelectable}
           aria-pressed={isSelected}
@@ -146,8 +122,18 @@ export function ZilchDiceArea({
     );
   }
 
+  const rollZoneClass = [
+    'zilch-table__roll-zone',
+    rolling ? 'zilch-table__roll-zone--throwing' : '',
+    diceUiPhase === 'landed' ? 'zilch-table__roll-zone--landed' : '',
+    diceUiPhase === 'ordered' ? 'zilch-table__roll-zone--ordered' : '',
+    !rolling && activeDice.length > 0 && diceUiPhase === 'idle' ? 'zilch-table__roll-zone--settled' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className="zilch-felt-center" data-testid="zilch-felt-center">
+    <div className="zilch-felt-center zilch-felt-center--play" data-testid="zilch-felt-center">
       {turnover && !rolling && (
         <p className="zilch-table__turnover" role="status">
           Turnover — roll all 6 dice again
@@ -167,15 +153,16 @@ export function ZilchDiceArea({
       )}
 
       <div
-        className={`zilch-table__roll-zone${
-          !rolling && activeDice.length > 0 ? ' zilch-table__roll-zone--settled' : ''
-        }`}
-        aria-label="Dice on table"
+        className="zilch-table__throw-oval"
+        data-testid="zilch-throw-oval"
+        data-dice-ui-phase={diceUiPhase}
       >
-        {activeDice.map((die, index) => renderDie(die, index, canSelect))}
-        {activeDice.length === 0 && zilch.phase === 'player-turn' && !rolling && !turnover && (
-          <span className="zilch-table__hint">Press Roll to throw dice</span>
-        )}
+        <div className={rollZoneClass} aria-label="Dice on table">
+          {activeDice.map((die, index) => renderDie(die, index, canSelect))}
+          {activeDice.length === 0 && zilch.phase === 'player-turn' && !rolling && !turnover && (
+            <span className="zilch-table__hint">Press Roll Dice to throw</span>
+          )}
+        </div>
       </div>
 
       {(keptOnTable.length > 0 || zilch.keptDice.length > 0) && (
@@ -191,22 +178,6 @@ export function ZilchDiceArea({
           ))}
         </div>
       )}
-
-      {selectionHint && (
-        <p className="zilch-table__selection-hint" role="status">
-          {selectionHint}
-        </p>
-      )}
-
-      <ZilchActions
-        zilch={zilch}
-        rolling={rolling}
-        controlsDisabled={controlsDisabled}
-        canKeepAndRoll={canKeepSelected}
-        onKeepAndRoll={handleKeepAndRollClick}
-        onRollDice={onRollDice}
-        onBank={onBank}
-      />
     </div>
   );
 }

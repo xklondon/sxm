@@ -1,6 +1,6 @@
 import type { ZilchCombination, ZilchDie } from './zilchTypes';
 
-/** Canonical Zilch scoring (points scale: single 1 = 100, single 5 = 50, etc.). */
+/** Low-level scoring primitives. Prefer `zilchProtocol.ts` for selection/keep validation. */
 
 export const SINGLE_ONE_SCORE = 100;
 export const SINGLE_FIVE_SCORE = 50;

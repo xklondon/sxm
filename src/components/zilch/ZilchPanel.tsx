@@ -17,7 +17,7 @@ import { canActOnZilchTurn, resolveZilchController } from '../zilchPlayerDisplay
 import { resolveViewerPersonIdForTable } from '../viewerIdentity';
 import { ZilchCommand } from './ZilchCommand';
 import { ZilchPlayerRail } from './ZilchPlayerRail';
-import { ZilchDiceArea } from './ZilchDiceArea';
+import { ZilchPlayArea } from './ZilchPlayArea';
 import { ZilchStarterSpinner } from './ZilchStarterSpinner';
 import { ZilchPracticeEndScreen } from './ZilchPracticeEndScreen';
 import { ZilchLedgerDrawer } from './ZilchLedgerDrawer';
@@ -73,7 +73,7 @@ export function ZilchPanel({
     handleStartGame,
     handleRandomiseStarter,
     handleRollDice,
-    handleKeepAndRoll,
+    handleKeepSelected,
     handleBank,
     actionError,
     zilchRevealCountdown,
@@ -339,25 +339,27 @@ export function ZilchPanel({
               visiblePlayers={visiblePlayers}
               highlightPlayerId={highlightStarterId}
             />
-            <div className="zilch-table__felt-center">
+            <div className="zilch-table__play-column">
               {showStarterSpinner ? (
-                <ZilchStarterSpinner
-                  players={visiblePlayers}
-                  activeIndex={randomiserIndex}
-                  spinning={starterSpinActive}
-                  starterPlayerId={zilch.starterPlayerId}
-                  disabled={randomiserDisabled}
-                  onRandomiseStarter={onRandomiseStarter}
-                />
+                <div className="zilch-table__felt-center">
+                  <ZilchStarterSpinner
+                    players={visiblePlayers}
+                    activeIndex={randomiserIndex}
+                    spinning={starterSpinActive}
+                    starterPlayerId={zilch.starterPlayerId}
+                    disabled={randomiserDisabled}
+                    onRandomiseStarter={onRandomiseStarter}
+                  />
+                </div>
               ) : (
-                <ZilchDiceArea
+                <ZilchPlayArea
                   zilch={zilch}
                   rolling={rolling}
                   showValues={showValues}
                   animSeed={animSeed}
                   controlsDisabled={controlsDisabled}
                   zilchRevealCountdown={zilchRevealCountdown}
-                  onKeepAndRoll={handleKeepAndRoll}
+                  onKeepSelected={handleKeepSelected}
                   onRollDice={handleRollDice}
                   onBank={handleBank}
                 />

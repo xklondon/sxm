@@ -1,5 +1,8 @@
 import type { ZilchGameState } from './zilchTypes';
-import { findCombinationForExactDiceIds } from './zilchRules';
+import {
+  isValidKeep,
+  resolveKeepForSelectedDice,
+} from './zilchProtocol';
 
 /** Phases where a seated player may roll, keep, or bank. */
 export function isActiveZilchTurnPhase(state: ZilchGameState): boolean {
@@ -66,15 +69,15 @@ export function isTurnoverRoll(state: ZilchGameState): boolean {
 export function findCombinationForSelection(
   state: ZilchGameState,
   selectedDiceIds: string[],
-): ReturnType<typeof findCombinationForExactDiceIds> {
-  return findCombinationForExactDiceIds(state.availableCombinations, selectedDiceIds);
+): ReturnType<typeof resolveKeepForSelectedDice> {
+  return resolveKeepForSelectedDice(state.dice, selectedDiceIds);
 }
 
 export function canKeepSelectedDice(state: ZilchGameState, selectedDiceIds: string[]): boolean {
   if (!canKeepCombination(state)) {
     return false;
   }
-  return Boolean(findCombinationForSelection(state, selectedDiceIds));
+  return isValidKeep(state.dice, selectedDiceIds);
 }
 
 export function canBank(state: ZilchGameState): boolean {
@@ -145,21 +148,11 @@ export function canKeepAndRollSelected(
 }
 
 export function selectionHintForDice(
-  state: ZilchGameState,
-  selectedDiceIds: string[],
-  canSelect: boolean,
+  _state: ZilchGameState,
+  _selectedDiceIds: string[],
+  _canSelect: boolean,
 ): string | null {
-  if (!canSelect) {
-    return null;
-  }
-  if (selectedDiceIds.length === 0) {
-    return state.phase === 'awaiting-keep-selection' ? 'Select scoring dice to keep.' : null;
-  }
-  const combo = findCombinationForSelection(state, selectedDiceIds);
-  if (combo) {
-    return `Selected: ${combo.label} = ${combo.score}`;
-  }
-  return 'Selected dice are not a valid scoring set.';
+  return null;
 }
 
 export function zilchRevealSecondsRemaining(
@@ -177,7 +170,7 @@ export function commandStatusForPhase(
   names: Record<string, string>,
   canAct: boolean,
   options: { challengeNeedsOpponent?: boolean } = {},
-): string {
+): string | null {
   switch (state.phase) {
     case 'setup':
       return options.challengeNeedsOpponent
@@ -197,10 +190,10 @@ export function commandStatusForPhase(
     case 'zilch-reveal':
       return 'ZILCH — no scoring dice. Turn score lost.';
     case 'awaiting-keep-selection':
-      return 'Select scoring dice to keep.';
+      return null;
     default:
       if (!canAct) {
-        return 'Waiting for another player…';
+        return null;
       }
       if (isTurnoverRoll(state)) {
         return 'Turnover — Greater Glory: roll all 6 dice.';

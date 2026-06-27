@@ -46,15 +46,17 @@ export function ZilchCommand({
           {actionError}
         </p>
       )}
-      <p className={`zilch-panel__banner${bannerClass}${className}`} role="status">
-        {message}
-        {zilch?.phase === 'zilch-reveal' && zilchRevealCountdown > 0 && (
-          <span className="zilch-panel__banner-countdown">
-            {' '}
-            Next player in {zilchRevealCountdown}…
-          </span>
-        )}
-      </p>
+      {message && (
+        <p className={`zilch-panel__banner${bannerClass}${className}`} role="status">
+          {message}
+          {zilch?.phase === 'zilch-reveal' && zilchRevealCountdown > 0 && (
+            <span className="zilch-panel__banner-countdown">
+              {' '}
+              Next player in {zilchRevealCountdown}…
+            </span>
+          )}
+        </p>
+      )}
     </>
   );
 }

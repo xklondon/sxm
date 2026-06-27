@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, act } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_ZILCH_SETTINGS } from '../../engine/dice/zilch/settings';
 import {
@@ -8,7 +8,7 @@ import {
   randomiseStarter,
   rollDice,
 } from '../../engine/dice/zilch/zilchEngine';
-import { ZilchDiceArea } from './ZilchDiceArea';
+import { ZilchPlayArea } from './ZilchPlayArea';
 
 afterEach(() => cleanup());
 
@@ -27,49 +27,58 @@ function awaitingKeepState(values: number[] = [1, 2, 3, 4, 5, 6]) {
 }
 
 describe('Zilch manual die selection', () => {
-  it('selects a valid scoring die and keeps via Keep and roll', () => {
+  it('selects a valid scoring die and keeps via Keep selected', () => {
+    vi.useFakeTimers();
     const zilch = awaitingKeepState([1, 2, 3, 4, 6, 2]);
-    const singleOne = zilch.availableCombinations.find((c) => c.type === 'single_one')!;
-    const onKeepAndRoll = vi.fn();
+    const oneId = zilch.dice.find((d) => d.value === 1)!.id;
+    const onKeepSelected = vi.fn();
 
     render(
-      <ZilchDiceArea
+      <ZilchPlayArea
         zilch={zilch}
         rolling={false}
         showValues
         animSeed={1}
         controlsDisabled={false}
-        onKeepAndRoll={onKeepAndRoll}
+        onKeepSelected={onKeepSelected}
         onRollDice={vi.fn()}
         onBank={vi.fn()}
       />,
     );
 
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Select die 1' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Keep and roll' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Keep selected' }));
 
-    expect(onKeepAndRoll).toHaveBeenCalledWith(singleOne.id);
+    expect(onKeepSelected).toHaveBeenCalledWith([oneId]);
+    vi.useRealTimers();
   });
 
-  it('blocks keep when selection is invalid and shows helper text', () => {
+  it('blocks keep when selection is invalid', () => {
+    vi.useFakeTimers();
     const zilch = awaitingKeepState([1, 2, 3, 4, 6, 2]);
 
     render(
-      <ZilchDiceArea
+      <ZilchPlayArea
         zilch={zilch}
         rolling={false}
         showValues
         animSeed={1}
         controlsDisabled={false}
-        onKeepAndRoll={vi.fn()}
+        onKeepSelected={vi.fn()}
         onRollDice={vi.fn()}
         onBank={vi.fn()}
       />,
     );
 
-    expect(screen.getByText('Select scoring dice to keep.')).toBeTruthy();
-    expect((screen.getByRole('button', { name: 'Keep and roll' }) as HTMLButtonElement).disabled).toBe(
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect((screen.getByRole('button', { name: 'Keep selected' }) as HTMLButtonElement).disabled).toBe(
       true,
     );
+    vi.useRealTimers();
   });
 });

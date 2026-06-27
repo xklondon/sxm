@@ -1,3 +1,4 @@
+export * from './zilchProtocol';
 export * from './zilchRoster';
 export * from './zilchTypes';
 export * from './zilchRules';

@@ -19,7 +19,7 @@ describe('Zilch play layout and seats', () => {
   it('felt canvas contains center dice zone inside play area', () => {
     expect(ZILCH_CSS).toContain('.zilch-table__felt--canvas');
     expect(ZILCH_CSS).toContain('.zilch-felt-center');
-    expect(ZILCH_CSS).toContain('grid-template-areas');
+    expect(ZILCH_CSS).toContain('.zilch-table__play-column');
   });
 
   it('mobile stacks compact actions without side options panel', () => {

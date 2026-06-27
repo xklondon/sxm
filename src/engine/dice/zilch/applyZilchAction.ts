@@ -9,6 +9,7 @@ import {
   createInitialZilchState,
   advanceAfterZilchReveal,
   keepCombination,
+  holdSelectedDice,
   randomiseStarter,
   rollDice,
 } from './zilchEngine';
@@ -76,11 +77,15 @@ export function applyZilchActionToState(
       zilch = completeDiceRoll(zilch);
       break;
     case 'zilchKeepCombination': {
+      const diceIds = payload.diceIds;
       const combinationId = String(payload.combinationId ?? '');
-      if (!combinationId) {
-        throw new Error('combinationId required');
+      if (Array.isArray(diceIds) && diceIds.length > 0) {
+        zilch = holdSelectedDice(zilch, diceIds.map(String));
+      } else if (combinationId) {
+        zilch = keepCombination(zilch, combinationId);
+      } else {
+        throw new Error('combinationId or diceIds required');
       }
-      zilch = keepCombination(zilch, combinationId);
       break;
     }
     case 'zilchBankTurn':
