@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { DiscardNewTableSetupDialog } from './DiscardNewTableSetupDialog';
+import { SxmModalShell } from './SxmModalShell';
 import './NewTableOverlay.css';
 
 export interface NewTableOverlayProps {
@@ -7,12 +8,11 @@ export interface NewTableOverlayProps {
   title: string;
   ariaLabel: string;
   onClose: () => void;
-  /** When true, backdrop/X close asks before discarding in-progress setup. */
   confirmDiscardWhenDirty?: boolean;
   children: ReactNode;
 }
 
-/** Shared New Table shell — fixed over page/table; desktop centered, mobile bottom sheet. */
+/** Open New Table — canonical SxmModalShell. */
 export function NewTableOverlay({
   open,
   title,
@@ -48,30 +48,16 @@ export function NewTableOverlay({
 
   return (
     <>
-      <div className="new-table-overlay" role="presentation" onClick={requestClose}>
-        <aside
-          className="new-table-overlay__panel"
-          role="dialog"
-          aria-label={ariaLabel}
-          aria-labelledby="new-table-overlay-title"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <header className="new-table-overlay__header">
-            <h2 id="new-table-overlay-title" className="new-table-overlay__title">
-              {title}
-            </h2>
-            <button
-              type="button"
-              className="new-table-overlay__close secondary"
-              onClick={requestClose}
-              aria-label={`Close ${title}`}
-            >
-              ×
-            </button>
-          </header>
-          <div className="new-table-overlay__body">{children}</div>
-        </aside>
-      </div>
+      <SxmModalShell
+        open={open}
+        title={title}
+        ariaLabel={ariaLabel}
+        onClose={requestClose}
+        titleId="new-table-overlay-title"
+        className="new-table-overlay__panel sxm-modal-shell__panel--new-table"
+      >
+        {children}
+      </SxmModalShell>
       <DiscardNewTableSetupDialog
         open={discardConfirmOpen}
         onConfirmDiscard={confirmDiscard}

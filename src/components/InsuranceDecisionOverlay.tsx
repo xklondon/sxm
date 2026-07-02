@@ -2,8 +2,11 @@ import './InsuranceDecisionOverlay.css';
 
 export interface InsuranceDecisionOverlayProps {
   boxLabel: string;
+  boxIndex: number;
+  boxCount: number;
   maxBet: number;
   canAfford: boolean;
+  blockReason?: string | null;
   pending?: boolean;
   onInsurance: () => void;
   onDecline: () => void;
@@ -12,8 +15,11 @@ export interface InsuranceDecisionOverlayProps {
 /** Compact insurance prompt — sits directly under the command area. */
 export function InsuranceDecisionOverlay({
   boxLabel,
+  boxIndex,
+  boxCount,
   maxBet,
   canAfford,
+  blockReason,
   pending = false,
   onInsurance,
   onDecline,
@@ -25,7 +31,14 @@ export function InsuranceDecisionOverlay({
       role="group"
       aria-label={`${boxLabel} insurance decision`}
     >
-      <p className="bj-insurance-overlay__hint">Insurance pays 2:1</p>
+      <p className="bj-insurance-overlay__hint">
+        Insurance: Box {boxIndex} of {boxCount} — pays 2:1
+      </p>
+      {!canAfford && blockReason ? (
+        <p className="bj-insurance-overlay__block" role="status">
+          {blockReason}
+        </p>
+      ) : null}
       <div className="bj-insurance-overlay__actions">
         <button
           type="button"

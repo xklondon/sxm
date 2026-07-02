@@ -16,7 +16,9 @@ import { appendBoxLedgerEntry, appendBoxLedgerEntryForStaker } from '../session/
 import {
   applyProportionalHandBankSettlement,
   applyProportionalHandBoxSettlement,
+  resolveHandStakerAmounts,
 } from './stakeSettlement';
+import { applyProportionalStakerDebits, getProportionalFundingBlockReason, resolveHandFundingParticipants, resolveProportionalFundingCapacity } from './handFunding';
 import { drawCard, getCardById } from '../deck/deck';
 import { applyDeckToGameState } from '../deck/gameState';
 import type { GameState } from '../../types';
@@ -379,7 +381,7 @@ export function doubleDownBlackjackPlayer(
   round: BlackjackRound,
   handKey: string,
   bankrollCtx: BankrollContext,
-  settings?: BlackjackSettings,
+  _settings?: BlackjackSettings,
   protocol?: BlackjackProtocol,
 ): {
   session: GameSession;
@@ -391,31 +393,50 @@ export function doubleDownBlackjackPlayer(
   assertRoundStatus(round, ['player-turns'], 'double down');
   const hand = assertHandCanAct(round, handKey, 'double down');
   const proto = protocol ?? getBlackjackProtocolOrDefault();
-  const bankrollOwnerId = resolveBankrollOwnerId(bankrollCtx, hand.playerId);
+  const fundingState = {
+    session,
+    players,
+    ledger,
+    tableMeta: {
+      ownerPersonId: bankrollCtx.ownerPersonId ?? null,
+      bankerSetup: bankrollCtx.bankerSetup ?? { mode: 'bot', playerId: null, displayName: '' },
+      boxStakes: {},
+      boxSlots: [],
+      bettingLocked: true,
+    },
+    blackjack: round,
+    deck,
+  } as unknown as GameState;
+  const fundingParticipants = resolveHandFundingParticipants(fundingState, hand, hand.playerId);
+  const stakerAmounts = resolveHandStakerAmounts(hand, bankrollCtx, hand.playerId);
+  const additionalBet = hand.currentBet;
+  const fundBlock = getProportionalFundingBlockReason(fundingParticipants, additionalBet);
+  if (fundBlock) {
+    throw new Error(fundBlock);
+  }
   const rulesCtx = buildActiveRulesHandContext(
     proto,
     ledger,
     round,
     handKey,
     deck,
-    bankrollOwnerId,
-    derivePlayerBalanceFromLedger(bankrollOwnerId, ledger) - hand.currentBet,
+    fundingParticipants[0]?.personId ?? hand.playerId,
+    resolveProportionalFundingCapacity(fundingParticipants, additionalBet),
   );
   if (!rulesCtx || !canDoubleUnderProtocol(proto, hand, rulesCtx)) {
     throw new Error('Double down not allowed for this protocol or hand');
   }
 
-  const additionalBet = hand.currentBet;
-  validateBetAmount(ledger, bankrollOwnerId, additionalBet, settings);
-
-  const bet = appendBoxLedgerEntry(
+  const bet = applyProportionalStakerDebits(
     session,
     ledger,
     bankrollCtx,
     hand.playerId,
+    stakerAmounts,
+    additionalBet,
     'bet-increased',
-    -additionalBet,
     `Double down: additional ${additionalBet} chips`,
+    session.currentRound,
   );
 
   let nextRound: BlackjackRound = {

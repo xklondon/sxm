@@ -1,49 +1,39 @@
-# Full Work Summary — Phase B: proportional stake settlement
+# Change Summary — blackjackRoundOwnershipReset batch flake fix
 
 ## Problem
 
-Phase A debited actual stakers at deal via `stakerAmountsByPersonId`, but round settlement still routed win/push/loss through box-native ledger helpers — so cross-box bettors did not receive payouts and native owners could be credited without staking.
+`blackjackRoundOwnershipReset.test.ts` passed in isolation but failed intermittently when batched with stake/insurance/deal-authority suites (e.g. `expected 'player-turns' to be 'resolved'` in `settleRound`). Different tests failed on different runs (`stakePayerAmounts`, `doublePayerFunding`, various ownership-reset cases).
 
-## Solution
+## Root cause
 
-### Settlement module (`src/engine/blackjack/stakeSettlement.ts`)
+1. **Global `Math.random` pollution:** `shuffleToStartOnState` → `shuffleGameDeck()` reshuffles the shoe with unseeded `Math.random`. Vitest batch runs consume the process-global PRNG across files, so the same `qa-seed` table fixture produced different dealer up-cards and hand shapes depending on which tests ran first.
 
-- `splitAmountByStakerShares` — integer proportional split (largest-remainder)
-- `resolveHandStakerAmounts` — hand snapshot first; legacy native-owner fallback
-- `applyProportionalHandBoxSettlement` — per-staker win/push/loss via `appendBoxLedgerEntryForStaker`; internal shared-pot rules per staker
-- `applyProportionalHandBankSettlement` — bank side unchanged totals (bets already debited at deal)
+2. **Brittle `settleRound` helper:** When the random reshuffle dealt a dealer Ace, insurance stayed pending. Phase 2 insurance no longer auto-skips unfunded boxes, but the helper only stood on `acting` hands and called `resolveBankTurnAuto` — it never declined insurance or handled even-money, so the loop exited at 80 iterations still in `player-turns`.
 
-### Hand snapshot (`src/types/blackjack.ts`, `round.ts`)
+3. **`doublePayerFunding` coupling:** One test relied on a real deal + manual card override; random deals could land in insurance or non-double-eligible hands.
 
-- `BlackjackPlayerHand.stakerAmountsByPersonId` copied at deal from box stake entry
-- `resolveBlackjackRound` settlement loop uses proportional box + bank helpers
+## Fix (test isolation only — no gameplay / ownership / layout changes)
 
-### Other settlement paths
+### `src/engine/blackjack/sanity/fixtures.ts`
 
-- `bustSettlement.ts` — proportional box + bank on bust
-- `naturalBlackjack.ts` — proportional box + bank on natural win
+- **`shuffleTableForDeal(state, seed)`** — shuffle then re-pin a seeded shoe (`test-deal-seed` default) + `withInstantInitialDeal`, immune to global PRNG drift.
+- **`blackjackTestActorContext(state)`** — shared actor for test reducers.
+- **`settleBlackjackRoundForTest(state, seed)`** — robust round walk: initial-deal completion, decline all pending insurance, `waitFor3to2` for even-money, stand acting hands, `resolveBankTurnAuto`.
 
-**Unchanged:** `canDealBlackjack`, box commander/caller (`resolveBoxRoundCommander`, `syncCallersForDeal`), free-box reset, `DealerBlock`, layouts, Zilch, IOU, routing.
+### Test files updated to use deterministic helpers
 
-## Tests
+- `blackjackRoundOwnershipReset.test.ts` — `settleRound` delegates to `settleBlackjackRoundForTest`.
+- `stakePayerAmounts.test.ts`, `stakeSettlement.test.ts`, `dealStartAuthority.test.ts` — `readyToDeal` → `shuffleTableForDeal`.
+- `doublePayerFunding.test.ts` — guest double test uses synthetic `playerTurnHard9` + `stakerAmountsByPersonId` instead of random deal.
 
-`src/engine/blackjack/stakeSettlement.test.ts` — 9 scenarios:
+## Validation
 
-1. Guest k on host box → k receives win; host native owner does not  
-2. Host xx on guest box → host receives win; guest native owner does not  
-3. Co-stake loss → only stakers lose (debits at deal); native owner unchanged  
-4. Co-stake win → payout split 1/3 and 2/3 (200/400 of 600 total)  
-5. Assigned player commands when they staked  
-6. First staker commands when assigned player did not stake  
-7. Free box resets commander after round  
-8. `syncCallersForDeal` locks commander separately from payer  
-9. `splitAmountByStakerShares` unit test  
+```text
+npm test -- blackjackRoundOwnershipReset          → 7/7 passed
+npm test -- stakePayerAmounts stakeSettlement doublePayerFunding multiBoxInsurance insurancePhase blackjackRoundOwnershipReset dealStartAuthority → 46/46 passed (8 consecutive batch runs)
+npm run build                                     → success
+```
 
-Also: `stakePayerAmounts.test.ts` (5), `sanity/sanity.test.ts` settlement checks (27 total in targeted run).
+## Spec discipline
 
-## Verification
-
-- `npx vitest run src/engine/blackjack/stakeSettlement.test.ts src/engine/blackjack/stakePayerAmounts.test.ts src/engine/blackjack/sanity/sanity.test.ts` — 27 passed  
-- `npm run build` — passed  
-
-**Spec discipline:** checked/updated `docs/SXM_MASTER_SPEC.md` and `docs/CHANGE_LOG.md`.
+Test-only change; no product behaviour, protocol, or layout updates — `SXM_MASTER_SPEC.md` and `CHANGE_LOG.md` unchanged.

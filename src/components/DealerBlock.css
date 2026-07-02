@@ -96,12 +96,19 @@
 
 .dealer-block__action-slot {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 1.85rem;
   width: 100%;
   position: relative;
   z-index: 3;
+  pointer-events: auto;
+}
+
+.dealer-block__action-slot .dealer-block__action {
+  width: 100%;
+  min-height: 1.85rem;
 }
 
 .dealer-block__action-spacer {

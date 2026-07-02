@@ -220,7 +220,7 @@ describe('insurance phase', () => {
         bankrollContextFromState(brokeState)!,
         LAS_VEGAS_PROTOCOL,
       ),
-    ).toThrow(/not enough chips/i);
+    ).toThrow(/insufficient chips/i);
 
     const actions = getInsuranceActionsForController(
       { ...brokeState, blackjack: round },

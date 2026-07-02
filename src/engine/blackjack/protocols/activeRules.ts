@@ -281,7 +281,7 @@ export function getInsuranceEligiblePlayerIds(
   return getInsuranceEligibleBoxIds(session, round, protocol);
 }
 
-/** True when every insurance-eligible box has accepted or declined (see insurance.ts for auto-skip). */
+/** @deprecated Use insurance.ts `allInsuranceDecisionsResolved(state, round, protocol)` — requires GameState. */
 export function allInsuranceDecisionsResolved(
   session: GameSession,
   round: BlackjackRound,
@@ -297,7 +297,8 @@ export function allInsuranceDecisionsResolved(
   return eligible.every((boxId) => {
     const declined = round.insuranceDeclined?.[boxId];
     const bet = round.insuranceBets?.[boxId] ?? 0;
-    return Boolean(declined) || bet > 0;
+    const skipped = round.insuranceSkipReasons?.[boxId];
+    return Boolean(declined) || bet > 0 || Boolean(skipped);
   });
 }
 

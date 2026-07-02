@@ -13,10 +13,10 @@ import { getBoxDecisionOwner } from '../session/boxDecisionOwnership';
 import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 import { bankrollContextFromState } from '../session/bankroll';
 import { addChipToBoxStake } from './stakes';
-import { dealCardsButtonOnState, shuffleToStartOnState, startNextRoundOnState } from './gameState';
+import { dealCardsButtonOnState, startNextRoundOnState } from './gameState';
 import { resolveBlackjackRound } from './round';
 import { splitAmountByStakerShares } from './stakeSettlement';
-import { boxPlayerId, findCardId, tableAfterStartPlaying } from './sanity/fixtures';
+import { boxPlayerId, findCardId, shuffleTableForDeal, tableAfterStartPlaying } from './sanity/fixtures';
 
 function twoPlayerSeated(startingChips = 500) {
   let state = tableAfterStartPlaying(startingChips);
@@ -51,7 +51,7 @@ function ledgerBalance(state: GameState, personId: string): number {
 }
 
 function readyToDeal(state: GameState): GameState {
-  return shuffleToStartOnState(state);
+  return shuffleTableForDeal(state);
 }
 
 function resolveBankingRound(

@@ -34,6 +34,8 @@ interface DealerBlockProps {
   canUserDealTable: boolean;
   /** Engine eligibility for betting-phase Deal Cards (stakes, shoe, protocol). */
   canDeal: boolean;
+  /** Shown when Deal Cards is disabled but user is host. */
+  dealBlockReason?: string | null;
   hasStakes: boolean;
   onShuffleToStart: () => void;
   onDealCards: () => void;
@@ -114,6 +116,7 @@ export function DealerBlock({
   bettingOpen,
   canUserDealTable,
   canDeal,
+  dealBlockReason = null,
   hasStakes,
   onShuffleToStart: _onShuffleToStart,
   onDealCards,
@@ -192,6 +195,10 @@ export function DealerBlock({
       disabled: !canDeal || !bettingOpen || !bankerReady || dealActionPending,
       onClick: onDealCards,
       cardsVariant: true,
+      hint:
+        canUserDealTable && !dealActionPending && (!canDeal || !bettingOpen) && dealBlockReason
+          ? dealBlockReason
+          : null,
     };
   }
 

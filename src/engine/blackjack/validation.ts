@@ -5,7 +5,6 @@ import type { Ledger } from '../../types/ledger';
 import type { Deck } from '../../types/deck';
 import type { BlackjackRound } from '../../types/blackjack';
 import { createEmptyBlackjackRound, createBlackjackPlayerHand } from '../../types/blackjack';
-import { getAvailableChipsForBankrollOwner, resolveBankrollOwnerIdForBox } from '../session/bankroll';
 import type { BlackjackSettings } from './settings';
 import { DEFAULT_BLACKJACK_SETTINGS } from './settings';
 import { runBlackjackRulesAudit } from './rules';
@@ -19,6 +18,10 @@ import {
   canSplitUnderProtocol,
   canStandUnderProtocol,
 } from './protocols/activeRules';
+import {
+  resolveHandFundingParticipants,
+  resolveProportionalFundingCapacity,
+} from './handFunding';
 
 export function canPlaceBlackjackBet(round: BlackjackRound): boolean {
   return round.status === 'betting';
@@ -51,17 +54,42 @@ function rulesContextForHand(state: GameState, handKey: string) {
   }
   const protocol = getBlackjackProtocolForState(state);
   const { playerId } = parseBlackjackHandKey(handKey);
-  const ownerId = resolveBankrollOwnerIdForBox(state, playerId);
+  const hand = round.playerHands[handKey];
+  if (!hand) {
+    return null;
+  }
+  const participants = resolveHandFundingParticipants(state, hand, playerId);
+  const fundingPersonId = participants[0]?.personId ?? playerId;
+  const availableForDouble = resolveProportionalFundingCapacity(participants, hand.currentBet);
   const ctx = buildActiveRulesHandContext(
     protocol,
     state.ledger,
     round,
     handKey,
     deck,
-    ownerId,
-    getAvailableChipsForBankrollOwner(state, ownerId),
+    fundingPersonId,
+    availableForDouble,
   );
-  return ctx ? { protocol, ctx, deck } : null;
+  return ctx ? { protocol, ctx, deck, participants } : null;
+}
+
+/** Block reason when double is rule-legal but stakers cannot fund the additional bet. */
+export function getDoubleFundingBlockReason(state: GameState, handKey: string): string | null {
+  const built = rulesContextForHand(state, handKey);
+  if (!built) {
+    return 'Hand not ready.';
+  }
+  const { hand } = built.ctx;
+  if (!canDoubleUnderProtocol(built.protocol, hand, built.ctx)) {
+    return null;
+  }
+  const block = built.participants.find(
+    (p) => p.availableChips < p.stakeAmount,
+  );
+  if (block) {
+    return `Insufficient chips for staker to double (${block.stakeAmount} needed).`;
+  }
+  return null;
 }
 
 export function canHitBlackjack(round: BlackjackRound, handKey: string): boolean {

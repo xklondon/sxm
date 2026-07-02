@@ -93,13 +93,15 @@ export function useBlackjackTableFlow(
   const gameOverMessage = getGameOverMessage(gameState);
   const bettingOpen = !gameEnded && allowsBettingActions(gameState);
   const awaitingNextRound = tableMeta.awaitingNextRound;
+  const dealGate = canDealBlackjack(gameState, viewerPersonId);
   const canDeal =
     protocolPhase === 'betting' &&
     Boolean(tableMeta.shoeStarted) &&
     bettingOpen &&
-    canDealBlackjack(gameState, viewerPersonId).allowed &&
+    dealGate.allowed &&
     !actionPending &&
     !onlineActionInFlight;
+  const dealBlockReason = dealGate.allowed ? null : dealGate.message;
 
   const reportFlowError = useCallback((msg: string) => {
     if (lastFlowErrorRef.current === msg) {
@@ -526,6 +528,7 @@ export function useBlackjackTableFlow(
     setFlowError,
     bettingOpen,
     canDeal,
+    dealBlockReason,
     dealActionPending: actionPending,
     nextRoundPending,
     protocolPhase,

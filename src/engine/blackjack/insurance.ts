@@ -2,29 +2,30 @@ import type { GameState } from '../../types';
 import type { Deck } from '../../types/deck';
 import type { Ledger } from '../../types/ledger';
 import type { GameSession } from '../../types/session';
+import type { Player } from '../../types/player';
+import type { BlackjackRound } from '../../types/blackjack';
+import type { BlackjackProtocol } from './protocols/types';
 import { getCallerPersonIdForBox, isSinglePlayerTable } from '../session/playerAssignment';
 import {
   getStakeContributorPersonIds,
   isBoxExposureAttributedToPerson,
 } from '../session/playerCommittedExposure';
-import type { Player } from '../../types/player';
-import type { BlackjackRound } from '../../types/blackjack';
-import type { BlackjackProtocol } from './protocols/types';
 import { getCardById } from '../deck/deck';
-import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 import type { BlackjackSettings } from './settings';
 import { insuranceBetMax, insuranceWinPayout } from './rules';
 import { getBlackjackHandValue, cardsFromIds } from './hand';
-import { handKeysWithConfirmedBets, syncPlayerBetsFromRound } from './helpers';
+import { handKeysWithConfirmedBets, syncPlayerBetsFromRound, syncActivePlayerId } from './helpers';
 import { parseBlackjackHandKey } from './handKeys';
-import {
-  getAvailableChipsForBankrollOwner,
-} from '../session/bankroll';
 import { findNextActingHand } from './virtual';
-import { syncActivePlayerId } from './helpers';
-import { resolveBankrollOwnerId, type BankrollContext } from '../session/bankroll';
-import { appendBoxLedgerEntry } from '../session/boxLedger';
+import type { BankrollContext } from '../session/bankroll';
+import { appendBoxLedgerEntryForStaker } from '../session/boxLedger';
 import { appendBankLedgerEntry } from './bankLedger';
+import {
+  getProportionalFundingBlockReason,
+  resolveHandFundingParticipants,
+  applyProportionalStakerDebits,
+} from './handFunding';
+import { resolveHandStakerAmounts, splitAmountByStakerShares } from './stakeSettlement';
 import {
   getInsuranceEligibleBoxIds,
   getInsuranceEligiblePlayerIds,
@@ -144,25 +145,30 @@ export function getPendingInsuranceBoxIdsForPerson(
   );
 }
 
+export function getInsuranceFundingBlockReason(
+  state: GameState,
+  round: BlackjackRound,
+  boxId: string,
+): string | null {
+  const handKey = getInsuranceHandKeyForBox(state.session, round, boxId);
+  const hand = handKey ? round.playerHands[handKey] : undefined;
+  if (!hand) {
+    return 'No active hand for insurance.';
+  }
+  const maxBet = insuranceBetMax(hand.currentBet);
+  if (maxBet <= 0) {
+    return 'Bet too small for insurance.';
+  }
+  const participants = resolveHandFundingParticipants(state, hand, boxId);
+  return getProportionalFundingBlockReason(participants, maxBet);
+}
+
 export function canAffordInsuranceForBox(
   state: GameState,
   round: BlackjackRound,
   boxId: string,
 ): boolean {
-  const handKey = getInsuranceHandKeyForBox(state.session, round, boxId);
-  const hand = handKey ? round.playerHands[handKey] : undefined;
-  if (!hand) {
-    return false;
-  }
-  const maxBet = insuranceBetMax(hand.currentBet);
-  if (maxBet <= 0) {
-    return false;
-  }
-  const bankrollOwnerId = getInsuranceDecisionPersonIdForBox(state, boxId);
-  if (!bankrollOwnerId) {
-    return false;
-  }
-  return getAvailableChipsForBankrollOwner(state, bankrollOwnerId) >= maxBet;
+  return getInsuranceFundingBlockReason(state, round, boxId) === null;
 }
 
 /** Box insurance complete: taken, declined, ineligible, no caller, or unfunded (auto-skip). */
@@ -186,11 +192,11 @@ export function isInsuranceBoxDecisionResolved(
   if ((round.insuranceBets?.[boxId] ?? 0) > 0) {
     return true;
   }
-  const decisionPersonId = getInsuranceDecisionPersonIdForBox(state, boxId);
-  if (!decisionPersonId) {
+  if (round.insuranceSkipReasons?.[boxId]) {
     return true;
   }
-  if (!canAffordInsuranceForBox(state, round, boxId)) {
+  const decisionPersonId = getInsuranceDecisionPersonIdForBox(state, boxId);
+  if (!decisionPersonId) {
     return true;
   }
   return false;
@@ -234,6 +240,7 @@ export function getInsuranceOfferForBox(
   handKey: string;
   maxBet: number;
   canAfford: boolean;
+  blockReason: string | null;
 } | null {
   if (!round.insuranceOfferPending) {
     return null;
@@ -258,6 +265,7 @@ export function getInsuranceOfferForBox(
     handKey,
     maxBet,
     canAfford: canAffordInsuranceForBox(state, round, boxId),
+    blockReason: getInsuranceFundingBlockReason(state, round, boxId),
   };
 }
 
@@ -269,7 +277,7 @@ export function takeInsuranceBet(
   playerId: string,
   bankrollCtx: BankrollContext,
   protocol?: BlackjackProtocol,
-  bankrollOwnerIdOverride?: string,
+  _bankrollOwnerIdOverride?: string,
 ): {
   session: GameSession;
   players: Record<string, Player>;
@@ -290,24 +298,35 @@ export function takeInsuranceBet(
   if (maxBet <= 0) {
     throw new Error('Bet too small for insurance');
   }
-  const bankrollOwnerId =
-    bankrollOwnerIdOverride ?? resolveBankrollOwnerId(bankrollCtx, boxId);
-  if (!bankrollOwnerId) {
-    throw new Error('No insurance decision owner for this box');
-  }
-  const balance = derivePlayerBalanceFromLedger(bankrollOwnerId, ledger);
-  if (balance < maxBet) {
-    throw new Error('Not enough chips for insurance');
+  const stakerAmounts = resolveHandStakerAmounts(hand, bankrollCtx, boxId);
+  const fundingState = {
+    session,
+    players,
+    ledger,
+    tableMeta: {
+      ownerPersonId: bankrollCtx.ownerPersonId ?? null,
+      bankerSetup: bankrollCtx.bankerSetup ?? { mode: 'bot', playerId: null, displayName: '' },
+      boxStakes: {},
+      boxSlots: [],
+      bettingLocked: true,
+    },
+    blackjack: round,
+  } as unknown as GameState;
+  const fundBlock = getInsuranceFundingBlockReason(fundingState, round, boxId);
+  if (fundBlock) {
+    throw new Error(fundBlock);
   }
 
-  const betResult = appendBoxLedgerEntry(
+  const betResult = applyProportionalStakerDebits(
     session,
     ledger,
     bankrollCtx,
-    playerId,
+    boxId,
+    stakerAmounts,
+    maxBet,
     'bet-placed',
-    -maxBet,
     `Insurance: ${maxBet} chips (2:1 if dealer blackjack)`,
+    session.currentRound,
   );
 
   const nextRound: BlackjackRound = {
@@ -333,14 +352,22 @@ export function takeInsuranceBet(
 export function declineInsurance(
   round: BlackjackRound,
   playerId: string,
+  skipReason?: string,
 ): BlackjackRound {
-  return {
+  const next: BlackjackRound = {
     ...round,
     insuranceDeclined: {
       ...(round.insuranceDeclined ?? {}),
       [playerId]: true,
     },
   };
+  if (skipReason) {
+    next.insuranceSkipReasons = {
+      ...(round.insuranceSkipReasons ?? {}),
+      [playerId]: skipReason,
+    };
+  }
+  return next;
 }
 
 export function closeInsuranceOffer(
@@ -422,20 +449,32 @@ export function settleInsuranceBets(
     if (insBet <= 0) {
       continue;
     }
+    const handKey = getInsuranceHandKeyForBox(session, round, playerId);
+    const hand = handKey ? round.playerHands[handKey] : undefined;
+    const stakerAmounts = hand
+      ? resolveHandStakerAmounts(hand, bankrollCtx, playerId)
+      : { [playerId]: insBet };
     if (dealerBj) {
       const payout = insuranceWinPayout(insBet);
-      const result = appendBoxLedgerEntry(
-        nextSession,
-        nextLedger,
-        bankrollCtx,
-        playerId,
-        'win-paid',
-        payout,
-        `Insurance wins 2:1 (+${payout} chips)`,
-        session.currentRound,
-      );
-      nextSession = result.session;
-      nextLedger = result.ledger;
+      const shares = splitAmountByStakerShares(payout, stakerAmounts);
+      for (const [stakerId, share] of Object.entries(shares)) {
+        if (share <= 0) {
+          continue;
+        }
+        const result = appendBoxLedgerEntryForStaker(
+          nextSession,
+          nextLedger,
+          bankrollCtx,
+          playerId,
+          stakerId,
+          'win-paid',
+          share,
+          `Insurance wins 2:1 (+${share} chips)`,
+          session.currentRound,
+        );
+        nextSession = result.session;
+        nextLedger = result.ledger;
+      }
       if (bankId) {
         const winnings = payout - insBet;
         const bankResult = appendBankLedgerEntry(

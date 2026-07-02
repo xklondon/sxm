@@ -9,14 +9,15 @@ import {
   getStakeForBox,
   removeLastChipFromBoxStake,
   resolveStakerAmountsByPersonId,
+  StakePayerInvariantError,
 } from './stakes';
 import {
   getOpenStakeExposureForPerson,
   getTotalCommittedExposureForPerson,
 } from '../session/playerCommittedExposure';
 import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
-import { dealCardsButtonOnState, shuffleToStartOnState, startNextRoundOnState } from './gameState';
-import { boxPlayerId, tableAfterStartPlaying } from './sanity/fixtures';
+import { dealCardsButtonOnState, startNextRoundOnState } from './gameState';
+import { boxPlayerId, shuffleTableForDeal, tableAfterStartPlaying } from './sanity/fixtures';
 
 function twoPlayerSeated(startingChips = 500) {
   let state = tableAfterStartPlaying(startingChips);
@@ -51,7 +52,7 @@ function ledgerBalance(state: GameState, personId: string): number {
 }
 
 function readyToDeal(state: GameState): GameState {
-  return shuffleToStartOnState(state);
+  return shuffleTableForDeal(state);
 }
 
 describe('stake payer amounts (Phase A)', () => {
@@ -177,5 +178,45 @@ describe('stake payer amounts (Phase A)', () => {
     expect(round2.blackjack?.status).not.toBe('betting');
     expect(ledgerBalance(round2, host)).toBe(hostBefore - 100);
     expect(ledgerBalance(round2, guest)).toBe(guestBefore - 100);
+  });
+
+  it('solo player cannot exceed 500 on one box', () => {
+    const { state, host } = twoPlayerSeated(500);
+    const box1 = boxPlayerId(state, 1)!;
+    let ready = state;
+    for (let i = 0; i < 10; i += 1) {
+      ready = addChipToBoxStake(ready, box1, 50, host);
+    }
+    expect(() => addChipToBoxStake(ready, box1, 50, host)).toThrow(/chip/i);
+  });
+
+  it('solo player cannot exceed 500 across multiple boxes', () => {
+    const { state, host } = twoPlayerSeated(500);
+    const box1 = boxPlayerId(state, 1)!;
+    const box2 = boxPlayerId(state, 2)!;
+    let ready = state;
+    for (let i = 0; i < 8; i += 1) {
+      ready = addChipToBoxStake(ready, box1, 50, host);
+    }
+    ready = addChipToBoxStake(ready, box2, 50, host);
+    ready = addChipToBoxStake(ready, box2, 50, host);
+    expect(getOpenStakeExposureForPerson(ready, host)).toBe(500);
+    expect(() => addChipToBoxStake(ready, box2, 50, host)).toThrow(/chip/i);
+  });
+
+  it('rejects corrupt stake with amount but no payer map', () => {
+    const { state, host } = twoPlayerSeated(500);
+    const box1 = boxPlayerId(state, 1)!;
+    const corrupt = {
+      ...state,
+      tableMeta: {
+        ...state.tableMeta,
+        boxStakes: {
+          [box1]: { amount: 100, chips: [50, 50] },
+        },
+      },
+    };
+    expect(() => resolveStakerAmountsByPersonId(corrupt, box1)).toThrow(StakePayerInvariantError);
+    expect(() => addChipToBoxStake(corrupt, box1, 50, host)).toThrow(StakePayerInvariantError);
   });
 });

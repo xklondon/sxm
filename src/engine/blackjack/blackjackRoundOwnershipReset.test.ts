@@ -22,8 +22,13 @@ import { addChipToBoxStake } from './stakes';
 import { getEligibleDealBoxes } from './dealEligibility';
 import { applyBlackjackActionToState, type BlackjackActorContext } from './applyBlackjackAction';
 import { blackjackHandKey } from './handKeys';
-import { shuffleToStartOnState, resolveBankTurnAuto, startNextRoundOnState } from './gameState';
-import { boxPlayerId, tableAfterStartPlaying } from './sanity/fixtures';
+import { startNextRoundOnState } from './gameState';
+import {
+  blackjackTestActorContext,
+  boxPlayerId,
+  settleBlackjackRoundForTest,
+  tableAfterStartPlaying,
+} from './sanity/fixtures';
 
 function twoPlayerSeated() {
   let state = tableAfterStartPlaying(500);
@@ -54,31 +59,11 @@ function twoPlayerSeated() {
 }
 
 function ctx(state: GameState): BlackjackActorContext {
-  return {
-    personId: state.tableMeta.ownerPersonId ?? 'host',
-    payload: {},
-    resolveBankAuto: true,
-  };
-}
-
-function readyToDeal(state: GameState): GameState {
-  return shuffleToStartOnState(state);
+  return blackjackTestActorContext(state);
 }
 
 function settleRound(state: GameState): GameState {
-  let s = applyBlackjackActionToState(readyToDeal(state), 'dealCards', ctx(state));
-  let guard = 0;
-  while (s.blackjack?.status !== 'resolved' && guard < 80) {
-    guard += 1;
-    if (s.blackjack?.status === 'player-turns' && s.blackjack.activeHandKey) {
-      const hand = s.blackjack.playerHands[s.blackjack.activeHandKey];
-      if (hand?.actionStatus === 'acting') {
-        s = applyBlackjackActionToState(s, 'stand', ctx(s));
-        continue;
-      }
-    }
-    s = resolveBankTurnAuto(s);
-  }
+  const s = settleBlackjackRoundForTest(state);
   expect(s.blackjack?.status).toBe('resolved');
   expect(s.tableMeta.awaitingNextRound).toBe(true);
   return s;

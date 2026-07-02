@@ -269,7 +269,9 @@ export function BlackjackPanel({
   const { session, ledger, deck, blackjack, blackjackSettings, tableViewMode, tableMeta } =
     gameState;
   const gameStateRef = useRef(gameState);
+  const optimisticStateRef = useRef(gameState);
   gameStateRef.current = gameState;
+  optimisticStateRef.current = gameState;
   const layoutRootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -377,6 +379,7 @@ export function BlackjackPanel({
     flowError,
     bettingOpen,
     canDeal,
+    dealBlockReason,
     dealActionPending,
     nextRoundPending,
     protocolPhase,
@@ -857,7 +860,7 @@ export function BlackjackPanel({
   }
 
   function applyOptimisticChipPlacement(slotNumber: number, amount: ChipValue, online: boolean): GameState {
-    let state = gameStateRef.current;
+    let state = optimisticStateRef.current;
     let boxId = resolveOccupantBoxIdForSlot(state, slotNumber);
     if (!boxId) {
       if (online) {
@@ -870,7 +873,10 @@ export function BlackjackPanel({
       }
     }
     const personId = resolveControllerPersonId(state, controllerName);
-    return addChipToBoxStake(state, boxId, amount, personId ?? undefined);
+    const next = addChipToBoxStake(state, boxId, amount, personId ?? undefined);
+    optimisticStateRef.current = next;
+    gameStateRef.current = next;
+    return next;
   }
 
   async function placeBetAtTargetCore(slotNumber: number, amount: ChipValue): Promise<void> {
@@ -973,18 +979,12 @@ export function BlackjackPanel({
   }
 
   function placeBetAtTarget(slotNumber: number, amount: ChipValue) {
-    const online = Boolean(onlineDispatch);
-    if (online && slotNumber >= 2) {
-      const prev = betChainBySlotRef.current.get(slotNumber) ?? Promise.resolve();
-      const chained = prev
-        .catch(() => {})
-        .then(() => placeBetAtTargetCore(slotNumber, amount));
-      betChainBySlotRef.current.set(slotNumber, chained);
-      void chained;
-      return;
-    }
-
-    void placeBetAtTargetCore(slotNumber, amount);
+    const prev = betChainBySlotRef.current.get(slotNumber) ?? Promise.resolve();
+    const chained = prev
+      .catch(() => {})
+      .then(() => placeBetAtTargetCore(slotNumber, amount));
+    betChainBySlotRef.current.set(slotNumber, chained);
+    void chained;
   }
 
   function selectBox(boxId: string) {
@@ -1340,6 +1340,7 @@ export function BlackjackPanel({
     bettingOpen,
     canUserDealTable,
     canDeal,
+    dealBlockReason,
     hasStakes,
     onShuffleToStart: handleShuffleToStart,
     shuffleAnimating,
@@ -1385,14 +1386,18 @@ export function BlackjackPanel({
       return null;
     }
 
-    const { playerId: boxId, maxBet, canAfford, slotNumber, slotNumbers } = primary;
+    const { playerId: boxId, maxBet, canAfford, slotNumber, slotNumbers, boxIndex, boxCount, blockReason } =
+      primary;
     const boxLabel = `Box ${slotNumber ?? slotNumbers[0] ?? '?'}`;
     const insuranceBusy = insuranceDecisionPending || onlineActionInFlight;
     return (
       <InsuranceDecisionOverlay
         boxLabel={boxLabel}
+        boxIndex={boxIndex}
+        boxCount={boxCount}
         maxBet={maxBet}
         canAfford={canAfford}
+        blockReason={blockReason}
         pending={insuranceBusy}
         onInsurance={() => {
           if (insuranceBusy) {

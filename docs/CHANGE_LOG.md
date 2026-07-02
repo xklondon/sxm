@@ -23,7 +23,17 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-22 — Phase B: proportional stake settlement
+## 2026-06-22 — Blackjack stabilization (Phases 1–6)
+
+**Betting:** Strict `stakerAmountsByPersonId` invariant; no caller/native payer fallback; exposure fix; optimistic chip chain.
+
+**Insurance/Double:** Payer-proportional funding via `handFunding.ts`; insurance Box N of M UI; no silent unfunded skip.
+
+**UI:** `SxmModalShell` (New Table); click-target fixes; `dealBlockReason` on disabled Deal Cards.
+
+**Tests:** stake cap, insurance, double payer, settlement regressions.
+
+---
 
 **Problem:** Deal debited actual stakers (Phase A) but round settlement still credited/charged box native `bankrollOwnerId`.
 

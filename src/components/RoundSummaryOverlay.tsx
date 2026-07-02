@@ -183,6 +183,10 @@ export function RoundSummaryOverlay({
           })}
         </ul>
 
+        <p className="bj-round-summary__next-round-hint">
+          Press <strong>New Cards</strong> to begin the next betting round.
+        </p>
+
         <label className="bj-round-summary__opt-out">
           <input
             type="checkbox"

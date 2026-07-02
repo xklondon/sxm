@@ -444,6 +444,9 @@ export interface InsuranceActionView {
   boxIds: string[];
   maxBet: number;
   canAfford: boolean;
+  blockReason?: string | null;
+  boxIndex: number;
+  boxCount: number;
   slotNumbers: number[];
   /** @deprecated First box id — prefer boxIds */
   playerId: string;
@@ -461,6 +464,7 @@ export function getInsuranceActionsForController(
     return [];
   }
   const protocol = getBlackjackProtocolForState(state);
+  const allPending = getPendingInsurancePlayerIds(state, round);
   const pendingBoxIds = getMyPendingInsurancePlayerIds(state, round, viewerPersonId);
   return pendingBoxIds.flatMap((boxId) => {
     const offer = getInsuranceOfferForBox(state, round, boxId, protocol);
@@ -468,12 +472,16 @@ export function getInsuranceActionsForController(
       return [];
     }
     const slotNumber = state.session.boxSlotNumbers?.[boxId];
+    const boxIndex = allPending.indexOf(boxId) + 1;
     return [
       {
         personId: viewerPersonId,
         boxIds: [boxId],
         maxBet: offer.maxBet,
         canAfford: offer.canAfford,
+        blockReason: offer.blockReason ?? null,
+        boxIndex: boxIndex > 0 ? boxIndex : 1,
+        boxCount: allPending.length,
         slotNumbers: typeof slotNumber === 'number' ? [slotNumber] : [],
         playerId: boxId,
         slotNumber,

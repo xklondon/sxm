@@ -20,9 +20,10 @@ import {
   findCardId,
   tableAfterStartPlaying,
 } from './sanity/fixtures';
-import { shuffleToStartOnState, dealCardsButtonOnState } from './gameState';
+import { dealCardsButtonOnState } from './gameState';
 import { applyBlackjackActionToState } from './applyBlackjackAction';
 import { getDealBlockReason } from './dealEligibility';
+import { shuffleTableForDeal } from './sanity/fixtures';
 
 const DEAL_ELIGIBILITY_SRC = readFileSync(
   join(process.cwd(), 'src/engine/blackjack/dealEligibility.ts'),
@@ -58,7 +59,7 @@ function twoPlayerSeated() {
 }
 
 function readyToDeal(state: GameState): GameState {
-  return shuffleToStartOnState(state);
+  return shuffleTableForDeal(state);
 }
 
 describe('deal start authority', () => {

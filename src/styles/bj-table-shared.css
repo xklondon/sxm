@@ -1068,7 +1068,11 @@
 .bj-box-hit-zone .bj-phone-view__mini-hand-card-stack *,
 .bj-box-hit-zone .bj-phone-view__mini-hand-box,
 .bj-box-hit-zone .bj-phone-view__mini-hand-name,
-.bj-box-hit-zone .bj-phone-view__mini-hand--empty > * {
+.bj-box-hit-zone .bj-phone-view__mini-hand-composition,
+.bj-box-hit-zone .bj-phone-view__mini-hand-composition *,
+.bj-box-hit-zone .bj-phone-view__mini-hand-value,
+.bj-box-hit-zone .bj-player-box-mobile,
+.bj-box-hit-zone .bj-player-box-mobile > * {
   pointer-events: none;
 }
 

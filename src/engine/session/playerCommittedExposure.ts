@@ -29,20 +29,12 @@ export function getStakeContributorPersonIds(
   if (!stake || stake.amount <= 0) {
     return [];
   }
-  const amounts = resolveStakerAmountsByPersonId(state, boxPlayerId, stake);
-  const fromAmounts = Object.keys(amounts).filter((id) => (amounts[id] ?? 0) > 0);
-  if (fromAmounts.length > 0) {
-    return fromAmounts;
+  try {
+    const amounts = resolveStakerAmountsByPersonId(state, boxPlayerId, stake);
+    return Object.keys(amounts).filter((id) => (amounts[id] ?? 0) > 0);
+  } catch {
+    return [];
   }
-  if (stake.stakerPersonIds && stake.stakerPersonIds.length > 0) {
-    return [...new Set(stake.stakerPersonIds)];
-  }
-  const caller = stake.callerPersonId ?? getCallerPersonIdForBox(state, boxPlayerId);
-  if (caller) {
-    return [caller];
-  }
-  const owner = resolveExposureBankrollOwnerId(state, boxPlayerId);
-  return owner ? [owner] : [];
 }
 
 function boxHasInRoundBet(state: GameState, boxPlayerId: string): boolean {
@@ -147,20 +139,23 @@ export function getTotalCommittedExposureForPerson(
   state: GameState,
   personId: string,
 ): number {
-  const round = state.blackjack;
-  if (state.tableMeta.awaitingNextRound || round?.isSettled || round?.status === 'resolved') {
-    return 0;
+  if (state.tableMeta.bettingLocked) {
+    return getInRoundBetExposureForPerson(state, personId);
   }
 
   const open = getOpenStakeExposureForPerson(state, personId);
-  const inRound = getInRoundBetExposureForPerson(state, personId);
-
-  if (!state.tableMeta.bettingLocked) {
-    if (open > 0) {
-      return open;
-    }
-    return inRound;
+  if (open > 0) {
+    return open;
   }
 
-  return inRound;
+  const round = state.blackjack;
+  if (
+    state.tableMeta.awaitingNextRound ||
+    round?.isSettled ||
+    round?.status === 'resolved'
+  ) {
+    return 0;
+  }
+
+  return getInRoundBetExposureForPerson(state, personId);
 }

@@ -2,10 +2,12 @@ import type { GameState } from '../../types';
 import type { BoxStakeEntry, StakeChipEntry } from '../../types/table';
 import { log } from '../../utils/logger';
 import { getTableMinimumBet } from './dealEligibility';
+import { getAvailableChipsForBankrollOwner, resolveBankrollOwnerIdForBox } from '../session/bankroll';
 import {
-  getAvailableChipsForBankrollOwner,
-  resolveBankrollOwnerIdForBox,
-} from '../session/bankroll';
+  assertStakePayerInvariant,
+  reconstructStakerAmountsFromChipEntries,
+  StakePayerInvariantError,
+} from './stakePayerInvariant';
 import { assignTemporaryBoxOwnerOnFirstBet } from '../session/boxDecisionOwnership';
 import {
   resolveControllerPersonId,
@@ -42,7 +44,12 @@ export function getStakeChipEntriesForBox(
   if (entry.chipEntries && entry.chipEntries.length > 0) {
     return [...entry.chipEntries];
   }
-  return migrateLegacyChipsToEntries(state, boxPlayerId, entry);
+  if (entry.amount > 0) {
+    throw new StakePayerInvariantError(
+      `Box ${boxPlayerId} missing chipEntries for open stake amount ${entry.amount}`,
+    );
+  }
+  return [];
 }
 
 export function getStakeChipsForBox(state: GameState, boxPlayerId: string): StakeChipValue[] {
@@ -51,7 +58,12 @@ export function getStakeChipsForBox(state: GameState, boxPlayerId: string): Stak
   );
 }
 
-/** Resolve per-staker amounts — uses stakerAmountsByPersonId or safe legacy fallback. */
+export { StakePayerInvariantError } from './stakePayerInvariant';
+
+/**
+ * Resolve per-staker amounts — canonical: stakerAmountsByPersonId or chipEntries reconstruction only.
+ * Never guesses payer from caller, native owner, or stakerPersonIds.
+ */
 export function resolveStakerAmountsByPersonId(
   state: GameState,
   boxPlayerId: string,
@@ -64,59 +76,16 @@ export function resolveStakerAmountsByPersonId(
 
   const fromMap = stake.stakerAmountsByPersonId;
   if (fromMap && Object.keys(fromMap).length > 0) {
-    const cleaned: Record<string, number> = {};
-    for (const [personId, amount] of Object.entries(fromMap)) {
-      if (amount > 0) {
-        cleaned[personId] = amount;
-      }
-    }
-    if (Object.values(cleaned).reduce((sum, n) => sum + n, 0) > 0) {
-      return cleaned;
-    }
+    return assertStakePayerInvariant(boxPlayerId, stake, fromMap);
   }
 
-  const fromChips = sumChipEntriesByPayer(migrateLegacyChipsToEntries(state, boxPlayerId, stake));
-  if (Object.keys(fromChips).length > 0) {
-    return fromChips;
+  if (stake.chipEntries && stake.chipEntries.length > 0) {
+    return reconstructStakerAmountsFromChipEntries(boxPlayerId, stake);
   }
 
-  if (stake.stakerPersonIds?.length === 1) {
-    return { [stake.stakerPersonIds[0]!]: stake.amount };
-  }
-
-  const caller = stake.callerPersonId;
-  if (caller) {
-    return { [caller]: stake.amount };
-  }
-
-  const nativeOwner = resolveBankrollOwnerIdForBox(state, boxPlayerId);
-  return { [nativeOwner]: stake.amount };
-}
-
-function sumChipEntriesByPayer(chips: StakeChipEntry[]): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const chip of chips) {
-    out[chip.payerPersonId] = (out[chip.payerPersonId] ?? 0) + chip.value;
-  }
-  return out;
-}
-
-function migrateLegacyChipsToEntries(
-  state: GameState,
-  boxPlayerId: string,
-  entry: BoxStakeEntry,
-): StakeChipEntry[] {
-  if (!entry.chips.length) {
-    return [];
-  }
-  const fallbackPayer =
-    entry.callerPersonId ??
-    entry.stakerPersonIds?.[0] ??
-    resolveBankrollOwnerIdForBox(state, boxPlayerId);
-  return entry.chips.map((value) => ({
-    value,
-    payerPersonId: fallbackPayer,
-  }));
+  throw new StakePayerInvariantError(
+    `Box ${boxPlayerId} has stake amount ${stake.amount} but no stakerAmountsByPersonId or chipEntries`,
+  );
 }
 
 export function getStakerAmountForPersonOnBox(
@@ -193,8 +162,12 @@ export function addChipToBoxStake(
     throw new Error(formatInsufficientChipsMessage(available, chip));
   }
   const entry: BoxStakeEntry = state.tableMeta.boxStakes[boxPlayerId] ?? { amount: 0, chips: [] };
+  const priorAmounts =
+    entry.amount > 0
+      ? resolveStakerAmountsByPersonId(state, boxPlayerId, entry)
+      : {};
   const chipEntries = [
-    ...getStakeChipEntriesForBox(state, boxPlayerId),
+    ...(entry.amount > 0 ? getStakeChipEntriesForBox(state, boxPlayerId) : []),
     { value: chip, payerPersonId: bettorId },
   ];
   const newAmount = entry.amount + chip;
@@ -203,9 +176,10 @@ export function addChipToBoxStake(
   const validation = isBetValidUnderProtocol(protocol, newAmount, minBet);
   const callerPersonId = assignTemporaryBoxOwnerOnFirstBet(state, boxPlayerId, bettorId, entry);
   const stakerAmountsByPersonId = pruneStakerAmounts({
-    ...resolveStakerAmountsByPersonId(state, boxPlayerId, entry),
-    [bettorId]: (resolveStakerAmountsByPersonId(state, boxPlayerId, entry)[bettorId] ?? 0) + chip,
+    ...priorAmounts,
+    [bettorId]: (priorAmounts[bettorId] ?? 0) + chip,
   });
+  assertStakePayerInvariant(boxPlayerId, { ...entry, amount: newAmount }, stakerAmountsByPersonId);
   const stakerPersonIds = Object.keys(stakerAmountsByPersonId);
   log.info('Stake chip added', {
     boxId: boxPlayerId,
@@ -370,6 +344,7 @@ export function clearBoxStake(state: GameState, boxPlayerId: string): GameState 
   };
 }
 
+/** @deprecated Use startNextRoundOnState — ownership reset only. */
 export function unlockBettingForNextRound(state: GameState): GameState {
   return resetBlackjackRoundOwnership(state);
 }

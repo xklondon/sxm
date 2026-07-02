@@ -9,6 +9,16 @@ import { createBlackjackShoe, shuffleBlackjackShoe } from '../shoe';
 import { createBlackjackPlayerHand } from '../../../types/blackjack';
 import { blackjackHandKey } from '../handKeys';
 import { createInitialBlackjackRound } from '../helpers';
+import {
+  completeStepwiseInitialDealIfNeeded,
+  declineInsuranceOnState,
+  resolveBankTurnAuto,
+  shuffleToStartOnState,
+} from '../gameState';
+import { applyBlackjackActionToState, type BlackjackActorContext } from '../applyBlackjackAction';
+import { isInsuranceBoxDecisionResolved } from '../insurance';
+import { getBlackjackProtocolForState } from '../protocolState';
+import { getInsuranceEligibleBoxIds } from '../protocols/activeRules';
 
 export function tableAfterStartPlaying(seatChips = 500, bankChips?: number): GameState {
   const bank = bankChips ?? seatChips;
@@ -116,4 +126,74 @@ export function deckWithTenUp(): Deck {
   const idx = deck.cards.findIndex((c) => c.id === tenId);
   const drawOrder = [idx, ...deck.drawOrder.filter((i) => i !== idx)];
   return { ...deck, drawOrder };
+}
+
+/**
+ * Deterministic pre-deal shuffle for tests. `shuffleToStartOnState` reshuffles with
+ * unseeded Math.random — batched vitest runs consume the global PRNG and change
+ * which hands (insurance / even-money) appear across files.
+ */
+export function shuffleTableForDeal(state: GameState, seed = 'test-deal-seed'): GameState {
+  const started = shuffleToStartOnState(state);
+  const deckCount = started.blackjackSettings?.numberOfDecks ?? 6;
+  return withInstantInitialDeal({
+    ...started,
+    deck: shuffleBlackjackShoe(createBlackjackShoe(deckCount, started.deck?.id), seed),
+  });
+}
+
+export function blackjackTestActorContext(
+  state: GameState,
+  resolveBankAuto = true,
+): BlackjackActorContext {
+  return {
+    personId: state.tableMeta.ownerPersonId ?? 'host',
+    payload: {},
+    resolveBankAuto,
+  };
+}
+
+/** Play deal → insurance/even-money → stands → bank → resolved for ownership/settlement tests. */
+export function settleBlackjackRoundForTest(state: GameState, seed = 'test-deal-seed'): GameState {
+  const actor = blackjackTestActorContext(state);
+  let s = applyBlackjackActionToState(shuffleTableForDeal(state, seed), 'dealCards', actor);
+  let guard = 0;
+  while (s.blackjack && s.blackjack.status !== 'resolved' && guard < 100) {
+    guard += 1;
+    const round = s.blackjack;
+
+    if (round.status === 'initial-deal') {
+      s = completeStepwiseInitialDealIfNeeded(s);
+      continue;
+    }
+
+    if (round.insuranceOfferPending) {
+      const protocol = getBlackjackProtocolForState(s);
+      for (const boxId of getInsuranceEligibleBoxIds(s.session, round, protocol)) {
+        if (!isInsuranceBoxDecisionResolved(s, round, protocol, boxId)) {
+          s = declineInsuranceOnState(s, boxId);
+        }
+      }
+      continue;
+    }
+
+    if (round.evenMoneyOfferHandKey) {
+      s = applyBlackjackActionToState(s, 'waitFor3to2', {
+        ...actor,
+        payload: { handKey: round.evenMoneyOfferHandKey },
+      });
+      continue;
+    }
+
+    if (round.status === 'player-turns' && round.activeHandKey) {
+      const hand = round.playerHands[round.activeHandKey];
+      if (hand?.actionStatus === 'acting') {
+        s = applyBlackjackActionToState(s, 'stand', actor);
+        continue;
+      }
+    }
+
+    s = resolveBankTurnAuto(s);
+  }
+  return s;
 }

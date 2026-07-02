@@ -58,6 +58,8 @@ export interface BlackjackRound {
   insuranceBets?: Record<string, number>;
   /** playerId -> declined insurance this round */
   insuranceDeclined?: Record<string, boolean>;
+  /** playerId -> explicit skip reason when insurance could not be funded */
+  insuranceSkipReasons?: Record<string, string>;
   /** True after payout ledger entries are written — prevents double settlement. */
   isSettled?: boolean;
   settledAt?: string | null;

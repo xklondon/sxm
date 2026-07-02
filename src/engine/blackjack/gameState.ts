@@ -23,6 +23,7 @@ import {
   closeInsuranceOffer,
   allInsuranceResolved,
   advanceInsurancePhaseIfComplete,
+  getInsuranceFundingBlockReason,
   getInsuranceOfferForBox,
   getInsuranceDecisionPersonIdForBox,
   getPendingInsuranceBoxIdsForPerson,
@@ -772,7 +773,8 @@ export function declineInsuranceOnState(state: GameState, playerId: string): Gam
   if (!s.blackjack) {
     throw new Error('No active Blackjack round');
   }
-  const round = declineInsurance(s.blackjack, playerId);
+  const blockReason = getInsuranceFundingBlockReason(s, s.blackjack, playerId);
+  const round = declineInsurance(s.blackjack, playerId, blockReason ?? undefined);
   let next: GameState = { ...s, blackjack: round };
   return finishInsurancePhaseIfComplete(next);
 }
@@ -799,6 +801,7 @@ export function splitBlackjackOnState(state: GameState, handKey?: string): GameS
 
 export { takeEvenMoneyOnState, waitForBlackjackPayoutOnState } from './naturalBlackjack';
 
+/** @internal Round object only — use startNextRoundOnState for user next-round. */
 export function newBlackjackRoundOnState(state: GameState): GameState {
   const s = requireBlackjackState(state);
   const result = resetBlackjackRound(s.session, s.players, s.deck);

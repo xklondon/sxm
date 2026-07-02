@@ -118,23 +118,23 @@ describe('multi-box insurance', () => {
     expect(getBlackjackProtocolPhase(state)).not.toBe('insurance');
   });
 
-  it('auto-skips unfunded boxes so the phase does not stall', () => {
+  it('unfunded boxes stay pending until explicit decline', () => {
     let state = readyTwoBoxInsurance();
     const box1 = boxPlayerId(state, 1)!;
     const box2 = boxPlayerId(state, 2)!;
-    const personId = state.tableMeta.ownerPersonId!;
     state = {
       ...state,
       ledger: { ...state.ledger, entries: [] },
       blackjack: insuranceRoundTwoBoxes(state, box1, box2, [50, 10]),
     };
-    void personId;
     expect(isInsuranceBoxDecisionResolved(state, state.blackjack!, LAS_VEGAS_PROTOCOL, box1)).toBe(
-      true,
+      false,
     );
     expect(isInsuranceBoxDecisionResolved(state, state.blackjack!, LAS_VEGAS_PROTOCOL, box2)).toBe(
-      true,
+      false,
     );
+    state = declineInsuranceOnState(state, box1);
+    state = declineInsuranceOnState(state, box2);
     expect(allInsuranceDecisionsResolved(state, state.blackjack!, LAS_VEGAS_PROTOCOL)).toBe(true);
     const advanced = applyInsuranceAdvanceOnState(state);
     expect(advanced.blackjack?.insuranceOfferPending).toBe(false);
