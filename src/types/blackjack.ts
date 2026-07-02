@@ -33,6 +33,8 @@ export interface BlackjackPlayerHand {
   bustSettled?: boolean;
   /** True after natural blackjack paid immediately or via even money. */
   naturalSettled?: boolean;
+  /** Snapshot of who paid what on this hand — used for proportional settlement. */
+  stakerAmountsByPersonId?: Record<string, number>;
 }
 
 export interface BlackjackRound {

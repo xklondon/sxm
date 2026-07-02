@@ -1,6 +1,11 @@
 import type { GameState } from '../../types';
 import { parseBlackjackHandKey, listHandKeysForPlayer } from '../blackjack/handKeys';
-import { getStakeForBox, getBoxesWithStakes } from '../blackjack/stakes';
+import {
+  getStakeForBox,
+  getBoxesWithStakes,
+  getStakerAmountForPersonOnBox,
+  resolveStakerAmountsByPersonId,
+} from '../blackjack/stakes';
 import { getCallerPersonIdForBox } from './playerAssignment';
 
 function resolveExposureBankrollOwnerId(state: GameState, boxPlayerId: string): string {
@@ -23,6 +28,11 @@ export function getStakeContributorPersonIds(
   const stake = state.tableMeta.boxStakes[boxPlayerId];
   if (!stake || stake.amount <= 0) {
     return [];
+  }
+  const amounts = resolveStakerAmountsByPersonId(state, boxPlayerId, stake);
+  const fromAmounts = Object.keys(amounts).filter((id) => (amounts[id] ?? 0) > 0);
+  if (fromAmounts.length > 0) {
+    return fromAmounts;
   }
   if (stake.stakerPersonIds && stake.stakerPersonIds.length > 0) {
     return [...new Set(stake.stakerPersonIds)];
@@ -110,8 +120,8 @@ export function getOpenStakeExposureForPerson(state: GameState, personId: string
   if (state.tableMeta.bettingLocked) {
     return 0;
   }
-  return getBoxIdsWithCommittedExposureForPerson(state, personId).reduce(
-    (sum, boxId) => sum + getStakeForBox(state, boxId),
+  return getBoxesWithStakes(state).reduce(
+    (sum, boxId) => sum + getStakerAmountForPersonOnBox(state, boxId, personId),
     0,
   );
 }

@@ -48,6 +48,7 @@ import {
 } from './dealEligibility';
 import {
   hasAnyStakes,
+  resolveStakerAmountsByPersonId,
 } from './stakes';
 import { bankrollContextFromState } from '../session/bankroll';
 import { applyTableGameEndIfNeeded } from '../session/tableGameEnd';
@@ -195,6 +196,7 @@ export function placeBlackjackBetOnState(
   state: GameState,
   playerId: string,
   amount: number,
+  options?: { stakerAmountsByPersonId?: Record<string, number> },
 ): GameState {
   let s = requireBlackjackState(state);
 
@@ -216,6 +218,9 @@ export function placeBlackjackBetOnState(
     amount,
     bankrollContextFromState(s),
     { ...s.blackjackSettings, minBet: getTableMinimumBet(s) },
+    options?.stakerAmountsByPersonId
+      ? { stakerAmountsByPersonId: options.stakerAmountsByPersonId }
+      : undefined,
   );
   log.info('Bet confirmed', { playerId, amount, roundBet: result.round.playerHands[blackjackHandKey(playerId, 0)]?.currentBet });
   const next = { ...s, ...result, blackjack: result.round };
@@ -306,7 +311,8 @@ export function applyBoxStakesToRound(state: GameState): GameState {
   for (const boxId of getEligibleDealBoxes(s)) {
     const amount = getStakeForBox(s, boxId);
     if (amount > 0) {
-      s = placeBlackjackBetOnState(s, boxId, amount);
+      const stakerAmountsByPersonId = resolveStakerAmountsByPersonId(s, boxId);
+      s = placeBlackjackBetOnState(s, boxId, amount, { stakerAmountsByPersonId });
     }
   }
 

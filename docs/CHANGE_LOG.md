@@ -23,7 +23,37 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-06-22 — Blackjack deal authority: single canonical path
+## 2026-06-22 — Phase B: proportional stake settlement
+
+**Problem:** Deal debited actual stakers (Phase A) but round settlement still credited/charged box native `bankrollOwnerId`.
+
+**Fix:**
+- `stakeSettlement.ts` — `splitAmountByStakerShares`, `applyProportionalHandBoxSettlement`, `applyProportionalHandBankSettlement`
+- Hand snapshot `stakerAmountsByPersonId` at deal; resolve splits win/push/loss by contributor share
+- `resolveBlackjackRound`, `settleBustHandOnState`, `payNaturalWin` use proportional helpers
+- Native box owner excluded from settlement unless they staked
+
+**Tests:** `stakeSettlement.test.ts` (cross-box win/loss, co-stake 1/3–2/3 split, commander unchanged, free box reset).
+
+**Unchanged:** deal authority, layouts, Zilch, IOU, routing.
+
+---
+
+## 2026-06-22 — Phase A: per-staker stake amounts and deal debits
+
+**Problem:** Deal debited box native `bankrollOwnerId`, not the chip placer. Exposure counted full box amount per staker.
+
+**Fix:**
+- `BoxStakeEntry.stakerAmountsByPersonId` + `chipEntries[]` with `payerPersonId`
+- `addChipToBoxStake` / `removeLastChipFromBoxStake` maintain per-payer amounts
+- `getOpenStakeExposureForPerson` sums payer-specific amounts only
+- `placeBlackjackBet` + `applyBoxStakesToRound` debit each staker via `appendBoxLedgerEntryForStaker`
+
+**Tests:** `stakePayerAmounts.test.ts` (cross-box, co-stake, undo, second round).
+
+**Unchanged:** deal authority, box commander, DealerBlock, layouts.
+
+---
 
 **Problem:** Deal Cards could show while click no-opped — split permission helpers (`canCurrentUserDealTable`, `canStartBlackjackDeal`, `getDealBlockReason`, `canStartCards`, server `assertHostDealAction`) disagreed; eligible boxes could be dropped when not in `getBettingPlayerIds` order.
 

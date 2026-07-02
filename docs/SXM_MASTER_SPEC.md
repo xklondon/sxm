@@ -299,6 +299,15 @@ Two separate systems — never mixed:
 
 All paths (DealerBlock click handler, offline reducer, server `assertHostDealAction`) call `canDealBlackjack`. `[DEAL AUDIT]` logs viewer, owner, phase, playable boxes, allowed, reason on every deal attempt.
 
+### Stake payer and settlement (canonical)
+
+| Phase | Helper | Rules |
+|-------|--------|-------|
+| **Chip placement** | `addChipToBoxStake` | `stakerAmountsByPersonId` tracks each payer’s committed chips; exposure uses payer-specific amounts only (`getOpenStakeExposureForPerson`). |
+| **Deal debit** | `placeBlackjackBet` | Debits each staker via `appendBoxLedgerEntryForStaker`; snapshots `stakerAmountsByPersonId` on the hand. |
+| **Round resolve** | `applyProportionalHandBoxSettlement` | Hand outcome computed on total box bet as today; win/push/loss credits split proportionally by staker shares (`splitAmountByStakerShares`). Native box owner receives/pays **only** if they staked. |
+| **Box commander** | `resolveBoxRoundCommander` / `syncCallersForDeal` | Assigned player commands if they staked; else first staker; free boxes reset each round. Unchanged by settlement path. |
+
 ---
 
 ## 9. Texas Hold'em Protocol

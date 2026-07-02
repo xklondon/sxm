@@ -60,16 +60,27 @@ import type { TableInviteRecord } from './invites';
 /** @deprecated use TableInviteRecord */
 export type TableInvite = TableInviteRecord;
 
+/** One chip on a box stake — payer is who placed it (not native box owner). */
+export interface StakeChipEntry {
+  value: number;
+  payerPersonId: string;
+}
+
 /** Per-box open betting stake (chips placed before shuffle / start round). */
 export interface BoxStakeEntry {
   amount: number;
+  /** Legacy chip values only — prefer chipEntries for payer attribution. */
   chips: number[];
+  /** Chip stack with payer per chip (canonical for undo). */
+  chipEntries?: StakeChipEntry[];
   /** True once stake meets minimum bet (auto-set on add or via confirm). */
   confirmed?: boolean;
   /** Person bankroll id of the caller for this box (first staker on free box). */
   callerPersonId?: string;
   /** Person bankroll ids who placed chips on this box (for This Table co-box display). */
   stakerPersonIds?: string[];
+  /** Per-person chip totals on this box — source of truth for exposure and deal debits. */
+  stakerAmountsByPersonId?: Record<string, number>;
 }
 
 export interface TableMeta {

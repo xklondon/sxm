@@ -5,10 +5,7 @@ import type { Ledger } from '../../types/ledger';
 import type { Deck } from '../../types/deck';
 import type { BlackjackRound } from '../../types/blackjack';
 import { getCardById } from '../deck/deck';
-import {
-  appendBankLedgerEntryUnlessInternalPot,
-  appendBoxLedgerEntryUnlessInternalPot,
-} from '../session/sharedPotSettlement';
+import { applyProportionalHandBankSettlement, applyProportionalHandBoxSettlement } from './stakeSettlement';
 import { bankrollContextFromState, type BankrollContext } from '../session/bankroll';
 import { cardsFromIds, getBlackjackHandValue } from './hand';
 import { getBlackjackProtocolForState } from './protocolState';
@@ -124,29 +121,30 @@ function payNaturalWin(
   let nextSession = session;
   let nextLedger = ledger;
 
-  const winResult = appendBoxLedgerEntryUnlessInternalPot(
+  const winResult = applyProportionalHandBoxSettlement(
     nextSession,
     nextLedger,
     bankrollCtx,
     hand.playerId,
-    'win-paid',
+    hand,
     payout,
+    'blackjack-win',
     message,
     session.currentRound,
-    bet,
   );
   nextSession = winResult.session;
   nextLedger = winResult.ledger;
 
   const bankId = session.bankPlayerId;
   if (bankId && winnings > 0) {
-    const bankResult = appendBankLedgerEntryUnlessInternalPot(
+    const bankResult = applyProportionalHandBankSettlement(
       nextSession,
       nextLedger,
       bankrollCtx,
       hand.playerId,
-      bankId,
-      -winnings,
+      hand,
+      payout,
+      'blackjack-win',
       `Natural blackjack payout (${message})`,
       session.currentRound,
     );

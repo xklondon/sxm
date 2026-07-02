@@ -22,11 +22,13 @@ export function boxLedgerMeta(
   };
 }
 
-export function appendBoxLedgerEntry(
+/** Ledger entry on a box position, debiting/crediting the actual staker person id. */
+export function appendBoxLedgerEntryForStaker(
   session: GameSession,
   ledger: Ledger,
   ctx: BankrollContext,
   boxPlayerId: string,
+  stakerPersonId: string,
   entryType: LedgerEntryType,
   amount: number,
   description: string,
@@ -37,7 +39,7 @@ export function appendBoxLedgerEntry(
   const desc = description.includes(slotLabel) ? description : `${slotLabel}: ${description}`;
 
   const result = appendLedgerEntry(session, ledger, {
-    playerId: meta.bankrollOwnerId,
+    playerId: stakerPersonId,
     entryType,
     amount,
     description: desc,
@@ -48,7 +50,7 @@ export function appendBoxLedgerEntry(
 
   if (entryType === 'bet-placed' || entryType === 'bet-increased') {
     log.info('betLedgerEntry', {
-      bankrollOwnerId: meta.bankrollOwnerId,
+      bankrollOwnerId: stakerPersonId,
       boxPlayerId: meta.boxPlayerId,
       boxSlotNumber: meta.boxSlotNumber,
       amount,
@@ -60,7 +62,7 @@ export function appendBoxLedgerEntry(
     entryType === 'loss-collected'
   ) {
     log.info('payoutLedgerEntry', {
-      bankrollOwnerId: meta.bankrollOwnerId,
+      bankrollOwnerId: stakerPersonId,
       boxPlayerId: meta.boxPlayerId,
       boxSlotNumber: meta.boxSlotNumber,
       amount,
@@ -69,4 +71,28 @@ export function appendBoxLedgerEntry(
   }
 
   return { session: result.session, ledger: result.ledger };
+}
+
+export function appendBoxLedgerEntry(
+  session: GameSession,
+  ledger: Ledger,
+  ctx: BankrollContext,
+  boxPlayerId: string,
+  entryType: LedgerEntryType,
+  amount: number,
+  description: string,
+  roundNumber?: number,
+): { session: GameSession; ledger: Ledger } {
+  const meta = boxLedgerMeta(ctx, boxPlayerId);
+  return appendBoxLedgerEntryForStaker(
+    session,
+    ledger,
+    ctx,
+    boxPlayerId,
+    meta.bankrollOwnerId,
+    entryType,
+    amount,
+    description,
+    roundNumber,
+  );
 }

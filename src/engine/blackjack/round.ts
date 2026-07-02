@@ -12,11 +12,11 @@ import {
   resolveBankrollOwnerId,
   type BankrollContext,
 } from '../session/bankroll';
-import { appendBoxLedgerEntry } from '../session/boxLedger';
+import { appendBoxLedgerEntry, appendBoxLedgerEntryForStaker } from '../session/boxLedger';
 import {
-  appendBankLedgerEntryUnlessInternalPot,
-  appendBoxLedgerEntryUnlessInternalPot,
-} from '../session/sharedPotSettlement';
+  applyProportionalHandBankSettlement,
+  applyProportionalHandBoxSettlement,
+} from './stakeSettlement';
 import { drawCard, getCardById } from '../deck/deck';
 import { applyDeckToGameState } from '../deck/gameState';
 import type { GameState } from '../../types';
@@ -164,6 +164,11 @@ export function createBlackjackRound(
   };
 }
 
+export interface PlaceBlackjackBetOptions {
+  /** Debit each staker's ledger directly — not the box native bankroll owner. */
+  stakerAmountsByPersonId?: Record<string, number>;
+}
+
 export function placeBlackjackBet(
   session: GameSession,
   players: Record<string, Player>,
@@ -173,14 +178,32 @@ export function placeBlackjackBet(
   amount: number,
   bankrollCtx: BankrollContext,
   settings?: BlackjackSettings,
+  options?: PlaceBlackjackBetOptions,
 ): { session: GameSession; players: Record<string, Player>; ledger: Ledger; round: BlackjackRound } {
   assertRoundStatus(round, ['betting'], 'place bet');
   if (!bettingPlayers(session).includes(playerId)) {
     throw new Error('Dealer cannot place a bet');
   }
 
+  const stakerAmounts = options?.stakerAmountsByPersonId;
+  const useStakerDebits = Boolean(stakerAmounts && Object.keys(stakerAmounts).length > 0);
+  if (useStakerDebits) {
+    const debitTotal = Object.values(stakerAmounts!).reduce((sum, n) => sum + n, 0);
+    if (debitTotal !== amount) {
+      throw new Error(`Staker debit total ${debitTotal} does not match bet ${amount}`);
+    }
+  }
+
   const bankrollOwnerId = resolveBankrollOwnerId(bankrollCtx, playerId);
-  validateBetAmount(ledger, bankrollOwnerId, amount, settings);
+  if (!useStakerDebits) {
+    validateBetAmount(ledger, bankrollOwnerId, amount, settings);
+  } else {
+    for (const [stakerId, stakerAmount] of Object.entries(stakerAmounts!)) {
+      if (stakerAmount > 0) {
+        validateBetAmount(ledger, stakerId, stakerAmount, settings);
+      }
+    }
+  }
 
   let nextSession = session;
   let nextLedger = ledger;
@@ -189,28 +212,57 @@ export function placeBlackjackBet(
   const previousBet = existingHand.currentBet ?? 0;
 
   if (previousBet > 0) {
-    const refund = appendBoxLedgerEntry(
+    const refundTarget = useStakerDebits ? stakerAmounts! : { [bankrollOwnerId]: previousBet };
+    for (const [stakerId, refundAmount] of Object.entries(refundTarget)) {
+      if (refundAmount <= 0) {
+        continue;
+      }
+      const refund = appendBoxLedgerEntryForStaker(
+        nextSession,
+        nextLedger,
+        bankrollCtx,
+        playerId,
+        stakerId,
+        'push-refund',
+        refundAmount,
+        `Bet cleared before new bet (${refundAmount} chips returned)`,
+      );
+      nextSession = refund.session;
+      nextLedger = refund.ledger;
+    }
+  }
+
+  if (useStakerDebits) {
+    for (const [stakerId, stakerAmount] of Object.entries(stakerAmounts!)) {
+      if (stakerAmount <= 0) {
+        continue;
+      }
+      const bet = appendBoxLedgerEntryForStaker(
+        nextSession,
+        nextLedger,
+        bankrollCtx,
+        playerId,
+        stakerId,
+        'bet-placed',
+        -stakerAmount,
+        `Blackjack bet: ${stakerAmount} chips`,
+      );
+      nextSession = bet.session;
+      nextLedger = bet.ledger;
+    }
+  } else {
+    const bet = appendBoxLedgerEntry(
       nextSession,
       nextLedger,
       bankrollCtx,
       playerId,
-      'push-refund',
-      previousBet,
-      `Bet cleared before new bet (${previousBet} chips returned)`,
+      'bet-placed',
+      -amount,
+      `Blackjack bet: ${amount} chips`,
     );
-    nextSession = refund.session;
-    nextLedger = refund.ledger;
+    nextSession = bet.session;
+    nextLedger = bet.ledger;
   }
-
-  const bet = appendBoxLedgerEntry(
-    nextSession,
-    nextLedger,
-    bankrollCtx,
-    playerId,
-    'bet-placed',
-    -amount,
-    `Blackjack bet: ${amount} chips`,
-  );
 
   const nextRound: BlackjackRound = {
     ...round,
@@ -220,14 +272,17 @@ export function placeBlackjackBet(
         ...existingHand,
         currentBet: amount,
         actionStatus: 'betting',
+        stakerAmountsByPersonId: useStakerDebits
+          ? { ...stakerAmounts! }
+          : existingHand.stakerAmountsByPersonId,
       },
     },
   };
 
   return {
-    session: bet.session,
+    session: nextSession,
     players: syncPlayerBetsFromRound(players, nextRound),
-    ledger: bet.ledger,
+    ledger: nextLedger,
     round: nextRound,
   };
 }
@@ -678,7 +733,6 @@ export function resolveBlackjackRound(
   const outcomes: Record<string, BlackjackOutcome> = {};
   const resultMessages: Record<string, string> = {};
   let nextRound = round;
-  const bankId = session.bankPlayerId;
 
   for (const handKey of orderedHandKeys(session, nextRound)) {
     const hand = nextRound.playerHands[handKey];
@@ -712,72 +766,35 @@ export function resolveBlackjackRound(
     outcomes[handKey] = outcome;
     resultMessages[handKey] = message;
 
-    if (payout > 0) {
-      const entryType =
-        outcome === 'push' || outcome === 'blackjack-push'
-          ? 'push-refund'
-          : 'win-paid';
-
-      const result = appendBoxLedgerEntryUnlessInternalPot(
+    if (payout > 0 || outcome === 'loss') {
+      const boxResult = applyProportionalHandBoxSettlement(
         nextSession,
         nextLedger,
         bankrollCtx,
         hand.playerId,
-        entryType,
+        hand,
         payout,
+        outcome,
         message,
         session.currentRound,
-        hand.currentBet,
       );
-      nextSession = result.session;
-      nextLedger = result.ledger;
-    } else if (outcome === 'loss') {
-      const result = appendBoxLedgerEntryUnlessInternalPot(
-        nextSession,
-        nextLedger,
-        bankrollCtx,
-        hand.playerId,
-        'loss-collected',
-        0,
-        message,
-        session.currentRound,
-        hand.currentBet,
-      );
-      nextSession = result.session;
-      nextLedger = result.ledger;
+      nextSession = boxResult.session;
+      nextLedger = boxResult.ledger;
     }
 
-    if (bankId) {
-      const bet = hand.currentBet;
-      if (outcome === 'loss') {
-        const bankResult = appendBankLedgerEntryUnlessInternalPot(
-          nextSession,
-          nextLedger,
-          bankrollCtx,
-          hand.playerId,
-          bankId,
-          bet,
-          `House collected ${bet} chips (${message})`,
-          session.currentRound,
-        );
-        nextSession = bankResult.session;
-        nextLedger = bankResult.ledger;
-      } else if (payout > bet) {
-        const bankPays = payout - bet;
-        const bankResult = appendBankLedgerEntryUnlessInternalPot(
-          nextSession,
-          nextLedger,
-          bankrollCtx,
-          hand.playerId,
-          bankId,
-          -bankPays,
-          `House paid ${bankPays} chips (${message})`,
-          session.currentRound,
-        );
-        nextSession = bankResult.session;
-        nextLedger = bankResult.ledger;
-      }
-    }
+    const bankResult = applyProportionalHandBankSettlement(
+      nextSession,
+      nextLedger,
+      bankrollCtx,
+      hand.playerId,
+      hand,
+      payout,
+      outcome,
+      message,
+      session.currentRound,
+    );
+    nextSession = bankResult.session;
+    nextLedger = bankResult.ledger;
 
     nextRound = {
       ...nextRound,
