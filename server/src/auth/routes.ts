@@ -1,5 +1,7 @@
 import { Router } from 'express';
-import type { AuthService } from '../auth/service.js';
+import type { Server as SocketServer } from 'socket.io';
+import type { AuthService } from './service.js';
+import type { TableService } from '../tables/service.js';
 import {
   clearSessionCookie,
   requireAuth,
@@ -24,6 +26,16 @@ import { config } from '../config.js';
 import type { PeopleService } from '../people/service.js';
 import { respondPeopleAuthError } from '../people/httpErrors.js';
 import { resolveAuthForRequest } from './sessionResolve.js';
+import { verifySessionToken } from './tokens.js';
+import {
+  clearPendingInviteCookie,
+  readPendingInviteToken,
+  safeReturnTo,
+} from './pendingInviteCookie.js';
+import {
+  completeInviteAcceptRedirect,
+  redirectInviteError,
+} from '../tables/inviteAcceptHttp.js';
 
 function magicLinkErrorStatus(message: string): number {
   if (/not configured/i.test(message)) {
@@ -42,18 +54,24 @@ function magicLinkErrorStatus(message: string): number {
   return 400;
 }
 
-export function createAuthRouter(auth: AuthService, people: PeopleService): Router {
+export function createAuthRouter(
+  auth: AuthService,
+  people: PeopleService,
+  tables: TableService,
+  io: SocketServer,
+): Router {
   const router = Router();
 
   router.post('/request-magic-link', async (req, res) => {
     const email = String(req.body?.email ?? '');
     const rememberMe = req.body?.rememberMe !== false;
+    const returnTo = safeReturnTo(resolveRequestOrigin(req), req.body?.returnTo);
     // eslint-disable-next-line no-console
     console.log(
       `[SXM][auth] POST /api/auth/request-magic-link recipient=${sanitizeEmail(email)} rememberMe=${rememberMe}`,
     );
     try {
-      const result = await auth.requestMagicLink(email, rememberMe);
+      const result = await auth.requestMagicLink(email, rememberMe, returnTo ?? undefined);
       // eslint-disable-next-line no-console
       console.log(
         `[SXM][auth] magic-link request ok recipient=${sanitizeEmail(email)} emailed=${config.isProduction || Boolean(result.devLink)}`,
@@ -87,8 +105,49 @@ export function createAuthRouter(auth: AuthService, people: PeopleService): Rout
       const persistent = parseRememberQuery(req.query.remember);
       const sessionToken = await auth.verifyMagicLink(token, { persistent });
       setSessionCookie(res, sessionToken, { persistent, req });
+
+      const pendingInvite = readPendingInviteToken(req);
+      if (pendingInvite) {
+        const payload = verifySessionToken(sessionToken);
+        if (!payload) {
+          clearPendingInviteCookie(res);
+          res.redirect(`${origin}/login?error=${encodeURIComponent('Invalid session after sign-in')}`);
+          return;
+        }
+        try {
+          await completeInviteAcceptRedirect(
+            res,
+            req,
+            tables,
+            io,
+            pendingInvite,
+            payload.userId,
+            'GET /api/auth/verify (pending invite)',
+          );
+          logAuthVerifyDiagnostics(req, {
+            redirectUrl: `${origin}/?table=… (pending invite)`,
+            cookieName: config.sessionCookieName,
+            secure: shouldSecureSessionCookie(req),
+            maxAgePresent: persistent || !config.isProduction,
+            persistent,
+            rememberQuery: req.query.remember,
+          });
+          return;
+        } catch (inviteErr) {
+          const message = inviteErr instanceof Error ? inviteErr.message : 'Invite accept failed';
+          const tableId = await tables.lookupInviteTableId(pendingInvite);
+          redirectInviteError(res, origin, message, tableId, { clearPending: true });
+          return;
+        }
+      }
+
       const wantsNewTable = req.query.newTable === '1';
-      const redirectUrl = wantsNewTable ? `${origin}/?newTable=1` : `${origin}/`;
+      const returnTo = safeReturnTo(origin, req.query.returnTo);
+      const redirectUrl = wantsNewTable
+        ? `${origin}/?newTable=1`
+        : returnTo
+          ? `${origin}${returnTo.startsWith('/') ? returnTo : `/${returnTo}`}`
+          : `${origin}/`;
       logAuthVerifyDiagnostics(req, {
         redirectUrl,
         cookieName: config.sessionCookieName,

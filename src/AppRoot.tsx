@@ -74,6 +74,8 @@ export function AppRoot() {
   const loginParams = new URLSearchParams(window.location.search);
   const loginError = loginParams.get('error');
   const inviteAcceptToken = loginParams.get('token');
+  const invitedEmailParam = loginParams.get('invitedEmail');
+  const inviteTableNameParam = loginParams.get('inviteTableName');
   const pendingSearch = isJoinPath ? window.location.search : getPendingJoin() ?? '';
 
   useEffect(() => {
@@ -193,8 +195,8 @@ export function AppRoot() {
         error={accessDenied ?? loginError}
         sessionWarning={sessionWarning}
         checkingSession={authLoading}
-        invitedEmail={inviteEmail}
-        inviteTableName={inviteTableName}
+        invitedEmail={inviteEmail ?? invitedEmailParam}
+        inviteTableName={inviteTableName ?? inviteTableNameParam}
       />
     );
   }

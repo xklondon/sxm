@@ -1,13 +1,18 @@
 import { Router } from 'express';
 import type { TableService } from './service.js';
 import type { TableActionType } from './actions.js';
-import { requireAuth, readSessionToken, setSessionCookie, clearSessionCookie, type AuthedRequest } from '../auth/middleware.js';
+import { requireAuth, readSessionToken, type AuthedRequest } from '../auth/middleware.js';
 import { verifySessionToken } from '../auth/tokens.js';
 import { resolveRequestOrigin } from '../auth/cookies.js';
 import { clientEmailErrorMessage } from '../email/smtp.js';
 import type { Server as SocketServer } from 'socket.io';
 import { respondPeopleAuthError } from '../people/httpErrors.js';
 import { respondInviteOrPeopleError } from './inviteHttpErrors.js';
+import {
+  completeInviteAcceptRedirect,
+  redirectInviteError,
+  redirectUnauthenticatedInviteAccept,
+} from './inviteAcceptHttp.js';
 import { TableForbiddenError, TableMembershipError, TableNotFoundError } from './errors.js';
 import { addTableChatMessage, listTableChatMessages } from './tableChatStore.js';
 import { broadcastTableUpdate } from './broadcast.js';
@@ -50,38 +55,32 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       const preview = await tables.previewInviteByToken(token);
       const raw = readSessionToken(req);
       const session = raw ? verifySessionToken(raw) : null;
-      let sessionUserId: string | undefined;
-      let clearedSession = false;
 
-      if (session) {
-        const sessionEmail = session.email.trim().toLowerCase();
-        const inviteEmail = preview.invitedEmail.trim().toLowerCase();
-        if (sessionEmail !== inviteEmail) {
-          clearSessionCookie(res);
-          clearedSession = true;
-        } else {
-          sessionUserId = session.userId;
-        }
+      if (!session) {
+        redirectUnauthenticatedInviteAccept(res, req, token, preview);
+        return;
       }
 
-      const result = await tables.acceptInviteByToken(token, sessionUserId, {
-        clearedSession,
-        route: 'GET /api/tables/invites/accept',
-      });
-      const joinedTable = tables.getTableRecord(result.tableId);
-      if (joinedTable) {
-        broadcastTableUpdate(io, joinedTable.id, joinedTable.version, joinedTable.state);
+      const sessionEmail = session.email.trim().toLowerCase();
+      const inviteEmail = preview.invitedEmail.trim().toLowerCase();
+      if (sessionEmail !== inviteEmail) {
+        redirectUnauthenticatedInviteAccept(res, req, token, preview, { clearSession: true });
+        return;
       }
-      setSessionCookie(res, result.sessionToken, { req });
-      const spectator = result.spectator ? '&spectator=1' : '';
-      res.redirect(`${origin}/?table=${encodeURIComponent(result.tableId)}${spectator}`);
+
+      await completeInviteAcceptRedirect(
+        res,
+        req,
+        tables,
+        io,
+        token,
+        session.userId,
+        'GET /api/tables/invites/accept',
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Invite accept failed';
       const tableId = await tables.lookupInviteTableId(token);
-      const query = tableId
-        ? `?table=${encodeURIComponent(tableId)}&inviteError=${encodeURIComponent(message)}`
-        : `?inviteError=${encodeURIComponent(message)}`;
-      res.redirect(`${origin}/${query}`);
+      redirectInviteError(res, origin, message, tableId, { clearPending: true });
     }
   });
 

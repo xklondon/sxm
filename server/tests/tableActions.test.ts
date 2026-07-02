@@ -303,12 +303,13 @@ describe('invite accept flow', () => {
     await expect(tables.acceptInviteByToken(token)).rejects.toThrow(/expired/i);
   });
 
-  it('HTTP accept sets session and redirects', async () => {
+  it('HTTP accept without session stores pending invite and redirects to login', async () => {
     const { app, store } = createApp();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
     const host = await seedHostUser(store);
     const table = await tables.createTable(host.id, 'Host');
+    await seedPerson(store, { email: 'guest@example.com', role: 'player', status: 'invited' });
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -320,16 +321,22 @@ describe('invite accept flow', () => {
       .get(`/api/tables/invites/accept?token=${encodeURIComponent(token)}`)
       .redirects(0);
     expect(res.status).toBe(302);
-    expect(res.headers.location).toContain(`table=${encodeURIComponent(table.id)}`);
-    expect(res.headers['set-cookie']).toBeTruthy();
+    expect(res.headers.location).toContain('/login');
+    expect(res.headers.location).toContain('invitedEmail=');
+    const cookies = res.headers['set-cookie'];
+    const cookieList = Array.isArray(cookies) ? cookies : cookies ? [cookies] : [];
+    expect(cookieList.some((c) => c.includes('sxm_pending_invite_token'))).toBe(true);
+    expect((await store.getInviteByToken(token))!.status).toBe('pending');
+    expect(store.getMembers(table.id)).toHaveLength(1);
   });
 
-  it('HTTP accept with wrong session clears host and accepts invitee', async () => {
+  it('HTTP accept with wrong session clears session and redirects to login with pending invite', async () => {
     const { app, store } = createApp();
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
     const host = await seedHostUser(store);
     const table = await tables.createTable(host.id, 'Host');
+    await seedPerson(store, { email: 'guest@example.com', role: 'player', status: 'invited' });
     const { joinUrl } = await tables.createInvite({
       tableId: table.id,
       userId: host.id,
@@ -343,10 +350,13 @@ describe('invite accept flow', () => {
       .set('Cookie', hostCookie)
       .redirects(0);
     expect(res.status).toBe(302);
-    expect(res.headers.location).toContain(`table=${encodeURIComponent(table.id)}`);
-    expect(res.headers.location).not.toContain('/login');
-    const guest = await store.getUserByEmail('guest@example.com')!;
-    expect(store.getMember(table.id, guest.id)).toBeTruthy();
+    expect(res.headers.location).toContain('/login');
+    expect(res.headers.location).not.toContain(`table=${encodeURIComponent(table.id)}`);
+    const cookies = res.headers['set-cookie'];
+    const cookieList = Array.isArray(cookies) ? cookies : cookies ? [cookies] : [];
+    expect(cookieList.some((c) => c.includes('sxm_pending_invite_token'))).toBe(true);
+    expect(store.getUserByEmail('guest@example.com')).toBeNull();
+    expect((await store.getInviteByToken(token))!.status).toBe('pending');
   });
 
   it('online action sequence uses table version for deal', async () => {

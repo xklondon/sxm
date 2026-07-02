@@ -81,8 +81,11 @@ SXM Casino (SXMCards) is a casual card-and-dice table app for friends. Players u
 
 - Server: `TableService.createInvite`, `invitePersonByEmail`, `acceptInviteByToken`
 - Persisted: `TableInvite` in Postgres
-- Accept: `GET /api/tables/invites/accept?token=…` → session + redirect `/?table={id}`
-- **Invite resolution:** all emails normalized (`trim` + lowercase). Session must match invite email on join, or accept clears session and provisions invitee. `getPersonForUser` prefers email-canonical Person and repairs stale `userId`. Duplicate Person/User rows block invite creation (`INVITE_DUPLICATE_ACCOUNTS`) until admin repair. Disabled persons cannot join (`INVITE_PERSON_DISABLED`).
+- Accept: `GET /api/tables/invites/accept?token=…`
+  - **Authenticated** (session email matches invite): accept token, join table/box, redirect `/?table={id}`
+  - **Unauthenticated** (or session email mismatch): store `sxm_pending_invite_token` HttpOnly cookie (15 min, SameSite=Lax, Secure in production), redirect `/login?invitedEmail=…` — **do not consume invite**
+  - **After magic-link verify:** `/api/auth/verify` reads pending invite cookie, accepts token, clears cookie, redirects `/?table={id}`; invalid/expired → `/?inviteError=…`
+- **Invite resolution:** all emails normalized (`trim` + lowercase). Session must match invite email on join. Wrong session on accept clears session and sends invitee to login with pending cookie. `getPersonForUser` prefers email-canonical Person and repairs stale `userId`. Duplicate Person/User rows block invite creation (`INVITE_DUPLICATE_ACCOUNTS`) until admin repair. Disabled persons cannot join (`INVITE_PERSON_DISABLED`).
 - **Diagnostics:** Railway/server logs tag `[SXM][invite-flow]` on create/accept/join/fail with masked fields (search `invite-flow` or `failureCode=`).
 - Client deep link: `/join-table?…` → `JoinTableCurtain`
 

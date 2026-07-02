@@ -23,6 +23,18 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+---
+
+## 2026-06-22 — Table invite login redirect
+
+**Problem:** Email accept link (`/api/tables/invites/accept?token=…`) auto-accepted without auth; when session cookie did not stick, user landed on login/lobby and lost the invite destination.
+
+**Fix:** Pending invite HttpOnly cookie (`sxm_pending_invite_token`, 15 min). Unauthenticated accept → login with invited email context; magic-link verify completes accept and redirects to `/?table={id}`. Authenticated matching session still accepts immediately. Magic-link request/verify support optional same-origin `returnTo`.
+
+**Files:** `server/src/auth/pendingInviteCookie.ts`, `server/src/tables/inviteAcceptHttp.ts`, `server/src/tables/routes.ts`, `server/src/auth/routes.ts`, `server/tests/inviteLoginRedirect.test.ts`
+
+---
+
 ## 2026-06-22 — Blackjack stabilization (Phases 1–6)
 
 **Betting:** Strict `stakerAmountsByPersonId` invariant; no caller/native payer fallback; exposure fix; optimistic chip chain.

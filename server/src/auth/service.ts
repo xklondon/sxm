@@ -11,7 +11,11 @@ export class AuthService {
     private readonly people: PeopleService,
   ) {}
 
-  async requestMagicLink(email: string, rememberMe = true): Promise<{ ok: true; devLink?: string }> {
+  async requestMagicLink(
+    email: string,
+    rememberMe = true,
+    returnTo?: string,
+  ): Promise<{ ok: true; devLink?: string }> {
     const normalized = email.trim().toLowerCase();
     if (!normalized.includes('@')) {
       throw new Error('Valid email required');
@@ -39,7 +43,8 @@ export class AuthService {
     await this.store.setLastMagicLinkRequestAt(normalized, new Date().toISOString());
 
     const rememberParam = rememberMe ? 'remember=1' : 'remember=0';
-    const verifyPath = `/api/auth/verify?token=${encodeURIComponent(token)}&${rememberParam}`;
+    const returnParam = returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : '';
+    const verifyPath = `/api/auth/verify?token=${encodeURIComponent(token)}&${rememberParam}${returnParam}`;
     const verifyUrl = `${getEffectivePublicOrigin().replace(/\/$/, '')}${verifyPath}`;
     // eslint-disable-next-line no-console
     console.log(

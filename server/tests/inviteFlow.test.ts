@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import { createSessionToken } from '../src/auth/tokens.js';
+import { PENDING_INVITE_COOKIE_NAME } from '../src/auth/pendingInviteCookie.js';
 import { permissionsForRole } from '../src/people/permissions.js';
 import { seedHostUser, seedPerson } from './testHelpers.js';
 
@@ -300,13 +301,15 @@ describe('invite flow HTTP', () => {
     expect(res.body.error).toMatch(/another email/i);
   });
 
-  it('accept clears mismatched session and provisions invite email user', async () => {
+  it('wrong session then magic verify accepts invite for invitee', async () => {
     const { app, store } = await setupApp();
     const host = await seedHostUser(store);
     const { TableService } = await import('../src/tables/service.js');
     const { PeopleService } = await import('../src/people/service.js');
+    const { AuthService } = await import('../src/auth/service.js');
     const people = new PeopleService(store);
     const tables = new TableService(store, people);
+    const auth = new AuthService(store, people);
     const table = await tables.createTable(host.id, 'Host');
     const wrongUser = await store.createUser('wrong@example.com', 'Wrong');
     await seedPerson(store, { email: 'wrong@example.com', userId: wrongUser.id, role: 'player' });
@@ -319,12 +322,22 @@ describe('invite flow HTTP', () => {
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
 
-    const res = await request(app)
+    const acceptRes = await request(app)
       .get(`/api/tables/invites/accept?token=${encodeURIComponent(token)}`)
-      .set('Cookie', sessionCookie(wrongUser.id, 'wrong@example.com'));
+      .set('Cookie', sessionCookie(wrongUser.id, 'wrong@example.com'))
+      .redirects(0);
+    expect(acceptRes.status).toBe(302);
+    expect(acceptRes.headers.location).toContain('/login');
 
-    expect(res.status).toBe(302);
-    expect(res.headers.location).toContain(`table=${table.id}`);
+    const { devLink } = await auth.requestMagicLink('guest@example.com');
+    const magicToken = new URL(devLink!, 'http://localhost:5173').searchParams.get('token')!;
+    const verifyRes = await request(app)
+      .get(`/api/auth/verify?token=${encodeURIComponent(magicToken)}`)
+      .set('Cookie', `${PENDING_INVITE_COOKIE_NAME}=${encodeURIComponent(token)}`)
+      .redirects(0);
+
+    expect(verifyRes.status).toBe(302);
+    expect(verifyRes.headers.location).toContain(`table=${table.id}`);
     const guestUser = await store.getUserByEmail('guest@example.com');
     expect(guestUser).toBeTruthy();
     expect(store.getMember(table.id, guestUser!.id)).toBeTruthy();

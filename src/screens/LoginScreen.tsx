@@ -37,7 +37,8 @@ export function LoginScreen({
     setMessage(null);
     setDevLink(null);
     try {
-      const result = await requestMagicLink(email, rememberMe);
+      const returnTo = new URLSearchParams(window.location.search).get('returnTo');
+      const result = await requestMagicLink(email, rememberMe, returnTo);
       setSentEmail(email.trim());
       setPhase('sent');
       if (isDev) {

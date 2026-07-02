@@ -111,7 +111,7 @@ export function createApp(options: CreateAppOptions = {}) {
   debugRouter.use(createEmailDebugRouter());
   debugRouter.use(createRuntimeDebugRouter({ store, io, startedAt, storeType }));
   app.use('/api/debug', debugRouter);
-  app.use('/api/auth', createAuthRouter(auth, people));
+  app.use('/api/auth', createAuthRouter(auth, people, tables, io));
   app.use('/api/people', createPeopleRouter(people, auth));
   app.use('/api/tables', createTableRouter(tables, io));
   app.use('/api/iou-handoff', createIouHandoffRouter(iouHandoff, tables));

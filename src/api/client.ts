@@ -121,10 +121,15 @@ export async function fetchMe(): Promise<AuthUser | null> {
 export async function requestMagicLink(
   email: string,
   rememberMe = true,
+  returnTo?: string | null,
 ): Promise<{ devLink?: string }> {
+  const body: Record<string, unknown> = { email, rememberMe };
+  if (returnTo) {
+    body.returnTo = returnTo;
+  }
   const res = await apiFetch('/api/auth/request-magic-link', {
     method: 'POST',
-    body: JSON.stringify({ email, rememberMe }),
+    body: JSON.stringify(body),
   });
   const data = await res.json();
   if (!res.ok) {
