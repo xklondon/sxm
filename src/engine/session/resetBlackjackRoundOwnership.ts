@@ -4,23 +4,50 @@ import { getCallerPersonIdForBox } from './playerAssignment';
 import { listPersonBankrollOwnerIds } from './bankroll';
 
 /**
- * Clear per-round box command / stake ownership while preserving permanent table
- * seating (nativeAssignedPersonId, assignedBoxByPersonId, playerOrder, chips).
- * Call once when returning to open betting after a completed round.
+ * Clear temporary round commanders (callerPersonId) while preserving open stakes
+ * for round-complete review. Native assignments are untouched.
  */
-export function resetBlackjackRoundOwnership(state: GameState): GameState {
+export function clearTemporaryBoxCommandState(state: GameState): GameState {
+  const boxStakes: GameState['tableMeta']['boxStakes'] = {};
+  for (const [boxId, entry] of Object.entries(state.tableMeta.boxStakes)) {
+    if (!entry) {
+      continue;
+    }
+    const { callerPersonId: _caller, ...rest } = entry;
+    boxStakes[boxId] = rest;
+  }
   return {
     ...state,
     tableMeta: {
       ...state.tableMeta,
-      boxStakes: {},
-      bettingLocked: false,
+      boxStakes,
       boxSlots: state.tableMeta.boxSlots.map((slot) => ({
         ...slot,
         callerPersonId: null,
       })),
     },
   };
+}
+
+/**
+ * Clear per-round box command / stake ownership while preserving permanent table
+ * seating (nativeAssignedPersonId, assignedBoxByPersonId, playerOrder, chips).
+ * Call once when returning to open betting after a completed round.
+ */
+export function resetBlackjackRoundOwnership(state: GameState): GameState {
+  return clearTemporaryBoxCommandState({
+    ...state,
+    tableMeta: {
+      ...state.tableMeta,
+      boxStakes: {},
+      bettingLocked: false,
+    },
+  });
+}
+
+/** Canonical post-round reset — open betting with no round-only commander/stake residue. */
+export function resetBlackjackRoundForBetting(state: GameState): GameState {
+  return resetBlackjackRoundOwnership(state);
 }
 
 /** Test helper — no temporary commander or round stake residue after reset. */

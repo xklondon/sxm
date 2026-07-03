@@ -221,7 +221,8 @@
     --bj-mobile-zone-cards-min-height: 0;
     --bj-mobile-zone-boxes-height: 5.75rem;
     --bj-mobile-zone-tray-height: 3.85rem;
-    --bj-zone-boxes-tray-gap: 0.32rem;
+    --bj-zone-boxes-tray-gap: 0.48rem;
+    --bj-cards-actions-gap: 0.62rem;
     --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
     --bj-zone-command-height: var(--bj-mobile-zone-command-height);
     --bj-zone-actions-height: var(--bj-mobile-zone-actions-height);
@@ -299,12 +300,20 @@
     .bj-table-slot-row.bj-arc--player-boxes
     .bj-arc__slot--owned
     .bj-phone-view__box-value--above,
+  .bj-view-full-mobile
+    .bj-table-slot-row.bj-arc--player-boxes
+    .bj-arc__slot--has-stake
+    .bj-phone-view__box-value--above,
   .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
       .bj-phone-view__mini-hand-value--placeholder
     ),
   .bj-view-card-mobile
     .bj-table-slot-row.bj-arc--player-boxes
     .bj-arc__slot--owned
+    .bj-phone-view__box-value--above,
+  .bj-view-card-mobile
+    .bj-table-slot-row.bj-arc--player-boxes
+    .bj-arc__slot--has-stake
     .bj-phone-view__box-value--above {
     font-size: calc(0.58rem * var(--bj-mobile-box-value-scale, 2));
     min-height: calc(0.95rem * var(--bj-mobile-box-value-scale, 2) * 0.55);
@@ -364,7 +373,8 @@
 
   /* Player box tile sizing — canonical rules in bj-player-row-layout.css (.bj-table-slot-row). */
 
-  .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above {
+  .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above,
+  .bj-arc--player-boxes .bj-arc__slot--has-stake .bj-phone-view__box-value--above {
     display: block;
   }
 
@@ -781,6 +791,30 @@
   .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions {
     margin-top: 0;
     padding-top: var(--bj-cards-actions-gap);
+    overflow: visible;
+    height: auto;
+    min-height: var(--bj-mobile-zone-actions-height);
+    max-height: none;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar--playing,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar-row--primary,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row:first-child {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--hit,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--stand,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar-extra--compact {
+    min-width: 4.1rem;
+    max-width: 5.1rem;
+    flex: 1 1 4.1rem;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions,
@@ -1408,7 +1442,8 @@
   display: none;
 }
 
-.bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above {
+.bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above,
+.bj-arc--player-boxes .bj-arc__slot--has-stake .bj-phone-view__box-value--above {
   display: block;
   flex: 0 0 var(--bj-box-value-band-height);
   min-height: var(--bj-box-value-band-height);
@@ -1423,7 +1458,8 @@
   font-weight: var(--ds-weight-bold, 700);
 }
 
-.bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above.bj-player-hand-value--emphasis {
+.bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above.bj-player-hand-value--emphasis,
+.bj-arc--player-boxes .bj-arc__slot--has-stake .bj-phone-view__box-value--above.bj-player-hand-value--emphasis {
   font-size: var(--bj-box-stake-amount-size);
   font-weight: var(--ds-weight-bold, 700);
 }
@@ -2696,7 +2732,8 @@
     box-sizing: border-box;
   }
 
-  .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above {
+  .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above,
+  .bj-arc--player-boxes .bj-arc__slot--has-stake .bj-phone-view__box-value--above {
     display: block;
   }
 

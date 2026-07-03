@@ -166,7 +166,7 @@ export function canSplitUnderProtocol(
   if (protocol.split.sameRankOnly && !ranksMatchForSplit(c0.rank, c1.rank)) {
     return false;
   }
-  return context.availableChips >= hand.currentBet && context.ledgerBalance >= hand.currentBet;
+  return context.availableChips >= hand.currentBet;
 }
 
 export function canHitUnderProtocol(

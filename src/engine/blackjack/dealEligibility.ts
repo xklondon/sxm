@@ -156,7 +156,7 @@ function getProtocolPhase(state: GameState): BlackjackProtocolPhase {
 
     case 'resolved':
 
-      return 'betting';
+      return 'round-complete';
 
     case 'betting':
     default:

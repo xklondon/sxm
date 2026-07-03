@@ -57,7 +57,10 @@ import { applyTableGameEndIfNeeded } from '../session/tableGameEnd';
 import { evaluateBlackjackGameOver } from './gameOverEvaluation';
 import { incrementBlackjackCountsOnSettlement } from '../session/tableBlackjackStats';
 import { syncCallersForDeal } from '../session/playerAssignment';
-import { resetBlackjackRoundOwnership } from '../session/resetBlackjackRoundOwnership';
+import {
+  clearTemporaryBoxCommandState,
+  resetBlackjackRoundOwnership,
+} from '../session/resetBlackjackRoundOwnership';
 import { clearTableUiEphemeral } from '../session/inviteJoin';
 import { settleBustHandOnState } from './bustSettlement';
 import { shuffleGameDeck } from '../deck';
@@ -153,6 +156,7 @@ function applyDouble(state: GameState, handKey: string): GameState {
     bankrollContextFromState(s),
     s.blackjackSettings,
     getBlackjackProtocolForState(s),
+    s,
   );
   log.info('Player action: double', { handKey });
   let next = applyBlackjackToGameState(s, result);
@@ -178,6 +182,7 @@ function applySplit(state: GameState, handKey: string): GameState {
     bankrollContextFromState(s),
     s.blackjackSettings,
     getBlackjackProtocolForState(s),
+    s,
   );
   log.info('Player action: split', { handKey });
   return applyBlackjackToGameState(s, result);
@@ -558,7 +563,7 @@ export function completeBankingOnState(state: GameState): GameState {
     resultMessages: resolved.round.resultMessages,
   });
   logPhase({ ...s, blackjack: resolved.round });
-  let next: GameState = {
+  let next: GameState = clearTemporaryBoxCommandState({
     ...s,
     session: resolved.session,
     players: resolved.players,
@@ -572,7 +577,7 @@ export function completeBankingOnState(state: GameState): GameState {
       awaitingNextRound: true,
       bettingLocked: true,
     },
-  };
+  });
   next = applyTableGameEndIfNeeded(next);
   const gameOver = evaluateBlackjackGameOver(next);
   if (gameOver.isGameOver) {

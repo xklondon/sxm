@@ -154,6 +154,12 @@ export function DealerBlock({
         label: pending ? 'Starting…' : 'New Cards',
         disabled: pending || !canUserDealTable,
         onClick: onNextRound,
+        hint:
+          !pending && !canUserDealTable
+            ? 'Only the table host can start the next round.'
+            : pending
+              ? 'Please wait…'
+              : null,
       };
     }
 

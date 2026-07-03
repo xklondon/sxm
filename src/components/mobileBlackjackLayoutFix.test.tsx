@@ -219,5 +219,19 @@ describe('mobile blackjack layout fix', () => {
         /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--stand[\s\S]*border-radius:\s*0\.45rem/,
       );
     });
+
+    it('adds breathing room between boxes row and tray on mobile Full Table', () => {
+      expect(SHARED_CSS).toMatch(/--bj-zone-boxes-tray-gap:\s*0\.48rem/);
+      expect(SHARED_CSS).toMatch(/--bj-cards-actions-gap:\s*0\.62rem/);
+    });
+
+    it('keeps Card View 2x button inside actions row without clipping', () => {
+      expect(SHARED_CSS).toMatch(
+        /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*overflow:\s*visible/,
+      );
+      expect(SHARED_CSS).toMatch(
+        /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.bj-phone-view__action-bar-row--primary[\s\S]*flex-wrap:\s*wrap/,
+      );
+    });
   });
 });

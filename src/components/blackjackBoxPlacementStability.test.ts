@@ -24,6 +24,7 @@ import { resolveEffectiveVisibleBoxCount, DEFAULT_VISIBLE_TABLE_BOXES } from './
 
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
+const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 
 describe('blackjackBoxPlacementContract', () => {
   it('uses slotNumber-only React keys in arc row', () => {
@@ -147,6 +148,14 @@ describe('blackjackBoxPlacementContract', () => {
     expect(LAYOUT_CSS).toMatch(/\.bj-phone-view__mini-stake-slot \.stake-chips[\s\S]*position:\s*absolute/);
     expect(LAYOUT_CSS).toMatch(/\.stake-chips__remove[\s\S]*position:\s*absolute/);
     expect(LAYOUT_CSS).toMatch(/overflow:\s*hidden/);
+  });
+
+  it('shows stake amount on unclaimed staked empty slots', () => {
+    expect(PANEL_SRC).toContain('hasOpenStake');
+    expect(PANEL_SRC).toContain('bj-arc__slot--has-stake');
+    expect(PANEL_SRC).toContain('isUnclaimedStakedSlot');
+    expect(LAYOUT_CSS).toMatch(/bj-arc__slot--has-stake[\s\S]*bj-phone-view__box-value--above/);
+    expect(SHARED_CSS).toMatch(/bj-arc__slot--has-stake[\s\S]*bj-phone-view__box-value--above/);
   });
 });
 

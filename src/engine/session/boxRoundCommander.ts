@@ -71,6 +71,13 @@ export function resolveBoxRoundCommander(
   state: GameState,
   boxPlayerId: string,
 ): BoxRoundCommanderResult {
+  if (state.tableMeta.awaitingNextRound) {
+    return { commanderPersonId: null, reason: null, coBettorPersonIds: [] };
+  }
+  if (state.blackjack?.status === 'resolved') {
+    return { commanderPersonId: null, reason: null, coBettorPersonIds: [] };
+  }
+
   const designatedOwner = designatedOwnerPersonId(state, boxPlayerId);
   const stake = state.tableMeta.boxStakes[boxPlayerId];
   const stakerPersonIds = [...new Set(stake?.stakerPersonIds ?? [])];

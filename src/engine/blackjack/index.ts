@@ -106,6 +106,8 @@ export type { BlackjackFlowSettings, DealMode, AdviceCostMode, DealSpeedPreset, 
 
 export {
   getStakeForBox,
+  getBoxStakeBreakdown,
+  formatBoxStakeDisplayLabel,
   getStakeBetValidationMessage,
   getStakeChipsForBox,
   getBoxesWithStakes,

@@ -150,6 +150,8 @@ export {
 export {
   hasNoRoundBoxOwnershipResidue,
   resetBlackjackRoundOwnership,
+  resetBlackjackRoundForBetting,
+  clearTemporaryBoxCommandState,
 } from './resetBlackjackRoundOwnership';
 export {
   resolveBoxRoundCommander,

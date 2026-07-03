@@ -281,7 +281,11 @@ Row click expands details; **ReOpen** button required (no load-on-click).
 
 ### Phases
 
-Protocol-driven phases via `getBlackjackProtocolPhase`. Betting → deal → player turns → insurance/even-money (when offered) → bank draw → settlement → next round.
+Protocol-driven phases via `getBlackjackProtocolPhase`. Betting → deal → player turns → insurance/even-money (when offered) → bank draw → settlement → **round-complete** (`awaitingNextRound`) → New Cards → betting.
+
+**Resolved vs betting:** `status === 'resolved'` maps to protocol phase `round-complete`, not `betting`. The command box shows “press New Cards…” until `startNextRoundOnState` clears `awaitingNextRound`. No stale `activeHandKey`, player-turn prompts, or temporary box commanders may appear during round-complete.
+
+**Round reset (canonical):** `clearTemporaryBoxCommandState` runs at settlement (clears `callerPersonId` on slots/stakes, keeps stake amounts for review). `resetBlackjackRoundForBetting` / `resetBlackjackRoundOwnership` runs on New Cards (clears stakes + temp commanders; native assignments preserved). Deal eligibility checks current-round bets only via `evaluateBlackjackDealEngine` / `canDealBlackjack`.
 
 **Bank draw skip:** When every active bet is terminal before bank draw (bust, natural/blackjack, or no further player action), the engine skips bank drawing and resolves immediately (`shouldSkipBankDraw` / `applySkipBankIfNeeded` in `roundFlow.ts`). Stood hands that still need dealer comparison follow normal bank draw rules.
 
@@ -310,7 +314,8 @@ All paths (DealerBlock click handler, offline reducer, server `assertHostDealAct
 | **Deal debit** | `placeBlackjackBet` | Debits each staker via `appendBoxLedgerEntryForStaker`; snapshots `stakerAmountsByPersonId` on the hand. |
 | **Round resolve** | `applyProportionalHandBoxSettlement` | Hand outcome computed on total box bet as today; win/push/loss credits split proportionally by staker shares (`splitAmountByStakerShares`). Native box owner receives/pays **only** if they staked. |
 | **Insurance / double / split funding** | `resolveFundableActionParticipants(hand, actionType)` | Per **staker** (from `hand.stakerAmountsByPersonId` or open box stake), not native box owner. Insurance: fundable stakers accept/decline; unfunded stakers auto-skipped with reason — queue never blocks. Double/split: disabled when any staker cannot fund proportional share (`Not enough chips to double/split`). |
-| **Box commander** | `resolveBoxRoundCommander` / `syncCallersForDeal` | Assigned player commands if they staked; else first staker; free boxes reset each round. Unchanged by settlement path. |
+| **Box commander** | `resolveBoxRoundCommander` / `getCallerPersonIdForBox` | Assigned player commands if they staked; else first staker on that box for the round; free boxes: first staker commands. Returns **null** when `awaitingNextRound` or `status === 'resolved'`. Temporary `callerPersonId` cleared at settlement and fully reset on New Cards. |
+| **Stake display** | `getBoxStakeBreakdown` / `formatBoxStakeDisplayLabel` | UI shows each contributor’s amount on a shared box (e.g. `Ali:120 Gue:80`), not a single misleading total. Combined total still drives hand value / proportional settlement. |
 
 ---
 
@@ -485,7 +490,7 @@ Shake-to-roll optional. Primary action label: **Dice** (roll).
 
 ### Blackjack presentation (Full Table + Card View)
 
-**Player box stability:** Slot row uses one `renderArcSlot(slotNumber)` with React key `slot-${slotNumber}` (never `boxId`). Local chip-tray target stores `{ slotNumber }` only; `boxId` is derived at `placeBet` payload time. Online empty-slot first chip uses a pending preview keyed by slot — no client `claimBoxSlot`. Visible box count expands only via the user **+** control, not when a high slot is first occupied. Fixed stake slot (`--bj-full-table-stake-min-height`) with absolutely positioned chip pile so adding/removing chips does not reflow box width or row height.
+**Player box stability:** Slot row uses one `renderArcSlot(slotNumber)` with React key `slot-${slotNumber}` (never `boxId`). Local chip-tray target stores `{ slotNumber }` only; `boxId` is derived at `placeBet` payload time. Online empty-slot first chip uses a pending preview keyed by slot — no client `claimBoxSlot`. **Stake amount label** renders for any slot with open/pending stake, including unclaimed far-left boxes (`bj-arc__slot--has-stake`) — commander label optional. Visible box count expands only via the user **+** control, not when a high slot is first occupied. Fixed stake slot (`--bj-full-table-stake-min-height`) with absolutely positioned chip pile so adding/removing chips does not reflow box width or row height.
 
 **Active turn highlight:** Card-column / hero hand totals use circular `bj-phone-view__box-value--active-turn` only — one circled numeric value, no box border or rectangle frame. Stake labels above boxes do not use hand-total emphasis. Betting selection uses `bj-box--selected` + `bj-phone-view__bet-chip--pulse` only.
 
@@ -546,11 +551,11 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 **Insurance / even-money (dealer Ace):**
 
 - Insurance offered when dealer up-card is Ace, after full initial deal, before player decisions (`insuranceOfferPending`, phase `insurance`).
-- **Per-staker insurance:** Each person in `stakerAmountsByPersonId` with enough available chips gets their own accept/decline for their proportional share; unfunded stakers are auto-marked skipped (`Not enough chips for insurance`) and do not block the queue. A box completes when all stakers are accepted, declined, or skipped. Overlay shows queue progress (`Insurance: Box X of Y — pays 2:1`).
+- **Per-staker insurance:** Each person in `stakerAmountsByPersonId` with enough available chips gets their own accept/decline for their proportional share; unfunded stakers are auto-marked skipped (`Not enough chips for insurance`) and do not block the queue. A box completes when all stakers are accepted, declined, or skipped. Overlay shows queue progress (`Insurance: Box X of Y — pays 2:1`) in the canonical action overlay layer (`bj-table-action-overlays`, z-index 20) above all cards.
 - **Take 1:1** — even-money only for clean natural blackjack vs Ace.
 - **Play vs Ace** — decline even-money or insurance (replaces “Wait for 3:2” / “No thanks”).
 - Ace-decision buttons: thin yellow border (`bj-table-actions__btn--ace`), single-line labels, compact width — same in Full Table and Card View.
-- **Double / split eligibility:** Same funding helper — action disabled when any actual staker cannot fund their proportional share.
+- **Double / split eligibility:** Same funding helper — action disabled when any actual staker cannot fund their proportional share. Execution uses full table `GameState` for funding (not stripped synthetic state). Split copies `stakerAmountsByPersonId` onto both post-split hands.
 
 **Summary screen:** Off by default (`showRoundSummaryOverlay: false`); opens only when enabled in settings. When shown: visual cards per box, outcome, **Won [n]c** / **Lost [n]c**, bank net summary.
 

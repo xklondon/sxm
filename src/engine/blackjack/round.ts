@@ -382,6 +382,7 @@ export function doubleDownBlackjackPlayer(
   bankrollCtx: BankrollContext,
   _settings?: BlackjackSettings,
   protocol?: BlackjackProtocol,
+  fundingState?: GameState,
 ): {
   session: GameSession;
   players: Record<string, Player>;
@@ -392,24 +393,26 @@ export function doubleDownBlackjackPlayer(
   assertRoundStatus(round, ['player-turns'], 'double down');
   const hand = assertHandCanAct(round, handKey, 'double down');
   const proto = protocol ?? getBlackjackProtocolOrDefault();
-  const fundingState = {
-    session,
-    players,
-    ledger,
-    tableMeta: {
-      ownerPersonId: bankrollCtx.ownerPersonId ?? null,
-      bankerSetup: bankrollCtx.bankerSetup ?? { mode: 'bot', playerId: null, displayName: '' },
-      boxStakes: {},
-      boxSlots: [],
-      bettingLocked: true,
-    },
-    blackjack: round,
-    deck,
-  } as unknown as GameState;
-  const fundingParticipants = resolveHandFundingParticipants(fundingState, hand, hand.playerId);
-  const stakerAmounts = resolveHandStakerAmounts(hand, bankrollCtx, hand.playerId);
+  const fundingCtx =
+    fundingState ??
+    ({
+      session,
+      players,
+      ledger,
+      tableMeta: {
+        ownerPersonId: bankrollCtx.ownerPersonId ?? null,
+        bankerSetup: bankrollCtx.bankerSetup ?? { mode: 'bot', playerId: null, displayName: '' },
+        boxStakes: {},
+        boxSlots: [],
+        bettingLocked: true,
+      },
+      blackjack: round,
+      deck,
+    } as unknown as GameState);
+  const fundingParticipants = resolveHandFundingParticipants(fundingCtx, hand, hand.playerId);
+  const stakerAmounts = resolveHandStakerAmounts(hand, bankrollCtx, hand.playerId, fundingCtx);
   const additionalBet = hand.currentBet;
-  const fundingResolution = resolveFundableActionParticipants(fundingState, hand, hand.playerId, 'double');
+  const fundingResolution = resolveFundableActionParticipants(fundingCtx, hand, hand.playerId, 'double');
   if (!fundingResolution.canFundAll) {
     throw new Error('Not enough chips to double');
   }
@@ -499,6 +502,7 @@ export function splitBlackjackPlayer(
   bankrollCtx: BankrollContext,
   _settings: BlackjackSettings,
   protocol?: BlackjackProtocol,
+  fundingState?: GameState,
 ): {
   session: GameSession;
   players: Record<string, Player>;
@@ -509,24 +513,26 @@ export function splitBlackjackPlayer(
   assertRoundStatus(round, ['player-turns'], 'split');
   const hand = assertHandCanAct(round, handKey, 'split');
   const proto = protocol ?? getBlackjackProtocolOrDefault();
-  const fundingState = {
-    session,
-    players,
-    ledger,
-    tableMeta: {
-      ownerPersonId: bankrollCtx.ownerPersonId ?? null,
-      bankerSetup: bankrollCtx.bankerSetup ?? { mode: 'bot', playerId: null, displayName: '' },
-      boxStakes: {},
-      boxSlots: [],
-      bettingLocked: true,
-    },
-    blackjack: round,
-    deck,
-  } as unknown as GameState;
-  const fundingParticipants = resolveHandFundingParticipants(fundingState, hand, hand.playerId);
-  const stakerAmounts = resolveHandStakerAmounts(hand, bankrollCtx, hand.playerId);
+  const fundingCtx =
+    fundingState ??
+    ({
+      session,
+      players,
+      ledger,
+      tableMeta: {
+        ownerPersonId: bankrollCtx.ownerPersonId ?? null,
+        bankerSetup: bankrollCtx.bankerSetup ?? { mode: 'bot', playerId: null, displayName: '' },
+        boxStakes: {},
+        boxSlots: [],
+        bettingLocked: true,
+      },
+      blackjack: round,
+      deck,
+    } as unknown as GameState);
+  const fundingParticipants = resolveHandFundingParticipants(fundingCtx, hand, hand.playerId);
+  const stakerAmounts = resolveHandStakerAmounts(hand, bankrollCtx, hand.playerId, fundingCtx);
   const additionalBet = hand.currentBet;
-  const fundingResolution = resolveFundableActionParticipants(fundingState, hand, hand.playerId, 'split');
+  const fundingResolution = resolveFundableActionParticipants(fundingCtx, hand, hand.playerId, 'split');
   if (!fundingResolution.canFundAll) {
     throw new Error('Not enough chips to split');
   }
@@ -574,10 +580,15 @@ export function splitBlackjackPlayer(
   const [firstCardId, secondCardId] = hand.cardIds;
   const splitCount = round.splitCounts[hand.playerId] ?? 0;
 
+  const stakerSnapshot = { ...stakerAmounts };
+  const splitBetAmount = hand.currentBet;
+
   const firstSplitHand = {
     ...hand,
     fromSplit: true,
     doubled: false,
+    currentBet: splitBetAmount,
+    stakerAmountsByPersonId: stakerSnapshot,
     cardIds: [firstCardId, drawA.card.id],
     actionStatus: 'acting' as const,
   };
@@ -587,6 +598,8 @@ export function splitBlackjackPlayer(
     handIndex: nextHandIndex,
     fromSplit: true,
     doubled: false,
+    currentBet: splitBetAmount,
+    stakerAmountsByPersonId: stakerSnapshot,
     cardIds: [secondCardId, drawB.card.id],
     actionStatus: 'acting' as const,
   };

@@ -22,6 +22,8 @@ export interface BlackjackTableLayoutShellProps {
   deviceView?: 'desktop' | 'mobile';
   playerBoxes: ReactNode;
   chipTray: ReactNode;
+  /** Insurance / even-money — canonical overlay layer above cards (z-index 20). */
+  actionOverlays?: ReactNode;
   layoutDebug?: boolean;
 }
 
@@ -41,6 +43,7 @@ export function BlackjackTableLayoutShell({
   deviceView = 'desktop',
   playerBoxes,
   chipTray,
+  actionOverlays,
   layoutDebug = false,
 }: BlackjackTableLayoutShellProps) {
   return (
@@ -72,6 +75,12 @@ export function BlackjackTableLayoutShell({
       <BlackjackPlayerBoxesZone>{playerBoxes}</BlackjackPlayerBoxesZone>
 
       <div className={`bj-table-zone ${TABLE_UX.tableZoneBottom}`}>{chipTray}</div>
+
+      {actionOverlays ? (
+        <div className="bj-table-action-overlays" aria-live="polite">
+          {actionOverlays}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,52 +1,61 @@
-# Change Summary — Insurance / double / split per-staker funding
+# Change Summary — Blackjack round transition after auto-stop (18+)
 
-## Problem
+## Root cause
 
-Insurance flow stalled after the first box when a stake owner could not fund their share. Double and split could show as available or debit the wrong person when co-staked or cross-box stakes were involved.
+1. **Protocol phase mismatch:** `getBlackjackProtocolPhase` treated `status === 'resolved'` as `'betting'`, so the command box could show betting/player-turn prompts while the round was still in round-complete (`awaitingNextRound`).
+2. **Stale temporary commanders:** `callerPersonId` on box slots/stakes was not cleared at settlement — only on explicit New Cards — so commander resolution could leak into the inter-round window.
+3. **Command builder gap:** `buildBlackjackCommandText` could emit player-turn lines when `protocolPhase === 'player'` even if the round was not in `player-turns` or was awaiting New Cards.
+4. **Co-staked display:** Arc slot labels showed only combined `betAmount`, hiding per-player contributions.
 
-## Root causes
+## Fixes
 
-1. **`takeInsuranceBet` used a stripped synthetic state** (empty `boxStakes`) for funding checks, mis-attributing in-round exposure to box callers instead of actual stakers.
-2. **Insurance tracked per-box, not per-staker** — unfunded stakers were not auto-skipped, leaving boxes pending with no actionable decision.
-3. **`resolveHandStakerAmounts` fell back to native box owner** when hands lacked `stakerAmountsByPersonId`, ignoring open box stake maps in tests and edge cases.
-4. **UI:** `insuranceDecisionPending` blocked decline on subsequent boxes after the first take.
+| Area | Change |
+|------|--------|
+| Protocol | `resolved` → `round-complete` (not `betting`) |
+| Settlement | `completeBankingOnState` calls `clearTemporaryBoxCommandState` |
+| Commander | `resolveBoxRoundCommander` returns null when `awaitingNextRound` or `resolved` |
+| Reset helpers | `clearTemporaryBoxCommandState`, `resetBlackjackRoundForBetting` (alias) exported from session |
+| Command box | Early return for `awaitingNextRound`; player-turn block requires `status === 'player-turns'` + `activeHandKey` |
+| Stake UI | `formatBoxStakeDisplayLabel` / `getBoxStakeBreakdown` wired into `BlackjackPanel` betting labels |
+| Deal gate | Unchanged — already blocks when `awaitingNextRound` or round in play |
 
-## Implementation
+## Files changed
 
-### Engine
+- `src/engine/blackjack/protocol.ts`
+- `src/engine/blackjack/dealEligibility.ts`
+- `src/engine/blackjack/gameState.ts`
+- `src/engine/blackjack/stakes.ts`
+- `src/engine/blackjack/index.ts`
+- `src/engine/session/resetBlackjackRoundOwnership.ts`
+- `src/engine/session/boxRoundCommander.ts`
+- `src/engine/session/index.ts`
+- `src/components/tableCommandDisplay.ts`
+- `src/components/BlackjackPanel.tsx`
+- `docs/SXM_MASTER_SPEC.md`
+- `docs/CHANGE_LOG.md`
 
-- **`resolveFundableActionParticipants(hand, actionType)`** in `handFunding.ts` — canonical fundable/skipped participants for `insurance | double | split`.
-- **Per-staker insurance state:** `insuranceStakerDecisions`, `insuranceStakerSkipReasons`, `insuranceStakerBets` on `BlackjackRound`.
-- **`applyAutoSkippedInsuranceStakers`** — marks unfunded stakers skipped; auto-completes zero-fundable boxes.
-- **`takeInsuranceBet`** — now uses full `GameState` for funding resolution; debits one staker's proportional share.
-- **`allStakersInsuranceResolved`** — box complete when all stakers accepted/declined/skipped; legacy `insuranceDeclined` honored when no per-staker map exists.
-- **Double/split** — `validation.ts` + `round.ts` use funding helper; split uses proportional staker debits.
-- **`resolveHandStakerAmounts`** — falls back to open box `stakerAmountsByPersonId` before native owner.
+## Tests added/updated
 
-### UI
+- `src/engine/blackjack/blackjackRoundTransition.test.ts` (new) — 6 cases:
+  - Three boxes auto-stop 18+ → bank → resolved: no stale command, commanders cleared, deal blocked
+  - New Cards → clean betting → deal after re-stake
+  - Native box commanded by other staker; reset after round; native assignment kept
+  - Co-staked breakdown label (120 + 80, not single 200)
+  - Split hands removed before next betting
+  - `resolved` never maps to betting protocol phase
+- `src/components/tableCommandDisplay.test.ts` — awaitingNextRound blocks stale player-turn command
 
-- **`InsuranceDecisionOverlay`** — queue hint `Insurance: Box X of Y — pays 2:1`; read-only block reason when viewer cannot fund.
-- **`BlackjackPanel`** — per-staker take/decline with `personId`; `pendingTake` only blocks take button; resets on insurance state change.
+## Validation
 
-## Tests
+```
+npx vitest run src/engine/blackjack/blackjackRoundTransition.test.ts \
+  src/components/tableCommandDisplay.test.ts \
+  src/engine/session/boxRoundCommander.test.ts
+→ 30 passed
 
-| Suite | Result |
-|-------|--------|
-| `npm test -- insurance` | 45/45 |
-| `npm test -- multiBoxInsurance` | 4/4 |
-| `npm test -- doublePayerFunding` | 2/2 |
-| `npm test -- split` | 15/15 |
-| `npm run build` | pass |
+npm run build → pass
+```
 
-New/updated: `insuranceFunding.test.ts` (12 scenarios), `multiBoxInsurance.test.ts`, existing phase/targeting tests updated for per-staker model.
-
-## Docs
-
-- Updated `docs/SXM_MASTER_SPEC.md` — stake payer table, insurance UX, online authority row.
-- Added `docs/CHANGE_LOG.md` entry (2026-06-22).
+After `resolved → awaitingNextRound`: `activeHandKey` null, `callerPersonId` null on all slots, `getCallerPersonIdForBox` null, deal blocked until New Cards + fresh stakes.
 
 **Spec discipline: checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.**
-
-## Not touched
-
-Table host deal authority, commander hierarchy, modal shell, Zilch, Hold'em, IOU, routing, layout geometry.

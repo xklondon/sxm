@@ -71,12 +71,13 @@ export function getVisibleDealerCardIds(state: GameState): string[] {
   if (protocol.dealingRules.showDealerHoleCardDuringPlay) {
     return ids;
   }
-  const revealSecond =
+  const revealSecondFaceUp =
     round.status === 'bank-turn' ||
     round.status === 'banking' ||
-    round.status === 'resolved';
-  if (!revealSecond && ids.length > 1) {
-    return ids.slice(0, 1);
+    round.status === 'resolved' ||
+    !round.dealerHoleHidden;
+  if (!revealSecondFaceUp && ids.length > 1) {
+    return ids;
   }
   return ids;
 }

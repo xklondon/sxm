@@ -374,6 +374,13 @@ export function buildBlackjackCommandText(params: {
     return { commandMessage: null, commandLines: [] };
   }
 
+  if (gameState.tableMeta.awaitingNextRound) {
+    return {
+      commandMessage: 'Round complete — press New Cards, then place bets for the next hand.',
+      commandLines: [],
+    };
+  }
+
   if (roundSummaryLines.length > 0 && cardRevealComplete) {
     return { commandMessage: 'Round finished. Summary ready.', commandLines: [] };
   }
@@ -430,8 +437,16 @@ export function buildBlackjackCommandText(params: {
   }
 
   if (protocolPhase === 'player') {
-    if (!round?.activeHandKey) {
-      return { commandMessage: 'Waiting for the next box…', commandLines: [] };
+    if (round?.status !== 'player-turns' || !round.activeHandKey) {
+      return {
+        commandMessage: sanitizeCommandStatusForVisibleBank(
+          polishCenterStatusMessage(centerStatus, protocolPhase),
+          displayState,
+          protocolPhase,
+          cardRevealComplete,
+        ),
+        commandLines: [],
+      };
     }
 
     const turnHandKey = round.activeHandKey;

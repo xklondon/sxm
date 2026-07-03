@@ -117,4 +117,28 @@ describe('split action', () => {
       );
     }
   });
+
+  it('split copies stakerAmountsByPersonId onto both hands', () => {
+    const { state, handKey } = pairTable();
+    const snapshot = { [state.tableMeta.ownerPersonId!]: 25 };
+    const playing = {
+      ...state,
+      blackjack: {
+        ...state.blackjack!,
+        playerHands: {
+          ...state.blackjack!.playerHands,
+          [handKey]: {
+            ...state.blackjack!.playerHands[handKey]!,
+            stakerAmountsByPersonId: snapshot,
+          },
+        },
+      },
+    };
+    const split = splitBlackjackOnState(playing, handKey);
+    const keys = listHandKeysForPlayer(split.blackjack!.playerHands, playing.blackjack!.playerHands[handKey]!.playerId);
+    expect(keys).toHaveLength(2);
+    for (const key of keys) {
+      expect(split.blackjack!.playerHands[key]!.stakerAmountsByPersonId).toEqual(snapshot);
+    }
+  });
 });

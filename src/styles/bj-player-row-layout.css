@@ -522,7 +522,9 @@
   }
 
   .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above,
-  .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above {
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-arc__slot--has-stake .bj-phone-view__box-value--above,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-arc__slot--has-stake .bj-phone-view__box-value--above {
     font-size: calc(var(--bj-seat-total-size, 0.52rem) * var(--bj-mobile-box-value-scale, 2));
     line-height: var(--bj-box-value-band-height);
   }

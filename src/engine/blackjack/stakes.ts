@@ -33,6 +33,38 @@ export function getStakeForBox(state: GameState, boxPlayerId: string): number {
   return state.tableMeta.boxStakes[boxPlayerId]?.amount ?? 0;
 }
 
+export interface BoxStakeContributor {
+  personId: string;
+  amount: number;
+}
+
+/** Per-player stake on a box — canonical breakdown for display and settlement audit. */
+export function getBoxStakeBreakdown(state: GameState, boxPlayerId: string): BoxStakeContributor[] {
+  const amounts = resolveStakerAmountsByPersonId(state, boxPlayerId);
+  return Object.entries(amounts)
+    .filter(([, amount]) => amount > 0)
+    .map(([personId, amount]) => ({ personId, amount }))
+    .sort((a, b) => b.amount - a.amount);
+}
+
+/** Betting label — one amount or per-contributor amounts (never a misleading single payer total). */
+export function formatBoxStakeDisplayLabel(state: GameState, boxPlayerId: string): string {
+  const breakdown = getBoxStakeBreakdown(state, boxPlayerId);
+  if (breakdown.length === 0) {
+    return '';
+  }
+  if (breakdown.length === 1) {
+    return String(breakdown[0]!.amount);
+  }
+  return breakdown
+    .map(({ personId, amount }) => {
+      const person = state.players[personId];
+      const label = (person?.controllerName?.trim() || person?.displayName || '?').slice(0, 3);
+      return `${label}:${amount}`;
+    })
+    .join(' ');
+}
+
 export function getStakeChipEntriesForBox(
   state: GameState,
   boxPlayerId: string,

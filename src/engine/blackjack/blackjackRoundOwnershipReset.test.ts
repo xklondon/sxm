@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { GameState } from '../../types';
+import { createEmptyBlackjackRound, createBlackjackPlayerHand } from '../../types/blackjack';
 import { addPlayer, mergeSessionUpdate } from '../session/session';
 import { allocateChipsToBankrollOwner } from '../session/allocation';
 import { claimBoxSlot } from '../session/boxOps';
@@ -20,8 +21,9 @@ import {
 } from '../session/tableDealPermission';
 import { addChipToBoxStake } from './stakes';
 import { getEligibleDealBoxes } from './dealEligibility';
+import { getBlackjackProtocolPhase } from './protocol';
 import { applyBlackjackActionToState, type BlackjackActorContext } from './applyBlackjackAction';
-import { blackjackHandKey } from './handKeys';
+import { blackjackHandKey, listHandKeysForPlayer } from './handKeys';
 import { startNextRoundOnState } from './gameState';
 import {
   blackjackTestActorContext,
@@ -262,5 +264,57 @@ describe('blackjack round ownership reset', () => {
     const dealt = applyBlackjackActionToState(betting, 'dealCards', ctx(betting));
     expect(dealt.blackjack?.status).not.toBe('betting');
     void p2;
+  });
+
+  it('createEmptyBlackjackRound clears insurance, even-money, and split residue fields', () => {
+    const round = createEmptyBlackjackRound();
+    expect(round.insuranceOfferPending).toBe(false);
+    expect(round.insuranceStakerDecisions).toEqual({});
+    expect(round.insuranceStakerSkipReasons).toEqual({});
+    expect(round.insuranceStakerBets).toEqual({});
+    expect(round.evenMoneyOfferHandKey).toBeNull();
+    expect(round.evenMoneyPendingHandKeys).toEqual([]);
+    expect(round.activeHandKey).toBeNull();
+    expect(round.splitCounts).toEqual({});
+  });
+
+  it('startNextRoundOnState clears split, insurance, and even-money residue', () => {
+    let { state, p1 } = twoPlayerSeated();
+    const box1 = boxPlayerId(state, 1)!;
+    const splitKey = blackjackHandKey(box1, 1);
+    state = {
+      ...state,
+      tableMeta: {
+        ...state.tableMeta,
+        awaitingNextRound: true,
+        bettingLocked: true,
+      },
+      blackjack: {
+        ...createEmptyBlackjackRound(),
+        status: 'resolved',
+        isSettled: true,
+        insuranceOfferPending: true,
+        insuranceStakerDecisions: { [box1]: { [p1]: 'accepted' } },
+        evenMoneyOfferHandKey: splitKey,
+        evenMoneyPendingHandKeys: [splitKey],
+        splitCounts: { [box1]: 1 },
+        activeHandKey: splitKey,
+        playerHands: {
+          [blackjackHandKey(box1, 0)]: createBlackjackPlayerHand(box1, 0, true),
+          [splitKey]: createBlackjackPlayerHand(box1, 1, true),
+        },
+      },
+    };
+    const next = startNextRoundOnState(state);
+    expect(next.tableMeta.awaitingNextRound).toBe(false);
+    expect(next.tableMeta.bettingLocked).toBe(false);
+    expect(next.blackjack?.insuranceOfferPending).toBe(false);
+    expect(next.blackjack?.insuranceStakerDecisions).toEqual({});
+    expect(next.blackjack?.evenMoneyOfferHandKey).toBeNull();
+    expect(next.blackjack?.evenMoneyPendingHandKeys).toEqual([]);
+    expect(next.blackjack?.activeHandKey).toBeNull();
+    expect(next.blackjack?.splitCounts).toEqual({});
+    expect(listHandKeysForPlayer(next.blackjack!.playerHands, box1)).toHaveLength(1);
+    expect(getBlackjackProtocolPhase(next)).toBe('betting');
   });
 });

@@ -91,6 +91,16 @@ export function createEmptyBlackjackRound(): BlackjackRound {
     insuranceOfferPending: false,
     insuranceBets: {},
     insuranceDeclined: {},
+    insuranceSkipReasons: {},
+    insuranceStakerDecisions: {},
+    insuranceStakerSkipReasons: {},
+    insuranceStakerBets: {},
+    evenMoneyOfferHandKey: null,
+    evenMoneyPendingHandKeys: [],
+    evenMoneyDeclined: {},
+    tookEvenMoney: {},
+    isSettled: undefined,
+    settledAt: null,
   };
 }
 

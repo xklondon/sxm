@@ -56,6 +56,31 @@ describe('buildBlackjackCommandText', () => {
     expect(result.commandLines).toEqual([]);
   });
 
+  it('awaitingNextRound blocks stale player-turn command even when protocolPhase is player', () => {
+    let state = tableWithClaimedBox(1);
+    const box1 = boxPlayerId(state, 1)!;
+    state = {
+      ...state,
+      tableMeta: { ...state.tableMeta, awaitingNextRound: true, bettingLocked: true },
+      blackjack: {
+        ...actingRound(state, box1, [findCardId(state.deck!, '10'), findCardId(state.deck!, '8')]),
+        status: 'resolved',
+        activeHandKey: null,
+      },
+    };
+    const result = buildBlackjackCommandText({
+      gameState: state,
+      gameEnded: false,
+      gameOverMessage: '',
+      centerStatus: 'Round complete',
+      protocolPhase: 'player',
+      roundSummaryLines: [],
+      controllerName: 'Alice',
+    });
+    expect(result.commandMessage).toContain('New Cards');
+    expect(result.commandMessage).not.toMatch(/your turn/i);
+  });
+
   it('formats player turn with box, caller name, and hand value', () => {
     let state = tableWithClaimedBox(2);
     const box2 = boxPlayerId(state, 2)!;

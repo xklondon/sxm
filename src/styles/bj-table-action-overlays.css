@@ -1,0 +1,102 @@
+/**
+ * Canonical action overlay layer — insurance, even-money, and ace decisions above all cards.
+ * z-index: felt 0, cards 1–8, dealer/boxes ~9, action overlays 20, modals 100+.
+ */
+
+.bj-table-layout-shell {
+  position: relative;
+}
+
+.bj-table-action-overlays {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.bj-table-action-overlays__slot {
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.bj-table-action-overlays__slot > * {
+  pointer-events: auto;
+}
+
+@media (min-width: 721px) {
+  .bj-table-action-overlays {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows:
+      [bank-info] minmax(0, auto)
+      [dealer] var(--bj-desktop-zone-dealer-height)
+      [command] var(--bj-desktop-zone-command-height)
+      [cards] var(--bj-desktop-grid-row-cards, minmax(0, 1fr))
+      [actions] var(--bj-desktop-zone-actions-height)
+      [boxes] var(--bj-desktop-zone-boxes-height)
+      [tray] var(--bj-desktop-zone-tray-height);
+    row-gap: 0;
+    column-gap: 0;
+    padding-bottom: var(--bj-desktop-bottom-padding, 0);
+  }
+
+  .bj-table-action-overlays__slot--command {
+    grid-row: command;
+    grid-column: 1;
+    align-self: start;
+    padding-top: var(--bj-desktop-dealer-command-gap, 0);
+    padding-inline: 0.35rem;
+  }
+
+  .bj-table-action-overlays__slot--actions {
+    grid-row: actions;
+    grid-column: 1;
+    align-self: center;
+    padding-inline: 0.35rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .bj-table-action-overlays {
+    display: grid;
+    grid-template-rows:
+      auto
+      var(--bj-zone-dealer-height, 4.35rem)
+      minmax(var(--bj-zone-command-height, 2.85rem), auto)
+      minmax(0, 1fr)
+      auto
+      var(--bj-zone-boxes-height, 5.35rem)
+      var(--bj-zone-tray-height, 3.5rem);
+    height: 100%;
+    width: 100%;
+  }
+
+  .bj-table-action-overlays__slot--command {
+    grid-row: 3;
+    align-self: start;
+    padding-top: var(--bj-mobile-zone-command-top-gap, 0.05rem);
+    padding-inline: 0.38rem;
+  }
+
+  .bj-table-action-overlays__slot--actions {
+    grid-row: 5;
+    align-self: center;
+    padding-inline: 0.38rem;
+  }
+}
+
+.bj-table-action-overlays .bj-insurance-overlay {
+  position: relative;
+  z-index: 1;
+}
+
+.bj-table-action-overlays .bj-table-actions--ace-decision,
+.bj-table-action-overlays .bj-table-actions--even-money {
+  position: relative;
+  z-index: 1;
+}

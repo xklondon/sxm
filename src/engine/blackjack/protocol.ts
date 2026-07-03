@@ -196,7 +196,7 @@ export function getBlackjackProtocolPhase(state: GameState): BlackjackProtocolPh
     case 'banking':
       return 'banking';
     case 'resolved':
-      return 'betting';
+      return 'round-complete';
     case 'betting':
     default:
       return 'betting';

@@ -288,6 +288,28 @@ export function nextGameplayRevealStep(
   visible: CardVisibilityCounts,
   target: CardVisibilityCounts,
 ): CardVisibilityCounts | null {
+  if (isInitialDealVisibilityCounts(target) && !areAllPlayerInitialCardsRevealed(visible, target)) {
+    const handKeys = [
+      ...new Set([...Object.keys(visible.hands), ...Object.keys(target.hands)]),
+    ];
+    for (const handKey of handKeys) {
+      const cur = visible.hands[handKey] ?? 0;
+      const tgt = target.hands[handKey] ?? 0;
+      if (cur < tgt) {
+        return {
+          ...visible,
+          hands: { ...visible.hands, [handKey]: cur + 1 },
+        };
+      }
+    }
+  }
+  if (
+    isInitialDealVisibilityCounts(target) &&
+    visible.dealer < target.dealer &&
+    !areAllPlayerInitialCardsRevealed(visible, target)
+  ) {
+    return null;
+  }
   if (visible.dealer < target.dealer) {
     return { ...visible, dealer: visible.dealer + 1 };
   }
@@ -351,6 +373,13 @@ export function nextSequentialRevealStep(
   if (round && shouldUseOrderedInitialReveal(roundStatus, workingVisible, target)) {
     const steps = buildInitialRevealSteps(round);
     for (const step of steps) {
+      if (
+        step.type === 'dealer' &&
+        step.cardIndex === 1 &&
+        !areAllPlayerInitialCardsRevealed(workingVisible, target)
+      ) {
+        continue;
+      }
       const after = applyRevealStep(workingVisible, step);
       if (
         after.dealer !== workingVisible.dealer ||
@@ -364,7 +393,9 @@ export function nextSequentialRevealStep(
       }
     }
     if (hasPendingCardReveal(workingVisible, target) && isInitialDealVisibilityCounts(target)) {
-      return null;
+      if (!isDealerHoleRevealPending(workingVisible, target)) {
+        return null;
+      }
     }
   }
   if (hasPendingCardReveal(workingVisible, target)) {
@@ -390,6 +421,58 @@ export function isHandBoundaryRevealStep(
     }
   }
   return false;
+}
+
+/** True when every player hand has reached its initial-deal target count. */
+export function areAllPlayerInitialCardsRevealed(
+  visible: CardVisibilityCounts,
+  target: CardVisibilityCounts,
+): boolean {
+  let anyHand = false;
+  for (const [handKey, targetCount] of Object.entries(target.hands)) {
+    if (targetCount <= 0) {
+      continue;
+    }
+    anyHand = true;
+    if ((visible.hands[handKey] ?? 0) < targetCount) {
+      return false;
+    }
+  }
+  return anyHand;
+}
+
+/** Dealer hole is the only remaining initial-deal reveal after all player cards are visible. */
+export function isDealerHoleRevealPending(
+  visible: CardVisibilityCounts,
+  target: CardVisibilityCounts,
+): boolean {
+  return (
+    isInitialDealVisibilityCounts(target) &&
+    target.dealer >= 2 &&
+    visible.dealer < 2 &&
+    visible.dealer >= 1 &&
+    areAllPlayerInitialCardsRevealed(visible, target)
+  );
+}
+
+export function isDealerHoleRevealStep(
+  before: CardVisibilityCounts,
+  after: CardVisibilityCounts,
+  target: CardVisibilityCounts,
+): boolean {
+  return (
+    isInitialDealVisibilityCounts(target) &&
+    before.dealer === 1 &&
+    after.dealer === 2 &&
+    target.dealer >= 2
+  );
+}
+
+/** Pause after the last player initial card before the dealer hole appears. */
+export function waitForInitialDealerHoleHoldMs(
+  state: Pick<GameState, 'blackjackFlowSettings'>,
+): number {
+  return getCardDealDelayMs(state, 'result-hold');
 }
 
 /** Pick deal-speed vs bank-timer delay for the next sequential reveal step. */

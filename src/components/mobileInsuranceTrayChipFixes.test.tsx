@@ -103,16 +103,16 @@ describe('insurance overlay under command area', () => {
     );
   });
 
-  it('Ace up-card panel renders insurance overlay in command zone', () => {
+  it('Ace up-card panel renders insurance overlay in canonical action layer', () => {
     simulatedViewport = { width: 390, height: 844 };
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={insuranceState()} onGameStateChange={noop} />,
     );
-    const commandZone = html.split('bj-table-zone--summary')[1]?.split('bj-table-zone--cards')[0] ?? '';
-    expect(commandZone).toContain('bj-insurance-overlay');
-    expect(commandZone).toContain('pays 2:1');
-    expect(commandZone).toContain('Insurance 25');
-    expect(commandZone).toMatch(/Don(&#x27;|&apos;)t Insure/);
+    expect(html).toContain('bj-table-action-overlays');
+    expect(html).toContain('bj-insurance-overlay');
+    expect(html).toContain('pays 2:1');
+    expect(html).toContain('Insurance 25');
+    expect(html).toMatch(/Don(&#x27;|&apos;)t Insure/);
   });
 });
 

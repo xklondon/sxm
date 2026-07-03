@@ -25,6 +25,42 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+---
+
+---
+
+## 2026-06-22 — Blackjack round transition after auto-stop (18+)
+
+**Problem:** After all boxes auto-stood at 18+, command box showed stale player-turn prompts before New Cards; deal could appear stuck because `resolved` mapped to betting protocol phase and temporary box commanders survived settlement.
+
+**Fix:** `getBlackjackProtocolPhase('resolved')` → `round-complete`; `clearTemporaryBoxCommandState` at settlement; `resolveBoxRoundCommander` returns null during round-complete; command builder gates player-turn text on `status === 'player-turns'` + `awaitingNextRound` early exit; co-staked boxes use `formatBoxStakeDisplayLabel` in arc slots.
+
+**Files:** `protocol.ts`, `dealEligibility.ts`, `gameState.ts`, `resetBlackjackRoundOwnership.ts`, `boxRoundCommander.ts`, `stakes.ts`, `tableCommandDisplay.ts`, `BlackjackPanel.tsx`, `blackjackRoundTransition.test.ts`
+
+---
+
+## 2026-06-22 — Blackjack split, stake display, mobile spacing, next-round reset
+
+**Split:** `splitBlackjackPlayer` / `doubleDownBlackjackPlayer` now fund from full `GameState` (not synthetic empty `boxStakes`). Split hands copy `stakerAmountsByPersonId` and `currentBet` onto both post-split hands. `canSplitUnderProtocol` drops incorrect single-staker `ledgerBalance` gate (proportional `availableChips` only).
+
+**Stake display:** Unclaimed/far-left boxes with chips (pending online stake or post-claim open stake) use `bj-arc__slot--has-stake` so the numeric amount renders above the box (CSS previously required `--owned`).
+
+**Mobile spacing:** Slightly larger `--bj-zone-boxes-tray-gap` and `--bj-cards-actions-gap` on mobile Full Table; Card View actions zone `overflow: visible` + primary row wrap so 2× is not clipped.
+
+**Next round:** `createEmptyBlackjackRound` explicitly clears insurance/even-money/split residue; DealerBlock shows hint when New Cards blocked.
+
+---
+
+## 2026-06-22 — Blackjack dealing and overlay presentation stabilization
+
+**Problem:** Insurance/even-money overlays rendered behind or clipped by cards; dealer hole appeared before player deal completed; Card View dealer cards clipped.
+
+**Fix:** Canonical `bj-table-action-overlays` layer (z-index 20); initial-deal reveal defers dealer hole until all player cards visible + result-hold pause; face-down hole visible in display state; Card View dealer overflow visible.
+
+**Files:** `bj-table-action-overlays.css`, `BlackjackTableLayoutShell.tsx`, `BlackjackPanel.tsx`, `cardRevealDisplay.ts`, `useSequentialCardReveal.ts`, `protocolState.ts`, `dealerDisplay.ts`, `bj-blackjack-table-shell.css`
+
+---
+
 ## 2026-06-22 — Insurance / double / split per-staker funding
 
 **Problem:** Insurance stalled after the first box when a stake owner lacked chips; double/split could appear enabled or charge the wrong payer.

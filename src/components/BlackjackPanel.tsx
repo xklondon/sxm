@@ -25,6 +25,7 @@ import {
   addChipToBoxStake,
   removeLastChipFromBoxStake,
   getStakeForBox,
+  formatBoxStakeDisplayLabel,
   getTableMinimumBet,
   canChangeMinimumBet,
   setPersonPlayFlow,
@@ -1429,10 +1430,36 @@ export function BlackjackPanel({
     );
   }
 
-  function renderSummaryContent() {
+  function renderActionOverlays() {
     const insurance = renderInsuranceDecisionOverlay();
-    if (insurance) {
-      return insurance;
+    const evenMoney =
+      round?.evenMoneyOfferHandKey && protocolPhase === 'player'
+        ? renderEvenMoneyActions()
+        : null;
+
+    if (!insurance && !evenMoney) {
+      return null;
+    }
+
+    return (
+      <>
+        {insurance ? (
+          <div className="bj-table-action-overlays__slot bj-table-action-overlays__slot--command">
+            {insurance}
+          </div>
+        ) : null}
+        {evenMoney ? (
+          <div className="bj-table-action-overlays__slot bj-table-action-overlays__slot--actions">
+            {evenMoney}
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
+  function renderSummaryContent() {
+    if (renderInsuranceDecisionOverlay()) {
+      return <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />;
     }
     const alert = renderTableAlert();
     return alert ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />;
@@ -1528,7 +1555,13 @@ export function BlackjackPanel({
 
   function renderTablePlayerActions() {
     if (round?.evenMoneyOfferHandKey) {
-      return renderEvenMoneyActions();
+      return (
+        <div
+          className="bj-action-row bj-action-row--slot-reserved"
+          data-layout-band="action-row"
+          aria-hidden="true"
+        />
+      );
     }
 
     if (!canShowPlayerDecisionControls(gameState, protocolPhase, {
@@ -1855,6 +1888,8 @@ export function BlackjackPanel({
     const pendingChips = pendingOnlineStakesBySlot[slotNumber] ?? [];
     const openStake = boxId ? getStakeForBox(gameState, boxId) : 0;
     const pendingStakeTotal = pendingChips.reduce((sum, chip) => sum + chip, 0);
+    const hasOpenStake = openStake > 0 || pendingStakeTotal > 0;
+    const isUnclaimedStakedSlot = isEmpty && hasOpenStake;
     const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
     const borderState = resolveBoxBorderVisualState({
       state: gameState,
@@ -1906,9 +1941,11 @@ export function BlackjackPanel({
       ? boxNetChips !== null
         ? formatBoxNetResultLabel(boxNetChips)
         : ''
-      : betAmount > 0
-        ? String(betAmount)
-        : '';
+      : betAmount > 0 && boxId && inBetting
+        ? formatBoxStakeDisplayLabel(gameState, boxId)
+        : betAmount > 0
+          ? String(betAmount)
+          : '';
     const boxNetTone =
       showBoxHandResultMarkers && boxParticipated && boxNetChips !== null
         ? boxNetResultTone(boxNetChips)
@@ -1956,7 +1993,8 @@ export function BlackjackPanel({
         ? 'bj-arc__slot-split-main'
         : [
             'bj-arc__slot',
-            isEmpty ? 'bj-arc__slot--empty' : 'bj-arc__slot--owned',
+            isEmpty && !isUnclaimedStakedSlot ? 'bj-arc__slot--empty' : 'bj-arc__slot--owned',
+            isUnclaimedStakedSlot ? 'bj-arc__slot--has-stake' : '',
             TABLE_UX.boxHitZone,
             isJoinAssigned ? 'bj-arc__slot--join-highlight' : '',
             isDrop ? 'bj-arc__slot--drop' : '',
@@ -2042,7 +2080,8 @@ export function BlackjackPanel({
             TABLE_UX.fullArcBox,
             'bj-player-box-mobile',
             turnBorderClass,
-            isEmpty && !isSplitCompanion ? 'bj-phone-view__mini-hand--empty' : '',
+            isEmpty && !isUnclaimedStakedSlot ? 'bj-phone-view__mini-hand--empty' : '',
+            isUnclaimedStakedSlot ? 'bj-phone-view__mini-hand--has-stake' : '',
             isSelected ? 'bj-box--selected' : '',
             isSelected ? BET_BOX_PULSE : '',
             isDrop ? 'bj-bet-zone--drop' : '',
@@ -2631,6 +2670,7 @@ export function BlackjackPanel({
             deviceView={deviceView}
             playerBoxes={renderPlayerBoxesArc()}
             chipTray={renderTrayInner()}
+            actionOverlays={renderActionOverlays()}
           />
         </div>
         </div>

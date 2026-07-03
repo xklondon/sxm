@@ -137,6 +137,17 @@
 
   .bj-view-card-desktop .bj-table-layout-shell > .bj-dealer-area {
     align-items: center;
+    overflow: visible;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell > .bj-dealer-area > .dealer-block {
+    overflow: visible;
+  }
+
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot .dealer-block__cards,
+  .bj-view-card-desktop .bj-table-layout-shell .bj-dealer-area .dealer-block__cards-slot .dealer-block__card-placeholder {
+    max-height: none;
+    overflow: visible;
   }
 
   .bj-view-full-desktop .bj-table-layout-shell > .bj-dealer-area {
@@ -547,7 +558,7 @@
   }
 
   .bj-view-full-desktop[data-phase='insurance'] .bj-table-layout-shell > .bj-table-zone--summary {
-    overflow: hidden;
+    overflow: visible;
   }
 
   .bj-view-full-desktop[data-phase='insurance']

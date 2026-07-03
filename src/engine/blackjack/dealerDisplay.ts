@@ -22,9 +22,17 @@ export function getDealerDisplayHand(state: GameState): DealerDisplayHand | null
   if (cardIds.length === 0) {
     return null;
   }
-  const cards = cardsFromIds(deck, cardIds);
+  const valueCardIds =
+    round.dealerHoleHidden &&
+    round.status !== 'bank-turn' &&
+    round.status !== 'banking' &&
+    round.status !== 'resolved' &&
+    cardIds.length > 1
+      ? cardIds.slice(0, 1)
+      : cardIds;
+  const cards = cardsFromIds(deck, valueCardIds);
   const { value, isSoft, isBlackjack } = getBlackjackHandValue(cards);
-  return { cardIds, cards, value, isSoft, isBlackjack };
+  return { cardIds, cards: cardsFromIds(deck, cardIds), value, isSoft, isBlackjack };
 }
 
 /** Authoritative dealer hand for settlement / bank-final messages (all dealt cards). */

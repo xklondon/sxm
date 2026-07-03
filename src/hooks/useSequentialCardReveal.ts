@@ -18,6 +18,8 @@ import {
   resolveRevealScopeTransition,
   shouldSnapCardRevealOnMount,
   shouldUseOrderedInitialReveal,
+  isDealerHoleRevealStep,
+  waitForInitialDealerHoleHoldMs,
   totalCardCount,
   type CardVisibilityCounts,
 } from '../engine/blackjack/dealing/cardRevealDisplay';
@@ -220,6 +222,17 @@ export function useSequentialCardReveal(
 
         if (stepped && round && isHandBoundaryRevealStep(visible, stepped)) {
           await sleepMs(waitForResultHoldMs(authoritative));
+          if (runIdRef.current !== runId) {
+            break;
+          }
+        }
+
+        if (
+          stepped &&
+          round &&
+          isDealerHoleRevealStep(visible, stepped, authoritativeTarget)
+        ) {
+          await sleepMs(waitForInitialDealerHoleHoldMs(authoritative));
           if (runIdRef.current !== runId) {
             break;
           }

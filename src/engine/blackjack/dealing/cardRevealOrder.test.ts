@@ -65,11 +65,11 @@ function simulateOrderedReveal(
 
 describe('natural reveal order', () => {
   it('does not reveal dealer cards before box cards when one card remains', () => {
-    const visible = { dealer: 1, hands: { 'p:0': 2, 'p2:0': 2 } };
+    const visible = { dealer: 1, hands: { 'p:0': 1, 'p2:0': 2 } };
     const target = { dealer: 2, hands: { 'p:0': 2, 'p2:0': 2 } };
     expect(shouldUseOrderedInitialReveal('player-turns', visible, target)).toBe(true);
     const gameplay = nextGameplayRevealStep(visible, target);
-    expect(gameplay?.dealer).toBe(2);
+    expect(gameplay?.dealer).toBe(1);
     expect(gameplay?.hands['p:0']).toBe(2);
     const round = {
       status: 'player-turns',
@@ -83,7 +83,8 @@ describe('natural reveal order', () => {
       },
       initialDealHandKeys: ['p:0', 'p2:0'],
     } as unknown as import('../../../types/blackjack').BlackjackRound;
-    const ordered = nextSequentialRevealStep(visible, target, round, 'player-turns');
+    const allPlayersDone = { dealer: 1, hands: { 'p:0': 2, 'p2:0': 2 } };
+    const ordered = nextSequentialRevealStep(allPlayersDone, target, round, 'player-turns');
     expect(ordered?.dealer).toBe(2);
     expect(ordered?.hands['p:0']).toBe(2);
   });
