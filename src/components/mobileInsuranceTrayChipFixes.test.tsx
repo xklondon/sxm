@@ -88,7 +88,7 @@ describe('insurance overlay under command area', () => {
       />,
     );
     expect(overlayHtml).toContain('bj-insurance-overlay');
-    expect(overlayHtml).toContain('Insurance pays 2:1');
+    expect(overlayHtml).toContain('pays 2:1');
     expect(overlayHtml).toContain('Insurance 25');
     expect(overlayHtml).toMatch(/Don(&#x27;|&apos;)t Insure/);
   });
@@ -110,7 +110,7 @@ describe('insurance overlay under command area', () => {
     );
     const commandZone = html.split('bj-table-zone--summary')[1]?.split('bj-table-zone--cards')[0] ?? '';
     expect(commandZone).toContain('bj-insurance-overlay');
-    expect(commandZone).toContain('Insurance pays 2:1');
+    expect(commandZone).toContain('pays 2:1');
     expect(commandZone).toContain('Insurance 25');
     expect(commandZone).toMatch(/Don(&#x27;|&apos;)t Insure/);
   });

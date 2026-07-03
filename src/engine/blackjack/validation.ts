@@ -19,8 +19,11 @@ import {
   canStandUnderProtocol,
 } from './protocols/activeRules';
 import {
+  resolveFundableActionParticipants,
   resolveHandFundingParticipants,
   resolveProportionalFundingCapacity,
+  INSUFFICIENT_DOUBLE_REASON,
+  INSUFFICIENT_SPLIT_REASON,
 } from './handFunding';
 
 export function canPlaceBlackjackBet(round: BlackjackRound): boolean {
@@ -80,14 +83,30 @@ export function getDoubleFundingBlockReason(state: GameState, handKey: string): 
     return 'Hand not ready.';
   }
   const { hand } = built.ctx;
+  const { playerId } = parseBlackjackHandKey(handKey);
+  const resolution = resolveFundableActionParticipants(state, hand, playerId, 'double');
+  if (!resolution.canFundAll) {
+    return INSUFFICIENT_DOUBLE_REASON;
+  }
   if (!canDoubleUnderProtocol(built.protocol, hand, built.ctx)) {
     return null;
   }
-  const block = built.participants.find(
-    (p) => p.availableChips < p.stakeAmount,
-  );
-  if (block) {
-    return `Insufficient chips for staker to double (${block.stakeAmount} needed).`;
+  return null;
+}
+
+export function getSplitFundingBlockReason(state: GameState, handKey: string): string | null {
+  const built = rulesContextForHand(state, handKey);
+  if (!built) {
+    return 'Hand not ready.';
+  }
+  const { hand } = built.ctx;
+  const { playerId } = parseBlackjackHandKey(handKey);
+  const resolution = resolveFundableActionParticipants(state, hand, playerId, 'split');
+  if (!resolution.canFundAll) {
+    return INSUFFICIENT_SPLIT_REASON;
+  }
+  if (!canSplitUnderProtocol(built.protocol, hand, { ...built.ctx, deck: built.deck })) {
+    return null;
   }
   return null;
 }
@@ -131,7 +150,11 @@ export function canDoubleBlackjack(
 
 export function canDoubleBlackjackForState(state: GameState, handKey: string): boolean {
   const built = rulesContextForHand(state, handKey);
-  return built ? canDoubleUnderProtocol(built.protocol, built.ctx.hand, built.ctx) : false;
+  if (!built || !canDoubleUnderProtocol(built.protocol, built.ctx.hand, built.ctx)) {
+    return false;
+  }
+  const { playerId } = parseBlackjackHandKey(handKey);
+  return resolveFundableActionParticipants(state, built.ctx.hand, playerId, 'double').canFundAll;
 }
 
 export function canSplitBlackjack(
@@ -154,9 +177,11 @@ export function canSplitBlackjack(
 
 export function canSplitBlackjackForState(state: GameState, handKey: string): boolean {
   const built = rulesContextForHand(state, handKey);
-  return built
-    ? canSplitUnderProtocol(built.protocol, built.ctx.hand, { ...built.ctx, deck: built.deck })
-    : false;
+  if (!built || !canSplitUnderProtocol(built.protocol, built.ctx.hand, { ...built.ctx, deck: built.deck })) {
+    return false;
+  }
+  const { playerId } = parseBlackjackHandKey(handKey);
+  return resolveFundableActionParticipants(state, built.ctx.hand, playerId, 'split').canFundAll;
 }
 
 /** Split/Double legality as if the hand were still acting — for auto-stop hold retrospection. */
@@ -168,10 +193,9 @@ export function getPlayerOptionalActionGateIfActing(
   if (!built) {
     return { canSplit: false, canDouble: false };
   }
-  const hand = { ...built.ctx.hand, actionStatus: 'acting' as const };
   return {
-    canSplit: canSplitUnderProtocol(built.protocol, hand, { ...built.ctx, deck: built.deck }),
-    canDouble: canDoubleUnderProtocol(built.protocol, hand, built.ctx),
+    canSplit: canSplitBlackjackForState(state, handKey),
+    canDouble: canDoubleBlackjackForState(state, handKey),
   };
 }
 

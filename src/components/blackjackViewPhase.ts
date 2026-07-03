@@ -467,8 +467,8 @@ export function getInsuranceActionsForController(
   const allPending = getPendingInsurancePlayerIds(state, round);
   const pendingBoxIds = getMyPendingInsurancePlayerIds(state, round, viewerPersonId);
   return pendingBoxIds.flatMap((boxId) => {
-    const offer = getInsuranceOfferForBox(state, round, boxId, protocol);
-    if (!offer) {
+    const offer = getInsuranceOfferForBox(state, round, boxId, protocol, viewerPersonId);
+    if (!offer || !offer.stakerPersonId) {
       return [];
     }
     const slotNumber = state.session.boxSlotNumbers?.[boxId];

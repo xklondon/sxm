@@ -309,6 +309,7 @@ All paths (DealerBlock click handler, offline reducer, server `assertHostDealAct
 | **Chip placement** | `addChipToBoxStake` | `stakerAmountsByPersonId` tracks each payer’s committed chips; exposure uses payer-specific amounts only (`getOpenStakeExposureForPerson`). |
 | **Deal debit** | `placeBlackjackBet` | Debits each staker via `appendBoxLedgerEntryForStaker`; snapshots `stakerAmountsByPersonId` on the hand. |
 | **Round resolve** | `applyProportionalHandBoxSettlement` | Hand outcome computed on total box bet as today; win/push/loss credits split proportionally by staker shares (`splitAmountByStakerShares`). Native box owner receives/pays **only** if they staked. |
+| **Insurance / double / split funding** | `resolveFundableActionParticipants(hand, actionType)` | Per **staker** (from `hand.stakerAmountsByPersonId` or open box stake), not native box owner. Insurance: fundable stakers accept/decline; unfunded stakers auto-skipped with reason — queue never blocks. Double/split: disabled when any staker cannot fund proportional share (`Not enough chips to double/split`). |
 | **Box commander** | `resolveBoxRoundCommander` / `syncCallersForDeal` | Assigned player commands if they staked; else first staker; free boxes reset each round. Unchanged by settlement path. |
 
 ---
@@ -545,9 +546,11 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 **Insurance / even-money (dealer Ace):**
 
 - Insurance offered when dealer up-card is Ace, after full initial deal, before player decisions (`insuranceOfferPending`, phase `insurance`).
+- **Per-staker insurance:** Each person in `stakerAmountsByPersonId` with enough available chips gets their own accept/decline for their proportional share; unfunded stakers are auto-marked skipped (`Not enough chips for insurance`) and do not block the queue. A box completes when all stakers are accepted, declined, or skipped. Overlay shows queue progress (`Insurance: Box X of Y — pays 2:1`).
 - **Take 1:1** — even-money only for clean natural blackjack vs Ace.
 - **Play vs Ace** — decline even-money or insurance (replaces “Wait for 3:2” / “No thanks”).
 - Ace-decision buttons: thin yellow border (`bj-table-actions__btn--ace`), single-line labels, compact width — same in Full Table and Card View.
+- **Double / split eligibility:** Same funding helper — action disabled when any actual staker cannot fund their proportional share.
 
 **Summary screen:** Off by default (`showRoundSummaryOverlay: false`); opens only when enabled in settings. When shown: visual cards per box, outcome, **Won [n]c** / **Lost [n]c**, bank net summary.
 
@@ -692,7 +695,7 @@ Enforced in `server/src/tables/authority.ts` before `applyTableAction`:
 | Betting | Phase `betting`, not locked; any seated member may place chips |
 | Player turns | Box owner for active `activeHandKey` only |
 | Host-only | shuffle, deal, nextRound, configureTable, resetTable, zilch host actions |
-| Insurance | Sole staker on a box (or box caller when multiple stakers); **one decision per eligible box/hand** in slot order; `{ playerId: boxId }` payload online |
+| Insurance | **Per staker** on each eligible box (`insuranceStakerDecisions`); fundable stakers accept/decline their share; unfunded auto-skipped; phase completes when all eligible boxes resolved; `{ playerId: boxId, personId }` payload online |
 | Zilch | `currentPlayerId === ctx.personId` |
 | assignChips | `canUserAssignChips` (table admin + owner rules) |
 | Personal ledger | Game ended, not already added |

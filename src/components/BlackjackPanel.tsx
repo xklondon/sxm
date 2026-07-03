@@ -697,7 +697,14 @@ export function BlackjackPanel({
     if (protocolPhase !== 'insurance' || !round?.insuranceOfferPending) {
       setInsuranceDecisionPending(false);
     }
-  }, [protocolPhase, round?.insuranceOfferPending]);
+  }, [
+    protocolPhase,
+    round?.insuranceOfferPending,
+    round?.insuranceBets,
+    round?.insuranceDeclined,
+    round?.insuranceSkipReasons,
+    round?.insuranceStakerDecisions,
+  ]);
 
   function handleAddToPersonalLedger() {
     setError(null);
@@ -1389,7 +1396,6 @@ export function BlackjackPanel({
     const { playerId: boxId, maxBet, canAfford, slotNumber, slotNumbers, boxIndex, boxCount, blockReason } =
       primary;
     const boxLabel = `Box ${slotNumber ?? slotNumbers[0] ?? '?'}`;
-    const insuranceBusy = insuranceDecisionPending || onlineActionInFlight;
     return (
       <InsuranceDecisionOverlay
         boxLabel={boxLabel}
@@ -1398,25 +1404,25 @@ export function BlackjackPanel({
         maxBet={maxBet}
         canAfford={canAfford}
         blockReason={blockReason}
-        pending={insuranceBusy}
+        pendingTake={insuranceDecisionPending || onlineActionInFlight}
         onInsurance={() => {
-          if (insuranceBusy) {
+          if (insuranceDecisionPending || onlineActionInFlight) {
             return;
           }
           setInsuranceDecisionPending(true);
-          run((s) => takeInsuranceOnState(s, boxId), {
+          run((s) => takeInsuranceOnState(s, boxId, viewerPersonId ?? undefined), {
             type: 'takeInsurance',
-            payload: { playerId: boxId },
+            payload: { playerId: boxId, personId: viewerPersonId },
           });
         }}
         onDecline={() => {
-          if (insuranceBusy) {
+          if (insuranceDecisionPending || onlineActionInFlight) {
             return;
           }
           setInsuranceDecisionPending(true);
-          run((s) => declineInsuranceOnState(s, boxId), {
+          run((s) => declineInsuranceOnState(s, boxId, viewerPersonId ?? undefined), {
             type: 'declineInsurance',
-            payload: { playerId: boxId },
+            payload: { playerId: boxId, personId: viewerPersonId },
           });
         }}
       />

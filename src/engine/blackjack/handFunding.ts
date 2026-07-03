@@ -5,11 +5,40 @@ import type { Ledger } from '../../types/ledger';
 import { getAvailableChipsForBankrollOwner, bankrollContextFromState, type BankrollContext } from '../session/bankroll';
 import { appendBoxLedgerEntryForStaker } from '../session/boxLedger';
 import { resolveHandStakerAmounts, splitAmountByStakerShares } from './stakeSettlement';
+import { insuranceBetMax } from './rules';
+
+export type FundableActionType = 'insurance' | 'double' | 'split';
+
+export const INSUFFICIENT_INSURANCE_REASON = 'Not enough chips for insurance';
+export const INSUFFICIENT_DOUBLE_REASON = 'Not enough chips to double';
+export const INSUFFICIENT_SPLIT_REASON = 'Not enough chips to split';
 
 export interface HandFundingParticipant {
   personId: string;
   stakeAmount: number;
   availableChips: number;
+}
+
+export interface FundableParticipant {
+  personId: string;
+  requiredAmount: number;
+  available: number;
+  stakeAmount: number;
+}
+
+export interface SkippedParticipant {
+  personId: string;
+  requiredAmount: number;
+  available: number;
+  reason: string;
+}
+
+export interface FundableActionResolution {
+  fundable: FundableParticipant[];
+  skipped: SkippedParticipant[];
+  canFundAll: boolean;
+  hasAnyFundable: boolean;
+  totalRequired: number;
 }
 
 /** Per-staker funding view for a box hand — payer-correct, not native box owner. */
@@ -19,7 +48,7 @@ export function resolveHandFundingParticipants(
   boxPlayerId: string,
 ): HandFundingParticipant[] {
   const ctx = bankrollContextFromState(state);
-  const stakerAmounts = resolveHandStakerAmounts(hand, ctx, boxPlayerId);
+  const stakerAmounts = resolveHandStakerAmounts(hand, ctx, boxPlayerId, state);
   return Object.entries(stakerAmounts)
     .filter(([, amount]) => amount > 0)
     .map(([personId, stakeAmount]) => ({
@@ -27,6 +56,97 @@ export function resolveHandFundingParticipants(
       stakeAmount,
       availableChips: getAvailableChipsForBankrollOwner(state, personId),
     }));
+}
+
+function skipReasonForAction(actionType: FundableActionType): string {
+  switch (actionType) {
+    case 'insurance':
+      return INSUFFICIENT_INSURANCE_REASON;
+    case 'double':
+      return INSUFFICIENT_DOUBLE_REASON;
+    case 'split':
+      return INSUFFICIENT_SPLIT_REASON;
+    default:
+      return 'Not enough chips.';
+  }
+}
+
+/** Canonical per-staker funding eligibility for insurance, double, or split. */
+export function resolveFundableActionParticipants(
+  state: GameState,
+  hand: BlackjackPlayerHand,
+  boxPlayerId: string,
+  actionType: FundableActionType,
+): FundableActionResolution {
+  const participants = resolveHandFundingParticipants(state, hand, boxPlayerId);
+  if (participants.length === 0) {
+    return {
+      fundable: [],
+      skipped: [],
+      canFundAll: false,
+      hasAnyFundable: false,
+      totalRequired: 0,
+    };
+  }
+
+  const totalRequired =
+    actionType === 'insurance' ? insuranceBetMax(hand.currentBet) : hand.currentBet;
+  if (totalRequired <= 0) {
+    return {
+      fundable: [],
+      skipped: [],
+      canFundAll: false,
+      hasAnyFundable: false,
+      totalRequired: 0,
+    };
+  }
+
+  const stakeMap = Object.fromEntries(
+    participants.map((p) => [p.personId, p.stakeAmount]),
+  );
+  const shares = splitAmountByStakerShares(totalRequired, stakeMap);
+  const skipReason = skipReasonForAction(actionType);
+  const fundable: FundableParticipant[] = [];
+  const skipped: SkippedParticipant[] = [];
+
+  for (const [personId, requiredAmount] of Object.entries(shares)) {
+    if (requiredAmount <= 0) {
+      continue;
+    }
+    const participant = participants.find((p) => p.personId === personId);
+    if (!participant) {
+      skipped.push({
+        personId,
+        requiredAmount,
+        available: 0,
+        reason: skipReason,
+      });
+      continue;
+    }
+    if (participant.availableChips >= requiredAmount) {
+      fundable.push({
+        personId,
+        requiredAmount,
+        available: participant.availableChips,
+        stakeAmount: participant.stakeAmount,
+      });
+    } else {
+      skipped.push({
+        personId,
+        requiredAmount,
+        available: participant.availableChips,
+        reason: skipReason,
+      });
+    }
+  }
+
+  return {
+    fundable,
+    skipped,
+    canFundAll: skipped.length === 0 && fundable.length > 0,
+    hasAnyFundable: fundable.length > 0,
+    totalRequired,
+  };
 }
 
 /** Effective chips available for proportional funding of `total` across stakers. */

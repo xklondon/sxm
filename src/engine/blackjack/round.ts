@@ -18,7 +18,7 @@ import {
   applyProportionalHandBoxSettlement,
   resolveHandStakerAmounts,
 } from './stakeSettlement';
-import { applyProportionalStakerDebits, getProportionalFundingBlockReason, resolveHandFundingParticipants, resolveProportionalFundingCapacity } from './handFunding';
+import { applyProportionalStakerDebits, resolveFundableActionParticipants, resolveHandFundingParticipants, resolveProportionalFundingCapacity } from './handFunding';
 import { drawCard, getCardById } from '../deck/deck';
 import { applyDeckToGameState } from '../deck/gameState';
 import type { GameState } from '../../types';
@@ -53,7 +53,6 @@ import {
   canDoubleUnderProtocol,
   canSplitUnderProtocol,
 } from './protocols/activeRules';
-import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 
 export interface BlackjackEngineState {
   session: GameSession;
@@ -410,9 +409,9 @@ export function doubleDownBlackjackPlayer(
   const fundingParticipants = resolveHandFundingParticipants(fundingState, hand, hand.playerId);
   const stakerAmounts = resolveHandStakerAmounts(hand, bankrollCtx, hand.playerId);
   const additionalBet = hand.currentBet;
-  const fundBlock = getProportionalFundingBlockReason(fundingParticipants, additionalBet);
-  if (fundBlock) {
-    throw new Error(fundBlock);
+  const fundingResolution = resolveFundableActionParticipants(fundingState, hand, hand.playerId, 'double');
+  if (!fundingResolution.canFundAll) {
+    throw new Error('Not enough chips to double');
   }
   const rulesCtx = buildActiveRulesHandContext(
     proto,
@@ -498,7 +497,7 @@ export function splitBlackjackPlayer(
   round: BlackjackRound,
   handKey: string,
   bankrollCtx: BankrollContext,
-  settings: BlackjackSettings,
+  _settings: BlackjackSettings,
   protocol?: BlackjackProtocol,
 ): {
   session: GameSession;
@@ -510,30 +509,50 @@ export function splitBlackjackPlayer(
   assertRoundStatus(round, ['player-turns'], 'split');
   const hand = assertHandCanAct(round, handKey, 'split');
   const proto = protocol ?? getBlackjackProtocolOrDefault();
-  const bankrollOwnerId = resolveBankrollOwnerId(bankrollCtx, hand.playerId);
+  const fundingState = {
+    session,
+    players,
+    ledger,
+    tableMeta: {
+      ownerPersonId: bankrollCtx.ownerPersonId ?? null,
+      bankerSetup: bankrollCtx.bankerSetup ?? { mode: 'bot', playerId: null, displayName: '' },
+      boxStakes: {},
+      boxSlots: [],
+      bettingLocked: true,
+    },
+    blackjack: round,
+    deck,
+  } as unknown as GameState;
+  const fundingParticipants = resolveHandFundingParticipants(fundingState, hand, hand.playerId);
+  const stakerAmounts = resolveHandStakerAmounts(hand, bankrollCtx, hand.playerId);
+  const additionalBet = hand.currentBet;
+  const fundingResolution = resolveFundableActionParticipants(fundingState, hand, hand.playerId, 'split');
+  if (!fundingResolution.canFundAll) {
+    throw new Error('Not enough chips to split');
+  }
   const rulesCtx = buildActiveRulesHandContext(
     proto,
     ledger,
     round,
     handKey,
     deck,
-    bankrollOwnerId,
-    derivePlayerBalanceFromLedger(bankrollOwnerId, ledger) - hand.currentBet,
+    fundingParticipants[0]?.personId ?? hand.playerId,
+    resolveProportionalFundingCapacity(fundingParticipants, additionalBet),
   );
   if (!rulesCtx || !canSplitUnderProtocol(proto, hand, { ...rulesCtx, deck })) {
     throw new Error('Split not allowed for this protocol or hand');
   }
 
-  validateBetAmount(ledger, bankrollOwnerId, hand.currentBet, settings);
-
-  const splitBet = appendBoxLedgerEntry(
+  const splitBet = applyProportionalStakerDebits(
     session,
     ledger,
     bankrollCtx,
     hand.playerId,
+    stakerAmounts,
+    additionalBet,
     'bet-increased',
-    -hand.currentBet,
-    `Split hand: additional ${hand.currentBet} chips`,
+    `Split hand: additional ${additionalBet} chips`,
+    session.currentRound,
   );
 
   const playerHandKeys = listHandKeysForPlayer(round.playerHands, hand.playerId);

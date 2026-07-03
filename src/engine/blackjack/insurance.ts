@@ -3,9 +3,9 @@ import type { Deck } from '../../types/deck';
 import type { Ledger } from '../../types/ledger';
 import type { GameSession } from '../../types/session';
 import type { Player } from '../../types/player';
-import type { BlackjackRound } from '../../types/blackjack';
+import type { BlackjackRound, BlackjackPlayerHand } from '../../types/blackjack';
 import type { BlackjackProtocol } from './protocols/types';
-import { getCallerPersonIdForBox, isSinglePlayerTable } from '../session/playerAssignment';
+import { getCallerPersonIdForBox } from '../session/playerAssignment';
 import {
   getStakeContributorPersonIds,
   isBoxExposureAttributedToPerson,
@@ -21,9 +21,8 @@ import type { BankrollContext } from '../session/bankroll';
 import { appendBoxLedgerEntryForStaker } from '../session/boxLedger';
 import { appendBankLedgerEntry } from './bankLedger';
 import {
-  getProportionalFundingBlockReason,
-  resolveHandFundingParticipants,
-  applyProportionalStakerDebits,
+  resolveFundableActionParticipants,
+  INSUFFICIENT_INSURANCE_REASON,
 } from './handFunding';
 import { resolveHandStakerAmounts, splitAmountByStakerShares } from './stakeSettlement';
 import {
@@ -81,6 +80,9 @@ export function activateInsuranceOfferIfNeeded(
     insuranceOfferPending: true,
     insuranceBets: { ...(round.insuranceBets ?? {}) },
     insuranceDeclined: { ...(round.insuranceDeclined ?? {}) },
+    insuranceStakerDecisions: { ...(round.insuranceStakerDecisions ?? {}) },
+    insuranceStakerSkipReasons: { ...(round.insuranceStakerSkipReasons ?? {}) },
+    insuranceStakerBets: { ...(round.insuranceStakerBets ?? {}) },
   };
 }
 
@@ -94,6 +96,180 @@ export function getInsuranceHandKeyForBox(
       (handKey) => parseBlackjackHandKey(handKey).playerId === boxId,
     ) ?? null
   );
+}
+
+function getHandForInsuranceBox(
+  session: GameSession,
+  round: BlackjackRound,
+  boxId: string,
+): BlackjackPlayerHand | undefined {
+  const handKey = getInsuranceHandKeyForBox(session, round, boxId);
+  return handKey ? round.playerHands[handKey] : undefined;
+}
+
+export function getStakerInsuranceDecision(
+  round: BlackjackRound,
+  boxId: string,
+  stakerPersonId: string,
+): 'accepted' | 'declined' | 'skipped' | undefined {
+  return round.insuranceStakerDecisions?.[boxId]?.[stakerPersonId];
+}
+
+function setStakerInsuranceDecision(
+  round: BlackjackRound,
+  boxId: string,
+  stakerPersonId: string,
+  status: 'accepted' | 'declined' | 'skipped',
+  options?: { reason?: string; amount?: number },
+): BlackjackRound {
+  let next: BlackjackRound = {
+    ...round,
+    insuranceStakerDecisions: {
+      ...(round.insuranceStakerDecisions ?? {}),
+      [boxId]: {
+        ...(round.insuranceStakerDecisions?.[boxId] ?? {}),
+        [stakerPersonId]: status,
+      },
+    },
+  };
+  if (options?.reason) {
+    next = {
+      ...next,
+      insuranceStakerSkipReasons: {
+        ...(next.insuranceStakerSkipReasons ?? {}),
+        [boxId]: {
+          ...(next.insuranceStakerSkipReasons?.[boxId] ?? {}),
+          [stakerPersonId]: options.reason,
+        },
+      },
+    };
+  }
+  if (options?.amount && options.amount > 0) {
+    next = {
+      ...next,
+      insuranceStakerBets: {
+        ...(next.insuranceStakerBets ?? {}),
+        [boxId]: {
+          ...(next.insuranceStakerBets?.[boxId] ?? {}),
+          [stakerPersonId]: options.amount,
+        },
+      },
+    };
+  }
+  return syncInsuranceBoxLegacyFields(next, boxId);
+}
+
+function syncInsuranceBoxLegacyFields(round: BlackjackRound, boxId: string): BlackjackRound {
+  const stakerBets = round.insuranceStakerBets?.[boxId] ?? {};
+  const totalBet = Object.values(stakerBets).reduce((sum, n) => sum + n, 0);
+  const decisions = round.insuranceStakerDecisions?.[boxId] ?? {};
+  const stakerIds = Object.keys(decisions);
+  const allResolved =
+    stakerIds.length > 0 &&
+    stakerIds.every((personId) => decisions[personId] !== undefined);
+  const anyAccepted = Object.values(decisions).some((d) => d === 'accepted');
+
+  let next: BlackjackRound = {
+    ...round,
+    insuranceBets: {
+      ...(round.insuranceBets ?? {}),
+      [boxId]: totalBet,
+    },
+  };
+
+  if (allResolved && !anyAccepted && totalBet <= 0) {
+    next = {
+      ...next,
+      insuranceDeclined: {
+        ...(next.insuranceDeclined ?? {}),
+        [boxId]: true,
+      },
+    };
+    const skipReasons = next.insuranceStakerSkipReasons?.[boxId];
+    if (skipReasons && Object.keys(skipReasons).length > 0) {
+      next = {
+        ...next,
+        insuranceSkipReasons: {
+          ...(next.insuranceSkipReasons ?? {}),
+          [boxId]: Object.values(skipReasons)[0]!,
+        },
+      };
+    }
+  } else if (anyAccepted || totalBet > 0) {
+    next = {
+      ...next,
+      insuranceDeclined: {
+        ...(next.insuranceDeclined ?? {}),
+        [boxId]: false,
+      },
+    };
+  }
+
+  return next;
+}
+
+/** Mark unfunded stakers skipped; auto-complete boxes with zero fundable stakers. */
+export function applyAutoSkippedInsuranceStakers(
+  state: GameState,
+  round: BlackjackRound,
+  protocol?: BlackjackProtocol,
+): BlackjackRound {
+  const resolvedProtocol = protocol ?? getBlackjackProtocolOrDefault();
+  if (!round.insuranceOfferPending) {
+    return round;
+  }
+  let next = round;
+  const eligible = getInsuranceEligibleBoxIds(state.session, round, resolvedProtocol);
+  for (const boxId of eligible) {
+    const hand = getHandForInsuranceBox(state.session, round, boxId);
+    if (!hand || !isHandEligibleForInsuranceOffer(resolvedProtocol, hand)) {
+      continue;
+    }
+    const resolution = resolveFundableActionParticipants(state, hand, boxId, 'insurance');
+    for (const skipped of resolution.skipped) {
+      if (getStakerInsuranceDecision(next, boxId, skipped.personId)) {
+        continue;
+      }
+      next = setStakerInsuranceDecision(next, boxId, skipped.personId, 'skipped', {
+        reason: skipped.reason,
+      });
+    }
+    if (!resolution.hasAnyFundable) {
+      for (const participant of resolution.skipped) {
+        if (!getStakerInsuranceDecision(next, boxId, participant.personId)) {
+          next = setStakerInsuranceDecision(next, boxId, participant.personId, 'skipped', {
+            reason: participant.reason,
+          });
+        }
+      }
+    }
+  }
+  return next;
+}
+
+export function isInsuranceStakerDecisionPending(
+  state: GameState,
+  round: BlackjackRound,
+  boxId: string,
+  stakerPersonId: string,
+  protocol?: BlackjackProtocol,
+): boolean {
+  if (!round.insuranceOfferPending) {
+    return false;
+  }
+  if (getStakerInsuranceDecision(round, boxId, stakerPersonId)) {
+    return false;
+  }
+  const hand = getHandForInsuranceBox(state.session, round, boxId);
+  if (!hand) {
+    return false;
+  }
+  const resolvedProtocol = protocol ?? getBlackjackProtocolOrDefault();
+  if (!isHandEligibleForInsuranceOffer(resolvedProtocol, hand)) {
+    return false;
+  }
+  const resolution = resolveFundableActionParticipants(state, hand, boxId, 'insurance');
+  return resolution.fundable.some((p) => p.personId === stakerPersonId);
 }
 
 /**
@@ -114,19 +290,21 @@ export function getInsuranceDecisionPersonIdForBox(
   return getCallerPersonIdForBox(state, boxPlayerId);
 }
 
-/** True when this seated person must decide insurance for the box. */
+/** True when this staker must still accept or decline their fundable insurance share. */
 export function canPersonDecideInsuranceForBox(
   state: GameState,
   boxPlayerId: string,
   personId: string,
 ): boolean {
+  const round = state.blackjack;
+  if (!round?.insuranceOfferPending) {
+    return false;
+  }
   if (!isBoxExposureAttributedToPerson(state, boxPlayerId, personId)) {
     return false;
   }
-  if (isSinglePlayerTable(state)) {
-    return true;
-  }
-  return getInsuranceDecisionPersonIdForBox(state, boxPlayerId) === personId;
+  const protocol = getBlackjackProtocolOrDefault();
+  return isInsuranceStakerDecisionPending(state, round, boxPlayerId, personId, protocol);
 }
 
 /** Pending eligible boxes this person must still accept or decline. */
@@ -149,9 +327,9 @@ export function getInsuranceFundingBlockReason(
   state: GameState,
   round: BlackjackRound,
   boxId: string,
+  stakerPersonId?: string,
 ): string | null {
-  const handKey = getInsuranceHandKeyForBox(state.session, round, boxId);
-  const hand = handKey ? round.playerHands[handKey] : undefined;
+  const hand = getHandForInsuranceBox(state.session, round, boxId);
   if (!hand) {
     return 'No active hand for insurance.';
   }
@@ -159,19 +337,28 @@ export function getInsuranceFundingBlockReason(
   if (maxBet <= 0) {
     return 'Bet too small for insurance.';
   }
-  const participants = resolveHandFundingParticipants(state, hand, boxId);
-  return getProportionalFundingBlockReason(participants, maxBet);
+  const resolution = resolveFundableActionParticipants(state, hand, boxId, 'insurance');
+  if (stakerPersonId) {
+    const fundable = resolution.fundable.find((p) => p.personId === stakerPersonId);
+    if (fundable) {
+      return null;
+    }
+    const skipped = resolution.skipped.find((p) => p.personId === stakerPersonId);
+    return skipped?.reason ?? INSUFFICIENT_INSURANCE_REASON;
+  }
+  return resolution.hasAnyFundable ? null : INSUFFICIENT_INSURANCE_REASON;
 }
 
 export function canAffordInsuranceForBox(
   state: GameState,
   round: BlackjackRound,
   boxId: string,
+  stakerPersonId?: string,
 ): boolean {
-  return getInsuranceFundingBlockReason(state, round, boxId) === null;
+  return getInsuranceFundingBlockReason(state, round, boxId, stakerPersonId) === null;
 }
 
-/** Box insurance complete: taken, declined, ineligible, no caller, or unfunded (auto-skip). */
+/** Box insurance complete when every staker is accepted, declined, or skipped. */
 export function isInsuranceBoxDecisionResolved(
   state: GameState,
   round: BlackjackRound,
@@ -181,25 +368,35 @@ export function isInsuranceBoxDecisionResolved(
   if (!round.insuranceOfferPending) {
     return true;
   }
-  const handKey = getInsuranceHandKeyForBox(state.session, round, boxId);
-  const hand = handKey ? round.playerHands[handKey] : undefined;
+  const hand = getHandForInsuranceBox(state.session, round, boxId);
   if (!hand || !isHandEligibleForInsuranceOffer(protocol, hand)) {
     return true;
   }
-  if (round.insuranceDeclined?.[boxId]) {
+  return allStakersInsuranceResolved(state, round, boxId, protocol);
+}
+
+function allStakersInsuranceResolved(
+  state: GameState,
+  round: BlackjackRound,
+  boxId: string,
+  _protocol: BlackjackProtocol,
+): boolean {
+  const hand = getHandForInsuranceBox(state.session, round, boxId);
+  if (!hand) {
     return true;
   }
-  if ((round.insuranceBets?.[boxId] ?? 0) > 0) {
+  if (round.insuranceDeclined?.[boxId] && !round.insuranceStakerDecisions?.[boxId]) {
     return true;
   }
-  if (round.insuranceSkipReasons?.[boxId]) {
+  const resolution = resolveFundableActionParticipants(state, hand, boxId, 'insurance');
+  const stakerIds = [
+    ...resolution.fundable.map((p) => p.personId),
+    ...resolution.skipped.map((p) => p.personId),
+  ];
+  if (stakerIds.length === 0) {
     return true;
   }
-  const decisionPersonId = getInsuranceDecisionPersonIdForBox(state, boxId);
-  if (!decisionPersonId) {
-    return true;
-  }
-  return false;
+  return stakerIds.every((personId) => Boolean(getStakerInsuranceDecision(round, boxId, personId)));
 }
 
 export function allInsuranceDecisionsResolved(
@@ -230,17 +427,19 @@ export function allInsuranceResolved(
 
 export { getInsuranceEligibleBoxIds, getInsuranceEligiblePlayerIds, isHandEligibleForInsuranceOffer };
 
-/** Insurance offer for one box (boxId = player id on the hand). */
+/** Insurance offer for one staker on one box. */
 export function getInsuranceOfferForBox(
   state: GameState,
   round: BlackjackRound,
   boxId: string,
   protocol?: BlackjackProtocol,
+  stakerPersonId?: string,
 ): {
   handKey: string;
   maxBet: number;
   canAfford: boolean;
   blockReason: string | null;
+  stakerPersonId: string | null;
 } | null {
   if (!round.insuranceOfferPending) {
     return null;
@@ -254,96 +453,91 @@ export function getInsuranceOfferForBox(
   if (!hand || !isHandEligibleForInsuranceOffer(resolvedProtocol, hand)) {
     return null;
   }
-  const maxBet = insuranceBetMax(hand.currentBet);
-  if (maxBet <= 0) {
+  const resolution = resolveFundableActionParticipants(state, hand, boxId, 'insurance');
+  const targetPersonId =
+    stakerPersonId ??
+    resolution.fundable.find(
+      (p) => isInsuranceStakerDecisionPending(state, round, boxId, p.personId, resolvedProtocol),
+    )?.personId ??
+    null;
+  if (!targetPersonId) {
     return null;
   }
-  if (!getInsuranceDecisionPersonIdForBox(state, boxId)) {
+  const fundable = resolution.fundable.find((p) => p.personId === targetPersonId);
+  if (!fundable) {
+    return {
+      handKey,
+      maxBet: 0,
+      canAfford: false,
+      blockReason: getInsuranceFundingBlockReason(state, round, boxId, targetPersonId),
+      stakerPersonId: targetPersonId,
+    };
+  }
+  if (getStakerInsuranceDecision(round, boxId, targetPersonId)) {
     return null;
   }
   return {
     handKey,
-    maxBet,
-    canAfford: canAffordInsuranceForBox(state, round, boxId),
-    blockReason: getInsuranceFundingBlockReason(state, round, boxId),
+    maxBet: fundable.requiredAmount,
+    canAfford: true,
+    blockReason: null,
+    stakerPersonId: targetPersonId,
   };
 }
 
 export function takeInsuranceBet(
-  session: GameSession,
-  players: Record<string, Player>,
-  ledger: Ledger,
-  round: BlackjackRound,
-  playerId: string,
+  state: GameState,
+  boxId: string,
   bankrollCtx: BankrollContext,
   protocol?: BlackjackProtocol,
-  _bankrollOwnerIdOverride?: string,
+  stakerPersonId?: string,
 ): {
   session: GameSession;
   players: Record<string, Player>;
   ledger: Ledger;
   round: BlackjackRound;
 } {
-  if (!round.insuranceOfferPending) {
+  const round = state.blackjack;
+  if (!round?.insuranceOfferPending) {
     throw new Error('Insurance is not offered');
   }
-  const boxId = playerId;
-  const handKey = getInsuranceHandKeyForBox(session, round, boxId);
+  const handKey = getInsuranceHandKeyForBox(state.session, round, boxId);
   const hand = handKey ? round.playerHands[handKey] : undefined;
   if (!hand || !isHandEligibleForInsuranceOffer(protocol ?? getBlackjackProtocolOrDefault(), hand)) {
     throw new Error('No active hand for insurance');
   }
 
-  const maxBet = insuranceBetMax(hand.currentBet);
-  if (maxBet <= 0) {
-    throw new Error('Bet too small for insurance');
+  const resolution = resolveFundableActionParticipants(state, hand, boxId, 'insurance');
+  const payerId =
+    stakerPersonId ??
+    (resolution.fundable.length === 1 ? resolution.fundable[0]!.personId : null);
+  if (!payerId) {
+    throw new Error('Insurance staker required');
   }
-  const stakerAmounts = resolveHandStakerAmounts(hand, bankrollCtx, boxId);
-  const fundingState = {
-    session,
-    players,
-    ledger,
-    tableMeta: {
-      ownerPersonId: bankrollCtx.ownerPersonId ?? null,
-      bankerSetup: bankrollCtx.bankerSetup ?? { mode: 'bot', playerId: null, displayName: '' },
-      boxStakes: {},
-      boxSlots: [],
-      bettingLocked: true,
-    },
-    blackjack: round,
-  } as unknown as GameState;
-  const fundBlock = getInsuranceFundingBlockReason(fundingState, round, boxId);
-  if (fundBlock) {
-    throw new Error(fundBlock);
+  const fundable = resolution.fundable.find((p) => p.personId === payerId);
+  if (!fundable) {
+    throw new Error(getInsuranceFundingBlockReason(state, round, boxId, payerId) ?? 'Not enough chips for insurance');
   }
 
-  const betResult = applyProportionalStakerDebits(
-    session,
-    ledger,
+  const betResult = appendBoxLedgerEntryForStaker(
+    state.session,
+    state.ledger,
     bankrollCtx,
     boxId,
-    stakerAmounts,
-    maxBet,
+    payerId,
     'bet-placed',
-    `Insurance: ${maxBet} chips (2:1 if dealer blackjack)`,
-    session.currentRound,
+    -fundable.requiredAmount,
+    `Insurance: ${fundable.requiredAmount} chips (2:1 if dealer blackjack)`,
+    state.session.currentRound,
   );
 
-  const nextRound: BlackjackRound = {
-    ...round,
-    insuranceBets: {
-      ...(round.insuranceBets ?? {}),
-      [playerId]: maxBet,
-    },
-    insuranceDeclined: {
-      ...(round.insuranceDeclined ?? {}),
-      [playerId]: false,
-    },
-  };
+  let nextRound = setStakerInsuranceDecision(round, boxId, payerId, 'accepted', {
+    amount: fundable.requiredAmount,
+  });
 
   return {
     session: betResult.session,
-    players,
+    players: state.players,
     ledger: betResult.ledger,
     round: nextRound,
   };
@@ -353,18 +547,20 @@ export function declineInsurance(
   round: BlackjackRound,
   playerId: string,
   skipReason?: string,
+  stakerPersonId?: string,
 ): BlackjackRound {
-  const next: BlackjackRound = {
-    ...round,
-    insuranceDeclined: {
-      ...(round.insuranceDeclined ?? {}),
-      [playerId]: true,
-    },
-  };
+  const boxId = playerId;
+  const payerId = stakerPersonId ?? playerId;
+  let next = setStakerInsuranceDecision(round, boxId, payerId, skipReason ? 'skipped' : 'declined', {
+    reason: skipReason,
+  });
   if (skipReason) {
-    next.insuranceSkipReasons = {
-      ...(round.insuranceSkipReasons ?? {}),
-      [playerId]: skipReason,
+    next = {
+      ...next,
+      insuranceSkipReasons: {
+        ...(next.insuranceSkipReasons ?? {}),
+        [boxId]: skipReason,
+      },
     };
   }
   return next;
@@ -409,11 +605,11 @@ export function advanceInsurancePhaseIfComplete(
   if (!round.insuranceOfferPending) {
     return { session, players, round, closed: false };
   }
-  const resolvedProtocol = protocol;
-  if (!allInsuranceDecisionsResolved(state, round, resolvedProtocol)) {
-    return { session, players, round, closed: false };
+  let workingRound = applyAutoSkippedInsuranceStakers(state, round, protocol);
+  if (!allInsuranceDecisionsResolved({ ...state, blackjack: workingRound }, workingRound, protocol)) {
+    return { session, players, round: workingRound, closed: false };
   }
-  const closed = closeInsuranceOffer(session, players, round);
+  const closed = closeInsuranceOffer(session, players, workingRound);
   return { ...closed, closed: true };
 }
 

@@ -36,6 +36,7 @@ function insuranceRoundTwoBoxes(
   box1: string,
   box2: string,
   bets: [number, number],
+  stakers?: [Record<string, number>, Record<string, number>],
 ): BlackjackRound {
   const aceId = findCardId(state.deck!, 'A');
   return {
@@ -54,12 +55,14 @@ function insuranceRoundTwoBoxes(
         cardIds: [findCardId(state.deck!, '9'), findCardId(state.deck!, '8')],
         currentBet: bets[0],
         actionStatus: 'acting',
+        stakerAmountsByPersonId: stakers?.[0],
       },
       [blackjackHandKey(box2, 0)]: {
         ...createBlackjackPlayerHand(box2, 0),
         cardIds: [findCardId(state.deck!, '7'), findCardId(state.deck!, '6')],
         currentBet: bets[1],
         actionStatus: 'acting',
+        stakerAmountsByPersonId: stakers?.[1],
       },
     },
   };
@@ -76,7 +79,10 @@ function readyTwoBoxInsurance(ownerName = 'Alice'): GameState {
   state = confirmBoxStake(state, box1);
   state = confirmBoxStake(state, box2);
   state = syncCallersForDeal(state, [box1, box2]);
-  const round = insuranceRoundTwoBoxes(state, box1, box2, [50, 10]);
+  const round = insuranceRoundTwoBoxes(state, box1, box2, [50, 10], [
+    { [personId]: 50 },
+    { [personId]: 10 },
+  ]);
   return { ...state, blackjack: round };
 }
 
@@ -118,7 +124,7 @@ describe('multi-box insurance', () => {
     expect(getBlackjackProtocolPhase(state)).not.toBe('insurance');
   });
 
-  it('unfunded boxes stay pending until explicit decline', () => {
+  it('unfunded stakers are auto-skipped and phase can advance', () => {
     let state = readyTwoBoxInsurance();
     const box1 = boxPlayerId(state, 1)!;
     const box2 = boxPlayerId(state, 2)!;
@@ -127,17 +133,10 @@ describe('multi-box insurance', () => {
       ledger: { ...state.ledger, entries: [] },
       blackjack: insuranceRoundTwoBoxes(state, box1, box2, [50, 10]),
     };
-    expect(isInsuranceBoxDecisionResolved(state, state.blackjack!, LAS_VEGAS_PROTOCOL, box1)).toBe(
-      false,
-    );
-    expect(isInsuranceBoxDecisionResolved(state, state.blackjack!, LAS_VEGAS_PROTOCOL, box2)).toBe(
-      false,
-    );
-    state = declineInsuranceOnState(state, box1);
-    state = declineInsuranceOnState(state, box2);
-    expect(allInsuranceDecisionsResolved(state, state.blackjack!, LAS_VEGAS_PROTOCOL)).toBe(true);
     const advanced = applyInsuranceAdvanceOnState(state);
     expect(advanced.blackjack?.insuranceOfferPending).toBe(false);
+    expect(advanced.blackjack?.insuranceStakerDecisions?.[box1]).toBeTruthy();
+    expect(advanced.blackjack?.insuranceStakerDecisions?.[box2]).toBeTruthy();
   });
 
   it('controller sees actions only for boxes they call', () => {
@@ -165,7 +164,7 @@ describe('multi-box insurance', () => {
     state = addChipToBoxStake(state, box2, 10, bobId);
     state = confirmBoxStake(state, box2);
     state = syncCallersForDeal(state, [box1, box2]);
-    state = { ...state, blackjack: insuranceRoundTwoBoxes(state, box1, box2, [50, 10]) };
+    state = { ...state, blackjack: insuranceRoundTwoBoxes(state, box1, box2, [50, 10], [{ [aliceId]: 50 }, { [bobId]: 10 }]) };
     const round = state.blackjack!;
 
     const aliceActions = getInsuranceActionsForController(state, round, aliceId);

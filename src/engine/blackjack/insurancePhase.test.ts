@@ -212,15 +212,13 @@ describe('insurance phase', () => {
 
     expect(() =>
       takeInsuranceBet(
-        brokeState.session,
-        brokeState.players,
-        brokeState.ledger,
-        round,
+        { ...brokeState, blackjack: round },
         boxId,
         bankrollContextFromState(brokeState)!,
         LAS_VEGAS_PROTOCOL,
+        personId,
       ),
-    ).toThrow(/insufficient chips/i);
+    ).toThrow(/not enough chips for insurance/i);
 
     const actions = getInsuranceActionsForController(
       { ...brokeState, blackjack: round },

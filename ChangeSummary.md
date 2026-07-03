@@ -1,48 +1,52 @@
-# Change Summary — Table invite login redirect fix
+# Change Summary — Insurance / double / split per-staker funding
 
 ## Problem
 
-Invite email link (`/api/tables/invites/accept?token=…`) previously auto-accepted and provisioned a session without requiring login. When the session cookie did not persist (origin mismatch, new browser, etc.), the user landed on the generic login/lobby and never reached the invited table. Magic-link verify always redirected to `/` with no invite resume.
+Insurance flow stalled after the first box when a stake owner could not fund their share. Double and split could show as available or debit the wrong person when co-staked or cross-box stakes were involved.
 
-## Root cause
+## Root causes
 
-1. Accept route consumed the invite and created a session before the user authenticated via magic link.
-2. No server-side pending invite storage — only fragile client `sessionStorage` on `/join-table` paths.
-3. `/api/auth/verify` had no pending-invite handling after session creation.
+1. **`takeInsuranceBet` used a stripped synthetic state** (empty `boxStakes`) for funding checks, mis-attributing in-round exposure to box callers instead of actual stakers.
+2. **Insurance tracked per-box, not per-staker** — unfunded stakers were not auto-skipped, leaving boxes pending with no actionable decision.
+3. **`resolveHandStakerAmounts` fell back to native box owner** when hands lacked `stakerAmountsByPersonId`, ignoring open box stake maps in tests and edge cases.
+4. **UI:** `insuranceDecisionPending` blocked decline on subsequent boxes after the first take.
 
-## Fix (invite/auth redirect only)
+## Implementation
 
-### Server
+### Engine
 
-- **`server/src/auth/pendingInviteCookie.ts`** — `sxm_pending_invite_token` HttpOnly cookie (15 min, SameSite=Lax, Secure in production); `safeReturnTo` helper.
-- **`server/src/tables/inviteAcceptHttp.ts`** — shared redirect helpers; atomic `Set-Cookie` arrays (clear pending + session together).
-- **`GET /api/tables/invites/accept`** — authenticated matching email → accept + table redirect; otherwise → pending cookie + `/login?invitedEmail=…` (invite not consumed).
-- **`GET /api/auth/verify`** — after session: pending cookie → accept invite → clear cookie → `/?table={id}`; else lobby (or validated `returnTo`).
-- **`POST /api/auth/request-magic-link`** — optional same-origin `returnTo` preserved on verify URL.
+- **`resolveFundableActionParticipants(hand, actionType)`** in `handFunding.ts` — canonical fundable/skipped participants for `insurance | double | split`.
+- **Per-staker insurance state:** `insuranceStakerDecisions`, `insuranceStakerSkipReasons`, `insuranceStakerBets` on `BlackjackRound`.
+- **`applyAutoSkippedInsuranceStakers`** — marks unfunded stakers skipped; auto-completes zero-fundable boxes.
+- **`takeInsuranceBet`** — now uses full `GameState` for funding resolution; debits one staker's proportional share.
+- **`allStakersInsuranceResolved`** — box complete when all stakers accepted/declined/skipped; legacy `insuranceDeclined` honored when no per-staker map exists.
+- **Double/split** — `validation.ts` + `round.ts` use funding helper; split uses proportional staker debits.
+- **`resolveHandStakerAmounts`** — falls back to open box `stakerAmountsByPersonId` before native owner.
 
-### Client
+### UI
 
-- **`AppRoot.tsx`** — read `invitedEmail` / `inviteTableName` from login query after accept redirect.
-- **`LoginScreen.tsx` / `client.ts`** — pass `returnTo` to magic-link request when present.
+- **`InsuranceDecisionOverlay`** — queue hint `Insurance: Box X of Y — pays 2:1`; read-only block reason when viewer cannot fund.
+- **`BlackjackPanel`** — per-staker take/decline with `personId`; `pendingTake` only blocks take button; resets on insurance state change.
 
-## Canonical flow
+## Tests
 
-1. Click invite accept link.
-2. If authenticated (email matches) → join table → redirect `/?table={id}`.
-3. If not → pending cookie → login with invite context.
-4. Magic-link verify → accept from cookie → redirect to table.
-5. Invalid/expired → `/?inviteError=…`.
+| Suite | Result |
+|-------|--------|
+| `npm test -- insurance` | 45/45 |
+| `npm test -- multiBoxInsurance` | 4/4 |
+| `npm test -- doublePayerFunding` | 2/2 |
+| `npm test -- split` | 15/15 |
+| `npm run build` | pass |
 
-## Validation
+New/updated: `insuranceFunding.test.ts` (12 scenarios), `multiBoxInsurance.test.ts`, existing phase/targeting tests updated for per-staker model.
 
-```text
-npx vitest run server/tests/inviteLoginRedirect.test.ts server/tests/inviteFlow.test.ts  → 15/15
-npx vitest run server/tests/tableActions.test.ts -t "invite"                             → 8/9 invite HTTP tests pass*
-npm run build                                                                          → success
-```
+## Docs
 
-\*Pre-existing service-level reuse test expects `/already used/` but engine returns “Invite expired or invalid.” for accepted invites — unchanged.
+- Updated `docs/SXM_MASTER_SPEC.md` — stake payer table, insurance UX, online authority row.
+- Added `docs/CHANGE_LOG.md` entry (2026-06-22).
 
-## Spec discipline
+**Spec discipline: checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.**
 
-Updated `docs/SXM_MASTER_SPEC.md` (Table invites online) and `docs/CHANGE_LOG.md`.
+## Not touched
+
+Table host deal authority, commander hierarchy, modal shell, Zilch, Hold'em, IOU, routing, layout geometry.

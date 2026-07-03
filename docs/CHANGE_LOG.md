@@ -25,6 +25,16 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-06-22 — Insurance / double / split per-staker funding
+
+**Problem:** Insurance stalled after the first box when a stake owner lacked chips; double/split could appear enabled or charge the wrong payer.
+
+**Fix:** Canonical `resolveFundableActionParticipants(hand, insurance|double|split)`; per-staker `insuranceStakerDecisions` / skip reasons; auto-skip unfunded stakers; insurance overlay queue progress; double/split gated on all stakers funding; split/double debits proportional to actual stakers.
+
+**Files:** `handFunding.ts`, `insurance.ts`, `validation.ts`, `round.ts`, `gameState.ts`, `stakeSettlement.ts`, `InsuranceDecisionOverlay.tsx`, `BlackjackPanel.tsx`, `blackjackViewPhase.ts`, `insuranceFunding.test.ts`
+
+---
+
 ## 2026-06-22 — Table invite login redirect
 
 **Problem:** Email accept link (`/api/tables/invites/accept?token=…`) auto-accepted without auth; when session cookie did not stick, user landed on login/lobby and lost the invite destination.

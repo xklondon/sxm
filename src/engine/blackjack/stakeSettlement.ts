@@ -6,6 +6,7 @@ import { appendBankLedgerEntryUnlessInternalPot } from '../session/sharedPotSett
 import { personsShareOneChipPot } from '../session/sharedBankroll';
 import { resolveBankrollOwnerId, type BankrollContext } from '../session/bankroll';
 import type { GameState } from '../../types';
+import { resolveStakerAmountsByPersonId } from './stakes';
 
 /** Split a total payout/amount across stakers by their committed shares (integer chips). */
 export function splitAmountByStakerShares(
@@ -42,11 +43,12 @@ export function splitAmountByStakerShares(
   return shares;
 }
 
-/** Staker contributions for settlement — hand snapshot first, else legacy native owner. */
+/** Staker contributions for settlement — hand snapshot, open box stake, else native owner. */
 export function resolveHandStakerAmounts(
   hand: BlackjackPlayerHand,
   bankrollCtx: BankrollContext,
   boxPlayerId: string,
+  state?: GameState,
 ): Record<string, number> {
   const fromHand = hand.stakerAmountsByPersonId;
   if (fromHand && Object.keys(fromHand).length > 0) {
@@ -58,6 +60,16 @@ export function resolveHandStakerAmounts(
     }
     if (Object.keys(cleaned).length > 0) {
       return cleaned;
+    }
+  }
+  if (state) {
+    try {
+      const fromStake = resolveStakerAmountsByPersonId(state, boxPlayerId);
+      if (Object.keys(fromStake).length > 0) {
+        return fromStake;
+      }
+    } catch {
+      // Fall through to native owner when stake map is unavailable.
     }
   }
   const nativeOwner = resolveBankrollOwnerId(bankrollCtx, boxPlayerId);

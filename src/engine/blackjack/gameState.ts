@@ -23,6 +23,7 @@ import {
   closeInsuranceOffer,
   allInsuranceResolved,
   advanceInsurancePhaseIfComplete,
+  applyAutoSkippedInsuranceStakers,
   getInsuranceFundingBlockReason,
   getInsuranceOfferForBox,
   getInsuranceDecisionPersonIdForBox,
@@ -474,7 +475,7 @@ export function applyInsuranceAdvanceOnState(state: GameState): GameState {
   const protocol = getBlackjackProtocolForState(state);
   const advanced = advanceInsurancePhaseIfComplete(state, round, protocol);
   if (!advanced.closed) {
-    return state;
+    return { ...state, players: advanced.players, blackjack: advanced.round };
   }
   let next: GameState = { ...state, players: advanced.players, blackjack: advanced.round };
   return resolvePendingNaturalsAfterDealerPeek(next);
@@ -664,34 +665,39 @@ export function startNextRoundOnState(state: GameState): GameState {
   return ownershipReset;
 }
 
-export function takeInsuranceOnState(state: GameState, playerId: string): GameState {
+export function takeInsuranceOnState(
+  state: GameState,
+  playerId: string,
+  stakerPersonId?: string,
+): GameState {
   const s = requireBlackjackState(state);
   if (!s.blackjack) {
     throw new Error('No active Blackjack round');
   }
   const protocol = getBlackjackProtocolForState(s);
-  const offer = getInsuranceOfferForBox(s, s.blackjack, playerId, protocol);
-  if (!offer) {
+  const payerId =
+    stakerPersonId ??
+    getInsuranceOfferForBox(s, s.blackjack, playerId, protocol)?.stakerPersonId ??
+    getInsuranceDecisionPersonIdForBox(s, playerId);
+  const offer = getInsuranceOfferForBox(s, s.blackjack, playerId, protocol, payerId ?? undefined);
+  if (!offer || !offer.stakerPersonId) {
     throw new Error('Insurance not offered for this box');
   }
   if (!offer.canAfford) {
-    throw new Error('Not enough chips for insurance');
-  }
-  const bankrollOwnerId = getInsuranceDecisionPersonIdForBox(s, playerId);
-  if (!bankrollOwnerId) {
-    throw new Error('Insurance not offered for this box');
+    throw new Error(offer.blockReason ?? 'Not enough chips for insurance');
   }
   const result = takeInsuranceBet(
-    s.session,
-    s.players,
-    s.ledger,
-    s.blackjack,
+    s,
     playerId,
     bankrollContextFromState(s),
     protocol,
-    bankrollOwnerId,
+    offer.stakerPersonId,
   );
   let next: GameState = { ...s, session: result.session, ledger: result.ledger, blackjack: result.round };
+  next = {
+    ...next,
+    blackjack: applyAutoSkippedInsuranceStakers(next, next.blackjack!, protocol),
+  };
   return finishInsurancePhaseIfComplete(next);
 }
 
@@ -701,11 +707,15 @@ function finishInsurancePhaseIfComplete(state: GameState): GameState {
     return state;
   }
   const protocol = getBlackjackProtocolForState(state);
-  if (!allInsuranceResolved(state, round, protocol)) {
-    return state;
+  let working: GameState = {
+    ...state,
+    blackjack: applyAutoSkippedInsuranceStakers(state, round, protocol),
+  };
+  if (!allInsuranceResolved(working, working.blackjack!, protocol)) {
+    return working;
   }
-  const closed = closeInsuranceOffer(state.session, state.players, round);
-  let next: GameState = { ...state, players: closed.players, blackjack: closed.round };
+  const closed = closeInsuranceOffer(working.session, working.players, working.blackjack!);
+  let next: GameState = { ...working, players: closed.players, blackjack: closed.round };
   next = resolvePendingNaturalsAfterDealerPeek(next);
   return next;
 }
@@ -723,29 +733,23 @@ export function takeInsuranceForPersonOnState(state: GameState, personId: string
   }
   let next: GameState = s;
   for (const boxId of boxIds) {
-    const offer = getInsuranceOfferForBox(next, next.blackjack!, boxId, protocol);
-    if (!offer) {
-      continue;
-    }
-    if (!offer.canAfford) {
-      throw new Error('Not enough chips for insurance');
-    }
-    const ownerId = getInsuranceDecisionPersonIdForBox(next, boxId);
-    if (!ownerId || ownerId !== personId) {
+    const offer = getInsuranceOfferForBox(next, next.blackjack!, boxId, protocol, personId);
+    if (!offer?.stakerPersonId || !offer.canAfford) {
       continue;
     }
     const result = takeInsuranceBet(
-      next.session,
-      next.players,
-      next.ledger,
-      next.blackjack!,
+      next,
       boxId,
       bankrollContextFromState(next),
       protocol,
-      ownerId,
+      offer.stakerPersonId,
     );
     next = { ...next, session: result.session, ledger: result.ledger, blackjack: result.round };
   }
+  next = {
+    ...next,
+    blackjack: applyAutoSkippedInsuranceStakers(next, next.blackjack!, protocol),
+  };
   return finishInsurancePhaseIfComplete(next);
 }
 
@@ -762,20 +766,51 @@ export function declineInsuranceForPersonOnState(state: GameState, personId: str
   }
   let round = s.blackjack;
   for (const boxId of boxIds) {
-    round = declineInsurance(round, boxId);
+    const offer = getInsuranceOfferForBox({ ...s, blackjack: round }, round, boxId, protocol, personId);
+    if (offer?.canAfford) {
+      round = declineInsurance(round, boxId, undefined, personId);
+    } else {
+      const blockReason = getInsuranceFundingBlockReason({ ...s, blackjack: round }, round, boxId, personId);
+      round = declineInsurance(round, boxId, blockReason ?? undefined, personId);
+    }
   }
-  const next: GameState = { ...s, blackjack: round };
+  let next: GameState = { ...s, blackjack: round };
+  next = {
+    ...next,
+    blackjack: applyAutoSkippedInsuranceStakers(next, next.blackjack!, protocol),
+  };
   return finishInsurancePhaseIfComplete(next);
 }
 
-export function declineInsuranceOnState(state: GameState, playerId: string): GameState {
+export function declineInsuranceOnState(
+  state: GameState,
+  playerId: string,
+  stakerPersonId?: string,
+): GameState {
   const s = requireBlackjackState(state);
   if (!s.blackjack) {
     throw new Error('No active Blackjack round');
   }
-  const blockReason = getInsuranceFundingBlockReason(s, s.blackjack, playerId);
-  const round = declineInsurance(s.blackjack, playerId, blockReason ?? undefined);
+  const protocol = getBlackjackProtocolForState(s);
+  const payerId =
+    stakerPersonId ??
+    getInsuranceOfferForBox(s, s.blackjack, playerId, protocol)?.stakerPersonId ??
+    getInsuranceDecisionPersonIdForBox(s, playerId);
+  if (!payerId) {
+    throw new Error('Insurance not offered for this box');
+  }
+  const blockReason = getInsuranceFundingBlockReason(s, s.blackjack, playerId, payerId);
+  const round = declineInsurance(
+    s.blackjack,
+    playerId,
+    blockReason ?? undefined,
+    payerId,
+  );
   let next: GameState = { ...s, blackjack: round };
+  next = {
+    ...next,
+    blackjack: applyAutoSkippedInsuranceStakers(next, next.blackjack!, protocol),
+  };
   return finishInsurancePhaseIfComplete(next);
 }
 
