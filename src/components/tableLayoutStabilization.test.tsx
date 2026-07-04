@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
@@ -12,6 +13,7 @@ import { claimBoxSlot } from '../engine/session';
 import { createBlackjackPlayerHand } from '../types/blackjack';
 import { blackjackHandKey } from '../engine/blackjack';
 
+const { shared: SHARED_CSS, cardLayout: CARD_LAYOUT_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
 
 function readSrc(relativePath: string): string {
@@ -91,7 +93,7 @@ describe('table layout stabilization contract', () => {
   }
 
   it('uses rounded-rectangle table radii instead of oval clipping on desktop', () => {
-    const css = readSrc('src/styles/bj-table-shared.css');
+    const css = SHARED_CSS;
     expect(css).toContain('--bj-table-rail-radius: var(--ds-radius-lg)');
     expect(css).toContain('--bj-table-felt-radius: calc(var(--ds-radius-lg) - 0.15rem)');
     expect(css).not.toContain('50% / 22%');
@@ -101,13 +103,13 @@ describe('table layout stabilization contract', () => {
   });
 
   it('uses wider shared desktop shell width token', () => {
-    const css = readSrc('src/styles/bj-table-shared.css');
+    const css = SHARED_CSS;
     expect(css).toContain('--bj-shell-width: min(98vw, 86rem)');
     expect(css).toContain('--bj-desktop-table-max-width: var(--bj-shell-width)');
   });
 
   it('does not clip play area with overflow hidden on desktop felt chain', () => {
-    const css = readSrc('src/styles/bj-table-shared.css');
+    const css = SHARED_CSS;
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-casino__felt[\s\S]*overflow:\s*visible/);
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-casino__felt-main[\s\S]*overflow:\s*visible/);
     expect(css).toMatch(/\.bj-view-full-desktop \.bj-arc[\s\S]*overflow:\s*visible/);
@@ -191,7 +193,7 @@ describe('table layout stabilization contract', () => {
   });
 
   it('player boxes use shared framed mini-hand shell', () => {
-    const css = readSrc('src/styles/bj-table-shared.css');
+    const css = SHARED_CSS;
     expect(css).toContain('--bj-seat-frame-shadow');
     expect(css).toMatch(/\.bj-phone-view__mini-hand[\s\S]*box-shadow:\s*var\(--bj-seat-frame-shadow\)/);
   });
@@ -311,8 +313,8 @@ describe('table layout polish contract', () => {
   });
 
   it('Card View uses fixed flex-column shell with bottom-anchored compact boxes', () => {
-    const layoutCss = readSrc('src/styles/bj-card-layout.css');
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const layoutCss = CARD_LAYOUT_CSS;
+    const sharedCss = SHARED_CSS;
     const cardCss = readSrc('src/components/BlackjackCardView.css');
     expect(layoutCss).toContain('--bj-card-row-boxes: var(--bj-zone-boxes-height');
     expect(layoutCss).toContain('--bj-card-row-hero-min: 0');

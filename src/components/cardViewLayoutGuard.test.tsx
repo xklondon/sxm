@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
@@ -15,6 +16,7 @@ import {
 import { claimBoxSlot } from '../engine/session';
 import { blackjackHandKey } from '../engine/blackjack';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, cardLayout: CARD_LAYOUT_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
 
 function readSrc(relativePath: string): string {
@@ -31,7 +33,7 @@ const SHELL_ZONE_ORDER = [
   TABLE_UX.tableZoneBottom,
 ] as const;
 
-const CARD_LAYOUT_CSS = 'src/styles/bj-card-layout.css';
+const CARD_LAYOUT_CSS_PATH = 'src/styles/bj-card-layout.css';
 const SHELL_TSX = 'src/components/BlackjackTableLayoutShell.tsx';
 const CARD_VIEW_TSX = 'src/components/BlackjackCardView.tsx';
 
@@ -184,7 +186,7 @@ describe('Card View layout guard', () => {
   });
 
   it('Card View CSS contains no margin-top:auto for boxes', () => {
-    const layoutCss = readSrc(CARD_LAYOUT_CSS);
+    const layoutCss = CARD_LAYOUT_CSS;
     const boxesBlock = layoutZoneBlock(layoutCss, '.bj-table-zone--boxes');
     const boxesReset =
       layoutCss.match(/\.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*?\}/)?.[0] ?? '';
@@ -193,7 +195,7 @@ describe('Card View layout guard', () => {
   });
 
   it('Card View CSS contains no translateY for hero/actions/boxes zones', () => {
-    const layoutCss = readSrc(CARD_LAYOUT_CSS);
+    const layoutCss = CARD_LAYOUT_CSS;
     for (const selector of [
       '.bj-table-zone--cards.bj-cards-area--hero',
       '.bj-table-zone--actions',
@@ -216,7 +218,7 @@ describe('Card View layout guard', () => {
   });
 
   it('Card View CSS contains no position:absolute for hero/actions/boxes/tray zones', () => {
-    const layoutCss = readSrc(CARD_LAYOUT_CSS);
+    const layoutCss = CARD_LAYOUT_CSS;
     for (const selector of [
       '.bj-table-zone--cards.bj-cards-area--hero',
       '.bj-table-zone--actions',
@@ -246,8 +248,8 @@ describe('Card View layout guard', () => {
   });
 
   it('uses mobile flex rows and desktop CSS grid for shell zones', () => {
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
-    const shellCss = readSrc('src/styles/bj-blackjack-table-shell.css');
+    const sharedCss = SHARED_CSS;
+    const shellCss = SHELL_CSS;
     expect(sharedCss).toMatch(/\.bj-table-layout-shell\s*\{[\s\S]*display:\s*flex/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*flex:\s*1\s*1\s*auto/);
     expect(shellCss).toMatch(/@media \(min-width: 721px\)[\s\S]*\.bj-view-full-desktop \.bj-table-layout-shell[\s\S]*display:\s*grid/);
@@ -257,8 +259,8 @@ describe('Card View layout guard', () => {
   });
 
   it('boxes row is tall enough for mini-hand tiles with bottom padding', () => {
-    const layoutCss = readSrc(CARD_LAYOUT_CSS);
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const layoutCss = CARD_LAYOUT_CSS;
+    const sharedCss = SHARED_CSS;
     expect(layoutCss).toContain('--bj-card-row-boxes: var(--bj-zone-boxes-height');
     expect(sharedCss).toContain('--bj-zone-boxes-height: 6.25rem');
     expect(layoutCss).toMatch(/\.bj-table-layout-shell[\s\S]*flex-direction:\s*column/);
@@ -267,7 +269,7 @@ describe('Card View layout guard', () => {
   });
 
   it('boxes row fits mini-hand height plus bottom padding without vertical clip', () => {
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const sharedCss = SHARED_CSS;
     const boxesBlock = sharedCss.match(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*?\}/)?.[0] ?? '';
     const miniRowReset =
       sharedCss.match(
@@ -289,14 +291,14 @@ describe('Card View layout guard', () => {
   });
 
   it('table shell height gives enough room for all Card View rows', () => {
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const sharedCss = SHARED_CSS;
     expect(sharedCss).toContain('--bj-shell-height: min(88vh, 56rem)');
     expect(sharedCss).toMatch(/\.bj-table-desktop-shell[\s\S]*var\(--bj-shell-height\)/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-zone-tray-height\)/);
   });
 
   it('boxes row contains player arc without expanding page scroll', () => {
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const sharedCss = SHARED_CSS;
     const boxesBlock = sharedCss.match(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*?\}/)?.[0] ?? '';
     expect(boxesBlock).toMatch(/overflow-x:\s*hidden/);
     expect(boxesBlock).toMatch(/overflow-y:\s*visible/);

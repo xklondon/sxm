@@ -1,4 +1,4 @@
-import { describe, expect, it, afterEach, vi } from 'vitest';
+import { describe, expect, it, afterEach, beforeAll, vi } from 'vitest';
 
 vi.mock('../src/email/mailer.js', () => ({
   sendMagicLinkEmail: vi.fn(async () => {}),
@@ -11,24 +11,65 @@ import { seedHostUser, seedPerson } from './testHelpers.js';
 
 const envBackup = { ...process.env };
 
+type ServiceModules = {
+  createMemoryStore: typeof import('../src/store/memoryStore.js').createMemoryStore;
+  PeopleService: typeof import('../src/people/service.js').PeopleService;
+  AuthService: typeof import('../src/auth/service.js').AuthService;
+  TableService: typeof import('../src/tables/service.js').TableService;
+};
+
+let cachedModules: ServiceModules | null = null;
+let cachedEnvKey = '';
+
 afterEach(() => {
   process.env = { ...envBackup };
-  vi.resetModules();
 });
+
+beforeAll(() => {
+  process.env.ROOT_USER_EMAIL = 'root@example.com';
+  process.env.INVITE_ONLY_MODE = 'true';
+  process.env.NODE_ENV = 'development';
+});
+
+async function loadServiceModules(envKey: string): Promise<ServiceModules> {
+  if (cachedModules && cachedEnvKey === envKey) {
+    return cachedModules;
+  }
+  if (cachedEnvKey !== envKey) {
+    vi.resetModules();
+    cachedModules = null;
+  }
+  cachedEnvKey = envKey;
+  const [memoryStore, peopleMod, authMod, tablesMod] = await Promise.all([
+    import('../src/store/memoryStore.js'),
+    import('../src/people/service.js'),
+    import('../src/auth/service.js'),
+    import('../src/tables/service.js'),
+  ]);
+  cachedModules = {
+    createMemoryStore: memoryStore.createMemoryStore,
+    PeopleService: peopleMod.PeopleService,
+    AuthService: authMod.AuthService,
+    TableService: tablesMod.TableService,
+  };
+  return cachedModules;
+}
 
 async function setupServices(rootEmail = 'root@example.com', inviteOnly = true) {
   process.env.ROOT_USER_EMAIL = rootEmail;
   process.env.INVITE_ONLY_MODE = inviteOnly ? 'true' : 'false';
   process.env.NODE_ENV = 'development';
-  vi.resetModules();
-  const { createMemoryStore } = await import('../src/store/memoryStore.js');
-  const { PeopleService } = await import('../src/people/service.js');
-  const { AuthService } = await import('../src/auth/service.js');
-  const { TableService } = await import('../src/tables/service.js');
+  const envKey = `${rootEmail}|${inviteOnly}|development`;
+  const {
+    createMemoryStore,
+    PeopleService: PeopleServiceClass,
+    AuthService: AuthServiceClass,
+    TableService: TableServiceClass,
+  } = await loadServiceModules(envKey);
   const store = createMemoryStore();
-  const people = new PeopleService(store);
-  const auth = new AuthService(store, people);
-  const tables = new TableService(store, people);
+  const people = new PeopleServiceClass(store);
+  const auth = new AuthServiceClass(store, people);
+  const tables = new TableServiceClass(store, people);
   return { store, people, auth, tables };
 }
 

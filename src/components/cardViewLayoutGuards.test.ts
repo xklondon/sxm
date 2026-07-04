@@ -1,23 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
-const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
-const HERO_AREA_CSS = readFileSync(
-  join(process.cwd(), 'src/styles/bj-card-desktop-hero-area.css'),
-  'utf8',
-);
-const CARD_DESKTOP_CSS = readFileSync(
-  join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
-  'utf8',
-);
+const {
+  shared: SHARED_CSS,
+  shell: SHELL_CSS,
+  cardLayout: LAYOUT_CSS,
+  fullTableCardArea: FULL_TABLE_CARD_CSS,
+  cardDesktop: CARD_DESKTOP_CSS,
+  cardDesktopHero: HERO_AREA_CSS,
+} = readBlackjackLayoutCss();
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
-const FULL_TABLE_CARD_CSS = readFileSync(
-  join(process.cwd(), 'src/styles/bj-full-table-card-area.css'),
-  'utf8',
-);
-const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
 
 function gapRem(css: string, token: string): number {

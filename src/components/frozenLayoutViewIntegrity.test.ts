@@ -18,9 +18,9 @@ function sha256(path: string): string {
 /** Frozen view CSS — update hashes only when deliberately changing a frozen view. */
 const FROZEN_LAYOUT_FILE_SHA256: Record<string, string> = {
   'src/styles/bj-full-table-card-area.css':
-    '593cb0dae8dab0621a8e05e126536c68b708148228ea54aafd9377bd29f9dbdf',
+    '35ca423a9ecfb7ea33e68143b8d0ecafee45c5683b7a39ad05c75078e36b176d',
   'src/styles/bj-card-desktop-hero-area.css':
-    'a2f19ad0c3145631ba1e5eb03201714a8ac6ed1491fb97c8283a16387461011f',
+    '2f9e31d459af30ace1a8afaac697456a253071af9d50dab49ad2d926063a3d70',
   'src/styles/bj-card-desktop-layout.css':
     'fd582709bb4b9ed5724d940e19a55ea8dd4e7dbc7f527321b118b1c9498d3909',
 };

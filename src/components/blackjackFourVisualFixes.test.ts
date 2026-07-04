@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const CLOTH_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackFeltClothLayer.tsx'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
@@ -78,8 +79,8 @@ describe('blackjack four visual fixes', () => {
       join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'),
       'utf8',
     );
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*flex:\s*0 0 auto/,
     );
     expect(FELT_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,

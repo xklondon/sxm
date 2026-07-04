@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -18,8 +19,8 @@ import {
   resolveBoxBorderVisualState,
 } from './cardViewBox';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 
 function bettingStateWithTwoBoxes(selectedBoxId: string, freeBoxStake = 0): GameState {
   let state = createNewBlackjackTable();
@@ -117,9 +118,12 @@ describe('Card View desktop targeted fixes', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-zone-boxes-tray-gap\)/,
     );
-    const desktop = SHARED_CSS.match(/@media \(min-width: 721px\)\s*\{[\s\S]*?\n\}/)?.[0] ?? '';
-    expect(desktop).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*margin-top:\s*0/);
-    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-zone-tray-height\)/);
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*margin-top:\s*var\(--bj-desktop-actions-boxes-gap\)/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-desktop-zone-tray-height\)/,
+    );
   });
 
   it('sizes Card View hero cards from CardsArea via container queries', () => {

@@ -1,26 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import {
+  readBlackjackLayoutCss,
+  sharedShellZoneBlock,
+} from '../test/readBlackjackLayoutCss';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
-const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+const { shared: SHARED_CSS, shell: SHELL_CSS, fullTableCardArea: CARD_AREA_CSS, cardLayout: CARD_LAYOUT_CSS } =
+  readBlackjackLayoutCss();
 
 function shellZoneBlock(zone: string): string {
-  const escaped = zone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return (
-    SHARED_CSS.match(
-      new RegExp(`^\\.bj-table-layout-shell ${escaped}\\s*\\{[\\s\\S]*?\\}`, 'm'),
-    )?.[0] ?? ''
-  );
+  return sharedShellZoneBlock(zone);
 }
 
 describe('canonical zone dimensions — Full Table and Card View', () => {
   it('defines one shell height/width token set', () => {
     expect(SHARED_CSS).toContain('--bj-shell-width: min(98vw, 86rem)');
     expect(SHARED_CSS).toContain('--bj-shell-height: min(88vh, 56rem)');
+    expect(SHARED_CSS).toContain('--bj-desktop-table-height: var(--bj-shell-height)');
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-desktop-shell[\s\S]*height:\s*var\(--bj-shell-height\)/,
+      /\.bj-table-desktop-shell[\s\S]*height:\s*var\(--bj-desktop-table-height\)/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-table-desktop-shell[\s\S]*max-width:\s*var\(--bj-shell-width\)/,
@@ -50,11 +47,21 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
 
   it('applies identical shell zone heights for all canonical zones', () => {
     expect(shellZoneBlock('.bj-table-zone--dealer')).toContain('height: var(--bj-zone-dealer-height)');
-    expect(shellZoneBlock('.bj-table-zone--summary')).toContain('min-height: var(--bj-zone-command-height)');
-    expect(shellZoneBlock('.bj-table-zone--summary')).toContain('max-height: var(--bj-zone-command-max-height)');
-    expect(shellZoneBlock('.bj-table-zone--actions')).toContain('height: var(--bj-zone-actions-height)');
-    expect(shellZoneBlock('.bj-table-zone--boxes')).toContain('height: var(--bj-zone-boxes-height)');
-    expect(shellZoneBlock('.bj-table-zone--bottom')).toContain('height: var(--bj-zone-tray-height)');
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-dealer-area[\s\S]*height: var\(--bj-desktop-zone-dealer-height\)/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*height: var\(--bj-zone-command-height\)/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*height: var\(--bj-desktop-zone-actions-height\)/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*height: var\(--bj-desktop-zone-boxes-height\)/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*height: var\(--bj-desktop-zone-tray-height\)/,
+    );
   });
 
   it('gives hero and Full Table card zones flex growth with bottom-pinned columns', () => {
@@ -74,13 +81,10 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
   });
 
   it('uses flexible Full Table cards grid row on desktop (1fr)', () => {
-    const desktop = SHARED_CSS.slice(
-      SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows'),
-      SHARED_CSS.indexOf('/* Desktop stage:'),
-    );
     expect(CARD_AREA_CSS).not.toMatch(/\[cards\]\s*var\(--bj-full-table-card-area-height\)/);
-    expect(desktop).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
-    expect(desktop).not.toMatch(
+    expect(SHELL_CSS).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
+    expect(SHELL_CSS).toContain('--bj-desktop-grid-row-cards: minmax(var(--bj-zone-cards-min-height, 0), 1fr)');
+    expect(SHELL_CSS).not.toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*height:\s*var\(--bj-zone-cards-height\)/,
     );
   });

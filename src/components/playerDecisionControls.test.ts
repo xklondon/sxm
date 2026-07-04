@@ -51,7 +51,7 @@ describe('table command display', () => {
       controllerName: 'Alice',
       viewerPersonId: state.tableMeta.ownerPersonId,
     });
-    expect(result.commandLines).toContain('Double available.');
+    expect(result.commandMessage).toContain('Double available.');
     expect(result.commandLines.some((line) => line.startsWith('Options:'))).toBe(false);
   });
 
@@ -78,8 +78,8 @@ describe('table command display', () => {
       controllerName: 'Alice',
       viewerPersonId: state.tableMeta.ownerPersonId,
     });
-    expect(result.commandMessage).toBe('Box 1 — Alice — your turn.');
-    expect(result.commandLines).toContain('Double available.');
+    expect(result.commandMessage).toMatch(/^Box 1 — Alice — your turn\./);
+    expect(result.commandMessage).toContain('Double available.');
     expect(result.commandLines.some((line) => line.startsWith('Options:'))).toBe(false);
     expect(isTableInstructionMessage('Double available.')).toBe(true);
   });
@@ -122,7 +122,7 @@ describe('command and action parity', () => {
       controllerName: 'Alice',
       viewerPersonId: state.tableMeta.ownerPersonId,
     });
-    expect(command.commandLines).toContain('Split available.');
+    expect(command.commandMessage).toContain('Split available.');
 
     const options = resolvePlayerHandActionOptions(
       state,
@@ -169,7 +169,7 @@ describe('command and action parity', () => {
       controllerName: 'Alice',
       viewerPersonId: state.tableMeta.ownerPersonId,
     });
-    expect(command.commandLines).toContain('Double available.');
+    expect(command.commandMessage).toContain('Double available.');
 
     const html = renderToStaticMarkup(
       createElement(BlackjackPanel, { gameState: state, onGameStateChange: noop }),
@@ -208,7 +208,7 @@ describe('command and action parity', () => {
       controllerName: 'Alice',
       viewerPersonId: state.tableMeta.ownerPersonId,
     });
-    expect(command.commandLines).not.toContain('Split available.');
+    expect(command.commandMessage ?? '').not.toContain('Split available.');
     const html = renderToStaticMarkup(
       createElement(BlackjackPanel, { gameState: state, onGameStateChange: noop }),
     );

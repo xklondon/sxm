@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState, TableViewMode } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
@@ -15,6 +16,7 @@ import {
 import { claimBoxSlot } from '../engine/session';
 import { addChipToBoxStake, blackjackHandKey, confirmBoxStake } from '../engine/blackjack';
 
+const { shared: SHARED_CSS, cardLayout: CARD_LAYOUT_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
 
 vi.mock('./storage/profileStorage', () => ({
@@ -135,8 +137,8 @@ describe('Card View central layout', () => {
     expect(actionsIdx).toBeGreaterThan(heroIdx);
     expect(cardsIdx).toBeGreaterThan(stackIdx);
     expect(cardsIdx).toBeLessThan(commandIdx);
-    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    const layoutCss = CARD_LAYOUT_CSS;
+    const sharedCss = SHARED_CSS;
     expect(layoutCss).toContain('.bj-card-layout__command');
     expect(sharedCss).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--summary \.dealer-block__command[\s\S]*max-height:\s*none/,

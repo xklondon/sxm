@@ -1,18 +1,17 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const SHELL_SRC = readFileSync(
   join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'),
   'utf8',
 );
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 
 function desktopShellBlock(): string {
-  const start = SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows');
-  const end = SHARED_CSS.indexOf('/* Desktop stage:', start);
-  return start >= 0 && end > start ? SHARED_CSS.slice(start, end) : '';
+  return SHELL_CSS;
 }
 
 describe('desktop zone separation — cloth scoped to CardsArea', () => {
@@ -58,13 +57,13 @@ describe('desktop zone separation — cloth scoped to CardsArea', () => {
 
   it('stacks zones with isolation: dealer, command, cards, actions', () => {
     const desktop = desktopShellBlock();
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--dealer[\s\S]*z-index:\s*2/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*z-index:\s*3/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*z-index:\s*5/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--dealer[\s\S]*isolation:\s*isolate/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*isolation:\s*isolate/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*isolation:\s*isolate/);
+    expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-dealer-area[\s\S]*z-index:\s*9/);
+    expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*z-index:\s*3/);
+    expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*z-index:\s*5/);
+    expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
+    expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-dealer-area[\s\S]*isolation:\s*isolate/);
+    expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*isolation:\s*isolate/);
+    expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*isolation:\s*isolate/);
   });
 
   it('does not use negative margins or z-index overlap hacks between dealer and command rows', () => {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -13,8 +14,8 @@ import { buildBlackjackCommandText } from './tableCommandDisplay';
 import { RoundSummaryOverlay } from './RoundSummaryOverlay';
 import { resolveShowRoundSummaryOverlay } from '../types/table';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const FLOW_SETTINGS_SRC = readFileSync(join(process.cwd(), 'src/engine/blackjack/flowSettings.ts'), 'utf8');
 
 function settledRoundState() {
@@ -70,7 +71,14 @@ describe('round summary overlay', () => {
   });
 
   it('uses short command text instead of full round summary lines', () => {
-    const state = settledRoundState();
+    const settled = settledRoundState();
+    const state = {
+      ...settled,
+      tableMeta: {
+        ...settled.tableMeta,
+        awaitingNextRound: false,
+      },
+    };
     const result = buildBlackjackCommandText({
       gameState: state,
       gameEnded: false,
@@ -79,6 +87,7 @@ describe('round summary overlay', () => {
       protocolPhase: 'round-complete',
       roundSummaryLines: ['Box 1: 20 wins — Alice wins 10.'],
       controllerName: 'Host',
+      cardRevealComplete: true,
     });
     expect(result.commandMessage).toBe('Round finished. Summary ready.');
     expect(result.commandLines).toEqual([]);

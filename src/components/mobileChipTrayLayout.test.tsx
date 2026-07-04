@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -7,8 +8,8 @@ import { ValueAndChipsBar } from './ChipStack';
 import { MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
 import { TABLE_UX } from './tableUxContract';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 
 describe('mobile chip tray layout (Table + card views)', () => {
   it('does not render an Available label', () => {

@@ -6,13 +6,14 @@ import { createBlackjackPlayerHand } from '../types/blackjack';
 import { blackjackHandKey } from '../engine/blackjack/handKeys';
 import { processPlayFlowAutoStands } from '../engine/blackjack/gameState';
 import { setPersonPlayFlow } from '../engine/blackjack/playFlow';
-import { getCallerPersonIdForBox } from '../engine/session';
+import { syncCallersForDeal } from '../engine/session/playerAssignment';
 import {
   tableAfterStartPlaying,
   boxPlayerId,
   findCardId,
 } from '../engine/blackjack/sanity/fixtures';
 import { claimBoxSlot } from '../engine/session/boxOps';
+import { addChipToBoxStake } from '../engine/blackjack/stakes';
 import {
   getActionableHandForView,
   getBlackjackRoundPhase,
@@ -64,8 +65,11 @@ function multiBoxTable(): {
   const box1 = boxPlayerId(state, 1)!;
   const box3 = boxPlayerId(state, 3)!;
   const box4 = boxPlayerId(state, 4)!;
-  const callerId = getCallerPersonIdForBox(state, box1)!;
+  const callerId = state.tableMeta.boxSlots.find((s) => s.playerId === box1)!.bankrollOwnerId!;
   state = setPersonPlayFlow(state, callerId, 'auto-18');
+  for (const boxId of [box1, box3, box4]) {
+    state = addChipToBoxStake(state, boxId, 10, callerId);
+  }
   return { state, box1, box3, box4, callerId };
 }
 
@@ -79,13 +83,25 @@ describe('online active-turn sync — auto-stand + actionable selector', () => {
       { boxId: box4, cardIds: [findCardId(deck, '6'), findCardId(deck, '7')] }, // 13
     ]);
     const next = processPlayFlowAutoStands({ ...state, blackjack: round });
+    const synced = syncCallersForDeal(next, [box1, box3, box4]);
+    const playable = {
+      ...synced,
+      tableMeta: {
+        ...synced.tableMeta,
+        bettingLocked: true,
+        boxSlots: synced.tableMeta.boxSlots.map((slot) =>
+          slot.playerId && [box1, box3, box4].includes(slot.playerId)
+            ? { ...slot, callerPersonId: callerId }
+            : slot,
+        ),
+      },
+    };
 
-    expect(next.blackjack!.activeHandKey).toBe(blackjackHandKey(box4, 0));
-    expect(next.blackjack!.playerHands[blackjackHandKey(box1, 0)]!.actionStatus).toBe('stood');
-    expect(next.blackjack!.playerHands[blackjackHandKey(box3, 0)]!.actionStatus).toBe('stood');
+    expect(playable.blackjack!.activeHandKey).toBe(blackjackHandKey(box4, 0));
+    expect(playable.blackjack!.playerHands[blackjackHandKey(box1, 0)]!.actionStatus).toBe('stood');
+    expect(playable.blackjack!.playerHands[blackjackHandKey(box3, 0)]!.actionStatus).toBe('stood');
 
-    // Only Box 4 is actionable for the caller.
-    const actionable = getActionableHandForView(next, callerId, true);
+    const actionable = getActionableHandForView(playable, callerId, true);
     expect(actionable).not.toBeNull();
     expect(actionable!.boxId).toBe(box4);
     expect(actionable!.handKey).toBe(blackjackHandKey(box4, 0));
@@ -128,12 +144,26 @@ describe('online active-turn sync — auto-stand + actionable selector', () => {
       { boxId: box3, cardIds: [findCardId(deck, 'Q'), findCardId(deck, '10')], status: 'stood' },
       { boxId: box4, cardIds: [findCardId(deck, '6'), findCardId(deck, '7')] },
     ]);
-    const s = { ...state, blackjack: round };
+    const s = syncCallersForDeal(
+      { ...state, blackjack: round, tableMeta: { ...state.tableMeta, bettingLocked: true } },
+      [box1, box3, box4],
+    );
+    const synced = {
+      ...s,
+      tableMeta: {
+        ...s.tableMeta,
+        boxSlots: s.tableMeta.boxSlots.map((slot) =>
+          slot.playerId && [box1, box3, box4].includes(slot.playerId)
+            ? { ...slot, callerPersonId: callerId }
+            : slot,
+        ),
+      },
+    };
 
     // Full Table, Card View (desktop + mobile) all call this one selector; the
     // online flag never changes the result (activeHandKey is authoritative).
-    const online = getActionableHandForView(s, callerId, true);
-    const offline = getActionableHandForView(s, callerId, false);
+    const online = getActionableHandForView(synced, callerId, true);
+    const offline = getActionableHandForView(synced, callerId, false);
     expect(online).toEqual(offline);
     expect(online?.boxId).toBe(box4);
   });

@@ -64,3 +64,19 @@ export function canUserStartTable(state: GameState, personName: string): boolean
 export function canUserResetTable(state: GameState, personName: string): boolean {
   return isTableOwner(state, personName);
 }
+
+/** Canonical reset/new-game permission — prefers ownerPersonId over display-name match. */
+export function canViewerResetTable(
+  state: GameState,
+  viewerPersonId: string | null | undefined,
+  fallbackControllerName?: string,
+): boolean {
+  const ownerPersonId = state.tableMeta.ownerPersonId;
+  if (ownerPersonId && viewerPersonId) {
+    return viewerPersonId === ownerPersonId;
+  }
+  if (fallbackControllerName?.trim()) {
+    return isTableOwner(state, fallbackControllerName);
+  }
+  return false;
+}

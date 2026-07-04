@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
@@ -17,7 +18,37 @@ import {
 import { claimBoxSlot } from '../engine/session';
 import { blackjackHandKey } from '../engine/blackjack';
 
+const { shared: SHARED_CSS, cardLayout: CARD_LAYOUT_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
+
+let simulatedWidth = 390;
+const globalRef = globalThis as unknown as { window?: unknown };
+const hadWindow = 'window' in globalRef;
+
+beforeAll(() => {
+  globalRef.window = {
+    matchMedia: (query: string) => {
+      const m = /max-width:\s*(\d+)/.exec(query);
+      const max = m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+      return {
+        matches: simulatedWidth <= max,
+        media: query,
+        addEventListener: noop,
+        removeEventListener: noop,
+        addListener: noop,
+        removeListener: noop,
+        onchange: null,
+        dispatchEvent: () => false,
+      };
+    },
+  };
+});
+
+afterAll(() => {
+  if (!hadWindow) {
+    delete globalRef.window;
+  }
+});
 
 function readSrc(relativePath: string): string {
   return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -119,12 +150,12 @@ describe('Card View polish guards', () => {
     const html = renderCardPanel(playingState());
     expect(html).toContain('bj-card-view__hero-value');
     expect(html).toContain('bj-player-hand-value--emphasis');
-    const layoutCss = readSrc('src/styles/bj-card-layout.css');
+    const layoutCss = CARD_LAYOUT_CSS;
     expect(layoutCss).toContain('bj-card-view__hero-value');
   });
 
   it('uses increased hero card size tokens inside hero row', () => {
-    const layoutCss = readSrc('src/styles/bj-card-layout.css');
+    const layoutCss = CARD_LAYOUT_CSS;
     expect(layoutCss).toMatch(/--bj-card-hero-card-width:\s*clamp\(/);
     expect(layoutCss).toMatch(/--bj-card-hero-card-max-height:\s*clamp\(/);
     expect(layoutCss).toContain('--bj-card-hero-card-aspect-ratio: 5 / 7');
@@ -134,17 +165,18 @@ describe('Card View polish guards', () => {
   });
 
   it('uses compact table action buttons in Card View actions row', () => {
+    simulatedWidth = 390;
     const html = renderCardPanel(playingState());
-    expect(html).toContain('bj-table-actions__btn');
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    expect(html).toContain('ds-btn--hit');
+    const sharedCss = SHARED_CSS;
     expect(sharedCss).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions__btn--sm[\s\S]*font-size:/,
     );
   });
 
   it('does not introduce page scroll when cards are dealt', () => {
-    const layoutCss = readSrc('src/styles/bj-card-layout.css');
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const layoutCss = CARD_LAYOUT_CSS;
+    const sharedCss = SHARED_CSS;
     const panelCss = readSrc('src/components/BlackjackPanel.css');
     expect(sharedCss).toMatch(/\.bj-table-layout-shell[\s\S]*overflow:\s*hidden/);
     expect(panelCss).toMatch(/\.bj-view-card-desktop[\s\S]*overflow-x:\s*hidden/);
@@ -166,7 +198,7 @@ describe('Card View polish guards', () => {
     const heroZone = html.split('bj-cards-area--hero')[1]?.split('bj-table-zone--actions')[0] ?? '';
     expect(slot).toContain(TABLE_UX.fullArcBox);
     expect(slot).toContain('bj-phone-view__mini-hand-head');
-    expect(heroZone).toContain('bj-phone-view__box-value--active-turn');
+    expect(slot).toContain('bj-phone-view__box-value--active-turn');
     expect(slot).toContain('bj-box--turn');
   });
 

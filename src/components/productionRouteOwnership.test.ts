@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import {
   BLACKJACK_TABLE_LAYOUT_SHELL_NAME,
   CANONICAL_BLACKJACK_CSS_IMPORT_ORDER,
@@ -13,14 +14,16 @@ const TABLE_SCREEN_SRC = readFileSync(join(ROOT, 'src/screens/TableScreen.tsx'),
 const APP_SRC = readFileSync(join(ROOT, 'src/App.tsx'), 'utf8');
 const SHELL_SRC = readFileSync(join(ROOT, 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
 const INDEX_CSS = readFileSync(join(ROOT, 'src/index.css'), 'utf8');
-const SHELL_CSS = readFileSync(join(ROOT, 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(ROOT, 'src/styles/bj-table-shared.css'), 'utf8');
-const CARD_AREA_CSS = readFileSync(join(ROOT, 'src/styles/bj-full-table-card-area.css'), 'utf8');
-const CARD_LAYOUT_CSS = readFileSync(join(ROOT, 'src/styles/bj-card-layout.css'), 'utf8');
+const {
+  shared: SHARED_CSS,
+  shell: SHELL_CSS,
+  fullTableCardArea: CARD_AREA_CSS,
+  cardLayout: CARD_LAYOUT_CSS,
+  playerRow: PLAYER_ROW_CSS,
+  cardDesktopHero: HERO_AREA_CSS,
+} = readBlackjackLayoutCss();
 const CARD_VIEW_CSS = readFileSync(join(ROOT, 'src/components/BlackjackCardView.css'), 'utf8');
 const STITCH_CSS = readFileSync(join(ROOT, 'src/styles/sxm-stitch-visual.css'), 'utf8');
-const PLAYER_ROW_CSS = readFileSync(join(ROOT, 'src/styles/bj-player-row-layout.css'), 'utf8');
-const HERO_AREA_CSS = readFileSync(join(ROOT, 'src/styles/bj-card-desktop-hero-area.css'), 'utf8');
 const COMMAND_BOX_SRC = readFileSync(join(ROOT, 'src/components/BlackjackCommandBox.tsx'), 'utf8');
 const DEALER_BLOCK_SRC = readFileSync(join(ROOT, 'src/components/DealerBlock.tsx'), 'utf8');
 

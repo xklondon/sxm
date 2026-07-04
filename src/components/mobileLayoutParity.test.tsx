@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -19,7 +20,7 @@ import {
   type SimulatedViewport,
 } from '../test/mobileLayoutMatchMedia';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 
@@ -55,6 +56,15 @@ function assertPairedMobileShellRules(css: string): string[] {
     const hasFull = selector.includes('.bj-view-full-mobile');
     const hasCard = selector.includes('.bj-view-card-mobile');
     if ((hasFull || hasCard) && !(hasFull && hasCard)) {
+      if (
+        hasCard &&
+        !hasFull &&
+        /\.bj-view-card-mobile[\s\S]*\.bj-table-zone--actions[\s\S]*(ds-btn--|bj-phone-view__action-bar)/.test(
+          selector,
+        )
+      ) {
+        continue;
+      }
       unpaired.push(selector);
     }
   }
@@ -141,7 +151,7 @@ function renderAt(mode: TableViewMode, width = 390, height = 844): string {
 
 describe('mobile layout parity audit — Full Table vs Card View', () => {
   it('requires paired mobile view selectors for shell layout rules', () => {
-    const unpaired = assertPairedMobileShellRules(`${SHARED_CSS}\n${PANEL_CSS}`);
+    const unpaired = assertPairedMobileShellRules(`${SHARED_CSS}\n${SHELL_CSS}\n${PANEL_CSS}`);
     expect(unpaired).toEqual([]);
   });
 

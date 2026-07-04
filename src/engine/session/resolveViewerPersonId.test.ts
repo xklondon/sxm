@@ -91,14 +91,18 @@ describe('resolveViewerPersonId', () => {
   it('active box 2: guest sees actionable hand, owner does not', () => {
     let { state, ownerId, guestId } = twoPlayerTable();
     const box2 = boxPlayerId(state, 2)!;
-    expect(getCallerPersonIdForBox(state, box2)).toBe(guestId);
     const round = actingRound(
       state,
       box2,
       [findCardId(state.deck!, '10'), findCardId(state.deck!, '9')],
       10,
     );
-    state = { ...state, blackjack: round };
+    state = {
+      ...state,
+      tableMeta: { ...state.tableMeta, bettingLocked: true },
+      blackjack: round,
+    };
+    expect(getCallerPersonIdForBox(state, box2)).toBe(guestId);
     expect(getActionableHandForView(state, guestId, true)).not.toBeNull();
     expect(getActionableHandForView(state, ownerId, true)).toBeNull();
   });

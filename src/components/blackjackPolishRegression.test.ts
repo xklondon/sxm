@@ -257,16 +257,18 @@ describe('blackjack polish regression', () => {
 
   it('insurance overlay disables duplicate submit and engine pays 2:1', () => {
     expect(PANEL_SRC).toContain('insuranceDecisionPending');
-    expect(PANEL_SRC).toContain('pending={insuranceBusy}');
-    expect(INSURANCE_SRC).toContain('pending = false');
-    expect(INSURANCE_SRC).toMatch(/disabled=\{!canAfford \|\| disabled\}/);
+    expect(PANEL_SRC).toMatch(/pendingTake=\{insuranceDecisionPending \|\| onlineActionInFlight\}/);
+    expect(INSURANCE_SRC).toContain('pendingTake = false');
+    expect(INSURANCE_SRC).toMatch(/takeDisabled = pendingTake \|\| !canAfford/);
 
     const html = renderToStaticMarkup(
       createElement(InsuranceDecisionOverlay, {
         boxLabel: 'Box 1',
+        boxIndex: 1,
+        boxCount: 1,
         maxBet: 50,
         canAfford: true,
-        pending: true,
+        pendingTake: true,
         onInsurance: noop,
         onDecline: noop,
       }),

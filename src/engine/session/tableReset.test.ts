@@ -11,7 +11,7 @@ import {
 import { hasPersonalLedgerEntryForTable } from '../scoreLedger/scoreLedger';
 import { loadScoreLedgerEntries } from '../../storage/scoreLedgerStorage';
 import { applyTableResetSetup, TABLE_RESET_LEDGER_MESSAGE } from './tableReset';
-import { canUserResetTable } from '../table/adminControls';
+import { canUserResetTable, canViewerResetTable } from '../table/adminControls';
 import { parseTableStakeSetupPayload, type TableStakeSetupInput } from './tableSetup';
 
 const setupInput: TableStakeSetupInput = {
@@ -101,6 +101,25 @@ describe('canUserResetTable', () => {
     const state = tableWithClaimedBox(1);
     expect(canUserResetTable(state, 'Alice')).toBe(true);
     expect(canUserResetTable(state, 'Bob')).toBe(false);
+  });
+});
+
+describe('canViewerResetTable', () => {
+  it('allows owner by person id regardless of display name', () => {
+    const state = tableWithClaimedBox(1);
+    const ownerId = state.tableMeta.ownerPersonId!;
+    expect(canViewerResetTable(state, ownerId, 'Wrong Name')).toBe(true);
+    expect(canViewerResetTable(state, 'other-id', 'Alice')).toBe(false);
+  });
+
+  it('falls back to owner name when person ids are missing', () => {
+    const state = tableWithClaimedBox(1);
+    const withoutOwnerId = {
+      ...state,
+      tableMeta: { ...state.tableMeta, ownerPersonId: null },
+    };
+    expect(canViewerResetTable(withoutOwnerId, null, 'Alice')).toBe(true);
+    expect(canViewerResetTable(withoutOwnerId, null, 'Bob')).toBe(false);
   });
 });
 

@@ -46,19 +46,26 @@ export const SXM_CORE_SECTIONS: readonly SxmLayoutSection[] = [
   SXM_LAYOUT.statusZone,
   SXM_LAYOUT.heroZone,
   SXM_LAYOUT.actionZone,
-  SXM_LAYOUT.primaryActions,
-  SXM_LAYOUT.secondaryActions,
   SXM_LAYOUT.playerBoxesZone,
   SXM_LAYOUT.chipTray,
   SXM_LAYOUT.playerBalance,
 ] as const;
 
-/** Sections required in card-view modes. */
+/** Sections required in card-view modes (betting through settlement). */
 export const SXM_CARD_VIEW_SECTIONS: readonly SxmLayoutSection[] = [
   ...SXM_CORE_SECTIONS,
-  SXM_LAYOUT.heroCards,
-  SXM_LAYOUT.handTotal,
   SXM_LAYOUT.playerBox,
+] as const;
+
+/** Card-view sections that mount only once play has cards (dealing / playing / resolved). */
+export const SXM_CARD_VIEW_PLAY_SECTIONS: readonly SxmLayoutSection[] = [
+  ...SXM_CARD_VIEW_SECTIONS,
+  SXM_LAYOUT.heroCards,
+] as const;
+
+/** Mobile Card View hand-total band (desktop totals live in player-box value). */
+export const SXM_CARD_VIEW_MOBILE_HAND_TOTAL_SECTIONS: readonly SxmLayoutSection[] = [
+  SXM_LAYOUT.handTotal,
 ] as const;
 
 /** Sections required in full-table modes (hero zone is a reserved slot). */

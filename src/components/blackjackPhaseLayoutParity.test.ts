@@ -24,7 +24,7 @@ describe('blackjack phase layout parity (desktop shell)', () => {
 
   it('uses play-phase command and actions band tokens as shared desktop defaults', () => {
     expect(SHELL_CSS).toMatch(
-      /\.bj-view-full-desktop,\s*\n\s*\.bj-view-card-desktop \{[\s\S]*--bj-desktop-zone-command-height:\s*5\.85rem/,
+      /\.bj-view-full-desktop,\s*\n\s*\.bj-view-card-desktop \{[\s\S]*--bj-desktop-zone-command-height:\s*4\.35rem/,
     );
     expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop,\s*\n\s*\.bj-view-card-desktop \{[\s\S]*--bj-desktop-dealer-command-gap:\s*0\.4125rem/,

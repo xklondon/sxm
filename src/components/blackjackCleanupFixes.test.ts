@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import {
   ACTIVE_HAND_VALUE_CLASS,
@@ -12,8 +13,7 @@ function readSrc(relativePath: string): string {
   return readFileSync(join(process.cwd(), relativePath), 'utf8');
 }
 
-const SHARED_CSS = readSrc('src/styles/bj-table-shared.css');
-const CARD_AREA_CSS = readSrc('src/styles/bj-full-table-card-area.css');
+const { shared: SHARED_CSS, shell: SHELL_CSS, fullTableCardArea: CARD_AREA_CSS } = readBlackjackLayoutCss();
 const TABLE_INFO_CSS = readSrc('src/components/TableInfoBar.css');
 const TABLE_INFO_TSX = readSrc('src/components/TableInfoBar.tsx');
 const PANEL_SRC = readSrc('src/components/BlackjackPanel.tsx');
@@ -57,10 +57,10 @@ describe('cleanup fixes — active value highlight', () => {
 
 describe('cleanup fixes — desktop card area position', () => {
   it('lowers desktop full-table card columns toward player boxes', () => {
-    expect(CARD_AREA_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
-    expect(CARD_AREA_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*padding-top:\s*0/,
     );
     expect(CARD_AREA_CSS).toMatch(

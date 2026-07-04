@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState, TableViewMode } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
@@ -21,6 +22,13 @@ import {
   type SimulatedViewport,
 } from '../test/mobileLayoutMatchMedia';
 
+const {
+  shared: SHARED_CSS,
+  shell: SHELL_CSS,
+  fullTableCardArea: PLAY_ZONE_CSS,
+  cardLayout: CARD_LAYOUT_CSS,
+  playerRow: PLAYER_ROW_CSS,
+} = readBlackjackLayoutCss();
 const noop = () => {};
 
 /**
@@ -320,29 +328,28 @@ describe('mobile Full Table renders the real table (not a fallback)', () => {
 
   it('felt scroller CSS keeps arc inside shell (no inner horizontal scroll)', () => {
     const css = mobileFullTableCss();
-    const playZoneCss = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-    expect(playZoneCss).toContain('Full Table play zone');
+    const sharedCss = SHARED_CSS;
+    expect(PLAY_ZONE_CSS).toContain('Full Table play zone');
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt-main,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt-main[\s\S]*overflow:\s*hidden/,
     );
-    expect(playZoneCss).toMatch(/\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--cards[\s\S]*width:\s*100%/);
+    expect(PLAY_ZONE_CSS).toMatch(/\.bj-view-full-mobile \.bj-table-slot-row\.bj-arc--cards[\s\S]*width:\s*100%/);
     expect(css).toMatch(/\.bj-view-full-mobile[\s\S]*overflow-x:\s*hidden/);
   });
 
   it('mobile Full Table vertical spacing aligns with Card View (shared felt token, boxes at bottom)', () => {
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    const sharedCss = SHARED_CSS;
     expect(sharedCss).toContain('--bj-mobile-felt-min-height: 0');
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt[\s\S]*min-height:\s*var\(--bj-mobile-felt-min-height\)/,
     );
     expect(sharedCss).toMatch(/\.bj-table-slot-row|\.bj-arc--player-boxes/);
     // Mobile boxes baseline is owned by the shell grid (table-layout-engine), not player-row.
-    const shellCss = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
+    const shellCss = SHELL_CSS;
     expect(shellCss).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--boxes,\s*\n\s*\.bj-view-card-mobile \.bj-table-layout-shell > \.bj-table-zone--boxes/,
     );
-    const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+    const layoutCss = CARD_LAYOUT_CSS;
     expect(layoutCss).toContain('--bj-card-row-hero-min: 0');
   });
 
@@ -470,7 +477,7 @@ describe('shared table UX classes (Full Table + Card View)', () => {
   });
 
   it('shared CSS uses one felt gradient for table surface and card column', () => {
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    const sharedCss = SHARED_CSS;
     expect(sharedCss).not.toContain('--bj-table-column-bg');
     expect(sharedCss).toMatch(/\.bj-table-column-surface[\s\S]*var\(--bj-table-felt-bg\)/);
     expect(sharedCss).toMatch(/\.bj-bet-zone[\s\S]*var\(--bj-seat-radius\)/);
@@ -525,9 +532,8 @@ describe('mobile Card View width contract', () => {
     expect(panelCss).toMatch(/\.bj-view-full-mobile[\s\S]*max-width:\s*100%/);
     expect(panelCss).toMatch(/\.bj-view-card-mobile[\s\S]*max-width:\s*100%/);
     expect(panelCss).toMatch(/\.bj-view-card-mobile \.bj-casino__rail[\s\S]*max-width:\s*100%/);
-    const playerRowCss = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
-    expect(playerRowCss).toMatch(/\.bj-table-slot-row[\s\S]*overflow:\s*visible/);
-    expect(playerRowCss).toMatch(
+    expect(PLAYER_ROW_CSS).toMatch(/\.bj-table-slot-row[\s\S]*overflow:\s*visible/);
+    expect(PLAYER_ROW_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-slot-row\.bj-arc--player-boxes[\s\S]*minmax\(0,\s*1fr\)/,
     );
   });

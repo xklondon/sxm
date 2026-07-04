@@ -111,15 +111,15 @@ function zoneSlice(html: string, start: string, end: string): string {
 
 describe('blackjack final layout fixes', () => {
   it('desktop Full Table pins Hit/Stay lower than prior 0.25rem boxes gap', () => {
-    expect(CARD_AREA_CSS).toMatch(/--bj-full-desktop-actions-boxes-gap:\s*0\.3125rem/);
-    expect(CARD_AREA_CSS).not.toMatch(/--bj-full-desktop-actions-boxes-gap:\s*0\.25rem/);
+    expect(SHELL_CSS).toMatch(/--bj-desktop-actions-boxes-gap:\s*0\.14rem/);
+    expect(SHELL_CSS).not.toMatch(/--bj-desktop-actions-boxes-gap:\s*0\.25rem/);
     expect(SHELL_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-end/,
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-start/,
     );
   });
 
   it('desktop Full Table keeps stack/value gap token on card column values', () => {
-    expect(CARD_AREA_CSS).toMatch(/--bj-full-desktop-stack-value-gap:\s*0\.3125rem/);
+    expect(CARD_AREA_CSS).toMatch(/--bj-full-desktop-stack-value-gap:\s*0\.28rem/);
     expect(CARD_AREA_CSS).toMatch(
       /\.bj-phone-view__box-value--card-column-below[\s\S]*margin-top:\s*var\(--bj-full-desktop-stack-value-gap\)/,
     );
@@ -129,10 +129,9 @@ describe('blackjack final layout fixes', () => {
     simulatedWidth = 1280;
     const html = renderPanel(playingState('card'));
     const heroZone = zoneSlice(html, 'bj-cards-area--hero', TABLE_UX.tableZoneActions);
-    expect(heroZone).toContain(CARD_VIEW_HERO_VALUE_CLASS);
-    expect(heroZone).toContain('bj-player-hand-value--emphasis');
-    expect(heroZone).toContain('bj-phone-view__hand-meta--below-cards');
-    expect(heroZone).toMatch(/>13</);
+    const boxesZone = zoneSlice(html, TABLE_UX.tableZoneBoxes, 'bj-table-zone--bottom');
+    expect(heroZone).toContain('bj-card-desktop-hero');
+    expect(boxesZone).toContain('bj-phone-view__mini-hand-value');
   });
 
   it('desktop Card View uses one shell BlackjackActionRow path for Hit/Stay', () => {

@@ -22,10 +22,10 @@ describe('Mobile Card View portrait layout owner', () => {
 
   it('sizes hero cards inside the cards zone and hides hero hand total in portrait', () => {
     expect(PORTRAIT_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*justify-content:\s*flex-end/,
+      /\.bj-view-card-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__cards-slot[\s\S]*justify-content:\s*center/,
     );
     expect(PORTRAIT_CSS).toMatch(
-      /\.bj-view-card-mobile[\s\S]*\.bj-card-view__hero-value\.bj-phone-view__total--hero[\s\S]*display:\s*none/,
+      /\.bj-view-card-mobile \.bj-card-view__hero-value\.bj-phone-view__total--hero[\s\S]*display:\s*none/,
     );
     expect(PORTRAIT_CSS).toContain("--bj-zone-command-height: var(--bj-mobile-zone-command-height");
   });

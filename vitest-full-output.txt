@@ -1,0 +1,60 @@
+﻿
+> card-dealer-app@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.7 C:/dev/SXMCards
+
+ ÔØ» src/components/blackjackFullTableCardColumnLayout.test.ts (9 tests | 1 failed) 30ms
+     ├ù does not apply Full Table card-column grid to Card View 12ms
+node.exe : DOMException [AbortError]: The operation was aborted.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (DOMException [A...on was aborted.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    at Fetch.onAsyncTaskManagerAbort (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.abort 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:52:21)
+    at DetachedBrowserFrame.abort 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:112:58)
+    at DetachedWindowAPI.abort (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/window/DetachedWindowAPI.js:51:35)
+    at teardownWindow (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/index.DC7d2Pf8.js:331:22)
+    at Object.teardown (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/index.DC7d2Pf8.js:392:10)
+    at file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/base.RR7zL1h0.js:168:65
+    at Traces.$ (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/traces.DT5aQ62U.js:142:27)
+ ÔØ» src/components/desktopCanonicalGrid.test.ts (10 tests | 1 failed) 30ms
+     ├ù assigns each shell zone to a grid row without vertical margin hacks 13ms
+ ÔØ» src/components/stitchLayoutSections.test.tsx (9 tests | 5 failed) 371ms
+     ├ù renders core sections in desktop full table view 126ms
+     ├ù renders core sections in desktop card view 29ms
+     ├ù renders core sections in mobile full table view 21ms
+     ├ù renders core sections in mobile card view 22ms
+     ├ù keeps named sections mounted across betting, play, and settlement in card view 81ms
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.abort 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:52:21)
+    at DetachedBrowserFrame.abort 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:112:58)
+    at DetachedWindowAPI.abort (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/window/DetachedWindowAPI.js:51:35)
+    at teardownWindow (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/index.DC7d2Pf8.js:331:22)
+    at Object.teardown (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/index.DC7d2Pf8.js:392:10)
+    at file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/base.RR7zL1h0.js:168:65
+    at Traces.$ (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/traces.DT5aQ62U.js:142:27)
+ ÔØ» src/engine/blackjack/dealing/cardRevealDisplay.test.ts (8 tests | 1 failed) 84ms
+     ├ù places dealer hole card in state immediately on the hole deal step 18ms
+ ÔØ» src/components/playerBoxVisualStability.test.ts (12 tests | 1 failed) 28ms
+     ├ù separates desktop chip tray from player boxes without mobile regression 11ms
+ ÔØ» src/engine/session/tableDealPermission.test.ts (9 tests | 1 failed) 67ms
+     ├ù gates New Cards on canUserDealTable only (not engine canDeal) 14ms
+ ÔØ» src/components/blackjackFullDesktopLayout.test.tsx (5 tests | 2 failed) 24ms
+     ├ù spreads Full Table player boxes with fixed width columns across felt width 11ms
+     ├ù fills flexible card area and bottom-pins columns on Full Table desktop 2ms

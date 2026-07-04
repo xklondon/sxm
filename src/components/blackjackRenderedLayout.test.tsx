@@ -16,6 +16,7 @@
  *   npx tsx scripts/runtime-visual-branch-audit.mts
  */
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createElement } from 'react';
@@ -47,14 +48,13 @@ import { DEFAULT_VISIBLE_TABLE_BOXES } from './tableBoxLayout';
 import { getViewRootClass } from './tableViewContract';
 import { isMobileLayoutViewport, MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS } = readBlackjackLayoutCss();
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
 const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const CARD_DESKTOP_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
-const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const noop = () => {};
 
 let simulatedWidth = 1280;

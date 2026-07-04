@@ -9,6 +9,7 @@ import { BlackjackPanel } from './BlackjackPanel';
 import { PlayLedgerModal } from './LedgerModals';
 import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
 import {
+  SXM_CARD_VIEW_PLAY_SECTIONS,
   SXM_CARD_VIEW_SECTIONS,
   SXM_FULL_TABLE_SECTIONS,
   SXM_LAYOUT,
@@ -177,9 +178,15 @@ describe('Stitch layout sections', () => {
         SXM_LAYOUT.actionZone,
         SXM_LAYOUT.playerBoxesZone,
         SXM_LAYOUT.chipTray,
-        SXM_LAYOUT.handTotal,
       ]);
     }
+
+    for (const html of [playing]) {
+      expectSections(html, [SXM_LAYOUT.heroCards]);
+    }
+
+    const playingMobile = renderPanelAt(390, playingState());
+    expectSections(playingMobile, [SXM_LAYOUT.handTotal, SXM_LAYOUT.heroCards]);
   });
 
   it('keeps card view hero, actions, and boxes in distinct sections', () => {

@@ -44,7 +44,7 @@ export function resolveBoxNetChipsForHands(
     if (!hand || hand.currentBet <= 0) {
       continue;
     }
-    const outcome = round.outcomes[handKey];
+    const outcome = round.outcomes?.[handKey];
     if (!outcome) {
       continue;
     }

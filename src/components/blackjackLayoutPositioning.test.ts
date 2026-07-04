@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss, shellDesktopDirectZoneBlock } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROUND_SUMMARY_OVERLAY_DELAY_MS } from './roundSummaryOverlayTiming';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
@@ -24,13 +25,11 @@ describe('player boxes bottom placement and cards area growth', () => {
   });
 
   it('uses fixed desktop CSS grid rows without margin-top:auto on boxes', () => {
-    const desktop = SHARED_CSS.slice(
-      SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows'),
-      SHARED_CSS.indexOf('/* Desktop stage:'),
-    );
-    expect(desktop).toMatch(/\.bj-table-layout-shell\s*\{[\s\S]*display:\s*grid/);
-    expect(desktop).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*margin:\s*0/);
+    expect(SHELL_CSS).toMatch(/\.bj-table-layout-shell\s*\{[\s\S]*display:\s*grid/);
+    expect(SHELL_CSS).toMatch(/\[cards\]\s*var\(--bj-desktop-grid-row-cards\)/);
+    const boxesZone = shellDesktopDirectZoneBlock('.bj-table-zone--boxes');
+    expect(boxesZone).toMatch(/margin:\s*0/);
+    expect(boxesZone).not.toMatch(/margin-top:\s*auto/);
   });
 
   it('does not reserve tray gap inside player boxes zone padding', () => {
@@ -43,11 +42,11 @@ describe('player boxes bottom placement and cards area growth', () => {
   });
 
   it('bottom-aligns player boxes in all view roots', () => {
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/,

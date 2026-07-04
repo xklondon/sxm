@@ -21,20 +21,12 @@ import { check, type SanitySuiteResult } from './types';
 import {
   boxPlayerId,
   findCardId,
+  setSanityOpenStake,
   tableWithClaimedBox,
 } from './fixtures';
 
 function setOpenStake(state: GameState, boxPlayerId: string, amount: number): GameState {
-  return {
-    ...state,
-    tableMeta: {
-      ...state.tableMeta,
-      boxStakes: {
-        ...state.tableMeta.boxStakes,
-        [boxPlayerId]: { amount, chips: [], confirmed: true },
-      },
-    },
-  };
+  return setSanityOpenStake(state, boxPlayerId, amount);
 }
 
 function bankingRound(state: GameState, boxId: string, playerCards: string[], dealerCards: string[], bet: number): BlackjackRound {

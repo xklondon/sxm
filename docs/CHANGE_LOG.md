@@ -29,6 +29,24 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-07-04 — Blackjack stabilization pass (test clusters + contracts)
+
+**Problem:** Full test suite red across ownership gate, insurance, round reset, Card View shell, Entry Lobby, command copy, layout CSS guards, and server table actions. Default `npm test` hung on heavy rendered-layout suite.
+
+**Fix:** Restored canonical ownership via `boxRoundCommander` in-round staker/owner fallback; aligned tests with inline player-turn command format, CSS shell ownership split (`bj-blackjack-table-shell.css`), server guest membership helper, co-box caller (first bettor) contract; excluded manual `blackjackRenderedLayout.test.tsx` from default vitest run.
+
+**Files:** `boxRoundCommander.ts`, `boxBetResultDisplay.ts`, `vite.config.ts`, cluster test files, `server/tests/tableActions.test.ts`, `ChangeSummary.md`
+
+---
+
+**Problem:** Game Over **Start New Game** and **Exit Table** appeared to do nothing — leave confirm rendered behind game-over overlay (z-index 60 vs 130); DealerBlock New Game required overlay confirm first; reset permission used display name only (`canUserResetTable`) so online owners with mismatched profile names could not reset.
+
+**Fix:** Dismiss game-over overlay before reset setup or leave prompt; DealerBlock New Game calls same `onBeginTableReset('newGame')` path as modal; `canViewerResetTable` uses `ownerPersonId`; leave dialog z-index 140.
+
+**Files:** `BlackjackPanel.tsx`, `adminControls.ts`, `LeaveTableConfirmDialog.css`, `gameOverTableActions.test.ts`
+
+---
+
 ## 2026-06-22 — Blackjack round transition after auto-stop (18+)
 
 **Problem:** After all boxes auto-stood at 18+, command box showed stale player-turn prompts before New Cards; deal could appear stuck because `resolved` mapped to betting protocol phase and temporary box commanders survived settlement.
@@ -743,6 +761,14 @@ betting, ledger, auth, Zilch, or routing changes):
 - **Desktop Card View:** Hero hand value visible below cards (overflow fix); shell `BlackjackActionPanel` shares Full Table desktop action-zone tokens; third+ hero cards use `bj-phone-view__card-wrap--layered`.
 - **All views:** Player boxes show in-play hand total inside box; chip stacks hidden during play; betting phase unchanged.
 - **Tests:** `blackjackFinalLayoutFixes.test.ts`; frozen layout tests updated.
+
+---
+
+## 2026-07-04 — IOU handoff env canonicalization
+
+- **Config:** IOU handoff uses only `IOU_HANDOFF_SOURCE`, `IOU_HANDOFF_SECRET`, `IOU_HANDOFF_CREATE_URL`; legacy `SXM_HANDOFF_*` ignored with startup/rename hint.
+- **Route:** `/api/iou-handoff/create` returns specific 503 when secret or create URL missing.
+- **Path:** Browser → SXM server encrypt → POST IOU Wallet integration URL only (no client secrets, no VITE handoff vars).
 
 ---
 

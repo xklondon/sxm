@@ -148,6 +148,18 @@ describe('entry lobby boot flow', () => {
   });
 });
 
+function openNewTableSetup() {
+  fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
+  expect(screen.getByRole('dialog', { name: 'Open New Table' })).toBeTruthy();
+  expect(document.querySelector('.new-table-overlay__panel, .sxm-modal-shell__backdrop')).toBeTruthy();
+}
+
+function openNewTableToBlackjackMode() {
+  openNewTableSetup();
+  fireEvent.click(screen.getByRole('button', { name: 'Cards' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Blackjack' }));
+}
+
 describe('entry lobby slide-outs', () => {
   afterEach(() => {
     cleanup();
@@ -172,9 +184,7 @@ describe('entry lobby slide-outs', () => {
         canOwnTables
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
-    expect(screen.getByRole('dialog', { name: 'Open New Table' })).toBeTruthy();
-    expect(document.querySelector('.new-table-overlay')).toBeTruthy();
+    openNewTableSetup();
     expect(screen.getByText('Game category')).toBeTruthy();
     expect(createOnlineTableMock).not.toHaveBeenCalled();
   });
@@ -189,8 +199,7 @@ describe('entry lobby slide-outs', () => {
         canOwnTables
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Cards' }));
+    openNewTableToBlackjackMode();
     expect(screen.getByText('Practice')).toBeTruthy();
     expect(screen.getByText('Challenge')).toBeTruthy();
   });
@@ -206,8 +215,7 @@ describe('entry lobby slide-outs', () => {
         canOwnTables
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Cards' }));
+    openNewTableToBlackjackMode();
     fireEvent.click(screen.getByRole('button', { name: /Practice/i }));
     expect(screen.queryByText('Play for what')).toBeNull();
     expect(screen.queryByText(/invite by email/i)).toBeNull();
@@ -229,8 +237,7 @@ describe('entry lobby slide-outs', () => {
         canOwnTables
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Cards' }));
+    openNewTableToBlackjackMode();
     fireEvent.click(screen.getByRole('button', { name: /Challenge/i }));
     expect(screen.getByText('Play for what')).toBeTruthy();
     expect(screen.getByText(/invite by email/i)).toBeTruthy();
@@ -336,6 +343,6 @@ describe('entry lobby slide-outs', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open New Table' }));
     expect(createOnlineTableMock).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: 'Open New Table' })).toBeTruthy();
-    expect(document.querySelector('.new-table-overlay')).toBeTruthy();
+    expect(document.querySelector('.new-table-overlay__panel, .sxm-modal-shell__backdrop')).toBeTruthy();
   });
 });

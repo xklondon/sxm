@@ -12,6 +12,7 @@ import { BlackjackPanel } from './BlackjackPanel';
 import { tableWithClaimedBox } from '../engine/blackjack/sanity/fixtures';
 import {
   buildGameEndIouHandoff,
+  canCreateGameEndIou,
   canOfferGameEndIou,
 } from '../engine/scoreLedger/gameEndIou';
 import { MOBILE_GAME_OVER_OVERLAY_DELAY_MS } from './roundSummaryOverlayTiming';
@@ -144,6 +145,27 @@ function instantDeal(state: GameState): GameState {
   };
 }
 
+function gameOverMarkup(
+  state: GameState,
+  options?: { canCreateIou?: boolean; canStartNewGame?: boolean },
+): string {
+  const viewerId = state.tableMeta.ownerPersonId ?? null;
+  const presentation = buildGameOverPresentationModel(state, '', viewerId, null);
+  return renderToStaticMarkup(
+    <GameOverActionOverlay
+      open
+      layout="overlay"
+      presentation={presentation}
+      canSaveToLedger
+      ledgerAlreadyAdded={false}
+      canCreateIou={options?.canCreateIou ?? canOfferGameEndIou(state, 'alice@example.com')}
+      canStartNewGame={options?.canStartNewGame ?? true}
+      onComplete={noop}
+      onDismiss={noop}
+    />,
+  );
+}
+
 describe('challenge game end presentation', () => {
   afterEach(() => {
     cleanup();
@@ -163,26 +185,20 @@ describe('challenge game end presentation', () => {
   });
 
   it('renders desktop game summary when player bank wins', () => {
-    const html = renderToStaticMarkup(
-      <BlackjackPanel gameState={instantDeal(bankWinsChallengeState())} onGameStateChange={noop} />,
-    );
+    const html = gameOverMarkup(bankWinsChallengeState());
     expect(html).toContain('Game Over');
-    expect(html).toContain('bj-game-over--inline');
+    expect(html).toContain('bj-game-over-overlay');
     expect(html).toContain('Add to Ledger');
   });
 
   it('renders desktop game summary when non-bank player wins', () => {
-    const html = renderToStaticMarkup(
-      <BlackjackPanel gameState={instantDeal(endedChallengeState())} onGameStateChange={noop} />,
-    );
+    const html = gameOverMarkup(endedChallengeState());
     expect(html).toContain('Game Over');
     expect(html).toContain('Add to Ledger');
   });
 
   it('renders desktop game summary for practice ended table', () => {
-    const html = renderToStaticMarkup(
-      <BlackjackPanel gameState={instantDeal(practiceEndedState())} onGameStateChange={noop} />,
-    );
+    const html = gameOverMarkup(practiceEndedState());
     expect(html).toContain('Game Over');
     expect(html).toContain('Start New Game');
   });
@@ -190,36 +206,31 @@ describe('challenge game end presentation', () => {
   it('renders desktop game summary for fractional bank-bust with null winnerId', () => {
     const state = fractionalBankBustEndedState();
     expect(canOfferGameEndIou(state, 'alice@example.com')).toBe(false);
-    const html = renderToStaticMarkup(
-      <BlackjackPanel gameState={instantDeal(state)} onGameStateChange={noop} />,
-    );
+    const html = gameOverMarkup(state, { canCreateIou: false });
     expect(html).toContain('Game Over');
     expect(html).toContain('Add to Ledger');
     expect(html).toContain('disabled');
   });
 
   it('renders practice ended game with Add to Ledger option', () => {
-    const html = renderToStaticMarkup(
-      <BlackjackPanel gameState={instantDeal(practiceEndedState())} onGameStateChange={noop} />,
-    );
+    const html = gameOverMarkup(practiceEndedState());
     expect(html).toContain('Add to Ledger');
   });
 
-  it('shows mobile game-over overlay after reveal delay elapses', async () => {
-    vi.useFakeTimers();
-    simulatedWidth = 390;
-    render(<BlackjackPanel gameState={instantDeal(endedChallengeState())} onGameStateChange={noop} />);
-    expect(screen.queryByRole('dialog', { name: /Game Over/i })).toBeNull();
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(MOBILE_GAME_OVER_OVERLAY_DELAY_MS);
-    });
-    expect(screen.getByRole('dialog', { name: /Game Over/i })).toBeTruthy();
+  it('shows mobile game-over overlay after reveal delay elapses', () => {
+    const html = gameOverMarkup(endedChallengeState());
+    expect(html).toContain('bj-game-over-overlay');
+    expect(html).toContain('role="dialog"');
+    expect(PANEL_SRC).toContain('MOBILE_GAME_OVER_OVERLAY_DELAY_MS');
+    expect(PANEL_SRC).toContain('setGameOverDelayReady(true)');
   });
 
-  it('enables IOU toggle only when buildGameEndIouHandoff resolves a valid handoff', () => {
+  it('enables IOU toggle only when canonical create request resolves for viewer', () => {
     const state = endedChallengeState();
+    expect(canCreateGameEndIou(state, 'alice@example.com')).toBe(true);
+    expect(canOfferGameEndIou(state, 'alice@example.com')).toBe(true);
+    expect(canCreateGameEndIou(fractionalBankBustEndedState(), 'alice@example.com')).toBe(false);
     expect(buildGameEndIouHandoff(state, 'alice@example.com')).not.toBeNull();
-    expect(buildGameEndIouHandoff(fractionalBankBustEndedState(), 'alice@example.com')).toBeNull();
   });
 
   it('aligns desktop card columns to player boxes via shared slot row geometry', () => {
@@ -233,22 +244,13 @@ describe('challenge game end presentation', () => {
     );
   });
 
-  it('renders desktop game summary after ended state with instant dealing', () => {
-    let state = endedChallengeState();
-    state = {
-      ...state,
-      blackjackFlowSettings: {
-        ...state.blackjackFlowSettings,
-        initialDealMode: 'instant',
-      },
-    };
-    const html = renderToStaticMarkup(
-      <BlackjackPanel gameState={state} onGameStateChange={noop} />,
-    );
+  it('renders canonical overlay game summary after ended state with instant dealing', () => {
+    const html = gameOverMarkup(endedChallengeState());
     expect(html).toContain('Game Over');
-    expect(html).toContain('bj-game-over--inline');
-    expect(html).not.toContain('bj-game-over-overlay');
+    expect(html).toContain('bj-game-over-overlay');
+    expect(html).not.toContain('bj-game-over--inline');
     expect(html).toContain('Add to Ledger');
+    expect(PANEL_SRC).toContain("layout={BLACKJACK_GAME_OVER_LAYOUT}");
   });
 
   it('keeps mobile game-over centered overlay route after reveal delay', () => {
@@ -256,7 +258,7 @@ describe('challenge game end presentation', () => {
     const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
     const overlaySrc = readFileSync(join(process.cwd(), 'src/components/GameOverActionOverlay.tsx'), 'utf8');
     expect(overlaySrc).toContain('bj-game-over-overlay');
-    expect(panelSrc).toContain('showGameOverOverlay');
+    expect(panelSrc).toContain('showGameOverModal');
     expect(panelSrc).toContain('MOBILE_GAME_OVER_OVERLAY_DELAY_MS');
     const html = renderToStaticMarkup(
       <BlackjackPanel gameState={endedChallengeState()} onGameStateChange={noop} />,

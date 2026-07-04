@@ -1,0 +1,5834 @@
+﻿
+ RUN  v4.1.7 C:/dev/SXMCards
+
+ ÔØ» src/components/playerBoxCardComposition.test.ts (3 tests | 2 failed) 25ms
+     ├ù renders composition from visible hand card ids only 15ms
+     ├ù styles composition text in player boxes without absolute positioning 3ms
+node.exe : 
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 2 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  src/components/playerBoxCardComposition.test.ts > player box visible card composition > renders composition 
+from visible hand card ids only
+AssertionError: expected 'import { useRef, useState, useEffect,ÔÇª' to match /const visibleCardIds = primaryHandKeyÔÇª/
+
+- Expected:
+/const visibleCardIds = primaryHandKey[\s\S]*getVisibleHandCardIds\(visualRound, 
+primaryHandKey\)[\s\S]*bj-phone-view__mini-hand-composition/
+
++ Received:
+"import { useRef, useState, useEffect, useMemo, type CSSProperties, type ReactNode } from 'react';
+import type { GameState, TableViewMode } from '../types';
+import { resolveShowRoundSummaryOverlay } from '../types/table';
+import { feltSkinModifierClass, resolveTableClothName, resolveTableClothWager, resolveTableFeltSkin, 
+resolveTableTrayLabel } from '../types/tableFeltSkin';
+import {
+  claimBoxSlot,
+  defaultBlackjackSeatId,
+  isBankerReady,
+  movePlayerInOrder,
+  resolveControllerPersonId,
+  canControllerCallBox,
+} from '../engine/session';
+import { isJoinAssignedHighlight } from '../engine/session/inviteJoin';
+import {
+  blackjackHandKey,
+  doubleDownBlackjackOnState,
+  getAidAdvice,
+  getShoeDeckCount,
+  hitBlackjackOnState,
+  isInsufficientChipsMessage,
+  orderedHandKeys,
+  parseBlackjackHandKey,
+  splitBlackjackOnState,
+  standBlackjackOnState,
+  addChipToBoxStake,
+  removeLastChipFromBoxStake,
+  getStakeForBox,
+  formatBoxStakeDisplayLabel,
+  getTableMinimumBet,
+  canChangeMinimumBet,
+  setPersonPlayFlow,
+} from '../engine/blackjack';
+import { getCardById, getRemainingCardCount } from '../engine/deck';
+import { readChipDragValue } from './chipDrag';
+import {
+  CHIP_DROP_BOX_ATTR,
+  CHIP_DROP_SLOT_ATTR,
+  chipDropKey,
+  createChipPointerDragHandlers,
+  type ChipDropTarget,
+} from './chipPointerDrag';
+import { StakeChips, type ChipValue } from './ChipStack';
+import { PlayingCard } from './PlayingCard';
+import { formatBoxCardRanksLabel } from './cardDisplay';
+import { useBlackjackTableFlow } from './useBlackjackTableFlow';
+import { BlackjackFlowSettingsMenu } from './BlackjackFlowSettings';
+import { BlackjackCardView } from './BlackjackCardView';
+import { CardViewDesktopHeroArea } from './CardViewDesktopHeroArea';
+import { BankerSetupPanel } from './BankerSetupPanel';
+import { dealSpeedDisplayLabel, DEAL_SPEED_CYCLE } from './DealerBlock';
+import { BlackjackActionRow } from './BlackjackActionRow';
+import { BlackjackPlayerBoxRow } from './BlackjackPlayerBoxRow';
+import { BlackjackTrayRow } from './BlackjackTrayRow';
+import { BlackjackCommandBox } from './BlackjackCommandBox';
+import { BlackjackDealerArea } from './BlackjackDealerArea';
+import { BlackjackTableLayoutShell } from './BlackjackTableLayoutShell';
+import { isBlackjackLayoutDebugEnabled, logLayoutDebugChipTarget } from './blackjackLayoutDebug';
+import { BlackjackLayoutDebugPanel } from './BlackjackLayoutDebugPanel';
+import { BlackjackFeltClothLayer } from './BlackjackFeltClothLayer';
+import { Magic8Ball } from './magic8/Magic8Ball';
+import { buildBlackjackPlayerBoxInfo } from './blackjackPlayerBoxInfo';
+import { BlackjackPlayerBoxHead } from './BlackjackPlayerBoxes';
+import { LocalProfileSetup } from './LocalProfileSetup';
+import { PlayLedgerModal, PlayLedgerPanel } from './LedgerModals';
+import { TableSideRailShell } from './TableSideRailShell';
+import {
+  affirmChipTargetAfterPlacement,
+  applyDefaultAssignedChipTarget,
+  createEmptyLocalChipTarget,
+  getCurrentChipTargetForBetting,
+  localChipTargetsEqual,
+  logChipBetDiagnostic,
+  logChipTargetResolution,
+  reconcileLocalChipTarget,
+  selectLocalChipTarget,
+  uiFromLocalChipTarget,
+  type LocalSelectedChipTarget,
+} from './localChipTargetSelection';
+import {
+  mergeStakeChipsForSlotDisplay,
+  resolveOccupantBoxIdForSlot,
+  resolvePlaceBetPayloadTarget,
+  slotArcReactKey,
+} from './blackjackBoxPlacementContract';
+import { InsuranceDecisionOverlay } from './InsuranceDecisionOverlay';
+import { bindTapSelect, createTapSelectHandler } from './tapSelect';
+import { useMobileBoxSwipeNavigation } from '../hooks/useMobileBoxSwipeNavigation';
+import { useMobileCardViewPlaySwipe } from '../hooks/useMobileCardViewPlaySwipe';
+import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
+import { TABLE_UX } from './tableUxContract';
+import { TableInfoBar } from './TableInfoBar';
+import { buildTableInfoDisplay } from './tableInfoDisplay';
+import { AssignChipsModal } from './AssignChipsModal';
+import { ChangeMinBetModal } from './ChangeMinBetModal';
+import { TableAccountsPanel } from './TableAccountsPanel';
+import {
+  takeInsuranceOnState,
+  declineInsuranceOnState,
+  takeEvenMoneyOnState,
+  waitForBlackjackPayoutOnState,
+  getStakeBetValidationMessage,
+} from '../engine/blackjack';
+import { isTableOwner } from '../engine/session';
+import { canCurrentUserDealTable } from '../engine/session/tableDealPermission';
+import { getTableWagerDisplay } from '../engine/session/wagerDisplay';
+import {
+  addGameToPersonalLedger,
+  canAddGameToPersonalLedger,
+  hasPersonalLedgerEntryForTable,
+} from '../engine/scoreLedger/scoreLedger';
+import {
+  canOfferGameEndIou,
+  getGameEndIouDisabledReason,
+} from '../engine/scoreLedger/gameEndIou';
+import { buildRoundResultSummary } from '../engine/blackjack';
+import { buildRoundSummaryOverlayModel } from '../engine/blackjack/roundSummaryOverlay';
+import { buildBlackjackCommandText } from './tableCommandDisplay';
+import { useHandTransitionHold } from './useHandTransitionHold';
+import { RoundSummaryOverlay } from './RoundSummaryOverlay';
+import {
+  MOBILE_GAME_OVER_OVERLAY_DELAY_MS,
+  ROUND_SUMMARY_OVERLAY_DELAY_MS,
+} from './roundSummaryOverlayTiming';
+import {
+  formatPlaceBetError,
+  placeBetPayloadFromTarget,
+} from '../engine/blackjack/chipPlacement';
+import {
+  canUserAssignChips,
+  canUserChangeProtocol,
+  canViewerResetTable,
+} from '../engine/table/adminControls';
+import {
+  getDisplayedHandValue,
+  getVisibleDealerCardIds,
+  getVisibleHandCardIds,
+} from './blackjackDealingContract';
+import {
+  getBlackjackProtocolForState,
+  getBlackjackProtocolOrDefault,
+  listBlackjackProtocolPresets,
+  setBlackjackProtocolOnState,
+  updateBlackjackFlowSettings,
+} from '../engine/blackjack';
+import {
+  canShowPlayerDecisionControls,
+  resolveViewerActionPermission,
+  resolvePlayerHandActionOptions,
+  getPrimaryInsuranceActionForController,
+} from './blackjackActionContract';
+import {
+  getActiveTurnBoxId,
+  isPlayerTurnPhase,
+} from './blackjackViewPhase';
+import { getDisplayBlackjackProtocolPhase } from '../engine/blackjack/protocol';
+import {
+  BET_BOX_PULSE,
+  BOX_BORDER_TURN,
+  getBoxActivePulseClassName,
+  getBoxCardVisualClasses,
+  resolveBoxBorderVisualState,
+} from './cardViewBox';
+import { boxStakeLabelClassName, cardColumnHandValueClassName, resolvePrimaryHandValueLabel } from 
+'./boxHandValueDisplay';
+import {
+  formatBoxNetResultLabel,
+  resolveBoxBetAmountDuringPlay,
+  resolveBoxNetChipsForHands,
+  boxHadActiveHandInRound,
+  boxNetResultTone,
+} from './boxBetResultDisplay';
+import {
+  cardAreaOutcomeMarkerClass,
+  cardAreaOutcomeMarkerText,
+  cardAreaOutcomeStackBadgeText,
+  cardAreaOutcomeToneFromMarker,
+  cardAreaOutcomeUsesStackBadge,
+  type CardAreaOutcomeMarker,
+} from './cardAreaOutcomeDisplay';
+import {
+  canShowEvenMoneyDecisionUi,
+  canShowInsuranceDecisionUi,
+  createUiRevealContext,
+  resolveGatedCardAreaOutcomeMarker,
+  resolveUiProtocolPhase,
+} from './blackjackUiRenderContract';
+import { shouldShowBoxHandResultMarkers } from './boxHandStatusDisplay';
+import { buildBlackjackCountByBoxDisplay } from './blackjackCountByBoxDisplay';
+import { GameOverActionOverlay, type GameOverCompleteOptions, type GameOverIouFeedback } from 
+'./GameOverActionOverlay';
+import { BLACKJACK_GAME_OVER_LAYOUT } from './blackjackGameOverContract';
+import { runGameOverCompleteAction } from './gameOverActionFlow';
+import { buildGameOverPresentationModel } from './gameOverPresentation';
+import { AceDecisionButtonRow } from './blackjackAceDecisionActions';
+import {
+  buildViewerIdentityHints,
+  resolveViewerPersonIdForTable,
+} from './viewerIdentity';
+import type { AuthUser } from '../api/client';
+import { MAX_TABLE_BOXES } from '../types/table';
+import {
+  arcSlotRotation,
+  arcSplitCompanionRotation,
+  DEFAULT_VISIBLE_TABLE_BOXES,
+  filterVisibleBoxSlots,
+  resolveEffectiveVisibleBoxCount,
+  visibleBoxArcClass,
+} from './tableBoxLayout';
+import { loadProfile, type PlayFlowAutoStand } from '../storage/profileStorage';
+import { loadSettings } from '../storage/settingsStorage';
+import { isOnlineModeEnabled } from '../api/config';
+import {
+  useIsMobileViewport,
+  useIsUltraNarrowViewport,
+  shouldShowMobileFullTableFallback,
+} from '../hooks/useIsMobileViewport';
+import { useSequentialCardReveal } from '../hooks/useSequentialCardReveal';
+import { FullTableMobileFallback } from './FullTableMobileFallback';
+import {
+  getDeviceView,
+  getViewRootClass,
+  resolveInitialViewMode,
+} from './tableViewContract';
+import { getBlackjackDesktopLayoutPhase } from './blackjackDesktopLayoutPhase';
+import { SXM_LAYOUT, sxmSectionProps } from './sxmLayoutContract';
+import { applyBlackjackTableTheme } from '../design/blackjackTableTheme';
+import { FULL_TABLE_CARD_AREA_CLASS } from './blackjackLayoutContract';
+import { MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
+import type { TableResetSetupVariant } from './TableStakePanel';
+import './BlackjackPanel.css';
+
+function initialSideRailPanel(): SideRailPanel {
+  if (typeof window === 'undefined') {
+    return 'thisTable';
+  }
+  return window.matchMedia(MOBILE_LAYOUT_MEDIA).matches ? null : 'thisTable';
+}
+
+const MAX_BOXES = MAX_TABLE_BOXES;
+
+interface BlackjackPanelProps {
+  gameState: GameState;
+  onGameStateChange: (state: GameState) => void;
+  onJoinTable?: () => void;
+  onInviteTable?: () => void;
+  onLeaveBox?: () => void;
+  onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
+  onlineActionInFlight?: boolean;
+  profileOpen?: boolean;
+  onProfileOpenChange?: (open: boolean) => void;
+  onSaveTable?: () => void;
+  onExitTable?: () => void;
+  onBeginTableReset?: (variant?: TableResetSetupVariant) => void;
+  onlineTableId?: string | null;
+  viewerAuth?: Pick<AuthUser, 'email' | 'displayName'> | null;
+}
+
+export function BlackjackPanel({
+  gameState,
+  onGameStateChange,
+  onInviteTable,
+  onlineDispatch,
+  onlineActionInFlight = false,
+  profileOpen: profileOpenProp,
+  onProfileOpenChange,
+  onSaveTable,
+  onExitTable,
+  onBeginTableReset,
+  onlineTableId = null,
+  viewerAuth = null,
+}: BlackjackPanelProps) {
+  const { session, ledger, deck, blackjack, blackjackSettings, tableViewMode, tableMeta } =
+    gameState;
+  const gameStateRef = useRef(gameState);
+  const optimisticStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
+  optimisticStateRef.current = gameState;
+  const layoutRootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    applyBlackjackTableTheme(gameState.blackjackTableTheme ?? null, layoutRootRef.current);
+  }, [gameState.blackjackTableTheme]);
+
+  const [error, setError] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [sideRailPanel, setSideRailPanel] = useState<SideRailPanel>(initialSideRailPanel);
+  const [mobileSidePanelTab, setMobileSidePanelTab] = useState<'thisTable' | 'playLedger' | 'settings'>(
+    'thisTable',
+  );
+  const [activeTablePanel, setActiveTablePanel] = useState<'playLedger' | 'settings' | null>(null);
+  const [profileOpenInternal, setProfileOpenInternal] = useState(
+    () => !isOnlineModeEnabled() && !loadProfile().name.trim(),
+  );
+  const profileOpen = profileOpenProp ?? profileOpenInternal;
+  const setProfileOpen = onProfileOpenChange ?? setProfileOpenInternal;
+  const [personalLedgerAdded, setPersonalLedgerAdded] = useState(false);
+  const [gameOverOverlayDismissed, setGameOverOverlayDismissed] = useState(false);
+  const [gameOverOverlayConfirmed, setGameOverOverlayConfirmed] = useState(false);
+  const [iouPending, setIouPending] = useState(false);
+  const [gameOverActionPending, setGameOverActionPending] = useState(false);
+  const [iouFeedback, setIouFeedback] = useState<GameOverIouFeedback | null>(null);
+  const [assignChipsOpen, setAssignChipsOpen] = useState(false);
+  const [minBetOpen, setMinBetOpen] = useState(false);
+  const [tableAidTip, setTableAidTip] = useState<string | null>(null);
+  const [magic8Answer, setMagic8Answer] = useState<string | null>(null);
+  const [roundSummaryDismissed, setRoundSummaryDismissed] = useState(false);
+  const [roundSummaryDelayReady, setRoundSummaryDelayReady] = useState(false);
+  const [gameOverDelayReady, setGameOverDelayReady] = useState(false);
+  const [insuranceDecisionPending, setInsuranceDecisionPending] = useState(false);
+  const [expandedVisibleBoxCount, setExpandedVisibleBoxCount] = useState(DEFAULT_VISIBLE_TABLE_BOXES);
+  /** Single local chip target ÔÇö tray pulse and placement both read from here. */
+  const [localChipSelection, setLocalChipSelection] = useState<LocalSelectedChipTarget>(() =>
+    createEmptyLocalChipTarget(),
+  );
+  const localSelectedChipTargetRef = useRef<LocalSelectedChipTarget>(createEmptyLocalChipTarget());
+  const betInFlightSlotsRef = useRef<Set<number>>(new Set());
+  const betChainBySlotRef = useRef<Map<number, Promise<void>>>(new Map());
+  const [pendingOnlineStakesBySlot, setPendingOnlineStakesBySlot] = useState<
+    Record<number, ChipValue[]>
+  >({});
+  const pendingOnlineStakesBySlotRef = useRef<Record<number, ChipValue[]>>({});
+  const tapSelectRef = useRef(createTapSelectHandler());
+  const SHUFFLE_ANIM_DURATION_MS = 3000;
+  const [shuffleAnimating, setShuffleAnimating] = useState(false);
+  const shuffleAnimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (shuffleAnimTimerRef.current) {
+        clearTimeout(shuffleAnimTimerRef.current);
+        shuffleAnimTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  const profile = loadProfile();
+  const controllerName = profile.name.trim() || tableMeta.controllerName;
+  const viewerHints = buildViewerIdentityHints(gameState, onlineTableId, viewerAuth);
+  const viewerPersonId = resolveViewerPersonIdForTable(gameState, onlineTableId, viewerAuth);
+  const canUserDealTable = canCurrentUserDealTable(gameState, viewerPersonId);
+  const tableOwner = isTableOwner(gameState, controllerName);
+  const canDriveTableAutomation =
+    tableOwner || controllerName === tableMeta.controllerName;
+
+  const isMobileViewport = useIsMobileViewport();
+  const [localViewMode, setLocalViewMode] = useState<TableViewMode>(() =>
+    resolveInitialViewMode(isMobileViewport, tableViewMode),
+  );
+  const { displayState: tableVisualState, isRevealing, activeHandRevealComplete } =
+    useSequentialCardReveal(gameState, {
+    onlineMode: Boolean(onlineDispatch) || isOnlineModeEnabled(),
+  });
+  const cardRevealComplete = !isRevealing;
+  const uiRevealContext = useMemo(
+    () => createUiRevealContext(gameState, tableVisualState, cardRevealComplete),
+    [gameState, tableVisualState, cardRevealComplete],
+  );
+  const protocolPhaseForHold = getDisplayBlackjackProtocolPhase(
+    gameState,
+    cardRevealComplete,
+    tableVisualState,
+  );
+  const handTransitionHold = useHandTransitionHold(gameState, protocolPhaseForHold, {
+    cardRevealComplete,
+    activeHandRevealComplete,
+    isRevealing,
+    cardViewMode: localViewMode === 'card',
+    isHandRevealComplete: (handKey) => {
+      const logicalHand = gameState.blackjack?.playerHands[handKey];
+      const visualHand = tableVisualState.blackjack?.playerHands[handKey];
+      if (!logicalHand || !visualHand) {
+        return true;
+      }
+      const logicalCount = logicalHand.cardIds.filter(Boolean).length;
+      const visualCount = visualHand.cardIds.filter(Boolean).length;
+      return visualCount >= logicalCount;
+    },
+  });
+
+  const {
+    centerStatus,
+    flowError,
+    bettingOpen,
+    canDeal,
+    dealBlockReason,
+    dealActionPending,
+    nextRoundPending,
+    protocolPhase,
+    hasStakes,
+    awaitingNextRound,
+    gameEnded,
+    gameOverMessage,
+    handlePrimaryDealAction: runPrimaryDealAction,
+    handleNextRound,
+    handleDealNextCard,
+    handleDrawBank,
+    handleShuffleToStart,
+    engineStatus,
+    initialDealStaged,
+  } = useBlackjackTableFlow(
+    gameState,
+    onGameStateChange,
+    onlineDispatch,
+    onlineActionInFlight,
+    canDriveTableAutomation,
+    cardRevealComplete,
+    handTransitionHold.suppressEngineAutoAdvance,
+    tableVisualState,
+    viewerPersonId,
+  );
+
+  // Full Table felt only degrades to the \"Use Card View\" hint on ultra-narrow
+  // screens (< 360px). All normal phone widths render the real Full Table.
+  const isUltraNarrowViewport = useIsUltraNarrowViewport();
+  // View mode is CLIENT-LOCAL: it must never be sourced from server-replaced
+  // gameState, or every table:update would flip Card View back to Full Table.
+  const [layoutDebug, setLayoutDebug] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return isBlackjackLayoutDebugEnabled(window.location?.search ?? '');
+  });
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+    const syncLayoutDebug = () => {
+      setLayoutDebug(isBlackjackLayoutDebugEnabled(window.location?.search ?? ''));
+    };
+    syncLayoutDebug();
+    window.addEventListener('popstate', syncLayoutDebug);
+    return () => window.removeEventListener('popstate', syncLayoutDebug);
+  }, []);
+  const round = blackjack;
+  const visualRound = tableVisualState.blackjack;
+  const visualDeck = tableVisualState.deck;
+  const hasDeck = deck !== null;
+  const deckCount = deck ? getShoeDeckCount(deck) : blackjackSettings.numberOfDecks;
+  const remaining = deck ? getRemainingCardCount(deck) : 0;
+  const viewMode = localViewMode;
+  const deviceView = getDeviceView(isMobileViewport);
+  const isFullTableDesktop = deviceView === 'desktop' && viewMode === 'full';
+  const isFullTableMobile = deviceView === 'mobile' && viewMode === 'full';
+  const isCardViewDesktop = deviceView === 'desktop' && viewMode === 'card';
+  const isCardViewMobile = deviceView === 'mobile' && viewMode === 'card';
+  const viewRootClass = getViewRootClass(deviceView, viewMode);
+  const desktopLayoutPhase =
+    deviceView === 'desktop' ? getBlackjackDesktopLayoutPhase(protocolPhase, gameEnded) : undefined;
+  const { selectedBettingBoxId: selectedBettingBoxIdForUi, selectedBettingSlotNumber } =
+    uiFromLocalChipTarget(localChipSelection.target, gameState);
+  const focusFallbackBoxId = defaultBlackjackSeatId(gameState);
+  const flowSettings = gameState.blackjackFlowSettings;
+  const canAssignChips = canUserAssignChips(gameState, controllerName);
+  const minimumBet = getTableMinimumBet(gameState);
+  const canChangeMinBet = tableOwner && canChangeMinimumBet(gameState);
+  const canChangeProtocol =
+    tableOwner && canUserChangeProtocol(gameState, controllerName) && canChangeMinimumBet(gameState);
+  const canChangeDealSpeed = tableOwner && canChangeMinimumBet(gameState);
+  const canResetTable = canViewerResetTable(gameState, viewerPersonId, controllerName);
+  const activeProtocol = getBlackjackProtocolForState(gameState);
+  const activeBoxId = getActiveTurnBoxId(gameState, protocolPhase);
+  const uiActiveBoxId = handTransitionHold.holdActiveBoxId ?? activeBoxId;
+  const playerDecisionActionsEnabled =
+    !handTransitionHold.playerActionsBlocked && !dealActionPending && !onlineActionInFlight;
+
+  const magic8ShakeAllowed =
+    !gameEnded &&
+    isPlayerTurnPhase(protocolPhase) &&
+    resolveViewerActionPermission(gameState, viewerPersonId).canAct;
+
+  useEffect(() => {
+    if (gameState.tableMeta.gameStatus === 'ended') {
+      setPersonalLedgerAdded(hasPersonalLedgerEntryForTable(gameState.session.id));
+    }
+  }, [gameState.tableMeta.gameStatus, gameState.session.id]);
+
+  useEffect(() => {
+    const local = localSelectedChipTargetRef.current;
+    if (local.hasUserSelected) {
+      return;
+    }
+    const next = applyDefaultAssignedChipTarget(local, gameStateRef.current, viewerPersonId);
+    if (!localChipTargetsEqual(local, next)) {
+      commitLocalChipTarget(next);
+    }
+  }, [viewerPersonId, gameState.tableMeta.boxSlots, gameState.session.id]);
+
+  useEffect(() => {
+    const local = localSelectedChipTargetRef.current;
+    const online = Boolean(onlineDispatch);
+    let next = reconcileLocalChipTarget(local, gameState, online);
+    if (bettingOpen && local.hasUserSelected && local.target) {
+      next = affirmChipTargetAfterPlacement(
+        { ...local, hasUserSelected: true },
+        gameState,
+        local.target.slotNumber,
+        online,
+      );
+    }
+    if (!localChipTargetsEqual(localSelectedChipTargetRef.current, next)) {
+      commitLocalChipTarget(next);
+    }
+  }, [
+    gameState.tableMeta.boxSlots,
+    gameState.tableMeta.boxStakes,
+    gameState.session.boxSlotNumbers,
+    onlineDispatch,
+    gameState.session.id,
+    bettingOpen,
+  ]);
+
+  useEffect(() => {
+    if (!onlineDispatch) {
+      return;
+    }
+    const pending = pendingOnlineStakesBySlotRef.current;
+    const slotsToClear = Object.keys(pending)
+      .map(Number)
+      .filter((slotNumber) => {
+        const boxId = resolveOccupantBoxIdForSlot(gameState, slotNumber);
+        return boxId != null && getStakeForBox(gameState, boxId) > 0;
+      });
+    if (slotsToClear.length === 0) {
+      return;
+    }
+    const next = { ...pendingOnlineStakesBySlotRef.current };
+    for (const slotNumber of slotsToClear) {
+      delete next[slotNumber];
+    }
+    pendingOnlineStakesBySlotRef.current = next;
+    setPendingOnlineStakesBySlot(next);
+  }, [gameState.tableMeta.boxStakes, gameState.tableMeta.boxSlots, onlineDispatch]);
+
+  useEffect(() => {
+    if (handTransitionHold.holdActiveHandKey) {
+      return;
+    }
+    if (round?.status !== 'player-turns' || !round.activeHandKey) {
+      return;
+    }
+    const { playerId } = parseBlackjackHandKey(round.activeHandKey);
+    const current = gameStateRef.current;
+    if (current.selectedSeatId !== playerId) {
+      onGameStateChange({ ...current, selectedSeatId: playerId });
+    }
+  }, [round?.status, round?.activeHandKey, handTransitionHold.holdActiveHandKey, onGameStateChange]);
+
+  useEffect(() => {
+    return () => {
+      if (shuffleAnimTimerRef.current) {
+        clearTimeout(shuffleAnimTimerRef.current);
+      }
+    };
+  }, []);
+
+  const playingFor = getTableWagerDisplay(gameState);
+  const effectiveVisibleBoxCount = resolveEffectiveVisibleBoxCount(
+    tableMeta.boxSlots,
+    expandedVisibleBoxCount,
+  );
+  const displaySlots = filterVisibleBoxSlots(tableMeta.boxSlots, effectiveVisibleBoxCount);
+  const visibleArcClass = visibleBoxArcClass(effectiveVisibleBoxCount);
+  const canAddVisibleBox = effectiveVisibleBoxCount < MAX_BOXES;
+  const bankerReady = isBankerReady(gameState);
+  const canSaveToLedger = canAddGameToPersonalLedger(gameState);
+  const viewerEmail = viewerAuth?.email?.trim() || profile.email.trim();
+  const canAddIou = canOfferGameEndIou(gameState, viewerEmail);
+  const iouDisabledReason = canAddIou ? undefined : getGameEndIouDisabledReason(gameState);
+  // Consolidated end-of-round summary, shown once (in the dealer block, above
+  // the Next Round button). Per-box result chips are intentionally not repeated.
+  const roundSummaryLines = useMemo(
+    () => (awaitingNextRound && !gameEnded ? buildRoundResultSummary(gameState) : []),
+    [awaitingNextRound, gameEnded, gameState],
+  );
+  const roundSummaryOverlayModel = useMemo(
+    () => (awaitingNextRound && !gameEnded ? buildRoundSummaryOverlayModel(gameState) : null),
+    [awaitingNextRound, gameEnded, gameState],
+  );
+  const showRoundSummaryOverlay =
+    Boolean(roundSummaryOverlayModel) &&
+    resolveShowRoundSummaryOverlay(tableMeta) &&
+    !roundSummaryDismissed &&
+    cardRevealComplete &&
+    roundSummaryDelayReady;
+  const tableCommand = useMemo(
+    () =>
+      buildBlackjackCommandText({
+        gameState,
+        displayState: tableVisualState,
+        cardRevealComplete,
+        gameEnded,
+        gameOverMessage,
+        centerStatus,
+        protocolPhase,
+        roundSummaryLines,
+        controllerName,
+        viewerPersonId,
+        viewerHints,
+      }),
+    [
+      gameState,
+      tableVisualState,
+      cardRevealComplete,
+      gameEnded,
+      gameOverMessage,
+      centerStatus,
+      protocolPhase,
+      roundSummaryLines,
+      controllerName,
+      viewerPersonId,
+      viewerHints,
+    ],
+  );
+
+  const uiProtocolPhase = useMemo(
+    () => resolveUiProtocolPhase(uiRevealContext),
+    [uiRevealContext],
+  );
+
+  const layoutDebugBoxReveal = useMemo(() => {
+    if (!layoutDebug) {
+      return '';
+    }
+    const round = gameState.blackjack;
+    if (!round) {
+      return 'n/a';
+    }
+    return Object.entries(round.playerHands)
+      .map(([handKey, hand]) => {
+        const { playerId } = parseBlackjackHandKey(handKey);
+        const slot = gameState.session.boxSlotNumbers?.[playerId] ?? '?';
+        const gameResult = hand.actionStatus ?? round.outcomes[handKey] ?? 'ÔÇö';
+        const uiMarker = resolveGatedCardAreaOutcomeMarker(uiRevealContext, {
+          showResults: true,
+          outcome: round.outcomes[handKey],
+          actionStatus: hand.actionStatus,
+          handKey,
+        });
+        return `B${slot}:${gameResult}/${uiMarker ?? 'hidden'}`;
+      })
+      .join(' ┬À ');
+  }, [layoutDebug, gameState, uiRevealContext]);
+
+  const showGameOverActions =
+    gameEnded && !gameOverOverlayDismissed && !gameOverOverlayConfirmed;
+  const gameEndRevealReady = cardRevealComplete || gameEnded;
+  const showGameOverModal =
+    showGameOverActions && gameEndRevealReady && gameOverDelayReady;
+
+  const gameOverPresentation = useMemo(
+    () => buildGameOverPresentationModel(gameState, gameOverMessage, viewerPersonId, magic8Answer),
+    [gameState, gameOverMessage, viewerPersonId, magic8Answer, gameState.session.id],
+  );
+
+  useEffect(() => {
+    if (!gameEnded) {
+      setGameOverOverlayDismissed(false);
+      setGameOverOverlayConfirmed(false);
+      setPersonalLedgerAdded(false);
+      setIouFeedback(null);
+      setIouPending(false);
+      setGameOverActionPending(false);
+    }
+  }, [gameEnded, gameState.session.id]);
+
+  useEffect(() => {
+    if (!awaitingNextRound) {
+      setRoundSummaryDismissed(false);
+      setRoundSummaryDelayReady(false);
+      return;
+    }
+    if (gameEnded || !cardRevealComplete) {
+      setRoundSummaryDelayReady(false);
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setRoundSummaryDelayReady(true),
+      ROUND_SUMMARY_OVERLAY_DELAY_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [awaitingNextRound, gameEnded, cardRevealComplete]);
+
+  useEffect(() => {
+    if (!gameEnded) {
+      setGameOverDelayReady(false);
+      return;
+    }
+    if (!gameEndRevealReady) {
+      setGameOverDelayReady(false);
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setGameOverDelayReady(true),
+      MOBILE_GAME_OVER_OVERLAY_DELAY_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [gameEnded, gameEndRevealReady, gameState.session.id]);
+
+  useEffect(() => {
+    if (protocolPhase !== 'insurance' || !round?.insuranceOfferPending) {
+      setInsuranceDecisionPending(false);
+    }
+  }, [
+    protocolPhase,
+    round?.insuranceOfferPending,
+    round?.insuranceBets,
+    round?.insuranceDeclined,
+    round?.insuranceSkipReasons,
+    round?.insuranceStakerDecisions,
+  ]);
+
+  function handleAddToPersonalLedger() {
+    setError(null);
+    if (onlineDispatch) {
+      void onlineDispatch('addGameToPersonalLedger', {}).then(() => setPersonalLedgerAdded(true)).catch((err) => {
+        setError(err instanceof Error ? err.message : 'Could not add to personal ledger');
+      });
+      return;
+    }
+    try {
+      addGameToPersonalLedger(gameStateRef.current, {
+        savedByEmail: viewerEmail || undefined,
+      });
+      setPersonalLedgerAdded(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not add to personal ledger');
+    }
+  }
+
+  async function completeGameOverAction(options: GameOverCompleteOptions): Promise<void> {
+    if (gameOverActionPending || iouPending) {
+      return;
+    }
+
+    setGameOverActionPending(true);
+    setError(null);
+    if (options.createIou) {
+      setIouPending(true);
+    }
+
+    function dismissGameOverOverlayForAction(nextAction: GameOverCompleteOptions['nextAction']) {
+      if (nextAction === 'new-game') {
+        setGameOverOverlayConfirmed(true);
+      } else {
+        setGameOverOverlayDismissed(true);
+      }
+      setSideRailPanel(null);
+    }
+
+    try {
+      const result = await runGameOverCompleteAction(options, {
+        getState: () => gameStateRef.current,
+        addToPersonalLedger: handleAddToPersonalLedger,
+        beginNewGame: () => {
+          dismissGameOverOverlayForAction('new-game');
+          onBeginTableReset?.('newGame');
+        },
+        exitTable: () => {
+          dismissGameOverOverlayForAction('exit-table');
+          onExitTable?.();
+        },
+        setIouFeedback,
+        canResetTable: Boolean(onBeginTableReset && canResetTable),
+        canExitTable: Boolean(onExitTable),
+      });
+
+      if (result === 'blocked') {
+        return;
+      }
+    } finally {
+      setGameOverActionPending(false);
+      setIouPending(false);
+    }
+  }
+
+  function handleGameOverDismiss() {
+    setGameOverOverlayDismissed(true);
+    setIouFeedback(null);
+  }
+
+  function run(
+    action: (state: GameState) => GameState,
+    online?: { type: string; payload?: Record<string, unknown> },
+  ) {
+    setError(null);
+    if (handTransitionHold.playerActionsBlocked) {
+      return;
+    }
+    if (onlineDispatch && online) {
+      if (onlineActionInFlight) {
+        return;
+      }
+      void onlineDispatch(online.type, online.payload ?? {}).catch((err) => {
+        const msg = err instanceof Error ? err.message : 'Action failed';
+        if (msg === 'Action already in progress') {
+          return;
+        }
+        setError(msg);
+      });
+      return;
+    }
+    try {
+      onGameStateChange(action(gameStateRef.current));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Action failed');
+    }
+  }
+
+  function setViewMode(mode: TableViewMode) {
+    setLocalViewMode(mode);
+    // Mirror into gameState for offline persistence only; online broadcasts
+    // never carry it back because the panel reads from localViewMode.
+    run((s) => ({ ...s, tableViewMode: mode }));
+  }
+
+  function commitLocalChipTarget(next: LocalSelectedChipTarget) {
+    localSelectedChipTargetRef.current = next;
+    setLocalChipSelection(next);
+  }
+
+  function selectLocalTarget(slotNumber: number) {
+    commitLocalChipTarget(selectLocalChipTarget(localSelectedChipTargetRef.current, slotNumber));
+  }
+
+  function addPendingOnlineStake(slotNumber: number, amount: ChipValue) {
+    const prev = pendingOnlineStakesBySlotRef.current[slotNumber] ?? [];
+    const next = {
+      ...pendingOnlineStakesBySlotRef.current,
+      [slotNumber]: [...prev, amount],
+    };
+    pendingOnlineStakesBySlotRef.current = next;
+    setPendingOnlineStakesBySlot(next);
+  }
+
+  function rollbackPendingOnlineStake(slotNumber: number) {
+    const prev = pendingOnlineStakesBySlotRef.current[slotNumber];
+    if (!prev?.length) {
+      return;
+    }
+    const chips = prev.slice(0, -1);
+    const next = { ...pendingOnlineStakesBySlotRef.current };
+    if (chips.length === 0) {
+      delete next[slotNumber];
+    } else {
+      next[slotNumber] = chips;
+    }
+    pendingOnlineStakesBySlotRef.current = next;
+    setPendingOnlineStakesBySlot(next);
+  }
+
+  function preserveLocalChipTargetAfterStateSync(
+    nextState?: GameState,
+    placedSlotNumber?: number,
+  ) {
+    const state = nextState ?? gameStateRef.current;
+    const online = Boolean(onlineDispatch);
+    const next =
+      placedSlotNumber != null
+        ? affirmChipTargetAfterPlacement(
+            localSelectedChipTargetRef.current,
+            state,
+            placedSlotNumber,
+            online,
+          )
+        : reconcileLocalChipTarget(localSelectedChipTargetRef.current, state, online);
+    commitLocalChipTarget(next);
+  }
+
+  function resolveActiveChipTrayTarget(explicitDropSlotNumber?: number | null) {
+    return getCurrentChipTargetForBetting({
+      ref: localSelectedChipTargetRef.current,
+      state: localChipSelection,
+      gameState: gameStateRef.current,
+      online: Boolean(onlineDispatch),
+      viewerPersonId,
+      visibleBoxCount: effectiveVisibleBoxCount,
+      explicitDropSlotNumber,
+    });
+  }
+
+  function applyOptimisticChipPlacement(slotNumber: number, amount: ChipValue, online: boolean): GameState {
+    let state = optimisticStateRef.current;
+    let boxId = resolveOccupantBoxIdForSlot(state, slotNumber);
+    if (!boxId) {
+      if (online) {
+        return state;
+      }
+      state = claimBoxSlot(state, slotNumber);
+      boxId = resolveOccupantBoxIdForSlot(state, slotNumber);
+      if (!boxId) {
+        throw new Error('Could not claim box');
+      }
+    }
+    const personId = resolveControllerPersonId(state, controllerName);
+    const next = addChipToBoxStake(state, boxId, amount, personId ?? undefined);
+    optimisticStateRef.current = next;
+    gameStateRef.current = next;
+    return next;
+  }
+
+  async function placeBetAtTargetCore(slotNumber: number, amount: ChipValue): Promise<void> {
+    const online = Boolean(onlineDispatch);
+    selectLocalTarget(slotNumber);
+
+    logChipBetDiagnostic({
+      stage: 'tap-target',
+      selectedTarget: localSelectedChipTargetRef.current.target,
+      slotNumber,
+      optimisticBoxId: resolveOccupantBoxIdForSlot(gameStateRef.current, slotNumber),
+    });
+
+    const inFlight = betInFlightSlotsRef.current.has(slotNumber);
+    let payloadTarget;
+    try {
+      payloadTarget = resolvePlaceBetPayloadTarget(
+        gameStateRef.current,
+        slotNumber,
+        online,
+        inFlight,
+      );
+    } catch (err) {
+      setError(formatPlaceBetError(err));
+      return;
+    }
+    const payload = placeBetPayloadFromTarget(payloadTarget, amount);
+
+    logChipBetDiagnostic({
+      stage: 'payload',
+      selectedTarget: localSelectedChipTargetRef.current.target,
+      payload,
+      slotNumber,
+    });
+
+    if (onlineDispatch) {
+      setError(null);
+      const snapshot = gameStateRef.current;
+      const hadOccupant = resolveOccupantBoxIdForSlot(snapshot, slotNumber) != null;
+      try {
+        if (hadOccupant) {
+          const optimistic = applyOptimisticChipPlacement(slotNumber, amount, true);
+          onGameStateChange(optimistic);
+          logChipBetDiagnostic({
+            stage: 'optimistic',
+            selectedTarget: localSelectedChipTargetRef.current.target,
+            optimisticBoxId: resolveOccupantBoxIdForSlot(optimistic, slotNumber),
+            slotNumber,
+          });
+        } else {
+          addPendingOnlineStake(slotNumber, amount);
+          logChipBetDiagnostic({
+            stage: 'optimistic',
+            selectedTarget: localSelectedChipTargetRef.current.target,
+            optimisticBoxId: null,
+            slotNumber,
+          });
+        }
+        preserveLocalChipTargetAfterStateSync(undefined, slotNumber);
+        betInFlightSlotsRef.current.add(slotNumber);
+      } catch (err) {
+        setError(formatPlaceBetError(err));
+        return;
+      }
+      try {
+        await onlineDispatch('placeBet', payload);
+        logChipBetDiagnostic({
+          stage: 'reconcile',
+          selectedTarget: localSelectedChipTargetRef.current.target,
+          slotNumber,
+        });
+        preserveLocalChipTargetAfterStateSync(undefined, slotNumber);
+      } catch (err) {
+        onGameStateChange(snapshot);
+        if (!hadOccupant) {
+          rollbackPendingOnlineStake(slotNumber);
+        }
+        logChipBetDiagnostic({
+          stage: 'error',
+          selectedTarget: localSelectedChipTargetRef.current.target,
+          slotNumber,
+          message: formatPlaceBetError(err),
+        });
+        preserveLocalChipTargetAfterStateSync(snapshot, slotNumber);
+        setError(formatPlaceBetError(err));
+      } finally {
+        betInFlightSlotsRef.current.delete(slotNumber);
+      }
+      return;
+    }
+
+    setError(null);
+    try {
+      const nextState = applyOptimisticChipPlacement(slotNumber, amount, false);
+      onGameStateChange(nextState);
+      preserveLocalChipTargetAfterStateSync(nextState, slotNumber);
+    } catch (err) {
+      setError(formatPlaceBetError(err));
+    }
+  }
+
+  function placeBetAtTarget(slotNumber: number, amount: ChipValue) {
+    const prev = betChainBySlotRef.current.get(slotNumber) ?? Promise.resolve();
+    const chained = prev
+      .catch(() => {})
+      .then(() => placeBetAtTargetCore(slotNumber, amount));
+    betChainBySlotRef.current.set(slotNumber, chained);
+    void chained;
+  }
+
+  function selectBox(boxId: string) {
+    const slot = gameStateRef.current.tableMeta.boxSlots.find((s) => s.playerId === boxId);
+    if (slot) {
+      selectLocalTarget(slot.slotNumber);
+      return;
+    }
+    const slotNum = gameStateRef.current.session.boxSlotNumbers?.[boxId];
+    if (slotNum != null) {
+      selectLocalTarget(slotNum);
+    }
+  }
+
+  function bindBoxTapSelect(action: () => void) {
+    return bindTapSelect(tapSelectRef.current, action);
+  }
+
+
+  function removeLastChipFromBox(boxId: string) {
+    run((s) => removeLastChipFromBoxStake(s, boxId), { type: 'retractChip', payload: { boxId } });
+  }
+
+  function handlePlayFlowChange(personId: string, playFlow: PlayFlowAutoStand) {
+    run((s) => setPersonPlayFlow(s, personId, playFlow));
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+  }
+
+  function handleSlotChipDrop(slotNumber: number, e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDropTargetId(null);
+    if (!bettingOpen) {
+      return;
+    }
+    const value = readChipDragValue(e.dataTransfer);
+    if (value === null) {
+      return;
+    }
+
+    selectLocalTarget(slotNumber);
+    placeBetAtTarget(slotNumber, value);
+  }
+
+  function handleClaimOrSelectSlot(slotNumber: number) {
+    if (!tableMeta.boxSlots.some((s) => s.slotNumber === slotNumber)) {
+      return;
+    }
+    selectLocalTarget(slotNumber);
+  }
+
+  function handleChipTrayClick(value: ChipValue) {
+    const result = resolveActiveChipTrayTarget();
+    if (layoutDebug) {
+      logLayoutDebugChipTarget({
+        refTarget: localSelectedChipTargetRef.current.target,
+        refHasUserSelected: localSelectedChipTargetRef.current.hasUserSelected,
+        stateTarget: localChipSelection.target,
+        result,
+      });
+    }
+    if (!result.ok) {
+      const local = localSelectedChipTargetRef.current;
+      const ui = uiFromLocalChipTarget(local.target ?? localChipSelection.target, gameStateRef.current);
+      logChipTargetResolution(result.reason, {
+        ...ui,
+        hasUserSelected: local.hasUserSelected || localChipSelection.hasUserSelected,
+        visibleBoxCount: effectiveVisibleBoxCount,
+      });
+      setError('Tap a box to bet');
+      return;
+    }
+    placeBetAtTarget(result.slotNumber, value);
+  }
+
+  function renderCard(cardId: string, faceDown = false, compact = true, reactKey?: string) {
+    if (!visualDeck) {
+      return null;
+    }
+    const card = getCardById(visualDeck, cardId);
+    if (!card) {
+      return null;
+    }
+    return (
+      <PlayingCard key={reactKey ?? cardId} card={card} compact={compact} faceDown={faceDown} animationMode=\"slide\" 
+/>
+    );
+  }
+
+  const dealerCards =
+    visualRound && visualDeck ? getVisibleDealerCardIds(tableVisualState) : [];
+  const showHoleHidden = Boolean(
+    round?.dealerHoleHidden &&
+      round.status !== 'resolved' &&
+      round.status !== 'bank-turn' &&
+      round.status !== 'banking',
+  );
+  const handKeysByBox = new Map<string, string[]>();
+  if (visualRound) {
+    for (const key of orderedHandKeys(session, visualRound)) {
+      const { playerId } = visualRound.playerHands[key]!;
+      const list = handKeysByBox.get(playerId) ?? [];
+      list.push(key);
+      handKeysByBox.set(playerId, list);
+    }
+  }
+
+  function resolveArcSlotHandKeys(boxId: string | null): string[] {
+    if (!boxId) {
+      return [];
+    }
+    let handKeys = handKeysByBox.get(boxId) ?? [];
+    if (handKeys.length === 0 && visualRound) {
+      const primaryKey = blackjackHandKey(boxId, 0);
+      const hand = visualRound.playerHands[primaryKey];
+      if (hand && (hand.currentBet > 0 || hand.cardIds.some(Boolean))) {
+        handKeys = [primaryKey];
+      }
+    }
+    return handKeys;
+  }
+
+  const inBetting = bettingOpen;
+  const showAddBoxLead = canAddVisibleBox && inBetting;
+  const showBoxHandResultMarkers = shouldShowBoxHandResultMarkers({
+    awaitingNextRound,
+    protocolPhase,
+    round: gameState.blackjack,
+  });
+  const chipPointerDrag = useMemo(
+    () =>
+      createChipPointerDragHandlers({
+        enabled: inBetting,
+        onHighlight: setDropTargetId,
+        onDrop: (value, target: ChipDropTarget) => {
+          if (!bettingOpen) {
+            return;
+          }
+          selectLocalTarget(target.slotNumber);
+          placeBetAtTarget(target.slotNumber, value);
+        },
+      }),
+    [inBetting, bettingOpen],
+  );
+  const viewerActionPermissionForSwipe = useMemo(
+    () => resolveViewerActionPermission(gameState, viewerPersonId),
+    [gameState, viewerPersonId],
+  );
+  const cardViewSwipeHandOptions = useMemo(() => {
+    if (!viewerActionPermissionForSwipe.canAct || !viewerActionPermissionForSwipe.actionable) {
+      return null;
+    }
+    return resolvePlayerHandActionOptions(
+      gameState,
+      viewerActionPermissionForSwipe.actionable.handKey,
+      blackjackSettings,
+      hasDeck,
+    );
+  }, [gameState, viewerActionPermissionForSwipe, blackjackSettings, hasDeck]);
+  const cardViewPlaySwipeEnabled =
+    isCardViewMobile &&
+    !gameEnded &&
+    !showGameOverModal &&
+    protocolPhase !== 'insurance' &&
+    !round?.evenMoneyOfferHandKey &&
+    !round?.insuranceOfferPending &&
+    playerDecisionActionsEnabled &&
+    viewerActionPermissionForSwipe.canAct &&
+    canShowPlayerDecisionControls(gameState, protocolPhase, {
+      cardRevealComplete,
+      activeHandRevealComplete,
+    });
+  const mobileBoxSwipe = useMobileBoxSwipeNavigation({
+    enabled: deviceView === 'mobile' && !gameEnded && !cardViewPlaySwipeEnabled,
+    displaySlots,
+    currentSlotNumber: selectedBettingSlotNumber,
+    onSelectSlot: selectLocalTarget,
+  });
+  const mobileCardViewPlaySwipe = useMobileCardViewPlaySwipe({
+    enabled: cardViewPlaySwipeEnabled,
+    canHit: cardViewSwipeHandOptions?.canHit ?? false,
+    canStand: cardViewSwipeHandOptions?.canStand ?? false,
+    onStand: () => {
+      const actionable = viewerActionPermissionForSwipe.actionable;
+      if (!actionable) {
+        return;
+      }
+      run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} });
+    },
+    onHit: () => {
+      const actionable = viewerActionPermissionForSwipe.actionable;
+      if (!actionable) {
+        return;
+      }
+      run((s) => hitBlackjackOnState(s, actionable.handKey), { type: 'hit', payload: {} });
+    },
+  });
+  const mobileFeltTouchHandlers = cardViewPlaySwipeEnabled
+    ? mobileCardViewPlaySwipe
+    : mobileBoxSwipe;
+  const displayError = error ?? flowError;
+  const activeBoxStakeMessage = selectedBettingBoxIdForUi
+    ? getStakeBetValidationMessage(gameState, selectedBettingBoxIdForUi)
+    : null;
+  const chipTrayHint =
+    displayError && isInsufficientChipsMessage(displayError)
+      ? displayError
+      : inBetting && activeBoxStakeMessage
+        ? activeBoxStakeMessage
+        : null;
+  const tableAlert =
+    displayError && !isInsufficientChipsMessage(displayError) ? displayError : null;
+  const shoeStarted = Boolean(tableMeta.shoeStarted);
+
+  function handleCycleDealSpeed() {
+    if (!canChangeDealSpeed) {
+      return;
+    }
+    const presets = DEAL_SPEED_CYCLE;
+    const idx = presets.indexOf(flowSettings.dealSpeedPreset);
+    const nextPreset = presets[(idx + 1) % presets.length]!;
+    run((s) => updateBlackjackFlowSettings(s, { dealSpeedPreset: nextPreset }));
+  }
+
+  function handleCycleProtocol() {
+    if (!canChangeProtocol) {
+      return;
+    }
+    const presets = listBlackjackProtocolPresets();
+    const idx = presets.findIndex((p) => p.protocolId === gameState.blackjackProtocolId);
+    const next = presets[(idx + 1) % presets.length]!;
+    run((s) => setBlackjackProtocolOnState(s, next.protocolId, controllerName));
+  }
+
+  function renderTableNav(className = 'bj-casino__table-nav') {
+    const isMobile = deviceView === 'mobile';
+    return (
+      <div {...sxmSectionProps(SXM_LAYOUT.userMenu, className)}>
+        <button
+          type=\"button\"
+          className={
+            sideRailPanel === 'thisTable'
+              ? 'bj-casino__nav-btn bj-casino__nav-btn--this-table bj-casino__nav-btn--active'
+              : 'bj-casino__nav-btn bj-casino__nav-btn--this-table'
+          }
+          onClick={() => {
+            setActiveTablePanel(null);
+            if (isMobile) {
+              setMobileSidePanelTab('thisTable');
+            }
+            setSideRailPanel((current) => toggleSideRailPanel(current, 'thisTable'));
+          }}
+          aria-expanded={sideRailPanel === 'thisTable'}
+        >
+          This Table
+        </button>
+        {!isMobile && (
+          <>
+            <button
+              type=\"button\"
+              className={activeTablePanel === 'playLedger' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+              onClick={() => {
+                setSideRailPanel(null);
+                setActiveTablePanel('playLedger');
+              }}
+            >
+              Play Ledger
+            </button>
+            <button
+              type=\"button\"
+              className={activeTablePanel === 'settings' ? 'bj-casino__nav-btn--active' : 'bj-casino__nav-btn'}
+              onClick={() => {
+                setSideRailPanel(null);
+                setActiveTablePanel('settings');
+              }}
+            >
+              Settings
+            </button>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  const tableDetailsProps = {
+    playingFor,
+    minimumBet,
+    canChangeMinBet,
+    onChangeMinBet: () => setMinBetOpen(true),
+    deckCount,
+    totalCards: deckCount * 52,
+    remaining,
+    hasDeck,
+    dealSpeedLabel: dealSpeedDisplayLabel(flowSettings.dealSpeedPreset),
+    canChangeDealSpeed,
+    onCycleDealSpeed: handleCycleDealSpeed,
+    protocolLabel: activeProtocol.displayName,
+    canChangeProtocol,
+    onChangeProtocol: handleCycleProtocol,
+    gameEnded,
+    blackjackCountByBox: buildBlackjackCountByBoxDisplay(gameState),
+    canResetTable: canResetTable && Boolean(onBeginTableReset),
+    onResetTable: onBeginTableReset
+      ? () => {
+          setSideRailPanel(null);
+          onBeginTableReset('resetTable');
+        }
+      : undefined,
+  };
+
+  function handlePrimaryDealAction() {
+    runPrimaryDealAction({
+      firstStartShuffleDelayMs: tableMeta.shoeStarted ? 0 : SHUFFLE_ANIM_DURATION_MS,
+      onFirstStartShuffleAnimationStart: () => {
+        setShuffleAnimating(true);
+        if (shuffleAnimTimerRef.current) {
+          clearTimeout(shuffleAnimTimerRef.current);
+        }
+        shuffleAnimTimerRef.current = setTimeout(() => {
+          setShuffleAnimating(false);
+          shuffleAnimTimerRef.current = null;
+        }, SHUFFLE_ANIM_DURATION_MS);
+      },
+      onFirstStartShuffleAnimationEnd: () => {
+        setShuffleAnimating(false);
+        if (shuffleAnimTimerRef.current) {
+          clearTimeout(shuffleAnimTimerRef.current);
+          shuffleAnimTimerRef.current = null;
+        }
+      },
+    });
+  }
+
+  function handleGameOverNewGameSetup() {
+    setGameOverOverlayConfirmed(true);
+    setSideRailPanel(null);
+    onBeginTableReset?.('newGame');
+  }
+
+  const dealerBlockProps = {
+    awaitingNextRound,
+    gameEnded,
+    onNewGame:
+      gameEnded && onBeginTableReset && canResetTable ? handleGameOverNewGameSetup : undefined,
+    canStartNewGame: canResetTable,
+    newGameDisabledReason:
+      gameEnded && !canResetTable ? 'Only the table owner can start a new game.' : null,
+    commentaryText: tableAidTip,
+    onNextRound: handleNextRound,
+    protocolPhase,
+    bankerReady,
+    shoeStarted,
+    bettingOpen,
+    canUserDealTable,
+    canDeal,
+    dealBlockReason,
+    hasStakes,
+    onShuffleToStart: handleShuffleToStart,
+    shuffleAnimating,
+    onDealCards: handlePrimaryDealAction,
+    onDealNextCard: handleDealNextCard,
+    onDrawBank: handleDrawBank,
+    dealActionPending,
+    nextRoundPending,
+    engineStatus,
+    initialDealManual: initialDealStaged,
+    bankDrawManual: flowSettings.bankDrawMode === 'manual',
+    bankInfo: (
+      <TableInfoBar
+        gameState={gameState}
+        displayState={tableVisualState}
+        viewerPersonId={viewerPersonId}
+        variant=\"dealer\"
+      />
+    ),
+  };
+
+  function renderTableAlert() {
+    if (!tableAlert) {
+      return null;
+    }
+    return (
+      <p className=\"bj-table-alert\" role=\"alert\">
+        {tableAlert}
+      </p>
+    );
+  }
+
+  function renderInsuranceDecisionOverlay() {
+    if (!canShowInsuranceDecisionUi(uiRevealContext, protocolPhase)) {
+      return null;
+    }
+    if (protocolPhase !== 'insurance' || !round?.insuranceOfferPending) {
+      return null;
+    }
+
+    const primary = getPrimaryInsuranceActionForController(gameState, round, viewerPersonId);
+    if (!primary) {
+      return null;
+    }
+
+    const { playerId: boxId, maxBet, canAfford, slotNumber, slotNumbers, boxIndex, boxCount, blockReason } =
+      primary;
+    const boxLabel = `Box ${slotNumber ?? slotNumbers[0] ?? '?'}`;
+    return (
+      <InsuranceDecisionOverlay
+        boxLabel={boxLabel}
+        boxIndex={boxIndex}
+        boxCount={boxCount}
+        maxBet={maxBet}
+        canAfford={canAfford}
+        blockReason={blockReason}
+        pendingTake={insuranceDecisionPending || onlineActionInFlight}
+        onInsurance={() => {
+          if (insuranceDecisionPending || onlineActionInFlight) {
+            return;
+          }
+          setInsuranceDecisionPending(true);
+          run((s) => takeInsuranceOnState(s, boxId, viewerPersonId ?? undefined), {
+            type: 'takeInsurance',
+            payload: { playerId: boxId, personId: viewerPersonId },
+          });
+        }}
+        onDecline={() => {
+          if (insuranceDecisionPending || onlineActionInFlight) {
+            return;
+          }
+          setInsuranceDecisionPending(true);
+          run((s) => declineInsuranceOnState(s, boxId, viewerPersonId ?? undefined), {
+            type: 'declineInsurance',
+            payload: { playerId: boxId, personId: viewerPersonId },
+          });
+        }}
+      />
+    );
+  }
+
+  function renderActionOverlays() {
+    const insurance = renderInsuranceDecisionOverlay();
+    const evenMoney =
+      round?.evenMoneyOfferHandKey && protocolPhase === 'player'
+        ? renderEvenMoneyActions()
+        : null;
+
+    if (!insurance && !evenMoney) {
+      return null;
+    }
+
+    return (
+      <>
+        {insurance ? (
+          <div className=\"bj-table-action-overlays__slot bj-table-action-overlays__slot--command\">
+            {insurance}
+          </div>
+        ) : null}
+        {evenMoney ? (
+          <div className=\"bj-table-action-overlays__slot bj-table-action-overlays__slot--actions\">
+            {evenMoney}
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
+  function renderSummaryContent() {
+    if (renderInsuranceDecisionOverlay()) {
+      return <div className={TABLE_UX.summaryPlaceholder} aria-hidden=\"true\" />;
+    }
+    const alert = renderTableAlert();
+    return alert ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden=\"true\" />;
+  }
+
+  function renderActionsContent() {
+    const playerActions = renderTablePlayerActions();
+    if (playerActions) {
+      return playerActions;
+    }
+    return (
+      <div
+        className=\"bj-action-row bj-action-row--slot-reserved\"
+        data-layout-band=\"action-row\"
+        data-action-row-scale={isCardViewMobile ? 'card-view' : 'full-table'}
+        aria-hidden=\"true\"
+      />
+    );
+  }
+
+
+  function renderTrayInner() {
+    const { playerAvailable } = buildTableInfoDisplay(gameState, viewerPersonId);
+    const trayLabel = resolveTableTrayLabel(tableMeta, loadSettings());
+    return (
+      <BlackjackTrayRow
+        available={playerAvailable}
+        showChips
+        onChipClick={handleChipTrayClick}
+        onChipPointerDown={chipPointerDrag.onChipPointerDown}
+        disabled={!bettingOpen}
+        minimumBet={minimumBet}
+        trayLabel={trayLabel}
+        hint={inBetting && chipTrayHint ? chipTrayHint : null}
+      />
+    );
+  }
+
+  function handleMovePlayer(personId: string, direction: 'up' | 'down') {
+    run((s) => movePlayerInOrder(s, personId, direction));
+  }
+
+  function renderEvenMoneyActions() {
+    const offerKey = round?.evenMoneyOfferHandKey;
+    if (!offerKey || protocolPhase !== 'player') {
+      return null;
+    }
+    if (!canShowEvenMoneyDecisionUi(uiRevealContext)) {
+      return null;
+    }
+
+    const { playerId } = parseBlackjackHandKey(offerKey);
+    const activeSlotNum = session.boxSlotNumbers?.[playerId];
+    const isCaller =
+      viewerPersonId !== null &&
+      canControllerCallBox(gameState, playerId, viewerPersonId);
+
+    if (!isCaller) {
+      return (
+        <p className={`${TABLE_UX.playerActions} bj-table-actions bj-table-actions--wait`}>
+          Box {activeSlotNum ?? '?'} ÔÇö even-money decision pendingÔÇª
+        </p>
+      );
+    }
+
+    return (
+      <AceDecisionButtonRow
+        panelClassName=\"bj-table-actions--even-money\"
+        ariaLabel=\"Even-money decision\"
+        primaryLabel=\"Take 1:1\"
+        secondaryLabel={
+          deck && round.dealerCardIds[0]
+            ? getCardById(deck, round.dealerCardIds[0])?.rank === 'A'
+              ? 'Play vs Ace'
+              : 'Play vs 10'
+            : 'Play for 3:2'
+        }
+        onPrimary={() =>
+          run((s) => takeEvenMoneyOnState(s, offerKey), {
+            type: 'takeEvenMoney',
+            payload: { handKey: offerKey },
+          })
+        }
+        onSecondary={() =>
+          run((s) => waitForBlackjackPayoutOnState(s, offerKey), {
+            type: 'waitFor3to2',
+            payload: { handKey: offerKey },
+          })
+        }
+      />
+    );
+  }
+
+  function renderTablePlayerActions() {
+    if (round?.evenMoneyOfferHandKey) {
+      return (
+        <div
+          className=\"bj-action-row bj-action-row--slot-reserved\"
+          data-layout-band=\"action-row\"
+          aria-hidden=\"true\"
+        />
+      );
+    }
+
+    if (!canShowPlayerDecisionControls(gameState, protocolPhase, {
+      cardRevealComplete,
+      activeHandRevealComplete,
+    })) {
+      return null;
+    }
+
+    if (!round) {
+      return null;
+    }
+    const activeRound: NonNullable<typeof round> = round;
+    if (!activeRound.activeHandKey) {
+      return null;
+    }
+
+    const actionPermission = resolveViewerActionPermission(gameState, viewerPersonId);
+    if (!actionPermission.canAct) {
+      return null;
+    }
+
+    const actionable = actionPermission.actionable!;
+    const handOptions = resolvePlayerHandActionOptions(
+      gameState,
+      actionable.handKey,
+      blackjackSettings,
+      Boolean(deck),
+    );
+    const { canHit, canStand, canDouble, canSplit, showDouble, showSplit } = handOptions;
+
+    function handleTableAid() {
+      if (!deck) {
+        return;
+      }
+      const advice = getAidAdvice(activeRound, actionable.handKey, deck, flowSettings, gameState, ledger);
+      if (advice) {
+        setTableAidTip(advice.text);
+      }
+    }
+
+    return (
+      <BlackjackActionRow
+        scale={isCardViewMobile ? 'card-view' : 'full-table'}
+        actionsEnabled={playerDecisionActionsEnabled}
+        canHit={canHit}
+        canStand={canStand}
+        canDouble={canDouble}
+        canSplit={canSplit}
+        showDouble={showDouble}
+        showSplit={showSplit}
+        showAid={flowSettings.adviceEnabled && !isFullTableDesktop && !isCardViewDesktop}
+        aidInlineWithHit={false}
+        onStand={() =>
+          run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} })
+        }
+        onHit={() =>
+          run((s) => hitBlackjackOnState(s, actionable.handKey), { type: 'hit', payload: {} })
+        }
+        onDouble={() =>
+          run((s) => doubleDownBlackjackOnState(s, actionable.handKey), {
+            type: 'double',
+            payload: {},
+          })
+        }
+        onSplit={() =>
+          run((s) => splitBlackjackOnState(s, actionable.handKey), { type: 'split', payload: {} })
+        }
+        onAid={handleTableAid}
+      />
+    );
+  }
+
+  function renderArcCardStack(cardIds: string[], stackBadge: ReactNode = null) {
+    if (cardIds.length === 0 || !visualDeck) {
+      return null;
+    }
+    return (
+      <div className=\"bj-arc__play-zone\" data-layout-band=\"card-column-cards\">
+        {stackBadge}
+        <div
+          className={[
+            TABLE_UX.arcCards,
+            TABLE_UX.arcCardsStackVertical,
+          ].join(' ')}
+        >
+          <div
+            className={TABLE_UX.arcCardsStack}
+            data-bj-card-count={Math.min(cardIds.length, 6)}
+          >
+            {cardIds.map((id) => renderCard(id, false, deviceView === 'mobile', id))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderArcCardColumn(boxId: string, slotNumber: number) {
+    let handKeys = handKeysByBox.get(boxId) ?? [];
+    if (handKeys.length === 0 && visualRound) {
+      const primaryKey = blackjackHandKey(boxId, 0);
+      const hand = visualRound.playerHands[primaryKey];
+      if (hand && (hand.currentBet > 0 || hand.cardIds.some(Boolean))) {
+        handKeys = [primaryKey];
+      }
+    }
+    const primaryHandKey = handKeys[0];
+    const primaryHand = primaryHandKey ? visualRound?.playerHands[primaryHandKey] : null;
+    const isBusted = primaryHand?.actionStatus === 'busted';
+    const valueLabel = resolvePrimaryHandValueLabel(
+      visualDeck,
+      visualRound,
+      primaryHandKey,
+      primaryHand,
+    );
+    const boxParticipated =
+      Boolean(primaryHand) &&
+      primaryHand!.currentBet > 0 &&
+      (primaryHand!.cardIds.some(Boolean) ||
+        Boolean(primaryHandKey && visualRound?.outcomes?.[primaryHandKey]));
+    const primaryOutcome = primaryHandKey
+      ? visualRound?.outcomes?.[primaryHandKey]
+      : undefined;
+    const outcomeMarker = boxParticipated
+      ? resolveGatedCardAreaOutcomeMarker(uiRevealContext, {
+          showResults: showBoxHandResultMarkers,
+          outcome: primaryOutcome,
+          actionStatus: primaryHand?.actionStatus,
+          handKey: primaryHandKey ?? null,
+          handTotal: primaryHandKey
+            ? getDisplayedHandValue(visualDeck, visualRound, primaryHandKey)
+            : null,
+        })
+      : null;
+    const cardColumnValueLabel = valueLabel;
+    const isActiveHand =
+      isPlayerTurnPhase(protocolPhase) &&
+      uiActiveBoxId === boxId &&
+      !showBoxHandResultMarkers &&
+      primaryHand?.actionStatus === 'acting';
+    const rotation =
+      deviceView === 'mobile'
+        ? 0
+        : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
+            mobile: false,
+          });
+    const isSplit = handKeys.length > 1;
+    const isFullTableView = viewMode === 'full';
+    const stackOutcomeBadgeMarker =
+      isFullTableView && outcomeMarker && cardAreaOutcomeUsesStackBadge(outcomeMarker);
+    const floatingOutcomeMarker =
+      outcomeMarker && !isSplit && !stackOutcomeBadgeMarker ? outcomeMarker : null;
+    const stackOutcomeBadge = (marker: CardAreaOutcomeMarker | null) =>
+      marker && isFullTableView && cardAreaOutcomeUsesStackBadge(marker) ? (
+        <span
+          className={[
+            cardAreaOutcomeMarkerClass(marker),
+            'bj-card-outcome-marker--stack-badge',
+          ].join(' ')}
+          aria-hidden=\"true\"
+        >
+          {cardAreaOutcomeStackBadgeText(marker)}
+        </span>
+      ) : null;
+    const suppressCardColumnStackValue =
+      (isFullTableDesktop || isFullTableMobile) &&
+      !inBetting &&
+      Boolean(cardColumnValueLabel);
+    return (
+      <div
+        key={`cards-${boxId}`}
+        className={[
+          'bj-arc__slot',
+          'bj-arc__slot--card-column',
+          isSplit ? 'bj-arc__slot--card-split' : '',
+          stackOutcomeBadgeMarker ? 'bj-arc__slot--card-column--stack-outcome' : '',
+          suppressCardColumnStackValue ? 'bj-arc__slot--card-column--stack-value-in-box' : '',
+        ].filter(Boolean).join(' ')}
+        style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
+        data-box-slot={slotNumber}
+      >
+        {floatingOutcomeMarker ? (
+          <span className={cardAreaOutcomeMarkerClass(floatingOutcomeMarker)} aria-hidden=\"true\">
+            {cardAreaOutcomeMarkerText(floatingOutcomeMarker)}
+          </span>
+        ) : null}
+        {isSplit ? (
+          <div className=\"bj-arc__split-hands\">
+            {handKeys.map((handKey) => {
+              const cardIds = getVisibleHandCardIds(visualRound, handKey);
+              const splitHand = visualRound?.playerHands[handKey];
+              const splitOutcome = visualRound?.outcomes?.[handKey];
+              const splitParticipated =
+                Boolean(splitHand) &&
+                splitHand!.currentBet > 0 &&
+                (splitHand!.cardIds.some(Boolean) || Boolean(splitOutcome));
+              const splitMarker = splitParticipated
+                ? resolveGatedCardAreaOutcomeMarker(uiRevealContext, {
+                    showResults: showBoxHandResultMarkers,
+                    outcome: splitOutcome,
+                    actionStatus: splitHand?.actionStatus,
+                    handKey,
+                    handTotal: getDisplayedHandValue(visualDeck, visualRound, handKey),
+                  })
+                : null;
+              const splitStackBadge =
+                isFullTableView && splitMarker && cardAreaOutcomeUsesStackBadge(splitMarker);
+              const splitFloatingMarker =
+                splitMarker && !splitStackBadge ? splitMarker : null;
+              const isSplitHandActive =
+                isPlayerTurnPhase(protocolPhase) &&
+                !showBoxHandResultMarkers &&
+                visualRound?.activeHandKey === handKey &&
+                splitHand?.actionStatus === 'acting';
+              return (
+                <div
+                  key={handKey}
+                  className={[
+                    'bj-arc__split-hand',
+                    isSplitHandActive ? 'bj-arc__split-hand--active' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  data-split-hand-key={handKey}
+                >
+                  {splitFloatingMarker ? (
+                    <span className={cardAreaOutcomeMarkerClass(splitFloatingMarker)} aria-hidden=\"true\">
+                      {cardAreaOutcomeMarkerText(splitFloatingMarker)}
+                    </span>
+                  ) : null}
+                  {renderArcCardStack(cardIds, stackOutcomeBadge(splitMarker))}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          renderArcCardStack(
+            handKeys[0] ? getVisibleHandCardIds(visualRound, handKeys[0]) : [],
+            stackOutcomeBadge(outcomeMarker),
+          )
+        )}
+        {suppressCardColumnStackValue ? null : (
+        <span
+          data-layout-band=\"card-column-value\"
+          className={[
+            cardColumnHandValueClassName(
+              Boolean(cardColumnValueLabel),
+              isBusted,
+              isActiveHand,
+              cardAreaOutcomeToneFromMarker(outcomeMarker),
+            ),
+            TABLE_UX.cardColumnValueBelow,
+          ].join(' ')}
+          aria-hidden={cardColumnValueLabel ? undefined : 'true'}
+        >
+          {cardColumnValueLabel || '\\u00a0'}
+        </span>
+        )}
+      </div>
+    );
+  }
+
+  function renderEmptyCardColumn(slotNumber: number) {
+    const rotation =
+      deviceView === 'mobile'
+        ? 0
+        : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
+    return (
+      <div
+        key={`cards-empty-${slotNumber}`}
+        className=\"bj-arc__slot bj-arc__slot--card-column bj-arc__slot--card-empty\"
+        style={{ '--arc-rot': `${rotation}deg` } as CSSProperties}
+        data-box-slot={slotNumber}
+        aria-hidden=\"true\"
+      >
+        <span
+          className={[
+            TABLE_UX.cardColumnValueBelow,
+            'bj-phone-view__box-value--placeholder',
+          ].join(' ')}
+          aria-hidden=\"true\"
+        >
+          {'\\u00a0'}
+        </span>
+      </div>
+    );
+  }
+
+  function renderArcSlot(
+    slotNumber: number,
+    slotOpts?: {
+      splitHandKey?: string;
+      splitCompanion?: boolean;
+      splitClusterMain?: boolean;
+    },
+  ) {
+    const isSplitCompanion = Boolean(slotOpts?.splitCompanion && slotOpts.splitHandKey);
+    const isSplitClusterMain = Boolean(slotOpts?.splitClusterMain);
+    const slot = tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
+    const boxId = slot?.playerId ?? null;
+
+    if (!isSplitCompanion && !isSplitClusterMain && deviceView === 'desktop' && boxId) {
+      const splitCompanionKeys = resolveArcSlotHandKeys(boxId).slice(1);
+      if (splitCompanionKeys.length > 0) {
+        const hostRotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
+        return (
+          <div
+            key={slotArcReactKey(slotNumber)}
+            className=\"bj-arc__slot bj-arc__slot--owned bj-arc__slot--split-host\"
+            style={{ '--arc-rot': `${hostRotation}deg` } as CSSProperties}
+            data-box-slot={slotNumber}
+          >
+            <div className=\"bj-arc__slot-split-cluster\">
+              {splitCompanionKeys.map((handKey) =>
+                renderArcSlot(slotNumber, { splitHandKey: handKey, splitCompanion: true }),
+              )}
+              {renderArcSlot(slotNumber, { splitClusterMain: true })}
+            </div>
+          </div>
+        );
+      }
+    }
+    const isEmpty = !boxId;
+    const pendingChips = pendingOnlineStakesBySlot[slotNumber] ?? [];
+    const openStake = boxId ? getStakeForBox(gameState, boxId) : 0;
+    const pendingStakeTotal = pendingChips.reduce((sum, chip) => sum + chip, 0);
+    const hasOpenStake = openStake > 0 || pendingStakeTotal > 0;
+    const isUnclaimedStakedSlot = isEmpty && hasOpenStake;
+    const isJoinAssigned = isJoinAssignedHighlight(gameState, slotNumber, protocolPhase);
+    const borderState = resolveBoxBorderVisualState({
+      state: gameState,
+      boxPlayerId: boxId ?? `slot-${slotNumber}`,
+      viewerPersonId,
+      openStake: openStake || pendingStakeTotal,
+      selectedBettingBoxId: selectedBettingBoxIdForUi,
+      selectedBettingSlotNumber,
+      activeBoxId: uiActiveBoxId,
+      isDropHover: dropTargetId === chipDropKey({ slotNumber, boxId }),
+      bettingStage: inBetting,
+      playerPhase: isPlayerTurnPhase(protocolPhase),
+    });
+    const boxInfo = boxId
+      ? buildBlackjackPlayerBoxInfo(gameState, slotNumber, boxId)
+      : null;
+    const handKeys = resolveArcSlotHandKeys(boxId);
+    const primaryHandKey = handKeys[0];
+    const displayHandKey = slotOpts?.splitHandKey ?? primaryHandKey;
+    const primaryHand = primaryHandKey ? visualRound?.playerHands[primaryHandKey] : null;
+    const displayHand = displayHandKey ? visualRound?.playerHands[displayHandKey] : primaryHand;
+    const visibleCardIds = displayHandKey
+      ? getVisibleHandCardIds(visualRound, displayHandKey)
+      : [];
+    const isBusted = displayHand?.actionStatus === 'busted';
+    const wager = inBetting ? openStake || pendingStakeTotal : (displayHand?.currentBet ?? openStake);
+    const betAmount = isSplitCompanion
+      ? (displayHand?.currentBet ?? 0)
+      : resolveBoxBetAmountDuringPlay(
+          inBetting,
+          openStake || pendingStakeTotal,
+          displayHand?.currentBet,
+        );
+    const boxParticipated =
+      Boolean(visualRound) &&
+      boxId != null &&
+      (isSplitCompanion
+        ? Boolean(displayHand && (displayHand.currentBet > 0 || displayHand.cardIds.some(Boolean)))
+        : boxHadActiveHandInRound(visualRound!, handKeys));
+    const boxNetChips =
+      showBoxHandResultMarkers && visualRound && boxParticipated
+        ? resolveBoxNetChipsForHands(
+            visualRound,
+            isSplitCompanion && displayHandKey ? [displayHandKey] : handKeys,
+            gameState.blackjackSettings.blackjackPayout,
+          )
+        : null;
+    const boxValueLabel = showBoxHandResultMarkers && boxParticipated
+      ? boxNetChips !== null
+        ? formatBoxNetResultLabel(boxNetChips)
+        : ''
+      : betAmount > 0 && boxId && inBetting
+        ? formatBoxStakeDisplayLabel(gameState, boxId)
+        : betAmount > 0
+          ? String(betAmount)
+          : '';
+    const boxNetTone =
+      showBoxHandResultMarkers && boxParticipated && boxNetChips !== null
+        ? boxNetResultTone(boxNetChips)
+        : null;
+    const stakeChips = mergeStakeChipsForSlotDisplay(gameState, slotNumber, boxId, pendingChips);
+    const showBettingChips = inBetting && (openStake > 0 || pendingChips.length > 0) && stakeChips.length > 0;
+    const inBoxPlayPhase =
+      !inBetting && !showBoxHandResultMarkers && Boolean(displayHandKey);
+    const inBoxHandValueLabel = inBoxPlayPhase
+      ? resolvePrimaryHandValueLabel(visualDeck, visualRound, displayHandKey, displayHand)
+      : '';
+    const displayChips = showBettingChips && !isSplitCompanion ? stakeChips : [];
+    const showStakeContent = isSplitCompanion
+      ? false
+      : displayChips.length > 0 || inBoxPlayPhase;
+    const dropKey = chipDropKey({ slotNumber, boxId });
+    const rotation =
+      deviceView === 'mobile'
+        ? 0
+        : isSplitCompanion
+          ? arcSplitCompanionRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false })
+          : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
+    const isSelected = inBetting && !isSplitCompanion && selectedBettingSlotNumber === slotNumber;
+    const isDrop = !isSplitCompanion && (dropTargetId === dropKey || dropTargetId === `slot-${slotNumber}`);
+    const onSelect = () => (boxId ? selectBox(boxId) : handleClaimOrSelectSlot(slotNumber));
+    const useHandLevelTurn =
+      deviceView === 'desktop' && (isSplitCompanion || handKeys.length > 1);
+    const isHandTurn =
+      useHandLevelTurn &&
+      isPlayerTurnPhase(protocolPhase) &&
+      !inBetting &&
+      Boolean(displayHandKey) &&
+      visualRound?.activeHandKey === displayHandKey;
+    const turnBorderClass = useHandLevelTurn
+      ? isHandTurn
+        ? BOX_BORDER_TURN
+        : ''
+      : borderState.isTurn
+        ? BOX_BORDER_TURN
+        : '';
+
+    const slotSurfaceClass = isSplitCompanion
+      ? 'bj-arc__split-companion-tile'
+      : isSplitClusterMain
+        ? 'bj-arc__slot-split-main'
+        : [
+            'bj-arc__slot',
+            isEmpty && !isUnclaimedStakedSlot ? 'bj-arc__slot--empty' : 'bj-arc__slot--owned',
+            isUnclaimedStakedSlot ? 'bj-arc__slot--has-stake' : '',
+            TABLE_UX.boxHitZone,
+            isJoinAssigned ? 'bj-arc__slot--join-highlight' : '',
+            isDrop ? 'bj-arc__slot--drop' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+
+    return (
+      <div
+        key={
+          isSplitCompanion
+            ? `split-companion-${slotNumber}-${slotOpts!.splitHandKey}`
+            : isSplitClusterMain
+              ? `split-main-${slotNumber}`
+              : slotArcReactKey(slotNumber)
+        }
+        className={[
+          slotSurfaceClass,
+          isSplitCompanion ? 'bj-arc__slot--split-companion' : '',
+          isHandTurn ? 'bj-arc__split-companion-tile--active' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        style={
+          isSplitCompanion || isSplitClusterMain
+            ? undefined
+            : ({ '--arc-rot': `${rotation}deg` } as CSSProperties)
+        }
+        {...(isSplitCompanion
+          ? { 'data-split-hand-key': slotOpts!.splitHandKey }
+          : isSplitClusterMain
+            ? {
+                [CHIP_DROP_SLOT_ATTR]: slotNumber,
+                [CHIP_DROP_BOX_ATTR]: boxId ?? '',
+              }
+            : {
+                [CHIP_DROP_SLOT_ATTR]: slotNumber,
+                [CHIP_DROP_BOX_ATTR]: boxId ?? '',
+              })}
+        {...(!isSplitCompanion && !isSplitClusterMain ? { 'data-box-slot': slotNumber } : {})}
+      >
+        {isSplitCompanion ? null : (
+        <button
+          type=\"button\"
+          className={TABLE_UX.boxHitArea}
+          {...bindBoxTapSelect(onSelect)}
+          aria-label={
+            isEmpty
+              ? `Join box ${slotNumber}${pendingStakeTotal > 0 ? `, ${pendingStakeTotal}c staked` : ''}`
+              : `Box ${slotNumber}${wager > 0 ? `, ${wager}c staked` : ''}`
+          }
+          aria-current={borderState.isSelected || uiActiveBoxId === boxId ? 'true' : undefined}
+          onDragOver={inBetting ? handleDragOver : undefined}
+          onDragEnter={
+            inBetting
+              ? (e) => {
+                  e.stopPropagation();
+                  setDropTargetId(dropKey);
+                }
+              : undefined
+          }
+          onDragLeave={
+            inBetting
+              ? (e) => {
+                  e.stopPropagation();
+                  setDropTargetId(null);
+                }
+              : undefined
+          }
+          onDrop={inBetting ? (e) => handleSlotChipDrop(slotNumber, e) : undefined}
+        />
+        )}
+        <span
+          className={boxStakeLabelClassName(Boolean(boxValueLabel), isBusted, boxNetTone)}
+          aria-hidden={boxValueLabel ? undefined : 'true'}
+        >
+          {boxValueLabel || '\\u00a0'}
+        </span>
+        <div
+          {...sxmSectionProps(
+            SXM_LAYOUT.playerBox,
+            getBoxCardVisualClasses(borderState),
+            TABLE_UX.fullArcBox,
+            'bj-player-box-mobile',
+            turnBorderClass,
+            isEmpty && !isUnclaimedStakedSlot ? 'bj-phone-view__mini-hand--empty' : '',
+            isUnclaimedStakedSlot ? 'bj-phone-view__mini-hand--has-stake' : '',
+            isSelected ? 'bj-box--selected' : '',
+            isSelected ? BET_BOX_PULSE : '',
+            isDrop ? 'bj-bet-zone--drop' : '',
+            useHandLevelTurn ? getBoxActivePulseClassName({ ...borderState, isTurn: isHandTurn }) : 
+getBoxActivePulseClassName(borderState),
+          )}
+        >
+          {boxInfo ? (
+            <BlackjackPlayerBoxHead
+              boxLabel={isSplitCompanion ? `${boxInfo.boxLabel} split` : boxInfo.boxLabel}
+              callerDisplayName={boxInfo.callerDisplayName}
+            />
+          ) : (
+            <span className=\"bj-phone-view__mini-hand-head\">
+              <span className=\"bj-phone-view__mini-hand-box\">Box {slotNumber}</span>
+              <span className=\"bj-phone-view__mini-hand-name\">Join</span>
+            </span>
+          )}
+          {visibleCardIds.length > 0 && visualDeck ? (
+            <span
+              className=\"bj-phone-view__mini-hand-composition\"
+              aria-label={`Cards: ${visibleCardIds
+                .map((id) => {
+                  const card = getCardById(visualDeck, id);
+                  return card?.rank ?? '';
+                })
+                .filter(Boolean)
+                .join(', ')}`}
+            >
+              {formatBoxCardRanksLabel(
+                visibleCardIds
+                  .map((id) => getCardById(visualDeck, id))
+                  .filter((card): card is NonNullable<typeof card> => Boolean(card)),
+              )}
+            </span>
+          ) : (
+            <span
+              className=\"bj-phone-view__mini-hand-composition bj-phone-view__mini-hand-composition--placeholder\"
+              aria-hidden=\"true\"
+            >
+              &nbsp;
+            </span>
+          )}
+          {inBoxHandValueLabel ? (
+            <span
+              className={[
+                'bj-phone-view__mini-hand-value',
+                cardColumnHandValueClassName(
+                  true,
+                  isBusted,
+                  (useHandLevelTurn ? isHandTurn : borderState.isTurn) &&
+                    isPlayerTurnPhase(protocolPhase),
+                ),
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              aria-label={`Hand value ${inBoxHandValueLabel}`}
+            >
+              {inBoxHandValueLabel}
+            </span>
+          ) : inBoxPlayPhase ? (
+            <span
+              className=\"bj-phone-view__mini-hand-value bj-phone-view__mini-hand-value--placeholder\"
+              aria-hidden=\"true\"
+            >
+              &nbsp;
+            </span>
+          ) : null}
+          <span
+            className={['bj-phone-view__mini-stake-slot', TABLE_UX.boxInteractive]
+              .filter(Boolean)
+              .join(' ')}
+            aria-hidden={!showStakeContent}
+          >
+            {displayChips.length > 0 ? (
+              <StakeChips
+                chips={displayChips}
+                variant=\"bet\"
+                removable={inBetting && showBettingChips && Boolean(boxId) && pendingChips.length === 0}
+                onRemoveTopChip={boxId ? () => removeLastChipFromBox(boxId) : undefined}
+              />
+            ) : (
+              <span className={TABLE_UX.stakeSlotReserved} aria-hidden=\"true\">
+                &nbsp;
+              </span>
+            )}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  function renderPlayerBoxesArc() {
+    return (
+      <BlackjackPlayerBoxRow>
+        <div className=\"bj-player-boxes-wrap\">
+          <div
+          className={[
+            'bj-table-slot-row',
+            'bj-arc',
+            'bj-arc--player-boxes',
+            visibleArcClass,
+            showAddBoxLead ? 'bj-table-slot-row--with-add' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
+        >
+          {showAddBoxLead ? (
+            <button
+              type=\"button\"
+              className=\"bj-table-slot-row__add bj-player-boxes-wrap__add\"
+              aria-label=\"Add player box\"
+              onClick={() =>
+                setExpandedVisibleBoxCount((count) =>
+                  Math.min(MAX_BOXES, Math.max(count, effectiveVisibleBoxCount) + 1),
+                )
+              }
+            >
+              +
+            </button>
+          ) : null}
+          {displaySlots.map((slot) => renderArcSlot(slot.slotNumber))}
+          </div>
+        </div>
+      </BlackjackPlayerBoxRow>
+    );
+  }
+
+  const focusBoxId =
+    deviceView === 'mobile' &&
+    localChipSelection.hasUserSelected &&
+    selectedBettingBoxIdForUi
+      ? selectedBettingBoxIdForUi
+      : round?.status === 'player-turns' && uiActiveBoxId
+        ? uiActiveBoxId
+        : bettingOpen && selectedBettingSlotNumber != null
+          ? selectedBettingBoxIdForUi
+          : selectedBettingBoxIdForUi ?? focusFallbackBoxId;
+
+  const dealerCardNodes =
+    dealerCards.length > 0
+      ? dealerCards.map((cardId, index) =>
+          renderCard(
+            cardId,
+            showHoleHidden && index === 1,
+            true,
+            `dealer-${index}-${cardId}`,
+          ),
+        )
+      : null;
+
+  const thisTableInline = deviceView === 'desktop';
+
+  function renderMobileSidePanelTabs() {
+    return (
+      <div className=\"bj-casino__mobile-panel-tabs\" role=\"tablist\" aria-label=\"Table panels\">
+        <button
+          type=\"button\"
+          role=\"tab\"
+          aria-selected={mobileSidePanelTab === 'thisTable'}
+          className={
+            mobileSidePanelTab === 'thisTable'
+              ? 'bj-casino__mobile-panel-tab bj-casino__mobile-panel-tab--active'
+              : 'bj-casino__mobile-panel-tab'
+          }
+          onClick={() => setMobileSidePanelTab('thisTable')}
+        >
+          This Table
+        </button>
+        <button
+          type=\"button\"
+          role=\"tab\"
+          aria-selected={mobileSidePanelTab === 'playLedger'}
+          className={
+            mobileSidePanelTab === 'playLedger'
+              ? 'bj-casino__mobile-panel-tab bj-casino__mobile-panel-tab--active'
+              : 'bj-casino__mobile-panel-tab'
+          }
+          onClick={() => setMobileSidePanelTab('playLedger')}
+        >
+          Play Ledger
+        </button>
+        <button
+          type=\"button\"
+          role=\"tab\"
+          aria-selected={mobileSidePanelTab === 'settings'}
+          className={
+            mobileSidePanelTab === 'settings'
+              ? 'bj-casino__mobile-panel-tab bj-casino__mobile-panel-tab--active'
+              : 'bj-casino__mobile-panel-tab'
+          }
+          onClick={() => setMobileSidePanelTab('settings')}
+        >
+          Settings
+        </button>
+      </div>
+    );
+  }
+
+  function renderMobileSidePanelBody() {
+    switch (mobileSidePanelTab) {
+      case 'playLedger':
+        return <PlayLedgerPanel gameState={gameState} />;
+      case 'settings':
+        return (
+          <BlackjackFlowSettingsMenu
+            embedded
+            gameState={gameState}
+            onGameStateChange={onGameStateChange}
+            open
+            onClose={() => setMobileSidePanelTab('thisTable')}
+            tableDetails={tableDetailsProps}
+          />
+        );
+      default:
+        return (
+          <TableAccountsPanel
+            gameState={gameState}
+            showAssignButton={canAssignChips}
+            onAssignChips={() => setAssignChipsOpen(true)}
+            onInvite={onInviteTable}
+            onSaveTable={onSaveTable}
+            showPlayerOrderControls={tableOwner && bettingOpen}
+            onMovePlayer={handleMovePlayer}
+            onPlayFlowChange={handlePlayFlowChange}
+            variant=\"inline\"
+          />
+        );
+    }
+  }
+
+  function renderCanonicalGameOverModal() {
+    if (!showGameOverModal) {
+      return null;
+    }
+    return (
+      <GameOverActionOverlay
+        open
+        layout={BLACKJACK_GAME_OVER_LAYOUT}
+        presentation={gameOverPresentation}
+        canSaveToLedger={canSaveToLedger}
+        ledgerAlreadyAdded={personalLedgerAdded}
+        canCreateIou={canAddIou}
+        iouPending={iouPending}
+        iouFeedback={iouFeedback}
+        iouDisabledReason={iouDisabledReason}
+        pending={gameOverActionPending}
+        canStartNewGame={canResetTable}
+        newGameDisabledReason={
+          !canResetTable
+            ? 'Only the table owner can start a new game.'
+            : !onBeginTableReset
+              ? 'New game setup is unavailable on this table.'
+              : null
+        }
+        onOpenLedger={() => setActiveTablePanel('playLedger')}
+        onComplete={completeGameOverAction}
+        onDismiss={handleGameOverDismiss}
+      />
+    );
+  }
+
+  function closeSideRailPanel() {
+    setSideRailPanel(null);
+  }
+
+  function renderSideRailPanel(variant: 'dock' | 'overlay') {
+    const activePanel = variant === 'dock' ? sideRailPanel : sideRailPanel;
+    if (!activePanel || showGameOverModal) {
+      return null;
+    }
+    const isOverlay = variant === 'overlay';
+    const title =
+      mobileSidePanelTab === 'playLedger'
+        ? 'Play Ledger'
+        : mobileSidePanelTab === 'settings'
+          ? 'Settings'
+          : 'This Table';
+    const panelContent = isOverlay ? (
+      renderMobileSidePanelBody()
+    ) : (
+      <TableAccountsPanel
+        gameState={gameState}
+        showAssignButton={canAssignChips}
+        onAssignChips={() => setAssignChipsOpen(true)}
+        onInvite={onInviteTable}
+        onSaveTable={onSaveTable}
+        showPlayerOrderControls={tableOwner && bettingOpen}
+        onMovePlayer={handleMovePlayer}
+        onPlayFlowChange={handlePlayFlowChange}
+        variant=\"inline\"
+      />
+    );
+
+    const shell = (
+      <div
+        {...sxmSectionProps(
+          SXM_LAYOUT.rightSidePanel,
+          `${TABLE_UX.sideRailPlacement} ${isOverlay ? 'bj-casino__this-table--overlay' : TABLE_UX.sideRailDock}`,
+        )}
+        data-panel-placement={variant}
+        data-side-panel={activePanel}
+      >
+        {isOverlay && sideRailPanel === 'thisTable' && renderMobileSidePanelTabs()}
+        <TableSideRailShell title={title} onClose={closeSideRailPanel}>
+          {panelContent}
+        </TableSideRailShell>
+      </div>
+    );
+
+    if (isOverlay) {
+      return (
+        <div
+          className={TABLE_UX.mobileSidePanelOverlay}
+          role=\"presentation\"
+          onClick={() => setSideRailPanel(null)}
+        >
+          <div
+            className={TABLE_UX.mobileSidePanelSheet}
+            role=\"dialog\"
+            aria-modal=\"true\"
+            aria-label={title}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {shell}
+          </div>
+        </div>
+      );
+    }
+    return shell;
+  }
+
+  function renderTableHeader() {
+    return (
+      <header
+        {...sxmSectionProps(
+          SXM_LAYOUT.appHeader,
+          TABLE_UX.tableHeader,
+          layoutDebug ? TABLE_UX.layoutDebug : '',
+        )}
+      >
+        <div className=\"bj-casino__toolbar\">
+          <div {...sxmSectionProps(SXM_LAYOUT.viewSwitcher, 'bj-casino__view-toggle')}>
+            <button type=\"button\" className={viewMode === 'full' ? 'bj-casino__view-btn--active' : 
+'bj-casino__view-btn'} onClick={() => setViewMode('full')}>Full Table</button>
+            <button type=\"button\" className={viewMode === 'card' ? 'bj-casino__view-btn--active' : 
+'bj-casino__view-btn'} onClick={() => setViewMode('card')}>Card View</button>
+          </div>
+          {renderTableNav()}
+        </div>
+      </header>
+    );
+  }
+
+  const clothProtocolLabel = getBlackjackProtocolOrDefault(gameState.blackjackProtocolId).displayName;
+  const clothWagerText =
+    tableMeta.tableMode === 'practice'
+      ? resolveTableClothWager(tableMeta) || 'Practice'
+      : resolveTableClothWager(tableMeta) || getTableWagerDisplay(gameState);
+
+  const cardViewSharedProps = {
+    gameState: tableVisualState,
+    logicalGameState: gameState,
+    viewerPersonId,
+    onlineTableId,
+    viewerAuth,
+    deviceView,
+    focusBoxId: focusBoxId ?? undefined,
+    activeBoxId: uiActiveBoxId,
+    heroHandKeyOverride: handTransitionHold.holdActiveHandKey,
+    handHoldActive: Boolean(handTransitionHold.holdActiveHandKey),
+    showHoleHidden,
+    protocolPhase,
+    cardRevealComplete,
+    activeHandRevealComplete,
+    bettingOpen,
+    gameEnded,
+    onBack: () => setViewMode('full'),
+  };
+
+  return (
+    <div
+      ref={layoutRootRef}
+      {...sxmSectionProps(SXM_LAYOUT.layoutRoot, `bj-casino ${viewRootClass}`)}
+      aria-label=\"Blackjack table\"
+      data-view-mode={viewMode}
+      data-device-view={deviceView}
+      data-phase={protocolPhase}
+      data-bj-view={deviceView === 'desktop' ? viewMode : undefined}
+      data-bj-phase={desktopLayoutPhase}
+      data-game-ended={gameEnded ? 'true' : 'false'}
+      data-game-over-ui={showGameOverActions ? 'true' : 'false'}
+    >
+      {tableMeta.showBankerSetup && tableMeta.agreement && (
+        <BankerSetupPanel gameState={gameState} onConfirm={onGameStateChange} />
+      )}
+
+      {activeTablePanel === 'playLedger' && deviceView !== 'mobile' && (
+        <PlayLedgerModal
+          open
+          onClose={() => setActiveTablePanel(null)}
+          gameState={gameState}
+        />
+      )}
+      {activeTablePanel === 'settings' && deviceView !== 'mobile' && (
+        <BlackjackFlowSettingsMenu
+          gameState={gameState}
+          onGameStateChange={onGameStateChange}
+          open
+          onClose={() => setActiveTablePanel(null)}
+          tableDetails={tableDetailsProps}
+        />
+      )}
+
+      {renderCanonicalGameOverModal()}
+
+      {showRoundSummaryOverlay && roundSummaryOverlayModel && (
+        <RoundSummaryOverlay
+          open
+          model={roundSummaryOverlayModel}
+          deck={deck}
+          pending={nextRoundPending}
+          onPlayOn={() => {
+            setRoundSummaryDismissed(true);
+            handleNextRound();
+          }}
+          onClose={() => setRoundSummaryDismissed(true)}
+          onDontShowAgain={() => {
+            onGameStateChange({
+              ...gameState,
+              tableMeta: {
+                ...gameState.tableMeta,
+                showRoundSummaryOverlay: false,
+              },
+            });
+            setRoundSummaryDismissed(true);
+          }}
+        />
+      )}
+
+      <LocalProfileSetup
+        open={profileOpen}
+        required={!isOnlineModeEnabled() && !loadProfile().name.trim()}
+        onClose={() => setProfileOpen(false)}
+        onSaved={(saved) => {
+          const personId = tableMeta.ownerPersonId;
+          if (personId) {
+            run((s) => setPersonPlayFlow(s, personId, saved.playFlow));
+          }
+        }}
+      />
+      <AssignChipsModal
+        gameState={gameState}
+        open={assignChipsOpen}
+        onClose={() => setAssignChipsOpen(false)}
+        onAssign={onGameStateChange}
+        onAssignOnline={
+          onlineDispatch
+            ? (params) => onlineDispatch('assignChips', params)
+            : undefined
+        }
+      />
+      <ChangeMinBetModal
+        gameState={gameState}
+        open={minBetOpen}
+        onClose={() => setMinBetOpen(false)}
+        onSave={onGameStateChange}
+      />
+
+      {shouldShowMobileFullTableFallback(isUltraNarrowViewport, viewMode) ? (
+        <FullTableMobileFallback onSwitchToCardView={() => setViewMode('card')} />
+      ) : (
+      <div
+        className={[
+          deviceView === 'desktop' ? TABLE_UX.desktopStage : '',
+          deviceView === 'desktop' && sideRailPanel && !showGameOverModal
+            ? 'bj-casino__desktop-stage--with-rail'
+            : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+      <div
+        {...sxmSectionProps(
+          SXM_LAYOUT.tableShell,
+          'bj-casino__rail-wrap',
+          deviceView === 'desktop' ? TABLE_UX.desktopTableShell : TABLE_UX.mobileTableShell,
+        )}
+      >
+      {renderTableHeader()}
+      <div className={`bj-casino__rail ${TABLE_UX.rail}`}>
+          <div
+            className={`bj-casino__felt ${TABLE_UX.surface}${viewMode === 'card' ? ' bj-casino__felt--card-view' : ''} 
+${feltSkinModifierClass(resolveTableFeltSkin(tableMeta))}`}
+            {...mobileFeltTouchHandlers}
+          >
+          <Magic8Ball
+            variant=\"table\"
+            compact
+            controlOnly
+            canShake={magic8ShakeAllowed}
+            answer={magic8Answer}
+            onAnswer={setMagic8Answer}
+          />
+          <BlackjackTableLayoutShell
+            layoutDebug={layoutDebug}
+            tableBankInfo={
+              <TableInfoBar
+                gameState={gameState}
+                displayState={tableVisualState}
+                viewerPersonId={viewerPersonId}
+                variant=\"felt\"
+              />
+            }
+            feltClothLayer={
+              resolveTableFeltSkin(tableMeta) === 'classic-casino' ? (
+                <BlackjackFeltClothLayer
+                  tableName={resolveTableClothName(tableMeta)}
+                  wagerText={clothWagerText}
+                  protocolText={clothProtocolLabel}
+                  customRulesText=\"House Rules: Standard\"
+                />
+              ) : null
+            }
+            dealer={
+              <BlackjackDealerArea
+                {...dealerBlockProps}
+                dealerCards={dealerCardNodes}
+                omitCommand
+              />
+            }
+            command={
+              <BlackjackCommandBox
+                commandMessage={
+                  showGameOverActions ? null : tableCommand.commandMessage
+                }
+                commandLines={showGameOverActions ? [] : tableCommand.commandLines}
+                gameEnded={gameEnded}
+              />
+            }
+            summaryExtras={renderSummaryContent()}
+            actions={renderActionsContent()}
+            cardsArea={
+              viewMode === 'full' ? (
+                <div
+                    className={[
+                      'bj-table-slot-row',
+                      'bj-arc',
+                      'bj-arc--cards',
+                      FULL_TABLE_CARD_AREA_CLASS,
+                      visibleArcClass,
+                      showAddBoxLead ? 'bj-table-slot-row--with-add' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    style={{ '--slot-count': effectiveVisibleBoxCount } as CSSProperties}
+                  >
+                    {showAddBoxLead ? (
+                      <div className=\"bj-table-slot-row__lead-spacer\" aria-hidden=\"true\" />
+                    ) : null}
+                    {displaySlots.map((slot) =>
+                      slot.playerId
+                        ? renderArcCardColumn(slot.playerId, slot.slotNumber)
+                        : renderEmptyCardColumn(slot.slotNumber),
+                    )}
+                  </div>
+              ) : isCardViewDesktop ? (
+                <CardViewDesktopHeroArea
+                  gameState={tableVisualState}
+                  logicalGameState={gameState}
+                  viewerPersonId={viewerPersonId}
+                  onlineTableId={onlineTableId}
+                  viewerAuth={viewerAuth}
+                  focusBoxId={focusBoxId ?? undefined}
+                  activeBoxId={uiActiveBoxId}
+                  heroHandKeyOverride={handTransitionHold.holdActiveHandKey}
+                  protocolPhase={protocolPhase}
+                  gameEnded={gameEnded}
+                  cardRevealComplete={cardRevealComplete}
+                />
+              ) : (
+                <BlackjackCardView
+                  {...cardViewSharedProps}
+                  segment=\"all\"
+                />
+              )
+            }
+            cardsAreaMode={viewMode === 'full' ? 'table' : 'hero'}
+            deviceView={deviceView}
+            playerBoxes={renderPlayerBoxesArc()}
+            chipTray={renderTrayInner()}
+            actionOverlays={renderActionOverlays()}
+          />
+        </div>
+        </div>
+      </div>
+      {deviceView === 'mobile' && sideRailPanel && renderSideRailPanel('overlay')}
+      {thisTableInline && sideRailPanel && renderSideRailPanel('dock')}
+      </div>
+      )}
+      <BlackjackLayoutDebugPanel
+        enabled={layoutDebug}
+        layoutRootRef={layoutRootRef}
+        viewRootClass={viewRootClass}
+        viewMode={viewMode}
+        deviceView={deviceView}
+        isMobileViewport={isMobileViewport}
+        protocolPhase={protocolPhase}
+        uiProtocolPhase={layoutDebug ? uiProtocolPhase : undefined}
+        cardRevealComplete={layoutDebug ? cardRevealComplete : undefined}
+        commandMessage={layoutDebug ? tableCommand.commandMessage : undefined}
+        commandMessageSource={
+          layoutDebug ? 'buildBlackjackCommandText ÔåÆ gateCommandForReveal' : undefined
+        }
+        boxRevealDiagnostics={layoutDebug ? layoutDebugBoxReveal : undefined}
+        desktopLayoutPhase={desktopLayoutPhase}
+        visibleBoxCount={effectiveVisibleBoxCount}
+        selectedBettingBoxId={selectedBettingBoxIdForUi}
+        selectedBettingSlotNumber={selectedBettingSlotNumber}
+        chipTargetPreview={layoutDebug ? resolveActiveChipTrayTarget() : null}
+        trayComponentLabel=\"ValueAndChipsBar ┬À bj-value-chips ┬À bj-table-zone--bottom\"
+      />
+    </div>
+  );
+}
+"
+
+ ÔØ» src/components/playerBoxCardComposition.test.ts:19:23
+     17|
+     18|   it('renders composition from visible hand card ids only', () => {
+     19|     expect(PANEL_SRC).toMatch(
+       |                       ^
+     20|       /const visibleCardIds = primaryHandKey[\s\S]*getVisibleHandCardIÔÇª
+     21|     );
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/2]ÔÄ»
+
+ FAIL  src/components/playerBoxCardComposition.test.ts > player box visible card composition > styles composition text 
+in player boxes without absolute positioning
+AssertionError: expected '/**\n * bj-table-shared.css ÔÇö TOKENS ÔÇª' not to match 
+/\.bj-phone-view__mini-hand-compositioÔÇª/
+
+- Expected:
+/\.bj-phone-view__mini-hand-composition[\s\S]*position:\s*absolute/
+
++ Received:
+"/**
+ * bj-table-shared.css ÔÇö TOKENS + shared surface/seat/action/side-rail VISUALS.
+ * Contract: src/components/tableLayoutEngine.ts (CSS_OWNERSHIP.tokensAndVisuals).
+ *
+ * MAY OWN  : :root design tokens (incl. mobile --bj-zone-* band heights/gaps consumed by the
+ *            shell grid), colors, borders, seat/box/tray visual chrome, side-rail panel styling.
+ * MUST NOT : own the shell grid, grid templates, named grid-row placement, or zone bands ÔÇö
+ *            that is bj-blackjack-table-shell.css (the single Table Layout Engine owner).
+ *            (Guarded by productionRouteOwnership.test.ts: no named-row grid geometry here.)
+ * Full Table + Card View (desktop + mobile) consume these ÔÇö view roots only tweak proportions.
+ */
+
+:root {
+  --bj-table-rail-radius: var(--ds-radius-lg);
+  --bj-table-felt-radius: calc(var(--ds-radius-lg) - 0.15rem);
+  --bj-table-felt-min-height: min(58dvh, 28rem);
+  --bj-table-felt-border: 1px solid rgb(251 191 36 / 0.12);
+  --bj-table-felt-bg:
+    radial-gradient(ellipse 100% 70% at 50% 20%, rgb(251 191 36 / 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at center, var(--ds-color-felt-mid) 0%, var(--ds-color-felt) 45%, 
+var(--ds-color-felt-dark) 100%);
+  --bj-table-rail-bg: linear-gradient(180deg, var(--ds-color-rail) 0%, #1a1008 100%);
+
+  --bj-seat-radius: var(--ds-radius-md);
+  --bj-seat-border: 1.5px solid rgb(251 191 36 / 0.38);
+  --bj-seat-bg: rgb(0 0 0 / 0.32);
+  --bj-seat-frame-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 2px 10px rgb(0 0 0 / 0.35);
+  --bj-seat-empty-border: 1px dashed var(--ds-color-border-subtle);
+  --bj-seat-active-border: var(--ds-color-gold);
+  --bj-seat-active-bg: rgb(251 191 36 / 0.16);
+  --bj-seat-selected-border: var(--bj-seat-active-border);
+  --bj-seat-selected-bg: rgb(251 191 36 / 0.1);
+  --bj-seat-assigned-border: rgb(125 211 252 / 0.45);
+  --bj-seat-assigned-bg: rgb(125 211 252 / 0.08);
+
+  --bj-seat-label-size: 0.42rem;
+  --bj-seat-name-size: 0.48rem;
+  --bj-seat-total-size: 1.25rem;
+  --bj-box-stake-amount-size: 0.72rem;
+  --bj-seat-meta-size: 0.42rem;
+
+  --bj-actions-panel-bg: transparent;
+  --bj-actions-panel-border: 1px solid rgb(160 209 183 / 0.28);
+  --bj-actions-panel-radius: 0.5rem;
+  --bj-actions-panel-padding: 0.12rem 0.4rem 0.08rem;
+  --bj-actions-panel-max-width: 20rem;
+  --bj-actions-panel-compact-max-height: 2.85rem;
+  --bj-actions-row-gap: 0.08rem;
+  --bj-actions-primary-row-gap: 0.12rem;
+  --bj-actions-primary-btn-min-height: 1.65rem;
+  --bj-actions-primary-btn-max-height: 1.65rem;
+  --bj-actions-primary-btn-min-width: 4.5rem;
+  --bj-actions-secondary-btn-min-height: 1.22rem;
+  --bj-actions-btn-radius: 0.5rem;
+  --bj-actions-btn-font-size: 0.66rem;
+  --bj-actions-btn-sm-font-size: 0.54rem;
+  --bj-actions-legal-bg: var(--ds-color-gold, #fbbf24);
+  --bj-actions-legal-color: #1a1a1a;
+  --bj-actions-legal-border: rgb(251 191 36 / 0.55);
+  --bj-actions-legal-shadow: 0 0 10px rgb(251 191 36 / 0.25);
+
+  --bj-side-rail-bg: linear-gradient(180deg, rgb(12 28 22 / 0.97) 0%, rgb(6 16 12 / 0.98) 100%);
+  --bj-side-rail-border: 1px solid rgb(255 255 255 / 0.14);
+  --bj-side-rail-radius: var(--ds-radius-md);
+  --bj-side-rail-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+  --bj-side-rail-header-bg: rgb(0 0 0 / 0.28);
+
+  /* Canonical layout shell + zone dimensions (Full Table and Card View share these). */
+  --bj-shell-width: min(98vw, 86rem);
+  --bj-shell-height: min(88vh, 56rem);
+  --bj-desktop-side-rail-width: 12.5rem;
+  --bj-desktop-stage-gap: 0.5rem;
+  --bj-desktop-header-band: 5.75rem;
+  --bj-desktop-table-width-with-rail: min(
+    calc(var(--bj-shell-width) - var(--bj-desktop-side-rail-width) - var(--bj-desktop-stage-gap)),
+    calc(100vw - var(--bj-desktop-side-rail-width) - 2rem)
+  );
+  --bj-zone-dealer-height: 7.5rem;
+  --bj-zone-command-height: 2rem;
+  --bj-zone-command-max-height: 3.25rem;
+  --bj-zone-actions-height: 4.25rem;
+  --bj-zone-cards-min-height: 0;
+  --bj-zone-boxes-height: 6.25rem;
+  --bj-zone-tray-height: 2.75rem;
+  --bj-zone-boxes-tray-gap: 1.35rem;
+  --bj-zone-tray-padding-bottom: 0.42rem;
+  --bj-desktop-zone-dealer-height: 7.75rem;
+  --bj-desktop-zone-command-height: 4rem;
+  --bj-desktop-zone-command-gap: 0;
+  --bj-dealer-command-gap: 0.08rem;
+  --bj-command-actions-gap: 0.08rem;
+  --bj-command-cards-gap: 0.35rem;
+  --bj-cards-actions-gap: 0.55rem;
+  --bj-actions-cards-safe-gap: var(--bj-cards-actions-gap);
+  --bj-table-grid-gap-cards-actions: var(--bj-cards-actions-gap);
+  --bj-desktop-grid-gap-cards-actions: var(--bj-cards-actions-gap);
+  /* Legacy aliases ÔÇö prefer dealer/command/actions names above. */
+  --bj-dealer-actions-gap: var(--bj-dealer-command-gap);
+  --bj-actions-command-gap: var(--bj-command-actions-gap);
+  --bj-command-cards-safe-gap: var(--bj-command-cards-gap);
+  --bj-table-grid-gap-command-cards: var(--bj-command-cards-gap);
+  --bj-desktop-grid-gap-command-cards: var(--bj-command-cards-gap);
+  --bj-desktop-zone-actions-height: 2.9rem;
+  --bj-hero-cards-top-inset: 0.65rem;
+  --bj-desktop-zone-hero-value-height: calc(
+    var(--bj-seat-total-size, 0.52rem) * 1.35 * var(--bj-desktop-cardview-hero-value-scale, 0.7) + 0.32rem
+  );
+  --bj-desktop-zone-boxes-height: 6.65rem;
+  --bj-desktop-zone-tray-height: 4.35rem;
+  --bj-desktop-zone-boxes-tray-gap: 1.1rem;
+  --bj-desktop-bottom-padding: 0.7rem;
+  --bj-desktop-grid-row-cards: minmax(0, 1fr);
+  --bj-player-box-width: 4.85rem;
+  --bj-player-box-height: 4.35rem;
+  --bj-action-panel-width: var(--bj-actions-panel-max-width);
+  --bj-action-panel-height: var(--bj-zone-actions-height);
+  --bj-card-boxes-padding-bottom: 0.35rem;
+  --bj-card-boxes-padding-inline: 0.75rem;
+
+  /* Legacy aliases ÔÇö single source of truth above. */
+  --bj-desktop-table-height: var(--bj-shell-height);
+  --bj-full-desktop-table-height: var(--bj-shell-height);
+  --bj-card-desktop-table-height: var(--bj-shell-height);
+  --bj-full-desktop-tray-padding-bottom: 0.42rem;
+  --bj-desktop-table-max-width: var(--bj-shell-width);
+  --bj-desktop-rail-padding: 0.35rem 0.5rem 0.45rem;
+  --bj-desktop-felt-bg: var(--bj-table-felt-bg);
+  --bj-desktop-seat-width: var(--bj-player-box-width);
+  --bj-desktop-mini-hand-width: var(--bj-player-box-width);
+  --bj-desktop-mini-hand-height: var(--bj-player-box-height);
+  --bj-desktop-seat-min-height: 3.65rem;
+  --bj-desktop-mini-row-height: 7.25rem;
+  --bj-table-zone-dealer-min-height: var(--bj-zone-dealer-height);
+  --bj-dealer-cards-slot-min-height: 3.35rem;
+  --bj-table-zone-summary-min-height: var(--bj-zone-command-height);
+  --bj-table-zone-actions-min-height: var(--bj-zone-actions-height);
+  --bj-desktop-actions-row-height: var(--bj-zone-actions-height);
+  --bj-desktop-boxes-row-height: var(--bj-zone-boxes-height);
+  --bj-table-zone-tray-min-height: var(--bj-zone-tray-height);
+  --bj-table-zone-play-min-height: 8rem;
+  --bj-table-zone-cards-min-height: 3.75rem;
+  --bj-table-zone-boxes-min-height: 5.25rem;
+  --bj-table-center-column-max-width: 28rem;
+  /* Full Table player cards ÔÇö medium-large, hand-size-aware overlap (see .bj-arc__cards-stack). */
+  --bj-table-card-width: 2.65rem;
+  --bj-table-card-height: 3.55rem;
+  --bj-table-card-overlap-2: 1.25rem;
+  --bj-table-card-overlap-3: 1.75rem;
+  --bj-table-card-overlap-4plus: 2.15rem;
+  --bj-table-actions-play-gap: 0.65rem;
+  --bj-table-play-actions-buffer: 0.25rem;
+  --bj-full-table-box-width: var(--bj-player-box-width);
+  --bj-full-table-box-height: var(--bj-player-box-height);
+  --bj-full-table-box-padding: 0.1rem 0.16rem 0.08rem;
+  --bj-full-table-box-gap: 0.02rem;
+  --bj-full-table-stake-min-height: 1.55rem;
+  --bj-box-value-band-height: 0.9rem;
+  --bj-cardview-zone-summary-height: 2.5rem;
+  --bj-cardview-zone-actions-height: var(--bj-zone-actions-height);
+  --bj-cardview-zone-boxes-height: var(--bj-zone-boxes-height);
+  --bj-cardview-desktop-mini-hand-width: var(--bj-player-box-width);
+  --bj-cardview-desktop-mini-hand-height: var(--bj-player-box-height);
+  --bj-cardview-desktop-mini-row-height: 4.85rem;
+  --bj-cardview-mobile-mini-hand-width: 2.3rem;
+  --bj-cardview-mobile-mini-hand-max-width: 2.55rem;
+  --bj-cardview-mobile-mini-hand-height: 2.2rem;
+}
+
+/* MOBILE_LAYOUT_MEDIA ÔÇö sync with src/styles/mobileLayoutContract.ts */
+@media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
+  .bj-view-full-mobile.bj-casino,
+  .bj-view-card-mobile.bj-casino {
+    --bj-seat-label-size: 0.462rem;
+    --bj-seat-name-size: 0.528rem;
+    --bj-seat-total-size: 0.792rem;
+    --bj-box-stake-amount-size: 0.792rem;
+    --bj-seat-meta-size: 0.462rem;
+    --bj-actions-btn-font-size: 0.638rem;
+    --bj-actions-btn-sm-font-size: 0.55rem;
+  }
+
+  :root {
+    --bj-seat-total-size: 0.72rem;
+    --bj-actions-btn-font-size: 0.58rem;
+    --bj-actions-btn-sm-font-size: 0.5rem;
+    --bj-actions-panel-padding: 0.18rem 0.38rem;
+    --bj-mobile-mini-hand-width: 2.55rem;
+    --bj-mobile-mini-hand-max-width: 2.85rem;
+    --bj-mobile-mini-hand-height: 2.45rem;
+    --bj-mobile-box-width: 6.25rem;
+    --bj-mobile-box-height: 5.35rem;
+    --bj-mobile-box-card-scale: 1.2;
+    --bj-mobile-box-gap: 0.03rem;
+    --bj-mobile-add-button-width: 1.5rem;
+    --bj-mobile-add-button-gap: 0.03rem;
+    --bj-full-table-box-padding: 0.05rem 0.06rem 0.08rem;
+    --bj-mobile-felt-min-height: 0;
+    --bj-mobile-felt-fill-grow: 1 1 auto;
+    --bj-mobile-table-canvas-height: calc(
+      100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2.75rem
+    );
+    --bj-mobile-table-width: 100%;
+    --bj-mobile-rail-width: 100%;
+    --bj-mobile-felt-width: 100%;
+    --bj-mobile-layout-shell-width: 100%;
+    --bj-mobile-table-height: var(--bj-mobile-table-canvas-height);
+    --bj-mobile-felt-height: 100%;
+    --bj-mobile-layout-shell-height: 100%;
+    --bj-mobile-dealer-oracle-width: 4.75rem;
+    --bj-mobile-zone-command-top-gap: 0.48rem;
+    --bj-mobile-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --bj-mobile-rail-padding: 0.22rem 0.38rem max(0.45rem, calc(env(safe-area-inset-bottom, 0px) + 0.28rem));
+    --bj-zone-tray-padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.45rem));
+    --bj-mobile-tray-inner-reserve: 0.4rem;
+    --bj-mobile-zone-dealer-height: 5.15rem;
+    --bj-mobile-zone-command-height: 2.25rem;
+    --bj-mobile-zone-command-playing-height: 2.85rem;
+    --bj-zone-command-max-height: 3.4rem;
+    --bj-mobile-zone-actions-height: 2.45rem;
+    --bj-mobile-zone-cards-min-height: 0;
+    --bj-mobile-zone-boxes-height: 5.75rem;
+    --bj-mobile-zone-tray-height: 3.85rem;
+    --bj-zone-boxes-tray-gap: 0.48rem;
+    --bj-cards-actions-gap: 0.62rem;
+    --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
+    --bj-zone-command-height: var(--bj-mobile-zone-command-height);
+    --bj-zone-actions-height: var(--bj-mobile-zone-actions-height);
+    --bj-zone-cards-min-height: var(--bj-mobile-zone-cards-min-height);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+    --bj-zone-tray-height: var(--bj-mobile-zone-tray-height);
+    --bj-cloth-mobile-width: 100%;
+    --bj-cloth-mobile-scale: 1.28;
+    --bj-cloth-mobile-bottom: calc(var(--bj-zone-tray-height) + 0.1rem);
+    --bj-cloth-mobile-top: calc(
+      var(--bj-zone-dealer-height) + var(--bj-zone-command-height) + var(--bj-zone-actions-height) + 0.06rem
+    );
+    --bj-table-zone-dealer-min-height: var(--bj-mobile-zone-dealer-height);
+    --bj-table-zone-summary-min-height: var(--bj-mobile-zone-command-height);
+    --bj-table-zone-actions-min-height: var(--bj-mobile-zone-actions-height);
+    --bj-table-zone-boxes-min-height: var(--bj-mobile-zone-boxes-height);
+    --bj-table-zone-tray-min-height: var(--bj-mobile-zone-tray-height);
+    --bj-table-card-width: 1.95rem;
+    --bj-table-card-height: 2.65rem;
+    --bj-table-card-overlap-2: 0.95rem;
+    --bj-table-card-overlap-3: 1.35rem;
+    --bj-table-card-overlap-4plus: 1.65rem;
+    --bj-table-actions-play-gap: 0.35rem;
+    --bj-table-grid-gap-cards-actions: var(--bj-cards-actions-gap);
+    --bj-table-grid-gap-command-cards: var(--bj-command-cards-gap);
+    --bj-command-cards-safe-gap: var(--bj-command-cards-gap);
+    --bj-hero-cards-top-inset: 0.48rem;
+    --bj-table-play-actions-buffer: 0.12rem;
+    --bj-table-zone-cards-min-height: 2.85rem;
+    --bj-full-table-box-width: var(--bj-mobile-box-width);
+    --bj-full-table-box-height: var(--bj-mobile-box-height);
+    --bj-full-table-stake-min-height: 1.5rem;
+    --bj-mobile-zone-boxes-height: calc(
+      var(--bj-mobile-box-height) + var(--bj-box-value-band-height) + 0.18rem
+    );
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+    --bj-table-zone-boxes-min-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  /* Mobile Full Table + Card View ÔÇö one felt/rail/box visual system. */
+  .bj-view-full-mobile,
+  .bj-view-card-mobile {
+    --bj-mobile-box-width: 6.25rem;
+    --bj-mobile-box-height: 5.35rem;
+    --bj-mobile-box-card-scale: 1.2;
+    --bj-mobile-box-value-scale: 2;
+    --bj-mobile-box-gap: 0.03rem;
+    --bj-mobile-add-button-width: 1.5rem;
+    --bj-mobile-add-button-gap: 0.03rem;
+    --bj-full-table-box-padding: 0.05rem 0.06rem 0.08rem;
+    --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
+    --bj-zone-command-height: var(--bj-mobile-zone-command-height);
+    --bj-zone-actions-height: var(--bj-mobile-zone-actions-height);
+    --bj-zone-cards-min-height: var(--bj-mobile-zone-cards-min-height);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+    --bj-zone-tray-height: var(--bj-mobile-zone-tray-height);
+    --bj-zone-boxes-tray-gap: 0.32rem;
+    --bj-zone-tray-padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.45rem));
+    width: var(--bj-mobile-table-width);
+    max-width: var(--bj-mobile-table-width);
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .bj-view-full-mobile .bj-casino__felt,
+  .bj-view-card-mobile .bj-casino__felt {
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+
+  .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ),
+  .bj-view-full-mobile
+    .bj-table-slot-row.bj-arc--player-boxes
+    .bj-arc__slot--owned
+    .bj-phone-view__box-value--above,
+  .bj-view-full-mobile
+    .bj-table-slot-row.bj-arc--player-boxes
+    .bj-arc__slot--has-stake
+    .bj-phone-view__box-value--above,
+  .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ),
+  .bj-view-card-mobile
+    .bj-table-slot-row.bj-arc--player-boxes
+    .bj-arc__slot--owned
+    .bj-phone-view__box-value--above,
+  .bj-view-card-mobile
+    .bj-table-slot-row.bj-arc--player-boxes
+    .bj-arc__slot--has-stake
+    .bj-phone-view__box-value--above {
+    font-size: calc(0.58rem * var(--bj-mobile-box-value-scale, 2));
+    min-height: calc(0.95rem * var(--bj-mobile-box-value-scale, 2) * 0.55);
+    max-height: calc(1.05rem * var(--bj-mobile-box-value-scale, 2) * 0.55);
+    line-height: 1.05;
+  }
+
+  .bj-view-full-mobile .bj-casino__rail,
+  .bj-view-card-mobile .bj-casino__rail {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    width: var(--bj-mobile-rail-width);
+    max-width: var(--bj-mobile-rail-width);
+    min-width: 0;
+    padding: var(--bj-mobile-rail-padding);
+    border-radius: var(--bj-table-rail-radius);
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-mobile .bj-casino__felt,
+  .bj-view-card-mobile .bj-casino__felt,
+  .bj-view-full-mobile .bj-casino__felt--card-view,
+  .bj-view-card-mobile .bj-casino__felt--card-view {
+    flex: var(--bj-mobile-felt-fill-grow);
+    border-radius: var(--bj-table-felt-radius);
+    min-height: var(--bj-mobile-felt-min-height);
+    height: var(--bj-mobile-felt-height);
+    align-self: stretch;
+    padding: 0.28rem 0.42rem 0.32rem;
+    width: var(--bj-mobile-felt-width);
+    max-width: var(--bj-mobile-felt-width);
+    min-width: 0;
+    box-sizing: border-box;
+    background: var(--bj-table-felt-bg);
+    border: var(--bj-table-felt-border);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-phone-view__mini-hand:not(.bj-phone-view__mini-hand--full-arc),
+  .bj-view-full-mobile .bj-arc__slot .bj-phone-view__mini-hand:not(.bj-phone-view__mini-hand--full-arc),
+  .bj-view-card-mobile .bj-phone-view__mini-hand:not(.bj-phone-view__mini-hand--full-arc) {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    min-height: var(--bj-mobile-mini-hand-height);
+    height: var(--bj-mobile-mini-hand-height);
+    padding: 0.1rem 0.04rem;
+  }
+
+  /* Player box tile sizing ÔÇö canonical rules in bj-player-row-layout.css (.bj-table-slot-row). */
+
+  .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above,
+  .bj-arc--player-boxes .bj-arc__slot--has-stake .bj-phone-view__box-value--above {
+    display: block;
+  }
+
+  /* Full Table card slots ÔÇö canonical rules in bj-full-table-card-area.css */
+
+  .bj-mobile-table-shell {
+    flex: var(--bj-mobile-felt-fill-grow);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bj-view-full-mobile.bj-casino,
+  .bj-view-card-mobile.bj-casino {
+    flex: var(--bj-mobile-felt-fill-grow);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bj-view-full-mobile .bj-mobile-table-shell,
+  .bj-view-card-mobile .bj-mobile-table-shell {
+    flex: var(--bj-mobile-felt-fill-grow);
+    min-height: 0;
+    width: var(--bj-mobile-table-width);
+    max-width: var(--bj-mobile-table-width);
+    height: var(--bj-mobile-table-height);
+    max-height: var(--bj-mobile-table-height);
+    box-sizing: border-box;
+  }
+
+  .bj-casino__mobile-panel-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    background: rgb(0 0 0 / 0.45);
+  }
+
+  .bj-casino__mobile-panel-sheet {
+    width: 100%;
+    max-width: 100%;
+    max-height: min(88dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 2rem));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border-radius: 14px 14px 0 0;
+    background: var(--ds-color-surface-raised, #1a2332);
+    box-shadow: 0 -8px 32px rgb(0 0 0 / 0.35);
+  }
+
+  .bj-casino__mobile-panel-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.45rem 0.55rem 0;
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .bj-casino__mobile-panel-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.35rem 0.25rem;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+    border-radius: 6px 6px 0 0;
+    background: transparent;
+    color: rgb(255 255 255 / 0.65);
+    cursor: pointer;
+  }
+
+  .bj-casino__mobile-panel-tab--active {
+    color: var(--ds-color-gold, #f0d060);
+    border-color: rgb(255 255 255 / 0.12);
+    background: rgb(255 255 255 / 0.06);
+  }
+
+  .bj-casino__this-table--overlay {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bj-casino__this-table--overlay .bj-side-rail-shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .bj-view-full-mobile .bj-casino__tray-wrap,
+  .bj-view-card-mobile .bj-casino__tray-wrap {
+    flex: 0 0 auto;
+    flex-shrink: 0;
+    width: 100%;
+  }
+
+  @media (orientation: landscape) {
+    :root {
+      --bj-mobile-landscape-compact: 1;
+      --bj-mobile-felt-min-height: 0;
+      --bj-mobile-table-canvas-height: min(
+        calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.35rem),
+        calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.35rem)
+      );
+      --bj-mobile-zone-dealer-height: 4.25rem;
+      --bj-mobile-zone-command-height: 1.55rem;
+      --bj-mobile-zone-actions-height: 2.15rem;
+      --bj-mobile-zone-tray-height: 2.65rem;
+      --bj-mobile-zone-command-top-gap: 0.28rem;
+      --bj-full-table-box-height: 2.55rem;
+      --bj-cloth-mobile-width: 100%;
+      --bj-cloth-mobile-scale: 1.02;
+      --bj-cloth-mobile-bottom: calc(var(--bj-zone-tray-height) + 0.04rem);
+      --bj-cloth-mobile-top: calc(
+        var(--bj-zone-dealer-height) + var(--bj-zone-command-height) + 0.03rem
+      );
+    }
+
+    .bj-view-full-mobile,
+    .bj-view-card-mobile {
+      --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
+      --bj-zone-command-height: var(--bj-mobile-zone-command-height);
+      --bj-zone-actions-height: var(--bj-mobile-zone-actions-height);
+      --bj-zone-tray-height: var(--bj-mobile-zone-tray-height);
+      --bj-zone-boxes-tray-gap: 0.5rem;
+      --bj-zone-tray-padding-bottom: max(0.55rem, calc(env(safe-area-inset-bottom, 0px) + 0.28rem));
+    }
+
+    .bj-view-full-mobile,
+    .bj-view-card-mobile {
+      --bj-mobile-zone-boxes-height: calc(
+        var(--bj-full-table-box-height) + var(--bj-box-value-band-height) + 0.12rem
+      );
+      --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+      --bj-table-zone-boxes-min-height: var(--bj-mobile-zone-boxes-height);
+    }
+
+    .bj-view-full-mobile.bj-casino,
+    .bj-view-full-mobile .bj-mobile-table-shell,
+    .bj-view-full-mobile .bj-casino__rail-wrap,
+    .bj-view-full-mobile .bj-casino__rail,
+    .bj-view-full-mobile .bj-casino__felt,
+    .bj-view-card-mobile.bj-casino,
+    .bj-view-card-mobile .bj-mobile-table-shell,
+    .bj-view-card-mobile .bj-casino__rail-wrap,
+    .bj-view-card-mobile .bj-casino__rail,
+    .bj-view-card-mobile .bj-casino__felt {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .bj-view-full-mobile .bj-casino__felt,
+    .bj-view-card-mobile .bj-casino__felt {
+      min-height: 0;
+    }
+
+    .bj-view-full-mobile .bj-casino__rail-wrap,
+    .bj-view-card-mobile .bj-casino__rail-wrap,
+    .bj-mobile-table-shell {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .bj-view-full-mobile .bj-casino__felt-main,
+    .bj-view-card-mobile .bj-casino__felt-main {
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    .bj-casino__mobile-panel-sheet {
+      max-height: min(72dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 3rem));
+    }
+  }
+
+  .bj-view-full-mobile .bj-arc-separator {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    height: 0;
+    margin: 0;
+    background: none;
+    border: none;
+  }
+
+  .bj-view-full-mobile .bj-arc__slot--owned,
+  .bj-view-card-mobile .bj-arc__slot--owned {
+    background: none;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* Mobile Full Table + Card View ÔÇö shared shell fit (one layout contract). */
+  .bj-view-full-mobile .bj-casino__felt-main,
+  .bj-view-card-mobile .bj-casino__felt-main {
+    flex: var(--bj-mobile-felt-fill-grow);
+    min-height: 0;
+    height: var(--bj-mobile-layout-shell-height);
+    width: var(--bj-mobile-layout-shell-width);
+    min-width: 0;
+    max-width: var(--bj-mobile-layout-shell-width);
+    margin: 0;
+    align-items: stretch;
+    align-self: stretch;
+    overflow-x: hidden;
+    overflow-y: visible;
+    padding: 0.1rem 0.38rem max(0.08rem, env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell,
+  .bj-view-card-mobile .bj-table-layout-shell {
+    width: var(--bj-mobile-layout-shell-width);
+    max-width: var(--bj-mobile-layout-shell-width);
+    min-width: 0;
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    align-self: stretch;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > *,
+  .bj-view-card-mobile .bj-table-layout-shell > * {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-inline: 0;
+  }
+
+  .bj-view-full-mobile .dealer-block,
+  .bj-view-card-mobile .dealer-block {
+    margin-bottom: 0;
+    max-width: 100%;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--dealer,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--dealer {
+    height: auto;
+    min-height: var(--bj-zone-dealer-height);
+    max-height: none;
+    overflow: visible;
+    padding-bottom: 0.04rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--dealer .dealer-block,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--dealer .dealer-block {
+    padding: 0.08rem 0.22rem 0.04rem;
+    max-height: none;
+  }
+
+  /* Mobile player/card rows ÔÇö canonical grid in bj-player-row-layout.css */
+
+  .bj-view-full-mobile .bj-table-zone--boxes,
+  .bj-view-card-mobile .bj-table-zone--boxes {
+    overflow: visible;
+    padding-top: 0.12rem;
+    padding-bottom: 0.1rem;
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes.bj-arc--visible-4,
+  .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-4,
+  .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-4),
+  .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-4) {
+    --bj-mobile-box-width: 6.25rem;
+    --bj-mobile-box-height: 5.35rem;
+    --bj-mobile-box-card-scale: 1.2;
+    --bj-mobile-box-gap: 0.03rem;
+    --bj-mobile-add-button-width: 1.5rem;
+    --bj-mobile-add-button-gap: 0.03rem;
+    --bj-mobile-zone-boxes-height: calc(5.35rem + var(--bj-box-value-band-height) + 0.22rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-4,
+  .bj-view-card-mobile .bj-arc--cards.bj-arc--visible-4 {
+    --bj-table-card-width: calc(var(--bj-full-table-box-width, 6.25rem) * 0.74);
+    --bj-table-card-height: calc(var(--bj-full-table-box-width, 6.25rem) * 1.02);
+    --bj-table-card-overlap-2: calc(var(--bj-table-card-width) * 0.48);
+    --bj-table-card-overlap-3: calc(var(--bj-table-card-width) * 0.68);
+    --bj-table-card-overlap-4plus: calc(var(--bj-table-card-width) * 0.84);
+  }
+
+  .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-5,
+  .bj-view-card-mobile .bj-arc--cards.bj-arc--visible-5 {
+    --bj-table-card-width: calc(var(--bj-full-table-box-width, 5rem) * 0.72);
+    --bj-table-card-height: calc(var(--bj-full-table-box-width, 5rem) * 0.98);
+    --bj-table-card-overlap-2: calc(var(--bj-table-card-width) * 0.48);
+    --bj-table-card-overlap-3: calc(var(--bj-table-card-width) * 0.68);
+    --bj-table-card-overlap-4plus: calc(var(--bj-table-card-width) * 0.84);
+  }
+
+  .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-6,
+  .bj-view-card-mobile .bj-arc--cards.bj-arc--visible-6 {
+    --bj-table-card-width: calc(var(--bj-full-table-box-width, 4.15rem) * 0.7);
+    --bj-table-card-height: calc(var(--bj-full-table-box-width, 4.15rem) * 0.94);
+  }
+
+  .bj-view-full-mobile .bj-arc--cards.bj-arc--visible-7,
+  .bj-view-card-mobile .bj-arc--cards.bj-arc--visible-7 {
+    --bj-table-card-width: calc(var(--bj-full-table-box-width, 3.5rem) * 0.68);
+    --bj-table-card-height: calc(var(--bj-full-table-box-width, 3.5rem) * 0.92);
+  }
+
+  /* Card row grid ÔÇö canonical rules in bj-player-row-layout.css (.bj-table-slot-row.bj-arc--cards) */
+
+  .bj-view-full-mobile .bj-arc--cards .bj-arc__cards--stack-vertical .bj-arc__cards-stack,
+  .bj-view-card-mobile .bj-arc--cards .bj-arc__cards-stack,
+  .bj-view-card-mobile .bj-arc--cards .bj-arc__cards--stack-vertical .bj-arc__cards-stack {
+    width: min(var(--bj-table-card-width), 100%);
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes.bj-arc--visible-5,
+  .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-5,
+  .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-5),
+  .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-5) {
+    --bj-mobile-box-width: 5rem;
+    --bj-mobile-box-height: 4.55rem;
+    --bj-mobile-box-card-scale: 1.08;
+    --bj-mobile-box-gap: 0.03rem;
+    --bj-mobile-add-button-width: 1.5rem;
+    --bj-mobile-add-button-gap: 0.03rem;
+    --bj-mobile-zone-boxes-height: calc(4.55rem + var(--bj-box-value-band-height) + 0.2rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes.bj-arc--visible-6,
+  .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-6,
+  .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-6),
+  .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-6) {
+    --bj-mobile-box-width: 4.15rem;
+    --bj-mobile-box-height: 3.9rem;
+    --bj-mobile-box-card-scale: 0.96;
+    --bj-mobile-box-gap: 0.02rem;
+    --bj-mobile-zone-boxes-height: calc(3.9rem + var(--bj-box-value-band-height) + 0.18rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes.bj-arc--visible-7,
+  .bj-view-card-mobile .bj-arc--player-boxes.bj-arc--visible-7,
+  .bj-view-full-mobile:has(.bj-arc--player-boxes.bj-arc--visible-7),
+  .bj-view-card-mobile:has(.bj-arc--player-boxes.bj-arc--visible-7) {
+    --bj-mobile-box-width: 3.5rem;
+    --bj-mobile-box-height: 3.25rem;
+    --bj-mobile-box-card-scale: 0.84;
+    --bj-mobile-box-gap: 0.02rem;
+    --bj-mobile-zone-boxes-height: calc(3.25rem + var(--bj-box-value-band-height) + 0.16rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+
+  /* Full Table mobile card zone ÔÇö fixed height in bj-full-table-card-area.css */
+
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-player-box-mobile .bj-phone-view__mini-stake-slot,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-player-box-mobile .bj-phone-view__mini-stake-slot,
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot {
+    overflow: visible;
+    contain: none;
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips__pile,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips__pile {
+    transform: scale(0.62);
+    transform-origin: center bottom;
+  }
+
+  .bj-view-full-mobile .bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips--bet,
+  .bj-view-card-mobile .bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips--bet {
+    transform: none;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--bottom,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--bottom {
+    overflow: visible;
+    z-index: 8;
+  }
+
+  .bj-view-full-mobile .bj-phone-view__mini-hand-card-stack,
+  .bj-view-card-mobile .bj-phone-view__mini-hand-card-stack {
+    min-height: calc(1.68rem * var(--bj-mobile-box-card-scale, 1));
+    height: calc(1.68rem * var(--bj-mobile-box-card-scale, 1));
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .bj-view-full-mobile .bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card,
+  .bj-view-card-mobile .bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card {
+    transform: translateX(calc(-50% + var(--mini-card-i, 0) * 0.4rem))
+      scale(calc(0.48 * var(--bj-mobile-box-card-scale, 1)));
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions {
+    margin-top: 0;
+    padding-top: var(--bj-cards-actions-gap);
+    overflow: visible;
+    height: auto;
+    min-height: var(--bj-mobile-zone-actions-height);
+    max-height: none;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar--playing,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar-row--primary,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row:first-child {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--hit,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--stand,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar-extra--compact {
+    min-width: 4.1rem;
+    max-width: 5.1rem;
+    flex: 1 1 4.1rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions {
+    gap: 0.1rem;
+    padding: 0.08rem 0.2rem;
+    max-width: 100%;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row {
+    gap: 0.32rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row + .bj-table-actions__row,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row + .bj-table-actions__row {
+    margin-top: 0.06rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--hit,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--hit {
+    background: rgb(8 22 16 / 0.82);
+    color: rgb(251 191 36 / 0.98);
+    border: 1px solid rgb(251 191 36 / 0.62);
+    box-shadow: none;
+    min-height: 2.75rem;
+    max-height: 2.75rem;
+    min-width: 5.5rem;
+    padding: 0.28rem 0.84rem;
+    font-size: 0.82rem;
+    border-radius: 0.45rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--stand,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .ds-btn--stand {
+    background: rgb(0 0 0 / 0.28);
+    color: rgb(235 245 240 / 0.95);
+    border: 1px solid rgb(255 255 255 / 0.22);
+    min-height: 2.75rem;
+    max-height: 2.75rem;
+    min-width: 5.5rem;
+    padding: 0.28rem 0.84rem;
+    font-size: 0.82rem;
+    border-radius: 0.45rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__btn--sm,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__btn--sm {
+    min-height: 1.15rem;
+    max-height: 1.15rem;
+    padding: 0.08rem 0.36rem;
+    border-radius: 0.32rem;
+    background: rgb(0 0 0 / 0.22);
+    border: 1px solid rgb(251 191 36 / 0.28);
+    color: rgb(251 191 36 / 0.88);
+  }
+
+  .bj-view-full-mobile .bj-table-zone--dealer .dealer-block,
+  .bj-view-card-mobile .bj-table-zone--dealer .dealer-block {
+    max-height: 100%;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--summary,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--summary {
+    margin-top: 0;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: var(--bj-mobile-zone-command-top-gap);
+    padding-bottom: 0;
+    height: var(--bj-zone-command-height);
+    min-height: var(--bj-zone-command-height);
+    max-height: var(--bj-zone-command-height);
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-mobile[data-phase='insurance'] .bj-table-layout-shell .bj-table-zone--summary,
+  .bj-view-card-mobile[data-phase='insurance'] .bj-table-layout-shell .bj-table-zone--summary {
+    height: auto;
+    min-height: min(42vh, 11.5rem);
+    max-height: min(42vh, 11.5rem);
+    overflow: visible;
+    z-index: 12;
+  }
+
+  /* Mobile play phases ÔÇö one shared command slot (data-phase on .bj-casino; data-bj-phase is desktop-only). */
+  .bj-view-full-mobile[data-phase='player'],
+  .bj-view-card-mobile[data-phase='player'],
+  .bj-view-full-mobile[data-phase='dealer'],
+  .bj-view-card-mobile[data-phase='dealer'],
+  .bj-view-full-mobile[data-phase='resolved'],
+  .bj-view-card-mobile[data-phase='resolved'] {
+    --bj-zone-command-height: var(--bj-mobile-zone-command-playing-height, 2.85rem);
+    --bj-zone-command-max-height: var(--bj-mobile-zone-command-playing-height, 2.85rem);
+    --bj-zone-dealer-height: 4.35rem;
+  }
+
+  .bj-view-full-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
+  .bj-view-full-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer 
+.dealer-block__action--reserved,
+  .bj-view-card-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
+  .bj-view-card-mobile[data-phase='player'] .bj-table-layout-shell .bj-table-zone--dealer 
+.dealer-block__action--reserved {
+    min-height: 0;
+    max-height: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--summary .dealer-block__command,
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--summary .dealer-block__command {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__cards-slot {
+    min-height: 2rem;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
+  .bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action--reserved {
+    min-height: 1.35rem;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--summary .dealer-block__status {
+    font-size: 0.52rem;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__btn {
+    font-size: 0.58rem;
+    padding: 0.2rem 0.32rem;
+    max-width: 4.75rem;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__btn--sm {
+    min-width: 1.75rem;
+    padding: 0.12rem 0.28rem;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar-btn {
+    max-height: var(--bj-actions-primary-btn-max-height);
+    min-height: 0;
+    padding: 0.12rem 0.32rem;
+  }
+
+  .bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar-extra {
+    max-height: var(--bj-actions-secondary-btn-min-height);
+    min-height: 0;
+  }
+
+  .bj-table-layout-shell .dealer-block__grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    grid-template-columns: unset;
+  }
+
+  .bj-table-layout-shell .dealer-block__commentary-col {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--bj-mobile-dealer-oracle-width, 4.75rem);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .bj-table-layout-shell .dealer-block__commentary-col > * {
+    pointer-events: auto;
+  }
+
+  .bj-table-layout-shell .dealer-block__center-col {
+    grid-area: unset;
+    width: 100%;
+    max-width: var(--bj-table-center-column-max-width);
+    margin-inline: auto;
+  }
+
+  .bj-table-layout-shell .dealer-block__cards-slot {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bj-phone-view__mini-hand-shell--drop .bj-phone-view__mini-hand,
+  .bj-arc__slot--drop .bj-phone-view__mini-hand {
+    border-color: var(--bj-seat-active-border);
+    box-shadow: 0 0 8px var(--ds-color-gold-glow);
+  }
+}
+
+/* Canonical felt surface (Full Table .bj-casino__felt + Card View column) */
+.bj-table-surface,
+.bj-table-column-surface {
+  background: var(--bj-table-felt-bg);
+}
+
+.bj-table-surface {
+  border: var(--bj-table-felt-border);
+  border-radius: var(--bj-table-felt-radius);
+  min-height: var(--bj-table-felt-min-height);
+}
+
+/* Canonical rail wrapper */
+.bj-table-rail {
+  background: var(--bj-table-rail-bg);
+  border-radius: var(--bj-table-rail-radius);
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.06),
+    var(--ds-shadow-lg);
+}
+
+/* Player seat shell ÔÇö Card View mini box, Full Table play zone + bet zone */
+.bj-seat-shell,
+.bj-phone-view__mini-hand,
+.bj-arc__play-zone,
+.bj-bet-zone {
+  border: var(--bj-seat-border);
+  border-radius: var(--bj-seat-radius);
+  background: var(--bj-seat-bg);
+  box-shadow: var(--bj-seat-frame-shadow);
+  box-sizing: border-box;
+}
+
+.bj-arc__play-zone {
+  padding: 0.15rem 0.2rem 0.1rem;
+}
+
+.bj-bet-zone {
+  width: 3.5rem;
+  min-height: 3.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 0.1rem 0;
+  transition: border-color 0.12s ease, background 0.12s ease;
+  overflow: visible;
+}
+
+/* Canonical box selection hit target ÔÇö one tap anywhere in the box zone. */
+.bj-box-hit-zone {
+  position: relative;
+}
+
+.bj-box-hit-area {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bj-box-hit-area:focus-visible {
+  outline: 2px solid var(--ds-color-gold);
+  outline-offset: 1px;
+}
+
+.bj-box-interactive {
+  position: relative;
+  z-index: 3;
+}
+
+.bj-box-hit-zone .bj-arc__play-zone,
+.bj-box-hit-zone .bj-arc__play-zone *,
+.bj-box-hit-zone .bj-phone-view__box-value,
+.bj-box-hit-zone .bj-phone-view__box-value--above,
+.bj-box-hit-zone .bj-phone-view__box-stake-label,
+.bj-box-hit-zone .bj-phone-view__mini-hand-head,
+.bj-box-hit-zone .bj-phone-view__mini-hand-card-stack,
+.bj-box-hit-zone .bj-phone-view__mini-hand-card-stack *,
+.bj-box-hit-zone .bj-phone-view__mini-hand-box,
+.bj-box-hit-zone .bj-phone-view__mini-hand-name,
+.bj-box-hit-zone .bj-phone-view__mini-hand-composition,
+.bj-box-hit-zone .bj-phone-view__mini-hand-composition *,
+.bj-box-hit-zone .bj-phone-view__mini-hand-value,
+.bj-box-hit-zone .bj-player-box-mobile,
+.bj-box-hit-zone .bj-player-box-mobile > * {
+  pointer-events: none;
+}
+
+.bj-box-interactive,
+.bj-box-interactive *,
+.bj-bet-zone,
+.bj-bet-zone *,
+.bj-arc__leave,
+.stake-chips__remove {
+  pointer-events: auto;
+}
+
+.bj-phone-view__mini-hand--full-arc,
+.bj-phone-view__mini-hand-column {
+  position: relative;
+}
+
+.bj-arc__slot--empty {
+  border: var(--bj-seat-empty-border);
+  border-radius: var(--bj-seat-radius);
+  background: transparent;
+  width: 3.5rem;
+  min-height: 3.25rem;
+  cursor: pointer;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.bj-arc__slot--owned,
+.bj-arc__slot--empty {
+  position: relative;
+}
+
+.bj-arc__slot--owned {
+  border-radius: 0;
+}
+
+/* Player boxes: mini-hand is the sole visual frame ÔÇö no outer slot chrome (all views). */
+.bj-arc--player-boxes .bj-arc__slot,
+.bj-arc--player-boxes .bj-arc__slot--owned,
+.bj-arc--player-boxes .bj-arc__slot--empty {
+  background: none;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  min-height: 0;
+  width: auto;
+  max-width: none;
+}
+
+.bj-arc--player-boxes .bj-arc__slot--owned {
+  border-radius: 0;
+  gap: 0;
+}
+
+/* Semantic box border states ÔÇö Full Table + Card View (classes from resolveBoxBorderVisualState). */
+.bj-phone-view__mini-hand.bj-box--native-assigned {
+  border: 1.5px solid rgb(251 191 36 / 0.82);
+  background: rgb(251 191 36 / 0.06);
+}
+
+.bj-phone-view__mini-hand.bj-box--running {
+  border: 1.5px dashed rgb(251 191 36 / 0.88);
+  background: rgb(251 191 36 / 0.05);
+}
+
+.bj-phone-view__mini-hand.bj-box--co-box {
+  border: 1.5px solid rgb(251 146 60 / 0.88);
+  background: rgb(251 146 60 / 0.07);
+}
+
+/* Local chip target ÔÇö inset ring avoids horizontal scroll from outline overflow. */
+.bj-phone-view__mini-hand.bj-box--selected {
+  box-shadow: inset 0 0 0 2px var(--ds-color-gold);
+  background: rgb(251 191 36 / 0.12);
+}
+
+.bj-phone-view__mini-hand.bj-box--drop-hover {
+  box-shadow:
+    inset 0 0 0 2px rgb(110 231 183 / 0.75),
+    var(--bj-seat-frame-shadow);
+}
+
+/* Local chip target + active turn ÔÇö visual pulse only; no layout-affecting transforms. */
+@keyframes bj-bet-pulse {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 2px rgb(251 191 36 / 0.45);
+  }
+
+  50% {
+    box-shadow:
+      inset 0 0 0 2px rgb(251 191 36 / 0.95),
+      0 0 10px rgb(251 191 36 / 0.28);
+  }
+}
+
+.bj-phone-view__bet-chip--pulse {
+  animation: bj-bet-pulse 1.8s ease-in-out infinite;
+  box-sizing: border-box;
+  transform: none;
+  margin: 0;
+}
+
+.bj-arc--player-boxes .bj-phone-view__bet-chip--pulse {
+  contain: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bj-phone-view__bet-chip--pulse {
+    animation: none;
+    box-shadow: inset 0 0 0 2px rgb(251 191 36 / 0.55);
+  }
+}
+
+/* Seat typography ÔÇö shared hierarchy across Full Table arc + Card View mini row */
+.bj-arc__box-label,
+.bj-phone-view__mini-hand-box {
+  font-size: var(--bj-seat-label-size);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-color-gold);
+}
+
+.bj-arc__box-label {
+  display: block;
+  font-weight: 700;
+  text-align: center;
+  opacity: 0.9;
+  line-height: 1.1;
+}
+
+.bj-arc__controller,
+.bj-phone-view__mini-hand-name {
+  font-size: var(--bj-seat-name-size);
+  font-weight: var(--ds-weight-bold);
+}
+
+.bj-arc__controller {
+  display: block;
+  text-align: center;
+  max-width: 4.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bj-arc__total-lg,
+.bj-phone-view__box-value {
+  font-family: var(--ds-font-mono);
+  font-size: var(--bj-seat-total-size);
+  font-weight: var(--ds-weight-extrabold, 800);
+  line-height: 1;
+  color: var(--ds-color-gold);
+}
+
+.bj-arc__total-lg {
+  display: block;
+  text-align: center;
+  margin-bottom: 0.12rem;
+}
+
+.bj-arc__val,
+.bj-phone-view__mini-hand-meta {
+  font-size: var(--bj-seat-meta-size);
+  font-family: var(--ds-font-mono);
+}
+
+.bj-arc__val {
+  display: block;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.bj-phone-view__box-value--bust {
+  font-size: calc(var(--bj-seat-total-size) * 0.85);
+  color: var(--ds-color-danger);
+}
+
+.bj-player-hand-value--emphasis {
+  font-size: calc(var(--bj-seat-total-size) * 1.35);
+}
+
+/* Desktop net results above player boxes ÔÇö compact to avoid clipping in value band. */
+.bj-view-full-desktop .bj-arc--player-boxes .bj-phone-view__box-value--net-result {
+  font-size: 0.58rem;
+  font-weight: var(--ds-weight-extrabold, 800);
+  letter-spacing: -0.03em;
+  line-height: var(--bj-box-value-band-height);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bj-view-full-desktop .bj-arc--player-boxes .bj-phone-view__box-value--net-result.bj-player-hand-value--emphasis {
+  font-size: 0.58rem;
+}
+
+.bj-view-full-desktop .bj-arc--cards .bj-phone-view__box-value--card-column.bj-player-hand-value--emphasis {
+  font-size: calc(var(--bj-seat-total-size) * 1.05);
+  line-height: var(--bj-box-value-band-height);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bj-phone-view__box-value--bust.bj-player-hand-value--emphasis {
+  font-size: calc(var(--bj-seat-total-size) * 1.35 * 0.85);
+}
+
+.bj-phone-view__box-value--win {
+  color: rgb(74 222 128);
+}
+
+.bj-phone-view__box-value--even {
+  color: var(--ds-color-gold);
+  opacity: 0.92;
+}
+
+/* Shared mini-hand box layout ÔÇö Card View row + Full Table arc seats. */
+.bj-phone-view__mini-hand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.08rem;
+  padding: 0.2rem 0.28rem 0.15rem;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  min-width: 3.6rem;
+  max-width: 4.85rem;
+  min-height: 5.5rem;
+  height: 5.5rem;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.bj-phone-view__mini-hand--empty {
+  border: var(--bj-seat-empty-border);
+  background: transparent;
+}
+
+.bj-phone-view__mini-hand-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  width: 100%;
+}
+
+.bj-phone-view__mini-hand-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bj-phone-view__mini-stake-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.35rem;
+}
+
+.bj-phone-view__mini-stake-slot .stake-chips__pile {
+  transform: scale(0.52);
+  transform-origin: center bottom;
+}
+
+.bj-phone-view__mini-stake-slot .stake-chips--bet {
+  transform: none;
+}
+
+.bj-phone-view__mini-hand-card-stack {
+  position: relative;
+  flex: 0 0 1.55rem;
+  width: 100%;
+  min-height: 1.55rem;
+  height: 1.55rem;
+  margin-top: 0.05rem;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.bj-phone-view__mini-hand-card-stack .bj-phone-view__mini-card {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  margin-left: 0;
+  transform: translateX(calc(-50% + var(--mini-card-i, 0) * 0.38rem)) scale(0.44);
+  transform-origin: bottom center;
+}
+
+.bj-phone-view__mini-card {
+  display: block;
+  line-height: 0;
+}
+
+.bj-phone-view__mini-hand-composition {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.04rem;
+  font-family: var(--ds-font-mono, ui-monospace, monospace);
+  font-size: 0.46rem;
+  font-weight: var(--ds-weight-bold, 700);
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bj-phone-view__mini-hand-composition--placeholder {
+  min-height: 0.55rem;
+  visibility: hidden;
+}
+
+.bj-phone-view__mini-hand-composition-card {
+  color: rgb(235 245 240 / 0.95);
+}
+
+.bj-phone-view__mini-hand-composition-card--red {
+  color: #f87171;
+}
+
+.bj-phone-view__box-value:not(.bj-phone-view__box-value--above) {
+  display: none;
+}
+
+.bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above,
+.bj-arc--player-boxes .bj-arc__slot--has-stake .bj-phone-view__box-value--above {
+  display: block;
+  flex: 0 0 var(--bj-box-value-band-height);
+  min-height: var(--bj-box-value-band-height);
+  max-height: var(--bj-box-value-band-height);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  line-height: var(--bj-box-value-band-height);
+  order: -1;
+  font-size: var(--bj-box-stake-amount-size);
+  font-weight: var(--ds-weight-bold, 700);
+}
+
+.bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above.bj-player-hand-value--emphasis,
+.bj-arc--player-boxes .bj-arc__slot--has-stake .bj-phone-view__box-value--above.bj-player-hand-value--emphasis {
+  font-size: var(--bj-box-stake-amount-size);
+  font-weight: var(--ds-weight-bold, 700);
+}
+
+.bj-phone-view__box-value--placeholder {
+  visibility: hidden;
+}
+
+/* Canonical felt zones ÔÇö stable shell across betting/dealing/player/round-complete. */
+.bj-table-zone {
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bj-table-zone--dealer {
+  min-height: var(--bj-table-zone-dealer-min-height, 6.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bj-view-full-desktop .bj-dealer-area .dealer-block,
+.bj-view-card-desktop .bj-dealer-area .dealer-block,
+.bj-view-full-desktop .bj-table-zone--dealer .dealer-block,
+.bj-view-card-desktop .bj-table-zone--dealer .dealer-block,
+.bj-view-full-mobile .bj-table-zone--dealer .dealer-block,
+.bj-view-card-mobile .bj-table-zone--dealer .dealer-block {
+  width: 100%;
+  max-width: var(--bj-table-center-column-max-width);
+  margin-inline: auto;
+}
+
+.bj-view-full-desktop .bj-table-zone--summary .bj-card-layout__command,
+.bj-view-full-mobile .bj-table-zone--summary .bj-card-layout__command,
+.bj-view-card-mobile .bj-table-zone--summary .bj-card-layout__command{
+  max-width: var(--bj-table-center-column-max-width);
+  margin-inline: auto;
+}
+
+.bj-view-full-mobile .bj-table-zone--actions,
+.bj-view-card-mobile .bj-table-zone--actions {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.bj-view-full-mobile .bj-table-zone--actions .bj-player-actions,
+.bj-view-full-mobile .bj-table-zone--actions .bj-table-actions,
+.bj-view-card-mobile .bj-table-zone--actions .bj-table-actions {
+  max-width: var(--bj-table-center-column-max-width);
+  margin-inline: auto;
+}
+
+.bj-table-zone--summary {
+  flex: 0 0 auto;
+  min-height: var(--bj-table-zone-summary-min-height, 1.75rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  gap: 0.04rem;
+}
+
+.bj-table-zone--summary .bj-card-layout__command {
+  width: 100%;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.bj-table-zone__summary-placeholder {
+  width: 100%;
+  min-height: calc(var(--bj-table-zone-summary-min-height, 1.75rem) - 0.35rem);
+}
+
+.bj-table-zone--hero {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bj-table-info-bar--dealer {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.04rem;
+  margin: 0;
+  padding: 0.04rem 0.2rem 0.06rem;
+  min-height: 1.55rem;
+}
+
+.bj-table-info-bar--dealer .bj-table-info-bar__item--placeholder {
+  min-width: 5rem;
+  min-height: 0.65rem;
+}
+
+.bj-table-zone--actions {
+  min-height: var(--bj-table-zone-actions-min-height, 3rem);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.bj-view-full-desktop .bj-table-zone--summary,
+.bj-view-full-mobile .bj-table-zone--summary,
+.bj-view-card-mobile .bj-table-zone--summary{
+  position: relative;
+  z-index: 3;
+}
+
+.bj-view-full-mobile .bj-table-zone--actions,
+.bj-view-card-mobile .bj-table-zone--actions {
+  position: relative;
+  z-index: 6;
+}
+
+.bj-view-full-desktop .bj-table-zone--cards,
+.bj-view-full-mobile .bj-table-zone--cards,
+.bj-view-card-mobile .bj-table-zone--cards {
+  position: relative;
+  z-index: 5;
+  overflow: visible;
+}
+
+.bj-view-full-mobile .bj-table-zone--boxes,
+.bj-view-card-mobile .bj-table-zone--boxes {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  overflow: hidden;
+}
+
+.bj-view-full-desktop .bj-table-zone--play,
+.bj-view-full-mobile .bj-table-zone--play {
+  position: relative;
+  z-index: 1;
+  padding-top: var(--bj-table-play-actions-buffer);
+}
+
+.bj-table-zone__actions-placeholder {
+  width: 100%;
+  max-width: 22rem;
+  min-height: calc(var(--bj-table-zone-actions-min-height, 3rem) - 0.5rem);
+}
+
+.bj-table-zone--play {
+  flex: 1 1 auto;
+  min-height: var(--bj-table-zone-play-min-height, 7rem);
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.bj-table-zone--bottom {
+  flex: 0 0 auto;
+  min-height: var(--bj-table-zone-tray-min-height, 3rem);
+}
+
+.bj-casino__tray--reserved {
+  min-height: calc(var(--bj-table-zone-tray-min-height, 3rem) - 0.75rem);
+  width: 100%;
+}
+
+/* Full Table arc seats ÔÇö compact box shell; cards render in bj-table-zone--cards. */
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc,
+.bj-arc--player-boxes .bj-phone-view__mini-hand--empty {
+  box-shadow: none;
+}
+
+.bj-arc--player-boxes .bj-bet-zone {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  min-height: var(--bj-full-table-stake-min-height);
+  max-height: var(--bj-full-table-stake-min-height);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot,
+.bj-arc--player-boxes .bj-phone-view__mini-stake-slot--reserved {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  flex: 0 0 var(--bj-full-table-stake-min-height);
+  min-height: var(--bj-full-table-stake-min-height);
+  max-height: var(--bj-full-table-stake-min-height);
+  height: var(--bj-full-table-stake-min-height);
+  overflow: visible;
+  contain: none;
+  align-items: flex-end;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips--bet {
+  transform: none;
+  max-height: 100%;
+  flex-shrink: 0;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-stake-slot .stake-chips__pile {
+  transform: scale(0.48);
+  transform-origin: center bottom;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-stake-slot--reserved {
+  opacity: 0;
+}
+
+.bj-arc--player-boxes .bj-arc__leave {
+  display: none !important;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Player boxes ÔÇö frozen shell; selection/turn pulse uses inset box-shadow only. */
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc {
+  border: 1.5px solid rgb(251 191 36 / 0.38);
+  background: var(--bj-seat-bg);
+  box-shadow: none;
+  transform: none;
+  margin: 0;
+  padding: var(--bj-full-table-box-padding);
+  width: 100%;
+  min-width: var(--bj-full-table-box-width);
+  max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+  min-height: var(--bj-full-table-box-height);
+  height: var(--bj-full-table-box-height);
+  position: relative;
+  top: auto;
+  bottom: auto;
+  box-sizing: border-box;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--native-assigned {
+  border-color: rgb(251 191 36 / 0.82);
+  background: rgb(251 191 36 / 0.06);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--running {
+  border-style: dashed;
+  border-color: rgb(251 191 36 / 0.88);
+  background: rgb(251 191 36 / 0.05);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--co-box {
+  border-color: rgb(251 146 60 / 0.88);
+  background: rgb(251 146 60 / 0.07);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--drop-hover {
+  box-shadow: inset 0 0 0 2px rgb(110 231 183 / 0.75);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-box--selected {
+  box-shadow: none;
+}
+
+.bj-arc--player-boxes
+  .bj-phone-view__mini-hand--full-arc.bj-box--selected:not(.bj-box--native-assigned):not(.bj-box--running):not(
+    .bj-box--co-box
+  ) {
+  background: var(--bj-seat-bg);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__mini-hand--empty,
+.bj-arc--player-boxes .bj-player-box-mobile.bj-phone-view__mini-hand--empty {
+  border: 1.5px solid rgb(251 191 36 / 0.38);
+  background: transparent;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__bet-chip--pulse {
+  animation: bj-bet-pulse 1.8s ease-in-out infinite;
+  transform: none;
+  margin: 0;
+  padding: var(--bj-full-table-box-padding);
+  width: var(--bj-full-table-box-width);
+  min-width: var(--bj-full-table-box-width);
+  max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+  min-height: var(--bj-full-table-box-height);
+  height: var(--bj-full-table-box-height);
+  border-width: 1.5px;
+  box-sizing: border-box;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand--has-stake,
+.bj-arc--player-boxes .bj-phone-view__mini-hand--full-arc.bj-phone-view__mini-hand--has-stake {
+  width: var(--bj-full-table-box-width);
+  min-width: var(--bj-full-table-box-width);
+  max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+  min-height: var(--bj-full-table-box-height);
+  height: var(--bj-full-table-box-height);
+  margin: 0;
+  padding: var(--bj-full-table-box-padding);
+  transform: none;
+  box-sizing: border-box;
+}
+
+.bj-arc--player-boxes .stake-chips--bet {
+  min-height: 0;
+  max-height: 100%;
+  transform: scale(0.52);
+  transform-origin: center center;
+}
+
+.bj-phone-view__mini-hand--full-arc {
+  justify-content: flex-start;
+  gap: var(--bj-full-table-box-gap);
+  flex: 0 0 auto;
+  min-width: var(--bj-full-table-box-width);
+  max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
+  min-height: var(--bj-full-table-box-height);
+  height: var(--bj-full-table-box-height);
+  padding: var(--bj-full-table-box-padding);
+  box-sizing: border-box;
+}
+
+
+.bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-hand-head {
+  order: 0;
+  flex: 0 0 auto;
+  font-size: 0.82em;
+  opacity: 0.85;
+  gap: 0.02rem;
+  line-height: 1.05;
+}
+
+.bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot {
+  order: 2;
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: 0.08rem;
+  min-height: var(--bj-full-table-stake-min-height);
+  width: 100%;
+  align-items: flex-end;
+}
+
+.bj-view-full-desktop .bj-arc__slot--owned,
+.bj-view-card-desktop .bj-arc__slot--owned,
+.bj-view-full-mobile .bj-arc__slot--owned,
+.bj-view-card-mobile .bj-arc__slot--owned {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.bj-view-full-desktop .bj-arc__slot .bj-arc__play-zone,
+.bj-view-full-mobile .bj-arc__slot .bj-arc__play-zone,
+.bj-view-card-mobile .bj-arc__slot .bj-arc__play-zone {
+  flex: 0 1 auto;
+  width: 100%;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bj-view-full-desktop .bj-arc--cards,
+.bj-view-full-mobile .bj-arc--cards {
+  margin-top: 0;
+  margin-bottom: 0.08rem;
+}
+
+/* Full Table card column / stack / zone ÔÇö bj-full-table-card-area.css */
+
+.bj-phone-view__mini-stake-slot--reserved {
+  display: block;
+  min-height: 1.65rem;
+  width: 100%;
+}
+
+.bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot .stake-chips__pile {
+  transform: scale(0.5);
+  transform-origin: center bottom;
+}
+
+.bj-phone-view__mini-hand--full-arc .bj-phone-view__mini-stake-slot .stake-chips--bet {
+  transform: none;
+}
+
+/* Legacy Card View compact boxes ÔÇö neutralized; player boxes use fullArcBox everywhere. */
+.bj-phone-view__mini-hand--card-compact {
+  display: none !important;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-stake-slot {
+  flex: 0 0 var(--bj-full-table-stake-min-height);
+  min-height: var(--bj-full-table-stake-min-height);
+  max-height: var(--bj-full-table-stake-min-height);
+  height: var(--bj-full-table-stake-min-height);
+  overflow: visible;
+  align-items: flex-end;
+}
+
+/* Active / turn highlight ÔÇö one animation for all views */
+@keyframes bj-turn-pulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 1px var(--bj-seat-active-border),
+      0 0 8px var(--ds-color-gold-glow);
+  }
+
+  50% {
+    box-shadow:
+      inset 0 0 0 1px var(--bj-seat-active-border),
+      0 0 14px var(--ds-color-gold-glow);
+  }
+}
+
+.bj-seat-shell--active,
+.bj-arc__slot--turn .bj-arc__play-zone,
+.bj-phone-view__mini-hand--active,
+.bj-phone-view__mini-hand.bj-box--turn {
+  animation: bj-turn-pulse 1.6s ease-in-out infinite;
+  transform: none;
+  filter: none;
+}
+
+.bj-arc__slot--turn {
+  animation: none;
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bj-seat-shell--active,
+  .bj-arc__slot--turn .bj-arc__play-zone,
+  .bj-phone-view__mini-hand--active,
+  .bj-phone-view__mini-hand.bj-box--turn {
+    animation: none;
+  }
+}
+
+/* Player action panels ÔÇö Full Table + Card View share button tokens; panel chrome varies by view. */
+.bj-table-actions__row--ace {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.bj-table-actions__btn--ace {
+  border: 1px solid rgb(251 191 36 / 0.72) !important;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 auto;
+  max-width: 9.5rem;
+  padding-inline: 0.45rem;
+  line-height: 1.15;
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand-name {
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-bold, 700);
+  line-height: 1.15;
+  color: rgb(235 245 240 / 0.96);
+}
+
+.bj-arc--player-boxes .bj-phone-view__mini-hand-composition {
+  font-size: 0.58rem;
+  font-weight: var(--ds-weight-bold, 700);
+  line-height: 1.2;
+  margin-top: 0.06rem;
+  color: rgb(235 245 240 / 0.92);
+}
+
+.bj-arc--cards .bj-phone-view__box-value--active-turn,
+.bj-phone-view__total--hero.bj-phone-view__box-value--active-turn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  padding: 0.06em 0.32em;
+  margin-inline: auto;
+  box-shadow: none;
+  border: 2px solid rgb(251 191 36 / 0.9);
+  border-radius: 0.32em;
+  background: rgb(8 28 22 / 0.55);
+  line-height: 1.1;
+  animation: bj-turn-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bj-arc--cards .bj-phone-view__box-value--active-turn,
+  .bj-phone-view__total--hero.bj-phone-view__box-value--active-turn {
+    animation: none;
+  }
+}
+
+.bj-arc--cards .bj-arc__slot--card-column .bj-phone-view__box-value--card-column {
+  display: block;
+  width: 100%;
+  min-height: var(--bj-box-value-band-height);
+  text-align: center;
+  margin: 0;
+}
+
+/* Value below stack ÔÇö Full Table uses bj-full-table-card-area.css (margin: 0). */
+.bj-view-card-mobile .bj-arc--cards .bj-arc__slot--card-column .bj-phone-view__box-value--card-column-below {
+  margin: 0.14rem 0 0;
+}
+
+.bj-card-outcome-marker {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.06rem;
+  font-family: var(--ds-font-mono);
+  font-size: 0.52rem;
+  font-weight: var(--ds-weight-extrabold, 800);
+  letter-spacing: 0.05em;
+  text-align: center;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.bj-card-outcome-marker--win {
+  color: #86efac;
+}
+
+.bj-card-outcome-marker--bust {
+  color: #fca5a5;
+}
+
+.bj-card-outcome-marker--even {
+  color: rgb(255 255 255 / 0.55);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.bj-card-outcome-marker--blackjack {
+  color: var(--ds-color-gold);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+}
+
+.bj-arc__split-hand .bj-card-outcome-marker {
+  margin-bottom: 0.04rem;
+}
+
+.bj-table-actions__hint {
+  margin: 0;
+  padding: 0 0.25rem;
+  font-family: var(--ds-font-mono);
+  font-size: 0.62rem;
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.03em;
+  color: var(--ds-color-gold);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.bj-table-info-bar__bank-summary {
+  white-space: nowrap;
+}
+
+.bj-table-actions,
+.bj-phone-view__phase-actions--insurance,
+.bj-phone-view__phase-actions--even-money {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bj-actions-row-gap);
+  box-sizing: border-box;
+  background: var(--bj-actions-panel-bg);
+  border: none;
+  border-radius: var(--bj-actions-panel-radius);
+  padding: var(--bj-actions-panel-padding);
+  max-width: var(--bj-actions-panel-max-width);
+  width: 100%;
+}
+
+@media (max-width: 720px), ((max-width: 960px) and (max-height: 520px) and (pointer: coarse)) {
+  .bj-view-full-mobile .bj-table-zone--actions .bj-table-actions--ace-decision .bj-table-actions__btn,
+  .bj-view-card-mobile .bj-table-zone--actions .bj-table-actions--ace-decision .bj-table-actions__btn {
+    min-height: 44px;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.55rem;
+  }
+}
+
+.bj-player-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bj-actions-row-gap);
+  box-sizing: border-box;
+  background: var(--bj-actions-panel-bg);
+  border: none;
+  border-radius: var(--bj-actions-panel-radius);
+  padding: var(--bj-actions-panel-padding);
+  max-width: var(--bj-actions-panel-max-width);
+  width: 100%;
+}
+
+.bj-phone-view__action-bar--playing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+  box-sizing: border-box;
+}
+
+.bj-phone-view__action-bar--bare {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+.bj-table-layout-shell .bj-table-zone--actions .bj-player-actions,
+.bj-table-layout-shell .bj-table-zone--actions .bj-table-actions,
+.bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar--bare {
+  background: transparent;
+  border: none;
+  border-radius: var(--bj-actions-panel-radius);
+  box-shadow: none;
+}
+
+.bj-table-actions__btn,
+.bj-phone-view__action-bar-btn,
+.bj-phone-view__action-bar-extra,
+.bj-phone-view__ins-btn {
+  border-radius: var(--bj-actions-btn-radius);
+  font-size: var(--bj-actions-btn-font-size);
+}
+
+.bj-table-actions__row {
+  gap: var(--bj-actions-primary-row-gap);
+}
+
+.bj-table-actions__btn {
+  min-height: var(--bj-actions-primary-btn-min-height);
+  min-width: var(--bj-actions-primary-btn-min-width);
+  padding: 0.32rem 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.bj-table-actions__btn--sm {
+  min-height: var(--bj-actions-secondary-btn-min-height);
+  min-width: 2.35rem;
+  padding: 0.18rem 0.45rem;
+}
+
+.bj-table-actions__btn--sm,
+.bj-phone-view__action-bar-row--secondary .bj-phone-view__action-bar-extra {
+  font-size: var(--bj-actions-btn-sm-font-size);
+}
+
+.bj-table-actions__btn--legal:not(:disabled),
+.bj-phone-view__action-bar-extra--legal,
+.bj-phone-view__extra-btn--legal {
+  background: var(--bj-actions-legal-bg);
+  color: var(--bj-actions-legal-color);
+  border-color: var(--bj-actions-legal-border);
+  font-weight: var(--ds-weight-bold, 700);
+  box-shadow: var(--bj-actions-legal-shadow);
+  opacity: 1;
+}
+
+.bj-phone-view__action-bar-btn--live:not(:disabled) {
+  opacity: 1;
+  box-shadow: var(--bj-actions-legal-shadow);
+}
+
+.bj-table-actions__btn--legal:not(:disabled):hover,
+.bj-phone-view__action-bar-extra--legal:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+/* Side-rail panel shell (This Table + Table Details) */
+.bj-side-rail-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bj-side-rail-shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  margin: 0 0 0.4rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: var(--ds-radius-sm);
+  background: var(--bj-side-rail-header-bg);
+  border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.bj-side-rail-shell__title {
+  margin: 0;
+  font-size: 0.58rem;
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-color-gold);
+}
+
+.bj-side-rail-shell__close {
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.bj-side-rail-shell__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.bj-casino__this-table {
+  border: var(--bj-side-rail-border);
+  border-radius: var(--bj-side-rail-radius);
+  background: var(--bj-side-rail-bg);
+  box-shadow: var(--bj-side-rail-shadow);
+  box-sizing: border-box;
+  padding: 0.35rem 0.3rem 0.5rem;
+}
+
+.bj-casino__this-table .bj-accounts-panel,
+.bj-casino__this-table .table-details-panel {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+/*
+ * Canonical shell zone dimensions ÔÇö identical for Full Table + Card View (all viewports).
+ * CardsArea modifiers style inner content only; outer zone size never diverges.
+ */
+.bj-table-layout-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--bj-table-felt-bg);
+}
+
+/* Shell zones stay transparent ÔÇö one continuous felt surface; components keep their own panels. */
+.bj-table-layout-shell > .bj-table-zone--dealer,
+.bj-table-layout-shell > .bj-table-zone--summary,
+.bj-table-layout-shell > .bj-table-zone--actions,
+.bj-table-layout-shell > .bj-table-zone--cards,
+.bj-table-layout-shell > .bj-table-zone--boxes,
+.bj-table-layout-shell > .bj-table-zone--bottom {
+  background: transparent;
+}
+
+.bj-table-layout-shell > .bj-table-zone--summary {
+  position: relative;
+  z-index: 3;
+}
+
+.bj-table-layout-shell > .bj-table-zone--actions {
+  position: relative;
+  z-index: 6;
+}
+
+.bj-table-layout-shell > .bj-table-zone--cards {
+  position: relative;
+  z-index: 5;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer {
+  flex: 0 0 auto;
+  height: var(--bj-zone-dealer-height);
+  min-height: var(--bj-zone-dealer-height);
+  max-height: var(--bj-zone-dealer-height);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block {
+  padding: 0.06rem 0.28rem 0.02rem;
+  margin: 0;
+  max-height: 100%;
+  box-sizing: border-box;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block__grid {
+  gap: 0.12rem 0.22rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block__center-col {
+  padding: 0.1rem 0.22rem 0.08rem;
+  gap: 0.08rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block__cards-slot {
+  min-height: 2rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action-slot,
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block__action--reserved {
+  min-height: 1.25rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block__cards {
+  min-height: 2.35rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block__card-stack {
+  width: 2.05rem;
+  height: 2.7rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block__card-back {
+  width: 1.85rem;
+  height: 2.55rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block__card-placeholder {
+  min-height: 2.35rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--dealer .dealer-block__details-btn {
+  margin-top: 0;
+  padding: 0.12rem 0.42rem;
+  font-size: 0.5rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--summary {
+  flex: 0 0 auto;
+  min-height: var(--bj-zone-command-height);
+  max-height: var(--bj-zone-command-max-height);
+  height: auto;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  padding: var(--bj-dealer-command-gap) 0.35rem 0;
+  box-sizing: border-box;
+}
+
+.bj-table-layout-shell .bj-table-zone--summary .bj-card-layout__command {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: var(--bj-table-center-column-max-width);
+  min-height: 0;
+  overflow: visible;
+}
+
+.bj-table-layout-shell .bj-table-zone--summary .dealer-block__command {
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  padding: 0.38rem 1.5rem;
+  border: 1px solid rgb(160 209 183 / 0.28);
+  border-radius: 999px;
+  background: rgb(10 61 42 / 0.88);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.32);
+  overflow: visible;
+}
+
+.bj-table-layout-shell .bj-table-zone--summary .bj-game-end-actions {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: var(--bj-table-center-column-max-width);
+  margin-top: 0.45rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--summary .bj-game-end-actions .ds-btn {
+  flex: 1 1 0;
+  min-height: 2.1rem;
+  min-width: 0;
+  white-space: nowrap;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.72rem;
+}
+
+.bj-table-layout-shell .bj-table-zone--summary .dealer-block__status {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  text-align: center;
+  text-wrap: balance;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  max-width: 100%;
+  /* Canonical command text ÔÇö yellow/gold on all views (one command style path). */
+  color: var(--ds-color-gold, #fbbf24);
+  font-weight: var(--ds-weight-semibold, 600);
+}
+
+.bj-table-layout-shell .bj-table-zone--summary .dealer-block__status--placeholder {
+  color: transparent;
+}
+
+.bj-table-layout-shell .bj-table-zone--actions {
+  flex: 0 0 auto;
+  height: var(--bj-zone-actions-height);
+  min-height: var(--bj-zone-actions-height);
+  max-height: var(--bj-zone-actions-height);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  padding-top: var(--bj-cards-actions-gap);
+  position: relative;
+}
+
+.bj-table-layout-shell .bj-table-zone--actions .bj-table-actions,
+.bj-table-layout-shell .bj-table-zone--actions .bj-player-actions,
+.bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar--playing,
+.bj-table-layout-shell .bj-table-zone--actions .bj-phone-view__action-bar--wait {
+  align-self: center;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: var(--bj-action-panel-width);
+  max-height: var(--bj-actions-panel-compact-max-height);
+  margin: 0;
+  padding: var(--bj-actions-panel-padding);
+  gap: var(--bj-actions-row-gap);
+  overflow: hidden;
+  position: relative;
+  top: 0;
+  box-sizing: border-box;
+}
+
+.bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__row {
+  gap: var(--bj-actions-primary-row-gap);
+  flex-wrap: nowrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__btn {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 4.75rem;
+  min-height: 0;
+  max-height: var(--bj-actions-primary-btn-max-height);
+  padding: 0.14rem 0.45rem;
+  font-size: var(--bj-actions-btn-font-size);
+}
+
+.bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__btn--sm {
+  flex: 0 0 auto;
+  min-width: 2rem;
+  min-height: var(--bj-actions-secondary-btn-min-height);
+  padding: 0.12rem 0.38rem;
+  font-size: var(--bj-actions-btn-sm-font-size);
+}
+
+.bj-table-layout-shell .bj-table-zone--actions .bj-table-actions__aid {
+  font-size: 0.5rem;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bj-table-layout-shell .bj-table-zone--cards,
+.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero {
+  flex: 1 1 auto;
+  min-height: var(--bj-zone-cards-min-height);
+  max-height: none;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.bj-table-layout-shell .bj-table-zone--boxes {
+  flex: 0 0 auto;
+  height: var(--bj-zone-boxes-height);
+  min-height: var(--bj-zone-boxes-height);
+  max-height: var(--bj-zone-boxes-height);
+  margin-top: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0.08rem var(--bj-card-boxes-padding-inline) var(--bj-card-boxes-padding-bottom);
+  box-sizing: border-box;
+}
+
+/* Full Table card zone ÔÇö fixed height in bj-full-table-card-area.css; desktop shell in bj-blackjack-table-shell.css 
+*/
+
+.bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes {
+  flex: 0 0 auto;
+  height: var(--bj-zone-boxes-height);
+  min-height: var(--bj-zone-boxes-height);
+  max-height: var(--bj-zone-boxes-height);
+  margin-top: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0.08rem var(--bj-card-boxes-padding-inline) var(--bj-card-boxes-padding-bottom);
+  box-sizing: border-box;
+}
+
+.bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-player-boxes-wrap {
+  width: 100%;
+  max-width: 100%;
+  align-self: stretch;
+}
+
+.bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes .bj-table-slot-row.bj-arc--player-boxes {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+  justify-content: stretch;
+  justify-items: stretch;
+  grid-template-columns: repeat(var(--slot-count, 4), minmax(0, 1fr));
+}
+
+.bj-view-full-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--boxes
+  .bj-table-slot-row--with-add.bj-arc--player-boxes,
+.bj-view-card-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--boxes
+  .bj-table-slot-row--with-add.bj-arc--player-boxes {
+  grid-template-columns: repeat(calc(var(--slot-count, 4) + 1), minmax(0, 1fr));
+}
+
+.bj-view-full-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--boxes
+  .bj-table-slot-row.bj-arc--player-boxes
+  > .bj-arc__slot,
+.bj-view-card-mobile
+  .bj-table-layout-shell
+  .bj-table-zone--boxes
+  .bj-table-slot-row.bj-arc--player-boxes
+  > .bj-arc__slot {
+  width: 100%;
+  max-width: none;
+}
+
+.bj-table-layout-shell .bj-table-zone--boxes .bj-arc--player-boxes {
+  overflow-x: hidden;
+  overflow-y: visible;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--bottom,
+.bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--bottom {
+  flex: 0 0 auto;
+  height: var(--bj-zone-tray-height);
+  min-height: var(--bj-zone-tray-height);
+  max-height: var(--bj-zone-tray-height);
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.04rem 0.35rem var(--bj-zone-tray-padding-bottom);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  margin-top: var(--bj-zone-boxes-tray-gap);
+}
+
+.bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--table {
+  padding-top: 0;
+}
+
+/* Desktop + mobile portrait table shell ÔÇö bj-blackjack-table-shell.css (+ mobile rules below). */
+
+@media (min-width: 721px) {
+  /* Full Table table card zone ÔÇö bj-full-table-card-area.css */
+
+  .bj-casino.bj-view-full-desktop,
+  .bj-casino.bj-view-card-desktop,
+  .bj-table-desktop-shell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: var(--bj-shell-width);
+    height: var(--bj-desktop-table-height);
+    max-height: min(var(--bj-desktop-table-height), calc(100dvh - 1rem));
+    margin-inline: auto;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .bj-table-desktop-shell > .bj-casino__table-header {
+    flex: 0 0 auto;
+  }
+
+  .bj-table-desktop-shell > .bj-casino__rail {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .bj-casino.bj-view-full-desktop,
+  .bj-casino.bj-view-card-desktop {
+    overflow: visible;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .bj-view-full-desktop .bj-casino__rail,
+  .bj-view-card-desktop .bj-casino__rail {
+    position: relative;
+    overflow: visible;
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+    max-height: calc(var(--bj-shell-height) - 0.25rem);
+    padding: var(--bj-desktop-rail-padding);
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-desktop .bj-casino__rail-wrap,
+  .bj-view-card-desktop .bj-casino__rail-wrap {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .bj-view-full-desktop .bj-casino__felt,
+  .bj-view-card-desktop .bj-casino__felt {
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: visible;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.3rem 0.45rem var(--bj-desktop-bottom-padding, 0.5rem);
+    box-sizing: border-box;
+    background: var(--bj-table-felt-bg);
+    border: none;
+    border-radius: inherit;
+  }
+
+  .bj-view-full-desktop .bj-casino__felt.bj-table-surface,
+  .bj-view-card-desktop .bj-casino__felt.bj-table-surface {
+    min-height: 0;
+  }
+
+  .bj-view-full-desktop .bj-arc__slot--owned,
+  .bj-view-card-desktop .bj-arc__slot--owned {
+    background: none;
+    padding: 0;
+  }
+
+  .bj-view-full-desktop .bj-arc__slot .bj-phone-view__mini-hand,
+  .bj-view-card-desktop .bj-arc__slot .bj-phone-view__mini-hand {
+    width: 100%;
+    min-width: var(--bj-desktop-mini-hand-width);
+    max-width: calc(var(--bj-desktop-mini-hand-width) + 0.65rem);
+    min-height: var(--bj-desktop-mini-hand-height);
+    height: var(--bj-desktop-mini-hand-height);
+  }
+
+  .bj-view-full-desktop .bj-arc__slot .bj-phone-view__mini-hand-card-stack,
+  .bj-view-card-desktop .bj-arc__slot .bj-phone-view__mini-hand-card-stack {
+    flex: 0 0 1.65rem;
+    min-height: 1.65rem;
+    height: 1.65rem;
+  }
+
+  .bj-view-full-desktop .bj-arc__slot,
+  .bj-view-card-desktop .bj-arc__slot {
+    width: var(--bj-desktop-mini-hand-width);
+    overflow: visible;
+  }
+
+  .bj-view-full-desktop .bj-arc__slot--empty:has(.bj-phone-view__mini-hand--empty),
+  .bj-view-card-desktop .bj-arc__slot--empty:has(.bj-phone-view__mini-hand--empty) {
+    border: none;
+    background: transparent;
+    padding: 0;
+    width: var(--bj-desktop-mini-hand-width);
+    min-height: var(--bj-desktop-mini-hand-height);
+  }
+
+  /* Desktop stage: table shell + right-docked side rail (no overlay on play area). */
+  .bj-casino__desktop-stage {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    gap: var(--bj-desktop-stage-gap);
+    box-sizing: border-box;
+    overflow: visible;
+    min-width: 0;
+  }
+
+  .bj-casino__desktop-stage .bj-table-desktop-shell {
+    flex: 1 1 0;
+    min-width: 0;
+    margin-inline: 0;
+    max-width: var(--bj-shell-width);
+    width: auto;
+  }
+
+  .bj-casino__desktop-stage--with-rail .bj-table-desktop-shell {
+    max-width: var(--bj-desktop-table-width-with-rail);
+  }
+
+  .bj-casino__this-table--dock {
+    position: relative;
+    flex: 0 0 12.5rem;
+    width: var(--bj-desktop-side-rail-width);
+    max-width: var(--bj-desktop-side-rail-width);
+    max-height: var(--bj-desktop-table-height);
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-self: flex-start;
+    z-index: 1;
+    box-sizing: border-box;
+  }
+
+  .bj-arc--player-boxes .bj-arc__slot--owned .bj-phone-view__box-value--above,
+  .bj-arc--player-boxes .bj-arc__slot--has-stake .bj-phone-view__box-value--above {
+    display: block;
+  }
+
+  .bj-view-full-desktop .bj-phone-view.bj-table-column-surface,
+  .bj-view-card-desktop .bj-phone-view.bj-table-column-surface {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+  }
+
+  .bj-view-full-desktop .bj-casino__felt,
+  .bj-view-card-desktop .bj-casino__felt {
+    padding-top: 0.35rem;
+    padding-bottom: var(--bj-full-desktop-tray-padding-bottom);
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /* Shell grid geometry (display/height/overflow/flow) is owned by bj-blackjack-table-shell.css.
+   * Felt-main is also .bj-table-layout-shell ÔÇö keep flex sizing + definite height for the 1fr row. */
+  .bj-view-full-desktop .bj-casino__felt-main,
+  .bj-view-card-desktop .bj-casino__felt-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    max-width: none;
+    padding-top: 0;
+  }
+
+  .bj-view-full-desktop .bj-casino__tray-wrap,
+  .bj-view-card-desktop .bj-casino__tray-wrap {
+    flex: 0 0 auto;
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .bj-view-full-desktop .bj-arc__cards--stack-vertical {
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .bj-view-full-desktop .dealer-block__center-col,
+  .bj-view-card-desktop .dealer-block__center-col {
+    border: none;
+    background: transparent;
+    padding: 0.12rem 0.25rem 0.1rem;
+    width: 100%;
+    max-width: var(--bj-table-center-column-max-width);
+    margin-inline: auto;
+  }
+
+  .bj-view-full-desktop .bj-arc__cards,
+  .bj-view-full-desktop .bj-cards-fan,
+  .bj-view-full-desktop .bj-arc,
+  .bj-view-full-desktop .bj-arc__slot{
+    overflow: visible;
+  }
+
+  .bj-view-full-desktop .bj-arc--cards:not(.bj-full-table-card-area) {
+    flex: 0 0 auto;
+    margin-top: 0;
+    align-items: flex-end;
+    width: 100%;
+    max-height: none;
+    justify-content: space-between;
+    gap: 0.12rem;
+    padding: 0 var(--bj-card-boxes-padding-inline, 0.75rem) 0.08rem;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .bj-view-full-desktop .bj-arc__slot .bj-bet-zone{
+    width: 100%;
+    min-height: var(--bj-full-table-stake-min-height);
+    max-height: var(--bj-full-table-stake-min-height);
+    margin: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .bj-view-full-desktop .bj-casino__tray-wrap,
+  .bj-view-card-desktop .bj-casino__tray-wrap {
+    flex: 0 0 auto;
+    margin-top: 0;
+    width: auto;
+    max-width: min(100%, 32rem);
+    margin-inline: auto;
+  }
+}
+
+/*
+ * Landscape phones (width > 720px) still use deviceView=mobile ÔÇö desktop @media (min-width: 721px)
+ * must not apply grid shell or desktop zone tokens to mobile view roots.
+ */
+@media (min-width: 721px) {
+  .bj-view-full-mobile,
+  .bj-view-card-mobile {
+    --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height, 6.25rem);
+    --bj-zone-command-height: var(--bj-mobile-zone-command-height, 2.65rem);
+    --bj-zone-actions-height: var(--bj-mobile-zone-actions-height, 2.9rem);
+    --bj-zone-cards-min-height: var(--bj-mobile-zone-cards-min-height, 0);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height, 6rem);
+    --bj-zone-tray-height: var(--bj-mobile-zone-tray-height, 3.75rem);
+    --bj-zone-boxes-tray-gap: 0.65rem;
+    --bj-zone-tray-padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.4rem));
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell,
+  .bj-view-card-mobile .bj-table-layout-shell {
+    display: flex;
+    flex-direction: column;
+    grid-template-rows: unset;
+    grid-template-columns: unset;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--dealer,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--dealer,
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--summary,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--summary,
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--actions,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--actions,
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--cards,
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--boxes,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--boxes,
+  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--bottom,
+  .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--bottom {
+    grid-row: unset;
+    grid-column: unset;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--boxes,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--boxes {
+    flex: 0 0 auto;
+    height: var(--bj-zone-boxes-height);
+    min-height: var(--bj-zone-boxes-height);
+    max-height: var(--bj-zone-boxes-height);
+    margin-top: auto;
+    padding-top: 0;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--bottom,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--bottom {
+    flex: 0 0 auto;
+    height: var(--bj-zone-tray-height);
+    min-height: var(--bj-zone-tray-height);
+    max-height: var(--bj-zone-tray-height);
+    margin-top: var(--bj-zone-boxes-tray-gap);
+    padding: 0.04rem 0.35rem var(--bj-zone-tray-padding-bottom);
+    justify-content: flex-end;
+    overflow: visible;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--cards.bj-cards-area--hero,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--cards {
+    flex: 1 1 auto;
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  14:35:29
+   Duration  1.78s (transform 668ms, setup 546ms, import 207ms, tests 25ms, environment 0ms)
+
+    min-height: var(--bj-zone-cards-min-height);
+    margin-top: var(--bj-command-cards-gap, 0.35rem);
+    max-height: none;
+  }
+
+  /* Full Table mobile card zone ÔÇö bj-full-table-card-area.css */
+
+  .bj-view-full-mobile .bj-casino__felt-main,
+  .bj-view-card-mobile .bj-casino__felt-main,
+  .bj-view-full-mobile .bj-mobile-table-shell,
+  .bj-view-card-mobile .bj-mobile-table-shell,
+  .bj-view-full-mobile.bj-casino,
+  .bj-view-card-mobile.bj-casino,
+  .bj-view-full-mobile .bj-casino__rail-wrap,
+  .bj-view-card-mobile .bj-casino__rail-wrap,
+  .bj-view-full-mobile .bj-casino__rail,
+  .bj-view-card-mobile .bj-casino__rail,
+  .bj-view-full-mobile .bj-casino__felt,
+  .bj-view-card-mobile .bj-casino__felt {
+    overflow: hidden;
+    max-width: 100%;
+    width: 100%;
+    min-height: 0;
+  }
+}
+
+@media (min-width: 721px) and (orientation: landscape) {
+  .bj-view-full-mobile,
+  .bj-view-card-mobile {
+    --bj-mobile-landscape-compact: 1;
+    --bj-mobile-table-canvas-height: min(
+      calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.35rem),
+      calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0.35rem)
+    );
+    --bj-zone-dealer-height: 4.25rem;
+    --bj-zone-command-height: 1.55rem;
+    --bj-zone-actions-height: 2.15rem;
+    --bj-zone-tray-height: 2.65rem;
+    --bj-zone-boxes-tray-gap: 0.35rem;
+    --bj-zone-tray-padding-bottom: max(0.55rem, calc(env(safe-area-inset-bottom, 0px) + 0.28rem));
+    --bj-full-table-box-height: 2.55rem;
+    --bj-mobile-zone-boxes-height: calc(var(--bj-full-table-box-height) + var(--bj-box-value-band-height, 0.9rem) + 
+0.08rem);
+    --bj-zone-boxes-height: var(--bj-mobile-zone-boxes-height);
+  }
+}
+
+/* Full Table ÔÇö per-box card columns with optional split mini-zones. */
+.bj-arc__split-hands {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.2rem;
+  width: 100%;
+  min-height: 0;
+}
+
+.bj-arc__split-hand {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.bj-arc__slot--card-split .bj-arc__play-zone {
+  width: 100%;
+}
+
+/* Desktop player boxes ÔÇö compact fixed tokens (no stretch-up by visible count). */
+@media (min-width: 721px) {
+  .bj-view-full-desktop .bj-table-slot-row.bj-arc--player-boxes .bj-phone-view__mini-hand-value:not(
+      .bj-phone-view__mini-hand-value--placeholder
+    ) {
+    font-size: calc(0.58rem * var(--bj-desktop-box-value-scale, 2));
+    min-height: calc(0.95rem * var(--bj-desktop-box-value-scale, 2) * 0.55);
+    max-height: calc(1.05rem * var(--bj-desktop-box-value-scale, 2) * 0.55);
+    line-height: 1.05;
+  }
+
+  .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-4,
+  .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-5,
+  .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-6,
+  .bj-view-full-desktop .bj-arc--player-boxes.bj-arc--visible-7,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-4,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-5,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-6,
+  .bj-view-card-desktop .bj-arc--player-boxes.bj-arc--visible-7 {
+    --bj-full-table-box-width: var(--bj-player-box-width);
+    --bj-full-table-box-height: var(--bj-player-box-height);
+  }
+}
+
+.bj-player-boxes-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* Legacy row wrapper ÔÇö unused; slot row is flat in bj-table-slot-row. */
+.bj-player-boxes-wrap__row {
+  display: contents;
+}
+
+.bj-player-boxes-wrap__add--leading {
+  order: unset;
+}
+
+@media (max-width: 720px) {
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--bottom,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--bottom {
+    overflow-x: hidden;
+    padding-inline: 0.2rem;
+  }
+
+  .bj-view-full-mobile .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap,
+  .bj-view-card-mobile .bj-table-layout-shell .bj-table-zone--bottom .bj-casino__tray-wrap {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .bj-view-full-mobile .bj-casino__tray-hint,
+  .bj-view-card-mobile .bj-casino__tray-hint {
+    display: none;
+  }
+}
+"
+
+ ÔØ» src/components/playerBoxCardComposition.test.ts:29:28
+     27|     expect(SHARED_CSS).toMatch(/\.bj-phone-view__mini-hand-compositionÔÇª
+     28|     expect(SHARED_CSS).toMatch(/\.bj-arc--player-boxes \.bj-phone-viewÔÇª
+     29|     expect(SHARED_CSS).not.toMatch(/\.bj-phone-view__mini-hand-composiÔÇª
+       |                            ^
+     30|   });
+     31| });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/2]ÔÄ»
+

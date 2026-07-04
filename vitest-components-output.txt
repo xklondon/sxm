@@ -1,0 +1,76 @@
+﻿
+ RUN  v4.1.7 C:/dev/SXMCards
+
+ ÔØ» src/components/blackjackFullTablePlayZoneLayout.test.ts (0 test)
+ ÔØ» src/components/blackjackDisplayLayout.test.ts (10 tests | 2 failed) 45ms
+     ├ù Full Table action zone sits below cards and above player boxes 15ms
+     ├ù exports arc stack and card command layout class names 4ms
+ ÔØ» src/components/blackjackUiResultState.test.tsx (14 tests | 1 failed) 191ms
+     ├ù wires deal permission through canCurrentUserDealTable 15ms
+ ÔØ» src/components/blackjackProtocolUiFixes.test.tsx (10 tests | 2 failed) 262ms
+     ├ù insurance UI and help text say pays 2:1 39ms
+     ├ù renders outcome markers in cards area only 37ms
+ ÔØ» src/components/cardViewReuseFixes.test.tsx (11 tests | 5 failed) 381ms
+     ├ù desktop Card View player boxes reuse Full Table box width tokens 13ms
+     ├ù desktop Card View applies active-turn box border on player boxes 129ms
+     ├ù desktop Card View shows Double in command zone when legal 43ms
+     ├ù desktop Card View routes optional play overlay through command zone 11ms
+     ├ù mobile Card View uses shell actions and optional play in command when split is legal 45ms
+ ÔØ» src/components/cardViewPolish.test.tsx (8 tests | 2 failed) 282ms
+     ├ù uses dealer-value hero total token in Card View hero markup 113ms
+     ├ù shared arc player boxes use the same mini-hand shell as Full Table 50ms
+ ÔØ» src/components/blackjackVisualCleanup.test.ts (18 tests | 1 failed) 39ms
+     ├ù assigns dealer and command to separate grid rows without z-index overlap hacks 12ms
+ ÔØ» src/components/blackjackFullTableCardColumnLayout.test.ts (9 tests | 3 failed) 32ms
+     ├ù fills command-to-actions gap and bottom-aligns columns (desktop + mobile) 11ms
+     ├ù does not apply Full Table card-column grid to Card View 3ms
+     ├ù does not override desktop grid cards row ÔÇö flexible 1fr stays in shared shell 3ms
+ ÔØ» src/components/blackjackVisualPolish.test.tsx (14 tests | 1 failed) 47ms
+     ├ù bottom-aligns table card stacks in CardsArea for all viewports 10ms
+ ÔØ» src/components/cardViewDesktopFix.test.tsx (5 tests | 1 failed) 38ms
+     ├ù adds desktop gap between boxes row and chip tray in both views 16ms
+ ÔØ» src/components/desktopCanonicalGrid.test.ts (10 tests | 2 failed) 29ms
+     ├ù assigns each shell zone to a grid row without vertical margin hacks 10ms
+     ├ù only differs CardsArea inner content between hero and table modifiers 3ms
+ ÔØ» src/components/cardViewBettingChips.test.tsx (4 tests | 3 failed) 168ms
+     ├ù reserves hero total slot without Betting/Bet label text 41ms
+     ├ù betting and playing share hero/total/box-strip slots 22ms
+     ├ù desktop Card View has no horizontal overflow contract 9ms
+ ÔØ» src/components/boxSelectionPulse.test.ts (6 tests | 1 failed) 63ms
+     ├ù active player turn box receives the same pulse during play 30ms
+ ÔØ» src/components/blackjackBoxPlacementStability.test.ts (11 tests | 1 failed) 73ms
+     ├ù uses slotNumber-only React keys in arc row 28ms
+ ÔØ» src/components/blackjackLayoutUxImprovements.test.ts (13 tests | 2 failed) 39ms
+       ├ù uses commandÔåÆcards and cardsÔåÆactions gap tokens 13ms
+       ├ù keeps table name field and practice/challenge mode stage 10ms
+ ÔØ» src/components/actionableHand.test.ts (7 tests | 2 failed) 58ms
+     ├ù Box 1 (19) and Box 3 (20) auto-stand; Box 4 (13) becomes active 38ms
+     ├ù actionable hand is identical regardless of view mode / online flag (single source) 5ms
+ ÔØ» src/components/BlackjackCardView.mobile.test.tsx (5 tests | 1 failed) 189ms
+     ├ù uses hero placeholder and bottom arc player boxes during betting 43ms
+ ÔØ» src/components/blackjackActionsCardsBoundary.test.ts (6 tests | 2 failed) 25ms
+     ├ù keeps CommandÔåÆCards gap smaller than CardsÔåÆActions gap 11ms
+     ├ù keeps Full Table card stacks bottom-aligned 2ms
+ ÔØ» src/components/blackjackZoneBackground.test.ts (8 tests | 1 failed) 27ms
+     ├ù uses identical CardsArea outer flex growth for hero; Full Table bottom-pins columns 13ms
+ ÔØ» src/components/blackjackZoneSeparation.test.ts (6 tests | 1 failed) 25ms
+     ├ù stacks zones with isolation: dealer, command, cards, actions 10ms
+ ÔØ» src/components/blackjackCleanupFixes.test.ts (7 tests | 1 failed) 21ms
+     ├ù lowers desktop full-table card columns toward player boxes 9ms
+ ÔØ» src/components/blackjackUxFixes.test.tsx (12 tests | 4 failed) 112ms
+     ├ù applies Full Table box turn border and card-column active value during player turn 36ms
+     ├ù uses strict player-turn format with options 12ms
+     ├ù shows Blackjack only for clean natural blackjack status 7ms
+     ├ù documents layout rules in master spec and changelog 4ms
+ ÔØ» src/components/blackjackFinalLayoutFixes.test.ts (9 tests | 3 failed) 409ms
+     ├ù desktop Full Table pins Hit/Stay lower than prior 0.25rem boxes gap 15ms
+     ├ù desktop Full Table keeps stack/value gap token on card column values 3ms
+     ├ù desktop Card View renders hero value below cards with dealer emphasis token 140ms
+ ÔØ» src/components/mobileLayoutParity.test.tsx (7 tests | 1 failed) 227ms
+     ├ù requires paired mobile view selectors for shell layout rules 21ms
+ ÔØ» src/components/playerRowLayout.test.tsx (15 tests | 1 failed) 144ms
+     ├ù exposes debug version render-route-canonical-1 with overlap diagnostics 40ms
+ ÔØ» src/components/blackjackVisualCleanupItems.test.ts (6 tests | 1 failed) 24ms
+     ├ù keeps chips mounted during play with inactive styling when betting closed 13ms
+ ÔØ» src/components/cardViewHeroClip.test.tsx (4 tests | 1 failed) 19ms
+     ├ù centers Card View desktop hero cards in grid row 3; mobile stays top-aligned 8ms

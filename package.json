@@ -43,6 +43,7 @@
     "test:layout:ownership": "vitest run src/components/fullTableDesktopLayoutOwnership.test.ts src/components/cardViewDesktopLayoutOwnership.test.ts",
     "test:layout:fast": "npm run test:ownership && npm run test:layout:ownership && vitest run src/components/blackjackEngineFreezeGuards.test.ts src/components/cardViewDesktopBoundingBox.test.tsx src/components/cardViewDisplayRegressions.test.ts src/components/cardViewLayoutGuards.test.ts",
     "test:layout:rendered": "vitest run src/components/blackjackRenderedLayout.test.tsx --pool=forks --maxWorkers=1",
+    "test:manual:blackjack-render": "vitest run src/components/blackjackFourRegression.test.ts src/components/blackjackRenderedLayout.test.tsx --reporter=verbose",
     "test:layout:audit": "npm run build && npm run test:ownership && npm run test:layout:ownership",
     "test:layout:all-fast": "npm run test:layout:desktop-full && npm run test:layout:desktop-card && npm run test:layout:ownership",
     "test:mobile-card-layout:browser": "tsx scripts/capture-mobile-card-layout.mts && vitest run src/components/cardViewMobileLayout.test.tsx src/components/mobileCardPortraitLayout.test.ts",

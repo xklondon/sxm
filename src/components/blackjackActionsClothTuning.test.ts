@@ -1,20 +1,19 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const CLOTH_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackFeltClothLayer.tsx'), 'utf8');
 
 function desktopShellBlock(): string {
-  const start = SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows');
-  const end = SHARED_CSS.indexOf('/* Desktop stage:', start);
-  return start >= 0 && end > start ? SHARED_CSS.slice(start, end) : '';
+  return SHELL_CSS;
 }
 
 describe('blackjack actions + cloth tuning', () => {
   it('reduces desktop actions row and primary button heights', () => {
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-actions-height: 2.9rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-actions-height: 2.5rem');
     expect(SHARED_CSS).toContain('--bj-actions-primary-btn-min-height: 1.65rem');
     expect(SHARED_CSS).toContain('--bj-actions-primary-btn-max-height: 1.65rem');
     expect(SHARED_CSS).toContain('--bj-actions-panel-compact-max-height: 2.85rem');
@@ -26,7 +25,7 @@ describe('blackjack actions + cloth tuning', () => {
     const desktop = desktopShellBlock();
     expect(desktop).toMatch(/\[command\][\s\S]*\[cards\][\s\S]*\[actions\]/);
     expect(desktop).toMatch(
-      /\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*align-items:\s*flex-start/,
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*justify-content:\s*flex-start/,
     );
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*align-items:\s*flex-start/,
@@ -42,8 +41,8 @@ describe('blackjack actions + cloth tuning', () => {
     expect(FELT_CSS).not.toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*none/,
     );
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*flex:\s*0 0 auto/,
     );
   });
 

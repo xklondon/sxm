@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
@@ -12,9 +13,9 @@ const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/Blackjack
 
 describe('launch layout fixes — table vertical positioning', () => {
   it('desktop Full Table pushes play content toward bottom of felt', () => {
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-casino__felt[\s\S]*var\(--bj-full-desktop-tray-padding-bottom\)/);
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-casino__felt-main[\s\S]*justify-content:\s*stretch/);
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
+    expect(SHARED_CSS).toMatch(/\.bj-view-full-desktop \.bj-casino__felt[\s\S]*padding-bottom:\s*var\(--bj-full-desktop-tray-padding-bottom\)/);
+    expect(SHELL_CSS).toMatch(/\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*justify-content:\s*stretch/);
+    expect(SHELL_CSS).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
   });
 
   it('desktop Card View uses shared felt padding with Full Table', () => {

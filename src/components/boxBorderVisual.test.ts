@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { GameState } from '../types';
@@ -16,9 +17,9 @@ import {
   resolveBoxBorderVisualState,
 } from './cardViewBox';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 
 function personTable(): GameState {
@@ -154,7 +155,7 @@ describe('Full Table desktop vertical stretch', () => {
     expect(SHARED_CSS).toContain('--bj-shell-width: min(98vw, 86rem)');
     expect(SHARED_CSS).toContain('--bj-desktop-table-height: var(--bj-shell-height)');
     expect(SHARED_CSS).toMatch(
-      /\.bj-table-desktop-shell[\s\S]*height:\s*var\(--bj-shell-height\)/,
+      /\.bj-table-desktop-shell[\s\S]*height:\s*var\(--bj-desktop-table-height\)/,
     );
     expect(SHARED_CSS).not.toMatch(/\.bj-view-full-desktop \.bj-table-desktop-shell[\s\S]*--bj-full-desktop-table-height/);
     expect(CARD_LAYOUT_CSS).not.toMatch(/\.bj-view-card-desktop \.bj-table-desktop-shell[\s\S]*height:/);

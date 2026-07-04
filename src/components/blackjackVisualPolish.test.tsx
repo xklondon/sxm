@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ValueAndChipsBar } from './ChipStack';
 import { TABLE_UX } from './tableUxContract';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
@@ -117,7 +118,7 @@ describe('desktop canonical vertical grid polish', () => {
 
 describe('Full Table card stack bottom alignment', () => {
   it('bottom-aligns table card stacks in CardsArea for all viewports', () => {
-    expect(CARD_AREA_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
     expect(CARD_AREA_CSS).toMatch(

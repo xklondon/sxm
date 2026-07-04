@@ -1,7 +1,7 @@
 import './loadEnv.js';
 import { createApp } from './app.js';
 import { createStore } from './store/createStore.js';
-import { config, getCorsOrigins, getEffectivePublicOrigin, isSmtpConfigured } from './config.js';
+import { config, getCorsOrigins, getEffectivePublicOrigin, isSmtpConfigured, logIouHandoffConfigStatus } from './config.js';
 import { probeConfiguredSmtpReachability } from './email/smtpProbe.js';
 
 const { store, storeType, disconnect } = await createStore();
@@ -17,6 +17,10 @@ if (disconnect) {
 
 if (isSmtpConfigured() && process.env.VITEST !== 'true') {
   void probeConfiguredSmtpReachability();
+}
+
+if (process.env.VITEST !== 'true') {
+  logIouHandoffConfigStatus();
 }
 
 httpServer.listen(config.port, config.host, () => {

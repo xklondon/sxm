@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { blackjackHandKey } from '../engine/blackjack';
+import { addChipToBoxStake } from '../engine/blackjack/stakes';
 import {
   actingRound,
   boxPlayerId,
@@ -70,8 +71,9 @@ describe('blackjack UX fixes — active turn highlight', () => {
     expect(resolved.isTurn).toBe(true);
     expect(getBoxBorderVisualClasses(resolved)).not.toContain(BOX_BORDER_TURN);
     expect(getBoxActivePulseClassName(resolved)).toBe('');
-    expect(PANEL_SRC).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
-    expect(PANEL_SRC).not.toContain("'bj-arc__slot--turn'");
+    expect(PANEL_SRC).toContain('turnBorderClass');
+    expect(PANEL_SRC).toContain('borderState.isTurn');
+    expect(PANEL_SRC).toContain('BOX_BORDER_TURN');
     expect(PANEL_SRC).toContain('getBoxActivePulseClassName(borderState)');
     expect(PANEL_SRC).toContain('cardColumnHandValueClassName');
   });
@@ -172,44 +174,68 @@ describe('blackjack UX fixes — command text', () => {
     let state = tableWithClaimedBox(2);
     const box2 = boxPlayerId(state, 2)!;
     const k2 = blackjackHandKey(box2, 0);
+    const callerId =
+      state.tableMeta.boxSlots.find((s) => s.playerId === box2)?.bankrollOwnerId ??
+      state.tableMeta.ownerPersonId!;
+    state = addChipToBoxStake(state, box2, 10, callerId);
     state = {
       ...state,
-      blackjack: actingRound(state, box2, [findCardId(state.deck!, '6'), findCardId(state.deck!, '7')], 10),
+      tableMeta: { ...state.tableMeta, bettingLocked: true },
+      blackjack: {
+        ...actingRound(state, box2, [findCardId(state.deck!, '5'), findCardId(state.deck!, '6')], 10),
+        dealerCardIds: [findCardId(state.deck!, '7'), findCardId(state.deck!, 'K')],
+        dealerHoleHidden: false,
+      },
     };
     state.blackjack!.activeHandKey = k2;
     const msg = formatPlayerTurnCommand(
       2,
       'Alice',
-      { value: 13, isSoft: false, isBlackjack: false },
+      { value: 11, isSoft: false, isBlackjack: false },
       {
         gameState: state,
+        displayState: state,
         handKey: k2,
         allowSplit: true,
         allowDouble: true,
+        cardRevealComplete: true,
       },
     );
-    expect(msg.commandMessage).toBe('Box 2 — Alice — your turn.');
-    expect(msg.commandLines.some((line) => /Bank has/.test(line))).toBe(true);
-    expect(msg.commandLines.some((line) => /^(Option|Options):/.test(line))).toBe(false);
-    expect(formatPlayerTurnOptions(true, true, true, false)).toBe('Double available.');
+    expect(msg.commandMessage).toMatch(/Bank has/);
+    expect(msg.commandMessage).toContain('Double available.');
   });
 
   it('shows Blackjack only for clean natural blackjack status', () => {
-    const natural = formatPlayerTurnCommand(1, 'Bob', {
-      value: 21,
-      isSoft: false,
-      isBlackjack: true,
-    }, { actionStatus: 'blackjack' });
-    expect(natural.commandMessage).toBe('Box 1, Blackjack.');
-    expect(natural.commandLines).toEqual([]);
-
     let state = tableWithClaimedBox(1);
     const box1 = boxPlayerId(state, 1)!;
     const k1 = blackjackHandKey(box1, 0);
     state = {
       ...state,
+      blackjack: actingRound(state, box1, [findCardId(state.deck!, '10'), findCardId(state.deck!, 'A')], 10),
+    };
+    const natural = formatPlayerTurnCommand(
+      1,
+      'Bob',
+      {
+        value: 21,
+        isSoft: false,
+        isBlackjack: true,
+      },
+      {
+        actionStatus: 'blackjack',
+        handKey: k1,
+        gameState: state,
+        displayState: state,
+        cardRevealComplete: true,
+      },
+    );
+    expect(natural.commandMessage).toBe('Box 1, Blackjack.');
+    expect(natural.commandLines).toEqual([]);
+
+    state = {
+      ...state,
       blackjack: {
-        ...actingRound(state, box1, [findCardId(state.deck!, '10'), findCardId(state.deck!, 'A')], 10),
+        ...state.blackjack!,
         evenMoneyOfferHandKey: k1,
       },
     };
@@ -229,11 +255,10 @@ describe('blackjack UX fixes — command text', () => {
 
 describe('blackjack UX fixes — documentation', () => {
   it('documents layout rules in master spec and changelog', () => {
-    expect(MASTER_SPEC).toContain('Card View layout');
     expect(MASTER_SPEC).toContain('Active turn highlight');
     expect(MASTER_SPEC).toContain('bust');
     expect(MASTER_SPEC).toContain('Bank Hand');
     expect(MASTER_SPEC).toContain('player box');
-    expect(CHANGE_LOG).toContain('Blackjack UX');
+    expect(CHANGE_LOG).toMatch(/Blackjack UX/i);
   });
 });

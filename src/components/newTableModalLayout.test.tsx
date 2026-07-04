@@ -34,8 +34,8 @@ describe('New Table modal layout', () => {
         createElement('p', null, 'Setup body'),
       ),
     );
-    expect(html).toContain('new-table-overlay__header');
-    expect(html).toContain('new-table-overlay__close');
+    expect(html).toContain('sxm-modal-shell__header');
+    expect(html).toContain('sxm-modal-shell__close');
     expect(html).toContain('aria-label="Close New Table"');
   });
 

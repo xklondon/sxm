@@ -207,7 +207,7 @@ Challenge bank plays against boxes; `session.bankPlayerId` is always a seated **
 **Game end presentation:**
 
 - **Final cards stay visible** — summary/ledger UI must not obscure the felt.
-- **All views (desktop Full/Card, mobile Full/Card):** one centered **Game Over** modal (`GameOverActionOverlay` via `blackjackGameOverContract.ts`) — random happy/sad glyph visual, winner/result/round summary, round-count comment line, Magic 8 wisdom; **Add to Ledger** checkbox + **Open Ledger** link (toggle only — no save until **Start New Game**); **Create IOU** checkbox + **Add message** expand (max 180 chars; empty uses default IOU message); **Start New Game** (owner only) and **Exit Table** apply ledger/IOU choices via `runGameOverCompleteAction` — IOU handoff POST runs before reset or leave; IOU failure keeps overlay open; **Exit Table** opens save-table prompt then returns to lobby/start; close/dismiss does not save ledger or create IOU. Side rail is suppressed while the modal is active. `gameEndRevealReady = cardRevealComplete || gameStatus === 'ended'`; modal appears after `gameOverDelayReady`.
+- **All views (desktop Full/Card, mobile Full/Card):** one centered **Game Over** modal (`GameOverActionOverlay` via `blackjackGameOverContract.ts`) — random happy/sad glyph visual, winner/result/round summary, round-count comment line, Magic 8 wisdom; **Add to Ledger** checkbox + **Open Ledger** link (toggle only — no save until **Start New Game**); **Create IOU** checkbox + **Add message** expand (max 180 chars; empty uses default IOU message); **Start New Game** (owner only) and **Exit Table** apply ledger/IOU choices via `runGameOverCompleteAction` — IOU handoff POST runs before reset or leave; IOU failure keeps overlay open; **Start New Game** dismisses the modal and opens the same `TableStakePanel` reset setup as Table Details → Reset Table (`openSetupFlow({ reset: true, variant: 'newGame' })`); **Exit Table** dismisses the modal then opens save-table / leave prompt (`requestLeaveTable`); close/dismiss does not save ledger or create IOU. Reset permission uses `canViewerResetTable` (ownerPersonId) — not display-name-only. Side rail is suppressed while the modal is active. `gameEndRevealReady = cardRevealComplete || gameStatus === 'ended'`; modal appears after `gameOverDelayReady`.
 - **Desktop polish:** toolbar nav aligned to felt right edge; Full Table card stacks align with player boxes; hand totals fixed at bottom of card column (stacks grow upward toward dealer; outcome/active frame must not shift value); tray label (e.g. **SxM Casino Challenge**) on desktop + mobile; ~10% larger mobile table typography (text tokens only).
 
 ### Personal score ledger (challenge games)
@@ -405,6 +405,14 @@ Host for start/randomise/confirm starter; current turn player for gameplay actio
 - Added via `addGameToPersonalLedger` when `gameStatus === 'ended'` (practice or challenge)
 - Winner attribution: challenge bank wins credit **player id/email** via `challengeBankDisplay.ts` — see §5 Table modes
 - UI: `ScoreLedgerModal` in app menu
+
+### IOU Wallet B2B handoff (challenge game-over)
+
+- **Single creation path:** browser UI → `POST /api/iou-handoff/create` (authenticated) → SXM server encrypts payload (AES-256-GCM) → `POST IOU_HANDOFF_CREATE_URL` with `{ source, handoff }`.
+- **Server-only env (canonical):** `IOU_HANDOFF_SOURCE` (default `sxm`), `IOU_HANDOFF_SECRET`, `IOU_HANDOFF_CREATE_URL`. Legacy `SXM_HANDOFF_*` names are **ignored**; startup logs missing canonical keys and rename hint when legacy vars are present.
+- **No client secrets:** no `VITE_*` handoff vars, no frontend encryption, no `/new?source=sxm&handoff=…` one-click path.
+- **Game-over UI:** `runGameOverCompleteAction` (`gameOverActionFlow.ts`) calls `createIouHandoff` before new-game reset or exit-table leave; IOU failure blocks proceed; duplicate/alreadySubmitted is non-fatal.
+- **Deprecated (tests only):** `buildGameEndIouHandoff` / `buildIouWalletNewUrl` — manual `/new?counterpartyEmail=…` prefill; not used for live handoff creation.
 
 ---
 

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
@@ -13,6 +14,7 @@ import { claimBoxSlot } from '../engine/session';
 import { createBlackjackPlayerHand } from '../types/blackjack';
 import { blackjackHandKey } from '../engine/blackjack';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, cardLayout: CARD_LAYOUT_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
 
 function readSrc(relativePath: string): string {
@@ -40,8 +42,8 @@ describe('TABLE_UX class contract', () => {
   });
 
   it('shared CSS defines one table surface, seat shell, and side-rail shell', () => {
-    const css = readSrc('src/styles/bj-table-shared.css');
-    const shellCss = readSrc('src/styles/bj-blackjack-table-shell.css');
+    const css = SHARED_CSS;
+    const shellCss = SHELL_CSS;
     const panelCss = readSrc('src/components/BlackjackPanel.css');
     expect(css).toContain('.bj-table-surface');
     expect(css).toContain('.bj-table-rail');
@@ -219,7 +221,7 @@ describe('TABLE_UX markup across views', () => {
   });
 
   it('desktop shell CSS uses one height token for both views without divergent overrides', () => {
-    const css = readSrc('src/styles/bj-table-shared.css');
+    const css = SHARED_CSS;
     const panelCss = readSrc('src/components/BlackjackPanel.css');
     expect(css).toContain('--bj-shell-height: min(88vh, 56rem)');
     expect(css).toContain('--bj-shell-width: min(98vw, 86rem)');
@@ -232,7 +234,7 @@ describe('TABLE_UX markup across views', () => {
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.bj-phone-view__hero-stage[\s\S]*min-height:\s*11\.5rem/);
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.bj-phone-view__cards-slot[\s\S]*min-height:\s*10\.5rem/);
     expect(panelCss).not.toMatch(/@media \(min-width: 721px\)[\s\S]*\.bj-view-card-desktop[\s\S]*--bj-desktop-table-max-width/);
-    expect(readSrc('src/styles/bj-card-layout.css')).not.toMatch(/\.bj-view-card-desktop \.bj-table-desktop-shell[\s\S]*height:/);
+    expect(CARD_LAYOUT_CSS).not.toMatch(/\.bj-view-card-desktop \.bj-table-desktop-shell[\s\S]*height:/);
   });
 
   it('bank summary renders inside table shell above dealer', () => {
@@ -273,7 +275,7 @@ describe('TABLE_UX markup across views', () => {
   });
 
   it('mobile Full Table and Card View share unified felt tokens and mini-hand sizing', () => {
-    const css = readSrc('src/styles/bj-table-shared.css');
+    const css = SHARED_CSS;
     expect(css).toContain('--bj-mobile-mini-hand-width: 2.55rem');
     expect(css).toMatch(
       /\.bj-view-full-mobile \.bj-casino__felt,\s*\n\s*\.bj-view-card-mobile \.bj-casino__felt/,

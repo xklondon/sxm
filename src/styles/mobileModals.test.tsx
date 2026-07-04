@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
+
+const { shared: SHARED_CSS } = readBlackjackLayoutCss();
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { AssignChipsModal } from '../components/AssignChipsModal';
@@ -22,8 +25,8 @@ function bettingTable(): GameState {
 
 describe('mobile Full Table arc fit (CSS contract)', () => {
   const panelCss = readCss('src/components/BlackjackPanel.css');
-  const playZoneCss = readCss('src/styles/bj-full-table-card-area.css');
-  const sharedCss = readCss('src/styles/bj-table-shared.css');
+  const playZoneCss = readBlackjackLayoutCss().fullTableCardArea;
+  const sharedCss = SHARED_CSS;
 
   it('felt-main hides horizontal overflow; arc stays within shell width', () => {
     expect(playZoneCss).toContain('Full Table play zone');

@@ -8,6 +8,7 @@ import { ensureTableOwnerPersonBankroll } from '../../session/ownerBankroll';
 import { createBlackjackShoe, shuffleBlackjackShoe } from '../shoe';
 import { createBlackjackPlayerHand } from '../../../types/blackjack';
 import { blackjackHandKey } from '../handKeys';
+import { resolveBankrollOwnerIdForBox } from '../../session/bankroll';
 import { createInitialBlackjackRound } from '../helpers';
 import {
   completeStepwiseInitialDealIfNeeded,
@@ -77,6 +78,37 @@ export function tableWithTwoBoxesSamePerson(): GameState {
 
 export function boxPlayerId(state: GameState, slotNumber: number): string | null {
   return state.tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber)?.playerId ?? null;
+}
+
+/** Test helper — open stake with canonical staker metadata (StakePayerInvariant). */
+export function setSanityOpenStake(
+  state: GameState,
+  boxPlayerId: string,
+  amount: number,
+  bettorPersonId?: string,
+): GameState {
+  const payer =
+    bettorPersonId ??
+    resolveBankrollOwnerIdForBox(state, boxPlayerId) ??
+    state.tableMeta.ownerPersonId ??
+    '';
+  return {
+    ...state,
+    tableMeta: {
+      ...state.tableMeta,
+      boxStakes: {
+        ...state.tableMeta.boxStakes,
+        [boxPlayerId]: {
+          amount,
+          chips: [],
+          confirmed: true,
+          callerPersonId: payer,
+          stakerPersonIds: [payer],
+          stakerAmountsByPersonId: { [payer]: amount },
+        },
+      },
+    },
+  };
 }
 
 export function actingRound(

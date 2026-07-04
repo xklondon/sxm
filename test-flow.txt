@@ -1,0 +1,15 @@
+﻿
+ RUN  v4.1.7 C:/dev/SXMCards
+
+node.exe : No test files found, exiting with code 1
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (No test files found, exiting with code 1:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+filter: src/hooks/useBlackjackTableFlow.test.ts
+include: src/**/*.test.{ts,tsx}, server/tests/**/*.test.ts
+exclude:  src/components/blackjackRenderedLayout.test.tsx
+

@@ -1,0 +1,40 @@
+﻿
+ RUN  v4.1.7 C:/dev/SXMCards
+
+ ÔØ» src/engine/session/resolveViewerPersonId.test.ts (3 tests | 1 failed) 121ms
+     ├ù active box 2: guest sees actionable hand, owner does not 41ms
+node.exe : 
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 1 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  src/engine/session/resolveViewerPersonId.test.ts > resolveViewerPersonId > active box 2: guest sees actionable 
+hand, owner does not
+AssertionError: expected null to be '46a0554f-2e48-44e9-8f55-2eb90ac782d2' // Object.is equality
+
+- Expected:
+"46a0554f-2e48-44e9-8f55-2eb90ac782d2"
+
++ Received:
+null
+
+ ÔØ» src/engine/session/resolveViewerPersonId.test.ts:94:50
+     92|     let { state, ownerId, guestId } = twoPlayerTable();
+     93|     const box2 = boxPlayerId(state, 2)!;
+     94|     expect(getCallerPersonIdForBox(state, box2)).toBe(guestId);
+       |                                                  ^
+     95|     const round = actingRound(
+     96|       state,
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/1]ÔÄ»
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  14:35:29
+   Duration  13.22s (transform 11.47s, setup 546ms, import 11.62s, tests 121ms, environment 0ms)
+

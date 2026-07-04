@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
@@ -52,6 +53,7 @@ import { createBlackjackPlayerHand } from '../types/blackjack';
 import { blackjackHandKey } from '../engine/blackjack';
 import { createMobileLayoutMatchMedia } from '../test/mobileLayoutMatchMedia';
 
+const { shared: SHARED_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
 
 function readSrc(relativePath: string): string {
@@ -150,7 +152,7 @@ describe('stability contracts — layout boundary', () => {
   });
 
   it('shared CSS scopes major table rules under view roots', () => {
-    const css = readSrc('src/styles/bj-table-shared.css');
+    const css = SHARED_CSS;
     expect(css).toContain('.bj-view-full-desktop');
     expect(css).toContain('.bj-view-card-mobile');
   });

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
+
+const { shared: sharedCss, shell: shellCss, cardLayout: layoutCss } = readBlackjackLayoutCss();
 
 describe('Card View — full card visibility', () => {
   const dealerCss = readFileSync(join(process.cwd(), 'src/components/DealerBlock.css'), 'utf8');
@@ -8,8 +11,6 @@ describe('Card View — full card visibility', () => {
     join(process.cwd(), 'src/components/BlackjackCardView.css'),
     'utf8',
   );
-  const layoutCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
-  const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 
   it('hero cards fit inside the hero grid row without a low max-height clip', () => {
     expect(layoutCss).toMatch(
@@ -37,8 +38,6 @@ describe('Card View — full card visibility', () => {
     expect(layoutCss).toContain('--bj-card-total-min-height: 0.7rem');
     expect(layoutCss).toMatch(/\.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__total--compact[\s\S]*font-size:\s*var\(--bj-card-total-font-size\)/);
   });
-
-  const shellCss = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 
   it('Card View desktop uses shared compact dealer path (no tall dealer band)', () => {
     expect(shellCss).not.toMatch(

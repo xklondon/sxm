@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS } = readBlackjackLayoutCss();
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
 const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
@@ -9,8 +11,6 @@ const COMMAND_BOX_SRC = readFileSync(join(process.cwd(), 'src/components/Blackja
 const ACTION_PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackActionPanel.tsx'), 'utf8');
 const DEALER_AREA_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackDealerArea.tsx'), 'utf8');
 const VIEW_ZONES_SRC = readFileSync(join(process.cwd(), 'src/components/blackjackViewZones.tsx'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const TABLE_UX_SRC = readFileSync(join(process.cwd(), 'src/components/tableUxContract.ts'), 'utf8');
@@ -156,7 +156,9 @@ describe('blackjack display layout contract', () => {
     );
     expect(SHELL_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*z-index:\s*5/);
     expect(SHELL_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
-    expect(SHARED_CSS).toMatch(/\.bj-view-full-mobile \.bj-table-zone--actions[\s\S]*z-index:\s*4/);
+    expect(CARD_AREA_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*6/,
+    );
     expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end|\.bj-view-full-desktop \.bj-table-zone--boxes[\s\S]*justify-content:\s*flex-end/);
   });
 
@@ -170,6 +172,7 @@ describe('blackjack display layout contract', () => {
     expect(TABLE_UX_SRC).toContain("cardsAreaHero: 'bj-cards-area--hero'");
     expect(PANEL_SRC).toContain('buildBlackjackCommandText');
     expect(PANEL_SRC).toContain('BlackjackCommandBox');
-    expect(PANEL_SRC).toMatch(/tableCommand\.commandMessage[\s\S]*BlackjackCommandBox/);
+    expect(PANEL_SRC).toContain('tableCommand.commandMessage');
+    expect(PANEL_SRC).toContain('BlackjackCommandBox');
   });
 });

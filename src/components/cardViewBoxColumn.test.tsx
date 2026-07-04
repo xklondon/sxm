@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
@@ -10,6 +11,7 @@ import { createNewBlackjackTable } from '../engine/session';
 import { allocateChipsToBankrollOwner } from '../engine/session/allocation';
 import { addChipToBoxStake } from '../engine/blackjack/stakes';
 
+const { shared: SHARED_CSS } = readBlackjackLayoutCss();
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
 
@@ -88,7 +90,7 @@ describe('shared player boxes arc', () => {
 
   it('Card View boxes zone uses arc smile layout CSS', () => {
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    const sharedCss = SHARED_CSS;
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/);
     expect(panelCss).toMatch(/\.bj-arc--cards:not\(\.bj-full-table-card-area\) \.bj-arc__slot[\s\S]*transform:\s*rotate\(var\(--arc-rot/);
   });

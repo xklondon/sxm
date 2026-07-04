@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { blackjackHandKey } from '../engine/blackjack';
 import {
   actingRound,
@@ -20,13 +21,12 @@ import {
 } from './blackjackUiRenderContract';
 import { buildBlackjackCommandText } from './tableCommandDisplay';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS } = readBlackjackLayoutCss();
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const CARD_VIEW_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.tsx'), 'utf8');
 const HERO_SRC = readFileSync(join(process.cwd(), 'src/components/CardViewDesktopHeroArea.tsx'), 'utf8');
 const COMMAND_BOX_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackCommandBox.tsx'), 'utf8');
 const DEALER_BLOCK_SRC = readFileSync(join(process.cwd(), 'src/components/DealerBlock.tsx'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 
 function blackjackHandWithOneCardVisible() {

@@ -119,7 +119,9 @@ describe('box selection + turn pulse', () => {
     });
     expect(resolved.isTurn).toBe(true);
     expect(getBoxBorderVisualClasses(resolved)).not.toContain('bj-box--turn');
-    expect(PANEL_SRC).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
+    expect(PANEL_SRC).toContain('turnBorderClass');
+    expect(PANEL_SRC).toContain('borderState.isTurn');
+    expect(PANEL_SRC).toContain('BOX_BORDER_TURN');
     expect(getBoxActivePulseClassName(resolved)).toBe('');
   });
 

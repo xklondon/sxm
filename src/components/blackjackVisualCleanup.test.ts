@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS } = readBlackjackLayoutCss();
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const MAGIC8_CSS = readFileSync(join(process.cwd(), 'src/components/magic8/Magic8Ball.css'), 'utf8');
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
@@ -168,7 +168,7 @@ describe('blackjack visual cleanup — command route and dealer/command grid', (
     expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*grid-row:\s*command/);
     expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*padding-top:\s*var\(--bj-desktop-dealer-command-gap\)/);
     expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*justify-content:\s*flex-start/);
-    expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-dealer-area[\s\S]*z-index:\s*2/);
+    expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-dealer-area[\s\S]*z-index:\s*9/);
     expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*z-index:\s*3/);
     expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*z-index:\s*6/);
     expect(desktop).toMatch(/\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*z-index:\s*5/);

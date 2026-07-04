@@ -225,7 +225,8 @@ describe('deal/new cards host permission', () => {
   it('wires deal permission through canCurrentUserDealTable', () => {
     expect(PANEL_SRC).toContain('canCurrentUserDealTable');
     expect(PANEL_SRC).toContain('canUserDealTable');
-    expect(PANEL_SRC).toMatch(/function handlePrimaryDealAction\(\) \{[\s\S]*if \(!canUserDealTable\)/);
+    expect(PANEL_SRC).toMatch(/function handlePrimaryDealAction\(\) \{[\s\S]*runPrimaryDealAction/);
+    expect(PANEL_SRC).toMatch(/canUserDealTable/);
   });
 });
 

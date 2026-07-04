@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { MOBILE_LAYOUT_MEDIA, MOBILE_LAYOUT_MEDIA_LANDSCAPE } from '../styles/mobileLayoutContract';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
@@ -17,12 +18,12 @@ describe('mobile layout fixes — portrait bottom safe area', () => {
       ),
     );
     expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-mobile[\s\S]*--bj-zone-tray-padding-bottom:\s*max\([\s\S]*env\(safe-area-inset-bottom/,
+      /@media \(max-width: 720px\)[\s\S]*--bj-zone-tray-padding-bottom:\s*max\([\s\S]*env\(safe-area-inset-bottom/,
     );
     expect(SHARED_CSS).toMatch(
       /--bj-mobile-rail-padding:[\s\S]*env\(safe-area-inset-bottom/,
     );
-    expect(PLAYER_ROW_CSS).toMatch(
+    expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*overflow:\s*visible/,
     );
   });
@@ -39,7 +40,10 @@ describe('mobile layout fixes — portrait bottom safe area', () => {
         `@media ${MOBILE_LAYOUT_MEDIA.replace(/[()]/g, '\\$&')}[\\s\\S]*--bj-zone-boxes-tray-gap:\\s*0\\.32rem`,
       ),
     );
-    expect(PLAYER_ROW_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*margin:\s*0/,
+    );
+    expect(SHARED_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-zone-boxes-tray-gap\)/,
     );
   });
@@ -77,8 +81,8 @@ describe('mobile layout fixes — Card View classic cloth', () => {
     expect(FELT_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
     );
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*flex:\s*0 0 auto/,
     );
   });
 

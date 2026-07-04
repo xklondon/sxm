@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { GameState } from '../types';
@@ -20,12 +21,8 @@ import {
   BLACKJACK_TABLE_SHELL_LAYOUT_OWNER_FILES,
 } from './blackjackLayoutContract';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const PLAY_ZONE_CSS = readFileSync(join(process.cwd(), FULL_TABLE_PLAY_ZONE_CSS), 'utf8');
-const SHELL_CSS = readFileSync(
-  join(process.cwd(), BLACKJACK_TABLE_SHELL_LAYOUT_OWNER_FILES[0]),
-  'utf8',
-);
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');

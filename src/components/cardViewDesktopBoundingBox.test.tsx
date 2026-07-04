@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createElement } from 'react';
 import { cleanup, render } from '@testing-library/react';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { BlackjackPanel } from './BlackjackPanel';
 import { playingCardDesktopState } from '../test/cardDesktopLayoutState';
 import { DEFAULT_VISIBLE_TABLE_BOXES } from './tableBoxLayout';
@@ -19,23 +20,33 @@ import {
   measureElement,
 } from './layoutMeasure';
 
+const {
+  shared,
+  shell,
+  playerRow,
+  cardLayout,
+  fullTableCardArea,
+  cardDesktopHero,
+  cardDesktop,
+} = readBlackjackLayoutCss();
+
 const CSS_BUNDLE = [
-  'src/styles/tokens.css',
-  'src/styles/bj-table-shared.css',
-  'src/styles/bj-player-row-layout.css',
-  'src/styles/bj-card-layout.css',
-  'src/styles/bj-full-table-card-area.css',
-  'src/styles/bj-blackjack-table-shell.css',
-  'src/styles/bj-felt-skins.css',
-  'src/styles/bj-card-desktop-hero-area.css',
-  'src/styles/bj-card-desktop-layout.css',
-  'src/styles/design-system.css',
-  'src/components/BlackjackPanel.css',
-  'src/components/BlackjackCardView.css',
-  'src/components/ChipStack.css',
-  'src/components/DealerBlock.css',
-  'src/components/PlayingCard.css',
-].map((rel) => readFileSync(join(process.cwd(), rel), 'utf8')).join('\n');
+  readFileSync(join(process.cwd(), 'src/styles/tokens.css'), 'utf8'),
+  shared,
+  playerRow,
+  cardLayout,
+  fullTableCardArea,
+  shell,
+  readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8'),
+  cardDesktopHero,
+  cardDesktop,
+  readFileSync(join(process.cwd(), 'src/styles/design-system.css'), 'utf8'),
+  readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8'),
+  readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8'),
+  readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8'),
+  readFileSync(join(process.cwd(), 'src/components/DealerBlock.css'), 'utf8'),
+  readFileSync(join(process.cwd(), 'src/components/PlayingCard.css'), 'utf8'),
+].join('\n');
 
 let simulatedWidth = 1280;
 let simulatedHeight = 800;

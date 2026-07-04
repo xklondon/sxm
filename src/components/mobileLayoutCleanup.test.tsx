@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
@@ -15,6 +16,7 @@ import {
   type SimulatedViewport,
 } from '../test/mobileLayoutMatchMedia';
 
+const { shared: SHARED_CSS, fullTableCardArea: PLAY_ZONE_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
 
 let simulatedViewport: SimulatedViewport = { width: 390, height: 844 };
@@ -51,7 +53,7 @@ function readCss(relativePath: string): string {
 
 describe('mobile layout cleanup', () => {
   const panelSrc = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-  const sharedCss = readCss('src/styles/bj-table-shared.css');
+  const sharedCss = SHARED_CSS;
   const panelCss = readCss('src/components/BlackjackPanel.css');
 
   it('uses shared mobile table shell class on rail-wrap', () => {
@@ -128,8 +130,8 @@ describe('mobile layout cleanup', () => {
   });
 
   it('mobile Full Table arc fits shell without inner horizontal scroll', () => {
-    const playZoneCss = readCss('src/styles/bj-full-table-card-area.css');
-    const sharedCss = readCss('src/styles/bj-table-shared.css');
+    const playZoneCss = PLAY_ZONE_CSS;
+    const sharedCss = SHARED_CSS;
     expect(playZoneCss).toContain('Full Table play zone');
     expect(sharedCss).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell[\s\S]*overflow:\s*hidden/,
@@ -139,7 +141,7 @@ describe('mobile layout cleanup', () => {
 });
 
 describe('mobile landscape layout source of truth', () => {
-  const sharedCss = readCss('src/styles/bj-table-shared.css');
+  const sharedCss = SHARED_CSS;
 
   it('keeps mobile classification when landscape width exceeds 720px', () => {
     const landscapePhone = renderAt({ width: 844, height: 390 }, 'card');

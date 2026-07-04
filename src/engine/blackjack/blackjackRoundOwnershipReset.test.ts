@@ -169,7 +169,7 @@ describe('blackjack round ownership reset', () => {
     state = addChipToBoxStake(state, box1, 50, p2);
 
     const settled = settleRound(state);
-    expect(settled.tableMeta.boxSlots.find((s) => s.playerId === box1)?.callerPersonId).toBeTruthy();
+    expect(settled.tableMeta.boxSlots.find((s) => s.playerId === box1)?.callerPersonId).toBeNull();
 
     let betting = startBettingRound(settled);
     expect(canStartBlackjackDeal(betting, p1)).toBe(false);

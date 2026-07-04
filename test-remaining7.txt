@@ -1,0 +1,59 @@
+﻿
+ RUN  v4.1.7 C:/dev/SXMCards
+
+ ÔØ» src/components/tableStakeSetupDirty.test.ts (2 tests | 1 failed) 18ms
+     ├ù is not dirty on initial open 16ms
+ ÔØ» src/components/frozenLayoutViewIntegrity.test.ts (3 tests | 1 failed) 18ms
+     ├ù does not mutate frozen owner CSS files during mobile/double pass 12ms
+node.exe : 
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 2 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  src/components/frozenLayoutViewIntegrity.test.ts > frozen layout view integrity > does not mutate frozen owner 
+CSS files during mobile/double pass
+AssertionError: src/styles/bj-card-desktop-hero-area.css: expected '2f9e31d459af30ace1a8afaac697456a25307ÔÇª' to be 
+'a2f19ad0c3145631ba1e5eb03201714a8ac6eÔÇª' // Object.is equality
+
+Expected: "a2f19ad0c3145631ba1e5eb03201714a8ac6ed1491fb97c8283a16387461011f"
+Received: "2f9e31d459af30ace1a8afaac697456a253071af9d50dab49ad2d926063a3d70"
+
+ ÔØ» src/components/frozenLayoutViewIntegrity.test.ts:37:34
+     35|   it('does not mutate frozen owner CSS files during mobile/double passÔÇª
+     36|     for (const [path, expected] of Object.entries(FROZEN_LAYOUT_FILE_SÔÇª
+     37|       expect(sha256(path), path).toBe(expected);
+       |                                  ^
+     38|     }
+     39|   });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/2]ÔÄ»
+
+ FAIL  src/components/tableStakeSetupDirty.test.ts > tableStakeSetupDirty > is not dirty on initial open
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ÔØ» src/components/tableStakeSetupDirty.test.ts:44:55
+     42|       inviteNote: '',
+     43|     });
+     44|     expect(isTableStakeSetupDirty(baseline, current)).toBe(false);
+       |                                                       ^
+     45|   });
+     46|
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/2]ÔÄ»
+
+
+ Test Files  2 failed | 5 passed (7)
+      Tests  2 failed | 22 passed (24)
+   Start at  14:38:00
+   Duration  20.11s (transform 29.29s, setup 721ms, import 26.63s, tests 4.98s, environment 2ms)
+

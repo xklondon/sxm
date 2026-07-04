@@ -128,7 +128,7 @@ import {
 import {
   canUserAssignChips,
   canUserChangeProtocol,
-  canUserResetTable,
+  canViewerResetTable,
 } from '../engine/table/adminControls';
 import {
   getDisplayedHandValue,
@@ -454,7 +454,7 @@ export function BlackjackPanel({
   const canChangeProtocol =
     tableOwner && canUserChangeProtocol(gameState, controllerName) && canChangeMinimumBet(gameState);
   const canChangeDealSpeed = tableOwner && canChangeMinimumBet(gameState);
-  const canResetTable = canUserResetTable(gameState, controllerName);
+  const canResetTable = canViewerResetTable(gameState, viewerPersonId, controllerName);
   const activeProtocol = getBlackjackProtocolForState(gameState);
   const activeBoxId = getActiveTurnBoxId(gameState, protocolPhase);
   const uiActiveBoxId = handTransitionHold.holdActiveBoxId ?? activeBoxId;
@@ -736,16 +736,25 @@ export function BlackjackPanel({
       setIouPending(true);
     }
 
+    function dismissGameOverOverlayForAction(nextAction: GameOverCompleteOptions['nextAction']) {
+      if (nextAction === 'new-game') {
+        setGameOverOverlayConfirmed(true);
+      } else {
+        setGameOverOverlayDismissed(true);
+      }
+      setSideRailPanel(null);
+    }
+
     try {
       const result = await runGameOverCompleteAction(options, {
         getState: () => gameStateRef.current,
         addToPersonalLedger: handleAddToPersonalLedger,
         beginNewGame: () => {
-          setGameOverOverlayConfirmed(true);
-          setSideRailPanel(null);
+          dismissGameOverOverlayForAction('new-game');
           onBeginTableReset?.('newGame');
         },
         exitTable: () => {
+          dismissGameOverOverlayForAction('exit-table');
           onExitTable?.();
         },
         setIouFeedback,
@@ -1330,13 +1339,17 @@ export function BlackjackPanel({
     });
   }
 
+  function handleGameOverNewGameSetup() {
+    setGameOverOverlayConfirmed(true);
+    setSideRailPanel(null);
+    onBeginTableReset?.('newGame');
+  }
+
   const dealerBlockProps = {
     awaitingNextRound,
     gameEnded,
     onNewGame:
-      gameEnded && onBeginTableReset && gameOverOverlayConfirmed
-        ? () => onBeginTableReset('newGame')
-        : undefined,
+      gameEnded && onBeginTableReset && canResetTable ? handleGameOverNewGameSetup : undefined,
     canStartNewGame: canResetTable,
     newGameDisabledReason:
       gameEnded && !canResetTable ? 'Only the table owner can start a new game.' : null,

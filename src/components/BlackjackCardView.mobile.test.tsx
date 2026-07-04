@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -16,6 +16,35 @@ import type { GameState } from '../types';
  */
 
 const noop = () => {};
+
+let simulatedWidth = 390;
+const globalRef = globalThis as unknown as { window?: unknown };
+const hadWindow = 'window' in globalRef;
+
+beforeAll(() => {
+  globalRef.window = {
+    matchMedia: (query: string) => {
+      const m = /max-width:\s*(\d+)/.exec(query);
+      const max = m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+      return {
+        matches: simulatedWidth <= max,
+        media: query,
+        addEventListener: noop,
+        removeEventListener: noop,
+        addListener: noop,
+        removeListener: noop,
+        onchange: null,
+        dispatchEvent: () => false,
+      };
+    },
+  };
+});
+
+afterAll(() => {
+  if (!hadWindow) {
+    delete globalRef.window;
+  }
+});
 
 function bettingTableWithBox(): { state: GameState; boxId: string } {
   let state = createNewBlackjackTable();

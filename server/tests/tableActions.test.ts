@@ -16,6 +16,32 @@ import { seedHostUser, seedPerson } from './testHelpers.js';
 import { addSeatAtTable } from '../../src/engine/session/table.js';
 import { ensureBoxPositionForPerson, getCallerPersonIdForBox } from '../../src/engine/session/playerAssignment.js';
 import { getBlackjackProtocolPhase } from '../../src/engine/blackjack/protocol.js';
+import type { TableRecord } from '../src/store/types.js';
+
+async function addGuestPlayerToTable(
+  store: ReturnType<typeof createMemoryStore>,
+  table: TableRecord,
+  email = 'guest@example.com',
+  displayName = 'Guest',
+) {
+  const guest = await store.createUser(email, displayName);
+  let state = addSeatAtTable(table.state, {
+    displayName,
+    controllerName: displayName,
+    role: 'person',
+    startingChips: 0,
+  });
+  const guestPersonId = state.session.playerIds[state.session.playerIds.length - 1]!;
+  store.addMember({
+    tableId: table.id,
+    userId: guest.id,
+    personId: guestPersonId,
+    role: 'player',
+    joinedAt: new Date().toISOString(),
+  });
+  store.updateTable(table.id, state, table.version);
+  return { guest, guestPersonId };
+}
 
 describe('table deal flow', () => {
   let store: ReturnType<typeof createMemoryStore>;
@@ -87,20 +113,13 @@ describe('table deal flow', () => {
   it('non-host cannot advance to next round', async () => {
     const host = await seedHostUser(store);
     const table = await tables.createTable(host.id, 'Host');
-    const guest = await store.createUser('guest@example.com', 'Guest');
-    store.addMember({
-      tableId: table.id,
-      userId: guest.id,
-      personId: 'guest-person',
-      role: 'player',
-      joinedAt: new Date().toISOString(),
-    });
-    // Force an awaiting-next-round state.
+    const { guest } = await addGuestPlayerToTable(store, table);
+    const current = store.getTable(table.id)!;
     const awaiting = {
-      ...table.state,
-      tableMeta: { ...table.state.tableMeta, awaitingNextRound: true },
-    } as typeof table.state;
-    store.updateTable(table.id, awaiting, table.version);
+      ...current.state,
+      tableMeta: { ...current.state.tableMeta, awaitingNextRound: true },
+    } as typeof current.state;
+    store.updateTable(table.id, awaiting, current.version);
 
     await expect(tables.applyAction(table.id, guest.id, 'nextRound', {})).rejects.toThrow(/host/i);
   });
@@ -108,20 +127,19 @@ describe('table deal flow', () => {
   it('unauthorized player cannot deal', async () => {
     const host = await seedHostUser(store);
     const table = await tables.createTable(host.id, 'Host');
-    const member = store.getMember(table.id, host.id)!;
-    const boxId = Object.keys(table.state.players).find(
-      (id) => table.state.players[id]?.role === 'box',
+    const { guest } = await addGuestPlayerToTable(store, table);
+    const current = store.getTable(table.id)!;
+    const boxId = Object.keys(current.state.players).find(
+      (id) => current.state.players[id]?.role === 'box',
     )!;
-    await tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, table.version);
-    const shuffled = await tables.applyAction(table.id, host.id, 'shuffleToStart', {}, table.version + 1);
-    const guest = await store.createUser('guest@example.com', 'Guest');
-    store.addMember({
-      tableId: table.id,
-      userId: guest.id,
-      personId: 'guest-person',
-      role: 'player',
-      joinedAt: new Date().toISOString(),
-    });
+    await tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 10 }, current.version);
+    const shuffled = await tables.applyAction(
+      table.id,
+      host.id,
+      'shuffleToStart',
+      {},
+      store.getTable(table.id)!.version,
+    );
     await expect(tables.applyAction(table.id, guest.id, 'dealCards', {}, shuffled.version)).rejects.toThrow(/host/i);
   });
 
@@ -158,35 +176,23 @@ describe('table deal flow', () => {
   it('allows shared betting on another player occupied box', async () => {
     const host = await seedHostUser(store);
     const table = await tables.createTable(host.id, 'Host');
-    const guest = await store.createUser('guest@example.com', 'Guest');
-    let state = addSeatAtTable(table.state, {
-      displayName: 'Guest',
-      controllerName: 'Guest',
-      role: 'person',
-      startingChips: 0,
-    });
-    const guestPersonId = state.session.playerIds[state.session.playerIds.length - 1]!;
-    store.addMember({
-      tableId: table.id,
-      userId: guest.id,
-      personId: guestPersonId,
-      role: 'player',
-      joinedAt: new Date().toISOString(),
-    });
+    const { guestPersonId } = await addGuestPlayerToTable(store, table);
+    let state = store.getTable(table.id)!.state;
     const guestSlot = state.tableMeta.boxSlots.find((s) => !s.playerId)!;
     state = ensureBoxPositionForPerson(state, guestSlot.slotNumber, guestPersonId);
     const guestBoxId = state.tableMeta.boxSlots.find((s) => s.slotNumber === guestSlot.slotNumber)!.playerId!;
-    store.updateTable(table.id, state, table.version);
+    store.updateTable(table.id, state, store.getTable(table.id)!.version);
 
     const bet = await tables.applyAction(
       table.id,
       host.id,
       'placeBet',
       { boxId: guestBoxId, amount: 10 },
-      table.version,
+      store.getTable(table.id)!.version,
     );
     expect(bet.state.tableMeta.boxStakes[guestBoxId]?.amount).toBe(10);
-    expect(getCallerPersonIdForBox(bet.state, guestBoxId)).toBe(guestPersonId);
+    // First bettor commands when native owner has not staked (boxDecisionOwnership contract).
+    expect(getCallerPersonIdForBox(bet.state, guestBoxId)).toBe(bet.state.tableMeta.ownerPersonId);
   });
 });
 
@@ -235,7 +241,7 @@ describe('invite accept flow', () => {
     });
     const token = new URL(joinUrl).searchParams.get('token')!;
     await tables.acceptInviteByToken(token);
-    await expect(tables.acceptInviteByToken(token)).rejects.toThrow(/already used/i);
+    await expect(tables.acceptInviteByToken(token)).rejects.toThrow(/expired or invalid/i);
   });
 
   it('wrong-session user id still accepts invite as invitee', async () => {

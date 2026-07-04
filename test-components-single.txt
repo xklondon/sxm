@@ -1,0 +1,240 @@
+﻿
+ RUN  v4.1.7 C:/dev/SXMCards
+
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile vs desktop ÔÇö same canonical Full Table sections > playing round: dealer, status, arc/boxes, actions, This Table 103ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile vs desktop ÔÇö same canonical Full Table sections > betting round: dealer, felt, arc, chip tray, This Table 26ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile vs desktop ÔÇö same canonical Full Table sections > same arc box ids/order on mobile and desktop 50ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile vs desktop ÔÇö same canonical Card View sections > playing round: dealer, status, hero/play-area, mini row, This Table 42ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile vs desktop ÔÇö same canonical Card View sections > betting round: dealer, ordered betting row, This Table 37ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > renders the felt/arc/boxes and never the fallback on a normal phone 27ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > shows dealer block, status/summary slot, actions, and the This Table bar 27ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > exposes the chip tray during betting 16ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > chip tray hides denominations below table minimum bet (same on Full Table and Card View) 29ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > highlights the active hand value and active player box during player turn 28ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > keeps a busted box visible with BUST in cards area and bet on box 27ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > uses the same box order as desktop Full Table 54ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > felt scroller CSS keeps arc inside shell (no inner horizontal scroll) 1ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > mobile Full Table vertical spacing aligns with Card View (shared felt token, boxes at bottom) 1ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > falls back only on ultra-narrow widths (< 360px) 4ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Full Table renders the real table (not a fallback) > includes Assign chips actions in mobile This Table overlay source 3ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Card View structure > renders dealer, hero/stage, mini box row, and the This Table bar 24ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Card View structure > shares mobile table shell; This Table panel lives in overlay source 48ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Card View structure > arc player boxes row includes all slots in order with active highlight and join boxes 20ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Card View structure > mobile Card View arc boxes use table visual order; occupied boxes match Full Table arc 51ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Card View structure > desktop Card View matches table order (Box 1 on the right) 24ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Card View structure > highlights the active box as the live hero with shell Stay/Hit controls 20ms
+ Ô£ô src/components/mobileTableViews.test.tsx > Table Details side rail (same slot as This Table) > does not render inline info chips or dealer Table Details button in the header 20ms
+ Ô£ô src/components/mobileTableViews.test.tsx > Table Details side rail (same slot as This Table) > does not use table-details slide overlay markup 21ms
+ Ô£ô src/components/mobileTableViews.test.tsx > Table Details side rail (same slot as This Table) > uses overlay panel slot when open (not below-table flow) 47ms
+ Ô£ô src/components/mobileTableViews.test.tsx > shared table UX classes (Full Table + Card View) > desktop and mobile render canonical rail, felt, and card column surface classes 97ms
+ Ô£ô src/components/mobileTableViews.test.tsx > shared table UX classes (Full Table + Card View) > shared CSS uses one felt gradient for table surface and card column 2ms
+ Ô£ô src/components/mobileTableViews.test.tsx > shared table UX classes (Full Table + Card View) > shared CSS is imported once via index.css 3ms
+ Ô£ô src/components/mobileTableViews.test.tsx > stable dealer layout slots across phases > Card View mobile: same dealer slots in betting and playing 35ms
+ Ô£ô src/components/mobileTableViews.test.tsx > stable dealer layout slots across phases > Full Table mobile: dealer slots and action bar area across phases 41ms
+ Ô£ô src/components/mobileTableViews.test.tsx > mobile Card View width contract > CSS constrains casino rail and hides horizontal overflow on arc player boxes 1ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout stabilization contract > uses rounded-rectangle table radii instead of oval clipping on desktop 14ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout stabilization contract > uses wider shared desktop shell width token 1ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout stabilization contract > does not clip play area with overflow hidden on desktop felt chain 4ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout stabilization contract > Full Table renders visible cards via vertical stack above boxes 218ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout stabilization contract > shows bank summary and bank hand inside table shell above dealer 163ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout stabilization contract > keeps canonical zone structure stable across Full and Card views 116ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout stabilization contract > keeps chip tray mounted during play with chips visible outside betting 38ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout stabilization contract > reserves action slot during betting when no player actions show 54ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout stabilization contract > bank visible value excludes hidden hole card in markup 70ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout stabilization contract > player boxes use shared framed mini-hand shell 5ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout polish contract > renders bank total and bank hand inside table shell above dealer 90ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout polish contract > Full Table arc stacks cards vertically above each box shell 66ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout polish contract > Full Table keeps play-phase stake chips in player boxes (frozen contract) 77ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout polish contract > Card View shows in-box hand total during play (chips hidden inside box) 70ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout polish contract > Card View uses fixed flex-column shell with bottom-anchored compact boxes 122ms
+ Ô£ô src/components/tableLayoutStabilization.test.tsx > table layout polish contract > Card View zones exist across betting and play phases 127ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX class contract > exports stable canonical class names 5ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX class contract > BLACKJACK_TABLE_LAYOUT includes TABLE_UX entries 1ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX class contract > shared CSS defines one table surface, seat shell, and side-rail shell 7ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX class contract > exports bet zone and player action class names 0ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX class contract > BlackjackPanel applies shared rail and felt classes 2ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX class contract > BlackjackCardView renders hero-only axis content without layout shell 4ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > Full Table and Card View share rail + surface classes on desktop and mobile 127ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > desktop Full Table and Card View share canonical desktop table shell 34ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > desktop shell CSS uses one height token for both views without divergent overrides 3ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > bank summary renders inside table shell above dealer 43ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > Card View playing actions use shared table action panel contract 31ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > Card View bottom boxes use shared arc player box row 24ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > player action panels use shared bj-player-actions shell 45ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > mobile Full Table and Card View share unified felt tokens and mini-hand sizing 1ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > mobile Full/Card player boxes share mini-hand class family on render 39ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > Full Table arc seats use vertical card stack + shared box class family 24ms
+ Ô£ô src/components/tableUxContract.test.tsx > TABLE_UX markup across views > arc stake slots use fixed mini-stake shell during betting 2ms
+ Ô£ô src/components/tableUxContract.test.tsx > TableSideRailShell > renders shared header, title, close, and body slots 1ms
+ Ô£ô src/components/gameOverActionOverlay.test.tsx > GameOverActionOverlay > renders round comment, ledger toggle/link, IOU toggle/message, and Start New Game 87ms
+ Ô£ô src/components/gameOverActionOverlay.test.tsx > GameOverActionOverlay > does not save ledger when Add to Ledger toggle is on until Start New Game 275ms
+ Ô£ô src/components/gameOverActionOverlay.test.tsx > GameOverActionOverlay > opens ledger via Open Ledger link without completing game over 68ms
+ Ô£ô src/components/gameOverActionOverlay.test.tsx > GameOverActionOverlay > passes custom IOU message capped at 180 characters 114ms
+ Ô£ô src/components/gameOverActionOverlay.test.tsx > GameOverActionOverlay > uses default IOU message when custom field is empty 61ms
+ Ô£ô src/components/gameOverActionOverlay.test.tsx > GameOverActionOverlay > passes exit-table action when Exit Table is clicked 42ms
+ Ô£ô src/components/gameOverActionOverlay.test.tsx > GameOverActionOverlay > disables Start New Game for non-owner 23ms
+ Ô£ô src/components/gameOverActionOverlay.test.tsx > GameOverActionOverlay > does not call onComplete when dismissed 77ms
+ Ô£ô src/components/stitchLayoutSections.test.tsx > Stitch layout sections > renders core sections in desktop full table view 71ms
+ Ô£ô src/components/stitchLayoutSections.test.tsx > Stitch layout sections > renders core sections in desktop card view 14ms
+ Ô£ô src/components/stitchLayoutSections.test.tsx > Stitch layout sections > renders core sections in mobile full table view 24ms
+ Ô£ô src/components/stitchLayoutSections.test.tsx > Stitch layout sections > renders core sections in mobile card view 17ms
+ Ô£ô src/components/stitchLayoutSections.test.tsx > Stitch layout sections > keeps named sections mounted across betting, play, and settlement in card view 58ms
+ Ô£ô src/components/stitchLayoutSections.test.tsx > Stitch layout sections > keeps card view hero, actions, and boxes in distinct sections 21ms
+ Ô£ô src/components/stitchLayoutSections.test.tsx > Stitch layout sections > renders player box sub-sections in card view 20ms
+ Ô£ô src/components/stitchLayoutSections.test.tsx > Stitch layout sections > exposes ledger and settings panels with stable section names 16ms
+ Ô£ô src/components/stitchLayoutSections.test.tsx > Stitch layout sections > has one canonical BlackjackPanel production path 11ms
+ Ô£ô src/components/mobileCardViewComposition.test.tsx > mobile Card View composition contract > uses BlackjackTableLayoutShell with canonical zone order 105ms
+ Ô£ô src/components/mobileCardViewComposition.test.tsx > mobile Card View composition contract > does not mount legacy mini-row or card-layout box grid wrappers 11ms
+ Ô£ô src/components/mobileCardViewComposition.test.tsx > mobile Card View composition contract > shares full-arc player box classes with mobile Full Table 84ms
+ Ô£ô src/components/mobileCardViewComposition.test.tsx > mobile Card View composition contract > owned box uses one visual shell ÔÇö slot chrome neutralized, turn highlight on mini-hand 100ms
+ Ô£ô src/components/mobileCardViewComposition.test.tsx > mobile Card View composition contract > prevents horizontal overflow at common phone widths and keeps tray visible 95ms
+ Ô£ô src/components/mobileCardViewComposition.test.tsx > mobile Card View composition contract > betting boxes expose chip-drop targets for tray placement 38ms
+ Ô£ô src/components/mobileCardViewComposition.test.tsx > mobile Card View composition contract > mobile Full Table shares the same shell stretch and zone width rules 58ms
+ Ô£ô src/components/mobileCardViewComposition.test.tsx > mobile Card View composition contract > shows classic cloth decor in Card View (desktop + mobile) 45ms
+ Ô£ô src/components/mobileCardViewComposition.test.tsx > mobile Card View composition contract > player boxes arc stays inside felt shell without card-layout wrappers 42ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile layout cleanup > uses shared mobile table shell class on rail-wrap 59ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile layout cleanup > mobile Full Table and Card View share felt/rail tokens in CSS 1ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile layout cleanup > mobile header hides Play Ledger and Settings nav buttons 31ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile layout cleanup > mobile This Table overlay exposes Play Ledger and Settings tabs in source 2ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile layout cleanup > mobile side panel is overlay, not below-table flow 12ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile layout cleanup > desktop side rail remains docked 13ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile layout cleanup > mobile Full Table and Card View share player box arc contract 13ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile layout cleanup > mobile landscape uses shared shell tokens and compresses felt height 1ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile layout cleanup > mobile Full Table arc fits shell without inner horizontal scroll 1ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile landscape layout source of truth > keeps mobile classification when landscape width exceeds 720px 15ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile landscape layout source of truth > Card View and Full Table landscape render chip tray in mobile shell 28ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile landscape layout source of truth > shared CSS pins chip tray with flex-shrink and flexible card grid rows 1ms
+ Ô£ô src/components/mobileLayoutCleanup.test.tsx > mobile landscape layout source of truth > landscape overlay sheet leaves room to dismiss and see table 0ms
+ Ô£ô src/components/mobileLayoutParity.test.tsx > mobile layout parity audit ÔÇö Full Table vs Card View > requires paired mobile view selectors for shell layout rules 17ms
+ Ô£ô src/components/mobileLayoutParity.test.tsx > mobile layout parity audit ÔÇö Full Table vs Card View > shares identical mobile shell zone CSS pairs for dealer/command/actions/boxes/tray 11ms
+ Ô£ô src/components/mobileLayoutParity.test.tsx > mobile layout parity audit ÔÇö Full Table vs Card View > does not keep Card View-only mobile layout selectors on shell zones in panel CSS 7ms
+ Ô£ô src/components/mobileLayoutParity.test.tsx > mobile layout parity audit ÔÇö Full Table vs Card View > renders the same canonical shell class tree except CardsArea mode 110ms
+ Ô£ô src/components/mobileLayoutParity.test.tsx > mobile layout parity audit ÔÇö Full Table vs Card View > keeps command after dealer and actions after command without overlap selectors 52ms
+ Ô£ô src/components/mobileLayoutParity.test.tsx > mobile layout parity audit ÔÇö Full Table vs Card View > uses the same player box classes in mobile Full Table and Card View 81ms
+ Ô£ô src/components/mobileLayoutParity.test.tsx > mobile layout parity audit ÔÇö Full Table vs Card View > neutralizes legacy card-layout and phone-view composition CSS 4ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > root flow: Cards ÔåÆ Practice shows blackjack settings 100ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > root flow: Cards ÔåÆ Poker ÔåÆ Practice shows holdem settings 41ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > root flow: Cards ÔåÆ Poker ÔåÆ Challenge shows play-for-what, invites, and blinds 41ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > root flow: Dice ÔåÆ Practice shows zilch settings 32ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > menu flow: Dice ÔåÆ Challenge shows zilch invite settings 39ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > does not show duplicate category selector after choosing Dice 23ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > reset from zilch to blackjack confirm renders blackjack 71ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > reset from blackjack to zilch confirm renders zilch 13ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > reset panel uses staged flow title 2ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > switching Dice then Cards clears dice game from draft 0ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > switching Cards then Dice clears card game from draft 0ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > mode selection advances to settings on click without Continue 47ms
+ Ô£ô src/components/tableSetupRouting.test.tsx > canonical table setup routing > holdem blind validation rejects big blind <= small blind 2ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch reference layout > uses oval felt throw area with gold rim 15ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch reference layout > renders dice inside throw oval 305ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch reference layout > does not show red not-your-turn banner during normal play 43ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch reference layout > does not render duplicate select-scoring banner or combo pills 241ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch reference layout > uses compact Roll Dice / Keep selected / Bank controls 67ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch reference layout > progresses dice UI phases landed ÔåÆ gather ÔåÆ ordered 130ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch protocol selection > allows selecting both ones on a roll with two 1s 5ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch protocol selection > scores two ones correctly when kept 10ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch protocol selection > allows selecting 1 and 5 together 2ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch protocol selection > rejects non-scoring dice selection 5ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch protocol selection > kept dice cannot be selected again 5ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch protocol selection > three 1s can be kept as three-of-a-kind 1ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch protocol selection > one or two 1s can be kept as lower scoring singles 3ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch play flow > keep selected then roll remaining dice only 1ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch play flow > bank advances to next player 3ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch play flow > UI selects two ones after ordered phase and keeps them 161ms
+ Ô£ô src/components/zilch/zilchReferenceLayout.test.tsx > Zilch play flow > no legacy ZilchActions component path 1ms
+ Ô£ô src/components/thisTablePanelLayout.test.tsx > This Table panel placement > desktop: side panel docks right of table shell without felt overlay 82ms
+ Ô£ô src/components/thisTablePanelLayout.test.tsx > This Table panel placement > mobile: This Table opens as overlay sheet (not below-table flow) 17ms
+ Ô£ô src/components/thisTablePanelLayout.test.tsx > This Table panel placement > Play Ledger still uses modal overlay markup 1ms
+ Ô£ô src/components/thisTablePanelLayout.test.tsx > This Table panel placement > Table Details lives in Settings menu (not dealer button or side-rail slot) 19ms
+ Ô£ô src/components/thisTablePanelLayout.test.tsx > This Table panel placement > Settings modal markup remains on desktop; mobile uses overlay tab 2ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö Blackjack shell > BlackjackPanel imports exactly one canonical BlackjackTableLayoutShell 11ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö Blackjack shell > follows App ÔåÆ TableScreen ÔåÆ BlackjackPanel ÔåÆ BlackjackTableLayoutShell 2ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö Blackjack shell > TableScreen routes holdem to PokerPanel and never legacy HoldemPanel 1ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö forbidden imports > production src does not import reference-ui, frozen layout, or test fixtures 328ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö forbidden imports > allows design/templates theme registry (not a layout fork) 3ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö CSS import order > index.css matches CANONICAL_BLACKJACK_CSS_IMPORT_ORDER 8ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö shell class and CSS geometry > uses bj-table-layout-shell only via canonical shell component 4ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö shell class and CSS geometry > owns desktop grid rows in bj-blackjack-table-shell.css only 1ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö shell class and CSS geometry > owns Full Table card area geometry in bj-full-table-card-area.css 4ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö shell class and CSS geometry > owns Card View layout hooks in bj-card-layout.css and BlackjackCardView.css 1ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > production route ownership ÔÇö shell class and CSS geometry > does not define gameplay zone grid geometry in sxm-stitch-visual.css 0ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Table Layout Engine ÔÇö single shell owner (CSS ownership map) > the shell file is the engine owner named by the contract 0ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Table Layout Engine ÔÇö single shell owner (CSS ownership map) > shell file owns the grid for ALL four modes (desktop grid rows + mobile grid block) 0ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Table Layout Engine ÔÇö single shell owner (CSS ownership map) > no competing file defines the shell grid template rows by zone name 1ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Table Layout Engine ÔÇö single shell owner (CSS ownership map) > every CSS owner declares its scope in a header comment 2ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Table Layout Engine ÔÇö single shell owner (CSS ownership map) > bj-card-layout.css has no bare (un-scoped) cards-area table selector 0ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Table Layout Engine ÔÇö single shell owner (CSS ownership map) > bj-player-row-layout.css no longer moves the boxes/tray zone wrappers (no margin-top on zone) 0ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Table Layout Engine ÔÇö single shell owner (CSS ownership map) > shell file owns mobile boxes + tray placement (consolidated from player-row) 0ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Table Layout Engine ÔÇö single shell owner (CSS ownership map) > contract enumerates all seven zones (shell DOM order parity) 0ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Blackjack layout ÔÇö command box single route + desktop parity > mounts exactly one canonical command route (BlackjackCommandBox + dealer omitCommand) 2ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Blackjack layout ÔÇö command box single route + desktop parity > desktopFull and desktopCard share one command zone owner + formatting class 2ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Blackjack layout ÔÇö desktop Card View has no fixed-row scroll > shell is height-bounded and clips (no vertical scroll from fixed rows) 0ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Blackjack layout ÔÇö desktop Card View has no fixed-row scroll > Card View uses a responsive cards-row floor (not a rigid 9rem overflow) 5ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Blackjack layout ÔÇö Card View does not re-own dealer/boxes/tray geometry > dealer zone is owned by the shell only (not re-owned by Card View CSS) 4ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Blackjack layout ÔÇö Card View does not re-own dealer/boxes/tray geometry > player-row CSS never moves boxes/tray (no margin-top:auto / transform zone movers) 1ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Blackjack layout ÔÇö desktop cards zone regressions (v1.1 follow-up) > Desktop Card View hero is visible: cards zone stretches hero and hero is not height:0 / display:none 3ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Blackjack layout ÔÇö desktop cards zone regressions (v1.1 follow-up) > Desktop Full Table per-box stack uses overlap layout (column-reverse), not a tall plain column 1ms
+ Ô£ô src/components/productionRouteOwnership.test.ts > Blackjack layout ÔÇö desktop cards zone regressions (v1.1 follow-up) > Full Table card stacks stay inside the cards zone (not the boxes zone) 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > resolveChipTrayBetTarget keeps lastTarget when set (legacy ÔÇö no selectedSeatId) 12ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > legacy resolveChipTrayBetTarget ignores selectedSeatId without lastTarget 2ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > uses pulse for selected box and keeps native border underneath 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > pulse applies only to selected box during betting 0ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > free box is not visually assigned until stake > 0 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > Card View and Full Table share selectedBettingBoxId in BlackjackPanel 4ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > empty occupied box selected without stake gets pulse immediately 6ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > selected pulse persists after chip placement on the same box 2ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > assigned native box and selected free box can differ visually 2ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > assigned and selected on same native box renders ownership plus pulse 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > chip tray uses lastTarget in legacy resolver, not selectedSeatId 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > does not sync selectedBettingBoxId from gameState.selectedSeatId offline 4ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > does not overwrite local selection during chip placement 3ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > selectBox sets canonical local chip target for occupied boxes 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > pulse matches selected slot number on occupied box row 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > reconcile effect upgrades slot targets instead of clearing after materialization 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > assigned native box and explicit selected box 5 can differ 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > handleChipTrayClick reads resolveActiveChipTrayTarget at click time 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > double chip placement on explicit Box 5 target keeps tray on Box 5 3ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > selects viewer assigned box by default when no explicit pick exists 1ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > does not auto-reselect assigned box after user picks another target 2ms
+ Ô£ô src/components/boxSelection.test.ts > box selection ÔÇö single chip target > chip tray target uses canonical local selection only 1ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > select box 4, tap 5 twice ÔåÆ both bets on box 4, no null target 47ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > switching selected box changes tray target 7ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > select box 2, tap 5 twice ÔåÆ both bets on box 2, no null target 5ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > select free box 3, tap 10 twice ÔåÆ both bets on box 3 8ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > select native box 1, tap 5 twice ÔåÆ both bets on native box 4ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > online snapshot after first chip keeps selectedBettingBoxId (production visibleBoxCount path) 4ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > drag/drop to box 3 then tray tap keeps box 3 target 4ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > Full Table and Card View share the same chip tray target route in BlackjackPanel 6ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > affirmChipTargetAfterPlacement sets hasUserSelected after first chip from default target 6ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > online-style transient sync keeps user-selected slot when row still exists 3ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > resolveCurrentChipTarget returns null only when there is no local target 5ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > user-selected target survives visibleBoxCount filter after first chip (production path) 2ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > BlackjackPanel logs chip target null reason in dev/test 0ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > immediate second tray tap reads ref before React state commits 4ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > Tap a box to bet path only when ref and state have no target 3ms
+ Ô£ô src/components/repeatChipStacking.test.ts > repeat chip stacking ÔÇö canonical target resolution > BlackjackPanel uses getCurrentChipTargetForBetting for tray and affirm after placement 2ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > uses balanced cloth title and red rule tokens within readable max values 3ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > keeps cloth layer non-interactive and behind gameplay 3ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > neutralizes player box slot wrapper chrome 1ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > removes inner stake/bet frame inside owned player boxes 1ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > locks player box dimensions; selection adds pulse only 2ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > uses one visible frame on player box mini-hand tiles 0ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > keeps selected pulse visual-only without layout displacement 2ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > uses consistent ownership border width on mini-hand 1ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > adds desktop tray separation via margin and taller zone heights 1ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > routes mobile Magic 8 response away from dealer centerline 1ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö cloth, player boxes, desktop tray > keeps Magic 8 response separate from command box styling 0ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö command route and dealer/command grid > mounts one canonical command route via BlackjackCommandBox with dealer omitCommand 1ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö command route and dealer/command grid > does not pass waitMessage into BlackjackActionPanel from Panel 0ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö command route and dealer/command grid > assigns dealer and command to separate grid rows without z-index overlap hacks 1ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö command route and dealer/command grid > reserves taller dealer and command rows on desktop 1ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö Full Table and Card View player box parity > bottom-aligns player boxes zone for both desktop view roots 0ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö Full Table and Card View player box parity > uses one shell-scoped player-box arc contract without per-view desktop overrides 1ms
+ Ô£ô src/components/blackjackVisualCleanup.test.ts > blackjack visual cleanup ÔÇö Full Table and Card View player box parity > gives desktop arc slots the same overflow contract in Full Table and Card View 1ms
+ Ô£ô src/components/challengeGameEndPresentation.test.tsx > challenge game end presentation > orders game-over sections: ledger row, IOU row, then Start New Game 11ms
+ ├ù src/components/challengeGameEndPresentation.test.tsx > challenge game end presentation > renders desktop game summary when player bank wins 255ms
+   ÔåÆ expected '<div class="sxm-layout-root bj-casinoÔÇª' to contain 'Game Over'
+ ├ù src/components/challengeGameEndPresentation.test.tsx > challenge game end presentation > renders desktop game summary when non-bank player wins 46ms
+   ÔåÆ expected '<div class="sxm-layout-root bj-casinoÔÇª' to contain 'Game Over'
+ ├ù src/components/challengeGameEndPresentation.test.tsx > challenge game end presentation > renders desktop game summary for practice ended table 49ms
+   ÔåÆ expected '<div class="sxm-layout-root bj-casinoÔÇª' to contain 'Game Over'

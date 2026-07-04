@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { GameState } from '../types';
@@ -16,9 +17,9 @@ import { claimBoxSlot } from '../engine/session';
 import { createBlackjackPlayerHand } from '../types/blackjack';
 import { blackjackHandKey } from '../engine/blackjack';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const DEALER_BLOCK_SRC = readFileSync(join(process.cwd(), 'src/components/DealerBlock.tsx'), 'utf8');
@@ -91,19 +92,19 @@ describe('targeted mobile cleanup — card area + actions', () => {
       /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*flex:\s*0 0 auto/,
     );
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-start/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile[\s\S]*\.bj-table-slot-row\.bj-arc--cards[\s\S]*margin-top:\s*auto/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table \.bj-table-slot-row\.bj-arc--cards[\s\S]*align-self:\s*end/,
     );
   });
 
-  it('anchors desktop stacks at bottom of stack band and mobile stacks at top', () => {
+  it('anchors desktop and mobile stacks at bottom of stack band', () => {
     expect(CARD_AREA_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column > \.bj-arc__play-zone[\s\S]*align-self:\s*end[\s\S]*justify-content:\s*flex-end/,
     );
     expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column > \.bj-arc__play-zone[\s\S]*align-self:\s*start[\s\S]*justify-content:\s*flex-start/,
+      /\.bj-view-full-mobile \.bj-arc--cards\.bj-full-table-card-area \.bj-arc__slot--card-column > \.bj-arc__play-zone[\s\S]*align-self:\s*end[\s\S]*justify-content:\s*flex-end/,
     );
   });
 
@@ -130,7 +131,7 @@ describe('targeted mobile cleanup — card area + actions', () => {
       /\.bj-view-full-mobile \.bj-casino__felt[\s\S]*touch-action:\s*pan-x pan-y pinch-zoom/,
     );
     expect(PANEL_SRC).toContain('useMobileBoxSwipeNavigation');
-    expect(PANEL_SRC).toContain('{...mobileBoxSwipe}');
+    expect(PANEL_SRC).toContain('mobileFeltTouchHandlers');
   });
 });
 

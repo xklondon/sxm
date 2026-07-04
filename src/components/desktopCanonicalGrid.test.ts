@@ -1,31 +1,28 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss, shellDesktopDirectZoneBlock } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const CARD_LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 
 function desktopShellBlock(): string {
-  const start = SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows');
-  const end = SHARED_CSS.indexOf('/* Desktop stage:', start);
-  return start >= 0 && end > start ? SHARED_CSS.slice(start, end) : '';
+  return SHELL_CSS;
 }
 
 describe('desktop canonical grid — Full Table and Card View parity', () => {
   it('defines one desktop zone height token set', () => {
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-dealer-height: 7.75rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-command-height: 4rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-command-gap: 0');
-    expect(SHARED_CSS).toContain('--bj-command-actions-gap: 0.08rem');
-    expect(SHARED_CSS).toContain('--bj-dealer-command-gap: 0.08rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-actions-height: 2.9rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-height: 6.65rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-tray-height: 4.35rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 1.1rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-bottom-padding: 0.7rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-grid-row-cards: minmax(0, 1fr)');
-    expect(SHARED_CSS).not.toContain('--bj-desktop-zone-cards-height: calc(');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-dealer-height: 7.15rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-command-height: 4.35rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-dealer-command-gap: 0.4125rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-actions-height: 2.5rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-boxes-height: 6.1rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-tray-height: 4.15rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-boxes-tray-gap: 0.42rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-bottom-padding: 0.42rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-grid-row-cards: minmax(var(--bj-zone-cards-min-height, 0), 1fr)');
+    expect(SHELL_CSS).not.toContain('--bj-desktop-zone-cards-height: calc(');
   });
 
   it('uses CSS grid with fixed rows and one flexible CardsArea row on desktop', () => {
@@ -44,16 +41,21 @@ describe('desktop canonical grid — Full Table and Card View parity', () => {
 
   it('assigns each shell zone to a grid row without vertical margin hacks', () => {
     const desktop = desktopShellBlock();
-    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--dealer[\s\S]*grid-row:\s*dealer/);
+    expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-dealer-area[\s\S]*grid-row:\s*dealer/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*grid-row:\s*command/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*grid-row:\s*cards/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*grid-row:\s*boxes/);
     expect(desktop).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*grid-row:\s*tray/);
-    expect(desktop).not.toMatch(/\.bj-table-layout-shell > \.bj-table-zone--summary[\s\S]*margin-top:/);
-    expect(desktop).not.toMatch(/\.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*margin-bottom:/);
-    expect(desktop).not.toMatch(/\.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*margin-top:/);
-    expect(desktop).not.toMatch(/\.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*margin-top:\s*auto/);
+    const summaryZone = shellDesktopDirectZoneBlock('.bj-table-zone--summary');
+    const actionsZone = shellDesktopDirectZoneBlock('.bj-table-zone--actions');
+    const bottomZone = shellDesktopDirectZoneBlock('.bj-table-zone--bottom');
+    const boxesZone = shellDesktopDirectZoneBlock('.bj-table-zone--boxes');
+    expect(summaryZone).not.toMatch(/margin-top:/);
+    expect(actionsZone).not.toMatch(/margin-bottom:/);
+    expect(bottomZone).not.toMatch(/margin-top:/);
+    expect(bottomZone).toMatch(/padding-top:\s*var\(--bj-desktop-zone-boxes-tray-gap\)/);
+    expect(boxesZone).not.toMatch(/margin-top:\s*auto/);
   });
 
   it('keeps mobile flex shell with margin-top:auto on boxes', () => {
@@ -110,18 +112,17 @@ describe('desktop canonical grid — Full Table and Card View parity', () => {
     expect(CARD_LAYOUT_CSS).toMatch(
       /@media \(min-width: 721px\)[\s\S]*\.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*justify-content:\s*center/,
     );
-    expect(playZoneCss).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
   });
 
   it('centers ValueAndChips as one unit in the desktop tray row', () => {
-    expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*justify-content:\s*center/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*justify-content:\s*center/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-table-layout-shell \.bj-table-zone--bottom \.bj-value-chips[\s\S]*margin-inline:\s*auto/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*margin:\s*0/,
     );
-    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*margin:\s*0/);
   });
 });

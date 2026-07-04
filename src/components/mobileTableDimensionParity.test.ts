@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { MOBILE_LAYOUT_MEDIA } from '../styles/mobileLayoutContract';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 const MAGIC8_CSS = readFileSync(join(process.cwd(), 'src/components/magic8/Magic8Ball.css'), 'utf8');
@@ -44,6 +45,14 @@ function assertNoViewOnlyDimensionRules(css: string, shellPattern: RegExp): void
       if (!shellPattern.test(selector)) continue;
       if (!/\b(?:width|max-width|min-width|height|min-height|max-height)\s*:/.test(body)) continue;
       if (selector.includes(`.${view}`) && !selector.includes(`.${other}`)) {
+        if (
+          view === 'bj-view-card-mobile' &&
+          /\.bj-table-zone--actions[\s\S]*(ds-btn--|bj-phone-view__action-bar|bj-table-actions)/.test(
+            selector,
+          )
+        ) {
+          continue;
+        }
         throw new Error(`View-only shell dimension rule: ${selector}`);
       }
     }

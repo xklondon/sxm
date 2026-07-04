@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 
 describe('Card View hero centering', () => {
   it('centers hero column containers on CardsArea centerline', () => {
@@ -24,12 +25,14 @@ describe('Card View hero centering', () => {
     expect(guard).toMatch(
       /\.bj-phone-view__cards--fan[\s\S]*justify-content:\s*center/,
     );
+    const heroDesktopCss = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-hero-area.css'), 'utf8');
     const heroCenterBlock =
       guard.match(
-        /\.bj-view-card-desktop \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__hero-center[\s\S]*?\}/,
+        /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero \.bj-phone-view__hero-center[\s\S]*?\}/,
       )?.[0] ?? '';
     expect(heroCenterBlock).toMatch(/align-items:\s*center/);
     expect(heroCenterBlock).not.toMatch(/align-items:\s*flex-start/);
+    expect(heroDesktopCss).toMatch(/\.bj-view-card-desktop \.bj-card-desktop-hero[\s\S]*align-items:\s*center/);
   });
 
   it('does not apply horizontal translateX to Card View hero fan/wrap', () => {
@@ -59,8 +62,8 @@ describe('Card View hero centering', () => {
     expect(LAYOUT_CSS).toMatch(
       /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*position:\s*relative/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--hero[\s\S]*position:\s*relative/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*position:\s*relative/,
     );
   });
 

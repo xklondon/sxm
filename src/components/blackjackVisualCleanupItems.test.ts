@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const DEALER_SRC = readFileSync(join(process.cwd(), 'src/components/DealerBlock.tsx'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const SETTINGS_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackFlowSettings.tsx'), 'utf8');
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const PLAY_ZONE_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
@@ -32,7 +33,7 @@ describe('blackjack visual cleanup items', () => {
   });
 
   it('keeps chips mounted during play with inactive styling when betting closed', () => {
-    expect(PANEL_SRC).toMatch(/ValueAndChipsBar[\s\S]*showChips[\s\S]*disabled=\{!bettingOpen\}/);
+    expect(PANEL_SRC).toMatch(/BlackjackTrayRow[\s\S]*showChips[\s\S]*disabled=\{!bettingOpen\}/);
     expect(PANEL_SRC).not.toMatch(/showChips=\{inBetting\}/);
     expect(CHIP_CSS).toContain('.bj-value-chips__stash--inactive');
   });

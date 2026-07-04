@@ -1,0 +1,10 @@
+﻿
+ RUN  v4.1.7 C:/dev/SXMCards
+
+┬À┬À┬À┬À┬À┬À┬À┬À┬À┬À┬À┬À┬À┬À┬À
+
+ Test Files  2 passed (2)
+      Tests  15 passed (15)
+   Start at  13:05:50
+   Duration  27.72s (transform 42.65s, setup 1.56s, import 44.43s, tests 410ms, environment 1ms)
+

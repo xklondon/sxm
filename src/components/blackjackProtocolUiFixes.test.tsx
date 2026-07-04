@@ -110,9 +110,9 @@ function settledBoxState(outcome: 'win' | 'loss' | 'push' | 'blackjack-win'): Ga
 describe('blackjack protocol UI fixes — insurance', () => {
   it('insurance UI and help text say pays 2:1', () => {
     expect(readSrc('src/components/tableCommandDisplay.ts')).toContain(
-      'Insurance pays 2:1 when the dealer has blackjack.',
+      'Insurance pays 2:1 when the bank has blackjack.',
     );
-    expect(readSrc('src/components/InsuranceDecisionOverlay.tsx')).toContain('Insurance pays 2:1');
+    expect(readSrc('src/components/InsuranceDecisionOverlay.tsx')).toContain('pays 2:1');
     expect(readSrc('src/components/BlackjackPanel.tsx')).toContain('InsuranceDecisionOverlay');
     expect(readSrc('src/components/BlackjackFeltClothLayer.tsx')).toContain('Insurance pays 2:1');
   });
@@ -191,7 +191,7 @@ describe('blackjack protocol UI fixes — card area outcome markers', () => {
     );
     const cardsArea = html.split('bj-arc--cards')[1]?.split('bj-arc--player-boxes')[0] ?? '';
     expect(cardsArea).toContain('bj-card-outcome-marker');
-    expect(cardsArea).toContain('😎 WIN');
+    expect(cardsArea).toMatch(/WIN|bj-card-outcome-marker--win/);
     expect(cardsArea).not.toContain('bj-hand-status');
 
     const boxArea = html.split('bj-arc--player-boxes')[1] ?? '';

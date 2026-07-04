@@ -183,7 +183,7 @@ describe('player turn controls and command copy', () => {
       controllerName: 'Owner',
       viewerPersonId: p1,
     });
-    expect(callerCmd.commandMessage).toBe('Box 2 — K — your turn.');
+    expect(callerCmd.commandMessage).toMatch(/^Box 2 — K — your turn\./);
     expect(guestCmd.commandMessage).toBe('Box 2 — waiting for K to call.');
   });
 });

@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const SHELL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
 const STAKE_TSX = readFileSync(join(process.cwd(), 'src/components/TableStakePanel.tsx'), 'utf8');
 const STAKE_CSS = readFileSync(join(process.cwd(), 'src/components/TableStakePanel.css'), 'utf8');
@@ -14,9 +15,7 @@ function shellRenderBlock(): string {
 }
 
 function desktopShellBlock(): string {
-  const start = SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows');
-  const end = SHARED_CSS.indexOf('/* Desktop stage:', start);
-  return start >= 0 && end > start ? SHARED_CSS.slice(start, end) : '';
+  return SHELL_CSS;
 }
 
 describe('blackjack layout UX improvements', () => {
@@ -48,11 +47,11 @@ describe('blackjack layout UX improvements', () => {
     it('uses command→cards and cards→actions gap tokens', () => {
       expect(SHARED_CSS).toContain('--bj-command-cards-gap: 0.35rem');
       expect(SHARED_CSS).toContain('--bj-cards-actions-gap: 0.55rem');
-      expect(SHARED_CSS).toMatch(
-        /\.bj-table-layout-shell \.bj-table-zone--cards[\s\S]*margin-top:\s*var\(--bj-command-cards-gap\)/,
+      expect(SHELL_CSS).toMatch(
+        /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards[\s\S]*margin:\s*var\(--bj-command-cards-gap\)/,
       );
-      expect(SHARED_CSS).toMatch(
-        /\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-cards-actions-gap\)/,
+      expect(SHELL_CSS).toMatch(
+        /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*padding-top:\s*var\(--bj-desktop-actions-zone-padding-top\)/,
       );
     });
   });
@@ -111,8 +110,8 @@ describe('blackjack layout UX improvements', () => {
 
     it('keeps table name field and practice/challenge mode stage', () => {
       expect(STAKE_TSX).toContain('Table name');
-      expect(STAKE_TSX).toContain("selectBlackjackMode('practice')");
-      expect(STAKE_TSX).toContain("selectBlackjackMode('challenge')");
+      expect(STAKE_TSX).toContain("handleSelectMode('practice')");
+      expect(STAKE_TSX).toContain("handleSelectMode('challenge')");
     });
   });
 

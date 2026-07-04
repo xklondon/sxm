@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -15,6 +16,7 @@ import { BOX_BORDER_TURN } from './cardViewBox';
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const CARD_DESKTOP_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-card-desktop-layout.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
+const { shared: SHARED_CSS } = readBlackjackLayoutCss();
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 
 const noop = () => {};
@@ -129,9 +131,10 @@ describe('Card View reuse fixes', () => {
     expect(PLAYER_ROW_CSS).not.toMatch(
       /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot[\s\S]*--bj-cardview-desktop-mini-hand-width/,
     );
-    expect(CARD_DESKTOP_CSS).toMatch(
-      /\.bj-view-card-desktop \.bj-arc--player-boxes[\s\S]*--bj-cardview-desktop-mini-hand-width:\s*var\(--bj-player-box-width\)/,
+    expect(PLAYER_ROW_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-slot-row\.bj-arc--player-boxes > \.bj-arc__slot[\s\S]*width:\s*var\(--bj-full-table-box-width\)/,
     );
+    expect(SHARED_CSS).toContain('--bj-cardview-desktop-mini-hand-width: var(--bj-player-box-width)');
   });
 
   it('desktop Card View applies active-turn box border on player boxes', () => {
@@ -139,7 +142,9 @@ describe('Card View reuse fixes', () => {
     const html = renderPanel(playingCardViewState());
     expect(html).toContain('bj-view-card-desktop');
     expect(html).toContain(BOX_BORDER_TURN);
-    expect(PANEL_SRC).toContain('borderState.isTurn ? BOX_BORDER_TURN :');
+    expect(PANEL_SRC).toContain('turnBorderClass');
+    expect(PANEL_SRC).toContain('borderState.isTurn');
+    expect(PANEL_SRC).toContain('BOX_BORDER_TURN');
   });
 
   it('desktop Full Table applies active-turn box border on player boxes during player turn', () => {
@@ -170,17 +175,20 @@ describe('Card View reuse fixes', () => {
     const html = renderPanel(state);
     const commandZone =
       html.split(TABLE_UX.tableZoneSummary)[1]?.split(TABLE_UX.tableZoneActions)[0] ?? '';
-    expect(commandZone).toContain('>Double<');
+    expect(commandZone).toContain('Double available');
     const actionsZone =
       html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';
     expect(actionsZone).toContain('ds-btn--hit');
     expect(actionsZone).toContain('ds-btn--stand');
   });
 
-  it('desktop Card View routes optional play overlay through command zone', () => {
-    expect(PANEL_SRC).toContain('renderOptionalPlayDecisionOverlay');
-    expect(PANEL_SRC).toContain('if (!isFullTableDesktop)');
+  it('desktop Card View routes optional play through command status text when split is legal', () => {
     expect(PANEL_SRC).not.toContain('isCardViewDesktop && isOptionalPlayOverlayVisible()');
+    simulatedWidth = 1280;
+    const html = renderPanel(splitEligibleCardViewState());
+    const commandZone =
+      html.split(TABLE_UX.tableZoneSummary)[1]?.split(TABLE_UX.tableZoneActions)[0] ?? '';
+    expect(commandZone).toContain('Split available');
   });
 
   it('desktop Card View reuses shell BlackjackActionPanel for Hit/Stay only', () => {
@@ -207,7 +215,7 @@ describe('Card View reuse fixes', () => {
     expect(heroZone).not.toContain('bj-phone-view__side-action--hit');
     const commandZone =
       html.split(TABLE_UX.tableZoneSummary)[1]?.split(TABLE_UX.tableZoneActions)[0] ?? '';
-    expect(commandZone).toContain('bj-optional-play-overlay');
+    expect(commandZone).toContain('Split available');
     expect(html).toContain('>Split<');
     const actionsZone =
       html.split(TABLE_UX.tableZoneActions)[1]?.split(TABLE_UX.tableZoneBoxes)[0] ?? '';

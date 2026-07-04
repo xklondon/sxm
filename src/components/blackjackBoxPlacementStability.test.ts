@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -22,13 +23,13 @@ import { tableAfterStartPlaying, boxPlayerId } from '../engine/blackjack/sanity/
 import { placeBetPayloadFromTarget } from '../engine/blackjack/chipPlacement';
 import { resolveEffectiveVisibleBoxCount, DEFAULT_VISIBLE_TABLE_BOXES } from './tableBoxLayout';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const LAYOUT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 
 describe('blackjackBoxPlacementContract', () => {
   it('uses slotNumber-only React keys in arc row', () => {
-    expect(PANEL_SRC).toContain('function renderArcSlot(slotNumber: number)');
+    expect(PANEL_SRC).toMatch(/function renderArcSlot\(/);
     expect(PANEL_SRC).toContain('slotArcReactKey(slotNumber)');
     expect(PANEL_SRC).not.toMatch(/key=\{`box-\$\{boxId\}`\}/);
     expect(PANEL_SRC).not.toMatch(/key=\{`empty-\$\{slotNumber\}`\}/);

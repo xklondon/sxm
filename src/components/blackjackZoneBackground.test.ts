@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const SHELL_SRC = readFileSync(
@@ -11,9 +12,7 @@ const SHELL_SRC = readFileSync(
 );
 
 function desktopShellBlock(): string {
-  const start = SHARED_CSS.indexOf('/* Desktop table shell — fixed CSS grid rows');
-  const end = SHARED_CSS.indexOf('/* Desktop stage:', start);
-  return start >= 0 && end > start ? SHARED_CSS.slice(start, end) : '';
+  return SHELL_CSS;
 }
 
 describe('blackjack zone backgrounds — continuous felt surface', () => {
@@ -71,10 +70,7 @@ describe('blackjack zone backgrounds — continuous felt surface', () => {
       )?.[0] ?? '';
     expect(heroBlock).toContain('flex: 1 1 auto');
     expect(heroBlock).not.toContain('background:');
-    expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*flex:\s*1\s+1\s+auto/,
-    );
-    expect(CARD_AREA_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
   });

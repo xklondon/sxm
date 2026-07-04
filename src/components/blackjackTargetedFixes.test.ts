@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
 import { BlackjackCardView } from './BlackjackCardView';
@@ -14,6 +15,7 @@ import {
 } from '../engine/blackjack/sanity/fixtures';
 import { blackjackHandKey } from '../engine/blackjack';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const TARGETED_CSS = readFileSync(
   join(process.cwd(), 'src/styles/bj-blackjack-targeted-fixes.css'),
   'utf8',
@@ -81,8 +83,7 @@ describe('Blackjack targeted fixes', () => {
   });
 
   it('mobile Full Table command box is not zero-height in shared CSS', () => {
-    const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-    expect(SHARED_CSS).not.toMatch(
+        expect(SHARED_CSS).not.toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--summary \.bj-card-layout__command,\s*\n\s*\.bj-view-full-mobile\[data-phase='player'\]/,
     );
     expect(SHARED_CSS).toMatch(

@@ -13,6 +13,7 @@ import { check, type SanitySuiteResult } from './types';
 import {
   baseTestTable,
   boxPlayerId,
+  setSanityOpenStake,
   tableWithClaimedBox,
   tableWithTwoBoxesSamePerson,
 } from './fixtures';
@@ -22,16 +23,7 @@ function setOpenStake(
   boxPlayerId: string,
   amount: number,
 ): import('../../../types').GameState {
-  return {
-    ...state,
-    tableMeta: {
-      ...state.tableMeta,
-      boxStakes: {
-        ...state.tableMeta.boxStakes,
-        [boxPlayerId]: { amount, chips: [], confirmed: true },
-      },
-    },
-  };
+  return setSanityOpenStake(state, boxPlayerId, amount);
 }
 function isBoxPlayerId(state: import('../../../types').GameState, playerId: string): boolean {
   return state.tableMeta.boxSlots.some((s) => s.playerId === playerId);

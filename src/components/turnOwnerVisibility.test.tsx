@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import {
   buildBlackjackCommandText,
 } from './tableCommandDisplay';
@@ -13,6 +14,9 @@ import {
 import { addPlayer, mergeSessionUpdate } from '../engine/session';
 import { allocateChipsToBankrollOwner } from '../engine/session/allocation';
 import { claimBoxSlot } from '../engine/session/boxOps';
+
+const { shared: SHARED_CSS } = readBlackjackLayoutCss();
+
 describe('multiplayer turn-owner visibility (UI)', () => {
   it('non-caller sees waiting message in command area', () => {
     let state = tableWithClaimedBox(1);
@@ -135,9 +139,8 @@ describe('multiplayer turn-owner visibility (UI)', () => {
   });
 
   it('mobile action bar has compact playing layout styles', () => {
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions[\s\S]*gap:/);
-    expect(sharedCss).toMatch(
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions[\s\S]*gap:/);
+    expect(SHARED_CSS).toMatch(
       /\.bj-phone-view__mini-hand-card-stack[\s\S]*position:\s*relative/,
     );
   });

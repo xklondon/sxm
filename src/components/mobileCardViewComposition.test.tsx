@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState, TableViewMode } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
@@ -20,6 +21,7 @@ import {
   type SimulatedViewport,
 } from '../test/mobileLayoutMatchMedia';
 
+const LAYOUT_CSS = readBlackjackLayoutCss();
 const noop = () => {};
 
 let simulatedViewport: SimulatedViewport = { width: 390, height: 844 };
@@ -98,9 +100,9 @@ const CANONICAL_SHELL_ZONES = [
 ] as const;
 
 describe('mobile Card View composition contract', () => {
-  const sharedCss = () => readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+  const sharedCss = () => LAYOUT_CSS.shared;
   const panelCss = () => readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
-  const layoutCss = () => readFileSync(join(process.cwd(), 'src/styles/bj-card-layout.css'), 'utf8');
+  const layoutCss = () => LAYOUT_CSS.cardLayout;
 
   it('uses BlackjackTableLayoutShell with canonical zone order', () => {
     const html = renderPanelAt(390, withView(bettingStateWithSelection(), 'card'));
@@ -213,10 +215,7 @@ describe('mobile Card View composition contract', () => {
 
   it('shows classic cloth decor in Card View (desktop + mobile)', () => {
     const feltCss = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
-    const cardAreaCss = readFileSync(
-      join(process.cwd(), 'src/styles/bj-full-table-card-area.css'),
-      'utf8',
-    );
+    const cardAreaCss = LAYOUT_CSS.fullTableCardArea;
     expect(feltCss).toContain('--bj-cloth-svg-width');
     expect(feltCss).toMatch(
       /\.bj-view-card-mobile \.bj-table-zone--cards \.bj-felt-cloth-layer[\s\S]*display:\s*flex/,

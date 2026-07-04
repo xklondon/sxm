@@ -8,6 +8,7 @@ import { createBlackjackPlayerHand } from '../types/blackjack';
 import { BlackjackPanel } from './BlackjackPanel';
 import { claimBoxSlot } from '../engine/session';
 import { blackjackHandKey, addChipToBoxStake, confirmBoxStake } from '../engine/blackjack';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import {
   actingRound,
   boxPlayerId,
@@ -49,8 +50,9 @@ import {
 } from './blackjackLayoutContract';
 
 const noop = () => {};
+const LAYOUT_CSS = readBlackjackLayoutCss();
 const PLAY_ZONE_CSS = readFileSync(join(process.cwd(), FULL_TABLE_PLAY_ZONE_CSS), 'utf8');
-const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
+const SHELL_CSS = LAYOUT_CSS.shell;
 const INSURANCE_OVERLAY_CSS = readFileSync(
   join(process.cwd(), 'src/components/InsuranceDecisionOverlay.css'),
   'utf8',
@@ -60,7 +62,12 @@ const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPane
 const CONTRACT_DOC = readFileSync(join(process.cwd(), BLACKJACK_LAYOUT_CONTRACT_DOC), 'utf8');
 
 const GUARDED_CSS = Object.fromEntries(
-  FULL_TABLE_LAYOUT_GUARDED_CSS_FILES.map((path) => [path, readFileSync(join(process.cwd(), path), 'utf8')]),
+  FULL_TABLE_LAYOUT_GUARDED_CSS_FILES.map((path) => {
+    if (path === 'src/styles/bj-table-shared.css') return [path, LAYOUT_CSS.shared];
+    if (path === 'src/styles/bj-card-layout.css') return [path, LAYOUT_CSS.cardLayout];
+    if (path === 'src/styles/bj-player-row-layout.css') return [path, LAYOUT_CSS.playerRow];
+    return [path, readFileSync(join(process.cwd(), path), 'utf8')];
+  }),
 );
 const CARD_VIEW_GUARD_SRC = Object.fromEntries(
   CARD_VIEW_LAYOUT_GUARD_FILES.map((path) => [path, readFileSync(join(process.cwd(), path), 'utf8')]),

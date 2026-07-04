@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -12,10 +13,9 @@ import {
   type SimulatedViewport,
 } from '../test/mobileLayoutMatchMedia';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS } = readBlackjackLayoutCss();
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-const SHELL_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-blackjack-table-shell.css'), 'utf8');
 const INDEX_CSS = readFileSync(join(process.cwd(), 'src/index.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
 const DEBUG_SRC = readFileSync(join(process.cwd(), 'src/components/blackjackLayoutDebug.ts'), 'utf8');
@@ -244,7 +244,7 @@ describe('canonical player row layout engine', () => {
   });
 
   it('exposes debug version render-route-canonical-1 with overlap diagnostics', () => {
-    expect(DEBUG_SRC).toContain("BLACKJACK_UI_FIX_VERSION = 'render-route-canonical-1'");
+    expect(DEBUG_SRC).toContain("BLACKJACK_UI_FIX_VERSION = 'card-placement-lock-v1'");
     expect(DEBUG_SRC).toContain('trayOverlapsPlayerRow');
     expect(DEBUG_SRC).toContain('trayOverflowChain');
   });

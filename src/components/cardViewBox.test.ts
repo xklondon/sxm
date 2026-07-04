@@ -56,6 +56,7 @@ describe('cardViewBox helpers', () => {
 
   describe('isCardViewBettingBoxVisuallyAssigned', () => {
     const baseState = {
+      session: { boxSlotNumbers: { 'native-box': 1, 'free-box': 3 } },
       tableMeta: {
         boxSlots: [
           { slotNumber: 1, playerId: 'native-box', nativeAssignedPersonId: 'person-1' },

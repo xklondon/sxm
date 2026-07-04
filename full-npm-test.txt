@@ -1,0 +1,63 @@
+﻿
+> card-dealer-app@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.7 C:/dev/SXMCards
+
+node.exe : DOMException [AbortError]: The operation was aborted.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (DOMException [A...on was aborted.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    at Fetch.onAsyncTaskManagerAbort (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.abort 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:52:21)
+    at DetachedBrowserFrame.abort 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:112:58)
+    at DetachedWindowAPI.abort (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/window/DetachedWindowAPI.js:51:35)
+    at teardownWindow (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/index.DC7d2Pf8.js:331:22)
+    at Object.teardown (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/index.DC7d2Pf8.js:392:10)
+    at file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/base.RR7zL1h0.js:168:65
+    at Traces.$ (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/traces.DT5aQ62U.js:142:27)
+ ÔØ» src/engine/blackjack/dealing/cardRevealDisplay.test.ts (8 tests | 1 failed) 76ms
+     ├ù places dealer hole card in state immediately on the hole deal step 15ms
+DOMException [AbortError]: The operation was aborted.
+    at Fetch.onAsyncTaskManagerAbort (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/fetch/Fetch.js:546:23)
+    at Object.<anonymous> (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/fetch/Fetch.js:416:101)
+    at AsyncTaskManager.abortAll 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:292:30)
+    at AsyncTaskManager.abort 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/async-task-manager/AsyncTaskManager.js:52:21)
+    at DetachedBrowserFrame.abort 
+(file:///C:/dev/SXMCards/node_modules/happy-dom/lib/browser/detached-browser/DetachedBrowserFrame.js:112:58)
+    at DetachedWindowAPI.abort (file:///C:/dev/SXMCards/node_modules/happy-dom/lib/window/DetachedWindowAPI.js:51:35)
+    at teardownWindow (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/index.DC7d2Pf8.js:331:22)
+    at Object.teardown (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/index.DC7d2Pf8.js:392:10)
+    at file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/base.RR7zL1h0.js:168:65
+    at Traces.$ (file:///C:/dev/SXMCards/node_modules/vitest/dist/chunks/traces.DT5aQ62U.js:142:27)
+ ÔØ» src/components/blackjackLayoutPositioning.test.ts (7 tests | 2 failed) 24ms
+     ├ù uses fixed desktop CSS grid rows without margin-top:auto on boxes 9ms
+     ├ù bottom-aligns player boxes in all view roots 3ms
+ ÔØ» src/engine/session/resolveViewerPersonId.test.ts (3 tests | 1 failed) 38ms
+     ├ù active box 2: guest sees actionable hand, owner does not 11ms
+ ÔØ» src/components/tableStakeSetupDirty.test.ts (2 tests | 1 failed) 25ms
+     ├ù is not dirty on initial open 21ms
+ ÔØ» src/components/blackjackDesktopPolish.test.tsx (5 tests | 1 failed) 20ms
+     ├ù adds game-ended card-row spacing and hides dealer new game while game-over UI is active 9ms
+ ÔØ» src/components/blackjackPhaseLayoutParity.test.ts (5 tests | 1 failed) 19ms
+     ├ù uses play-phase command and actions band tokens as shared desktop defaults 9ms
+ ÔØ» src/components/frozenLayoutViewIntegrity.test.ts (3 tests | 1 failed) 25ms
+     ├ù does not mutate frozen owner CSS files during mobile/double pass 18ms
+ ÔØ» src/components/playerBoxCardComposition.test.ts (3 tests | 2 failed) 21ms
+     ├ù renders composition from visible hand card ids only 11ms
+     ├ù styles composition text in player boxes without absolute positioning 4ms
+ ÔØ» src/components/mobileCardPortraitLayout.test.ts (2 tests | 1 failed) 15ms
+     ├ù sizes hero cards inside the cards zone and hides hero hand total in portrait 8ms
+ ÔØ» src/components/useBlackjackTableFlow.test.ts (3 tests | 1 failed) 18ms
+     ├ù does not block canDeal while online placeBet is in flight 10ms

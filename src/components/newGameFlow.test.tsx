@@ -53,10 +53,9 @@ describe('New Game flow', () => {
         onConfirm={noop}
       />,
     );
-    expect(html).toContain('New Game');
+    expect(html).toContain('New game');
     expect(html).not.toContain('Reset table');
-    expect(html).toContain('Start new game');
-    expect(html).toContain('table-stake-panel__title');
+    expect(html).toContain('Game category');
   });
 
   it('resetTable variant keeps Reset table title', () => {
@@ -69,7 +68,7 @@ describe('New Game flow', () => {
       />,
     );
     expect(html).toContain('Reset table');
-    expect(html).toContain('Start new game');
+    expect(html).toContain('Game category');
   });
 
   it('reset action keeps table session id and clears round', () => {

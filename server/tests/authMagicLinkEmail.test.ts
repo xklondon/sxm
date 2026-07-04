@@ -6,19 +6,20 @@ const envBackup = { ...process.env };
 afterEach(() => {
   process.env = { ...envBackup };
   vi.resetModules();
-  vi.doUnmock('../src/email/mailer.js');
 });
+
+async function createDevTestApp() {
+  process.env.NODE_ENV = 'development';
+  process.env.ROOT_USER_EMAIL = 'root@example.com';
+  process.env.INVITE_ONLY_MODE = 'true';
+  vi.resetModules();
+  const { createApp } = await import('../src/app.js');
+  return createApp();
+}
 
 describe('magic-link email (auth + people)', () => {
   it('POST /api/auth/request-magic-link succeeds in dev without leaking config errors', async () => {
-    process.env.NODE_ENV = 'development';
-    process.env.ROOT_USER_EMAIL = 'root@example.com';
-    process.env.INVITE_ONLY_MODE = 'true';
-    vi.resetModules();
-    vi.doUnmock('../src/email/mailer.js');
-
-    const { createApp } = await import('../src/app.js');
-    const { app } = createApp();
+    const { app } = await createDevTestApp();
     const res = await request(app)
       .post('/api/auth/request-magic-link')
       .send({ email: 'root@example.com' });
@@ -30,10 +31,12 @@ describe('magic-link email (auth + people)', () => {
       expect(String(res.body.error)).not.toMatch(/config is not defined/i);
       expect(String(res.body.error)).not.toMatch(/config not found/i);
     }
-  });
+  }, 30_000);
 
   it('sanitizes config ReferenceError on magic-link failure in production', async () => {
     process.env.NODE_ENV = 'production';
+    process.env.PUBLIC_ORIGIN = 'https://example.com';
+    process.env.CORS_ORIGIN = 'https://example.com';
     process.env.ROOT_USER_EMAIL = 'root@example.com';
     process.env.INVITE_ONLY_MODE = 'true';
     process.env.RESEND_API_KEY = 're_test';

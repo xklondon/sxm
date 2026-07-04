@@ -1,11 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const PANEL_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
 const CARD_AREA_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-full-table-card-area.css'), 'utf8');
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
 const PANEL_SRC = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.tsx'), 'utf8');
+const DEALER_BLOCK_SRC = readFileSync(join(process.cwd(), 'src/components/DealerBlock.tsx'), 'utf8');
 
 describe('blackjack desktop polish contracts', () => {
   it('aligns desktop toolbar nav to felt horizontal inset', () => {
@@ -27,10 +29,10 @@ describe('blackjack desktop polish contracts', () => {
     expect(PANEL_SRC).toContain('FULL_TABLE_CARD_AREA_CLASS');
   });
 
-  it('adds game-ended card-row spacing and hides dealer new game while game-over UI is active', () => {
-    expect(PANEL_CSS).toMatch(/data-game-ended='true'[\s\S]*padding-top:\s*0\.95rem/);
-    expect(PANEL_SRC).toContain('!showGameOverActions');
+  it('gates dealer command and new-round action while game-over UI is active', () => {
     expect(PANEL_SRC).toContain("data-game-over-ui={showGameOverActions ? 'true' : 'false'}");
+    expect(PANEL_SRC).toContain('showGameOverActions ? null : tableCommand.commandMessage');
+    expect(DEALER_BLOCK_SRC).toContain("protocolPhase === 'round-complete' && awaitingNextRound");
   });
 
   it('passes tray label on desktop and mobile', () => {

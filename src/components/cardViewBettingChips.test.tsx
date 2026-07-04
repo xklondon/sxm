@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
@@ -15,6 +16,7 @@ import { createNewBlackjackTable } from '../engine/session';
 import { allocateChipsToBankrollOwner } from '../engine/session/allocation';
 import { addChipToBoxStake } from '../engine/blackjack/stakes';
 
+const { shared: SHARED_CSS, shell: SHELL_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
 
 let simulatedWidth = 1280;
@@ -46,7 +48,7 @@ afterAll(() => {
   }
 });
 
-function bettingPanelWithStake(): { state: GameState; boxId: string; html: string } {
+function bettingPanelWithStake(viewportWidth = 1280): { state: GameState; boxId: string; html: string } {
   let state = createNewBlackjackTable();
   const boxId = 'box-test';
   const personId = 'person-1';
@@ -104,7 +106,7 @@ function bettingPanelWithStake(): { state: GameState; boxId: string; html: strin
   state = addChipToBoxStake(state, boxId, 10, personId);
   state = addChipToBoxStake(state, boxId, 5, personId);
 
-  simulatedWidth = 1280;
+  simulatedWidth = viewportWidth;
   const html = renderToStaticMarkup(<BlackjackPanel gameState={state} onGameStateChange={noop} />);
 
   return { state, boxId, html };
@@ -135,17 +137,16 @@ describe('Card View betting chips and layout', () => {
   });
 
   it('reserves hero total slot without Betting/Bet label text', () => {
-    const { html } = bettingPanelWithStake();
+    const { html } = bettingPanelWithStake(390);
     expect(html).toContain('bj-phone-view__total--placeholder');
     expect(html).toContain('bj-phone-view__hand-meta');
     expect(html).not.toMatch(/>Betting</);
     expect(html).not.toMatch(/>Bet \d+</);
     expect(html).toContain('bj-phone-view__cards-placeholder');
-    expect(html).toContain('bj-phone-view__hero-actions--placeholder');
   });
 
   it('betting and playing share hero/total/box-strip slots', () => {
-    const betting = bettingPanelWithStake().html;
+    const betting = bettingPanelWithStake(390).html;
     const slots = [
       TABLE_UX.cardsAreaHero,
       'bj-phone-view__hand-meta',
@@ -160,13 +161,15 @@ describe('Card View betting chips and layout', () => {
   });
 
   it('desktop Card View has no horizontal overflow contract', () => {
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    const sharedCss = SHARED_CSS;
     const panelCss = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
     const cardCss = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
     expect(sharedCss).toMatch(/\.bj-casino\.bj-view-card-desktop[\s\S]*overflow:\s*hidden/);
     expect(sharedCss).toMatch(/\.bj-table-desktop-shell[\s\S]*overflow:\s*hidden/);
-    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--boxes \.bj-arc--player-boxes[\s\S]*overflow:\s*hidden/);
-    expect(sharedCss).toMatch(/\.bj-casino__this-table--dock[\s\S]*max-width:\s*12\.5rem/);
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*overflow:\s*hidden/,
+    );
+    expect(sharedCss).toMatch(/\.bj-casino__this-table--dock[\s\S]*flex:\s*0 0 12\.5rem/);
     expect(cardCss).toMatch(/\.bj-phone-view[\s\S]*overflow-x:\s*hidden/);
     expect(panelCss).not.toMatch(/\.bj-view-card-desktop \.dealer-block[\s\S]*padding:\s*0\.1rem/);
   });

@@ -98,9 +98,94 @@ export const config = {
       'IOU_HANDOFF_CREATE_URL',
       'http://localhost:6969/api/integrations/handoff/create',
     ),
-    enabled: Boolean(env('IOU_HANDOFF_SECRET') && env('IOU_HANDOFF_CREATE_URL')),
+    enabled: isIouHandoffConfigured(),
   },
 };
+
+/** Canonical IOU Wallet B2B handoff env keys (server-only). */
+export const IOU_HANDOFF_CANONICAL_ENV_KEYS = [
+  'IOU_HANDOFF_SOURCE',
+  'IOU_HANDOFF_SECRET',
+  'IOU_HANDOFF_CREATE_URL',
+] as const;
+
+/** Legacy names — ignored; log rename hint if present without canonical keys. */
+export const IOU_HANDOFF_LEGACY_ENV_KEYS = [
+  'SXM_HANDOFF_SECRET',
+  'SXM_HANDOFF_SOURCE',
+  'SXM_HANDOFF_CREATE_URL',
+] as const;
+
+export interface IouHandoffConfigDiagnostics {
+  enabled: boolean;
+  hasSecret: boolean;
+  hasCreateUrl: boolean;
+  missingCanonical: string[];
+  legacyEnvPresent: string[];
+}
+
+function isIouHandoffConfigured(): boolean {
+  return Boolean(env('IOU_HANDOFF_SECRET') && env('IOU_HANDOFF_CREATE_URL'));
+}
+
+export function getIouHandoffConfigDiagnostics(): IouHandoffConfigDiagnostics {
+  const hasSecret = Boolean(env('IOU_HANDOFF_SECRET'));
+  const hasCreateUrl = Boolean(env('IOU_HANDOFF_CREATE_URL'));
+  const missingCanonical: string[] = [];
+  if (!hasSecret) {
+    missingCanonical.push('IOU_HANDOFF_SECRET');
+  }
+  if (!hasCreateUrl) {
+    missingCanonical.push('IOU_HANDOFF_CREATE_URL');
+  }
+  const legacyEnvPresent = IOU_HANDOFF_LEGACY_ENV_KEYS.filter((key) => Boolean(env(key)));
+  return {
+    enabled: hasSecret && hasCreateUrl,
+    hasSecret,
+    hasCreateUrl,
+    missingCanonical,
+    legacyEnvPresent,
+  };
+}
+
+/** User-facing error when handoff routes are hit but env is incomplete. */
+export function getIouHandoffNotConfiguredMessage(): string {
+  const diag = getIouHandoffConfigDiagnostics();
+  if (diag.legacyEnvPresent.length > 0 && !diag.hasSecret) {
+    return (
+      'IOU handoff is not configured on this server. ' +
+      `Rename legacy env ${diag.legacyEnvPresent.join(', ')} to IOU_HANDOFF_* (see .env.example).`
+    );
+  }
+  if (!diag.hasSecret) {
+    return 'IOU handoff is not configured on this server. Set IOU_HANDOFF_SECRET.';
+  }
+  if (!diag.hasCreateUrl) {
+    return 'IOU handoff is not configured on this server. Set IOU_HANDOFF_CREATE_URL.';
+  }
+  return 'IOU handoff is not configured on this server.';
+}
+
+export function logIouHandoffConfigStatus(): void {
+  const diag = getIouHandoffConfigDiagnostics();
+  if (diag.enabled) {
+    // eslint-disable-next-line no-console
+    console.log('[SXM][iou-handoff] configured (IOU_HANDOFF_SECRET + IOU_HANDOFF_CREATE_URL set)');
+    return;
+  }
+  if (diag.legacyEnvPresent.length > 0) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[SXM][iou-handoff] legacy env ignored: ${diag.legacyEnvPresent.join(', ')} — use IOU_HANDOFF_* only`,
+    );
+  }
+  if (diag.missingCanonical.length > 0) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[SXM][iou-handoff] not configured — missing: ${diag.missingCanonical.join(', ')}`,
+    );
+  }
+}
 
 function normalizeEmailEnv(value: string): string {
   return value.trim().toLowerCase();

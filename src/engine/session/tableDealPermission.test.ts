@@ -88,7 +88,7 @@ describe('DealerBlock deal permission wiring', () => {
   it('gates New Cards on canUserDealTable only (not engine canDeal)', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/DealerBlock.tsx'), 'utf8');
     const newCardsBlock = src.match(
-      /protocolPhase === 'round-complete'[\s\S]*?onClick: onNextRound,\s*\};/,
+      /protocolPhase === 'round-complete' && awaitingNextRound[\s\S]*?onClick: onNextRound/,
     )?.[0];
     expect(newCardsBlock).toBeTruthy();
     expect(newCardsBlock).toContain('canUserDealTable');

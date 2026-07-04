@@ -8,7 +8,11 @@ import {
   getTotalBettingExposureForBankrollOwner,
 } from '../../session/bankroll';
 import { check, type SanitySuiteResult } from './types';
-import { boxPlayerId, tableAfterStartPlaying } from './fixtures';
+import {
+  boxPlayerId,
+  setSanityOpenStake,
+  tableAfterStartPlaying,
+} from './fixtures';
 import { claimBoxSlot } from '../../session/boxOps';
 
 function setOpenStake(
@@ -16,16 +20,7 @@ function setOpenStake(
   boxId: string,
   amount: number,
 ) {
-  return {
-    ...state,
-    tableMeta: {
-      ...state.tableMeta,
-      boxStakes: {
-        ...state.tableMeta.boxStakes,
-        [boxId]: { amount, chips: [], confirmed: true },
-      },
-    },
-  };
+  return setSanityOpenStake(state, boxId, amount);
 }
 
 export function runOwnerSetupSanityChecks(): SanitySuiteResult {

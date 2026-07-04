@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
@@ -15,6 +16,7 @@ import {
 import { claimBoxSlot } from '../engine/session';
 import { addChipToBoxStake, blackjackHandKey, confirmBoxStake } from '../engine/blackjack';
 
+const { shared: SHARED_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
 
 vi.mock('./storage/profileStorage', () => ({
@@ -119,7 +121,7 @@ describe('Card View layout polish', () => {
     expect(html).not.toContain('dealer-block__hero-row');
     expect(html).toContain('bj-card-layout__command');
     expect(html).toContain('dealer-block__command');
-    expect(html).toMatch(/Box \d+ — your turn\./);
+    expect(html).toMatch(/Box \d+ — .+ — your turn\./);
     const stackIdx = html.indexOf('dealer-block__stack');
     const commandIdx = html.indexOf('bj-card-layout__command');
     const heroIdx = html.indexOf(TABLE_UX.cardsAreaHero);
@@ -130,10 +132,9 @@ describe('Card View layout polish', () => {
   });
 
   it('hero action CSS uses shared shell action panel and player box stack', () => {
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
-    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions/);
-    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions__row/);
-    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions__btn--sm/);
-    expect(sharedCss).toMatch(/\.bj-phone-view__mini-hand-card-stack[\s\S]*position:\s*relative/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions__row/);
+    expect(SHARED_CSS).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions \.bj-table-actions__btn--sm/);
+    expect(SHARED_CSS).toMatch(/\.bj-phone-view__mini-hand-card-stack[\s\S]*position:\s*relative/);
   });
 });

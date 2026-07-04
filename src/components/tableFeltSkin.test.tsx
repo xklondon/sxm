@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { createDefaultTableMeta } from '../types/table';
@@ -29,6 +30,8 @@ import { tableAfterStartPlaying } from '../engine/blackjack/sanity/fixtures';
 import { claimBoxSlot } from '../engine/session';
 
 const noop = () => {};
+
+const { shared: SHARED_CSS, shell: SHELL_CSS } = readBlackjackLayoutCss();
 
 vi.mock('../storage/profileStorage', () => ({
   loadProfile: () => ({ name: 'Alice', email: 'alice@test.com' }),
@@ -212,8 +215,8 @@ describe('table felt cloth layer', () => {
   });
 
   it('chip tray zone is bottom-aligned with boxes separation in shared shell CSS', () => {
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
-    const shellCss = readSrc('src/styles/bj-blackjack-table-shell.css');
+    const sharedCss = SHARED_CSS;
+    const shellCss = SHELL_CSS;
     expect(sharedCss).toContain('--bj-zone-boxes-tray-gap: 1.35rem');
     expect(sharedCss).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*justify-content:\s*flex-end/,
@@ -230,7 +233,7 @@ describe('table felt cloth layer', () => {
   });
 
   it('Card View player boxes arc does not expand shell scroll', () => {
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const sharedCss = SHARED_CSS;
     const boxesBlock =
       sharedCss.match(/\.bj-table-layout-shell \.bj-table-zone--boxes\s*\{[\s\S]*?\}/)?.[0] ?? '';
     expect(boxesBlock).toMatch(/overflow-x:\s*hidden/);
@@ -241,7 +244,7 @@ describe('table felt cloth layer', () => {
   });
 
   it('dealer and command zones use shell sizing without overlap selectors', () => {
-    const sharedCss = readSrc('src/styles/bj-table-shared.css');
+    const sharedCss = SHARED_CSS;
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--dealer[\s\S]*justify-content:\s*center/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--summary[\s\S]*justify-content:\s*flex-end/);
     expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--actions[\s\S]*overflow:\s*hidden/);

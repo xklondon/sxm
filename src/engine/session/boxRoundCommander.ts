@@ -49,6 +49,29 @@ function boxHasInRoundHand(state: GameState, boxPlayerId: string): boolean {
   });
 }
 
+/** Stakers committed on in-round hands (post-deal when open boxStakes may be empty). */
+function inRoundHandStakerPersonIds(state: GameState, boxPlayerId: string): string[] {
+  const round = state.blackjack;
+  if (!round) {
+    return [];
+  }
+  const ids: string[] = [];
+  for (const [handKey, hand] of Object.entries(round.playerHands)) {
+    if (parseBlackjackHandKey(handKey).playerId !== boxPlayerId) {
+      continue;
+    }
+    if (hand.cardIds.length === 0 && hand.currentBet <= 0) {
+      continue;
+    }
+    for (const [personId, amount] of Object.entries(hand.stakerAmountsByPersonId ?? {})) {
+      if (amount > 0 && !ids.includes(personId)) {
+        ids.push(personId);
+      }
+    }
+  }
+  return ids;
+}
+
 function reasonForCommander(
   designatedOwner: string | null,
   commanderPersonId: string,
@@ -80,9 +103,11 @@ export function resolveBoxRoundCommander(
 
   const designatedOwner = designatedOwnerPersonId(state, boxPlayerId);
   const stake = state.tableMeta.boxStakes[boxPlayerId];
-  const stakerPersonIds = [...new Set(stake?.stakerPersonIds ?? [])];
   const hasOpenStake = getStakeForBox(state, boxPlayerId) > 0;
   const inRound = boxHasInRoundHand(state, boxPlayerId);
+  const openStakerPersonIds = [...new Set(stake?.stakerPersonIds ?? [])];
+  const handStakerPersonIds = inRound ? inRoundHandStakerPersonIds(state, boxPlayerId) : [];
+  const stakerPersonIds = [...new Set([...openStakerPersonIds, ...handStakerPersonIds])];
 
   if (!hasOpenStake && !inRound) {
     return { commanderPersonId: null, reason: null, coBettorPersonIds: [] };
@@ -102,7 +127,12 @@ export function resolveBoxRoundCommander(
     };
   }
 
-  const firstStaker = lockedCaller ?? stake?.callerPersonId ?? stakerPersonIds[0] ?? null;
+  let firstStaker = lockedCaller ?? stake?.callerPersonId ?? stakerPersonIds[0] ?? null;
+
+  // Native owner on an in-round hand with no staker metadata (post-deal / test snapshots).
+  if (!firstStaker && inRound && designatedOwner) {
+    firstStaker = designatedOwner;
+  }
 
   if (!firstStaker) {
     return { commanderPersonId: null, reason: null, coBettorPersonIds: [] };

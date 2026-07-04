@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { TableService } from '../tables/service.js';
 import { requireAuth, type AuthedRequest } from '../auth/middleware.js';
 import { respondPeopleAuthError } from '../people/httpErrors.js';
+import { getIouHandoffNotConfiguredMessage } from '../config.js';
 import type { IouHandoffService } from './service.js';
 import type { IouHandoffCreateRequestBody } from '../../../src/lib/iouHandoffPayload.js';
 
@@ -14,7 +15,7 @@ export function createIouHandoffRouter(
   router.post('/create', requireAuth, async (req: AuthedRequest, res) => {
     try {
       if (!handoff.isConfigured()) {
-        res.status(503).json({ ok: false, error: 'IOU handoff is not configured on this server.' });
+        res.status(503).json({ ok: false, error: getIouHandoffNotConfiguredMessage() });
         return;
       }
 

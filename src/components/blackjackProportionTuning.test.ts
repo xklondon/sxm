@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const SHARED_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS } = readBlackjackLayoutCss();
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
 const SHELL_SRC = readFileSync(
@@ -12,10 +13,10 @@ const SHELL_SRC = readFileSync(
 
 describe('blackjack proportion tuning — zone tokens and Stitch-aligned surfaces', () => {
   it('uses compact dealer and taller command/actions/tray desktop rows', () => {
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-dealer-height: 7.75rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-command-height: 4rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-actions-height: 2.9rem');
-    expect(SHARED_CSS).toContain('--bj-desktop-zone-tray-height: 4.35rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-dealer-height: 7.15rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-command-height: 4.35rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-actions-height: 2.5rem');
+    expect(SHELL_CSS).toContain('--bj-desktop-zone-tray-height: 4.15rem');
   });
 
   it('keeps command text visible with Stitch-style pill and no ellipsis clip', () => {
@@ -25,8 +26,8 @@ describe('blackjack proportion tuning — zone tokens and Stitch-aligned surface
     expect(SHARED_CSS).toMatch(
       /\.bj-table-layout-shell \.bj-table-zone--summary \.dealer-block__command[\s\S]*background:\s*rgb\(10 61 42/,
     );
-    expect(SHARED_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--summary \.dealer-block__status[\s\S]*overflow:\s*visible/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--summary \.dealer-block__status[\s\S]*display:\s*block/,
     );
     expect(SHARED_CSS).not.toMatch(
       /@media \(min-width: 721px\)[\s\S]*\.bj-table-layout-shell \.bj-table-zone--summary \.dealer-block__status[\s\S]*text-overflow:\s*ellipsis/,

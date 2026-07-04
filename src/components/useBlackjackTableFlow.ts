@@ -99,8 +99,7 @@ export function useBlackjackTableFlow(
     Boolean(tableMeta.shoeStarted) &&
     bettingOpen &&
     dealGate.allowed &&
-    !actionPending &&
-    !onlineActionInFlight;
+    !actionPending;
   const dealBlockReason = dealGate.allowed ? null : dealGate.message;
 
   const reportFlowError = useCallback((msg: string) => {

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readBlackjackLayoutCss } from '../test/readBlackjackLayoutCss';
 
 import type { GameState } from '../types';
 import { BlackjackPanel } from './BlackjackPanel';
@@ -15,6 +16,7 @@ import { claimBoxSlot } from '../engine/session';
 import { createBlackjackPlayerHand } from '../types/blackjack';
 import { blackjackHandKey } from '../engine/blackjack';
 
+const { shared: SHARED_CSS } = readBlackjackLayoutCss();
 const noop = () => {};
 
 vi.mock('./storage/profileStorage', () => ({
@@ -103,7 +105,7 @@ describe('This Table panel placement', () => {
     expect(html).toContain('bj-side-rail-shell');
     expect(html).toContain('bj-side-rail-shell__title');
     const css = readFileSync(join(process.cwd(), 'src/components/BlackjackPanel.css'), 'utf8');
-    const sharedCss = readFileSync(join(process.cwd(), 'src/styles/bj-table-shared.css'), 'utf8');
+    const sharedCss = SHARED_CSS;
     expect(css).not.toContain('.bj-casino__this-table--float');
     expect(sharedCss).toContain('.bj-casino__this-table--dock');
     expect(sharedCss).toMatch(/\.bj-casino__desktop-stage[\s\S]*display:\s*flex/);
