@@ -3,7 +3,11 @@ import type { GameState } from '../../types';
 import type { Deck, Rank } from '../../types/deck';
 import { tableAfterStartPlaying, boxPlayerId, findCardId, actingRound } from './sanity/fixtures';
 import { claimBoxSlot } from '../session/boxOps';
-import { addChipToBoxStake } from './stakes';
+import { addPlayer, mergeSessionUpdate } from '../session/session';
+import { allocateChipsToBankrollOwner } from '../session/allocation';
+import { syncPlayerOrderAndAssignments } from '../session/playerAssignment';
+import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
+import { confirmBoxStake, addChipToBoxStake } from './stakes';
 import { createBlackjackShoe, shuffleBlackjackShoe } from './shoe';
 import { blackjackHandKey, listHandKeysForPlayer } from './handKeys';
 import { splitBlackjackPlayer } from './round';
@@ -101,10 +105,11 @@ describe('split action', () => {
   });
 
   it('online and offline split produce the same hand layout', () => {
-    const { state, handKey } = pairTable();
+    const { state, handKey, boxId } = pairTable();
     const ownerId = state.tableMeta.ownerPersonId!;
-    const offline = splitBlackjackOnState(state, handKey);
-    const online = applyBlackjackActionToState(state, 'split', {
+    const manual = setPersonPlayFlow(state, ownerId, 'manual');
+    const offline = splitBlackjackOnState(manual);
+    const online = applyBlackjackActionToState(manual, 'split', {
       ...actor,
       personId: ownerId,
     });
@@ -116,6 +121,7 @@ describe('split action', () => {
         offline.blackjack!.playerHands[key]!.cardIds,
       );
     }
+    expect(offline.blackjack!.activeHandKey).toBe(handKey);
   });
 
   it('split copies stakerAmountsByPersonId onto both hands', () => {
@@ -134,11 +140,83 @@ describe('split action', () => {
         },
       },
     };
-    const split = splitBlackjackOnState(playing, handKey);
+    const split = splitBlackjackOnState(playing);
     const keys = listHandKeysForPlayer(split.blackjack!.playerHands, playing.blackjack!.playerHands[handKey]!.playerId);
     expect(keys).toHaveLength(2);
     for (const key of keys) {
       expect(split.blackjack!.playerHands[key]!.stakerAmountsByPersonId).toEqual(snapshot);
     }
+  });
+
+  it('co-staked split debits every participating staker proportionally (caller split, no opt-in UI)', () => {
+    let state = tableAfterStartPlaying(500);
+    const host = state.tableMeta.ownerPersonId!;
+    const guestSpl = addPlayer(state.session, state.players, state.ledger, {
+      displayName: 'K',
+      controllerName: 'K',
+      role: 'person',
+      startingChips: 0,
+    });
+    state = mergeSessionUpdate(state, guestSpl);
+    const guest = guestSpl.session.playerIds[guestSpl.session.playerIds.length - 1]!;
+    state = allocateChipsToBankrollOwner(state, {
+      bankrollOwnerId: guest,
+      amount: 500,
+      reason: 'initial-player',
+      source: 'setup',
+    });
+    state = { ...state, tableMeta: { ...state.tableMeta, playerOrder: [host, guest] } };
+    state = syncPlayerOrderAndAssignments(state);
+    state = claimBoxSlot(state, 1);
+    const boxId = boxPlayerId(state, 1)!;
+    state = addChipToBoxStake(state, boxId, 50, host);
+    state = addChipToBoxStake(state, boxId, 50, guest);
+    state = confirmBoxStake(state, boxId);
+    state = startBlackjackRound(state);
+    let deck = shuffleBlackjackShoe(createBlackjackShoe(6), 'co-split');
+    deck = deckWithNextDrawRanks(deck, ['2', '3']);
+    state = { ...state, deck };
+    const eightA = findCardId(deck, '8', 'spades');
+    const eightB = deck.cards.find((c) => c.rank === '8' && c.id !== eightA)!.id;
+    const handKey = blackjackHandKey(boxId, 0);
+    const stakerSnapshot = { [host]: 50, [guest]: 50 };
+    const round = actingRound(state, boxId, [eightA, eightB], 100);
+    state = {
+      ...state,
+      blackjack: {
+        ...round,
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: boxId,
+        playerHands: {
+          [handKey]: {
+            ...round.playerHands[handKey]!,
+            stakerAmountsByPersonId: stakerSnapshot,
+          },
+        },
+      },
+    };
+    const hostBefore = derivePlayerBalanceFromLedger(host, state.ledger);
+    const guestBefore = derivePlayerBalanceFromLedger(guest, state.ledger);
+    const split = splitBlackjackOnState(state);
+    expect(derivePlayerBalanceFromLedger(host, split.ledger)).toBe(hostBefore - 50);
+    expect(derivePlayerBalanceFromLedger(guest, split.ledger)).toBe(guestBefore - 50);
+    for (const key of listHandKeysForPlayer(split.blackjack!.playerHands, boxId)) {
+      expect(split.blackjack!.playerHands[key]!.stakerAmountsByPersonId).toEqual(stakerSnapshot);
+    }
+  });
+
+  it('hit after split deals only to activeHandKey', () => {
+    let { state, handKey, boxId } = pairTable({ splitDrawRanks: ['2', '3', '5'] });
+    const ownerId = getCallerPersonIdForBox(state, boxId)!;
+    state = setPersonPlayFlow(state, ownerId, 'manual');
+    const split = splitBlackjackOnState(state);
+    expect(split.blackjack!.activeHandKey).toBe(handKey);
+    const beforeCount = split.blackjack!.playerHands[handKey]!.cardIds.filter(Boolean).length;
+    const hit = applyBlackjackActionToState(split, 'hit', { ...actor, personId: ownerId });
+    expect(hit.blackjack!.activeHandKey).toBe(handKey);
+    expect(hit.blackjack!.playerHands[handKey]!.cardIds.filter(Boolean).length).toBe(beforeCount + 1);
+    const secondKey = listHandKeysForPlayer(hit.blackjack!.playerHands, boxId).find((k) => k !== handKey)!;
+    expect(hit.blackjack!.playerHands[secondKey]!.cardIds.filter(Boolean).length).toBe(2);
   });
 });

@@ -549,6 +549,8 @@ export function splitBlackjackPlayer(
     throw new Error('Split not allowed for this protocol or hand');
   }
 
+  // Co-staked split: box caller split funds every participating staker proportionally.
+  // Per-staker opt-in/out requires new UI + engine extension (see SXM_MASTER_SPEC).
   const splitBet = applyProportionalStakerDebits(
     session,
     ledger,

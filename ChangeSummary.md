@@ -1,32 +1,46 @@
-# Change Summary — people.test.ts timeout fix
+# Change Summary — Blackjack canonical flow cleanup
 
-## Root cause
+## Duplicate paths removed
 
-`requestMagicLink` was **not** hanging on email or SMTP. The mailer mock was already working (dev `devLink` logged, no network send).
+| Before | After |
+|--------|-------|
+| Private `getProtocolPhase()` in `dealEligibility.ts` | Single mapper: `getBlackjackProtocolPhase()` from `protocol.ts` |
+| Offline panel passed `actionable.handKey` to hit/double/split | Offline uses `activeHandKey` only (same as server/`applyBlackjackActionToState`) |
+| Mobile Full Table skipped split-host cluster (`deviceView === 'desktop'`) | Split companion tiles render on mobile Full Table too |
 
-The timeouts came from **test harness overhead**:
-- `afterEach` called `vi.resetModules()` after every test
-- `setupServices()` called `vi.resetModules()` again + 4 sequential dynamic imports before each test
-- First test in the file paid ~12–15s cold module load; under full-suite CPU contention this exceeded the 15s default timeout
+## Canonical flow changes
 
-## Fix
+1. **Phase mapping** — Deal eligibility and min-bet change checks use the same phase source as all views; insurance during initial deal maps to `dealing`, not `insurance`.
+2. **Player actions** — `BlackjackPanel` hit/double/split call `*OnState(s)` without handKey override.
+3. **Reveal regression** — Tests guard against visibility regression on hit, double, split, and resplit (`:2`) hands outside `initialDealHandKeys`.
+4. **Mobile split parity** — `.bj-view-full-mobile` CSS + split-host cluster in `renderArcSlot` (real hand keys, companion left of main).
+5. **Co-staker split rule** — Documented and tested: caller split funds all participating stakers proportionally; per-staker opt-in marked TODO in spec + `round.ts`.
 
-`server/tests/people.test.ts` only:
-- Removed `vi.resetModules()` from `afterEach`
-- Added `loadServiceModules()` cache — reset/re-import only when env key changes (`rootEmail|inviteOnly|nodeEnv`)
-- Parallel `Promise.all` for the four service imports on cold load
-- `beforeAll` sets default dev env once
-- Mailer mock unchanged; production email path untouched
+## Files changed
 
-## Result
+- `src/engine/blackjack/dealEligibility.ts`
+- `src/engine/blackjack/dealEligibility.test.ts` (new)
+- `src/engine/blackjack/round.ts`
+- `src/engine/blackjack/splitAction.test.ts`
+- `src/engine/blackjack/dealing/cardRevealGameplay.test.ts`
+- `src/components/BlackjackPanel.tsx`
+- `src/styles/bj-player-row-layout.css`
+- `docs/SXM_MASTER_SPEC.md`
+- `docs/CHANGE_LOG.md`
+
+## Tests
+
+**Targeted:** 32/32 passed
 
 ```
-npx vitest run server/tests/people.test.ts --reporter=verbose
-→ 13/13 passed in ~9.4s (first magic-link test ~6.2s, second ~41ms)
+dealEligibility.test.ts, splitAction.test.ts, cardRevealGameplay.test.ts,
+blackjackStabilityContracts.test.tsx
 ```
 
-## Product code
+**Full suite:** 346 files, **2448 passed**, 5 skipped — 81.7s
 
-No changes.
+**Build:** `npm run build` — success
 
-**Spec discipline:** test-infra only — SXM_MASTER_SPEC.md / CHANGE_LOG.md not updated.
+## Spec discipline
+
+Checked/updated `SXM_MASTER_SPEC.md` and `CHANGE_LOG.md`.

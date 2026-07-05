@@ -564,6 +564,7 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 - **Play vs Ace** — decline even-money or insurance (replaces “Wait for 3:2” / “No thanks”).
 - Ace-decision buttons: thin yellow border (`bj-table-actions__btn--ace`), single-line labels, compact width — same in Full Table and Card View.
 - **Double / split eligibility:** Same funding helper — action disabled when any actual staker cannot fund their proportional share. Execution uses full table `GameState` for funding (not stripped synthetic state). Split copies `stakerAmountsByPersonId` onto both post-split hands.
+- **Co-staked split (current rule):** Box caller split applies proportional funding to **all** participating stakers in `stakerAmountsByPersonId` — no per-staker opt-in UI yet. Future per-staker split opt-in requires new UI + engine extension (TODO).
 
 **Summary screen:** Off by default (`showRoundSummaryOverlay: false`); opens only when enabled in settings. When shown: visual cards per box, outcome, **Won [n]c** / **Lost [n]c**, bank net summary.
 

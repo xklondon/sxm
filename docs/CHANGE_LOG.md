@@ -29,6 +29,26 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
+## 2026-07-05 — Blackjack canonical flow cleanup
+
+**Changes:** Single phase mapper (`dealEligibility` → `getBlackjackProtocolPhase`); offline hit/double/split use `activeHandKey` only; mobile Full Table split-host parity; reveal regression tests; co-staker split rule documented.
+
+**Files:** `dealEligibility.ts`, `BlackjackPanel.tsx`, `bj-player-row-layout.css`, `round.ts`, test files, `SXM_MASTER_SPEC.md`
+
+---
+
+## 2026-07-05 — Blackjack split reveal (paced dealing)
+
+**Problem:** After Yes/Split, nothing visible happened — no split companion cards, controls blocked, `activeHandKey` turn flow appeared broken. Engine split state was correct; paced reveal stalled.
+
+**Root cause:** `nextSequentialRevealStep` used ordered initial-deal steps from `initialDealHandKeys` only. When original hand + dealer were already visible, a stale dealer step regressed visibility and returned early, never reaching `nextGameplayRevealStep` for the split companion hand (`boxId:1`).
+
+**Fix:** Fall through to gameplay reveal for pending hands outside `initialDealHandKeys`; only accept reveal steps that strictly advance `totalCardCount`.
+
+**Files:** `cardRevealDisplay.ts`, `cardRevealGameplay.test.ts`, `splitAction.test.ts`
+
+---
+
 ## 2026-07-04 — Blackjack stabilization pass (test clusters + contracts)
 
 **Problem:** Full test suite red across ownership gate, insurance, round reset, Card View shell, Entry Lobby, command copy, layout CSS guards, and server table actions. Default `npm test` hung on heavy rendered-layout suite.

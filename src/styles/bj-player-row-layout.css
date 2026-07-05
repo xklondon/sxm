@@ -86,7 +86,8 @@
   }
 
   .bj-view-full-desktop .bj-arc__slot--split-host,
-  .bj-view-card-desktop .bj-arc__slot--split-host {
+  .bj-view-card-desktop .bj-arc__slot--split-host,
+  .bj-view-full-mobile .bj-arc__slot--split-host {
     display: flex;
     justify-content: center;
     align-items: flex-end;
@@ -96,7 +97,8 @@
   }
 
   .bj-view-full-desktop .bj-arc__slot-split-cluster,
-  .bj-view-card-desktop .bj-arc__slot-split-cluster {
+  .bj-view-card-desktop .bj-arc__slot-split-cluster,
+  .bj-view-full-mobile .bj-arc__slot-split-cluster {
     display: flex;
     flex-direction: row;
     align-items: flex-end;
@@ -107,7 +109,8 @@
   }
 
   .bj-view-full-desktop .bj-arc__slot-split-main,
-  .bj-view-card-desktop .bj-arc__slot-split-main {
+  .bj-view-card-desktop .bj-arc__slot-split-main,
+  .bj-view-full-mobile .bj-arc__slot-split-main {
     position: relative;
     width: var(--bj-full-table-box-width);
     max-width: calc(var(--bj-full-table-box-width) + 0.35rem);
@@ -115,7 +118,8 @@
   }
 
   .bj-view-full-desktop .bj-arc__split-companion-tile,
-  .bj-view-card-desktop .bj-arc__split-companion-tile {
+  .bj-view-card-desktop .bj-arc__split-companion-tile,
+  .bj-view-full-mobile .bj-arc__split-companion-tile {
     position: relative;
     width: calc(var(--bj-full-table-box-width) * 0.58);
     max-width: calc(var(--bj-full-table-box-width) * 0.62);
@@ -124,38 +128,44 @@
   }
 
   .bj-view-full-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand--full-arc,
-  .bj-view-card-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand--full-arc {
+  .bj-view-card-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand--full-arc,
+  .bj-view-full-mobile .bj-arc__split-companion-tile .bj-phone-view__mini-hand--full-arc {
     width: 100%;
     min-height: calc(var(--bj-full-table-box-height) * 0.72);
     max-height: calc(var(--bj-full-table-box-height) * 0.78);
   }
 
   .bj-view-full-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-name,
-  .bj-view-card-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-name {
+  .bj-view-card-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-name,
+  .bj-view-full-mobile .bj-arc__split-companion-tile .bj-phone-view__mini-hand-name {
     display: none;
   }
 
   .bj-view-full-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-box,
-  .bj-view-card-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-box {
+  .bj-view-card-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-box,
+  .bj-view-full-mobile .bj-arc__split-companion-tile .bj-phone-view__mini-hand-box {
     font-size: 0.48rem;
   }
 
   .bj-view-full-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-composition,
-  .bj-view-card-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-composition {
+  .bj-view-card-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-composition,
+  .bj-view-full-mobile .bj-arc__split-companion-tile .bj-phone-view__mini-hand-composition {
     font-size: 0.46rem;
     min-height: 0.82rem;
     max-height: 0.95rem;
   }
 
   .bj-view-full-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-value,
-  .bj-view-card-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-value {
+  .bj-view-card-desktop .bj-arc__split-companion-tile .bj-phone-view__mini-hand-value,
+  .bj-view-full-mobile .bj-arc__split-companion-tile .bj-phone-view__mini-hand-value {
     font-size: calc(0.48rem * var(--bj-desktop-box-value-scale, 1.35));
     min-height: calc(0.78rem * 0.55);
     max-height: calc(0.88rem * 0.55);
   }
 
   .bj-view-full-desktop .bj-arc__split-companion-tile--active .bj-phone-view__mini-hand--full-arc,
-  .bj-view-card-desktop .bj-arc__split-companion-tile--active .bj-phone-view__mini-hand--full-arc {
+  .bj-view-card-desktop .bj-arc__split-companion-tile--active .bj-phone-view__mini-hand--full-arc,
+  .bj-view-full-mobile .bj-arc__split-companion-tile--active .bj-phone-view__mini-hand--full-arc {
     box-shadow: inset 0 0 0 2px rgb(251 191 36 / 0.9);
   }
 

@@ -1631,18 +1631,9 @@ export function BlackjackPanel({
         onStand={() =>
           run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} })
         }
-        onHit={() =>
-          run((s) => hitBlackjackOnState(s, actionable.handKey), { type: 'hit', payload: {} })
-        }
-        onDouble={() =>
-          run((s) => doubleDownBlackjackOnState(s, actionable.handKey), {
-            type: 'double',
-            payload: {},
-          })
-        }
-        onSplit={() =>
-          run((s) => splitBlackjackOnState(s, actionable.handKey), { type: 'split', payload: {} })
-        }
+        onHit={() => run((s) => hitBlackjackOnState(s), { type: 'hit', payload: {} })}
+        onDouble={() => run((s) => doubleDownBlackjackOnState(s), { type: 'double', payload: {} })}
+        onSplit={() => run((s) => splitBlackjackOnState(s), { type: 'split', payload: {} })}
         onAid={handleTableAid}
       />
     );
@@ -1876,10 +1867,12 @@ export function BlackjackPanel({
     const slot = tableMeta.boxSlots.find((s) => s.slotNumber === slotNumber);
     const boxId = slot?.playerId ?? null;
 
-    if (!isSplitCompanion && !isSplitClusterMain && deviceView === 'desktop' && boxId) {
+    if (!isSplitCompanion && !isSplitClusterMain && boxId) {
       const splitCompanionKeys = resolveArcSlotHandKeys(boxId).slice(1);
       if (splitCompanionKeys.length > 0) {
-        const hostRotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
+        const hostRotation = arcSlotRotation(slotNumber, effectiveVisibleBoxCount, {
+          mobile: deviceView === 'mobile',
+        });
         return (
           <div
             key={slotArcReactKey(slotNumber)}

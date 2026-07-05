@@ -1,6 +1,6 @@
 import type { GameState } from '../../types';
 
-import type { BlackjackProtocolPhase } from './protocol';
+import { getBlackjackProtocolPhase } from './protocol';
 
 import { getRemainingCardCount } from '../deck/deck';
 
@@ -94,7 +94,7 @@ export function evaluateBlackjackDealEngine(
   if (state.tableMeta.bettingLocked) {
     return engineFail('betting_locked');
   }
-  const phase = getProtocolPhase(state);
+  const phase = getBlackjackProtocolPhase(state);
   if (phase !== 'betting') {
     return engineFail('wrong_phase');
   }
@@ -117,54 +117,6 @@ export function getDealBlockReason(
 ): string | null {
   return evaluateBlackjackDealEngine(state, options).message;
 }
-
-
-
-function getProtocolPhase(state: GameState): BlackjackProtocolPhase {
-
-  if (state.tableMeta.awaitingNextRound && state.blackjack?.status === 'resolved') {
-
-    return 'round-complete';
-
-  }
-
-  if (state.blackjack?.insuranceOfferPending) {
-
-    return 'insurance';
-
-  }
-
-  const status = state.blackjack?.status;
-
-  switch (status) {
-
-    case 'initial-deal':
-
-      return 'dealing';
-
-    case 'player-turns':
-
-      return 'player';
-
-    case 'bank-turn':
-
-      return 'bank';
-
-    case 'banking':
-
-      return 'banking';
-
-    case 'resolved':
-
-      return 'round-complete';
-
-    case 'betting':
-    default:
-      return 'betting';
-  }
-}
-
-
 
 /** Table minimum bet — tableMeta overrides blackjackSettings default (5). */
 
@@ -303,7 +255,7 @@ export function canChangeMinimumBet(state: GameState): boolean {
 
   }
 
-  const phase = getProtocolPhase(state);
+  const phase = getBlackjackProtocolPhase(state);
 
   if (phase !== 'betting') {
 
@@ -365,7 +317,7 @@ export function logDealBlockedAudit(
 
   const payload = {
 
-    phase: getProtocolPhase(state),
+    phase: getBlackjackProtocolPhase(state),
 
     shoeReady: Boolean(state.deck),
 
@@ -402,7 +354,7 @@ export function logDealCardsAudit(
 
   const payload = {
 
-    phase: getProtocolPhase(state),
+    phase: getBlackjackProtocolPhase(state),
 
     shoeReady: Boolean(state.deck),
 

@@ -387,14 +387,17 @@ export function nextSequentialRevealStep(
           (handKey) => (after.hands[handKey] ?? 0) !== (workingVisible.hands[handKey] ?? 0),
         )
       ) {
-        if (totalCardCount(after) <= totalCardCount(target)) {
+        if (
+          totalCardCount(after) > totalCardCount(workingVisible) &&
+          totalCardCount(after) <= totalCardCount(target)
+        ) {
           return after;
         }
       }
     }
     if (hasPendingCardReveal(workingVisible, target) && isInitialDealVisibilityCounts(target)) {
       if (!isDealerHoleRevealPending(workingVisible, target)) {
-        return null;
+        return nextGameplayRevealStep(workingVisible, target);
       }
     }
   }
