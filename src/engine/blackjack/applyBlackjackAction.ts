@@ -110,10 +110,11 @@ export function applyBlackjackActionToState(
       break;
     }
     case 'takeEvenMoney':
-      next = takeEvenMoneyOnState(state, ctx.payload.handKey as string);
+      // Server-authoritative: ignore client handKey — resolve on evenMoneyOfferHandKey only.
+      next = takeEvenMoneyOnState(state);
       break;
     case 'waitFor3to2':
-      next = waitForBlackjackPayoutOnState(state, ctx.payload.handKey as string);
+      next = waitForBlackjackPayoutOnState(state);
       break;
     case 'nextRound':
       next = startNextRoundOnState(state);

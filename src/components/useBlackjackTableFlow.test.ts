@@ -20,4 +20,15 @@ describe('useBlackjackTableFlow betting UX', () => {
     expect(PANEL_SRC).toContain('applyOptimisticChipPlacement');
     expect(PANEL_SRC).toMatch(/onlineDispatch\('placeBet'[\s\S]*onGameStateChange\(snapshot\)/);
   });
+
+  it('does not mutate protocol locally for manual deal/bank controls when online', () => {
+    expect(FLOW_SRC).toMatch(/handleDealNextCard[\s\S]*if \(onlineDispatch\)[\s\S]*return/);
+    expect(FLOW_SRC).toMatch(/handleDrawBank[\s\S]*if \(onlineDispatch\)[\s\S]*return/);
+    expect(FLOW_SRC).toMatch(/handleShuffleFresh[\s\S]*if \(onlineDispatch\)[\s\S]*return/);
+  });
+
+  it('hides manual Card/Draw dealer controls when online', () => {
+    expect(PANEL_SRC).toContain('initialDealStaged && !onlineDispatch');
+    expect(PANEL_SRC).toContain("flowSettings.bankDrawMode === 'manual' && !onlineDispatch");
+  });
 });

@@ -258,15 +258,41 @@ export function resolveNaturalsAfterInitialDeal(state: GameState): GameState {
   return { ...state, session, ledger, blackjack: nextRound };
 }
 
-export function takeEvenMoneyOnState(state: GameState, handKey?: string): GameState {
-  const round = state.blackjack;
-  if (!round) {
-    throw new Error('No active round');
-  }
-  const key = handKey ?? round.evenMoneyOfferHandKey;
+function requireEvenMoneyOfferHandKey(round: BlackjackRound): string {
+  const key = round.evenMoneyOfferHandKey;
   if (!key) {
     throw new Error('No even-money offer pending');
   }
+  return key;
+}
+
+function assertEvenMoneyNaturalHand(
+  round: BlackjackRound,
+  handKey: string,
+  deck: Deck,
+): void {
+  const hand = round.playerHands[handKey];
+  if (!hand || hand.fromSplit || hand.naturalSettled) {
+    throw new Error('Not an even-money natural offer hand');
+  }
+  if (hand.actionStatus !== 'blackjack') {
+    throw new Error('Not an even-money natural offer hand');
+  }
+  const cards = cardsFromIds(deck, hand.cardIds.filter(Boolean));
+  const { isBlackjack } = getBlackjackHandValue(cards);
+  if (!isBlackjack) {
+    throw new Error('Not an even-money natural offer hand');
+  }
+}
+
+export function takeEvenMoneyOnState(state: GameState, _handKey?: string): GameState {
+  const round = state.blackjack;
+  const deck = state.deck;
+  if (!round || !deck) {
+    throw new Error('No active round');
+  }
+  const key = requireEvenMoneyOfferHandKey(round);
+  assertEvenMoneyNaturalHand(round, key, deck);
 
   const ctx = bankrollContextFromState(state);
   const paid = payNaturalWin(
@@ -296,15 +322,12 @@ export function takeEvenMoneyOnState(state: GameState, handKey?: string): GameSt
   };
 }
 
-export function waitForBlackjackPayoutOnState(state: GameState, handKey?: string): GameState {
+export function waitForBlackjackPayoutOnState(state: GameState, _handKey?: string): GameState {
   const round = state.blackjack;
   if (!round) {
     throw new Error('No active round');
   }
-  const key = handKey ?? round.evenMoneyOfferHandKey;
-  if (!key) {
-    throw new Error('No even-money offer pending');
-  }
+  const key = requireEvenMoneyOfferHandKey(round);
 
   let nextRound: BlackjackRound = {
     ...round,

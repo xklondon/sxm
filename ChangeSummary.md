@@ -1,48 +1,47 @@
-# Change Summary — Remove separate bank timer; unified card timing engine
+# Change Summary — Blackjack canonical-risk fixes (V1/V2/V3)
 
-## Timing sources found (audit)
+## Root causes fixed
 
-| Source | Location | Status |
-|--------|----------|--------|
-| `cardTimerPreset` / Turn timer | `BlackjackFlowSettings`, `TableStakePanel` | **Removed from UI**; forced to 0 |
-| `getBankTurnDelayMs` / bank-turn-start | `flowSettings.ts`, `useBlackjackTableFlow` | **Removed** — bank loop no longer sleeps |
-| `bank-card-draw` / `bank-pause` contexts | `getCardDealDelayMs` | **Deprecated** — all contexts same delay |
-| `resolveCardRevealDelayMs` bank branches | `cardRevealDisplay.ts` | **Removed** — calls `getNextCardDelay` only |
-| Extra hole/result pre-reveal holds | `useSequentialCardReveal` | **Removed** — one delay via `scheduleNextCardReveal` |
-| `bankAutoDrawDelayMs`, `bankDrawMin/Max` | `flowSettings` | Synced from preset; not used for separate pacing |
-| Auto bank async draw loop | `useBlackjackTableFlow` | **Refactored** — one draw per `cardRevealComplete` cycle |
-
-## Canonical timing path
-
-```
-useSequentialCardReveal
-  → scheduleNextCardReveal(state)
-    → getNextCardDelay(state, settings)   // fixed preset/custom or random min/max
-
-useBlackjackTableFlow (auto bank)
-  → drawBankCardOnState when cardRevealComplete  // WHAT only, no WHEN
-```
-
-Presets: **1s / 2s / 3s (default) / 5s / custom** + optional random timing.
+| ID | Root cause | Fix |
+|----|------------|-----|
+| **V1** | `applyBlackjackActionToState` passed `ctx.payload.handKey` into even-money actions; a crafted key could settle a non-offer hand at 1:1 | Reducer calls `takeEvenMoneyOnState` / `waitForBlackjackPayoutOnState` with no client key; engine resolves only on `evenMoneyOfferHandKey` and validates natural-blackjack offer hand |
+| **V2** | `handleDealNextCard`, `handleDrawBank`, `handleShuffleFresh` mutated local protocol state without `onlineDispatch` guard; DealerBlock showed Card/Draw online | Early-return when `onlineDispatch` is set; panel gates `initialDealManual` / `bankDrawManual` off when online |
+| **V3** | Reveal queue could stall indefinitely with pending cards, blocking offline bank draw and controls | Display-only watchdog in `useSequentialCardReveal`: snap to target after bounded stuck steps or timeout; logs safe warning; no engine mutation |
 
 ## Files changed
 
-- `src/engine/blackjack/flowSettings.ts` — `getNextCardDelay`, `medium` + `custom` presets
-- `src/engine/blackjack/dealPacing.ts` — `scheduleNextCardReveal`
-- `src/engine/blackjack/dealing/cardRevealDisplay.ts` — unified delay
-- `src/hooks/useSequentialCardReveal.ts` — single scheduler
-- `src/components/useBlackjackTableFlow.ts` — reveal-gated bank draw; no bank timer
-- `src/components/BlackjackFlowSettings.tsx` — card deal speed + random; bank timer removed
-- `src/components/TableStakePanel.tsx` — turn timer removed
-- `src/components/DealerBlock.tsx` — speed cycle labels
-- `src/storage/settingsStorage.ts`, `src/engine/session/tableSetup.ts` — ignore legacy timer
-- Tests: `cardTimingEngine.test.ts` (new), `bankTurnPacing`, `dealTimingConsistency`, others updated
-- `docs/SXM_MASTER_SPEC.md`, `docs/CHANGE_LOG.md`
+- `src/engine/blackjack/applyBlackjackAction.ts`
+- `src/engine/blackjack/naturalBlackjack.ts`
+- `src/components/useBlackjackTableFlow.ts`
+- `src/components/BlackjackPanel.tsx`
+- `src/hooks/useSequentialCardReveal.ts`
+- `src/engine/blackjack/naturalBlackjack.test.ts`
+- `src/components/useBlackjackTableFlow.test.ts`
+- `src/engine/blackjack/dealTimingConsistency.test.ts`
 
-## Targeted test results
+## Tests added/updated
 
-Run: `npx vitest run src/engine/blackjack/cardTimingEngine.test.ts src/engine/blackjack/bankTurnPacing.test.ts src/engine/blackjack/dealTimingConsistency.test.ts src/engine/blackjack/dealPacing.test.ts src/engine/blackjack/flowSettings.test.ts --reporter=verbose`
+- `naturalBlackjack.test.ts` — crafted mismatched `handKey` in `takeEvenMoney` settles offer hand only
+- `useBlackjackTableFlow.test.ts` — online guards + manual control hiding
+- `dealTimingConsistency.test.ts` — watchdog presence in reveal hook
 
-## Spec discipline
+## Validation run
 
-Checked/updated `SXM_MASTER_SPEC.md` and `CHANGE_LOG.md`.
+| Tier | Command | Result |
+|------|---------|--------|
+| Targeted | `npx vitest run src/engine/blackjack/naturalBlackjack.test.ts src/engine/blackjack/insurancePhase.test.ts` | **Run** — 16 passed |
+| Targeted | `npx vitest run src/components/useBlackjackTableFlow.test.ts src/components/bankAutomationGate.test.ts` | **Run** — 9 passed |
+| Targeted | `npx vitest run src/engine/blackjack/dealing/cardRevealGameplay.test.ts src/engine/blackjack/dealTimingConsistency.test.ts` | **Run** — 12 passed |
+| Targeted | `npx vitest run src/components/blackjackStabilityContracts.test.tsx` | **Run** — 17 passed |
+| Full suite | `npx vitest run --reporter=dot --pool=forks --testTimeout=10000` | **Run** — 347 files, 2473 passed, 5 skipped |
+| Build | `npm run build` | **Run** — success |
+
+## Architecture impact
+
+Minimal, localized to canonical-risk boundaries. No new routes, no poker/zilch/lobby/styling changes.
+
+## Deploy readiness
+
+Build green; full test suite green. Safe to deploy after review.
+
+**Spec discipline:** checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no spec update required (security/guard fixes only, behavior now matches documented even-money authority).

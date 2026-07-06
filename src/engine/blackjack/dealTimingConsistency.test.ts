@@ -34,6 +34,8 @@ describe('deal timing — single canonical source', () => {
     const src = readFileSync(join(process.cwd(), 'src/hooks/useSequentialCardReveal.ts'), 'utf8');
     expect(src).toContain('scheduleNextCardReveal');
     expect(src).not.toContain('resolveCardRevealDelayMs');
+    expect(src).toContain('watchdog snap');
+    expect(src).toContain('REVEAL_WATCHDOG_MAX_STUCK_STEPS');
   });
 
   it('useBlackjackTableFlow does not pace bank draws locally', () => {

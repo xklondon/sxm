@@ -315,31 +315,40 @@ export function useBlackjackTableFlow(
   }, [actionPending, clearFlowError, onGameStateChange, onlineDispatch, reportFlowError]);
 
   const handleShuffleFresh = useCallback(() => {
+    if (onlineDispatch) {
+      return;
+    }
     setFlowError(null);
     try {
       onGameStateChange(shuffleFreshShoeOnState(gameStateRef.current));
     } catch (err) {
       setFlowError(err instanceof Error ? err.message : 'Cannot shuffle');
     }
-  }, [onGameStateChange]);
+  }, [onGameStateChange, onlineDispatch]);
 
   const handleDealNextCard = useCallback(() => {
+    if (onlineDispatch) {
+      return;
+    }
     setFlowError(null);
     try {
       onGameStateChange(dealNextInitialCardOnState(gameStateRef.current));
     } catch (err) {
       setFlowError(err instanceof Error ? err.message : 'Cannot deal card');
     }
-  }, [onGameStateChange]);
+  }, [onGameStateChange, onlineDispatch]);
 
   const handleDrawBank = useCallback(() => {
+    if (onlineDispatch) {
+      return;
+    }
     setFlowError(null);
     try {
       onGameStateChange(drawBankCardOnState(gameStateRef.current));
     } catch (err) {
       setFlowError(err instanceof Error ? err.message : 'Bank draw failed');
     }
-  }, [onGameStateChange]);
+  }, [onGameStateChange, onlineDispatch]);
 
   /** Auto bank draw: engine decides WHAT; reveal queue decides WHEN. One card per reveal cycle. */
   useEffect(() => {

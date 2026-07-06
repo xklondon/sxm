@@ -20,6 +20,19 @@ import {
   type CardVisibilityCounts,
 } from '../engine/blackjack/dealing/cardRevealDisplay';
 import { scheduleNextCardReveal } from '../engine/blackjack/dealPacing';
+import { getNextCardDelay } from '../engine/blackjack/flowSettings';
+import { log } from '../utils/logger';
+
+/** Max reveal steps with no progress before display-only watchdog snap. */
+export const REVEAL_WATCHDOG_MAX_STUCK_STEPS = 5;
+
+/** Bounded ms cap for reveal watchdog (display-only snap). */
+export const REVEAL_WATCHDOG_MAX_MS = 15_000;
+
+export function computeRevealWatchdogTimeoutMs(state: GameState): number {
+  const perStep = getNextCardDelay(state);
+  return Math.min(REVEAL_WATCHDOG_MAX_MS, perStep * REVEAL_WATCHDOG_MAX_STUCK_STEPS);
+}
 
 function countsEqual(a: CardVisibilityCounts, b: CardVisibilityCounts): boolean {
   if (a.dealer !== b.dealer) {
@@ -177,6 +190,26 @@ export function useSequentialCardReveal(
     setIsRevealing(true);
 
     void (async () => {
+      let stuckSteps = 0;
+      const watchdogStartedAt = Date.now();
+
+      const snapRevealToTarget = (
+        authoritative: GameState,
+        target: CardVisibilityCounts,
+        reason: 'watchdog-steps' | 'watchdog-timeout',
+      ) => {
+        visibleRef.current = target;
+        setDisplayState(applyCardVisibility(authoritative, target));
+        setIsRevealing(false);
+        setActiveHandRevealComplete(computeActiveHandRevealComplete(authoritative, target, pacedReveal));
+        log.warn('[cardReveal] watchdog snap — reveal queue stalled', {
+          reason,
+          sessionId: authoritative.session.id,
+          round: authoritative.session.currentRound,
+          pendingCards: totalCardCount(target) - totalCardCount(visibleRef.current),
+        });
+      };
+
       while (runIdRef.current === runId) {
         const authoritative = gameStateRef.current;
         const authoritativeTarget = maxVisibilityForRound(authoritative.blackjack);
@@ -199,6 +232,14 @@ export function useSequentialCardReveal(
           break;
         }
 
+        if (
+          hasPendingCardReveal(visible, authoritativeTarget) &&
+          Date.now() - watchdogStartedAt >= computeRevealWatchdogTimeoutMs(authoritative)
+        ) {
+          snapRevealToTarget(authoritative, authoritativeTarget, 'watchdog-timeout');
+          break;
+        }
+
         const round = authoritative.blackjack;
         const stepped = round
           ? nextSequentialRevealStep(visible, authoritativeTarget, round, round.status)
@@ -214,6 +255,16 @@ export function useSequentialCardReveal(
           if (!hasPendingCardReveal(visible, authoritativeTarget)) {
             break;
           }
+          stuckSteps += 1;
+          if (
+            stuckSteps >= REVEAL_WATCHDOG_MAX_STUCK_STEPS &&
+            !isStagedInitialDeal(authoritative.blackjackFlowSettings.initialDealMode)
+          ) {
+            snapRevealToTarget(authoritative, authoritativeTarget, 'watchdog-steps');
+            break;
+          }
+        } else {
+          stuckSteps = 0;
         }
 
         visible = stepped ?? visible;
@@ -222,6 +273,7 @@ export function useSequentialCardReveal(
         setActiveHandRevealComplete(
           computeActiveHandRevealComplete(authoritative, visible, pacedReveal),
         );
+
         if (!isStagedInitialDeal(authoritative.blackjackFlowSettings.initialDealMode)) {
           await scheduleNextCardReveal(authoritative);
         }

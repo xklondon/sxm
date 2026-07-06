@@ -1371,8 +1371,8 @@ export function BlackjackPanel({
     dealActionPending,
     nextRoundPending,
     engineStatus,
-    initialDealManual: initialDealStaged,
-    bankDrawManual: flowSettings.bankDrawMode === 'manual',
+    initialDealManual: initialDealStaged && !onlineDispatch,
+    bankDrawManual: flowSettings.bankDrawMode === 'manual' && !onlineDispatch,
     bankInfo: (
       <TableInfoBar
         gameState={gameState}

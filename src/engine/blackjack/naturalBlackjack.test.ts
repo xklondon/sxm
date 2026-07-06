@@ -11,6 +11,7 @@ import {
   waitForBlackjackPayoutOnState,
   resolvePendingNaturalsAfterDealerPeek,
 } from './naturalBlackjack';
+import { applyBlackjackActionToState } from './applyBlackjackAction';
 import { shouldOfferEvenMoney } from './protocols/activeRules';
 import { getCardById } from '../deck/deck';
 import { cardsFromIds } from './hand';
@@ -129,5 +130,24 @@ describe('even money — player natural vs dealer Ace/10', () => {
       (h) => h.actionStatus === 'blackjack',
     );
     expect(naturals.length).toBe(2);
+  });
+
+  it('applyBlackjackAction takeEvenMoney ignores crafted handKey and settles only the offer hand', () => {
+    let state = resolveNaturalsAfterInitialDeal(naturalDealState('K', true));
+    const offerKey = state.blackjack!.evenMoneyOfferHandKey!;
+    const otherKey = Object.keys(state.blackjack!.playerHands).find((k) => k !== offerKey)!;
+    expect(otherKey).toBeTruthy();
+    expect(state.blackjack!.playerHands[otherKey]!.naturalSettled).toBeFalsy();
+
+    const ownerId = state.tableMeta.ownerPersonId!;
+    state = applyBlackjackActionToState(state, 'takeEvenMoney', {
+      personId: ownerId,
+      payload: { handKey: otherKey },
+      resolveBankAuto: false,
+    });
+
+    expect(state.blackjack?.playerHands[offerKey]?.naturalSettled).toBe(true);
+    expect(state.blackjack?.playerHands[otherKey]?.naturalSettled).toBeFalsy();
+    expect(state.blackjack?.evenMoneyOfferHandKey).toBe(otherKey);
   });
 });
