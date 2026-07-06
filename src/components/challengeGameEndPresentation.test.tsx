@@ -176,9 +176,9 @@ describe('challenge game end presentation', () => {
 
   it('orders game-over sections: ledger row, IOU row, then Start New Game', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/GameOverActionOverlay.tsx'), 'utf8');
-    const ledgerIdx = src.indexOf('bj-game-over__action-row');
-    const iouIdx = src.indexOf('Create IOU');
-    const actionsIdx = src.indexOf('bj-game-over__actions');
+    const ledgerIdx = src.indexOf("'Add to Ledger'");
+    const iouIdx = src.indexOf('<span>Create IOU</span>');
+    const actionsIdx = src.indexOf('<div className="bj-game-over__actions">');
     expect(ledgerIdx).toBeGreaterThan(-1);
     expect(iouIdx).toBeGreaterThan(ledgerIdx);
     expect(actionsIdx).toBeGreaterThan(iouIdx);

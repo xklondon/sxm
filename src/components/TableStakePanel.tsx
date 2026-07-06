@@ -716,7 +716,6 @@ export function TableStakePanel({
     advancedOpen,
     naturalDealing,
     dealSpeedPreset,
-    cardTimerPreset: 0,
     bankDrawAuto,
     inviteNote,
   ]);
