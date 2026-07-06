@@ -269,7 +269,34 @@ export function getCardViewHeroBoxId(
   if (activeBoxId) {
     return activeBoxId;
   }
+  if (isRoundCompletePhase(phase) || isBankPhase(phase) || isDealingPhase(phase)) {
+    return selectedSeatId ?? focusBoxId ?? null;
+  }
   return selectedSeatId ?? focusBoxId ?? null;
+}
+
+function resolveSettledHandKeyOnBox(
+  round: BlackjackRound,
+  heroBoxId: string,
+): string | null {
+  const handsOnBox = Object.entries(round.playerHands)
+    .filter(([handKey, hand]) => {
+      if (parseBlackjackHandKey(handKey).playerId !== heroBoxId) {
+        return false;
+      }
+      return hand.cardIds.filter(Boolean).length > 0;
+    })
+    .sort(
+      ([keyA], [keyB]) =>
+        parseBlackjackHandKey(keyB).handIndex - parseBlackjackHandKey(keyA).handIndex,
+    );
+
+  if (handsOnBox.length === 0) {
+    return null;
+  }
+
+  const withOutcome = handsOnBox.find(([handKey]) => round.outcomes?.[handKey]);
+  return withOutcome?.[0] ?? handsOnBox[0]![0];
 }
 
 /** Hand key for the hero box — active turn hand during play; primary hand otherwise. */
@@ -286,7 +313,19 @@ export function getCardViewHeroHandKey(
     return heroHandKeyOverride;
   }
   if (isPlayerTurnPhase(phase) && round?.activeHandKey) {
-    return round.activeHandKey;
+    const { playerId } = parseBlackjackHandKey(round.activeHandKey);
+    if (playerId === heroBoxId) {
+      return round.activeHandKey;
+    }
+  }
+  if (round) {
+    const settledHandKey = resolveSettledHandKeyOnBox(round, heroBoxId);
+    if (
+      settledHandKey &&
+      (isRoundCompletePhase(phase) || isBankPhase(phase) || isDealingPhase(phase))
+    ) {
+      return settledHandKey;
+    }
   }
   return `${heroBoxId}:0`;
 }

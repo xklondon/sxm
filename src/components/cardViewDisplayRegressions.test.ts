@@ -8,8 +8,17 @@ import { createBlackjackPlayerHand } from '../types/blackjack';
 import { BlackjackPanel } from './BlackjackPanel';
 import { claimBoxSlot } from '../engine/session';
 import { blackjackHandKey, addChipToBoxStake } from '../engine/blackjack';
-import { tableAfterStartPlaying, boxPlayerId, findCardId } from '../engine/blackjack/sanity/fixtures';
+import { tableAfterStartPlaying, tableWithClaimedBox, boxPlayerId, findCardId } from '../engine/blackjack/sanity/fixtures';
+import { completeBankingOnState, placeBlackjackBetOnState, startBlackjackRound } from '../engine/blackjack/gameState';
+import { buildTableInfoDisplay } from './tableInfoDisplay';
+import { derivePlayerBalanceFromLedger } from '../engine/ledger/ledger';
 import { TABLE_UX } from './tableUxContract';
+import {
+  getCardViewHeroBoxId,
+  getCardViewHeroHandKey,
+  showHeroPlayerCards,
+} from './blackjackViewPhase';
+import { getBlackjackProtocolPhase } from '../engine/blackjack/protocol';
 import {
   CARD_VIEW_HERO_VALUE_CLASS,
   CARD_VIEW_SHELL_VERTICAL_ORDER,
@@ -139,6 +148,126 @@ function assertHeroBeforeActions(html: string, expectHeroValue: boolean): void {
   }
   expect(html.indexOf('bj-table-zone--hero-value')).toBe(-1);
 }
+
+function resolvedRoundCompleteState(view: 'full' | 'card'): GameState {
+  const playing = playingState(view);
+  const box1 = boxPlayerId(playing, 1)!;
+  const handKey = blackjackHandKey(box1, 0);
+  return {
+    ...playing,
+    selectedSeatId: box1,
+    tableMeta: {
+      ...playing.tableMeta,
+      awaitingNextRound: true,
+      bettingLocked: true,
+    },
+    blackjack: {
+      ...playing.blackjack!,
+      status: 'resolved',
+      activeHandKey: null,
+      activePlayerId: null,
+      isSettled: true,
+      outcomes: { [handKey]: 'win' },
+      resultMessages: { [handKey]: 'Win' },
+    },
+  };
+}
+
+describe('Card View hero display across phases', () => {
+  it('shows hero hand during player-turns', () => {
+    const state = playingState('card');
+    const phase = getBlackjackProtocolPhase(state);
+    const box1 = boxPlayerId(state, 1)!;
+    const handKey = blackjackHandKey(box1, 0);
+    const heroBoxId = getCardViewHeroBoxId(phase, box1, box1, box1);
+    const heroHandKey = getCardViewHeroHandKey(phase, state.blackjack, heroBoxId);
+    expect(heroHandKey).toBe(handKey);
+    expect(showHeroPlayerCards(phase, false, 2)).toBe(true);
+  });
+
+  it('keeps completed hero hand when activeHandKey is null at round-complete', () => {
+    const state = resolvedRoundCompleteState('card');
+    const phase = getBlackjackProtocolPhase(state);
+    const box1 = boxPlayerId(state, 1)!;
+    const handKey = blackjackHandKey(box1, 0);
+    const heroBoxId = getCardViewHeroBoxId(phase, null, box1, box1);
+    const heroHandKey = getCardViewHeroHandKey(phase, state.blackjack, heroBoxId);
+    expect(heroBoxId).toBe(box1);
+    expect(heroHandKey).toBe(handKey);
+    expect(state.blackjack?.playerHands[handKey]?.cardIds.filter(Boolean).length).toBe(2);
+    expect(showHeroPlayerCards(phase, false, 2)).toBe(true);
+  });
+
+  it('renders hero cards in Card View during resolved round-complete', () => {
+    simulatedWidth = 390;
+    const html = renderPanel(resolvedRoundCompleteState('card'));
+    const cardsZone = zoneSlice(html, 'bj-cards-area--hero', TABLE_UX.tableZoneActions);
+    expect(cardsZone).toContain('playing-card');
+    expect(cardsZone).toContain('data-bj-hero-card-count="2"');
+    expect(cardsZone).toContain('bj-card-outcome-marker--win');
+  });
+
+  it('shows active split hand on hero box during split turn', () => {
+    const state = playingState('card');
+    const box1 = boxPlayerId(state, 1)!;
+    const splitKey = blackjackHandKey(box1, 1);
+    const splitState: GameState = {
+      ...state,
+      blackjack: {
+        ...state.blackjack!,
+        activeHandKey: splitKey,
+        activePlayerId: box1,
+        playerHands: {
+          ...state.blackjack!.playerHands,
+          [splitKey]: {
+            ...createBlackjackPlayerHand(box1, 1, true),
+            cardIds: state.blackjack!.playerHands[blackjackHandKey(box1, 0)]!.cardIds,
+            currentBet: 25,
+            actionStatus: 'acting',
+          },
+        },
+        splitCounts: { [box1]: 1 },
+      },
+    };
+    const phase = getBlackjackProtocolPhase(splitState);
+    const heroHandKey = getCardViewHeroHandKey(phase, splitState.blackjack, box1);
+    expect(heroHandKey).toBe(splitKey);
+  });
+});
+
+describe('bank bankruptcy game-over', () => {
+  it('bankrupts bank and ends table after all-in player win', () => {
+    let state = tableWithClaimedBox(1);
+    const boxId = boxPlayerId(state, 1)!;
+    const bankId = state.session.bankPlayerId!;
+    const deck = state.deck!;
+    state = startBlackjackRound(state);
+    state = placeBlackjackBetOnState(state, boxId, 500);
+    state = {
+      ...state,
+      blackjack: {
+        ...state.blackjack!,
+        status: 'banking',
+        dealerCardIds: [findCardId(deck, '10'), findCardId(deck, '8')],
+        dealerHoleHidden: false,
+        playerHands: {
+          [`${boxId}:0`]: {
+            ...state.blackjack!.playerHands[`${boxId}:0`]!,
+            cardIds: [findCardId(deck, 'K'), findCardId(deck, '9')],
+            currentBet: 500,
+            actionStatus: 'stood',
+          },
+        },
+      },
+    };
+    state = completeBankingOnState(state);
+    expect(state.tableMeta.gameStatus).toBe('ended');
+    expect(state.tableMeta.awaitingNextRound).toBe(false);
+    expect(derivePlayerBalanceFromLedger(bankId, state.ledger)).toBeLessThanOrEqual(0);
+    const bankDisplay = buildTableInfoDisplay(state, state.tableMeta.ownerPersonId);
+    expect(bankDisplay.bankChips).toBe(0);
+  });
+});
 
 describe('Card View display regressions', () => {
   it('uses one shared shell path for actions, boxes, and tray', () => {

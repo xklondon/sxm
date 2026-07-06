@@ -247,7 +247,7 @@ export function runCardViewPhaseChecks(): SanitySuiteResult {
       getCardViewHeroHandKey(
         'player',
         { ...actingRound(twoBoxState, box2, [findCardId(twoBoxState.deck!, '10'), findCardId(twoBoxState.deck!, '9')], 25), activeHandKey: `${box2}:0` },
-        box1,
+        box2,
       ) === `${box2}:0`,
     ),
   );

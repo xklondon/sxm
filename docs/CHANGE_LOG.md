@@ -11,6 +11,12 @@ Every significant feature change must update **both**:
 
 before the work is considered complete. This rule is also stated in `.cursorrules`.
 
+## 2026-07-06 — Blackjack reveal order, Card View hero, bank game-over regressions
+
+- **Reveal:** Initial-deal ordered reveal follows the canonical plan from the round even when authoritative counts grow (online bank-resolve). Watchdog snap is progressive in plan order.
+- **Card View:** Hero keeps viewer/settled hand visible when `activeHandKey` is null at round-complete; `selectedSeatId` participates in hero box selection.
+- **Settlement:** Banking settlement is engine-immediate; game-over re-evaluated when a settled round lacks `gameStatus: ended`.
+
 ---
 
 ---

@@ -9,6 +9,7 @@ import {
   cardRevealScopeKey,
   emptyCardVisibility,
   hasPendingCardReveal,
+  hasPendingInitialDealReveal,
   isActiveHandRevealComplete,
   isStaleHandVisibility,
   maxVisibilityForRound,
@@ -198,15 +199,33 @@ export function useSequentialCardReveal(
         target: CardVisibilityCounts,
         reason: 'watchdog-steps' | 'watchdog-timeout',
       ) => {
-        visibleRef.current = target;
-        setDisplayState(applyCardVisibility(authoritative, target));
-        setIsRevealing(false);
-        setActiveHandRevealComplete(computeActiveHandRevealComplete(authoritative, target, pacedReveal));
+        const round = authoritative.blackjack;
+        let visible = visibleRef.current;
+        const maxSteps =
+          reason === 'watchdog-timeout'
+            ? Math.max(REVEAL_WATCHDOG_MAX_STUCK_STEPS, totalCardCount(target) - totalCardCount(visible))
+            : 1;
+        for (let i = 0; i < maxSteps; i += 1) {
+          if (countsEqual(visible, target)) {
+            break;
+          }
+          const stepped = round
+            ? nextSequentialRevealStep(visible, target, round, round.status)
+            : nextSequentialRevealStep(visible, target, null, undefined);
+          if (!stepped || countsEqual(stepped, visible)) {
+            break;
+          }
+          visible = stepped;
+        }
+        visibleRef.current = visible;
+        setDisplayState(applyCardVisibility(authoritative, visible));
+        setIsRevealing(!countsEqual(visible, target));
+        setActiveHandRevealComplete(computeActiveHandRevealComplete(authoritative, visible, pacedReveal));
         log.warn('[cardReveal] watchdog snap — reveal queue stalled', {
           reason,
           sessionId: authoritative.session.id,
           round: authoritative.session.currentRound,
-          pendingCards: totalCardCount(target) - totalCardCount(visibleRef.current),
+          pendingCards: totalCardCount(target) - totalCardCount(visible),
         });
       };
 
@@ -248,7 +267,7 @@ export function useSequentialCardReveal(
         if (!stepped) {
           if (
             round &&
-            shouldUseOrderedInitialReveal(round.status, visible, authoritativeTarget)
+            shouldUseOrderedInitialReveal(round, visible, authoritativeTarget)
           ) {
             break;
           }
@@ -258,7 +277,11 @@ export function useSequentialCardReveal(
           stuckSteps += 1;
           if (
             stuckSteps >= REVEAL_WATCHDOG_MAX_STUCK_STEPS &&
-            !isStagedInitialDeal(authoritative.blackjackFlowSettings.initialDealMode)
+            !isStagedInitialDeal(authoritative.blackjackFlowSettings.initialDealMode) &&
+            !(
+              round &&
+              hasPendingInitialDealReveal(visible, round)
+            )
           ) {
             snapRevealToTarget(authoritative, authoritativeTarget, 'watchdog-steps');
             break;

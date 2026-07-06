@@ -38,7 +38,7 @@ function simulateOrderedReveal(
   let guard = 0;
   while (
     guard < 30 &&
-    shouldUseOrderedInitialReveal(roundStatus, visible, target)
+    shouldUseOrderedInitialReveal(round, visible, target)
   ) {
     guard += 1;
     let nextVisible: CardVisibilityCounts | null = null;
@@ -133,5 +133,40 @@ describe('natural reveal order', () => {
     const handKey = blackjackHandKey(boxId, 0);
     const labels = simulateOrderedReveal(round, 'player-turns');
     expect(labels).toEqual([`${handKey}:0`, 'D0', `${handKey}:1`, 'D1']);
+  });
+
+  it('online bank-resolve jump keeps player cards before dealer catch-up', () => {
+    const handKey = 'p:0';
+    const round = {
+      status: 'resolved',
+      dealerCardIds: ['d1', 'd2', 'd3', 'd4'],
+      dealerHoleHidden: false,
+      activeHandKey: null,
+      activePlayerId: null,
+      playerHands: {
+        [handKey]: {
+          cardIds: ['a', 'b'],
+          playerId: 'p',
+          handIndex: 0,
+          currentBet: 10,
+          actionStatus: 'done',
+        },
+      },
+      initialDealHandKeys: [handKey],
+      insuranceOfferPending: false,
+      evenMoneyOfferHandKey: null,
+      splitCounts: {},
+      outcomes: { [handKey]: 'win' },
+      isSettled: true,
+    } as unknown as import('../../../types/blackjack').BlackjackRound;
+    const visible = { dealer: 0, hands: {} };
+    const target = {
+      dealer: 4,
+      hands: { [handKey]: 2 },
+    };
+    expect(shouldUseOrderedInitialReveal(round, visible, target)).toBe(true);
+    const step = nextSequentialRevealStep(visible, target, round, 'resolved');
+    expect(step?.hands[handKey]).toBe(1);
+    expect(step?.dealer).toBe(0);
   });
 });

@@ -26,6 +26,7 @@ import {
   canDealBlackjack,
   logDealAudit,
 } from '../engine/session/canDealBlackjack';
+import { applyTableGameEndIfNeeded } from '../engine/session/tableGameEnd';
 import { isNaturalInitialDeal, isStagedInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import {
   getGameOverMessage,
@@ -372,6 +373,16 @@ export function useBlackjackTableFlow(
       if (status === 'bank-turn' && !cardRevealComplete) {
         setBankUiMessage('Bank thinking…');
       }
+      if (status === 'banking') {
+        setBankUiMessage(getBankFinalMessage(gameStateRef.current));
+        try {
+          onGameStateChange(completeBankingOnState(gameStateRef.current));
+        } catch (err) {
+          setFlowError(err instanceof Error ? err.message : 'Banking failed');
+        } finally {
+          setBankUiMessage(null);
+        }
+      }
       return;
     }
 
@@ -415,7 +426,7 @@ export function useBlackjackTableFlow(
     if (flow.bankDrawMode === 'auto') {
       return;
     }
-    if (round?.status !== 'banking' || !cardRevealComplete) {
+    if (round?.status !== 'banking') {
       return;
     }
     setBankUiMessage(getBankFinalMessage(gameStateRef.current));
@@ -427,6 +438,28 @@ export function useBlackjackTableFlow(
       setBankUiMessage(null);
     }
   }, [round?.status, flow.bankDrawMode, onGameStateChange, onlineDispatch, canDriveTableAutomation, cardRevealComplete]);
+
+  /** Re-evaluate game end when a settled round arrives without tableMeta.gameStatus ended. */
+  useEffect(() => {
+    const current = gameStateRef.current;
+    const settledRound = current.blackjack;
+    if (!settledRound?.isSettled || settledRound.status !== 'resolved') {
+      return;
+    }
+    if (current.tableMeta.gameStatus === 'ended') {
+      return;
+    }
+    const next = applyTableGameEndIfNeeded(current);
+    if (next.tableMeta.gameStatus !== current.tableMeta.gameStatus) {
+      onGameStateChange(next);
+    }
+  }, [
+    gameState.blackjack?.isSettled,
+    gameState.blackjack?.status,
+    gameState.tableMeta.gameStatus,
+    gameState.ledger.entries.length,
+    onGameStateChange,
+  ]);
 
   /** Auto-stand when caller play-flow threshold is already met (e.g. after deal or turn advance). */
   useEffect(() => {

@@ -36,7 +36,7 @@ function simulateNaturalRevealLabels(
   let guard = 0;
   while (
     guard < 30 &&
-    shouldUseOrderedInitialReveal(round.status, visible, target)
+    shouldUseOrderedInitialReveal(round, visible, target)
   ) {
     guard += 1;
     let nextVisible = null;

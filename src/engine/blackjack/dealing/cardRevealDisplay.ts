@@ -283,12 +283,22 @@ export function shouldSnapCardRevealOnMount(state: GameState): boolean {
   return false;
 }
 
+function cappedInitialDealTarget(target: CardVisibilityCounts): CardVisibilityCounts {
+  return {
+    dealer: Math.min(target.dealer, 2),
+    hands: Object.fromEntries(
+      Object.entries(target.hands).map(([handKey, count]) => [handKey, Math.min(count, 2)]),
+    ),
+  };
+}
+
 /** Reveal one gameplay card (hit, double, bank draw) toward target visibility. */
 export function nextGameplayRevealStep(
   visible: CardVisibilityCounts,
   target: CardVisibilityCounts,
 ): CardVisibilityCounts | null {
-  if (isInitialDealVisibilityCounts(target) && !areAllPlayerInitialCardsRevealed(visible, target)) {
+  const initialTarget = cappedInitialDealTarget(target);
+  if (!areAllPlayerInitialCardsRevealed(visible, initialTarget)) {
     const handKeys = [
       ...new Set([...Object.keys(visible.hands), ...Object.keys(target.hands)]),
     ];
@@ -304,9 +314,8 @@ export function nextGameplayRevealStep(
     }
   }
   if (
-    isInitialDealVisibilityCounts(target) &&
-    visible.dealer < target.dealer &&
-    !areAllPlayerInitialCardsRevealed(visible, target)
+    visible.dealer < Math.min(target.dealer, 2) &&
+    !areAllPlayerInitialCardsRevealed(visible, initialTarget)
   ) {
     return null;
   }
@@ -347,12 +356,45 @@ export function hasPendingCardReveal(
   return totalCardCount(target) > totalCardCount(visible);
 }
 
-/** Ordered initial-deal reveal while catching up the first two cards per hand. */
+/** Visibility target for the canonical initial-deal plan (independent of bank-draw growth). */
+export function initialDealRevealTarget(round: BlackjackRound): CardVisibilityCounts {
+  return countsFromRevealSteps(buildInitialRevealSteps(round));
+}
+
+/** True while any initial-deal plan step remains unrevealed. */
+export function hasPendingInitialDealReveal(
+  visible: CardVisibilityCounts,
+  round: BlackjackRound,
+): boolean {
+  const planTarget = initialDealRevealTarget(round);
+  if (!hasPendingCardReveal(visible, planTarget)) {
+    return false;
+  }
+  if (!areAllPlayerInitialCardsRevealed(visible, planTarget)) {
+    if (totalCardCount(visible) === 0) {
+      return true;
+    }
+    return isInitialDealVisibilityCounts(maxVisibilityForRound(round));
+  }
+  if (!isInitialDealVisibilityCounts(maxVisibilityForRound(round))) {
+    return false;
+  }
+  return true;
+}
+
+/** Ordered initial-deal reveal while catching up the canonical two-card plan. */
 export function shouldUseOrderedInitialReveal(
-  _roundStatus: BlackjackRound['status'] | undefined,
+  roundOrStatus: BlackjackRound | BlackjackRound['status'] | null | undefined,
   visible: CardVisibilityCounts,
   target: CardVisibilityCounts,
 ): boolean {
+  const round =
+    roundOrStatus && typeof roundOrStatus === 'object' && 'playerHands' in roundOrStatus
+      ? roundOrStatus
+      : null;
+  if (round) {
+    return hasPendingInitialDealReveal(visible, round);
+  }
   if (!hasPendingCardReveal(visible, target) || !isInitialDealVisibilityCounts(target)) {
     return false;
   }
@@ -364,13 +406,13 @@ export function nextSequentialRevealStep(
   visible: CardVisibilityCounts,
   target: CardVisibilityCounts,
   round: BlackjackRound | null,
-  roundStatus: BlackjackRound['status'] | undefined,
+  _roundStatus: BlackjackRound['status'] | undefined,
 ): CardVisibilityCounts | null {
   const workingVisible = isStaleHandVisibility(visible, target)
     ? emptyCardVisibility()
     : visible;
 
-  if (round && shouldUseOrderedInitialReveal(roundStatus, workingVisible, target)) {
+  if (round && shouldUseOrderedInitialReveal(round, workingVisible, target)) {
     const steps = buildInitialRevealSteps(round);
     for (const step of steps) {
       if (

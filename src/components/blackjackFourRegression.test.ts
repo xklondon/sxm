@@ -249,7 +249,7 @@ describe('player natural blackjack reveal order', () => {
 
     const target = maxVisibilityForRound(round);
     expect(
-      shouldUseOrderedInitialReveal(round.status, emptyCardVisibility(), target),
+      shouldUseOrderedInitialReveal(round, emptyCardVisibility(), target),
     ).toBe(true);
 
     const labels = simulateRevealLabels(round, round.status);

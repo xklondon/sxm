@@ -27,6 +27,8 @@ import {
   isBettingPhase,
   isDealingPhase,
   isPlayerTurnPhase,
+  isRoundCompletePhase,
+  isBankPhase,
   showBettingMainStage,
   showEvenMoneyControls,
   showInsuranceControls,
@@ -122,7 +124,7 @@ export function BlackjackCardView({
   const heroBoxId = getCardViewHeroBoxId(
     protocolPhase,
     activeBoxId,
-    null,
+    gameState.selectedSeatId ?? null,
     focusBoxId ?? null,
   );
   const heroHandKey = getCardViewHeroHandKey(
@@ -159,8 +161,15 @@ export function BlackjackCardView({
 
   const logicalCardIds = (logicalHand?.cardIds ?? []).filter((id) => id.length > 0);
   const visualCardIds = (visualHand?.cardIds ?? []).filter((id) => id.length > 0);
-  /** Reveal may lag authoritative state — show dealt cards once engine has them. */
-  const heroCardIds = visualCardIds;
+  const keepLogicalHeroWhenMasked =
+    isRoundCompletePhase(protocolPhase) || isBankPhase(protocolPhase);
+  /** Reveal may lag authoritative state — fall back to logical only after round play settles. */
+  const heroCardIds =
+    visualCardIds.length > 0
+      ? visualCardIds
+      : keepLogicalHeroWhenMasked
+        ? logicalCardIds
+        : visualCardIds;
 
   const heroDisplayValue =
     heroHandKey !== null ? getDisplayedHandValue(deck, round, heroHandKey) : null;
