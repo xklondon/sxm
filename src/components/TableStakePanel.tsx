@@ -175,7 +175,6 @@ export function TableStakePanel({
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [naturalDealing, setNaturalDealing] = useState(isNaturalInitialDeal(flow.initialDealMode));
   const [dealSpeedPreset, setDealSpeedPreset] = useState<DealSpeedPreset>(flow.dealSpeedPreset);
-  const [cardTimerPreset, setCardTimerPreset] = useState(flow.cardTimerPreset);
   const [bankDrawAuto, setBankDrawAuto] = useState(flow.bankDrawMode === 'auto');
   const [submitting, setSubmitting] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
@@ -265,7 +264,7 @@ export function TableStakePanel({
           protocolId,
           naturalDealing,
           dealSpeedPreset,
-          cardTimerPreset,
+          cardTimerPreset: 0,
           bankDrawAuto,
           tableMode: 'practice',
           invitedEmails: [],
@@ -284,7 +283,7 @@ export function TableStakePanel({
         protocolId,
         naturalDealing,
         dealSpeedPreset,
-        cardTimerPreset,
+        cardTimerPreset: 0,
         bankDrawAuto,
         tableMode: 'challenge',
         invitedEmails,
@@ -351,7 +350,7 @@ export function TableStakePanel({
       protocolId,
       naturalDealing,
       dealSpeedPreset,
-      cardTimerPreset,
+      cardTimerPreset: 0,
       bankDrawAuto,
     };
   }
@@ -684,7 +683,7 @@ export function TableStakePanel({
       advancedOpen,
       naturalDealing,
       dealSpeedPreset,
-      cardTimerPreset,
+      cardTimerPreset: 0,
       bankDrawAuto,
       inviteNote,
     });
@@ -717,7 +716,7 @@ export function TableStakePanel({
     advancedOpen,
     naturalDealing,
     dealSpeedPreset,
-    cardTimerPreset,
+    cardTimerPreset: 0,
     bankDrawAuto,
     inviteNote,
   ]);
@@ -756,29 +755,16 @@ export function TableStakePanel({
               Natural dealing
             </label>
             <label className="table-stake-panel__field">
-              <span>Deal speed</span>
+              <span>Card deal speed</span>
               <select
                 className="table-stake-panel__input"
                 value={dealSpeedPreset}
                 onChange={(e) => setDealSpeedPreset(e.target.value as DealSpeedPreset)}
               >
-                <option value="fast">Fast (1s)</option>
-                <option value="normal">Normal (3s)</option>
-                <option value="slow">Slow (5s)</option>
-              </select>
-            </label>
-            <label className="table-stake-panel__field">
-              <span>Turn timer</span>
-              <select
-                className="table-stake-panel__input"
-                value={cardTimerPreset}
-                onChange={(e) => setCardTimerPreset(Number(e.target.value) as typeof cardTimerPreset)}
-              >
-                <option value={0}>Off</option>
-                <option value={5}>5 sec</option>
-                <option value={10}>10 sec</option>
-                <option value={15}>15 sec</option>
-                <option value={30}>30 sec</option>
+                <option value="fast">1 sec</option>
+                <option value="medium">2 sec</option>
+                <option value="normal">3 sec</option>
+                <option value="slow">5 sec</option>
               </select>
             </label>
             <label className="table-stake-panel__option">

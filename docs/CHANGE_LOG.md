@@ -29,7 +29,30 @@ before the work is considered complete. This rule is also stated in `.cursorrule
 
 ---
 
-## 2026-07-05 — Blackjack canonical flow cleanup
+## 2026-07-06 — Blackjack canonical engine rule (spec)
+
+**Changes:** Documented WHAT/WHEN/HOW separation — engine vs timing vs reveal; prohibitions on display/timing altering protocol state, turn order, activeHandKey, settlement, authority, or permanently blocking progression.
+
+**Files:** `docs/SXM_MASTER_SPEC.md`
+
+---
+
+## 2026-07-06 — Remove separate bank timer; unified card timing engine
+
+**Changes:** `getNextCardDelay()` + `scheduleNextCardReveal()` as sole timing path; bank auto-draw gated on `cardRevealComplete` (no local bank sleeps); bank timer UI removed; card deal speed 1/2/3/5/custom + random timing in settings.
+
+**Files:** `flowSettings.ts`, `dealPacing.ts`, `cardRevealDisplay.ts`, `useSequentialCardReveal.ts`, `useBlackjackTableFlow.ts`, `BlackjackFlowSettings.tsx`, `TableStakePanel.tsx`, tests, `SXM_MASTER_SPEC.md`
+
+---
+
+## 2026-07-06 — Blackjack double fix + unified card deal speed
+
+**Changes:** Fixed 2× disabled on eligible hard-11 hands during dealer-hole reveal; canonical `resolveDoubleAvailabilityForHand` with `doubleBlockReason` on UI; per-staker exposure fix for co-staked boxes; unified global card interval (default 3000ms); deprecated separate bank timer for per-card pacing; optional random deal timing.
+
+**Files:** `validation.ts`, `blackjackActionContract.ts`, `BlackjackActionPanel.tsx`, `BlackjackPanel.tsx`, `useHandTransitionHold.ts`, `playerCommittedExposure.ts`, `flowSettings.ts`, tests, `SXM_MASTER_SPEC.md`
+
+---
+
 
 **Changes:** Single phase mapper (`dealEligibility` → `getBlackjackProtocolPhase`); offline hit/double/split use `activeHandKey` only; mobile Full Table split-host parity; reveal regression tests; co-staker split rule documented.
 
@@ -781,6 +804,13 @@ betting, ledger, auth, Zilch, or routing changes):
 - **Desktop Card View:** Hero hand value visible below cards (overflow fix); shell `BlackjackActionPanel` shares Full Table desktop action-zone tokens; third+ hero cards use `bj-phone-view__card-wrap--layered`.
 - **All views:** Player boxes show in-play hand total inside box; chip stacks hidden during play; betting phase unchanged.
 - **Tests:** `blackjackFinalLayoutFixes.test.ts`; frozen layout tests updated.
+
+---
+
+## 2026-07-06 — IOU handoff rejection diagnostics + game-over continue path
+
+- **Server:** Safe `[SXM][iou-handoff] remote attempt/rejected` logs (source, host, payload shape, HTTP status, nonce prefix); surfaces IOU `message`/`error` fields in API response instead of generic rejection when available.
+- **Game-over UX:** IOU failure keeps overlay open with error; **Continue without IOU** + uncheck path; buttons re-enable after pending clears.
 
 ---
 

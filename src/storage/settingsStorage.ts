@@ -134,29 +134,25 @@ export function mergeSettingsWithDefaults(partial?: Partial<PersistedSettings>):
 
         partial?.blackjackFlowSettings?.dealSpeedPreset ?? defaults.blackjackFlowSettings.dealSpeedPreset,
 
-      bankDrawMinDelayMs:
+      customDealDelayMs:
 
-        partial?.blackjackFlowSettings?.bankDrawMinDelayMs ?? defaults.blackjackFlowSettings.bankDrawMinDelayMs,
+        partial?.blackjackFlowSettings?.customDealDelayMs ?? defaults.blackjackFlowSettings.customDealDelayMs,
 
-      bankDrawMaxDelayMs:
+      randomDealTiming:
 
-        partial?.blackjackFlowSettings?.bankDrawMaxDelayMs ?? defaults.blackjackFlowSettings.bankDrawMaxDelayMs,
+        partial?.blackjackFlowSettings?.randomDealTiming ?? defaults.blackjackFlowSettings.randomDealTiming,
 
-      bankStandPauseMs:
+      randomDealMinMs:
 
-        partial?.blackjackFlowSettings?.bankStandPauseMs ?? defaults.blackjackFlowSettings.bankStandPauseMs,
+        partial?.blackjackFlowSettings?.randomDealMinMs ?? defaults.blackjackFlowSettings.randomDealMinMs,
 
-      bankingDisplayMs:
+      randomDealMaxMs:
 
-        partial?.blackjackFlowSettings?.bankingDisplayMs ?? defaults.blackjackFlowSettings.bankingDisplayMs,
+        partial?.blackjackFlowSettings?.randomDealMaxMs ?? defaults.blackjackFlowSettings.randomDealMaxMs,
 
-      cardTimerPreset:
+      cardTimerPreset: 0,
 
-        partial?.blackjackFlowSettings?.cardTimerPreset ??
-
-        (partial?.blackjackFlowSettings?.countdownSeconds as 0 | 5 | 10 | 15 | 30 | undefined) ??
-
-        defaults.blackjackFlowSettings.cardTimerPreset,
+      countdownSeconds: 0,
 
     }),
 

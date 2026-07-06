@@ -306,14 +306,21 @@ export function DealerBlock({
   );
 }
 
-export const DEAL_SPEED_CYCLE: DealSpeedPreset[] = ['fast', 'normal', 'slow'];
+export const DEAL_SPEED_CYCLE: DealSpeedPreset[] = ['fast', 'medium', 'normal', 'slow', 'custom'];
 
-export function dealSpeedDisplayLabel(preset: DealSpeedPreset): string {
+export function dealSpeedDisplayLabel(
+  preset: DealSpeedPreset,
+  customMs?: number,
+): string {
   switch (preset) {
     case 'fast':
       return '1s deal';
+    case 'medium':
+      return '2s deal';
     case 'slow':
       return '5s deal';
+    case 'custom':
+      return customMs != null ? `${Math.round(customMs / 1000)}s deal` : 'Custom deal';
     default:
       return '3s deal';
   }

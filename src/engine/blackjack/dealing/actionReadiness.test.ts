@@ -134,35 +134,29 @@ describe('action readiness — natural dealing ON', () => {
     ).toBe(true);
   });
 
-  it('uses configured deal speed per card reveal (not bank timer)', () => {
+  it('uses configured deal speed per card reveal (unified bank and player)', () => {
     const settings = normalizeFlowSettings({
       dealSpeedPreset: 'slow',
       cardTimerPreset: 15,
     });
     expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'initial-deal')).toBe(5000);
     expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'dealer')).toBe(5000);
-    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-turn-start')).toBe(
-      15000,
-    );
-    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-card-draw')).toBe(
-      15000,
-    );
+    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-turn-start')).toBe(5000);
+    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-card-draw')).toBe(5000);
   });
 });
 
-describe('bank timer — independent of natural dealing', () => {
-  it('uses cardTimerPreset for pre-bank delay', () => {
+describe('bank timer — deprecated for per-card timing', () => {
+  it('cardTimerPreset no longer overrides deal speed', () => {
     const settings = normalizeFlowSettings({ cardTimerPreset: 10, dealSpeedPreset: 'fast' });
-    expect(getBankTurnDelayMs(settings)).toBe(10000);
-    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-turn-start')).toBe(
-      10000,
-    );
+    expect(getBankTurnDelayMs(settings)).toBe(1000);
+    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-turn-start')).toBe(1000);
   });
 
-  it('bank timer 0 starts bank immediately (no pre-bank wait)', () => {
+  it('bank draws use global interval even when cardTimerPreset is 0', () => {
     const settings = normalizeFlowSettings({ cardTimerPreset: 0, dealSpeedPreset: 'slow' });
-    expect(getBankTurnDelayMs(settings)).toBe(0);
-    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-turn-start')).toBe(0);
+    expect(getBankTurnDelayMs(settings)).toBe(5000);
+    expect(getCardDealDelayMs({ blackjackFlowSettings: settings }, 'bank-turn-start')).toBe(5000);
   });
 
   it('does not gate player decision controls', () => {

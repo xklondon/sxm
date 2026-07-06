@@ -269,6 +269,21 @@ Row click expands details; **ReOpen** button required (no load-on-click).
 | **Canonical reducer** | `applyBlackjackActionToState` — used online and offline |
 | **UI** | `BlackjackPanel` — Full Table + Card View |
 
+### Blackjack canonical engine rule
+
+The engine decides **WHAT** happens.  
+The timing system decides **WHEN** it is shown.  
+The reveal layer decides **HOW** it is shown.
+
+No display, timing, animation, or reveal system may:
+
+- alter protocol state
+- alter turn order
+- alter `activeHandKey`
+- alter settlement
+- alter authority
+- block protocol progression permanently
+
 ### Built-in presets
 
 | ID | Name | Notes |
@@ -411,7 +426,8 @@ Host for start/randomise/confirm starter; current turn player for gameplay actio
 - **Single creation path:** browser UI → `POST /api/iou-handoff/create` (authenticated) → SXM server encrypts payload (AES-256-GCM) → `POST IOU_HANDOFF_CREATE_URL` with `{ source, handoff }`.
 - **Server-only env (canonical):** `IOU_HANDOFF_SOURCE` (default `sxm`), `IOU_HANDOFF_SECRET`, `IOU_HANDOFF_CREATE_URL`. Legacy `SXM_HANDOFF_*` names are **ignored**; startup logs missing canonical keys and rename hint when legacy vars are present.
 - **No client secrets:** no `VITE_*` handoff vars, no frontend encryption, no `/new?source=sxm&handoff=…` one-click path.
-- **Game-over UI:** `runGameOverCompleteAction` (`gameOverActionFlow.ts`) calls `createIouHandoff` before new-game reset or exit-table leave; IOU failure blocks proceed; duplicate/alreadySubmitted is non-fatal.
+- **Game-over UI:** `runGameOverCompleteAction` (`gameOverActionFlow.ts`) calls `createIouHandoff` before new-game reset or exit-table leave; IOU failure blocks proceed but overlay offers **Continue without IOU** / uncheck path; duplicate/alreadySubmitted is non-fatal.
+- **Remote diagnostics:** server logs safe handoff attempt/rejection fields (host, payload shape, HTTP status) — never secret or full ciphertext.
 - **Deprecated (tests only):** `buildGameEndIouHandoff` / `buildIouWalletNewUrl` — manual `/new?counterpartyEmail=…` prefill; not used for live handoff creation.
 
 ---
@@ -469,7 +485,7 @@ Protected boundaries so protocol, layout, dealing, and accounting cannot drift a
 
 | Boundary | Module | Rule |
 |----------|--------|------|
-| Protocol | `blackjackActionContract.ts` | Views use `resolveViewerActionPermission` + `resolvePlayerHandActionOptions`; no direct engine legality imports. |
+| Protocol | `blackjackActionContract.ts` | Views use `resolveViewerActionPermission` + `resolvePlayerHandActionOptions` (double via `resolveDoubleAvailabilityForHand` + `doubleBlockReason` on disabled 2×); no direct engine legality imports. |
 | Layout | `tableViewContract.ts`, `blackjackLayoutContract.ts` | **`docs/BLACKJACK_LAYOUT_CONTRACTS.md`** is the single layout source of truth; freeze flags in `blackjackLayoutContract.ts`. |
 | Dealing | `useSequentialCardReveal`, `blackjackDealingContract.ts` | One reveal queue; values via `getDisplayedHandValue`; controls gated until reveal ready. |
 | UI render | `blackjackUiRenderContract.ts` | Badges, command text, cloth-adjacent status, and decision overlays must pass reveal-gated selectors (`isHandVisiblyRevealed`, `resolveGatedCardAreaOutcomeMarker`, `gateCommandForReveal`) — never render raw engine result state before visual reveal. **Frozen** — do not modify unless user explicitly requests. |
@@ -528,6 +544,10 @@ Hero card size uses responsive `clamp()` tokens (`--bj-card-hero-card-width`, `-
 
 **Card View result hold:** After a hit that busts or triggers auto-stand, Card View keeps the hero on that hand/box for `CARD_VIEW_BUST_HOLD_MS` (3000ms) via `useHandTransitionHold` (Card View mode) once the dealt card is visible. Hit/Stay are disabled during the hold. Game state may advance immediately (especially online); presentation follows after the hold. Full Table uses deal-speed result hold timing, not the fixed 3s Card View hold.
 
+**Card deal pacing:** One timing engine — `getNextCardDelay()` / `scheduleNextCardReveal()` in `flowSettings.ts` + `dealPacing.ts`. Every card (player deal, dealer hole, hits, doubles, splits, bank draws) uses the same delay. Presets: 1s / 2s / 3s (default) / 5s / custom; optional random min/max. Legacy bank timer (`cardTimerPreset`) removed from UI and ignored. Auto bank play decides WHAT to draw; reveal queue decides WHEN.
+
+**Player action gating during reveal:** Full Table enables Hit/Double/Split when the **active hand** reveal is complete, even if dealer hole or other cards are still revealing (`useHandTransitionHold` — `activeHandRevealComplete`).
+
 **Player auto-stand (play flow):** Threshold checks use the best hand total for hard hands and the **minimum/hard total** when any Ace is present (e.g. soft A+8 does not auto-stand at auto-18; hard 10+8 does). **Split and Double block auto-stop** when legal — engine uses `shouldAutoStopPlayerHandForState` (same legality as `resolvePlayerHandActionOptions`). Implemented in `shouldAutoStandHand` / `processPlayFlowAutoStands`.
 
 **Dealer info layout (all views):**
@@ -563,7 +583,7 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 - **Take 1:1** — even-money only for clean natural blackjack vs Ace.
 - **Play vs Ace** — decline even-money or insurance (replaces “Wait for 3:2” / “No thanks”).
 - Ace-decision buttons: thin yellow border (`bj-table-actions__btn--ace`), single-line labels, compact width — same in Full Table and Card View.
-- **Double / split eligibility:** Same funding helper — action disabled when any actual staker cannot fund their proportional share. Execution uses full table `GameState` for funding (not stripped synthetic state). Split copies `stakerAmountsByPersonId` onto both post-split hands.
+- **Double / split eligibility:** Same funding helper — action disabled when any actual staker cannot fund their proportional share (`resolveDoubleAvailabilityForHand` returns `blockReason`, surfaced as disabled 2× `title`). Execution uses full table `GameState` for funding (not stripped synthetic state). Split copies `stakerAmountsByPersonId` onto both post-split hands.
 - **Co-staked split (current rule):** Box caller split applies proportional funding to **all** participating stakers in `stakerAmountsByPersonId` — no per-staker opt-in UI yet. Future per-staker split opt-in requires new UI + engine extension (TODO).
 
 **Summary screen:** Off by default (`showRoundSummaryOverlay: false`); opens only when enabled in settings. When shown: visual cards per box, outcome, **Won [n]c** / **Lost [n]c**, bank net summary.

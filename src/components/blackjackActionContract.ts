@@ -5,10 +5,10 @@
 import type { GameState } from '../types';
 import type { BlackjackSettings } from '../engine/blackjack/settings';
 import {
-  canDoubleBlackjackForState,
   canHitBlackjack,
   canSplitBlackjackForState,
   canStandBlackjack,
+  resolveDoubleAvailabilityForHand,
 } from '../engine/blackjack';
 
 export {
@@ -39,6 +39,7 @@ export interface PlayerHandActionOptions {
   canSplit: boolean;
   showDouble: boolean;
   showSplit: boolean;
+  doubleBlockReason: string | null;
 }
 
 /** Engine legality for one hand — call only after `resolveViewerActionPermission.canAct`. */
@@ -57,15 +58,19 @@ export function resolvePlayerHandActionOptions(
       canSplit: false,
       showDouble: false,
       showSplit: false,
+      doubleBlockReason: null,
     };
   }
+  const activeHandKey = round.activeHandKey ?? handKey;
+  const doubleAvailability = resolveDoubleAvailabilityForHand(state, activeHandKey);
   return {
-    canHit: canHitBlackjack(round, handKey),
-    canStand: canStandBlackjack(round, handKey),
-    canDouble: hasDeck && canDoubleBlackjackForState(state, handKey),
-    canSplit: canSplitBlackjackForState(state, handKey),
+    canHit: canHitBlackjack(round, activeHandKey),
+    canStand: canStandBlackjack(round, activeHandKey),
+    canDouble: hasDeck && settings.allowDoubleDown && doubleAvailability.canDouble,
+    canSplit: canSplitBlackjackForState(state, activeHandKey),
     showDouble: settings.allowDoubleDown,
     showSplit: settings.allowSplit && hasDeck,
+    doubleBlockReason: doubleAvailability.blockReason,
   };
 }
 

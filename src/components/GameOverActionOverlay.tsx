@@ -59,15 +59,18 @@ export function GameOverActionOverlay({
   const [createIou, setCreateIou] = useState(false);
   const [showIouMessage, setShowIouMessage] = useState(false);
   const [iouMessage, setIouMessage] = useState('');
+  const [lastAttemptedAction, setLastAttemptedAction] = useState<GameOverNextAction | null>(null);
 
   if (!open) {
     return null;
   }
 
   const busy = pending || iouPending;
+  const iouFailed = iouFeedback?.tone === 'error';
   const iouToggleDisabled = !canCreateIou || busy;
   const ledgerToggleDisabled = !canSaveToLedger || ledgerAlreadyAdded || busy;
   const startNewGameDisabled = !canStartNewGame || busy;
+  const showContinueWithoutIou = iouFailed && createIou && canCreateIou && !busy;
 
   function buildCompleteOptions(nextAction: GameOverNextAction): GameOverCompleteOptions {
     const trimmedMessage = iouMessage.trim().slice(0, IOU_HANDOFF_MESSAGE_MAX_LENGTH);
@@ -83,6 +86,7 @@ export function GameOverActionOverlay({
     if (startNewGameDisabled) {
       return;
     }
+    setLastAttemptedAction('new-game');
     await onComplete(buildCompleteOptions('new-game'));
   }
 
@@ -90,7 +94,21 @@ export function GameOverActionOverlay({
     if (busy) {
       return;
     }
+    setLastAttemptedAction('exit-table');
     await onComplete(buildCompleteOptions('exit-table'));
+  }
+
+  async function handleContinueWithoutIou() {
+    if (busy) {
+      return;
+    }
+    const nextAction = lastAttemptedAction ?? 'new-game';
+    setCreateIou(false);
+    setShowIouMessage(false);
+    await onComplete({
+      ...buildCompleteOptions(nextAction),
+      createIou: false,
+    });
   }
 
   const isInline = layout === 'inline';
@@ -155,6 +173,11 @@ export function GameOverActionOverlay({
           role="status"
         >
           {iouFeedback.message}
+        </p>
+      ) : null}
+      {iouFailed && createIou && canCreateIou ? (
+        <p className="bj-game-over__iou-hint">
+          Uncheck Create IOU or continue without IOU to proceed.
         </p>
       ) : null}
       {iouFeedback?.openUrl ? (
@@ -270,6 +293,15 @@ export function GameOverActionOverlay({
             Exit Table
           </button>
         </div>
+        {showContinueWithoutIou ? (
+          <button
+            type="button"
+            className="ds-btn ds-btn--secondary bj-game-over__continue-without-iou"
+            onClick={() => void handleContinueWithoutIou()}
+          >
+            Continue without IOU
+          </button>
+        ) : null}
       </div>
     </div>
   );

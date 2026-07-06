@@ -49,6 +49,16 @@ describe('game end flow regression guards', () => {
     expect(OVERLAY_SRC).toContain('Exit Table');
   });
 
+  it('blackjack game-over IOU uses runGameOverCompleteAction only (no parallel client create path)', () => {
+    expect(PANEL_SRC).not.toContain('createIouHandoff');
+    expect(PANEL_SRC).not.toContain('buildGameEndIouHandoff');
+    expect(PANEL_SRC).not.toContain('buildIouWalletNewUrl');
+    expect(PANEL_SRC).not.toMatch(/onBeginTableReset\?\.\('newGame'\)[\s\S]*createIouHandoff/);
+    expect(PANEL_SRC).toMatch(/beginNewGame:[\s\S]*onBeginTableReset\?\.\('newGame'\)/);
+    expect(PANEL_SRC).toContain("from './gameOverActionFlow'");
+    expect(PANEL_SRC).toContain('runGameOverCompleteAction');
+  });
+
   it('routes Exit Table through onLeave save prompt in TableScreen', () => {
     expect(TABLE_SRC).toContain('onExitTable={onLeave}');
     expect(APP_SRC).toContain('onLeave={requestLeaveTable}');

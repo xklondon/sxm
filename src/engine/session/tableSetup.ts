@@ -194,8 +194,8 @@ export function applyTableStakeSetup(state: GameState, input: TableStakeSetupInp
   next = updateBlackjackFlowSettings(next, {
     initialDealMode: input.naturalDealing ? 'natural' : 'staged',
     dealSpeedPreset: input.dealSpeedPreset,
-    cardTimerPreset: input.cardTimerPreset,
-    countdownSeconds: input.cardTimerPreset,
+    cardTimerPreset: 0,
+    countdownSeconds: 0,
     bankDrawMode: input.bankDrawAuto ? 'auto' : 'manual',
   });
 

@@ -1,5 +1,16 @@
 import { createCipheriv, createHash, randomBytes } from 'node:crypto';
 import type { IouCreatePayload } from '../../../src/lib/iouHandoffPayload.js';
+import {
+  buildIouHandoffPayloadDiagnostics,
+  parseIouWalletRemoteError,
+} from './iouHandoffDiagnostics.js';
+
+export {
+  buildIouHandoffPayloadDiagnostics,
+  iouHandoffCreateUrlHost,
+  iouHandoffNoncePrefix,
+  parseIouWalletRemoteError,
+} from './iouHandoffDiagnostics.js';
 
 function base64url(buf: Buffer): string {
   return buf.toString('base64url');
@@ -72,6 +83,10 @@ export async function sendIouCreateHandoff(
   config: IouHandoffRemoteConfig,
 ): Promise<IouHandoffRemoteResponse> {
   const handoff = encryptIouHandoff(payload, config.secret);
+  const diagnostics = buildIouHandoffPayloadDiagnostics(payload, config.createUrl, handoff);
+  // eslint-disable-next-line no-console
+  console.info('[SXM][iou-handoff] remote attempt', diagnostics);
+
   let response: Response;
   try {
     response = await fetch(config.createUrl, {
@@ -83,6 +98,11 @@ export async function sendIouCreateHandoff(
       }),
     });
   } catch {
+    // eslint-disable-next-line no-console
+    console.warn('[SXM][iou-handoff] remote unreachable', {
+      createUrlHost: diagnostics.createUrlHost,
+      source: config.source,
+    });
     return { ok: false, error: 'IOU Wallet is unavailable. Try again later.' };
   }
 
@@ -90,20 +110,37 @@ export async function sendIouCreateHandoff(
   try {
     body = await response.json();
   } catch {
+    // eslint-disable-next-line no-console
+    console.warn('[SXM][iou-handoff] remote invalid json', {
+      httpStatus: response.status,
+      createUrlHost: diagnostics.createUrlHost,
+    });
     return {
       ok: false,
       error: response.ok
         ? 'IOU Wallet returned an invalid response.'
-        : `IOU Wallet request failed (${response.status}).`,
+        : `IOU Wallet request failed (HTTP ${response.status}).`,
     };
   }
 
   if (!body || typeof body !== 'object') {
+    // eslint-disable-next-line no-console
+    console.warn('[SXM][iou-handoff] remote invalid body', {
+      httpStatus: response.status,
+      createUrlHost: diagnostics.createUrlHost,
+    });
     return { ok: false, error: 'IOU Wallet returned an invalid response.' };
   }
 
   const record = body as Record<string, unknown>;
   if (record.ok === true) {
+    // eslint-disable-next-line no-console
+    console.info('[SXM][iou-handoff] remote accepted', {
+      httpStatus: response.status,
+      createUrlHost: diagnostics.createUrlHost,
+      iouId: typeof record.iouId === 'string' ? record.iouId : undefined,
+      status: typeof record.status === 'string' ? record.status : undefined,
+    });
     return {
       ok: true,
       iouId: String(record.iouId ?? ''),
@@ -113,10 +150,20 @@ export async function sendIouCreateHandoff(
     };
   }
 
-  const error = typeof record.error === 'string' ? record.error : 'IOU Wallet rejected the handoff.';
+  const error = parseIouWalletRemoteError(record, response.status);
   const duplicate =
     /duplicate|replay|already/i.test(error) ||
     /duplicate|replay|already/i.test(String(record.code ?? ''));
+
+  // eslint-disable-next-line no-console
+  console.warn('[SXM][iou-handoff] remote rejected', {
+    httpStatus: response.status,
+    createUrlHost: diagnostics.createUrlHost,
+    source: config.source,
+    error,
+    duplicate,
+    noncePrefix: diagnostics.noncePrefix,
+  });
 
   return { ok: false, error, duplicate };
 }

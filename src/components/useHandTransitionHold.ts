@@ -212,6 +212,8 @@ export function useHandTransitionHold(
     holdActiveHandKey: hold.holdActiveHandKey,
     suppressEngineAutoAdvance: hold.holdActive || pendingHoldHandKey != null,
     playerActionsBlocked:
-      hold.holdActive || pendingHoldHandKey != null || options.isRevealing,
+      hold.holdActive ||
+      pendingHoldHandKey != null ||
+      (options.isRevealing && !options.activeHandRevealComplete),
   };
 }

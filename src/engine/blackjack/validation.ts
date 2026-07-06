@@ -148,13 +148,54 @@ export function canDoubleBlackjack(
   return built ? canDoubleUnderProtocol(built.protocol, built.ctx.hand, built.ctx) : false;
 }
 
-export function canDoubleBlackjackForState(state: GameState, handKey: string): boolean {
+/** Canonical double availability — UI and command copy must use this only. */
+export interface DoubleAvailability {
+  canDouble: boolean;
+  blockReason: string | null;
+}
+
+export function resolveDoubleAvailabilityForHand(
+  state: GameState,
+  handKey: string,
+): DoubleAvailability {
+  const round = state.blackjack;
+  if (!round || !state.deck) {
+    return { canDouble: false, blockReason: 'Hand not ready.' };
+  }
+  if (!state.blackjackSettings.allowDoubleDown) {
+    return { canDouble: false, blockReason: 'Double down is disabled for this table.' };
+  }
+  if (round.status !== 'player-turns' || round.activeHandKey !== handKey) {
+    return { canDouble: false, blockReason: 'Not the active hand.' };
+  }
+  const hand = round.playerHands[handKey];
+  if (!hand || hand.actionStatus !== 'acting' || hand.doubled) {
+    return { canDouble: false, blockReason: 'Double not allowed for this hand.' };
+  }
   const built = rulesContextForHand(state, handKey);
-  if (!built || !canDoubleUnderProtocol(built.protocol, built.ctx.hand, built.ctx)) {
-    return false;
+  if (!built) {
+    return { canDouble: false, blockReason: 'Hand not ready.' };
   }
   const { playerId } = parseBlackjackHandKey(handKey);
-  return resolveFundableActionParticipants(state, built.ctx.hand, playerId, 'double').canFundAll;
+  const funding = resolveFundableActionParticipants(state, hand, playerId, 'double');
+  if (!canDoubleUnderProtocol(built.protocol, hand, built.ctx)) {
+    const fundingReason = getDoubleFundingBlockReason(state, handKey);
+    if (fundingReason) {
+      return { canDouble: false, blockReason: fundingReason };
+    }
+    if (hand.cardIds.length !== 2) {
+      return { canDouble: false, blockReason: 'Double only on the first two cards.' };
+    }
+    return { canDouble: false, blockReason: 'Double not allowed on this hand total.' };
+  }
+  if (!funding.canFundAll) {
+    return { canDouble: false, blockReason: INSUFFICIENT_DOUBLE_REASON };
+  }
+  return { canDouble: true, blockReason: null };
+}
+
+export function canDoubleBlackjackForState(state: GameState, handKey: string): boolean {
+  return resolveDoubleAvailabilityForHand(state, handKey).canDouble;
 }
 
 export function canSplitBlackjack(

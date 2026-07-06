@@ -1299,7 +1299,7 @@ export function BlackjackPanel({
     totalCards: deckCount * 52,
     remaining,
     hasDeck,
-    dealSpeedLabel: dealSpeedDisplayLabel(flowSettings.dealSpeedPreset),
+    dealSpeedLabel: dealSpeedDisplayLabel(flowSettings.dealSpeedPreset, flowSettings.customDealDelayMs),
     canChangeDealSpeed,
     onCycleDealSpeed: handleCycleDealSpeed,
     protocolLabel: activeProtocol.displayName,
@@ -1604,7 +1604,8 @@ export function BlackjackPanel({
       blackjackSettings,
       Boolean(deck),
     );
-    const { canHit, canStand, canDouble, canSplit, showDouble, showSplit } = handOptions;
+    const { canHit, canStand, canDouble, canSplit, showDouble, showSplit, doubleBlockReason } =
+      handOptions;
 
     function handleTableAid() {
       if (!deck) {
@@ -1626,11 +1627,10 @@ export function BlackjackPanel({
         canSplit={canSplit}
         showDouble={showDouble}
         showSplit={showSplit}
+        doubleBlockReason={doubleBlockReason}
         showAid={flowSettings.adviceEnabled && !isFullTableDesktop && !isCardViewDesktop}
         aidInlineWithHit={false}
-        onStand={() =>
-          run((s) => standBlackjackOnState(s, actionable.handKey), { type: 'stand', payload: {} })
-        }
+        onStand={() => run((s) => standBlackjackOnState(s), { type: 'stand', payload: {} })}
         onHit={() => run((s) => hitBlackjackOnState(s), { type: 'hit', payload: {} })}
         onDouble={() => run((s) => doubleDownBlackjackOnState(s), { type: 'double', payload: {} })}
         onSplit={() => run((s) => splitBlackjackOnState(s), { type: 'split', payload: {} })}

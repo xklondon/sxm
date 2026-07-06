@@ -8,8 +8,6 @@ import {
   startNextRoundOnState,
   shuffleToStartOnState,
   shuffleFreshShoeOnState,
-  updateBlackjackFlowSettings,
-  getCardDealDelayMs,
   getBankFinalMessage,
   processPlayFlowAutoStands,
   syncBankPhaseOnState,
@@ -28,7 +26,6 @@ import {
   canDealBlackjack,
   logDealAudit,
 } from '../engine/session/canDealBlackjack';
-import type { CardTimerPreset } from '../engine/blackjack/flowSettings';
 import { isNaturalInitialDeal, isStagedInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import {
   getGameOverMessage,
@@ -77,9 +74,7 @@ export function useBlackjackTableFlow(
   const [nextRoundPending, setNextRoundPending] = useState(false);
   const lastFlowErrorRef = useRef<string | null>(null);
   const [bankUiMessage, setBankUiMessage] = useState<string | null>(null);
-  const bankPacingRef = useRef<'idle' | 'running'>('idle');
-  const bankRunIdRef = useRef(0);
-  const manualBankingRef = useRef(false);
+  const bankDrawInFlightRef = useRef(false);
 
   const protocolPhase = getDisplayBlackjackProtocolPhase(
     gameState,
@@ -346,19 +341,7 @@ export function useBlackjackTableFlow(
     }
   }, [onGameStateChange]);
 
-  const handleSetTimerPreset = useCallback(
-    (preset: CardTimerPreset) => {
-      onGameStateChange(
-        updateBlackjackFlowSettings(gameStateRef.current, {
-          cardTimerPreset: preset,
-          countdownSeconds: preset,
-        }),
-      );
-    },
-    [onGameStateChange],
-  );
-
-  /** Auto bank draw: random 2–5s between cards; pause before banking/payout. */
+  /** Auto bank draw: engine decides WHAT; reveal queue decides WHEN. One card per reveal cycle. */
   useEffect(() => {
     const status = round?.status;
     if (
@@ -369,117 +352,72 @@ export function useBlackjackTableFlow(
         roundStatus: status,
       })
     ) {
-      bankPacingRef.current = 'idle';
+      bankDrawInFlightRef.current = false;
       if (status !== 'bank-turn' && status !== 'banking') {
         setBankUiMessage(null);
       }
       return;
     }
 
-    if (bankPacingRef.current === 'running') {
-      return;
-    }
-
-    bankPacingRef.current = 'running';
-    const runId = bankRunIdRef.current + 1;
-    bankRunIdRef.current = runId;
-
-    void (async () => {
-      if (gameStateRef.current.blackjack?.status === 'bank-turn') {
+    if (!cardRevealComplete || bankDrawInFlightRef.current) {
+      if (status === 'bank-turn' && !cardRevealComplete) {
         setBankUiMessage('Bank thinking…');
-        const startDelay = getCardDealDelayMs(gameStateRef.current, 'bank-turn-start');
-        if (startDelay > 0) {
-          await sleepMs(startDelay);
-          if (bankRunIdRef.current !== runId) {
-            return;
-          }
-        }
-        while (gameStateRef.current.blackjack?.status === 'bank-turn') {
-          if (bankRunIdRef.current !== runId) {
-            break;
-          }
-          const snap = gameStateRef.current;
-          if (snap.blackjack?.status !== 'bank-turn') {
-            break;
-          }
-          setBankUiMessage('Bank draws.');
-          const next = drawBankCardOnState(snap);
-          gameStateRef.current = next;
-          onGameStateChange(next);
-          if (gameStateRef.current.blackjack?.status !== 'bank-turn') {
-            break;
-          }
-          const between = getCardDealDelayMs(gameStateRef.current, 'bank-card-draw');
-          if (between > 0) {
-            await sleepMs(between);
-          }
-        }
       }
-
-      if (bankRunIdRef.current !== runId) {
-        return;
-      }
-
-      const afterDraw = gameStateRef.current;
-      if (afterDraw.blackjack?.status === 'banking') {
-        setBankUiMessage(getBankFinalMessage(afterDraw));
-        await sleepMs(getCardDealDelayMs(afterDraw, 'bank-pause'));
-        if (bankRunIdRef.current !== runId) {
-          return;
-        }
-        onGameStateChange(completeBankingOnState(gameStateRef.current));
-        setBankUiMessage(null);
-      }
-
-      if (bankRunIdRef.current === runId) {
-        bankPacingRef.current = 'idle';
-      }
-    })();
-
-    return () => {
-      bankRunIdRef.current += 1;
-      bankPacingRef.current = 'idle';
-      setBankUiMessage(null);
-    };
-  }, [round?.status, flow.bankDrawMode, onGameStateChange, onlineDispatch, canDriveTableAutomation]);
-
-  /** Manual bank: show final bank state before payout. */
-  useEffect(() => {
-    // Online never settles locally; server resolves banking.
-    if (onlineDispatch || !canDriveTableAutomation) {
-      manualBankingRef.current = false;
       return;
     }
-    if (flow.bankDrawMode === 'auto') {
-      manualBankingRef.current = false;
-      return;
-    }
-    if (round?.status !== 'banking') {
-      manualBankingRef.current = false;
-      return;
-    }
-    if (manualBankingRef.current) {
-      return;
-    }
-    manualBankingRef.current = true;
 
-    const current = gameStateRef.current;
-    setBankUiMessage(getBankFinalMessage(current));
-    const pause = getCardDealDelayMs(current, 'bank-pause');
+    if (status === 'bank-turn') {
+      bankDrawInFlightRef.current = true;
+      setBankUiMessage('Bank draws.');
+      try {
+        onGameStateChange(drawBankCardOnState(gameStateRef.current));
+      } catch (err) {
+        setFlowError(err instanceof Error ? err.message : 'Bank draw failed');
+      } finally {
+        bankDrawInFlightRef.current = false;
+      }
+      return;
+    }
 
-    const timer = window.setTimeout(() => {
+    if (status === 'banking') {
+      setBankUiMessage(getBankFinalMessage(gameStateRef.current));
       try {
         onGameStateChange(completeBankingOnState(gameStateRef.current));
       } catch (err) {
         setFlowError(err instanceof Error ? err.message : 'Banking failed');
       } finally {
-        manualBankingRef.current = false;
         setBankUiMessage(null);
       }
-    }, pause);
+    }
+  }, [
+    round?.status,
+    flow.bankDrawMode,
+    onGameStateChange,
+    onlineDispatch,
+    canDriveTableAutomation,
+    cardRevealComplete,
+  ]);
 
-    return () => window.clearTimeout(timer);
-  }, [round?.status, flow.bankDrawMode, onGameStateChange, onlineDispatch]);
+  /** Manual bank: complete banking once all bank cards are revealed. */
+  useEffect(() => {
+    if (onlineDispatch || !canDriveTableAutomation) {
+      return;
+    }
+    if (flow.bankDrawMode === 'auto') {
+      return;
+    }
+    if (round?.status !== 'banking' || !cardRevealComplete) {
+      return;
+    }
+    setBankUiMessage(getBankFinalMessage(gameStateRef.current));
+    try {
+      onGameStateChange(completeBankingOnState(gameStateRef.current));
+    } catch (err) {
+      setFlowError(err instanceof Error ? err.message : 'Banking failed');
+    } finally {
+      setBankUiMessage(null);
+    }
+  }, [round?.status, flow.bankDrawMode, onGameStateChange, onlineDispatch, canDriveTableAutomation, cardRevealComplete]);
 
   /** Auto-stand when caller play-flow threshold is already met (e.g. after deal or turn advance). */
   useEffect(() => {
@@ -544,7 +482,6 @@ export function useBlackjackTableFlow(
     handleShuffleFresh,
     handleDealNextCard,
     handleDrawBank,
-    handleSetTimerPreset,
     engineStatus: round?.status,
     initialDealStaged: isStagedInitialDeal(flow.initialDealMode),
     initialDealNatural: isNaturalInitialDeal(flow.initialDealMode),

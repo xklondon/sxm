@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { GameState } from '../../types';
 import type { Rank } from '../../types/deck';
-import { tableAfterStartPlaying, boxPlayerId, findCardId, actingRound } from './sanity/fixtures';
+import { tableAfterStartPlaying, boxPlayerId, findCardId, actingRound, tableWithClaimedBox } from './sanity/fixtures';
 import { claimBoxSlot } from '../session/boxOps';
 import { addChipToBoxStake } from './stakes';
 import { createBlackjackShoe, shuffleBlackjackShoe } from './shoe';
@@ -12,9 +12,18 @@ import { bankrollContextFromState } from '../session/bankroll';
 import { getBlackjackProtocolForState } from './protocolState';
 import { applyBlackjackActionToState, type BlackjackActorContext } from './applyBlackjackAction';
 import { doubleDownBlackjackOnState, hitBlackjackOnState, startBlackjackRound } from './gameState';
-import { canDoubleBlackjackForState } from './validation';
-import { applyCardVisibility, maxVisibilityForRound } from './dealing/cardRevealDisplay';
+import {
+  canDoubleBlackjackForState,
+  resolveDoubleAvailabilityForHand,
+} from './validation';
+import { INSUFFICIENT_DOUBLE_REASON } from './handFunding';
+import { applyCardVisibility, maxVisibilityForRound, nextSequentialRevealStep } from './dealing/cardRevealDisplay';
 import { isNaturalInitialDeal } from './dealing/dealingModes';
+import { addPlayer, mergeSessionUpdate } from '../session/session';
+import { allocateChipsToBankrollOwner } from '../session/allocation';
+import { syncPlayerOrderAndAssignments } from '../session/playerAssignment';
+import { confirmBoxStake } from './stakes';
+import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
 
 const actor: BlackjackActorContext = { personId: 'host', payload: {}, resolveBankAuto: false };
 
@@ -88,7 +97,7 @@ describe('double down action', () => {
 
   it('online and offline double produce the same hand state', () => {
     const { state, handKey } = playerTurn(baseTable(), ['5', '4']);
-    const offline = doubleDownBlackjackOnState(state, handKey);
+    const offline = doubleDownBlackjackOnState(state);
     const online = applyBlackjackActionToState(state, 'double', actor);
     expect(online.blackjack!.playerHands[handKey]!.cardIds).toEqual(
       offline.blackjack!.playerHands[handKey]!.cardIds,
@@ -97,6 +106,96 @@ describe('double down action', () => {
       offline.blackjack!.playerHands[handKey]!.actionStatus,
     );
     expect(online.blackjack!.playerHands[handKey]!.doubled).toBe(true);
+  });
+
+  it('hard 11 two-card active hand enables double for caller', () => {
+    const { state, handKey } = playerTurn(baseTable(), ['5', '6']);
+    const cards = cardsFromIds(state.deck!, state.blackjack!.playerHands[handKey]!.cardIds);
+    expect(getBlackjackHandValue(cards).value).toBe(11);
+    expect(resolveDoubleAvailabilityForHand(state, handKey)).toEqual({
+      canDouble: true,
+      blockReason: null,
+    });
+  });
+
+  it('hard 10 enables double', () => {
+    const { state, handKey } = playerTurn(baseTable(), ['6', '4']);
+    expect(canDoubleBlackjackForState(state, handKey)).toBe(true);
+  });
+
+  it('insufficient funds blocks double with clear reason', () => {
+    const { state, handKey } = playerTurn(tableWithClaimedBox(1), ['5', '6'], 400);
+    const availability = resolveDoubleAvailabilityForHand(state, handKey);
+    expect(availability.canDouble).toBe(false);
+    expect(availability.blockReason).toBe(INSUFFICIENT_DOUBLE_REASON);
+  });
+
+  it('co-staked hand doubles per contributor when all can fund', () => {
+    let state = tableAfterStartPlaying(500);
+    const host = state.tableMeta.ownerPersonId!;
+    const guestSpl = addPlayer(state.session, state.players, state.ledger, {
+      displayName: 'K',
+      controllerName: 'K',
+      role: 'person',
+      startingChips: 0,
+    });
+    state = mergeSessionUpdate(state, guestSpl);
+    const guest = guestSpl.session.playerIds[guestSpl.session.playerIds.length - 1]!;
+    state = allocateChipsToBankrollOwner(state, {
+      bankrollOwnerId: guest,
+      amount: 500,
+      reason: 'initial-player',
+      source: 'setup',
+    });
+    state = { ...state, tableMeta: { ...state.tableMeta, playerOrder: [host, guest] } };
+    state = syncPlayerOrderAndAssignments(state);
+    state = claimBoxSlot(state, 1);
+    const boxId = boxPlayerId(state, 1)!;
+    state = addChipToBoxStake(state, boxId, 50, host);
+    state = addChipToBoxStake(state, boxId, 50, guest);
+    state = confirmBoxStake(state, boxId);
+    state = startBlackjackRound(state);
+    const deck = shuffleBlackjackShoe(createBlackjackShoe(6), 'co-double');
+    state = { ...state, deck };
+    const handKey = blackjackHandKey(boxId, 0);
+    const round = actingRound(state, boxId, [findCardId(deck, '5'), findCardId(deck, '6')], 100);
+    state = {
+      ...state,
+      blackjack: {
+        ...round,
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: boxId,
+        playerHands: {
+          [handKey]: {
+            ...round.playerHands[handKey]!,
+            stakerAmountsByPersonId: { [host]: 50, [guest]: 50 },
+          },
+        },
+      },
+    };
+    expect(resolveDoubleAvailabilityForHand(state, handKey).canDouble).toBe(true);
+    const hostBefore = derivePlayerBalanceFromLedger(host, state.ledger);
+    const guestBefore = derivePlayerBalanceFromLedger(guest, state.ledger);
+    const doubled = doubleDownBlackjackOnState(state);
+    expect(derivePlayerBalanceFromLedger(host, doubled.ledger)).toBe(hostBefore - 50);
+    expect(derivePlayerBalanceFromLedger(guest, doubled.ledger)).toBe(guestBefore - 50);
+    expect(doubled.blackjack!.playerHands[handKey]!.currentBet).toBe(200);
+  });
+
+  it('offline double uses activeHandKey only', () => {
+    const { state, handKey } = playerTurn(baseTable(), ['5', '6']);
+    const doubled = doubleDownBlackjackOnState(state);
+    expect(doubled.blackjack!.playerHands[handKey]!.doubled).toBe(true);
+  });
+
+  it('double reveal uses global interval and does not block next hand', () => {
+    const { state, handKey } = playerTurn(baseTable(), ['5', '4']);
+    const doubled = doubleDownBlackjackOnState(state);
+    const target = maxVisibilityForRound(doubled.blackjack);
+    const visible = { dealer: target.dealer, hands: { [handKey]: 2 } };
+    const step = nextSequentialRevealStep(visible, target, doubled.blackjack, 'player-turns');
+    expect(step?.hands[handKey]).toBe(3);
   });
 
   it('natural dealing keeps full authoritative hand while masking display', () => {

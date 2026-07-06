@@ -6,7 +6,9 @@ import {
   getStakerAmountForPersonOnBox,
   resolveStakerAmountsByPersonId,
 } from '../blackjack/stakes';
+import { bankrollContextFromState } from './bankroll';
 import { getCallerPersonIdForBox } from './playerAssignment';
+import { resolveHandStakerAmounts } from '../blackjack/stakeSettlement';
 
 function resolveExposureBankrollOwnerId(state: GameState, boxPlayerId: string): string {
   const slot = state.tableMeta.boxSlots.find((s) => s.playerId === boxPlayerId);
@@ -123,13 +125,18 @@ export function getInRoundBetExposureForPerson(state: GameState, personId: strin
   if (!round?.playerHands) {
     return 0;
   }
+  const ctx = bankrollContextFromState(state);
   return getBoxIdsWithCommittedExposureForPerson(state, personId).reduce((sum, boxId) => {
     return (
       sum +
-      listHandKeysForPlayer(round.playerHands, boxId).reduce(
-        (handSum, key) => handSum + (round.playerHands[key]?.currentBet ?? 0),
-        0,
-      )
+      listHandKeysForPlayer(round.playerHands, boxId).reduce((handSum, key) => {
+        const hand = round.playerHands[key];
+        if (!hand) {
+          return handSum;
+        }
+        const stakerAmounts = resolveHandStakerAmounts(hand, ctx, boxId, state);
+        return handSum + (stakerAmounts[personId] ?? 0);
+      }, 0)
     );
   }, 0);
 }

@@ -10,20 +10,16 @@ import {
   emptyCardVisibility,
   hasPendingCardReveal,
   isActiveHandRevealComplete,
-  isHandBoundaryRevealStep,
   isStaleHandVisibility,
   maxVisibilityForRound,
   nextSequentialRevealStep,
-  resolveCardRevealDelayMs,
   resolveRevealScopeTransition,
   shouldSnapCardRevealOnMount,
   shouldUseOrderedInitialReveal,
-  isDealerHoleRevealStep,
-  waitForInitialDealerHoleHoldMs,
   totalCardCount,
   type CardVisibilityCounts,
 } from '../engine/blackjack/dealing/cardRevealDisplay';
-import { sleepMs, waitForResultHoldMs } from '../engine/blackjack/dealPacing';
+import { scheduleNextCardReveal } from '../engine/blackjack/dealPacing';
 
 function countsEqual(a: CardVisibilityCounts, b: CardVisibilityCounts): boolean {
   if (a.dealer !== b.dealer) {
@@ -220,39 +216,15 @@ export function useSequentialCardReveal(
           }
         }
 
-        if (stepped && round && isHandBoundaryRevealStep(visible, stepped)) {
-          await sleepMs(waitForResultHoldMs(authoritative));
-          if (runIdRef.current !== runId) {
-            break;
-          }
-        }
-
-        if (
-          stepped &&
-          round &&
-          isDealerHoleRevealStep(visible, stepped, authoritativeTarget)
-        ) {
-          await sleepMs(waitForInitialDealerHoleHoldMs(authoritative));
-          if (runIdRef.current !== runId) {
-            break;
-          }
-        }
-
-        const delay = resolveCardRevealDelayMs(
-          authoritative,
-          round ?? null,
-          round?.status,
-          visible,
-          authoritativeTarget,
-        );
-
         visible = stepped ?? visible;
         visibleRef.current = visible;
         setDisplayState(applyCardVisibility(authoritative, visible));
         setActiveHandRevealComplete(
           computeActiveHandRevealComplete(authoritative, visible, pacedReveal),
         );
-        await sleepMs(delay);
+        if (!isStagedInitialDeal(authoritative.blackjackFlowSettings.initialDealMode)) {
+          await scheduleNextCardReveal(authoritative);
+        }
         if (stagedManual && !countsEqual(visible, authoritativeTarget)) {
           break;
         }

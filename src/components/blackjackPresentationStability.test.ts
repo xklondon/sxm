@@ -71,7 +71,7 @@ describe('blackjack presentation stability', () => {
     expect(isDealerHoleRevealStep(playersDone, { ...playersDone, dealer: 2 }, target)).toBe(true);
   });
 
-  it('initial dealer hole hold uses deal-speed result-hold timing', () => {
+  it('initial dealer hole hold uses global card timing', () => {
     expect(waitForInitialDealerHoleHoldMs({ blackjackFlowSettings: normalizeFlowSettings({ dealSpeedPreset: 'normal' }) })).toBe(3000);
     expect(waitForInitialDealerHoleHoldMs({ blackjackFlowSettings: normalizeFlowSettings({ dealSpeedPreset: 'fast' }) })).toBe(1000);
   });

@@ -1,77 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-
 import {
-  getCardDealDelayMs,
+  getNextCardDelay,
   normalizeFlowSettings,
 } from './flowSettings';
-import {
-  resolveCardRevealDelayMs,
-  type CardVisibilityCounts,
-} from './dealing/cardRevealDisplay';
+import { resolveCardRevealDelayMs } from './dealing/cardRevealDisplay';
 
-describe('bank turn pacing — launch timing audit', () => {
-  it('Bank Timer OFF → zero delay for bank-turn-start and bank-card-draw', () => {
+describe('bank turn pacing — unified card timing engine', () => {
+  it('dealer initial, draw, player hit/double all use getNextCardDelay', () => {
+    const settings = normalizeFlowSettings({ dealSpeedPreset: 'normal', cardTimerPreset: 5 });
+    const state = { blackjackFlowSettings: settings };
+    const delay = getNextCardDelay(state);
+    expect(delay).toBe(3000);
+    expect(resolveCardRevealDelayMs(state, null, undefined, { dealer: 0, hands: {} }, { dealer: 1, hands: {} })).toBe(3000);
+    expect(resolveCardRevealDelayMs(state, { status: 'bank-turn' } as never, 'bank-turn', { dealer: 1, hands: {} }, { dealer: 2, hands: {} })).toBe(3000);
+    expect(resolveCardRevealDelayMs(state, { status: 'player-turns', playerHands: {}, dealerCardIds: [] } as never, 'player-turns', { dealer: 1, hands: { k: 2 } }, { dealer: 1, hands: { k: 3 } })).toBe(3000);
+  });
+
+  it('legacy cardTimerPreset does not change dealer pacing', () => {
     const settings = normalizeFlowSettings({ cardTimerPreset: 0, dealSpeedPreset: 'slow' });
-    const state = { blackjackFlowSettings: settings };
-    expect(getCardDealDelayMs(state, 'bank-turn-start')).toBe(0);
-    expect(getCardDealDelayMs(state, 'bank-card-draw')).toBe(0);
-    expect(getCardDealDelayMs(state, 'initial-deal')).toBe(5000);
+    expect(getNextCardDelay({ blackjackFlowSettings: settings })).toBe(5000);
   });
 
-  it('Bank Timer ON → configured delay for post-player bank pacing only', () => {
-    const settings = normalizeFlowSettings({ cardTimerPreset: 15, dealSpeedPreset: 'fast' });
-    const state = { blackjackFlowSettings: settings };
-    expect(getCardDealDelayMs(state, 'bank-turn-start')).toBe(15000);
-    expect(getCardDealDelayMs(state, 'bank-card-draw')).toBe(15000);
-    expect(getCardDealDelayMs(state, 'initial-deal')).toBe(1000);
-  });
-
-  it('bank-turn initial-deal catch-up still uses deal speed for dealer hole', () => {
-    const settings = normalizeFlowSettings({ cardTimerPreset: 0, dealSpeedPreset: 'slow' });
-    const state = { blackjackFlowSettings: settings };
-    const visible: CardVisibilityCounts = { dealer: 1, hands: {} };
-    const target: CardVisibilityCounts = { dealer: 2, hands: {} };
-    expect(
-      resolveCardRevealDelayMs(state, { status: 'bank-turn' } as never, 'bank-turn', visible, target),
-    ).toBe(5000);
-  });
-
-  it('bank-turn bank draw uses bank-card-draw context after initial deal is visible', () => {
-    const settings = normalizeFlowSettings({ cardTimerPreset: 0, dealSpeedPreset: 'slow' });
-    const state = { blackjackFlowSettings: settings };
-    const visible: CardVisibilityCounts = { dealer: 2, hands: { 'box-0': 2 } };
-    const target: CardVisibilityCounts = { dealer: 3, hands: { 'box-0': 2 } };
-    expect(
-      resolveCardRevealDelayMs(state, { status: 'bank-turn' } as never, 'bank-turn', visible, target),
-    ).toBe(0);
-    expect(
-      resolveCardRevealDelayMs(state, { status: 'bank-turn' } as never, 'bank-turn', visible, target),
-    ).not.toBe(5000);
-  });
-
-  it('initial deal reveal still uses deal speed', () => {
-    const settings = normalizeFlowSettings({ cardTimerPreset: 30, dealSpeedPreset: 'slow' });
-    const state = { blackjackFlowSettings: settings };
-    const visible: CardVisibilityCounts = { dealer: 0, hands: { 'box-0': 0 } };
-    const target: CardVisibilityCounts = { dealer: 0, hands: { 'box-0': 1 } };
-    expect(
-      resolveCardRevealDelayMs(state, { status: 'player-turns', playerHands: {}, dealerCardIds: [] } as never, 'player-turns', visible, target),
-    ).toBe(5000);
-  });
-
-  it('useBlackjackTableFlow draws first bank card before inter-card timer', () => {
-    const src = readFileSync(join(process.cwd(), 'src/components/useBlackjackTableFlow.ts'), 'utf8');
-    expect(src).toContain("getCardDealDelayMs(gameStateRef.current, 'bank-turn-start')");
-    expect(src).toContain("getCardDealDelayMs(gameStateRef.current, 'bank-card-draw')");
-    expect(src).toMatch(/drawBankCardOnState\(snap\)[\s\S]*bank-card-draw/);
-    expect(src).not.toMatch(/bank-card-draw[\s\S]*drawBankCardOnState\(snap\)/);
-  });
-
-  it('useSequentialCardReveal uses resolveCardRevealDelayMs', () => {
+  it('useSequentialCardReveal uses scheduleNextCardReveal', () => {
     const src = readFileSync(join(process.cwd(), 'src/hooks/useSequentialCardReveal.ts'), 'utf8');
-    expect(src).toContain('resolveCardRevealDelayMs');
-    expect(src).not.toContain("getCardDealDelayMs(authoritative, 'initial-deal')");
+    expect(src).toContain('scheduleNextCardReveal');
+    expect(src).not.toContain('getCardDealDelayMs');
   });
 });

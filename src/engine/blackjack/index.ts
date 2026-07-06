@@ -65,6 +65,8 @@ export {
   canDoubleBlackjack,
   canSplitBlackjack,
   canDoubleBlackjackForState,
+  resolveDoubleAvailabilityForHand,
+  type DoubleAvailability,
   canSplitBlackjackForState,
   getPlayerOptionalActionGateIfActing,
   canDrawBankCard,
@@ -97,10 +99,12 @@ export {
   DEAL_SPEED_MS,
   dealDelayMsForPreset,
   cardDealDelayMs,
+  getNextCardDelay,
   getCardDealDelayMs,
   getBankTurnDelayMs,
   syncDealTimingFromPreset,
   randomBankDrawDelayMs,
+  dealSpeedLabelForPreset,
 } from './flowSettings';
 export type { BlackjackFlowSettings, DealMode, AdviceCostMode, DealSpeedPreset, CardDealDelayContext } from './flowSettings';
 

@@ -1,7 +1,7 @@
 import type { GameState } from '../../../types';
 import type { BlackjackRound } from '../../../types/blackjack';
 import type { Deck } from '../../../types/deck';
-import { getCardDealDelayMs } from '../flowSettings';
+import { getNextCardDelay } from '../flowSettings';
 import { isStagedInitialDeal } from './dealingModes';
 import { buildInitialDealPlanFromHandKeys } from '../initialDeal';
 import type { InitialDealStep } from '../initialDeal';
@@ -471,36 +471,23 @@ export function isDealerHoleRevealStep(
   );
 }
 
-/** Pause after the last player initial card before the dealer hole appears. */
+/** @deprecated use getNextCardDelay — same global interval */
 export function waitForInitialDealerHoleHoldMs(
   state: Pick<GameState, 'blackjackFlowSettings'>,
 ): number {
-  return getCardDealDelayMs(state, 'result-hold');
+  return getNextCardDelay(state);
 }
 
-/** Pick deal-speed vs bank-timer delay for the next sequential reveal step. */
+/** Delay before showing the next card — always uses the global timing engine. */
 export function resolveCardRevealDelayMs(
   state: Pick<GameState, 'blackjackFlowSettings'>,
-  round: NonNullable<GameState['blackjack']> | null,
-  roundStatus: NonNullable<GameState['blackjack']>['status'] | undefined,
-  visible: CardVisibilityCounts,
-  target: CardVisibilityCounts,
+  _round: NonNullable<GameState['blackjack']> | null,
+  _roundStatus: NonNullable<GameState['blackjack']>['status'] | undefined,
+  _visible: CardVisibilityCounts,
+  _target: CardVisibilityCounts,
 ): number {
   if (isStagedInitialDeal(state.blackjackFlowSettings.initialDealMode)) {
     return 0;
   }
-  if (round && shouldUseOrderedInitialReveal(roundStatus, visible, target)) {
-    return getCardDealDelayMs(state, 'initial-deal');
-  }
-  const step = nextGameplayRevealStep(visible, target);
-  if (!step) {
-    return getCardDealDelayMs(state, 'initial-deal');
-  }
-  if (step.dealer > visible.dealer) {
-    if (roundStatus === 'bank-turn' || roundStatus === 'banking') {
-      return getCardDealDelayMs(state, 'bank-card-draw');
-    }
-    return getCardDealDelayMs(state, 'dealer');
-  }
-  return getCardDealDelayMs(state, 'hit');
+  return getNextCardDelay(state);
 }

@@ -78,6 +78,100 @@ describe('sendIouCreateHandoff', () => {
       expect(result.error).toContain('unavailable');
     }
   });
+
+  it('posts contract body { source, handoff } to integration create URL', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        ok: true,
+        iouId: 'iou-1',
+        status: 'pending',
+        message: 'IOU created and sent.',
+      }),
+    });
+    const payload = buildServerIouCreatePayload({
+      source: 'sxm',
+      debtorEmail: 'debtor@example.com',
+      creditorEmail: 'creditor@example.com',
+      title: 'Dinner',
+      wagerText: 'Dinner',
+      tableId: 't1',
+      gameId: 'g1',
+    });
+    expect(payload.type).toBe('personal');
+    expect(payload.amountCents).toBeUndefined();
+    expect(payload.currency).toBeUndefined();
+    expect(payload.action).toBe('create_iou');
+    expect(payload.cryptoSettlement).toBe(false);
+
+    await sendIouCreateHandoff(payload, {
+      source: 'sxm',
+      secret: TEST_SECRET,
+      createUrl: 'https://iou-wallet.com/api/integrations/handoff/create',
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://iou-wallet.com/api/integrations/handoff/create');
+    expect(init.method).toBe('POST');
+    const body = JSON.parse(String(init.body));
+    expect(body).toEqual({
+      source: 'sxm',
+      handoff: expect.stringMatching(/^[-A-Za-z0-9_]+\.[-A-Za-z0-9_]+\.[-A-Za-z0-9_]+$/),
+    });
+    expect(Object.keys(body)).toEqual(['source', 'handoff']);
+  });
+
+  it('returns IOU Wallet message field when ok:false without string error', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 403,
+      json: async () => ({ ok: false, message: 'Unknown integration source' }),
+    });
+    const payload = buildServerIouCreatePayload({
+      debtorEmail: 'a@example.com',
+      creditorEmail: 'b@example.com',
+      title: 'Dinner',
+      wagerText: 'Dinner',
+      tableId: 't1',
+      gameId: 'g1',
+    });
+    const result = await sendIouCreateHandoff(payload, {
+      source: 'sxm',
+      secret: TEST_SECRET,
+      createUrl: 'https://iou-wallet.com/api/integrations/handoff/create',
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe('Unknown integration source');
+    }
+  });
+
+  it('returns HTTP status when IOU body has no error message', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ ok: false }),
+    });
+    const payload = buildServerIouCreatePayload({
+      debtorEmail: 'a@example.com',
+      creditorEmail: 'b@example.com',
+      title: 'Dinner',
+      wagerText: 'Dinner',
+      tableId: 't1',
+      gameId: 'g1',
+    });
+    const result = await sendIouCreateHandoff(payload, {
+      source: 'sxm',
+      secret: TEST_SECRET,
+      createUrl: 'https://iou-wallet.com/api/integrations/handoff/create',
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe('IOU Wallet rejected the handoff (HTTP 401).');
+    }
+  });
 });
 
 describe('IouHandoffService', () => {

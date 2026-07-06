@@ -12,6 +12,8 @@ export interface BlackjackActionPanelProps {
   showDouble: boolean;
   showSplit: boolean;
   showAid: boolean;
+  /** Shown on disabled 2× button — from resolveDoubleAvailabilityForHand. */
+  doubleBlockReason?: string | null;
   /** Desktop Full Table — AID sits to the right of Hit instead of a second row. */
   aidInlineWithHit?: boolean;
   onHit: () => void;
@@ -33,6 +35,7 @@ export function BlackjackActionPanel({
   showDouble,
   showSplit,
   showAid,
+  doubleBlockReason = null,
   aidInlineWithHit = false,
   onHit,
   onStand,
@@ -158,6 +161,7 @@ export function BlackjackActionPanel({
             type="button"
             className={doubleBtnClass}
             disabled={!actionsEnabled || !canDouble}
+            title={!canDouble && doubleBlockReason ? doubleBlockReason : undefined}
             onClick={onDouble}
           >
             2×

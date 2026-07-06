@@ -85,7 +85,7 @@ describe('runGameOverCompleteAction', () => {
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('calls IOU create before new game when IOU is selected', async () => {
@@ -238,6 +238,64 @@ describe('runGameOverCompleteAction', () => {
     expect(beginNewGame).not.toHaveBeenCalled();
     expect(setIouFeedback).toHaveBeenCalledWith(
       expect.objectContaining({ tone: 'error', message: 'Handoff rejected' }),
+    );
+  });
+
+  it('starts new game without IOU after prior failure when IOU is unchecked', async () => {
+    vi.mocked(iouHandoffApi.createIouHandoff)
+      .mockResolvedValueOnce({ ok: false, error: 'Handoff rejected' });
+    const beginNewGame = vi.fn();
+    const handlers = {
+      getState: () => endedChallengeState(),
+      addToPersonalLedger: vi.fn(),
+      beginNewGame,
+      exitTable: vi.fn(),
+      setIouFeedback: vi.fn(),
+      canResetTable: true,
+      canExitTable: true,
+    };
+
+    const blocked = await runGameOverCompleteAction(
+      { saveLedger: false, createIou: true, nextAction: 'new-game' },
+      handlers,
+    );
+    expect(blocked).toBe('blocked');
+    expect(beginNewGame).not.toHaveBeenCalled();
+
+    await runGameOverCompleteAction(
+      { saveLedger: false, createIou: false, nextAction: 'new-game' },
+      handlers,
+    );
+    expect(iouHandoffApi.createIouHandoff).toHaveBeenCalledTimes(1);
+    expect(beginNewGame).toHaveBeenCalledTimes(1);
+  });
+
+  it('surfaces network-style IOU errors without starting new game', async () => {
+    vi.mocked(iouHandoffApi.createIouHandoff).mockResolvedValueOnce({
+      ok: false,
+      error: 'IOU Wallet is unavailable. Try again later.',
+    });
+    const beginNewGame = vi.fn();
+    const setIouFeedback = vi.fn();
+    const result = await runGameOverCompleteAction(
+      { saveLedger: false, createIou: true, nextAction: 'new-game' },
+      {
+        getState: () => endedChallengeState(),
+        addToPersonalLedger: vi.fn(),
+        beginNewGame,
+        exitTable: vi.fn(),
+        setIouFeedback,
+        canResetTable: true,
+        canExitTable: true,
+      },
+    );
+    expect(result).toBe('blocked');
+    expect(beginNewGame).not.toHaveBeenCalled();
+    expect(setIouFeedback).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tone: 'error',
+        message: 'IOU Wallet is unavailable. Try again later.',
+      }),
     );
   });
 });

@@ -326,4 +326,96 @@ describe('GameOverActionOverlay', () => {
     fireEvent.click(screen.getByRole('button', { name: /close without saving/i }));
     expect(onComplete).not.toHaveBeenCalled();
   });
+
+  it('shows IOU error, re-enables actions, and offers continue without IOU', async () => {
+    const onComplete = vi.fn().mockResolvedValue(undefined);
+    const { rerender } = render(
+      <GameOverActionOverlay
+        open
+        presentation={samplePresentation()}
+        canSaveToLedger={false}
+        ledgerAlreadyAdded={false}
+        canCreateIou
+        onComplete={onComplete}
+        onDismiss={noop}
+      />,
+    );
+    fireEvent.click(screen.getByRole('checkbox', { name: /create iou/i }));
+
+    rerender(
+      <GameOverActionOverlay
+        open
+        presentation={samplePresentation()}
+        canSaveToLedger={false}
+        ledgerAlreadyAdded={false}
+        canCreateIou
+        pending
+        iouPending
+        onComplete={onComplete}
+        onDismiss={noop}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Creating IOU…' }).hasAttribute('disabled')).toBe(
+      true,
+    );
+
+    rerender(
+      <GameOverActionOverlay
+        open
+        presentation={samplePresentation()}
+        canSaveToLedger={false}
+        ledgerAlreadyAdded={false}
+        canCreateIou
+        pending={false}
+        iouPending={false}
+        iouFeedback={{ tone: 'error', message: 'Invalid partner secret' }}
+        onComplete={onComplete}
+        onDismiss={noop}
+      />,
+    );
+
+    const startButton = screen.getByRole('button', { name: 'Start New Game' });
+    expect(startButton.hasAttribute('disabled')).toBe(false);
+    expect(screen.getByText(/Invalid partner secret/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Continue without IOU' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /create iou/i }));
+    fireEvent.click(startButton);
+    expect(onComplete).toHaveBeenLastCalledWith({
+      saveLedger: false,
+      createIou: false,
+      iouMessage: undefined,
+      nextAction: 'new-game',
+    });
+  });
+
+  it('continues without IOU via secondary button after failure', async () => {
+    const onComplete = vi.fn().mockResolvedValue(undefined);
+    render(
+      <GameOverActionOverlay
+        open
+        presentation={samplePresentation()}
+        canSaveToLedger={false}
+        ledgerAlreadyAdded={false}
+        canCreateIou
+        iouFeedback={{ tone: 'error', message: 'Handoff rejected' }}
+        onComplete={onComplete}
+        onDismiss={noop}
+      />,
+    );
+
+    await clickStartNewGame({ createIou: true });
+    expect(onComplete).toHaveBeenCalledWith(
+      expect.objectContaining({ createIou: true, nextAction: 'new-game' }),
+    );
+
+    onComplete.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue without IOU' }));
+    expect(onComplete).toHaveBeenCalledWith({
+      saveLedger: false,
+      createIou: false,
+      iouMessage: undefined,
+      nextAction: 'new-game',
+    });
+  });
 });

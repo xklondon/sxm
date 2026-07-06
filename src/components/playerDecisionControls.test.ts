@@ -11,6 +11,7 @@ import {
   showPlayerActionControls,
 } from './blackjackViewPhase';
 import { resolvePlayerHandActionOptions } from './blackjackActionContract';
+import { resolveViewerActionPermission } from './blackjackViewPhase';
 import { BlackjackPanel } from './BlackjackPanel';
 import {
   actingRound,
@@ -177,6 +178,37 @@ describe('command and action parity', () => {
     const actionsZone =
       html.split('bj-table-zone--actions')[1]?.split('bj-table-zone--boxes')[0] ?? '';
     expect(actionsZone).toContain('>2×<');
+
+    const options = resolvePlayerHandActionOptions(
+      state,
+      handKey,
+      state.blackjackSettings,
+      true,
+    );
+    expect(options.canDouble).toBe(true);
+    expect(options.doubleBlockReason).toBeNull();
+  });
+
+  it('non-caller viewer cannot act on active hand even when double is legal', () => {
+    let state = tableWithClaimedBox(1);
+    const boxId = boxPlayerId(state, 1)!;
+    const handKey = blackjackHandKey(boxId, 0);
+    const deck = state.deck!;
+    state = {
+      ...state,
+      blackjackSettings: { ...state.blackjackSettings, allowDoubleDown: true },
+      blackjack: {
+        ...actingRound(state, boxId, [findCardId(deck, '5'), findCardId(deck, '6')], 50),
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: boxId,
+      },
+    };
+    const ownerId = state.tableMeta.ownerPersonId!;
+    const options = resolvePlayerHandActionOptions(state, handKey, state.blackjackSettings, true);
+    expect(options.canDouble).toBe(true);
+    expect(resolveViewerActionPermission(state, ownerId).canAct).toBe(true);
+    expect(resolveViewerActionPermission(state, 'guest-person').canAct).toBe(false);
   });
 
   it('non-split hand: no Split command line or button', () => {

@@ -16,8 +16,7 @@ describe('deal pacing helpers', () => {
     const state = {
       blackjackFlowSettings: normalizeFlowSettings({ dealSpeedPreset: 'slow' }),
     } as GameState;
-    expect(waitForDealPaceMs(state, 'initial-deal')).toBe(5000);
-    expect(waitForDealPaceMs(state, 'hit')).toBe(5000);
+    expect(waitForDealPaceMs(state)).toBe(5000);
     expect(waitForResultHoldMs(state)).toBe(5000);
   });
 
@@ -57,12 +56,10 @@ describe('deal pacing helpers', () => {
     expect(delay).toBe(5000);
   });
 
-  it('sequential reveal hook applies paced dealing for staged and natural modes', () => {
+  it('sequential reveal hook uses scheduleNextCardReveal', () => {
     const hook = readFileSync(join(process.cwd(), 'src/hooks/useSequentialCardReveal.ts'), 'utf8');
     expect(hook).toContain('isInstantInitialDeal');
-    expect(hook).toContain('isHandBoundaryRevealStep');
-    expect(hook).toContain('waitForResultHoldMs');
-    expect(hook).toContain('sleepMs');
+    expect(hook).toContain('scheduleNextCardReveal');
   });
 
   it('table flow defers auto-stand while result hold is active', () => {

@@ -1,6 +1,9 @@
 import type { GameState } from '../types';
 import { useState } from 'react';
-import type { DealSpeedPreset } from '../engine/blackjack/flowSettings';
+import {
+  dealSpeedLabelForPreset,
+  type DealSpeedPreset,
+} from '../engine/blackjack/flowSettings';
 import { isNaturalInitialDeal } from '../engine/blackjack/dealing/dealingModes';
 import {
   listAllBlackjackProtocolsForSelector,
@@ -79,15 +82,8 @@ function persistDesignTemplate(
   saveSettings(settingsFromGameState(next));
 }
 
-function dealSpeedLabel(preset: DealSpeedPreset): string {
-  switch (preset) {
-    case 'fast':
-      return 'Fast (1s)';
-    case 'slow':
-      return 'Slow (5s)';
-    default:
-      return 'Normal (3s)';
-  }
+function dealSpeedLabel(preset: DealSpeedPreset, customMs?: number): string {
+  return dealSpeedLabelForPreset(preset, customMs);
 }
 
 function persistTableClothVisuals(
@@ -338,7 +334,7 @@ export function BlackjackFlowSettingsMenu({
               />
             </label>
             <label className="bj-flow-settings__field">
-              <span className="bj-flow-settings__label">Deal speed</span>
+              <span className="bj-flow-settings__label">Card deal speed</span>
               <select
                 value={s.dealSpeedPreset}
                 onChange={(e) =>
@@ -348,34 +344,81 @@ export function BlackjackFlowSettingsMenu({
                 }
               >
                 <option value="fast">{dealSpeedLabel('fast')}</option>
+                <option value="medium">{dealSpeedLabel('medium')}</option>
                 <option value="normal">{dealSpeedLabel('normal')}</option>
                 <option value="slow">{dealSpeedLabel('slow')}</option>
+                <option value="custom">{dealSpeedLabel('custom', s.customDealDelayMs)}</option>
               </select>
             </label>
-          </section>
-
-          <section className="bj-flow-settings__card" aria-labelledby="bj-settings-timer">
-            <h3 id="bj-settings-timer" className="bj-flow-settings__card-title">
-              Timer / Bank play
-            </h3>
-            <label className="bj-flow-settings__field">
-              <span className="bj-flow-settings__label">Turn timer</span>
-              <select
-                value={s.cardTimerPreset}
+            {s.dealSpeedPreset === 'custom' && (
+              <label className="bj-flow-settings__field">
+                <span className="bj-flow-settings__label">Custom interval (ms)</span>
+                <input
+                  type="number"
+                  min={500}
+                  max={15000}
+                  step={100}
+                  value={s.customDealDelayMs}
+                  onChange={(e) =>
+                    persistAndApply(gameState, onGameStateChange, {
+                      customDealDelayMs: Math.max(500, Number(e.target.value) || 3000),
+                    })
+                  }
+                />
+              </label>
+            )}
+            <label className="bj-flow-settings__field bj-flow-settings__field--check">
+              <span className="bj-flow-settings__label">Random timing</span>
+              <input
+                type="checkbox"
+                checked={s.randomDealTiming}
                 onChange={(e) =>
                   persistAndApply(gameState, onGameStateChange, {
-                    cardTimerPreset: Number(e.target.value) as typeof s.cardTimerPreset,
-                    countdownSeconds: Number(e.target.value),
+                    randomDealTiming: e.target.checked,
                   })
                 }
-              >
-                <option value={0}>Off</option>
-                <option value={5}>5 sec</option>
-                <option value={10}>10 sec</option>
-                <option value={15}>15 sec</option>
-                <option value={30}>30 sec</option>
-              </select>
+              />
             </label>
+            {s.randomDealTiming && (
+              <>
+                <label className="bj-flow-settings__field">
+                  <span className="bj-flow-settings__label">Random min (ms)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={15000}
+                    step={100}
+                    value={s.randomDealMinMs}
+                    onChange={(e) =>
+                      persistAndApply(gameState, onGameStateChange, {
+                        randomDealMinMs: Math.max(0, Number(e.target.value) || 0),
+                      })
+                    }
+                  />
+                </label>
+                <label className="bj-flow-settings__field">
+                  <span className="bj-flow-settings__label">Random max (ms)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={15000}
+                    step={100}
+                    value={s.randomDealMaxMs}
+                    onChange={(e) =>
+                      persistAndApply(gameState, onGameStateChange, {
+                        randomDealMaxMs: Math.max(0, Number(e.target.value) || 0),
+                      })
+                    }
+                  />
+                </label>
+              </>
+            )}
+          </section>
+
+          <section className="bj-flow-settings__card" aria-labelledby="bj-settings-bank">
+            <h3 id="bj-settings-bank" className="bj-flow-settings__card-title">
+              Bank play
+            </h3>
             <label className="bj-flow-settings__field bj-flow-settings__field--check">
               <span className="bj-flow-settings__label">Auto bank play</span>
               <input
