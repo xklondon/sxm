@@ -10,6 +10,7 @@ import {
 import {
   getTotalCommittedExposureForPerson,
   getOpenStakeExposureForPerson,
+  getInRoundBetExposureForPerson,
 } from '../session/playerCommittedExposure';
 import { getAvailableChipsForBankrollOwner } from '../session/bankroll';
 import { addChipToBoxStake } from '../blackjack/stakes';
@@ -82,6 +83,26 @@ describe('playerCommittedExposure', () => {
     expect(tray.playerAvailable).toBe(0);
     expect(row.available).toBe(0);
     expect(row.betting).toBe(500);
+  });
+
+  it('does not count in-round hand bets after settlement for game-end exposure', () => {
+    let { state, p2 } = twoPlayerTable();
+    const box2 = boxPlayerId(state, 2)!;
+    const deck = state.deck!;
+    state = {
+      ...state,
+      tableMeta: { ...state.tableMeta, bettingLocked: true, awaitingNextRound: true },
+      blackjack: {
+        ...actingRound(state, box2, [findCardId(deck, '10'), findCardId(deck, '8')], 500),
+        status: 'resolved',
+        isSettled: true,
+        dealerCardIds: [findCardId(deck, '10'), findCardId(deck, '9')],
+        dealerHoleHidden: false,
+      },
+    };
+    expect(state.blackjack!.playerHands[`${box2}:0`]!.currentBet).toBeGreaterThan(0);
+    expect(getInRoundBetExposureForPerson(state, p2)).toBe(0);
+    expect(getTotalCommittedExposureForPerson(state, p2)).toBe(0);
   });
 
   it('does not attribute co-box stake to native box owner bankroll', () => {

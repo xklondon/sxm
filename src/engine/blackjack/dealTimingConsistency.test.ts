@@ -38,9 +38,22 @@ describe('deal timing — single canonical source', () => {
     expect(src).toContain('REVEAL_WATCHDOG_MAX_STUCK_STEPS');
   });
 
-  it('useBlackjackTableFlow does not pace bank draws locally', () => {
+  it('useBlackjackTableFlow gates banking on cardRevealComplete', () => {
     const src = readFileSync(join(process.cwd(), 'src/components/useBlackjackTableFlow.ts'), 'utf8');
     expect(src).not.toContain('getCardDealDelayMs');
     expect(src).toContain('cardRevealComplete');
+    const earlyGate = src.match(
+      /if \(!cardRevealComplete \|\| bankDrawInFlightRef\.current\) \{[\s\S]*?\n {4}\}/,
+    )?.[0];
+    expect(earlyGate).toBeTruthy();
+    expect(earlyGate).not.toContain('completeBankingOnState');
+    expect(src).toMatch(/round\?\.status !== 'banking' \|\| !cardRevealComplete/);
+  });
+
+  it('watchdog timeout requires stuck steps before snap', () => {
+    const src = readFileSync(join(process.cwd(), 'src/hooks/useSequentialCardReveal.ts'), 'utf8');
+    expect(src).toMatch(
+      /stuckSteps >= REVEAL_WATCHDOG_MAX_STUCK_STEPS[\s\S]*watchdog-timeout/,
+    );
   });
 });

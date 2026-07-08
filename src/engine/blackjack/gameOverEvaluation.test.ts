@@ -151,6 +151,39 @@ describe('evaluateBlackjackGameOver', () => {
     expect(state.tableMeta.awaitingNextRound).toBe(false);
   });
 
+  it('ends after settlement even when resolved hands still carry currentBet', () => {
+    let state = tableWithClaimedBox(1);
+    const bankId = state.session.bankPlayerId!;
+    const boxId = boxPlayerId(state, 1)!;
+    const deck = state.deck!;
+    state = startBlackjackRound(state);
+    state = placeBlackjackBetOnState(state, boxId, 500);
+    state = {
+      ...state,
+      blackjack: {
+        ...state.blackjack!,
+        status: 'banking',
+        dealerCardIds: [findCardId(deck, '10'), findCardId(deck, '9')],
+        dealerHoleHidden: false,
+        playerHands: {
+          [`${boxId}:0`]: {
+            ...state.blackjack!.playerHands[`${boxId}:0`]!,
+            cardIds: [findCardId(deck, '10'), findCardId(deck, '8')],
+            currentBet: 500,
+            actionStatus: 'stood',
+          },
+        },
+      },
+    };
+    state = completeBankingOnState(state);
+    expect(state.blackjack?.playerHands[`${boxId}:0`]?.currentBet).toBeGreaterThan(0);
+    expect(state.blackjack?.isSettled).toBe(true);
+    expect(state.tableMeta.gameStatus).toBe('ended');
+    expect(evaluateTableGameEnd(state).reason).toBe('single-holder');
+    expect(state.tableMeta.awaitingNextRound).toBe(false);
+    expect(evaluateBlackjackGameOver(state).winnerPersonId).toBe(bankId);
+  });
+
   it('does not trigger game over from pre-settlement ledger snapshot', () => {
     const state = tableAfterStartPlaying(500);
     const bankId = state.session.bankPlayerId!;

@@ -252,6 +252,7 @@ export function useSequentialCardReveal(
         }
 
         if (
+          stuckSteps >= REVEAL_WATCHDOG_MAX_STUCK_STEPS &&
           hasPendingCardReveal(visible, authoritativeTarget) &&
           Date.now() - watchdogStartedAt >= computeRevealWatchdogTimeoutMs(authoritative)
         ) {
@@ -269,6 +270,13 @@ export function useSequentialCardReveal(
             round &&
             shouldUseOrderedInitialReveal(round, visible, authoritativeTarget)
           ) {
+            if (
+              hasPendingCardReveal(visible, authoritativeTarget) &&
+              !isStagedInitialDeal(authoritative.blackjackFlowSettings.initialDealMode)
+            ) {
+              await scheduleNextCardReveal(authoritative);
+              continue;
+            }
             break;
           }
           if (!hasPendingCardReveal(visible, authoritativeTarget)) {

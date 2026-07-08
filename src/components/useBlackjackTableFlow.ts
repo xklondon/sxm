@@ -373,16 +373,6 @@ export function useBlackjackTableFlow(
       if (status === 'bank-turn' && !cardRevealComplete) {
         setBankUiMessage('Bank thinking…');
       }
-      if (status === 'banking') {
-        setBankUiMessage(getBankFinalMessage(gameStateRef.current));
-        try {
-          onGameStateChange(completeBankingOnState(gameStateRef.current));
-        } catch (err) {
-          setFlowError(err instanceof Error ? err.message : 'Banking failed');
-        } finally {
-          setBankUiMessage(null);
-        }
-      }
       return;
     }
 
@@ -426,7 +416,7 @@ export function useBlackjackTableFlow(
     if (flow.bankDrawMode === 'auto') {
       return;
     }
-    if (round?.status !== 'banking') {
+    if (round?.status !== 'banking' || !cardRevealComplete) {
       return;
     }
     setBankUiMessage(getBankFinalMessage(gameStateRef.current));

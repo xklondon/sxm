@@ -125,6 +125,10 @@ export function getInRoundBetExposureForPerson(state: GameState, personId: strin
   if (!round?.playerHands) {
     return 0;
   }
+  // Settled rounds: bets are ledger-final; hand currentBet is display history only.
+  if (round.isSettled || round.status === 'resolved') {
+    return 0;
+  }
   const ctx = bankrollContextFromState(state);
   return getBoxIdsWithCommittedExposureForPerson(state, personId).reduce((sum, boxId) => {
     return (

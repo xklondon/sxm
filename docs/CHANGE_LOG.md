@@ -11,6 +11,14 @@ Every significant feature change must update **both**:
 
 before the work is considered complete. This rule is also stated in `.cursorrules`.
 
+## 2026-07-08 — Game-over after settlement; card reveal timing
+
+- **Game end:** Settled/resolved rounds no longer count in-round `currentBet` as betting exposure for `evaluateTableGameEnd` — prevents `all-players-eliminated` / `single-holder` from being blocked while resolved hands still show bet amounts. **Available: 0 alone does not end the game**; ledger ≤ 0 and betting ≤ 0 (post-settlement) are required for non-bank elimination.
+- **Banking timing:** Auto/manual bank settlement waits for `cardRevealComplete` — no early `completeBankingOnState` while bank-draw cards are still revealing.
+- **Reveal watchdog:** Wall-clock snap requires stuck steps first; ordered initial-deal wait loops use `scheduleNextCardReveal` instead of breaking without delay.
+
+---
+
 ## 2026-07-06 — Blackjack reveal order, Card View hero, bank game-over regressions
 
 - **Reveal:** Initial-deal ordered reveal follows the canonical plan from the round even when authoritative counts grow (online bank-resolve). Watchdog snap is progressive in plan order.
