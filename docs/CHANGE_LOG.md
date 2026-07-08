@@ -813,6 +813,14 @@ betting, ledger, auth, Zilch, or routing changes):
 
 ---
 
+## 2026-07-08 — Co-staked double visibility, mobile actions clearance, IOU handoff contract
+
+- **Double (multiplayer):** Separated rule eligibility from funding in `resolveDoubleAvailabilityForHand`; `showDouble` follows `isDoubleOfferedForHand` so 2× stays visible (disabled + block reason) when co-staked funding blocks; command copy surfaces funding reason.
+- **Mobile Full Table:** `--bj-full-mobile-actions-clearance: 10px` lifts actions zone above player boxes (Full Table mobile only).
+- **IOU handoff:** `payloadVersion: 1`; personal IOUs send `amountCents: 0` + `currency: 'USD'` contract markers; expanded safe remote diagnostics (`hasIv`, `hasAuthTag`, `payloadVersion`, etc.); `validateIouCreatePayloadContract` + pre-send validation.
+
+---
+
 ## 2026-07-06 — IOU handoff rejection diagnostics + game-over continue path
 
 - **Server:** Safe `[SXM][iou-handoff] remote attempt/rejected` logs (source, host, payload shape, HTTP status, nonce prefix); surfaces IOU `message`/`error` fields in API response instead of generic rejection when available.

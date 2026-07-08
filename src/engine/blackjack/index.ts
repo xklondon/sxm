@@ -66,6 +66,7 @@ export {
   canSplitBlackjack,
   canDoubleBlackjackForState,
   resolveDoubleAvailabilityForHand,
+  isDoubleOfferedForHand,
   type DoubleAvailability,
   canSplitBlackjackForState,
   getPlayerOptionalActionGateIfActing,

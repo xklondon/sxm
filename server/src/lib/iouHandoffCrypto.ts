@@ -4,6 +4,7 @@ import {
   buildIouHandoffPayloadDiagnostics,
   parseIouWalletRemoteError,
 } from './iouHandoffDiagnostics.js';
+import { validateIouCreatePayloadContract } from '../../../src/lib/iouHandoffPayload.js';
 
 export {
   buildIouHandoffPayloadDiagnostics,
@@ -82,6 +83,10 @@ export async function sendIouCreateHandoff(
   payload: IouCreatePayload,
   config: IouHandoffRemoteConfig,
 ): Promise<IouHandoffRemoteResponse> {
+  const contractError = validateIouCreatePayloadContract(payload);
+  if (contractError) {
+    return { ok: false, error: `Invalid IOU handoff payload: ${contractError}` };
+  }
   const handoff = encryptIouHandoff(payload, config.secret);
   const diagnostics = buildIouHandoffPayloadDiagnostics(payload, config.createUrl, handoff);
   // eslint-disable-next-line no-console

@@ -27,11 +27,23 @@ export interface IouHandoffPayloadDiagnostics {
   creditorEmailPresent: boolean;
   action: string;
   type: string;
+  hasAmountCents: boolean;
+  hasCurrency: boolean;
   amountCentsPresent: boolean;
   currency: string | null;
   cryptoSettlement: boolean;
+  hasEncryptedPayload: boolean;
+  hasIv: boolean;
+  hasAuthTag: boolean;
+  payloadVersion: number | null;
+  keyId: string | null;
   noncePrefix: string;
   handoffIvPrefix: string;
+}
+
+function handoffTokenParts(handoff: string): { iv: string; cipher: string; tag: string } {
+  const [iv = '', cipher = '', tag = ''] = handoff.split('.');
+  return { iv, cipher, tag };
 }
 
 export function buildIouHandoffPayloadDiagnostics(
@@ -39,6 +51,7 @@ export function buildIouHandoffPayloadDiagnostics(
   createUrl: string,
   handoff: string,
 ): IouHandoffPayloadDiagnostics {
+  const token = handoffTokenParts(handoff);
   return {
     source: payload.source,
     createUrlHost: iouHandoffCreateUrlHost(createUrl),
@@ -46,9 +59,16 @@ export function buildIouHandoffPayloadDiagnostics(
     creditorEmailPresent: Boolean(payload.creditorEmail?.trim()),
     action: payload.action,
     type: payload.type,
+    hasAmountCents: payload.amountCents !== undefined,
+    hasCurrency: payload.currency !== undefined,
     amountCentsPresent: payload.amountCents !== undefined,
     currency: payload.currency ?? null,
     cryptoSettlement: payload.cryptoSettlement,
+    hasEncryptedPayload: Boolean(token.cipher),
+    hasIv: Boolean(token.iv),
+    hasAuthTag: Boolean(token.tag),
+    payloadVersion: payload.payloadVersion ?? null,
+    keyId: null,
     noncePrefix: iouHandoffNoncePrefix(payload.nonce),
     handoffIvPrefix: iouHandoffTokenIvPrefix(handoff),
   };

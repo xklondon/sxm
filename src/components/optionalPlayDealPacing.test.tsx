@@ -120,7 +120,7 @@ describe('optional play overlay under command', () => {
     expect(html).toContain('>Split<');
   });
 
-  it('renders only Double when split is illegal', () => {
+  it('renders Double and disabled Split when split is illegal but offered', () => {
     const html = renderToStaticMarkup(
       <OptionalPlayDecisionOverlay
         canDouble
@@ -133,16 +133,34 @@ describe('optional play overlay under command', () => {
       />,
     );
     expect(html).toContain('>Double<');
-    expect(html).not.toContain('>Split<');
+    expect(html).toContain('>Split<');
+    expect(html).toContain('disabled=""');
   });
 
-  it('renders nothing when neither is legal', () => {
+  it('renders disabled buttons when offered but neither action is legal', () => {
     const html = renderToStaticMarkup(
       <OptionalPlayDecisionOverlay
         canDouble={false}
         canSplit={false}
         showDouble
         showSplit
+        actionsEnabled
+        onDouble={noop}
+        onSplit={noop}
+      />,
+    );
+    expect(html).toContain('>Double<');
+    expect(html).toContain('>Split<');
+    expect(html.match(/disabled=""/g)?.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('renders nothing when neither action is offered', () => {
+    const html = renderToStaticMarkup(
+      <OptionalPlayDecisionOverlay
+        canDouble={false}
+        canSplit={false}
+        showDouble={false}
+        showSplit={false}
         actionsEnabled
         onDouble={noop}
         onSplit={noop}

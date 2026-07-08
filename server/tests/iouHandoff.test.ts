@@ -6,6 +6,7 @@ import {
   encryptIouHandoff,
   sendIouCreateHandoff,
 } from '../src/lib/iouHandoffCrypto.js';
+import { validateIouCreatePayloadContract } from '../../src/lib/iouHandoffPayload.js';
 import { IouHandoffService } from '../src/iouHandoff/service.js';
 
 const TEST_SECRET = 'test-partner-secret';
@@ -38,11 +39,44 @@ describe('iouHandoffCrypto', () => {
       tableId: 't1',
       gameId: 'g1',
     });
+    expect(validateIouCreatePayloadContract(payload)).toBeNull();
     const token = encryptIouHandoff(payload, TEST_SECRET);
     expect(token.split('.')).toHaveLength(3);
     const decoded = decryptHandoff(token, TEST_SECRET) as typeof payload;
     expect(decoded.debtorEmail).toBe('debtor@example.com');
     expect(decoded.nonce).toBe(payload.nonce);
+    expect(decoded.payloadVersion).toBe(1);
+  });
+
+  it('bad secret fails decrypt (invalid/tampered contract)', () => {
+    const payload = buildServerIouCreatePayload({
+      debtorEmail: 'a@example.com',
+      creditorEmail: 'b@example.com',
+      title: 'Dinner',
+      wagerText: 'Dinner',
+      tableId: 't1',
+      gameId: 'g1',
+    });
+    const token = encryptIouHandoff(payload, TEST_SECRET);
+    expect(() => decryptHandoff(token, 'wrong-secret')).toThrow();
+  });
+
+  it('personal dinner IOU validates and round-trips encrypted', () => {
+    const payload = buildServerIouCreatePayload({
+      debtorEmail: 'loser@example.com',
+      creditorEmail: 'winner@example.com',
+      title: 'Dinner',
+      wagerText: 'Dinner',
+      tableId: 't1',
+      gameId: 'g1',
+    });
+    expect(payload.type).toBe('personal');
+    expect(payload.amountCents).toBe(0);
+    expect(payload.currency).toBe('USD');
+    expect(validateIouCreatePayloadContract(payload)).toBeNull();
+    const decoded = decryptHandoff(encryptIouHandoff(payload, TEST_SECRET), TEST_SECRET) as typeof payload;
+    expect(decoded.amountCents).toBe(0);
+    expect(decoded.currency).toBe('USD');
   });
 });
 
@@ -100,8 +134,9 @@ describe('sendIouCreateHandoff', () => {
       gameId: 'g1',
     });
     expect(payload.type).toBe('personal');
-    expect(payload.amountCents).toBeUndefined();
-    expect(payload.currency).toBeUndefined();
+    expect(payload.amountCents).toBe(0);
+    expect(payload.currency).toBe('USD');
+    expect(payload.payloadVersion).toBe(1);
     expect(payload.action).toBe('create_iou');
     expect(payload.cryptoSettlement).toBe(false);
 

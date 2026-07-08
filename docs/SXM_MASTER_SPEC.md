@@ -427,7 +427,8 @@ Host for start/randomise/confirm starter; current turn player for gameplay actio
 - **Server-only env (canonical):** `IOU_HANDOFF_SOURCE` (default `sxm`), `IOU_HANDOFF_SECRET`, `IOU_HANDOFF_CREATE_URL`. Legacy `SXM_HANDOFF_*` names are **ignored**; startup logs missing canonical keys and rename hint when legacy vars are present.
 - **No client secrets:** no `VITE_*` handoff vars, no frontend encryption, no `/new?source=sxm&handoff=…` one-click path.
 - **Game-over UI:** `runGameOverCompleteAction` (`gameOverActionFlow.ts`) calls `createIouHandoff` before new-game reset or exit-table leave; IOU failure blocks proceed but overlay offers **Continue without IOU** / uncheck path; duplicate/alreadySubmitted is non-fatal.
-- **Remote diagnostics:** server logs safe handoff attempt/rejection fields (host, payload shape, HTTP status) — never secret or full ciphertext.
+- **Remote diagnostics:** server logs safe handoff attempt/rejection fields (host, payload shape, HTTP status, `hasAmountCents`, `hasCurrency`, `hasIv`, `hasAuthTag`, `payloadVersion`) — never secret or full ciphertext.
+- **Personal IOU contract:** encrypted payload includes `payloadVersion: 1`, `amountCents: 0`, `currency: 'USD'` for non-monetary personal wagers (IOU Wallet schema).
 - **Deprecated (tests only):** `buildGameEndIouHandoff` / `buildIouWalletNewUrl` — manual `/new?counterpartyEmail=…` prefill; not used for live handoff creation.
 
 ---

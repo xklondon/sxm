@@ -10,6 +10,23 @@ const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-ro
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
 
+describe('mobile layout fixes — Full Table action/box clearance', () => {
+  const { fullTableCardArea: PLAY_ZONE_CSS } = readBlackjackLayoutCss();
+
+  it('lifts mobile Full Table actions zone by 10px without affecting Card View', () => {
+    expect(SHARED_CSS).toMatch(/--bj-full-mobile-actions-clearance:\s*10px/);
+    expect(PLAY_ZONE_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*transform:\s*translateY\(calc\(-1 \* var\(--bj-full-mobile-actions-clearance/,
+    );
+    expect(PLAY_ZONE_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*margin-bottom:\s*var\(--bj-full-mobile-actions-clearance/,
+    );
+    expect(PLAY_ZONE_CSS).not.toMatch(
+      /\.bj-view-card-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*--bj-full-mobile-actions-clearance/,
+    );
+  });
+});
+
 describe('mobile layout fixes — portrait bottom safe area', () => {
   it('pads tray and rail with safe-area-inset-bottom on mobile view roots', () => {
     expect(SHARED_CSS).toMatch(

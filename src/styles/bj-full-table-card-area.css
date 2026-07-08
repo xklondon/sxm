@@ -400,6 +400,8 @@
   justify-content: flex-start;
   z-index: 6;
   position: relative;
+  transform: translateY(calc(-1 * var(--bj-full-mobile-actions-clearance, 0px)));
+  margin-bottom: var(--bj-full-mobile-actions-clearance, 0px);
 }
 
 .bj-view-full-desktop .bj-table-zone--actions .bj-player-actions,

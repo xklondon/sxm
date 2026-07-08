@@ -3,7 +3,9 @@ import {
   buildIouCreatePayload,
   buildIouHandoffNonceMaterial,
   classifyWagerToIouType,
+  IOU_HANDOFF_PAYLOAD_VERSION,
   parseCashWagerDetails,
+  validateIouCreatePayloadContract,
 } from './iouHandoffPayload';
 
 describe('iouHandoff payload', () => {
@@ -57,7 +59,7 @@ describe('iouHandoff payload', () => {
     expect(payload.metadata.settlementReason).toBe('challenge_result');
   });
 
-  it('builds personal IOU payload without amount fields', () => {
+  it('builds personal IOU payload with zero USD contract markers', () => {
     const payload = buildIouCreatePayload({
       debtorEmail: 'loser@example.com',
       creditorEmail: 'winner@example.com',
@@ -68,7 +70,24 @@ describe('iouHandoff payload', () => {
       nonce: 'nonce-2',
     });
     expect(payload.type).toBe('personal');
-    expect(payload.amountCents).toBeUndefined();
-    expect(payload.currency).toBeUndefined();
+    expect(payload.payloadVersion).toBe(IOU_HANDOFF_PAYLOAD_VERSION);
+    expect(payload.amountCents).toBe(0);
+    expect(payload.currency).toBe('USD');
+    expect(validateIouCreatePayloadContract(payload)).toBeNull();
+  });
+
+  it('rejects tampered payload contract and bad secret roundtrip', () => {
+    const payload = buildIouCreatePayload({
+      debtorEmail: 'loser@example.com',
+      creditorEmail: 'winner@example.com',
+      title: '$5',
+      wagerText: '$5',
+      tableId: 'table-1',
+      gameId: 'game-1',
+      nonce: 'nonce-3',
+    });
+    expect(validateIouCreatePayloadContract(payload)).toBeNull();
+    const badPersonal = { ...payload, type: 'personal' as const, amountCents: undefined };
+    expect(validateIouCreatePayloadContract(badPersonal)).toMatch(/Personal IOU/);
   });
 });

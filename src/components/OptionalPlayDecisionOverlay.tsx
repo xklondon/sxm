@@ -24,8 +24,8 @@ export function OptionalPlayDecisionOverlay({
   onSplit,
   onPlayHand,
 }: OptionalPlayDecisionOverlayProps) {
-  const showDoubleBtn = showDouble && canDouble;
-  const showSplitBtn = showSplit && canSplit;
+  const showDoubleBtn = showDouble;
+  const showSplitBtn = showSplit;
   if (!showDoubleBtn && !showSplitBtn) {
     return null;
   }
@@ -41,7 +41,7 @@ export function OptionalPlayDecisionOverlay({
           <button
             type="button"
             className="bj-insurance-overlay__btn bj-insurance-overlay__btn--primary"
-            disabled={!actionsEnabled}
+            disabled={!actionsEnabled || !canDouble}
             onClick={onDouble}
           >
             Double
@@ -51,7 +51,7 @@ export function OptionalPlayDecisionOverlay({
           <button
             type="button"
             className="bj-insurance-overlay__btn bj-insurance-overlay__btn--secondary"
-            disabled={!actionsEnabled}
+            disabled={!actionsEnabled || !canSplit}
             onClick={onSplit}
           >
             Split

@@ -154,6 +154,47 @@ export interface DoubleAvailability {
   blockReason: string | null;
 }
 
+/** Protocol/rule eligibility only — ignores staker funding capacity. */
+function isDoubleRuleEligibleForHand(state: GameState, handKey: string): boolean {
+  const built = rulesContextForHand(state, handKey);
+  if (!built) {
+    return false;
+  }
+  const { playerId } = parseBlackjackHandKey(handKey);
+  const fundingPersonId = built.participants[0]?.personId ?? playerId;
+  const ruleCtx = buildActiveRulesHandContext(
+    built.protocol,
+    state.ledger,
+    state.blackjack!,
+    handKey,
+    state.deck!,
+    fundingPersonId,
+    Number.POSITIVE_INFINITY,
+  );
+  return ruleCtx
+    ? canDoubleUnderProtocol(built.protocol, built.ctx.hand, ruleCtx)
+    : false;
+}
+
+/** True when 2× should appear (rule-legal active hand) — funding may still block execution. */
+export function isDoubleOfferedForHand(state: GameState, handKey: string): boolean {
+  if (!state.blackjackSettings.allowDoubleDown) {
+    return false;
+  }
+  const round = state.blackjack;
+  if (!round || !state.deck) {
+    return false;
+  }
+  if (round.status !== 'player-turns' || round.activeHandKey !== handKey) {
+    return false;
+  }
+  const hand = round.playerHands[handKey];
+  if (!hand || hand.actionStatus !== 'acting' || hand.doubled) {
+    return false;
+  }
+  return isDoubleRuleEligibleForHand(state, handKey);
+}
+
 export function resolveDoubleAvailabilityForHand(
   state: GameState,
   handKey: string,
@@ -172,22 +213,14 @@ export function resolveDoubleAvailabilityForHand(
   if (!hand || hand.actionStatus !== 'acting' || hand.doubled) {
     return { canDouble: false, blockReason: 'Double not allowed for this hand.' };
   }
-  const built = rulesContextForHand(state, handKey);
-  if (!built) {
-    return { canDouble: false, blockReason: 'Hand not ready.' };
-  }
-  const { playerId } = parseBlackjackHandKey(handKey);
-  const funding = resolveFundableActionParticipants(state, hand, playerId, 'double');
-  if (!canDoubleUnderProtocol(built.protocol, hand, built.ctx)) {
-    const fundingReason = getDoubleFundingBlockReason(state, handKey);
-    if (fundingReason) {
-      return { canDouble: false, blockReason: fundingReason };
-    }
+  if (!isDoubleRuleEligibleForHand(state, handKey)) {
     if (hand.cardIds.length !== 2) {
       return { canDouble: false, blockReason: 'Double only on the first two cards.' };
     }
     return { canDouble: false, blockReason: 'Double not allowed on this hand total.' };
   }
+  const { playerId } = parseBlackjackHandKey(handKey);
+  const funding = resolveFundableActionParticipants(state, hand, playerId, 'double');
   if (!funding.canFundAll) {
     return { canDouble: false, blockReason: INSUFFICIENT_DOUBLE_REASON };
   }

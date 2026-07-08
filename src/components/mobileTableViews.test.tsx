@@ -524,6 +524,16 @@ describe('stable dealer layout slots across phases', () => {
     expect(playing).toContain('dealer-block__cards');
     expect(playing).toContain('bj-table-actions');
   });
+
+  it('mobile Full Table actions zone has +10px clearance above boxes', () => {
+    expect(SHARED_CSS).toMatch(/--bj-full-mobile-actions-clearance:\s*10px/);
+    expect(PLAY_ZONE_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*margin-bottom:\s*var\(--bj-full-mobile-actions-clearance/,
+    );
+    expect(PLAY_ZONE_CSS).not.toMatch(
+      /\.bj-view-card-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*--bj-full-mobile-actions-clearance/,
+    );
+  });
 });
 
 describe('mobile Card View width contract', () => {

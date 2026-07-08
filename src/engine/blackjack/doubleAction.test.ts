@@ -24,6 +24,9 @@ import { allocateChipsToBankrollOwner } from '../session/allocation';
 import { syncPlayerOrderAndAssignments } from '../session/playerAssignment';
 import { confirmBoxStake } from './stakes';
 import { derivePlayerBalanceFromLedger } from '../ledger/ledger';
+import { dealCardsButtonOnState } from './gameState';
+import { shuffleTableForDeal } from './sanity/fixtures';
+import { resolvePlayerHandActionOptions } from '../../components/blackjackActionContract';
 
 const actor: BlackjackActorContext = { personId: 'host', payload: {}, resolveBankAuto: false };
 
@@ -181,6 +184,113 @@ describe('double down action', () => {
     expect(derivePlayerBalanceFromLedger(host, doubled.ledger)).toBe(hostBefore - 50);
     expect(derivePlayerBalanceFromLedger(guest, doubled.ledger)).toBe(guestBefore - 50);
     expect(doubled.blackjack!.playerHands[handKey]!.currentBet).toBe(200);
+  });
+
+  it('co-staked hard 10 (8+2) enables double through deal path without hand snapshot override', () => {
+    let state = tableAfterStartPlaying(500);
+    const host = state.tableMeta.ownerPersonId!;
+    const guestSpl = addPlayer(state.session, state.players, state.ledger, {
+      displayName: 'K',
+      controllerName: 'K',
+      role: 'person',
+      startingChips: 0,
+    });
+    state = mergeSessionUpdate(state, guestSpl);
+    const guest = guestSpl.session.playerIds[guestSpl.session.playerIds.length - 1]!;
+    state = allocateChipsToBankrollOwner(state, {
+      bankrollOwnerId: guest,
+      amount: 500,
+      reason: 'initial-player',
+      source: 'setup',
+    });
+    state = { ...state, tableMeta: { ...state.tableMeta, playerOrder: [host, guest] } };
+    state = syncPlayerOrderAndAssignments(state);
+    state = claimBoxSlot(state, 1);
+    const boxId = boxPlayerId(state, 1)!;
+    state = addChipToBoxStake(state, boxId, 50, host);
+    state = addChipToBoxStake(state, boxId, 50, guest);
+    state = confirmBoxStake(state, boxId);
+    state = startBlackjackRound(state);
+    state = dealCardsButtonOnState(shuffleTableForDeal(state));
+    const handKey = blackjackHandKey(boxId, 0);
+    const deck = state.deck!;
+    const hand = state.blackjack!.playerHands[handKey]!;
+    expect(hand.stakerAmountsByPersonId).toEqual({ [host]: 50, [guest]: 50 });
+    state = {
+      ...state,
+      blackjack: {
+        ...state.blackjack!,
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: boxId,
+        playerHands: {
+          ...state.blackjack!.playerHands,
+          [handKey]: {
+            ...hand,
+            cardIds: [findCardId(deck, '8'), findCardId(deck, '2')],
+            actionStatus: 'acting',
+          },
+        },
+      },
+      tableMeta: { ...state.tableMeta, bettingLocked: true },
+    };
+    expect(resolveDoubleAvailabilityForHand(state, handKey)).toEqual({
+      canDouble: true,
+      blockReason: null,
+    });
+    const ui = resolvePlayerHandActionOptions(state, handKey, state.blackjackSettings, true);
+    expect(ui.showDouble).toBe(true);
+    expect(ui.canDouble).toBe(true);
+  });
+
+  it('co-staked hard 10 blocks double with funding reason when one staker cannot fund', () => {
+    let state = tableAfterStartPlaying(500);
+    const host = state.tableMeta.ownerPersonId!;
+    const guestSpl = addPlayer(state.session, state.players, state.ledger, {
+      displayName: 'K',
+      controllerName: 'K',
+      role: 'person',
+      startingChips: 0,
+    });
+    state = mergeSessionUpdate(state, guestSpl);
+    const guest = guestSpl.session.playerIds[guestSpl.session.playerIds.length - 1]!;
+    state = allocateChipsToBankrollOwner(state, {
+      bankrollOwnerId: guest,
+      amount: 50,
+      reason: 'initial-player',
+      source: 'setup',
+    });
+    state = { ...state, tableMeta: { ...state.tableMeta, playerOrder: [host, guest] } };
+    state = syncPlayerOrderAndAssignments(state);
+    state = claimBoxSlot(state, 1);
+    const boxId = boxPlayerId(state, 1)!;
+    const handKey = blackjackHandKey(boxId, 0);
+    const deck = shuffleBlackjackShoe(createBlackjackShoe(6), 'co-double-block');
+    state = {
+      ...state,
+      deck,
+      tableMeta: { ...state.tableMeta, bettingLocked: true },
+      blackjack: {
+        ...actingRound(state, boxId, [findCardId(deck, '8'), findCardId(deck, '2')], 400),
+        status: 'player-turns',
+        activeHandKey: handKey,
+        activePlayerId: boxId,
+        playerHands: {
+          [handKey]: {
+            ...actingRound(state, boxId, [findCardId(deck, '8'), findCardId(deck, '2')], 400)
+              .playerHands[handKey]!,
+            stakerAmountsByPersonId: { [host]: 200, [guest]: 200 },
+          },
+        },
+      },
+    };
+    const availability = resolveDoubleAvailabilityForHand(state, handKey);
+    expect(availability.canDouble).toBe(false);
+    expect(availability.blockReason).toBe(INSUFFICIENT_DOUBLE_REASON);
+    const ui = resolvePlayerHandActionOptions(state, handKey, state.blackjackSettings, true);
+    expect(ui.showDouble).toBe(true);
+    expect(ui.canDouble).toBe(false);
+    expect(ui.doubleBlockReason).toBe(INSUFFICIENT_DOUBLE_REASON);
   });
 
   it('offline double uses activeHandKey only', () => {

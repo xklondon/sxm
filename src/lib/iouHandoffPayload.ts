@@ -2,6 +2,7 @@ import { detectIouTypeFromWager, IOU_GAME_MESSAGE, type IouWalletType } from '..
 
 export const IOU_HANDOFF_ACTION = 'create_iou' as const;
 export const IOU_HANDOFF_SOURCE_DEFAULT = 'sxm';
+export const IOU_HANDOFF_PAYLOAD_VERSION = 1;
 export const IOU_CREATE_MESSAGE =
   'Created from SXM Casino after a completed challenge.';
 
@@ -15,6 +16,7 @@ export interface IouHandoffMetadata {
 export interface IouCreatePayload {
   source: string;
   action: typeof IOU_HANDOFF_ACTION;
+  payloadVersion: number;
   debtorEmail: string;
   creditorEmail: string;
   debtorName?: string;
@@ -195,6 +197,7 @@ export function buildIouCreatePayload(input: IouCreatePayloadInput): IouCreatePa
   const payload: IouCreatePayload = {
     source: input.source?.trim() || IOU_HANDOFF_SOURCE_DEFAULT,
     action: IOU_HANDOFF_ACTION,
+    payloadVersion: IOU_HANDOFF_PAYLOAD_VERSION,
     debtorEmail,
     creditorEmail,
     title: input.title.trim() || wagerText || 'Blackjack wager',
@@ -227,9 +230,45 @@ export function buildIouCreatePayload(input: IouCreatePayloadInput): IouCreatePa
     if (cash.currency) {
       payload.currency = cash.currency;
     }
+  } else {
+    // IOU Wallet schema: personal IOUs carry explicit zero amount + currency (non-monetary).
+    payload.amountCents = 0;
+    payload.currency = 'USD';
   }
 
   return payload;
+}
+
+/** Validate plaintext payload against IOU Wallet integration contract (pre-encrypt). */
+export function validateIouCreatePayloadContract(payload: IouCreatePayload): string | null {
+  if (payload.action !== IOU_HANDOFF_ACTION) {
+    return 'Invalid action';
+  }
+  if (payload.payloadVersion !== IOU_HANDOFF_PAYLOAD_VERSION) {
+    return 'Invalid payloadVersion';
+  }
+  if (!payload.debtorEmail?.trim() || !payload.creditorEmail?.trim()) {
+    return 'Missing debtor or creditor email';
+  }
+  if (payload.debtorEmail === payload.creditorEmail) {
+    return 'Debtor and creditor must differ';
+  }
+  if (!payload.nonce?.trim()) {
+    return 'Missing nonce';
+  }
+  if (payload.type === 'cash') {
+    if (payload.amountCents === undefined || payload.amountCents <= 0) {
+      return 'Cash IOU requires positive amountCents';
+    }
+    if (!payload.currency?.trim()) {
+      return 'Cash IOU requires currency';
+    }
+  } else if (payload.type === 'personal') {
+    if (payload.amountCents !== 0 || payload.currency !== 'USD') {
+      return 'Personal IOU requires zero USD amount marker';
+    }
+  }
+  return null;
 }
 
 /** Client-side idempotency key for a completed table session. */

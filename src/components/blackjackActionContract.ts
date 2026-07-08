@@ -8,6 +8,7 @@ import {
   canHitBlackjack,
   canSplitBlackjackForState,
   canStandBlackjack,
+  isDoubleOfferedForHand,
   resolveDoubleAvailabilityForHand,
 } from '../engine/blackjack';
 
@@ -63,12 +64,14 @@ export function resolvePlayerHandActionOptions(
   }
   const activeHandKey = round.activeHandKey ?? handKey;
   const doubleAvailability = resolveDoubleAvailabilityForHand(state, activeHandKey);
+  const showDouble =
+    settings.allowDoubleDown && isDoubleOfferedForHand(state, activeHandKey);
   return {
     canHit: canHitBlackjack(round, activeHandKey),
     canStand: canStandBlackjack(round, activeHandKey),
-    canDouble: hasDeck && settings.allowDoubleDown && doubleAvailability.canDouble,
+    canDouble: hasDeck && showDouble && doubleAvailability.canDouble,
     canSplit: canSplitBlackjackForState(state, activeHandKey),
-    showDouble: settings.allowDoubleDown,
+    showDouble,
     showSplit: settings.allowSplit && hasDeck,
     doubleBlockReason: doubleAvailability.blockReason,
   };
@@ -79,6 +82,8 @@ export function resolvePlayerHandCommandLines(options: PlayerHandActionOptions):
   const lines: string[] = [];
   if (options.showDouble && options.canDouble) {
     lines.push('Double available.');
+  } else if (options.showDouble && options.doubleBlockReason) {
+    lines.push(options.doubleBlockReason);
   }
   if (options.showSplit && options.canSplit) {
     lines.push('Split available.');
