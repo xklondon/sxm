@@ -150,15 +150,9 @@ export function canPersonControlZilchPlayer(
     return true;
   }
 
-  const person = state.players[personId];
-  if (person && player.playerType !== 'virtual') {
-    const personLabel = (person.controllerName?.trim() || person.displayName || '').toLowerCase();
-    const playerLabel = (player.controllerName?.trim() || player.displayName || '').toLowerCase();
-    if (personLabel && personLabel === playerLabel) {
-      return true;
-    }
-  }
-
+  // No display-name matching here: this function is on the server authority
+  // path (assertZilchPlayerTurn) and names are client-chosen/spoofable.
+  // Offline name-only contexts use canControllerActOnZilchTurn below.
   return false;
 }
 

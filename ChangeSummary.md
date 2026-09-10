@@ -31,5 +31,11 @@ Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates mad
 - Tests: new `src/hooks/useOnlineMultiplayer.versionGuard.test.tsx` (4 cases: stale broadcast dropped, own-broadcast double-apply dedup, foreign-table payload ignored, newer-after-older applied); onlineSocket + App.staleTable/infraStability/membership all pass.
 - Validation tier: multiplayer targeted tests + `npm run build` (pass).
 
+## Item 5 — zilch display-name fallback removed from server path
+- Files: `src/engine/dice/zilch/zilchTurnAuthority.ts` (case-insensitive label-match branch deleted from `canPersonControlZilchPlayer`, which backs the server's `assertZilchPlayerTurn`; the explicit offline name-only helper `canControllerActOnZilchTurn` is untouched, as is the host-drives-any-turn branch pinned by existing tests).
+- Tests: new spoof regression in `zilchTurnAuthority.test.ts` (two guests with identical display names — no cross-control). All 82 zilch engine/UI tests pass.
+- Validation tier: zilch targeted tests + `npm run build` (pass).
+- Note: the `playable.length <= 1 → allow` shortcut was kept — it is load-bearing for offline/local solo tables where no viewer person id exists; server exposure is a seated member driving the only playable seat (low harm, host-equivalent).
+
 ## Item 2 notes
 - Notes: (a) `npm run build:server` fails on a PRE-EXISTING tsconfig rootDir misconfiguration (fails identically on the clean tree; it also emits stray `.js` files beside sources — cleaned up). Canonical `npm run build` (tsc -b + vite) passes. (b) Known limitation: saving an ONLINE table state locally and resuming it OFFLINE now resumes with a masked shoe order (reshuffle-equivalent); online resume is unaffected (server keeps the real deck).

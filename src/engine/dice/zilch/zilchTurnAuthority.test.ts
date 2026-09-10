@@ -99,6 +99,29 @@ describe('zilchTurnAuthority', () => {
     expect(canControlZilchTurn(state, hostId)).toBe(true);
   });
 
+  it('matching display name does not grant control of another player turn', () => {
+    let state = setTableOwner(createNewZilchTable(), 'Host', 'host@example.com');
+    state = applyZilchTableStakeSetup(state, {
+      ...practiceSetup,
+      tableMode: 'challenge',
+      bankerMode: 'self',
+      bankerName: 'Host',
+      virtualPlayerCount: 0,
+    } as never);
+    state = beginZilchPlay(state);
+    state = finalizeInviteJoinAtTable(state, 'guest-a', 'Guest').state;
+    // Second guest picked the SAME display name — names are spoofable and
+    // must never grant turn control (server authority path).
+    state = finalizeInviteJoinAtTable(state, 'guest-b', 'Guest').state;
+    state = {
+      ...state,
+      zilch: { ...state.zilch!, currentPlayerId: 'guest-a' },
+    };
+    expect(canPersonControlZilchPlayer(state, 'guest-b', 'guest-a')).toBe(false);
+    expect(canControlZilchTurn(state, 'guest-b')).toBe(false);
+    expect(canControlZilchTurn(state, 'guest-a')).toBe(true);
+  });
+
   it('non-host cannot act on another player turn in challenge', () => {
     const { state: base, hostId } = practiceTable();
     let state = applyZilchActionToState(base, 'zilchRandomiseStarter', {});
