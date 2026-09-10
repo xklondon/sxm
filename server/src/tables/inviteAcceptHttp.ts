@@ -50,7 +50,9 @@ export async function completeInviteAcceptRedirect(
   });
   const joinedTable = tables.getTableRecord(result.tableId);
   if (joinedTable) {
-    broadcastTableUpdate(io, joinedTable.id, joinedTable.version, joinedTable.state);
+    broadcastTableUpdate(io, joinedTable.id, joinedTable.version, joinedTable.state, (userId) =>
+      tables.getMemberPersonId(joinedTable.id, userId),
+    );
   }
   res.setHeader('Set-Cookie', [
     buildClearPendingInviteCookieHeader(),

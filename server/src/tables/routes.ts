@@ -16,6 +16,7 @@ import {
 import { TableForbiddenError, TableMembershipError, TableNotFoundError } from './errors.js';
 import { addTableChatMessage, listTableChatMessages } from './tableChatStore.js';
 import { broadcastTableUpdate } from './broadcast.js';
+import { redactStateForViewer } from './redactState.js';
 
 function respondTableServiceError(res: import('express').Response, err: unknown): boolean {
   if (err instanceof TableNotFoundError) {
@@ -143,7 +144,12 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         req.auth!.email,
         'GET /api/tables/:id',
       );
-      res.json({ tableId: table.id, version: table.version, state: table.state, memberPersonId });
+      res.json({
+        tableId: table.id,
+        version: table.version,
+        state: redactStateForViewer(table.state, memberPersonId),
+        memberPersonId,
+      });
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
         return;
@@ -256,11 +262,13 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         token: String(req.body?.token ?? ''),
         sessionEmail: req.auth!.email,
       });
-      broadcastTableUpdate(io, joined.table.id, joined.table.version, joined.table.state);
+      broadcastTableUpdate(io, joined.table.id, joined.table.version, joined.table.state, (userId) =>
+        tables.getMemberPersonId(joined.table.id, userId),
+      );
       res.json({
         tableId: joined.table.id,
         version: joined.table.version,
-        state: joined.table.state,
+        state: redactStateForViewer(joined.table.state, joined.memberPersonId),
         memberPersonId: joined.memberPersonId,
       });
     } catch (err) {
@@ -301,7 +309,9 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       });
       const approvedTable = tables.getTableRecord(req.params.tableId!);
       if (approvedTable) {
-        broadcastTableUpdate(io, approvedTable.id, approvedTable.version, approvedTable.state);
+        broadcastTableUpdate(io, approvedTable.id, approvedTable.version, approvedTable.state, (userId) =>
+          tables.getMemberPersonId(approvedTable.id, userId),
+        );
       }
       res.json(result);
     } catch (err) {
@@ -343,8 +353,14 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
         expectedVersion,
         req.auth!.email,
       );
-      broadcastTableUpdate(io, req.params.tableId!, result.version, result.state);
-      res.json(result);
+      const actionTableId = req.params.tableId!;
+      broadcastTableUpdate(io, actionTableId, result.version, result.state, (userId) =>
+        tables.getMemberPersonId(actionTableId, userId),
+      );
+      res.json({
+        version: result.version,
+        state: redactStateForViewer(result.state, result.personId),
+      });
     } catch (err) {
       if (respondPeopleAuthError(res, err)) {
         return;

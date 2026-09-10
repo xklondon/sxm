@@ -79,6 +79,14 @@ export class TableService {
     return this.store.getTable(tableId);
   }
 
+  /**
+   * Pure membership lookup (no provisioning) — used to resolve the viewer for
+   * per-socket state redaction in broadcasts.
+   */
+  getMemberPersonId(tableId: string, userId: string): string | null {
+    return this.store.getMember(tableId, userId)?.personId ?? null;
+  }
+
   async getTableForUser(
     tableId: string,
     userId: string,
@@ -771,7 +779,7 @@ export class TableService {
     payload: Record<string, unknown>,
     expectedVersion?: number,
     sessionEmail?: string,
-  ): Promise<{ state: GameState; version: number }> {
+  ): Promise<{ state: GameState; version: number; personId: string }> {
     const member = await ensureTableMember({
       store: this.store,
       people: this.people,
@@ -797,7 +805,7 @@ export class TableService {
     const nextState = applyTableAction(table.state, action, payload, member.personId);
     const version = table.version + 1;
     this.store.updateTable(tableId, nextState, version);
-    return { state: nextState, version };
+    return { state: nextState, version, personId: member.personId };
   }
 }
 
