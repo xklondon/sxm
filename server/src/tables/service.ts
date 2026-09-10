@@ -621,14 +621,19 @@ export class TableService {
         access = 'request';
       }
 
-      summaries.push(
-        buildActiveTableSummary(table, access, {
-          invite,
-          hostName,
-          hostEmail,
-          joinRequestId,
-        }),
-      );
+      const summary = buildActiveTableSummary(table, access, {
+        invite,
+        hostName,
+        hostEmail,
+        joinRequestId,
+      });
+      // Unrelated viewers (Knock flow) may see the table exists, but not the
+      // host email or invited-player emails — members/invitees only.
+      if (access === 'request' || access === 'pending') {
+        summary.hostEmail = null;
+        summary.players = [];
+      }
+      summaries.push(summary);
     }
 
     return summaries.sort((a, b) => b.createdAt.localeCompare(a.createdAt));

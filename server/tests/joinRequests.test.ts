@@ -30,6 +30,9 @@ describe('table join requests', () => {
     const row = list.find((entry) => entry.tableId === table.id);
     expect(row?.access).toBe('request');
     expect(row?.host).toBeTruthy();
+    // Knock flow shows the table exists, but not host/player emails.
+    expect(row?.hostEmail).toBeNull();
+    expect(row?.players).toEqual([]);
   });
 
   it('creates pending join request for non-invited user', async () => {

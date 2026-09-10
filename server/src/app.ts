@@ -192,7 +192,15 @@ export function createApp(options: CreateAppOptions = {}) {
   });
 
   io.on('connection', (socket) => {
-    socket.on('table:subscribe', (tableId: string) => {
+    socket.on('table:subscribe', async (tableId: string) => {
+      // Same membership resolution as GET /api/tables/:tableId — a session
+      // alone must not grant a live feed of any table's state.
+      try {
+        await tables.getTableForUser(String(tableId), socket.data.userId as string);
+      } catch {
+        socket.emit('table:subscribe:denied', { tableId });
+        return;
+      }
       const prev = socket.data.subscribedTableId as string | undefined;
       if (prev && prev !== tableId) {
         socket.leave(`table:${prev}`);

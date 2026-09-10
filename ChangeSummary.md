@@ -1,47 +1,18 @@
-# Change Summary
+# Change Summary — Repo audit (double routes / ungated routines / visual sequencing)
 
-## Files changed
+1. **Files changed:** None. Read-only audit; findings report delivered in chat. No code, spec, or env files touched.
+2. **Tests added/updated:** None.
+3. **Validation run:** All tiers skipped — no code changed (Ownership: skipped; Layout: skipped; Blackjack layout: skipped; People/invites: skipped; Build: skipped).
+4. **Architecture impact:** None yet. Report flags 3 high-severity server gaps (ungated `table:subscribe` + full-state broadcasts leaking hole cards/deck, display-name-based `assignChips` authority, `/api/tables/active` listing all tables to any user), plus medium findings (no client version guard on `table:update`, unauthenticated `/api/debug`, negative `placeBet` amounts, zilch display-name turn fallback, single-slot `useHandTransitionHold`). Two findings conflict with the blackjack freeze (`cardRevealDisplay.ts` reveal order, Card View `slice(0,4)` results cap) and are flagged, not proposed, pending explicit unfreeze.
+5. **Deploy readiness:** Unchanged from before audit; the high-severity information-leak/authority findings should be fixed before any wider deployment.
 
-### BUG 1 — End of game not triggered
-- `src/engine/session/playerCommittedExposure.ts` — `getInRoundBetExposureForPerson` returns 0 when round is settled/resolved
-- `src/engine/blackjack/gameOverEvaluation.test.ts` — settled round with stale `currentBet` still triggers game-over
-- `src/engine/session/playerCommittedExposure.test.ts` — post-settlement exposure guard
+Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates made (audit only, no behaviour changed).
 
-### BUG 2 — Card deal timing inconsistent
-- `src/components/useBlackjackTableFlow.ts` — banking settlement gated on `cardRevealComplete` (removed early complete while reveals pending; manual bank same)
-- `src/hooks/useSequentialCardReveal.ts` — watchdog timeout requires stuck steps; ordered initial-deal wait uses `scheduleNextCardReveal` instead of break-without-delay
-- `src/engine/blackjack/dealTimingConsistency.test.ts` — banking gate + watchdog guards
+---
 
-### Docs
-- `docs/CHANGE_LOG.md`, `docs/SXM_MASTER_SPEC.md`
+# Punch-list execution log
 
-## Tests added/updated
-
-| Area | Tests |
-|------|-------|
-| Game end | `gameOverEvaluation.test.ts` (+1), `playerCommittedExposure.test.ts` (+1) |
-| Game-over UI | `gameEndFlowRegression.test.ts`, `blackjackGameOverContract.test.ts` (pass) |
-| Card timing | `dealTimingConsistency.test.ts` (+2), `cardRevealOrder.test.ts`, `cardRevealGameplay.test.ts`, `bankTurnPacing.test.ts`, `bankDrawLoop.test.ts` (pass) |
-
-## Validation run
-
-| Tier | Command | Result |
-|------|---------|--------|
-| Game end UI | `npx vitest run src/components/gameEndFlowRegression.test.ts src/components/blackjackGameOverContract.test.ts` | **Run — 15 passed** |
-| Game end engine | `npx vitest run src/engine/blackjack/gameOverEvaluation.test.ts src/engine/session/playerCommittedExposure.test.ts` | **Run — pass** |
-| Card timing | `npx vitest run src/engine/blackjack/dealTimingConsistency.test.ts src/engine/blackjack/dealing/cardRevealOrder.test.ts src/engine/blackjack/dealing/cardRevealGameplay.test.ts src/engine/blackjack/bankTurnPacing.test.ts src/engine/blackjack/bankDrawLoop.test.ts` | **Run — pass** |
-| Full suite | `npx vitest run --reporter=dot --pool=forks --testTimeout=10000` | **Run — 2490 passed, 5 skipped** |
-| Build | `npm run build` | **Run — pass** |
-| Ownership / layout | `npm run test:ownership`, `npm run test:layout:target` | **Skipped** — no routing/CSS ownership changes |
-
-## Architecture impact
-
-- Game-end eligibility: settled rounds treat hand `currentBet` as display-only for exposure; ledger remains source of truth.
-- Bank automation: engine may enter `banking` before reveal catches up, but settlement waits for reveal queue (`cardRevealComplete`).
-- Card timing: single delay path unchanged (`getNextCardDelay` → `scheduleNextCardReveal`); removed fast-path settlement and premature watchdog snap during normal paced sequences.
-
-## Deploy readiness
-
-Ready — full suite green, build green.
-
-**Spec discipline: checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.**
+## Item 1 — socket `table:subscribe` membership gate + `/api/tables/active` PII scope
+- Files: `server/src/app.ts` (subscribe now resolves membership via `tables.getTableForUser` before joining the room; denial emits `table:subscribe:denied`), `server/src/tables/service.ts` (`listActiveTables` strips `hostEmail` and `players` emails for `request`/`pending` rows — Knock flow keeps table visibility per `joinRequests.test.ts` intent).
+- Tests: new `server/tests/socketSubscribe.test.ts` (member receives updates, stranger denied); extended `server/tests/joinRequests.test.ts` PII assertions. Ran socketSubscribe + joinRequests + activeTables + multiplayer + multiplayerOwnership — all pass.
+- Validation tier: multiplayer/table targeted tests + `npm run build` (pass).
