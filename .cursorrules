@@ -339,3 +339,69 @@ At task completion, overwrite **`ChangeSummary.md`** with:
 **Never** mark a task complete without reporting which commands were executed.  
 **Never** run full `npm test` inside a Cursor agent loop.  
 **Never** pipe `npm test` through `Select-Object`.
+
+
+## Authority & security discipline (added post-audit 2026-09)
+
+- **personId only, never display-name, for any authority/ownership check.**
+  Display names are client-chosen and not unique. `assertTableHost`,
+  `assertPlayerAction`, and the hold'em turn gates are the canonical
+  pattern — every gameplay/admin check (chip assignment, table reset,
+  turn control, host actions) must compare `ctx.personId` against
+  server-held state, never a name string. If you find a name-based
+  fallback outside the documented offline-only path, it's a bug, not a
+  feature — file it, don't extend it.
+
+- **Socket room membership must match HTTP membership.** Any `socket.on`
+  handler that joins a client to a table/room must run the same
+  membership check the HTTP route for that resource uses
+  (`getTableForUser` pattern) before `socket.join(...)`. A session cookie
+  proves identity, not access.
+
+- **Broadcast state must be redacted per-viewer.** `broadcastTableUpdate`
+  (or any future single choke-point broadcaster) must strip
+  hidden/opponent-only data (hole cards, unrevealed deck order, other
+  seats' hole cards) before emit — hiding it only in the renderer is not
+  sufficient; the data must not leave the server for that viewer.
+
+- **Debug/dev routers must be gated the same way.** Any router mounted
+  under `/api/debug` or `/api/dev` must either be wrapped in
+  `!config.isProduction` (like `devRouter`) or behind `requireAuth` +
+  admin check (like `peopleRouter`) — never mounted unconditionally in
+  all environments.
+
+- **Client state application must be monotonic.** Any code path that
+  applies server-pushed game state (`table:update`, poll fallback, HTTP
+  action response) must compare `payload.version` against the last
+  applied version and discard stale/out-of-order payloads. Never assume
+  socket and HTTP arrive in order.
+
+- **Numeric inputs from the client (bet/chip amounts) must be validated
+  positive and within allowed denominations server-side**, not just
+  client-side — client-side validation is UX, not security. Mirror
+  whichever sibling action in the same file already does this correctly
+  (e.g. hold'em's `bet`/`raise` amount checks) rather than writing a new
+  check from scratch.
+
+## Redundancy discipline (added post-audit 2026-09)
+
+- **One render owner per dialog/overlay.** If a component can be opened
+  from more than one parent (e.g. a profile dialog reachable from `App`
+  and from a game panel), exactly one of them must own it — the other
+  receives a controlled prop and renders nothing of its own. This is
+  Architecture Rule 6 (no duplicate render paths), extended to dialogs
+  and overlays, not just action rows/boxes.
+- **List keys must use a stable identity field** (`handKey`, `message.id`,
+  the model's own unique key) — never a composite of label/index/sliced
+  text. If you're keying on a template string, stop and find the id the
+  model already carries.
+- **Dead code with zero production imports gets deleted, not kept
+  "just in case."** If an ownership test already asserts production
+  never imports a file (e.g. `productionRouteOwnership.test.ts`), that
+  file should not exist in `src/` at all — quarantine to
+  `reference-ui/` or delete it in the same task that confirms it's
+  orphaned.
+- **One implementation per cross-cutting utility.** Don't let two
+  endpoints/helpers solve the same problem differently (e.g. two
+  email-test code paths, a stale hardcoded self-inventory of routes).
+  Consolidate to one and have the other call it.
