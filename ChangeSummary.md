@@ -1,11 +1,18 @@
-# Change Summary — Audit punch-list execution (items 1–14 + approved #15 reveal-order fix)
+# Change Summary — Audit punch-list execution (items 1–14 + approved #15 exceptions)
+
+## Item #15b — complete Card View settlement results, approved freeze exception (2026-09-11)
+
+- **Files changed:** `src/components/BlackjackCardView.tsx` and `src/components/CardViewDesktopHeroArea.tsx` now derive settlement lines from `orderedHandKeys(session, round)` and render all matching results; the `slice(0, 4)` cap and object-insertion ordering are removed. No CSS, card geometry, reveal sequencing, or timing changed.
+- **Test updated:** `src/components/blackjackVisualResultDisplay.test.tsx` creates six settled boxes with messages inserted in reverse order, then confirms mobile and desktop Card View render all six in canonical box order.
+- **Validation:** targeted Card View suites — 5 files, 48 passed; ownership smoke — 28 passed; `npm run build` green (pre-existing chunk-size warning only). Full `npm test` and `blackjackRenderedLayout.test.tsx` skipped per rules.
+- **Docs:** separate approved-exception line in `docs/BLACKJACK_ENGINE_FREEZE.md`; behavior recorded in `docs/SXM_MASTER_SPEC.md` and `docs/CHANGE_LOG.md`.
 
 ## Item #15 (partial) — reveal order, approved freeze exception (2026-09-10)
 
 - **Files changed:** `src/engine/blackjack/dealing/cardRevealDisplay.ts` (`nextGameplayRevealStep` only — player-hand catch-up now precedes dealer/bank-draw catch-up; pure reorder, no new timing/state/config), `docs/BLACKJACK_ENGINE_FREEZE.md` (exception recorded), `docs/CHANGE_LOG.md`.
 - **Tests added/updated:** `src/engine/blackjack/dealing/cardRevealGameplay.test.ts` — new case pinning players-before-dealer during gameplay catch-up (double card + bank draws in one state).
 - **Validation:** targeted engine reveal/pacing suites (`src/engine/blackjack/dealing` + bankTurnPacing, dealPacing, cardTimingEngine, dealerDisplay, doubleAction, blackjackPolish) — 16 files, 121 passed; dependent component suites (blackjackFiveIssueFixes, blackjackPresentationStability, blackjackStabilityContracts, cardViewHeroHand, tableInfoDisplay) — 5 files, 44 passed; `npm run build` green. `blackjackRenderedLayout.test.tsx` / full `npm test` not run per rules.
-- **Not touched (outside approval):** Card View `slice(0,4)` results cap; all other frozen files.
+- **Not touched by this reveal-order exception:** Card View results rendering was handled later under the separate #15b exception; all other frozen files remained unchanged.
 
 ---
 

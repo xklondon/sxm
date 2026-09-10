@@ -8,6 +8,7 @@ import type { GameState } from "../types";
 import type { BlackjackProtocolPhase } from "../engine/blackjack/protocol";
 
 import {
+  orderedHandKeys,
   parseBlackjackHandKey,
 } from "../engine/blackjack";
 
@@ -527,7 +528,11 @@ export function BlackjackCardView({
         return null;
       }
       const results = round?.resultMessages ?? {};
-      const lines = Object.entries(results).filter(([key]) => key !== "__round__").slice(0, 4);
+      const lines = round
+        ? orderedHandKeys(session, round)
+            .filter((key) => results[key] !== undefined)
+            .map((key) => [key, results[key]!] as const)
+        : [];
 
       return (
         <div className="bj-phone-view__settle-results">

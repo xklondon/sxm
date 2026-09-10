@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { GameState } from '../types';
 import type { BlackjackProtocolPhase } from '../engine/blackjack/protocol';
-import { parseBlackjackHandKey } from '../engine/blackjack';
+import { orderedHandKeys, parseBlackjackHandKey } from '../engine/blackjack';
 import { getCardById } from '../engine/deck';
 import { getPlayerInitials } from '../storage/profileStorage';
 import type { AuthUser } from '../api/client';
@@ -56,7 +56,7 @@ export function CardViewDesktopHeroArea({
   viewerAuth: _viewerAuth = null,
 }: CardViewDesktopHeroAreaProps) {
   const logicalGameState = logicalGameStateProp ?? gameState;
-  const { players, deck, blackjack: round } = gameState;
+  const { session, players, deck, blackjack: round } = gameState;
   const logicalRound = logicalGameState.blackjack;
 
   const heroBoxId = getCardViewHeroBoxId(protocolPhase, activeBoxId, null, focusBoxId ?? null);
@@ -131,7 +131,11 @@ export function CardViewDesktopHeroArea({
 
   function renderSettleResults() {
     const results = round?.resultMessages ?? {};
-    const lines = Object.entries(results).filter(([key]) => key !== '__round__').slice(0, 4);
+    const lines = round
+      ? orderedHandKeys(session, round)
+          .filter((key) => results[key] !== undefined)
+          .map((key) => [key, results[key]!] as const)
+      : [];
 
     return (
       <div className="bj-card-desktop-hero__results">

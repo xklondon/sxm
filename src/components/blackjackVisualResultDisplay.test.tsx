@@ -6,6 +6,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import type { GameState } from '../types';
 import { createBlackjackPlayerHand } from '../types/blackjack';
+import { BlackjackCardView } from './BlackjackCardView';
+import { CardViewDesktopHeroArea } from './CardViewDesktopHeroArea';
 import { BlackjackPanel } from './BlackjackPanel';
 import { boxHadActiveHandInRound } from './boxBetResultDisplay';
 import { resolveCardAreaOutcomeMarker } from './cardAreaOutcomeDisplay';
@@ -63,6 +65,56 @@ function settledMultiBoxState(): GameState {
   };
 }
 
+function settledSixBoxState(): GameState {
+  let state = tableAfterStartPlaying(500);
+  for (let slot = 1; slot <= 6; slot += 1) {
+    state = claimBoxSlot(state, slot);
+  }
+
+  const handKeys = Array.from({ length: 6 }, (_, index) => {
+    const boxId = boxPlayerId(state, index + 1)!;
+    return blackjackHandKey(boxId, 0);
+  });
+  const playerHands = Object.fromEntries(
+    handKeys.map((handKey, index) => {
+      const boxId = boxPlayerId(state, index + 1)!;
+      return [
+        handKey,
+        {
+          ...createBlackjackPlayerHand(boxId, 0),
+          currentBet: 10,
+          actionStatus: 'stood' as const,
+        },
+      ];
+    }),
+  );
+  // Deliberately insert messages backwards: rendering must follow canonical
+  // box order, not object insertion order.
+  const resultMessages = Object.fromEntries(
+    [...handKeys]
+      .reverse()
+      .map((handKey) => [
+        handKey,
+        `result-for-box-${state.session.boxSlotNumbers[handKey.split(':')[0]!]}`,
+      ]),
+  );
+
+  return {
+    ...state,
+    tableMeta: { ...state.tableMeta, awaitingNextRound: true },
+    blackjack: {
+      ...state.blackjack!,
+      status: 'resolved',
+      isSettled: true,
+      activeHandKey: null,
+      activePlayerId: null,
+      playerHands,
+      outcomes: Object.fromEntries(handKeys.map((handKey) => [handKey, 'win' as const])),
+      resultMessages,
+    },
+  };
+}
+
 describe('blackjack visual result display', () => {
   it('desktop net result uses compact net-result class', () => {
     expect(PANEL_SRC).toContain('boxStakeLabelClassName');
@@ -103,6 +155,38 @@ describe('blackjack visual result display', () => {
     expect(CARD_VIEW_SRC).toContain('hideHeroValueOnMobile');
     expect(CARD_VIEW_SRC).toContain('bj-card-view__hero-outcome');
     expect(CARD_VIEW_SRC).toContain('cardAreaOutcomeMarkerText');
+  });
+
+  it('renders all settled box results in canonical order in mobile and desktop Card View', () => {
+    const state = settledSixBoxState();
+    const mobileHtml = renderToStaticMarkup(
+      <BlackjackCardView
+        gameState={state}
+        deviceView="mobile"
+        activeBoxId={null}
+        showHoleHidden={false}
+        protocolPhase="banking"
+        bettingOpen={false}
+        gameEnded={false}
+        onBack={noop}
+      />,
+    );
+    const desktopHtml = renderToStaticMarkup(
+      <CardViewDesktopHeroArea
+        gameState={state}
+        activeBoxId={null}
+        protocolPhase="banking"
+        gameEnded={false}
+      />,
+    );
+
+    for (const html of [mobileHtml, desktopHtml]) {
+      const positions = Array.from({ length: 6 }, (_, index) =>
+        html.indexOf(`result-for-box-${index + 1}`),
+      );
+      expect(positions.every((position) => position >= 0)).toBe(true);
+      expect(positions).toEqual([...positions].sort((a, b) => a - b));
+    }
   });
 
   it('mobile full-table arc keeps card column numeric value when outcome marker shows', () => {

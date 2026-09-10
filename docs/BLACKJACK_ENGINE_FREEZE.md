@@ -39,6 +39,7 @@ Related guards:
 
 ## Approved exceptions
 
+- **2026-09-11** — `BlackjackCardView.tsx` and `CardViewDesktopHeroArea.tsx`: removed the four-result data cap and render every settled hand in canonical `orderedHandKeys` box order. Explicit user-approved unfreeze, scoped to Card View settle-result data rendering; no card geometry/CSS changes.
 - **2026-09-10** — `cardRevealDisplay.ts` `nextGameplayRevealStep`: reordered gameplay reveal catch-up so pending player cards (hit/double/split draws) reveal **before** dealer/bank draw cards, matching the players-before-dealer principle of `buildInitialRevealSteps`. Explicit user-approved unfreeze, scoped to that one function; no timing/config/state changes.
 
 ---

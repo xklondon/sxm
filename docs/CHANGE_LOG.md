@@ -11,6 +11,12 @@ Every significant feature change must update **both**:
 
 before the work is considered complete. This rule is also stated in `.cursorrules`.
 
+## 2026-09-11 — Card View complete settlement results (approved freeze exception, punch-list #15b)
+
+- `BlackjackCardView.tsx` and `CardViewDesktopHeroArea.tsx`: Card View settlement panels now render every settled hand result in canonical `orderedHandKeys` box order. Removed the silent `slice(0, 4)` data truncation; no card geometry, CSS, reveal sequencing, or timing changed. Explicit user-approved exception recorded separately in `docs/BLACKJACK_ENGINE_FREEZE.md`.
+
+---
+
 ## 2026-09-10 — Blackjack gameplay reveal order (approved freeze exception, punch-list #15a)
 
 - `cardRevealDisplay.ts` `nextGameplayRevealStep`: pending player cards (hit/double/split draws) now reveal before dealer/bank draw cards — players-before-dealer, same principle as `buildInitialRevealSteps`. Pure reorder of the existing step sequencing; no new timing config, state, or animation. Explicit user-approved exception recorded in `docs/BLACKJACK_ENGINE_FREEZE.md`. The Card View `slice(0,4)` cap was **not** part of this approval and is unchanged.
