@@ -7,6 +7,7 @@ import {
   createNewBlackjackTable,
   createNewHoldemTable,
   createNewZilchTable,
+  isBlackjackTable,
   normalizeLoadedGameState,
 } from './engine/session';
 import type { InvitedTablePlayerSetup } from './features/messaging/tableMessagingTypes';
@@ -726,7 +727,12 @@ export default function App({ user, onlineMode = false, bootTableId = null, forc
           onSaved={() => setProfileSetupOpen(false)}
         />
       )}
-      {!showOnlineProfileSetup && profileOpen && (
+      {/* On blackjack tables the panel owns the profile dialog (controlled via
+          profileOpen prop, richer onSaved play-flow sync) — rendering a second
+          copy here stacked two dialogs with double-Escape/double-save. */}
+      {!showOnlineProfileSetup &&
+        profileOpen &&
+        !(onTableScreen && gameState && isBlackjackTable(gameState)) && (
         <LocalProfileSetup
           open
           required={!onlineMode && !profile.name.trim()}

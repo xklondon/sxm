@@ -2529,6 +2529,7 @@ export function BlackjackPanel({
       <LocalProfileSetup
         open={profileOpen}
         required={!isOnlineModeEnabled() && !loadProfile().name.trim()}
+        lockedEmail={isOnlineModeEnabled() ? viewerAuth?.email : undefined}
         onClose={() => setProfileOpen(false)}
         onSaved={(saved) => {
           const personId = tableMeta.ownerPersonId;

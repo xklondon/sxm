@@ -57,5 +57,10 @@ Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates mad
 - Tests: `blackjackUxFixes` + `optionalPlayDealPacing` (21 pass) and `npm run test:layout:fast` (31 pass, freeze-adjacent guard tier).
 - Validation tier: blackjack targeted tests + layout fast tier + `npm run build` (pass).
 
+## Item 10 — LocalProfileSetup single owner on blackjack tables
+- Files: `src/App.tsx` (App's copy no longer renders when the table screen routes to BlackjackPanel — the panel owns the dialog there), `src/components/BlackjackPanel.tsx` (panel copy gains `lockedEmail` in online mode so behaviour matches the removed App copy; its richer `onSaved` play-flow sync is preserved). Zilch/hold'em/non-table screens keep the App copy (only BlackjackPanel receives `profileOpen`).
+- Tests: App.render/membership/infraStability + productionRouteOwnership + blackjackEngineFreezeGuards — 40 pass.
+- Validation tier: ownership + App targeted tests + `npm run build` (pass).
+
 ## Item 2 notes
 - Notes: (a) `npm run build:server` fails on a PRE-EXISTING tsconfig rootDir misconfiguration (fails identically on the clean tree; it also emits stray `.js` files beside sources — cleaned up). Canonical `npm run build` (tsc -b + vite) passes. (b) Known limitation: saving an ONLINE table state locally and resuming it OFFLINE now resumes with a masked shoe order (reshuffle-equivalent); online resume is unaffected (server keeps the real deck).
