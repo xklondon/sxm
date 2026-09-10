@@ -79,6 +79,83 @@ function zilchRevealTable() {
   return { ...base, zilch };
 }
 
+function rollingTable() {
+  const base = readyTable();
+  const zilch = base.zilch!;
+  return {
+    ...base,
+    zilch: {
+      ...zilch,
+      diceAnimation: { isRolling: true, durationMs: 400, startedAt: Date.now() },
+    },
+  };
+}
+
+describe('useZilchTableFlow online roll completion gate', () => {
+  it('acting client dispatches zilchCompleteRoll after the animation', async () => {
+    vi.useFakeTimers();
+    const gameState = rollingTable();
+    const onlineDispatch = vi.fn().mockResolvedValue(undefined);
+
+    renderHook(() =>
+      useZilchTableFlow({
+        gameState,
+        onGameStateChange: vi.fn(),
+        onlineDispatch,
+        canRunZilchRevealTimer: true,
+      }),
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(onlineDispatch).toHaveBeenCalledWith('zilchCompleteRoll', {});
+    vi.useRealTimers();
+  });
+
+  it('non-acting client never dispatches zilchCompleteRoll', async () => {
+    vi.useFakeTimers();
+    const gameState = rollingTable();
+    const onlineDispatch = vi.fn().mockResolvedValue(undefined);
+
+    renderHook(() =>
+      useZilchTableFlow({
+        gameState,
+        onGameStateChange: vi.fn(),
+        onlineDispatch,
+        canRunZilchRevealTimer: false,
+      }),
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
+    expect(onlineDispatch).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it('offline still completes the roll locally regardless of the gate', async () => {
+    vi.useFakeTimers();
+    const gameState = rollingTable();
+    const onGameStateChange = vi.fn();
+
+    renderHook(() =>
+      useZilchTableFlow({
+        gameState,
+        onGameStateChange,
+        canRunZilchRevealTimer: false,
+      }),
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(onGameStateChange).toHaveBeenCalledTimes(1);
+    expect(onGameStateChange.mock.calls[0]![0].zilch?.diceAnimation.isRolling).toBe(false);
+    vi.useRealTimers();
+  });
+});
+
 describe('useZilchTableFlow zilch reveal timer', () => {
   it('auto-advances once after reveal window and cleans up on unmount', async () => {
     vi.useFakeTimers();

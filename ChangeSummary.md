@@ -47,5 +47,10 @@ Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates mad
 - Tests: `debugRoutes.test.ts` (401 unauthenticated + authed happy paths), `emailDebug.test.ts` (root session on all debug calls; new 404-for-non-root and 401-unauthenticated cases). 19 tests pass (debugRoutes + emailDebug + staticAssets).
 - Validation tier: server targeted tests (pass); build at next commit.
 
+## Item 8 — zilchCompleteRoll gated to the acting client
+- Files: `src/components/useZilchTableFlow.ts` (roll-completion effect early-returns online when `canRunZilchRevealTimer` is false — same gate the reveal timer already used; offline local completion unchanged).
+- Tests: 3 new cases in `useZilchTableFlow.test.ts` (acting client dispatches, non-acting never dispatches, offline unaffected). 9 tests pass (flow + turn-advance UI).
+- Validation tier: zilch targeted tests + `npm run build` (pass).
+
 ## Item 2 notes
 - Notes: (a) `npm run build:server` fails on a PRE-EXISTING tsconfig rootDir misconfiguration (fails identically on the clean tree; it also emits stray `.js` files beside sources — cleaned up). Canonical `npm run build` (tsc -b + vite) passes. (b) Known limitation: saving an ONLINE table state locally and resuming it OFFLINE now resumes with a masked shoe order (reshuffle-equivalent); online resume is unaffected (server keeps the real deck).

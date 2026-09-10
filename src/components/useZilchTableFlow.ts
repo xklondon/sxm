@@ -13,7 +13,11 @@ interface UseZilchTableFlowOptions {
   gameState: GameState;
   onGameStateChange: (state: GameState) => void;
   onlineDispatch?: (type: string, payload?: Record<string, unknown>) => Promise<unknown>;
-  /** When true, this client may dispatch zilch-reveal auto-advance (controller/host). */
+  /**
+   * When true, this client may dispatch timer-driven zilch actions online
+   * (roll completion + zilch-reveal auto-advance). Wired to the viewer's
+   * turn-control authority (canControlZilchTurn) by ZilchPanel.
+   */
   canRunZilchRevealTimer?: boolean;
 }
 
@@ -56,6 +60,12 @@ export function useZilchTableFlow({
     if (!zilch?.diceAnimation.isRolling) {
       return;
     }
+    // Online: only the acting client completes the roll — otherwise every
+    // subscriber fires zilchCompleteRoll and the losers surface authority
+    // errors / burn stale-version retries. Same gate as the reveal timer.
+    if (onlineDispatch && !canRunZilchRevealTimer) {
+      return;
+    }
     const duration = zilch.diceAnimation.durationMs ?? 2500;
     if (rollTimerRef.current) {
       clearTimeout(rollTimerRef.current);
@@ -84,6 +94,7 @@ export function useZilchTableFlow({
       }
     };
   }, [
+    canRunZilchRevealTimer,
     gameState,
     gameState.zilch?.diceAnimation.isRolling,
     gameState.zilch?.diceAnimation.startedAt,
