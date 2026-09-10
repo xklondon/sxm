@@ -145,10 +145,10 @@ People Management, users, magic links, and table invites are stored in Postgres 
 3. On the **app** service → **Variables** → add `DATABASE_URL` (Railway can link the plugin variable automatically).
 4. Redeploy the app. Startup runs **`npm run db:migrate`** equivalent (`prisma migrate deploy`) — additive migrations only; never `migrate reset` or `db push --force-reset`.
 
-Verify persistence after deploy:
+Verify persistence after deploy (`/api/debug/*` requires a **root** session in production — pass the `ROOT_USER_EMAIL` account's session cookie or Bearer token):
 
 ```bash
-curl -sS "https://<railway-domain>/api/debug/runtime"
+curl -sS "https://<railway-domain>/api/debug/runtime" -H "Cookie: sxmcards_session=<root-session-cookie>"
 ```
 
 Expect JSON including `"storeType":"postgres"`, plus `people` and `users` counts (no credentials).
@@ -190,10 +190,10 @@ Local dev can keep `EMAIL_PROVIDER=smtp` (default) with your existing `SMTP_*` /
 
 ### Magic-link email (debug / SMTP)
 
-Backend diagnostics (JSON, not the frontend `/debug/client-config` page):
+Backend diagnostics (JSON, not the frontend `/debug/client-config` page; root session required in production):
 
 ```bash
-curl -sS "https://<railway-domain>/api/debug/email-config"
+curl -sS "https://<railway-domain>/api/debug/email-config" -H "Cookie: sxmcards_session=<root-session-cookie>"
 ```
 
 Expect `emailProvider`, `emailConfigured: true`, and `publicOrigin` with `https://`. With Resend: `emailProvider: "resend"`, `resendConfigured: true`, `resendFrom` set (no API key in JSON).
@@ -204,6 +204,7 @@ The endpoint runs `verify()` then `sendMail()` with hard 20s caps (never hangs p
 ```bash
 curl -sS -X POST "https://<railway-domain>/api/debug/send-test-email" \
   -H "Content-Type: application/json" \
+  -H "Cookie: sxmcards_session=<root-session-cookie>" \
   -d '{"email":"you@gmail.com"}'
 ```
 

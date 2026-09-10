@@ -28,7 +28,8 @@ import { createEmailDebugRouter } from './debug/emailRoutes.js';
 import { createRuntimeDebugRouter } from './debug/runtimeRoutes.js';
 import { createApiErrorHandler } from './middleware/apiErrorHandler.js';
 import { verifySessionToken } from './auth/tokens.js';
-import { readSessionToken } from './auth/middleware.js';
+import { readSessionToken, requireAuth, type AuthedRequest } from './auth/middleware.js';
+import { isRootEmail } from './people/permissions.js';
 import { IouHandoffService } from './iouHandoff/service.js';
 import { createIouHandoffRouter } from './iouHandoff/routes.js';
 
@@ -108,6 +109,16 @@ export function createApp(options: CreateAppOptions = {}) {
   });
 
   const debugRouter = express.Router();
+  // Debug diagnostics expose runtime/email/provisioning internals: any authed
+  // session in dev, root only in production (404 hides their existence).
+  // Public health checks live at /health and /api/health.
+  debugRouter.use(requireAuth, (req: AuthedRequest, res, next) => {
+    if (!config.isProduction || isRootEmail(req.auth!.email)) {
+      next();
+      return;
+    }
+    res.status(404).json({ error: 'Not found' });
+  });
   debugRouter.use(createEmailDebugRouter());
   debugRouter.use(createRuntimeDebugRouter({ store, io, startedAt, storeType }));
   app.use('/api/debug', debugRouter);

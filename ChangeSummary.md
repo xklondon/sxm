@@ -42,5 +42,10 @@ Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates mad
 - Tests: new negative/zero-amount regression in `multiplayerOwnership.test.ts`; 34 tests pass (multiplayerOwnership + tableActions + multiplayer).
 - Validation tier: multiplayer targeted tests (pass); server-only change, build covered at next commit.
 
+## Item 7 — /api/debug gated
+- Files: `server/src/app.ts` (debug router now requires an authenticated session; in production additionally root-only via `isRootEmail`, non-root gets 404 to hide existence; public health checks unaffected at `/health` + `/api/health`); `RAILWAY_DEPLOY.md` (curl examples updated with root session cookie).
+- Tests: `debugRoutes.test.ts` (401 unauthenticated + authed happy paths), `emailDebug.test.ts` (root session on all debug calls; new 404-for-non-root and 401-unauthenticated cases). 19 tests pass (debugRoutes + emailDebug + staticAssets).
+- Validation tier: server targeted tests (pass); build at next commit.
+
 ## Item 2 notes
 - Notes: (a) `npm run build:server` fails on a PRE-EXISTING tsconfig rootDir misconfiguration (fails identically on the clean tree; it also emits stray `.js` files beside sources — cleaned up). Canonical `npm run build` (tsc -b + vite) passes. (b) Known limitation: saving an ONLINE table state locally and resuming it OFFLINE now resumes with a masked shoe order (reshuffle-equivalent); online resume is unaffected (server keeps the real deck).

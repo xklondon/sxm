@@ -76,13 +76,17 @@ async function createApp(opts?: { email?: EmailFixture; debugEmailTest?: boolean
 
   vi.resetModules();
   const { createApp: buildApp } = await import('../src/app.js');
-  return buildApp();
+  // /api/debug is root-only in production — mint a root session with the
+  // same freshly-loaded config/secret the app instance uses.
+  const { createSessionToken } = await import('../src/auth/tokens.js');
+  const rootAuth = `Bearer ${createSessionToken({ userId: 'root-user', email: 'root@example.com' })}`;
+  return { ...buildApp(), rootAuth };
 }
 
 describe('GET /api/debug/email-config', () => {
   it('returns sanitized snapshot when SMTP present but Resend not configured (production auto)', async () => {
-    const { app } = await createApp({ email: 'production-smtp-unreachable-no-resend' });
-    const res = await request(app).get('/api/debug/email-config');
+    const { app, rootAuth } = await createApp({ email: 'production-smtp-unreachable-no-resend' });
+    const res = await request(app).get('/api/debug/email-config').set('Authorization', rootAuth);
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/json/);
     expect(res.body).toMatchObject({
@@ -106,8 +110,8 @@ describe('GET /api/debug/email-config', () => {
   });
 
   it('returns configured snapshot when Resend is explicitly configured', async () => {
-    const { app } = await createApp({ email: 'resend-configured' });
-    const res = await request(app).get('/api/debug/email-config');
+    const { app, rootAuth } = await createApp({ email: 'resend-configured' });
+    const res = await request(app).get('/api/debug/email-config').set('Authorization', rootAuth);
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       env: 'production',
@@ -137,17 +141,38 @@ describe('SMTP timeout helpers', () => {
 
 describe('POST /api/debug/send-test-email', () => {
   it('returns 404 when DEBUG_EMAIL_TEST is not enabled', async () => {
-    const { app } = await createApp({ email: 'resend-configured' });
+    const { app, rootAuth } = await createApp({ email: 'resend-configured' });
     const res = await request(app)
       .post('/api/debug/send-test-email')
+      .set('Authorization', rootAuth)
       .send({ email: 'test@example.com' });
     expect(res.status).toBe(404);
   });
 
-  it('returns 503 when email is not configured', async () => {
-    const { app } = await createApp({ email: 'unconfigured', debugEmailTest: true });
+  it('returns 404 for a non-root session in production', async () => {
+    const { app } = await createApp({ email: 'resend-configured', debugEmailTest: true });
+    const { createSessionToken } = await import('../src/auth/tokens.js');
+    const memberAuth = `Bearer ${createSessionToken({ userId: 'u1', email: 'player@example.com' })}`;
     const res = await request(app)
       .post('/api/debug/send-test-email')
+      .set('Authorization', memberAuth)
+      .send({ email: 'test@example.com' });
+    expect(res.status).toBe(404);
+  });
+
+  it('returns 401 without a session', async () => {
+    const { app } = await createApp({ email: 'resend-configured', debugEmailTest: true });
+    const res = await request(app)
+      .post('/api/debug/send-test-email')
+      .send({ email: 'test@example.com' });
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 503 when email is not configured', async () => {
+    const { app, rootAuth } = await createApp({ email: 'unconfigured', debugEmailTest: true });
+    const res = await request(app)
+      .post('/api/debug/send-test-email')
+      .set('Authorization', rootAuth)
       .send({ email: 'test@example.com' });
     expect(res.status).toBe(503);
     expect(res.body.emailConfigured).toBe(false);
@@ -160,9 +185,10 @@ describe('POST /api/debug/send-test-email', () => {
       'fetch',
       vi.fn(async () => Response.json({ id: 'msg-resend-1' }, { status: 200 })),
     );
-    const { app } = await createApp({ email: 'resend-configured', debugEmailTest: true });
+    const { app, rootAuth } = await createApp({ email: 'resend-configured', debugEmailTest: true });
     const res = await request(app)
       .post('/api/debug/send-test-email')
+      .set('Authorization', rootAuth)
       .send({ email: 'test@example.com' });
     expect(res.status).toBe(200);
     expect(res.body.ok).toBe(true);
@@ -181,9 +207,9 @@ describe('POST /api/debug/send-test-email', () => {
 
 describe('SPA fallback does not swallow /api/debug', () => {
   it('GET /debug/client-config may be HTML but /api/debug/email-config is JSON', async () => {
-    const { app } = await createApp({ email: 'production-smtp-unreachable-no-resend' });
+    const { app, rootAuth } = await createApp({ email: 'production-smtp-unreachable-no-resend' });
     const client = await request(app).get('/debug/client-config');
-    const api = await request(app).get('/api/debug/email-config');
+    const api = await request(app).get('/api/debug/email-config').set('Authorization', rootAuth);
     expect(api.headers['content-type']).toMatch(/json/);
     if (client.status === 200) {
       expect(client.headers['content-type']).toMatch(/html/);
