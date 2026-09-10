@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { parseBlackjackHandKey } from '../engine/blackjack';
+import { orderedHandKeys, parseBlackjackHandKey } from '../engine/blackjack';
 import { cardsFromIds } from '../engine/blackjack/hand';
 import { getCallerPersonIdForBox } from '../engine/session/playerAssignment';
 import { waitForResultHoldMs } from '../engine/blackjack/dealPacing';
@@ -81,8 +81,12 @@ export function useHandTransitionHold(
   const prevStatusRef = useRef<Map<string, string>>(new Map());
   const prevCardCountRef = useRef<Map<string, number>>(new Map());
   const prevActiveHandKeyRef = useRef<string | null>(null);
+  const seededRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [pendingHoldHandKey, setPendingHoldHandKey] = useState<string | null>(null);
+  // FIFO of hands awaiting their result hold — simultaneous transitions
+  // (multi-box bust resolution in one server update) must each get a hold
+  // instead of the last write silently replacing earlier ones.
+  const [pendingHoldHandKeys, setPendingHoldHandKeys] = useState<string[]>([]);
 
   function clearTimer() {
     if (timerRef.current) {
@@ -100,7 +104,7 @@ export function useHandTransitionHold(
 
   function startHold(handKey: string) {
     const { playerId } = parseBlackjackHandKey(handKey);
-    setPendingHoldHandKey(null);
+    setPendingHoldHandKeys((keys) => keys.filter((key) => key !== handKey));
     setHold({ holdActive: true, holdActiveBoxId: playerId, holdActiveHandKey: handKey });
     clearTimer();
     timerRef.current = setTimeout(() => {
@@ -110,7 +114,7 @@ export function useHandTransitionHold(
   }
 
   function queueHold(handKey: string) {
-    setPendingHoldHandKey(handKey);
+    setPendingHoldHandKeys((keys) => (keys.includes(handKey) ? keys : [...keys, handKey]));
   }
 
   function pendingHandRevealReady(pending: string, round: NonNullable<GameState['blackjack']>): boolean {
@@ -124,17 +128,31 @@ export function useHandTransitionHold(
 
   useEffect(() => {
     if (!isPlayerTurnPhase(protocolPhase)) {
-      setPendingHoldHandKey(null);
+      setPendingHoldHandKeys([]);
       setHold({ holdActive: false, holdActiveBoxId: null, holdActiveHandKey: null });
       prevStatusRef.current.clear();
       prevCardCountRef.current.clear();
       prevActiveHandKeyRef.current = null;
+      seededRef.current = false;
       clearTimer();
       return;
     }
 
     const round = gameState.blackjack;
     if (!round) {
+      return;
+    }
+
+    // First observation of this round (fresh mount / rejoin mid-round): seed
+    // the baseline without queueing holds — a hand that is already busted or
+    // stood is old news to this viewer, not a transition to re-announce.
+    if (!seededRef.current) {
+      seededRef.current = true;
+      for (const [handKey, hand] of Object.entries(round.playerHands)) {
+        prevStatusRef.current.set(handKey, hand.actionStatus ?? '');
+        prevCardCountRef.current.set(handKey, hand.cardIds.filter((id) => id.length > 0).length);
+      }
+      prevActiveHandKeyRef.current = round.activeHandKey ?? null;
       return;
     }
 
@@ -176,14 +194,22 @@ export function useHandTransitionHold(
       prevCardCountRef.current.set(handKey, cardCount);
     }
 
-    const pending = pendingHoldHandKey;
-    const revealReady =
-      options.cardRevealComplete &&
-      !options.isRevealing &&
-      (pending == null || pendingHandRevealReady(pending, round));
-
-    if (pending && revealReady && !hold.holdActive) {
-      startHold(pending);
+    // Drain pending holds in canonical table order (same ordering the felt
+    // renders), not queue-insertion order.
+    if (pendingHoldHandKeys.length > 0 && !hold.holdActive) {
+      const canonical = orderedHandKeys(gameState.session, round);
+      const ordered = [...pendingHoldHandKeys].sort(
+        (a, b) => canonical.indexOf(a) - canonical.indexOf(b),
+      );
+      const ready = ordered.find(
+        (key) =>
+          options.cardRevealComplete &&
+          !options.isRevealing &&
+          pendingHandRevealReady(key, round),
+      );
+      if (ready) {
+        startHold(ready);
+      }
     }
 
     prevActiveHandKeyRef.current = activeHandKey;
@@ -195,7 +221,7 @@ export function useHandTransitionHold(
     options.activeHandRevealComplete,
     options.isHandRevealComplete,
     options.isRevealing,
-    pendingHoldHandKey,
+    pendingHoldHandKeys,
     protocolPhase,
   ]);
 
@@ -210,10 +236,10 @@ export function useHandTransitionHold(
     holdActive: hold.holdActive,
     holdActiveBoxId: hold.holdActiveBoxId,
     holdActiveHandKey: hold.holdActiveHandKey,
-    suppressEngineAutoAdvance: hold.holdActive || pendingHoldHandKey != null,
+    suppressEngineAutoAdvance: hold.holdActive || pendingHoldHandKeys.length > 0,
     playerActionsBlocked:
       hold.holdActive ||
-      pendingHoldHandKey != null ||
+      pendingHoldHandKeys.length > 0 ||
       (options.isRevealing && !options.activeHandRevealComplete),
   };
 }
