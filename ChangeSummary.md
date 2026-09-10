@@ -72,5 +72,10 @@ Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates mad
 - Tests: new `server/tests/iouHandoffRouteAccess.test.ts` (403 for non-member with real tableId; unknown tableId still uses offline fallback). 22 tests pass (route access + iouHandoff + iouHandoffConfig).
 - Validation tier: server targeted tests (pass); server-only change, client build unaffected.
 
+## Item 13 — dead parallel implementations deleted
+- Files removed: `src/components/HoldemPanel.tsx` (legacy hold'em shell rendering ALL hole cards face-up; production routes to PokerPanel), `src/components/HoldemPanel.css` (only imported by it), `src/components/useCardViewBustHold.ts` + its test (superseded by `useHandTransitionHold`; carried the same single-slot bug fixed in item 9).
+- Tests: `npm run test:ownership` (28 pass — the "never HoldemPanel" guards are negative assertions and stay green), poker live-route + integration (24 pass).
+- Validation tier: ownership + poker targeted tests + `npm run build` (pass).
+
 ## Item 2 notes
 - Notes: (a) `npm run build:server` fails on a PRE-EXISTING tsconfig rootDir misconfiguration (fails identically on the clean tree; it also emits stray `.js` files beside sources — cleaned up). Canonical `npm run build` (tsc -b + vite) passes. (b) Known limitation: saving an ONLINE table state locally and resuming it OFFLINE now resumes with a masked shoe order (reshuffle-equivalent); online resume is unaffected (server keeps the real deck).
