@@ -65,7 +65,7 @@ export function PokerChatDock({
           <h3 className="poker-chat__title">Action log</h3>
           <ul className="poker-chat__action-list">
             {actionLog.slice(-8).map((entry, index) => (
-              <li key={`${entry}-${index}`}>{entry}</li>
+              <li key={`log-${Math.max(0, actionLog.length - 8) + index}`}>{entry}</li>
             ))}
           </ul>
         </section>

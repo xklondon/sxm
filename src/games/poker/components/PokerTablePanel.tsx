@@ -207,7 +207,9 @@ export function PokerTablePanel({
                 <li className="poker-table-panel__log-empty">No actions yet.</li>
               ) : (
                 actionLog.slice(-12).map((entry, index) => (
-                  <li key={`${entry}-${index}`}>{entry}</li>
+                  // Append-only log: key on the global position so window
+                  // shifts don't re-key repeated lines (e.g. "P checks").
+                  <li key={`log-${Math.max(0, actionLog.length - 12) + index}`}>{entry}</li>
                 ))
               )}
             </ul>

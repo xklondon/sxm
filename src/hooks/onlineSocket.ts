@@ -29,6 +29,7 @@ let subscribedTableId: string | null = null;
 let refCount = 0;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let activeHandlers: OnlineSocketHandlers | null = null;
+let hasConnectedBefore = false;
 
 function notifyState(state: OnlineConnectionState) {
   activeHandlers?.onConnectionState(state);
@@ -74,6 +75,7 @@ function teardownSocket() {
   }
   subscribedTableId = null;
   activeHandlers = null;
+  hasConnectedBefore = false;
 }
 
 function ensureSocket(): Socket {
@@ -98,7 +100,13 @@ function ensureSocket(): Socket {
     notifyState('connected');
     if (activeHandlers) {
       subscribeTable(activeHandlers.tableId);
+      if (hasConnectedBefore) {
+        // Broadcasts missed while disconnected are never replayed — re-sync
+        // once. The client version guard drops it if nothing changed.
+        void activeHandlers.pollTable().catch(() => {});
+      }
     }
+    hasConnectedBefore = true;
   });
 
   socket.on('disconnect', (reason) => {

@@ -77,5 +77,13 @@ Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates mad
 - Tests: `npm run test:ownership` (28 pass — the "never HoldemPanel" guards are negative assertions and stay green), poker live-route + integration (24 pass).
 - Validation tier: ownership + poker targeted tests + `npm run build` (pass).
 
+## Item 14 — hygiene batch
+- Poker log keys: `PokerTablePanel.tsx` / `PokerChatDock.tsx` action logs keyed by global log position (append-only stable), `PokerPotArea.tsx` payouts keyed by index+line (duplicate payout lines no longer collide).
+- Debug routes inventory: `server/src/debug/emailRoutes.ts` `/api/debug/routes` list refreshed to the actual mounted surface (mine/active, messages, request-access/approve/deny, people delete/repair, iou-handoff, dev) with the new auth note.
+- Email-test consolidation: `server/src/dev/routes.ts` `/api/dev/test-email` now sends through the shared `sendDebugTestEmail` provider path (Resend/SMTP selection, 20s timeouts, 465 handling) instead of building its own nodemailer transport; nodemailer import dropped.
+- Reconnect re-sync: `src/hooks/onlineSocket.ts` fetches the table once after a socket RE-connect (never on first connect); the item-4 version guard drops it when nothing was missed. New regression test in `onlineSocket.test.ts`.
+- Tests: onlineSocket + versionGuard + emailDebug + debugRoutes + poker UI/panel — 45 pass.
+- Validation tier: targeted tests + `npm run build` (pass).
+
 ## Item 2 notes
 - Notes: (a) `npm run build:server` fails on a PRE-EXISTING tsconfig rootDir misconfiguration (fails identically on the clean tree; it also emits stray `.js` files beside sources — cleaned up). Canonical `npm run build` (tsc -b + vite) passes. (b) Known limitation: saving an ONLINE table state locally and resuming it OFFLINE now resumes with a masked shoe order (reshuffle-equivalent); online resume is unaffected (server keeps the real deck).

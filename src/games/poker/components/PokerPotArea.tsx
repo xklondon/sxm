@@ -32,8 +32,8 @@ export function PokerPotArea({
       )}
       {payoutSummary.length > 0 && (
         <ul className="poker-pot__payouts poker-hr-pot__payouts" aria-label="Pot payouts">
-          {payoutSummary.map((line) => (
-            <li key={line}>{line}</li>
+          {payoutSummary.map((line, index) => (
+            <li key={`${index}-${line}`}>{line}</li>
           ))}
         </ul>
       )}

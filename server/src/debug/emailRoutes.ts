@@ -73,7 +73,7 @@ export function createEmailDebugRouter(): Router {
         'POST /api/auth/logout',
       ],
       debug: [
-        'GET /api/debug/health',
+        'GET /api/debug/health (authed; root-only in production)',
         'GET /api/debug/runtime',
         'GET /api/debug/email-config',
         'GET /api/debug/email-provider',
@@ -85,19 +85,30 @@ export function createEmailDebugRouter(): Router {
       tables: [
         'GET /api/tables/invites/preview',
         'GET /api/tables/invites/accept',
+        'GET /api/tables/mine',
+        'GET /api/tables/active',
         'POST /api/tables',
         'POST /api/tables/join',
         'GET /api/tables/:tableId',
+        'GET /api/tables/:tableId/messages',
+        'POST /api/tables/:tableId/messages',
         'POST /api/tables/:tableId/actions',
         'POST /api/tables/:tableId/invites',
         'POST /api/tables/:tableId/invite-person',
+        'POST /api/tables/:tableId/request-access',
+        'POST /api/tables/:tableId/requests/:requestId/approve',
+        'POST /api/tables/:tableId/requests/:requestId/deny',
       ],
       people: [
         'GET /api/people',
         'POST /api/people',
         'PATCH /api/people/:personId',
+        'DELETE /api/people/:personId',
+        'POST /api/people/repair-email',
         'POST /api/people/:personId/send-invite',
       ],
+      iouHandoff: ['POST /api/iou-handoff/create'],
+      dev: ['GET /api/dev/config (non-production)', 'POST /api/dev/test-email (non-production)'],
     });
   });
 

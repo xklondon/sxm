@@ -134,6 +134,23 @@ describe('onlineSocket manager', () => {
     });
   });
 
+  it('re-fetches table state once after a reconnect (not on first connect)', () => {
+    const pollTable = vi.fn(async () => {});
+    acquireOnlineSocket({
+      tableId: 'table-a',
+      onTableUpdate: vi.fn(),
+      onConnectionState: vi.fn(),
+      pollTable,
+    });
+
+    mockSocket.fireConnect();
+    expect(pollTable).not.toHaveBeenCalled();
+
+    mockSocket.fireDisconnect('transport close');
+    mockSocket.fireConnect();
+    expect(pollTable).toHaveBeenCalledTimes(1);
+  });
+
   it('disconnect does not leave an unhandled rejection path', () => {
     acquireOnlineSocket({
       tableId: 'table-a',

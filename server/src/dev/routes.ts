@@ -1,6 +1,12 @@
 import { Router } from 'express';
-import nodemailer from 'nodemailer';
-import { config, getCorsOrigins, getEffectivePublicOrigin, isSmtpConfigured } from '../config.js';
+import {
+  config,
+  getCorsOrigins,
+  getEffectivePublicOrigin,
+  isEmailConfigured,
+  isSmtpConfigured,
+} from '../config.js';
+import { sendDebugTestEmail, smtpFailureResponse } from '../email/smtp.js';
 
 function redact(value: string): string {
   if (!value) return '(empty)';
@@ -43,45 +49,36 @@ export function createDevRouter(): Router {
       return;
     }
 
-    if (!isSmtpConfigured()) {
+    if (!isEmailConfigured()) {
       res.status(400).json({
         ok: false,
-        error: 'SMTP not configured (need SMTP_HOST and EMAIL_FROM)',
+        error: 'Email not configured (need SMTP_HOST + EMAIL_FROM, or Resend vars)',
         smtpConfigured: false,
       });
       return;
     }
 
     try {
-      const transport = nodemailer.createTransport({
-        host: config.smtp.host,
-        port: config.smtp.port,
-        secure: config.smtp.port === 465,
-        auth: config.smtp.user
-          ? { user: config.smtp.user, pass: config.smtp.pass }
-          : undefined,
-      });
-
-      await transport.verify();
-      const info = await transport.sendMail({
+      // Same provider-aware send path (timeouts, Resend/SMTP selection,
+      // logging) as POST /api/debug/send-test-email — no second transport.
+      const info = await sendDebugTestEmail({
         from: config.smtp.from,
         to,
         subject: 'SXMCARDS SMTP test',
-        text: 'If you received this, SMTP is working for local dev.',
+        text: 'If you received this, email sending is working for local dev.',
       });
 
       res.json({
         ok: true,
-        smtpConfigured: true,
+        smtpConfigured: isSmtpConfigured(),
         messageId: info.messageId,
         to: redact(to),
         from: config.smtp.from,
       });
     } catch (err) {
       res.status(500).json({
-        ok: false,
-        smtpConfigured: true,
-        error: err instanceof Error ? err.message : 'SMTP test failed',
+        ...smtpFailureResponse(err, 'sendMail'),
+        smtpConfigured: isSmtpConfigured(),
       });
     }
   });
