@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { TableService } from '../tables/service.js';
+import { TableNotFoundError } from '../tables/errors.js';
 import { requireAuth, type AuthedRequest } from '../auth/middleware.js';
 import { respondPeopleAuthError } from '../people/httpErrors.js';
 import { getIouHandoffNotConfiguredMessage } from '../config.js';
@@ -30,9 +31,21 @@ export function createIouHandoffRouter(
             req.auth!.email,
           );
           tableState = table.state;
-        } catch {
-          // Offline/local tables may not exist server-side — fall back to request body.
-          tableState = null;
+        } catch (err) {
+          if (err instanceof TableNotFoundError) {
+            // Offline/local tables may not exist server-side — fall back to
+            // the request body (parties still validated against the viewer).
+            tableState = null;
+          } else {
+            // The table EXISTS but this session may not read it (membership /
+            // auth failure): fail closed rather than validating an IOU against
+            // unverifiable client-supplied party data.
+            res.status(403).json({
+              ok: false,
+              error: 'You are not a member of the table referenced by this IOU.',
+            });
+            return;
+          }
         }
       }
 

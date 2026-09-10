@@ -67,5 +67,10 @@ Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates mad
 - Tests: blackjackUiResultState + blackjackFiveIssueFixes + challengeGameEndPresentation — 38 pass. (`blackjackFourRegression.test.ts` is excluded by vitest config by design.)
 - Validation tier: blackjack targeted tests + `npm run build` (pass).
 
+## Item 12 — IOU handoff fails closed on unverifiable tableId
+- Files: `server/src/iouHandoff/routes.ts` (catch narrowed: `TableNotFoundError` keeps the offline/local fallback; any other failure — table exists but membership/auth denied — returns 403 instead of validating the IOU against client-supplied party data).
+- Tests: new `server/tests/iouHandoffRouteAccess.test.ts` (403 for non-member with real tableId; unknown tableId still uses offline fallback). 22 tests pass (route access + iouHandoff + iouHandoffConfig).
+- Validation tier: server targeted tests (pass); server-only change, client build unaffected.
+
 ## Item 2 notes
 - Notes: (a) `npm run build:server` fails on a PRE-EXISTING tsconfig rootDir misconfiguration (fails identically on the clean tree; it also emits stray `.js` files beside sources — cleaned up). Canonical `npm run build` (tsc -b + vite) passes. (b) Known limitation: saving an ONLINE table state locally and resuming it OFFLINE now resumes with a masked shoe order (reshuffle-equivalent); online resume is unaffected (server keeps the real deck).
