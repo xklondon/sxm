@@ -1,89 +1,64 @@
-# Change Summary — Repo audit (double routes / ungated routines / visual sequencing)
+# Change Summary — Audit punch-list execution (items 1–14)
 
-1. **Files changed:** None. Read-only audit; findings report delivered in chat. No code, spec, or env files touched.
-2. **Tests added/updated:** None.
-3. **Validation run:** All tiers skipped — no code changed (Ownership: skipped; Layout: skipped; Blackjack layout: skipped; People/invites: skipped; Build: skipped).
-4. **Architecture impact:** None yet. Report flags 3 high-severity server gaps (ungated `table:subscribe` + full-state broadcasts leaking hole cards/deck, display-name-based `assignChips` authority, `/api/tables/active` listing all tables to any user), plus medium findings (no client version guard on `table:update`, unauthenticated `/api/debug`, negative `placeBet` amounts, zilch display-name turn fallback, single-slot `useHandTransitionHold`). Two findings conflict with the blackjack freeze (`cardRevealDisplay.ts` reveal order, Card View `slice(0,4)` results cap) and are flagged, not proposed, pending explicit unfreeze.
-5. **Deploy readiness:** Unchanged from before audit; the high-severity information-leak/authority findings should be fixed before any wider deployment.
+Date: 2026-09-10. All 14 approved punch-list items implemented, each as its own commit on `main`. Item #15 was **not** touched (frozen — see Deploy readiness).
 
-Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates made (audit only, no behaviour changed).
+## 1. Files changed
 
----
+**Server (security/authority):**
+- `server/src/app.ts` — `table:subscribe` membership gate (`getTableForUser`, emits `table:subscribe:denied` on failure); `/api/debug` gated behind `requireAuth` + production root-only (404 for non-root).
+- `server/src/tables/redactState.ts` — **new**: `redactStateForViewer(state, viewerPersonId)` masks hidden blackjack dealer hole card, opponent hold'em holes, and shoe `drawOrder` with decoy real-card ids; mirrors client visibility rules exactly (protocol `showDealerHoleCardDuringPlay`, showdown/resolved, `canPersonControlHoldemSeat`).
+- `server/src/tables/broadcast.ts` — rewritten: per-socket redacted emits via `io.in(room).fetchSockets()` with per-viewer cache (replaces room-level `io.to().emit()`).
+- `server/src/tables/service.ts` — `/api/tables/active` strips `hostEmail` + `players` for non-member viewers; new `getMemberPersonId`; `applyAction` returns `personId`.
+- `server/src/tables/routes.ts`, `server/src/tables/inviteAcceptHttp.ts` — redaction applied to GET/join/action responses; person resolver passed to all broadcast sites.
+- `server/src/tables/authority.ts` — `assignChips` via `assertTableHost` on `personId` (when `ownerOnlyCanAssignChips`); `placeBet` requires finite positive amount.
+- `server/src/iouHandoff/routes.ts` — fail closed: non-`TableNotFoundError` lookup failures → 403.
+- `server/src/debug/emailRoutes.ts` — `/routes` inventory refreshed; `server/src/dev/routes.ts` — `/test-email` uses shared SMTP helpers.
 
-# Punch-list execution log
+**Client:**
+- `src/hooks/useOnlineMultiplayer.ts` — monotonic version guard across socket/poll/action/refetch ingestion.
+- `src/hooks/onlineSocket.ts` — `tableId` in payload type; one-time re-fetch on reconnect.
+- `src/engine/dice/zilch/zilchTurnAuthority.ts` — display-name fallback removed from server-relevant path (offline `playable.length <= 1` shortcut deliberately kept).
+- `src/components/useZilchTableFlow.ts` — `zilchCompleteRoll` dispatch gated to the acting client.
+- `src/components/useHandTransitionHold.ts` — ordered FIFO hold queue + seeded prev-refs (no spurious holds on rejoin).
+- `src/App.tsx` + `src/components/BlackjackPanel.tsx` — LocalProfileSetup render deduplicated (App copy suppressed on blackjack table screen; panel copy gains `lockedEmail`).
+- `src/engine/blackjack/roundSummaryOverlay.ts` + `src/components/RoundSummaryOverlay.tsx` — entries keyed by `handKey`.
+- `src/games/poker/components/PokerTablePanel.tsx`, `PokerChatDock.tsx`, `PokerPotArea.tsx` — stable list keys.
+- **Deleted (dead code, −625 lines):** `src/components/HoldemPanel.tsx`, `HoldemPanel.css`, `useCardViewBustHold.ts` (+ its test).
 
-## Item 1 — socket `table:subscribe` membership gate + `/api/tables/active` PII scope
-- Files: `server/src/app.ts` (subscribe now resolves membership via `tables.getTableForUser` before joining the room; denial emits `table:subscribe:denied`), `server/src/tables/service.ts` (`listActiveTables` strips `hostEmail` and `players` emails for `request`/`pending` rows — Knock flow keeps table visibility per `joinRequests.test.ts` intent).
-- Tests: new `server/tests/socketSubscribe.test.ts` (member receives updates, stranger denied); extended `server/tests/joinRequests.test.ts` PII assertions. Ran socketSubscribe + joinRequests + activeTables + multiplayer + multiplayerOwnership — all pass.
-- Validation tier: multiplayer/table targeted tests + `npm run build` (pass).
+**Docs:** `docs/SXM_MASTER_SPEC.md` (assignChips authority, subscribe gate, redaction, version guard, placeBet validation), `docs/CHANGE_LOG.md` (2026-09-10 entry), `RAILWAY_DEPLOY.md` (debug curl examples need root session).
 
-## Item 2 — per-viewer state redaction at the transport boundary
-- Files: new `server/src/tables/redactState.ts` (mirrors `getVisibleDealerCardIds` reveal rule incl. `showDealerHoleCardDuringPlay` protocols, `mapPokerTableViewModel` face-up rule via `canPersonControlHoldemSeat`; deck `drawOrder` replaced with sequential dummy, hidden ids swapped for decoy real-card ids so client `getCardById`/keys/counts stay stable); `server/src/tables/broadcast.ts` (per-socket redacted emit with person resolver); `server/src/tables/service.ts` (`getMemberPersonId` pure lookup; `applyAction` returns `personId`); `server/src/tables/routes.ts` (redacted GET /:tableId, POST /join, POST /actions responses + resolver at 3 broadcast sites); `server/src/tables/inviteAcceptHttp.ts` (resolver).
-- Tests: new `server/tests/stateRedaction.test.ts` (7 cases: hole hidden/revealed/open-hole protocol, shoe masking, holdem own-vs-opponent, showdown reveal, null viewer). Ran with socketSubscribe, tableActions, multiplayer, holdemTableActions, tableReset — 61 tests pass.
-- Validation tier: multiplayer/table targeted tests + `npm run build` (pass).
-## Item 3 — assignChips personId authority
-- Files: `server/src/tables/authority.ts` (name-based `canUserAssignChips` replaced with `assertTableHost(ctx.personId)` gated by `tableAdminSettings.ownerOnlyCanAssignChips` — same pattern as configureTable/resetTable).
-- Tests: new spoof-regression in `server/tests/multiplayerOwnership.test.ts` (member with display name "Host" rejected); existing host assignChips test still passes. 24 tests pass (multiplayerOwnership + tableActions).
-- Validation tier: multiplayer targeted tests + build (deferred to item 4 commit; server-only logic change, no client build impact).
+## 2. Tests added / updated
 
-## Item 4 — client monotonic version guard
-- Files: `src/hooks/useOnlineMultiplayer.ts` (single `applyServerState` guard — `version <= versionRef.current` dropped — used by socket `onTableUpdate`, `pollTable`, HTTP action response, and stale-refetch; socket handler also drops payloads for a different tableId), `src/hooks/onlineSocket.ts` (payload type includes `tableId`, matching what the server emits).
-- Tests: new `src/hooks/useOnlineMultiplayer.versionGuard.test.tsx` (4 cases: stale broadcast dropped, own-broadcast double-apply dedup, foreign-table payload ignored, newer-after-older applied); onlineSocket + App.staleTable/infraStability/membership all pass.
-- Validation tier: multiplayer targeted tests + `npm run build` (pass).
+**New:** `server/tests/socketSubscribe.test.ts` (member broadcast + stranger denied), `server/tests/stateRedaction.test.ts` (7 cases: hole hidden/revealed/open-protocol, shoe masking, holdem own/opponent/showdown/null-viewer), `src/hooks/useOnlineMultiplayer.versionGuard.test.tsx` (4 cases), `server/tests/iouHandoffRouteAccess.test.ts`.
 
-## Item 5 — zilch display-name fallback removed from server path
-- Files: `src/engine/dice/zilch/zilchTurnAuthority.ts` (case-insensitive label-match branch deleted from `canPersonControlZilchPlayer`, which backs the server's `assertZilchPlayerTurn`; the explicit offline name-only helper `canControllerActOnZilchTurn` is untouched, as is the host-drives-any-turn branch pinned by existing tests).
-- Tests: new spoof regression in `zilchTurnAuthority.test.ts` (two guests with identical display names — no cross-control). All 82 zilch engine/UI tests pass.
-- Validation tier: zilch targeted tests + `npm run build` (pass).
-- Note: the `playable.length <= 1 → allow` shortcut was kept — it is load-bearing for offline/local solo tables where no viewer person id exists; server exposure is a seated member driving the only playable seat (low harm, host-equivalent).
+**Updated:** `server/tests/joinRequests.test.ts` (PII stripping), `multiplayerOwnership.test.ts` (spoofed-name assignChips, invalid placeBet), `zilchTurnAuthority.test.ts` (same-name guests), `useZilchTableFlow.test.ts` (roll gate), `debugRoutes.test.ts` + `emailDebug.test.ts` + `authRoutes.test.ts` + `emailProvider.test.ts` (root-auth for debug endpoints), `holdemJoinBroadcast.test.ts` (per-socket broadcast contract), `onlineSocket.test.ts` (reconnect re-fetch).
 
-## Item 6 — positive-amount validation on placeBet
-- Files: `server/src/tables/authority.ts` (placeBet rejects non-finite/zero/negative amounts — identical pattern to holdemBet/holdemRaise in the same switch).
-- Tests: new negative/zero-amount regression in `multiplayerOwnership.test.ts`; 34 tests pass (multiplayerOwnership + tableActions + multiplayer).
-- Validation tier: multiplayer targeted tests (pass); server-only change, build covered at next commit.
+## 3. Validation run
 
-## Item 7 — /api/debug gated
-- Files: `server/src/app.ts` (debug router now requires an authenticated session; in production additionally root-only via `isRootEmail`, non-root gets 404 to hide existence; public health checks unaffected at `/health` + `/api/health`); `RAILWAY_DEPLOY.md` (curl examples updated with root session cookie).
-- Tests: `debugRoutes.test.ts` (401 unauthenticated + authed happy paths), `emailDebug.test.ts` (root session on all debug calls; new 404-for-non-root and 401-unauthenticated cases). 19 tests pass (debugRoutes + emailDebug + staticAssets).
-- Validation tier: server targeted tests (pass); build at next commit.
+| Tier | Command | Result |
+|------|---------|--------|
+| Server/multiplayer | `npx vitest run server/tests` | **Run — 40 files, 259 passed, 5 skipped, 0 failed** |
+| Ownership | `npm run test:ownership` | **Run — 28 passed** |
+| People/invites | `npm run test:people-invite` | **Run — 35 passed** |
+| Blackjack layout | `npm run test:blackjack:layout` | **Run — 19 files, 261 passed** |
+| Layout target | `npm run test:layout:target` | Skipped — no Full Table layout/CSS contract changes (only React keys + hold-queue logic; covered by blackjack layout tier) |
+| Build | `npm run build` | **Run — green** (only pre-existing chunk-size warning) |
+| Full `npm test` | — | Skipped — forbidden in agent loop per `.cursorrules` |
 
-## Item 8 — zilchCompleteRoll gated to the acting client
-- Files: `src/components/useZilchTableFlow.ts` (roll-completion effect early-returns online when `canRunZilchRevealTimer` is false — same gate the reveal timer already used; offline local completion unchanged).
-- Tests: 3 new cases in `useZilchTableFlow.test.ts` (acting client dispatches, non-acting never dispatches, offline unaffected). 9 tests pass (flow + turn-advance UI).
-- Validation tier: zilch targeted tests + `npm run build` (pass).
+Per-item targeted tests were also run and recorded at each commit. Note: `npm run build:server` is **pre-existing broken** (tsconfig rootDir errors on clean tree, verified via stash) — canonical gate is `npm run build`.
 
-## Item 9 — useHandTransitionHold ordered queue + seeded baseline
-- Files: `src/components/useHandTransitionHold.ts` (single `pendingHoldHandKey` slot → FIFO array deduped on enqueue, drained one hold at a time in canonical `orderedHandKeys` felt order; first observation of a round now seeds `prevStatusRef`/card counts and returns, so rejoining mid-round no longer replays a hold for an already-busted hand).
-- Tests: `blackjackUxFixes` + `optionalPlayDealPacing` (21 pass) and `npm run test:layout:fast` (31 pass, freeze-adjacent guard tier).
-- Validation tier: blackjack targeted tests + layout fast tier + `npm run build` (pass).
+## 4. Architecture impact
 
-## Item 10 — LocalProfileSetup single owner on blackjack tables
-- Files: `src/App.tsx` (App's copy no longer renders when the table screen routes to BlackjackPanel — the panel owns the dialog there), `src/components/BlackjackPanel.tsx` (panel copy gains `lockedEmail` in online mode so behaviour matches the removed App copy; its richer `onSaved` play-flow sync is preserved). Zilch/hold'em/non-table screens keep the App copy (only BlackjackPanel receives `profileOpen`).
-- Tests: App.render/membership/infraStability + productionRouteOwnership + blackjackEngineFreezeGuards — 40 pass.
-- Validation tier: ownership + App targeted tests + `npm run build` (pass).
+- **New transport-boundary module** `server/src/tables/redactState.ts`: server state now differs per viewer. Broadcast is asynchronous per-socket; any future broadcast callers must pass a personId resolver.
+- Canonical routes unchanged (App → TableScreen → panels). No parallel render paths added; one dead path (HoldemPanel) removed.
+- Authority now consistently personId-based; no display-name matching remains on server-relevant paths.
+- **Known limitation:** saving an online table locally and resuming offline gets a masked shoe `drawOrder` (reshuffle-equivalent). Online resume unaffected.
 
-## Item 11 — RoundSummaryOverlay keyed by handKey
-- Files: `src/engine/blackjack/roundSummaryOverlay.ts` (entry model gains `handKey` — additive display-model field, no rules change), `src/components/RoundSummaryOverlay.tsx` (list key `boxLabel-playerName` → `handKey`; split children previously produced duplicate keys).
-- Tests: blackjackUiResultState + blackjackFiveIssueFixes + challengeGameEndPresentation — 38 pass. (`blackjackFourRegression.test.ts` is excluded by vitest config by design.)
-- Validation tier: blackjack targeted tests + `npm run build` (pass).
+## 5. Deploy readiness
 
-## Item 12 — IOU handoff fails closed on unverifiable tableId
-- Files: `server/src/iouHandoff/routes.ts` (catch narrowed: `TableNotFoundError` keeps the offline/local fallback; any other failure — table exists but membership/auth denied — returns 403 instead of validating the IOU against client-supplied party data).
-- Tests: new `server/tests/iouHandoffRouteAccess.test.ts` (403 for non-member with real tableId; unknown tableId still uses offline fallback). 22 tests pass (route access + iouHandoff + iouHandoffConfig).
-- Validation tier: server targeted tests (pass); server-only change, client build unaffected.
+- All validation tiers green; each item independently revertable by commit.
+- **Item #15 (blackjack reveal-order in `cardRevealDisplay.ts` + Card View `slice(0,4)` cap) NOT implemented** — inside `docs/BLACKJACK_ENGINE_FREEZE.md`; requires explicit unfreeze approval.
+- Production `/api/debug/*` now requires a root session — `RAILWAY_DEPLOY.md` curl examples updated accordingly.
+- No open test failures.
 
-## Item 13 — dead parallel implementations deleted
-- Files removed: `src/components/HoldemPanel.tsx` (legacy hold'em shell rendering ALL hole cards face-up; production routes to PokerPanel), `src/components/HoldemPanel.css` (only imported by it), `src/components/useCardViewBustHold.ts` + its test (superseded by `useHandTransitionHold`; carried the same single-slot bug fixed in item 9).
-- Tests: `npm run test:ownership` (28 pass — the "never HoldemPanel" guards are negative assertions and stay green), poker live-route + integration (24 pass).
-- Validation tier: ownership + poker targeted tests + `npm run build` (pass).
-
-## Item 14 — hygiene batch
-- Poker log keys: `PokerTablePanel.tsx` / `PokerChatDock.tsx` action logs keyed by global log position (append-only stable), `PokerPotArea.tsx` payouts keyed by index+line (duplicate payout lines no longer collide).
-- Debug routes inventory: `server/src/debug/emailRoutes.ts` `/api/debug/routes` list refreshed to the actual mounted surface (mine/active, messages, request-access/approve/deny, people delete/repair, iou-handoff, dev) with the new auth note.
-- Email-test consolidation: `server/src/dev/routes.ts` `/api/dev/test-email` now sends through the shared `sendDebugTestEmail` provider path (Resend/SMTP selection, 20s timeouts, 465 handling) instead of building its own nodemailer transport; nodemailer import dropped.
-- Reconnect re-sync: `src/hooks/onlineSocket.ts` fetches the table once after a socket RE-connect (never on first connect); the item-4 version guard drops it when nothing was missed. New regression test in `onlineSocket.test.ts`.
-- Tests: onlineSocket + versionGuard + emailDebug + debugRoutes + poker UI/panel — 45 pass.
-- Validation tier: targeted tests + `npm run build` (pass).
-
-## Item 2 notes
-- Notes: (a) `npm run build:server` fails on a PRE-EXISTING tsconfig rootDir misconfiguration (fails identically on the clean tree; it also emits stray `.js` files beside sources — cleaned up). Canonical `npm run build` (tsc -b + vite) passes. (b) Known limitation: saving an ONLINE table state locally and resuming it OFFLINE now resumes with a masked shoe order (reshuffle-equivalent); online resume is unaffected (server keeps the real deck).
+Spec discipline: checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.

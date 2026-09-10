@@ -18,7 +18,10 @@ async function createProdApp() {
   process.env.RESEND_FROM = 'SXM <notify@verified.example.com>';
   vi.resetModules();
   const { createApp } = await import('../src/app.js');
-  return createApp();
+  // /api/debug is root-only in production.
+  const { createSessionToken } = await import('../src/auth/tokens.js');
+  const rootAuth = `Bearer ${createSessionToken({ userId: 'root-user', email: 'root@example.com' })}`;
+  return { ...createApp(), rootAuth };
 }
 
 describe('auth API routes in production build', () => {
@@ -49,8 +52,8 @@ describe('auth API routes in production build', () => {
   });
 
   it('GET /api/debug/routes lists auth endpoints', async () => {
-    const { app } = await createProdApp();
-    const res = await request(app).get('/api/debug/routes');
+    const { app, rootAuth } = await createProdApp();
+    const res = await request(app).get('/api/debug/routes').set('Authorization', rootAuth);
     expect(res.status).toBe(200);
     expect(res.body.auth).toContain('GET /api/auth/me');
     expect(res.body.auth).toContain('POST /api/auth/request-magic-link');
@@ -73,8 +76,8 @@ describe('auth API routes in production build', () => {
   });
 
   it('GET /api/debug/auth-provision documents provisioning logs', async () => {
-    const { app } = await createProdApp();
-    const res = await request(app).get('/api/debug/auth-provision');
+    const { app, rootAuth } = await createProdApp();
+    const res = await request(app).get('/api/debug/auth-provision').set('Authorization', rootAuth);
     expect(res.status).toBe(200);
     expect(res.body.paths).toContain('resolve-by-email');
   });

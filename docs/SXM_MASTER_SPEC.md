@@ -464,7 +464,7 @@ Blackjack tables only. Owner toggles (mostly UI-enforced locally):
 - Owner only — change protocol
 - Owner only — change design
 
-`assignChips` is enforced server-side via `canUserAssignChips`; other toggles are primarily client-side.
+`assignChips` is enforced server-side: when `ownerOnlyCanAssignChips` is set, authority uses `assertTableHost` on the session `personId` (not display-name matching); other toggles are primarily client-side.
 
 ---
 
@@ -666,6 +666,9 @@ Options: Hit, Double — one card, Split.  (valid options only; singular Option:
 - **No local gameplay mutation** when online (panels early-return local effects)
 - **Table membership:** `ensureTableMember` (`server/src/tables/membership.ts`) resolves canonical session user id, upserts host/invitee rows, and syncs `member.personId` to `ownerPersonId` / seated game-state persons before authority checks
 - Socket.IO: `table:subscribe` → `table:update`; fallback poll 15s
+- `table:subscribe` is membership-gated server-side (`getTableForUser`); non-members receive `table:subscribe:denied` and never join the room
+- `table:update` and HTTP state responses are **redacted per viewer** (`server/src/tables/redactState.ts`): hidden blackjack dealer hole card, opponent hold'em hole cards, and shoe `drawOrder` are masked before leaving the server; the client never receives cards its view may not show
+- Client applies server state through a **monotonic version guard** — stale versions from socket, poll, action response, or refetch are dropped
 - Optimistic concurrency on `version`; stale → refetch + retry message
 - Viewer identity: `memberPersonId` from bootstrap + profile viewer map
 
@@ -727,12 +730,12 @@ Enforced in `server/src/tables/authority.ts` before `applyTableAction`:
 
 | Rule | Detail |
 |------|--------|
-| Betting | Phase `betting`, not locked; any seated member may place chips |
+| Betting | Phase `betting`, not locked; any seated member may place chips; `placeBet` amount must be a finite positive number |
 | Player turns | Box owner for active `activeHandKey` only |
 | Host-only | shuffle, deal, nextRound, configureTable, resetTable, zilch host actions |
 | Insurance | **Per staker** on each eligible box (`insuranceStakerDecisions`); fundable stakers accept/decline their share; unfunded auto-skipped; phase completes when all eligible boxes resolved; `{ playerId: boxId, personId }` payload online |
 | Zilch | `currentPlayerId === ctx.personId` |
-| assignChips | `canUserAssignChips` (table admin + owner rules) |
+| assignChips | Owner-only via `assertTableHost` on `personId` when `ownerOnlyCanAssignChips` (`getTableAdminSettings`) |
 | Personal ledger | Game ended, not already added |
 
 **Hold'em online:** Server-authoritative gameplay, blind edits, all-in, side-pot construction and **showdown payout** (Phase C2); **challenge winner authority** (Phase D1).

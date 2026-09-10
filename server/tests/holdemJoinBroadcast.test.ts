@@ -28,19 +28,26 @@ const HOLDEM_CHALLENGE_CONFIGURE = {
 };
 
 describe('holdem join table:update broadcast', () => {
-  it('broadcastTableUpdate emits full state to the table room', () => {
+  it('broadcastTableUpdate emits per-socket redacted state to table room subscribers', async () => {
     const emit = vi.fn();
-    const io = { to: vi.fn(() => ({ emit })) };
+    const fetchSockets = vi.fn(async () => [
+      { data: { userId: 'user-1' }, emit },
+    ]);
+    const io = { in: vi.fn(() => ({ fetchSockets })) };
+    // No deck / hidden cards — redaction is a no-op and the same state object
+    // flows through.
     const state = { session: { id: 'table-1' } } as GameState;
 
-    broadcastTableUpdate(io as never, 'table-1', 3, state);
+    broadcastTableUpdate(io as never, 'table-1', 3, state, () => 'person-1');
 
-    expect(io.to).toHaveBeenCalledWith('table:table-1');
-    expect(emit).toHaveBeenCalledWith('table:update', {
-      tableId: 'table-1',
-      version: 3,
-      state,
+    await vi.waitFor(() => {
+      expect(emit).toHaveBeenCalledWith('table:update', {
+        tableId: 'table-1',
+        version: 3,
+        state,
+      });
     });
+    expect(io.in).toHaveBeenCalledWith('table:table-1');
   });
 
   it('guest join adds second playable seat to table state', async () => {

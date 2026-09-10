@@ -99,14 +99,21 @@ describe('GET /api/debug/email-provider', () => {
     process.env.PUBLIC_ORIGIN = 'https://sxm-production.up.railway.app';
     process.env.CORS_ORIGIN = 'https://sxm-production.up.railway.app';
     process.env.SESSION_SECRET = 'test-secret';
+    process.env.ROOT_USER_EMAIL = 'root@example.com';
     process.env.RESEND_API_KEY = 're_x';
     process.env.RESEND_FROM = 'SXM <notify@verified.example.com>';
     smtpEnv();
     vi.resetModules();
     const { createApp } = await import('../src/app.js');
+    const { createSessionToken } = await import('../src/auth/tokens.js');
     const { app } = createApp();
     const request = (await import('supertest')).default;
-    const res = await request(app).get('/api/debug/email-provider');
+    const res = await request(app)
+      .get('/api/debug/email-provider')
+      .set(
+        'Authorization',
+        `Bearer ${createSessionToken({ userId: 'root-user', email: 'root@example.com' })}`,
+      );
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       emailProvider: 'resend',

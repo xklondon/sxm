@@ -11,6 +11,19 @@ Every significant feature change must update **both**:
 
 before the work is considered complete. This rule is also stated in `.cursorrules`.
 
+## 2026-09-10 — Multiplayer security hardening + audit punch-list (items 1–14)
+
+- **Socket subscribe gated:** `table:subscribe` now verifies table membership server-side; non-members get `table:subscribe:denied` and never join the room. `/api/tables/active` strips `hostEmail` and player names for viewers without membership.
+- **Per-viewer state redaction:** new `server/src/tables/redactState.ts` masks the hidden blackjack dealer hole card, opponent hold'em hole cards, and the shoe `drawOrder` before state leaves the server (socket broadcasts via per-socket `fetchSockets()` emits, plus GET/join/action HTTP responses). Redaction mirrors client visibility rules exactly (protocol `showDealerHoleCardDuringPlay`, showdown, practice-mode virtual seats). Known limitation: saving an online table and resuming it offline gets a masked shoe order (reshuffle-equivalent).
+- **Authority fixes:** `assignChips` enforced by `assertTableHost` on `personId` (was spoofable display-name match); `placeBet` requires a finite positive amount; zilch server path no longer falls back to display-name matching.
+- **Client sync:** monotonic version guard drops stale states across socket/poll/action/refetch paths; socket reconnect triggers a one-time re-fetch.
+- **Debug surface:** `/api/debug/*` requires auth, and in production is root-only (404 otherwise); `/api/debug/routes` inventory refreshed; dev `/test-email` consolidated onto shared SMTP helpers.
+- **UI/flow fixes:** `useHandTransitionHold` ordered hold queue + seeded refs (no spurious holds on rejoin); `zilchCompleteRoll` dispatch gated to the acting client; LocalProfileSetup render deduplicated; RoundSummaryOverlay keyed by `handKey`; poker log/pot keys stabilized.
+- **Fail-closed IOU handoff:** unverifiable `tableId` now 403s unless the table genuinely doesn't exist (offline fallback preserved).
+- **Dead code removed:** unused `HoldemPanel.tsx`/`.css`, `useCardViewBustHold.ts` (+test) — −625 lines.
+
+---
+
 ## 2026-07-08 — Game-over after settlement; card reveal timing
 
 - **Game end:** Settled/resolved rounds no longer count in-round `currentBet` as betting exposure for `evaluateTableGameEnd` — prevents `all-players-eliminated` / `single-holder` from being blocked while resolved hands still show bet amounts. **Available: 0 alone does not end the game**; ledger ≤ 0 and betting ≤ 0 (post-settlement) are required for non-bank elimination.
