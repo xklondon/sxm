@@ -61,7 +61,7 @@ Per-item targeted tests were also run and recorded at each commit. Note: `npm ru
 - **New transport-boundary module** `server/src/tables/redactState.ts`: server state now differs per viewer. Broadcast is asynchronous per-socket; any future broadcast callers must pass a personId resolver.
 - Canonical routes unchanged (App → TableScreen → panels). No parallel render paths added; one dead path (HoldemPanel) removed.
 - Authority now consistently personId-based; no display-name matching remains on server-relevant paths.
-- **Known limitation:** saving an online table locally and resuming offline gets a masked shoe `drawOrder` (reshuffle-equivalent). Online resume unaffected.
+- **Confirmed non-issue:** SXM does not support saving an online table and resuming it offline, so the masked shoe `drawOrder` cannot affect a supported session-overlap flow.
 
 ## 5. Deploy readiness
 
