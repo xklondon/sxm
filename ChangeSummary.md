@@ -1,4 +1,13 @@
-# Change Summary — Audit punch-list execution (items 1–14)
+# Change Summary — Audit punch-list execution (items 1–14 + approved #15 reveal-order fix)
+
+## Item #15 (partial) — reveal order, approved freeze exception (2026-09-10)
+
+- **Files changed:** `src/engine/blackjack/dealing/cardRevealDisplay.ts` (`nextGameplayRevealStep` only — player-hand catch-up now precedes dealer/bank-draw catch-up; pure reorder, no new timing/state/config), `docs/BLACKJACK_ENGINE_FREEZE.md` (exception recorded), `docs/CHANGE_LOG.md`.
+- **Tests added/updated:** `src/engine/blackjack/dealing/cardRevealGameplay.test.ts` — new case pinning players-before-dealer during gameplay catch-up (double card + bank draws in one state).
+- **Validation:** targeted engine reveal/pacing suites (`src/engine/blackjack/dealing` + bankTurnPacing, dealPacing, cardTimingEngine, dealerDisplay, doubleAction, blackjackPolish) — 16 files, 121 passed; dependent component suites (blackjackFiveIssueFixes, blackjackPresentationStability, blackjackStabilityContracts, cardViewHeroHand, tableInfoDisplay) — 5 files, 44 passed; `npm run build` green. `blackjackRenderedLayout.test.tsx` / full `npm test` not run per rules.
+- **Not touched (outside approval):** Card View `slice(0,4)` results cap; all other frozen files.
+
+---
 
 Date: 2026-09-10. All 14 approved punch-list items implemented, each as its own commit on `main`. Item #15 was **not** touched (frozen — see Deploy readiness).
 

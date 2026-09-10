@@ -38,6 +38,21 @@ describe('gameplay card reveal steps', () => {
     });
   });
 
+  it('reveals pending player cards before dealer/bank draws (players-before-dealer)', () => {
+    // Online bank resolve can deliver a player's double card and the bank
+    // draw cards in one state — the player's card must reveal first.
+    let visible: CardVisibilityCounts = { dealer: 2, hands: { 'p:0': 2 } };
+    const target = { dealer: 4, hands: { 'p:0': 3 } };
+    const step1 = nextGameplayRevealStep(visible, target);
+    expect(step1).toEqual({ dealer: 2, hands: { 'p:0': 3 } });
+    visible = step1!;
+    const step2 = nextGameplayRevealStep(visible, target);
+    expect(step2).toEqual({ dealer: 3, hands: { 'p:0': 3 } });
+    const step3 = nextGameplayRevealStep(step2!, target);
+    expect(step3).toEqual({ dealer: 4, hands: { 'p:0': 3 } });
+    expect(hasPendingCardReveal(step3!, target)).toBe(false);
+  });
+
   it('reveals hit mid-round without regressing visibility', () => {
     const visible = { dealer: 2, hands: { 'p:0': 2 } };
     const target = { dealer: 2, hands: { 'p:0': 3 } };

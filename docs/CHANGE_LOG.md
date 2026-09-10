@@ -11,6 +11,12 @@ Every significant feature change must update **both**:
 
 before the work is considered complete. This rule is also stated in `.cursorrules`.
 
+## 2026-09-10 — Blackjack gameplay reveal order (approved freeze exception, punch-list #15a)
+
+- `cardRevealDisplay.ts` `nextGameplayRevealStep`: pending player cards (hit/double/split draws) now reveal before dealer/bank draw cards — players-before-dealer, same principle as `buildInitialRevealSteps`. Pure reorder of the existing step sequencing; no new timing config, state, or animation. Explicit user-approved exception recorded in `docs/BLACKJACK_ENGINE_FREEZE.md`. The Card View `slice(0,4)` cap was **not** part of this approval and is unchanged.
+
+---
+
 ## 2026-09-10 — Multiplayer security hardening + audit punch-list (items 1–14)
 
 - **Socket subscribe gated:** `table:subscribe` now verifies table membership server-side; non-members get `table:subscribe:denied` and never join the room. `/api/tables/active` strips `hostEmail` and player names for viewers without membership.

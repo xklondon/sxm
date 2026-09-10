@@ -37,6 +37,12 @@ Related guards:
 
 ---
 
+## Approved exceptions
+
+- **2026-09-10** — `cardRevealDisplay.ts` `nextGameplayRevealStep`: reordered gameplay reveal catch-up so pending player cards (hit/double/split draws) reveal **before** dealer/bank draw cards, matching the players-before-dealer principle of `buildInitialRevealSteps`. Explicit user-approved unfreeze, scoped to that one function; no timing/config/state changes.
+
+---
+
 ## Allowed without unfreeze
 
 - Small **visual polish** (tokens, spacing) scoped under a single view root

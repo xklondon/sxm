@@ -319,9 +319,9 @@ export function nextGameplayRevealStep(
   ) {
     return null;
   }
-  if (visible.dealer < target.dealer) {
-    return { ...visible, dealer: visible.dealer + 1 };
-  }
+  // Players before dealer: pending player cards (hit/double/split draws)
+  // reveal before dealer/bank draw cards — same principle as
+  // buildInitialRevealSteps. (2026-09-10 approved freeze exception.)
   const handKeys = [
     ...new Set([...Object.keys(visible.hands), ...Object.keys(target.hands)]),
   ];
@@ -334,6 +334,9 @@ export function nextGameplayRevealStep(
         hands: { ...visible.hands, [handKey]: cur + 1 },
       };
     }
+  }
+  if (visible.dealer < target.dealer) {
+    return { ...visible, dealer: visible.dealer + 1 };
   }
   return null;
 }
