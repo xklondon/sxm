@@ -104,6 +104,33 @@ describe('multiplayer ownership (server authority)', () => {
     expect(bet.state.tableMeta.boxStakes[boxId]?.amount).toBe(10);
   });
 
+  it('rejects assignChips from a member whose display name spoofs the host', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    const { joinUrl } = await tables.createInvite({
+      tableId: table.id,
+      userId: host.id,
+      invitedEmail: 'spoof@example.com',
+      // Same display name as the table owner — name matching must NOT grant authority.
+      invitedName: 'Host',
+    });
+    const token = new URL(joinUrl).searchParams.get('token')!;
+    await tables.acceptInviteByToken(token);
+    const spoofer = await store.getUserByEmail('spoof@example.com')!;
+    const hostPersonId = store.getMember(table.id, host.id)!.personId;
+    const current = store.getTable(table.id)!;
+
+    await expect(
+      tables.applyAction(
+        table.id,
+        spoofer.id,
+        'assignChips',
+        { recipientId: hostPersonId, amount: 5000, reason: 'top-up' },
+        current.version,
+      ),
+    ).rejects.toThrow(/Not authorized to assign chips/i);
+  });
+
   it('assigned box: guest who bet first can hit when host did not stake', async () => {
     const host = await seedHostUser(store);
     const table = await tables.createTable(host.id, 'Host');

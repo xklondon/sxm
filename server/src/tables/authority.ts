@@ -8,7 +8,7 @@ import {
   isSeatedPersonAtTable,
 } from '../../../src/engine/session/playerAssignment.js';
 import { hasPersonalLedgerEntryForTable } from '../../../src/engine/scoreLedger/scoreLedger.js';
-import { canUserAssignChips } from '../../../src/engine/table/adminControls.js';
+import { getTableAdminSettings } from '../../../src/engine/table/adminControls.js';
 import { canDealBlackjack } from '../../../src/engine/session/canDealBlackjack.js';
 import { hasAnyStakes } from '../../../src/engine/blackjack/stakes.js';
 import { isBankerReady } from '../../../src/engine/session/boxOps.js';
@@ -107,10 +107,10 @@ export function assertActionAuthorized(state: GameState, ctx: ActionContext): vo
       return;
 
     case 'assignChips': {
-      const caller = state.players[ctx.personId];
-      const callerLabel = caller?.controllerName?.trim() || caller?.displayName || '';
-      if (!canUserAssignChips(state, callerLabel)) {
-        throw new Error('Not authorized to assign chips');
+      // personId-based authority (same pattern as configureTable/resetTable).
+      // Display names are client-chosen and spoofable — never an identity.
+      if (getTableAdminSettings(state).ownerOnlyCanAssignChips) {
+        assertTableHost(state, ctx.personId, 'Not authorized to assign chips');
       }
       return;
     }
