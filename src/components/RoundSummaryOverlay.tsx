@@ -137,7 +137,7 @@ export function RoundSummaryOverlay({
             const tone = outcomeTone(entry.netChips);
             return (
               <li
-                key={`${entry.boxLabel}-${entry.playerName}`}
+                key={entry.handKey}
                 className={[
                   'bj-round-summary__row',
                   `bj-round-summary__row--${tone}`,

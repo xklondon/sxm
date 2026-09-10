@@ -6,6 +6,8 @@ import { cardsFromIds, getBlackjackHandValue } from './hand';
 import { orderedHandKeys } from './helpers';
 
 export interface RoundSummaryBoxEntry {
+  /** Unique per hand — split children share boxLabel/playerName. */
+  handKey: string;
   boxLabel: string;
   playerName: string;
   handValue: number;
@@ -127,6 +129,7 @@ export function buildRoundSummaryOverlayModel(state: GameState): RoundSummaryOve
     const netChips = netChipsForOutcome(outcome, hand.currentBet, state.blackjackSettings.blackjackPayout);
     const flavor = roundSummaryFlavor(outcome, netChips);
     entries.push({
+      handKey,
       boxLabel: boxLabelForPlayer(state, hand.playerId),
       playerName: personLabel(state, hand.playerId),
       handValue: playerTotal.value,

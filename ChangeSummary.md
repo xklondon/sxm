@@ -62,5 +62,10 @@ Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates mad
 - Tests: App.render/membership/infraStability + productionRouteOwnership + blackjackEngineFreezeGuards — 40 pass.
 - Validation tier: ownership + App targeted tests + `npm run build` (pass).
 
+## Item 11 — RoundSummaryOverlay keyed by handKey
+- Files: `src/engine/blackjack/roundSummaryOverlay.ts` (entry model gains `handKey` — additive display-model field, no rules change), `src/components/RoundSummaryOverlay.tsx` (list key `boxLabel-playerName` → `handKey`; split children previously produced duplicate keys).
+- Tests: blackjackUiResultState + blackjackFiveIssueFixes + challengeGameEndPresentation — 38 pass. (`blackjackFourRegression.test.ts` is excluded by vitest config by design.)
+- Validation tier: blackjack targeted tests + `npm run build` (pass).
+
 ## Item 2 notes
 - Notes: (a) `npm run build:server` fails on a PRE-EXISTING tsconfig rootDir misconfiguration (fails identically on the clean tree; it also emits stray `.js` files beside sources — cleaned up). Canonical `npm run build` (tsc -b + vite) passes. (b) Known limitation: saving an ONLINE table state locally and resuming it OFFLINE now resumes with a masked shoe order (reshuffle-equivalent); online resume is unaffected (server keeps the real deck).
