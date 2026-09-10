@@ -104,6 +104,21 @@ describe('multiplayer ownership (server authority)', () => {
     expect(bet.state.tableMeta.boxStakes[boxId]?.amount).toBe(10);
   });
 
+  it('rejects negative and zero placeBet amounts', async () => {
+    const host = await seedHostUser(store);
+    const table = await tables.createTable(host.id, 'Host');
+    const boxId = Object.keys(table.state.players).find(
+      (id) => table.state.players[id]?.role === 'box',
+    )!;
+
+    await expect(
+      tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: -100 }, table.version),
+    ).rejects.toThrow(/positive number/i);
+    await expect(
+      tables.applyAction(table.id, host.id, 'placeBet', { boxId, amount: 0 }, table.version),
+    ).rejects.toThrow(/positive number/i);
+  });
+
   it('rejects assignChips from a member whose display name spoofs the host', async () => {
     const host = await seedHostUser(store);
     const table = await tables.createTable(host.id, 'Host');

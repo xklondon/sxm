@@ -47,6 +47,14 @@ export function assertActionAuthorized(state: GameState, ctx: ActionContext): vo
       if (state.tableMeta.bettingLocked) {
         throw new Error('Betting is locked');
       }
+      if (ctx.action === 'placeBet') {
+        // Same positive-amount discipline as holdemBet/holdemRaise below — a
+        // negative chip would silently shrink a box stake in the engine.
+        const amount = Number(ctx.payload.amount);
+        if (!Number.isFinite(amount) || amount <= 0) {
+          throw new Error('amount must be a positive number');
+        }
+      }
       assertBetPlacement(state, ctx);
       return;
 
