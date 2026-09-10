@@ -19,7 +19,7 @@ const POLL_INTERVAL_MS = 15_000;
 
 export interface OnlineSocketHandlers {
   tableId: string;
-  onTableUpdate: (payload: { state: GameState; version: number }) => void;
+  onTableUpdate: (payload: { tableId: string; state: GameState; version: number }) => void;
   onConnectionState: (state: OnlineConnectionState) => void;
   pollTable: () => Promise<void>;
 }
@@ -125,7 +125,7 @@ function ensureSocket(): Socket {
     });
   }
 
-  socket.on('table:update', (payload: { state: GameState; version: number }) => {
+  socket.on('table:update', (payload: { tableId: string; state: GameState; version: number }) => {
     activeHandlers?.onTableUpdate(payload);
   });
 

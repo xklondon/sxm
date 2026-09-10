@@ -26,5 +26,10 @@ Spec discipline: checked SXM_MASTER_SPEC.md and CHANGE_LOG.md — no updates mad
 - Tests: new spoof-regression in `server/tests/multiplayerOwnership.test.ts` (member with display name "Host" rejected); existing host assignChips test still passes. 24 tests pass (multiplayerOwnership + tableActions).
 - Validation tier: multiplayer targeted tests + build (deferred to item 4 commit; server-only logic change, no client build impact).
 
+## Item 4 — client monotonic version guard
+- Files: `src/hooks/useOnlineMultiplayer.ts` (single `applyServerState` guard — `version <= versionRef.current` dropped — used by socket `onTableUpdate`, `pollTable`, HTTP action response, and stale-refetch; socket handler also drops payloads for a different tableId), `src/hooks/onlineSocket.ts` (payload type includes `tableId`, matching what the server emits).
+- Tests: new `src/hooks/useOnlineMultiplayer.versionGuard.test.tsx` (4 cases: stale broadcast dropped, own-broadcast double-apply dedup, foreign-table payload ignored, newer-after-older applied); onlineSocket + App.staleTable/infraStability/membership all pass.
+- Validation tier: multiplayer targeted tests + `npm run build` (pass).
+
 ## Item 2 notes
 - Notes: (a) `npm run build:server` fails on a PRE-EXISTING tsconfig rootDir misconfiguration (fails identically on the clean tree; it also emits stray `.js` files beside sources — cleaned up). Canonical `npm run build` (tsc -b + vite) passes. (b) Known limitation: saving an ONLINE table state locally and resuming it OFFLINE now resumes with a masked shoe order (reshuffle-equivalent); online resume is unaffected (server keeps the real deck).

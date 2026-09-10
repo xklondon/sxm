@@ -62,6 +62,24 @@ export function useOnlineTable(
   const onGameStateChangeRef = useRef(onGameStateChange);
   onGameStateChangeRef.current = onGameStateChange;
 
+  /**
+   * Monotonic version guard — mirrors the server's `expectedVersion` write
+   * discipline on the read side. Socket broadcasts, poll responses, and HTTP
+   * action responses arrive on independent connections with no cross-channel
+   * ordering: a delayed older payload must never overwrite newer applied
+   * state, and the actor's own broadcast must not re-apply the state its HTTP
+   * response already delivered.
+   */
+  function applyServerState(nextVersion: number, state: GameState): boolean {
+    if (versionRef.current !== null && nextVersion <= versionRef.current) {
+      return false;
+    }
+    versionRef.current = nextVersion;
+    setVersion(nextVersion);
+    onGameStateChangeRef.current(state);
+    return true;
+  }
+
   useEffect(() => {
     versionRef.current = tableVersion;
     setVersion(tableVersion);
@@ -84,21 +102,22 @@ export function useOnlineTable(
     return acquireOnlineSocket({
       tableId,
       onTableUpdate: (payload) => {
-        versionRef.current = payload.version;
-        setVersion(payload.version);
-        onGameStateChangeRef.current(payload.state);
+        if (payload.tableId !== tableId) {
+          return;
+        }
+        applyServerState(payload.version, payload.state);
       },
       onConnectionState: setConnectionState,
       pollTable: async () => {
         const refreshed = await fetchTable(tableId);
+        if (!applyServerState(refreshed.version, refreshed.state)) {
+          return;
+        }
         applyOnlineTableBootstrap({
           tableId: refreshed.tableId,
           state: refreshed.state,
           memberPersonId: refreshed.memberPersonId,
         });
-        versionRef.current = refreshed.version;
-        setVersion(refreshed.version);
-        onGameStateChangeRef.current(refreshed.state);
       },
     });
   }, [tableId]);
@@ -118,9 +137,7 @@ export function useOnlineTable(
         payload,
         versionRef.current ?? undefined,
       );
-      versionRef.current = result.version;
-      setVersion(result.version);
-      onGameStateChangeRef.current(result.state);
+      applyServerState(result.version, result.state);
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
@@ -130,14 +147,13 @@ export function useOnlineTable(
       if (/stale/i.test(message)) {
         try {
           const refreshed = await fetchTable(tableId);
-          applyOnlineTableBootstrap({
-            tableId: refreshed.tableId,
-            state: refreshed.state,
-            memberPersonId: refreshed.memberPersonId,
-          });
-          versionRef.current = refreshed.version;
-          setVersion(refreshed.version);
-          onGameStateChangeRef.current(refreshed.state);
+          if (applyServerState(refreshed.version, refreshed.state)) {
+            applyOnlineTableBootstrap({
+              tableId: refreshed.tableId,
+              state: refreshed.state,
+              memberPersonId: refreshed.memberPersonId,
+            });
+          }
         } catch {
           // Ignore refetch failure; fall through to the retry message.
         }
