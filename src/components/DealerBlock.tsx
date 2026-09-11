@@ -71,8 +71,9 @@ export function DealerCommandArea({
             <p
               className={[
                 CANONICAL_COMMAND_STATUS_CLASS,
+                'dealer-block__status--primary',
                 gameEnded ? 'dealer-block__status--game-over' : '',
-                isTableInstructionMessage(commandMessage) || commandMessage.includes('\n')
+                isTableInstructionMessage(commandMessage)
                   ? 'dealer-block__status--summary'
                   : '',
               ]
@@ -83,7 +84,10 @@ export function DealerCommandArea({
             </p>
           ) : null}
           {commandLines.map((line, i) => (
-            <p key={`${i}-${line}`} className={`${CANONICAL_COMMAND_STATUS_CLASS} dealer-block__status--summary`}>
+            <p
+              key={`${i}-${line}`}
+              className={`${CANONICAL_COMMAND_STATUS_CLASS} dealer-block__status--secondary`}
+            >
               {line}
             </p>
           ))}

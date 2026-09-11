@@ -332,7 +332,8 @@ describe('table layout polish contract', () => {
         onGameStateChange={noop}
       />,
     );
-    expect(betting).toContain(TABLE_UX.summaryPlaceholder);
+    expect(betting).toContain('dealer-block__command');
+    expect(betting).not.toContain(TABLE_UX.summaryPlaceholder);
   });
 
   it('Card View zones exist across betting and play phases', () => {

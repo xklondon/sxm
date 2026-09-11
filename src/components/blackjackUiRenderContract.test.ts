@@ -192,8 +192,8 @@ describe('blackjackUiRenderContract — layout overlap guards', () => {
     expect(SHELL_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*overflow-x:\s*clip/,
     );
-    expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[\s\S]*justify-content:\s*flex-end/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
   });
 

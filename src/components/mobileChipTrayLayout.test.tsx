@@ -91,14 +91,14 @@ describe('mobile chip tray layout (Table + card views)', () => {
     );
   });
 
-  it('keeps fixed tray zone height on mobile', () => {
+  it('lets the shell tray row grow to contain its content', () => {
     expect(SHARED_CSS).toContain(MOBILE_LAYOUT_MEDIA);
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 3.85rem');
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]{0,120}height:\s*var\(--bj-zone-tray-height\)/,
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 3.45rem');
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*height:\s*auto/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]{0,120}max-height:\s*var\(--bj-zone-tray-height\)/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*max-height:\s*none/,
     );
   });
 });

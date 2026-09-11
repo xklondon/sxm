@@ -1,104 +1,488 @@
 {
   "twoCard": {
     "cardCount": 2,
-    "cardsZone": {
-      "top": 375.28125,
-      "bottom": 575.28125,
+    "tableViewMode": "card",
+    "commandZone": {
+      "top": 210.15625,
+      "bottom": 273,
       "left": 19.875,
       "right": 370.125,
       "width": 350.25,
-      "height": 200
+      "height": 62.84375
+    },
+    "cardsZone": {
+      "top": 273,
+      "bottom": 553.5625,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 280.5625
+    },
+    "actionsZone": {
+      "top": 553.5625,
+      "bottom": 621.015625,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 67.453125
+    },
+    "boxesZone": {
+      "top": 621.015625,
+      "bottom": 729.28125,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 108.265625
+    },
+    "trayZone": {
+      "top": 729.28125,
+      "bottom": 789.109375,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 59.828125
+    },
+    "trayInner": {
+      "top": 729.90625,
+      "bottom": 781.921875,
+      "left": 25.46875,
+      "right": 364.53125,
+      "width": 339.0625,
+      "height": 52.015625
+    },
+    "boxesInner": {
+      "top": 622.28125,
+      "bottom": 723.6875,
+      "left": 31.875,
+      "right": 358.125,
+      "width": 326.25,
+      "height": 101.40625
+    },
+    "shell": {
+      "top": 41.765625,
+      "bottom": 790.375,
+      "left": 13.796875,
+      "right": 376.203125,
+      "width": 362.40625,
+      "height": 748.609375
+    },
+    "trayZoneStyle": {
+      "height": "59.8281px",
+      "minHeight": "55.2px",
+      "maxHeight": "none",
+      "padding": "0.64px 5.6px 7.2px",
+      "display": "block",
+      "gridTemplateRows": "none",
+      "alignSelf": "auto"
+    },
+    "trayInnerStyle": {
+      "height": "52.0156px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "padding": "2.56px 7.2px 1.28px",
+      "display": "grid",
+      "gridTemplateRows": "28px 15.9688px",
+      "alignSelf": "auto"
+    },
+    "boxesInnerStyle": {
+      "height": "101.406px",
+      "minHeight": "auto",
+      "maxHeight": "none",
+      "padding": "0px",
+      "display": "grid",
+      "gridTemplateRows": "101.406px",
+      "alignSelf": "auto"
+    },
+    "shellStyle": {
+      "height": "748.609px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "padding": "1.6px 6.08px 1.28px",
+      "display": "grid",
+      "gridTemplateRows": "[bank-info] 24px [dealer] 142.797px [command] 62.8438px [cards] 280.562px [actions] 67.4531px [boxes] 108.266px [tray] 59.8281px",
+      "alignSelf": "stretch"
     },
     "heroPlayingCards": [
       {
         "i": 0,
         "width": 136,
         "height": 190.390625,
-        "top": 382.171875,
-        "bottom": 572.5625
+        "top": 320.03125,
+        "bottom": 510.421875
       },
       {
         "i": 1,
         "width": 136,
         "height": 190.390625,
-        "top": 382.171875,
-        "bottom": 572.5625
+        "top": 320.03125,
+        "bottom": 510.421875
       }
     ]
   },
   "threeCard": {
     "cardCount": 3,
-    "cardsZone": {
-      "top": 375.28125,
-      "bottom": 575.28125,
+    "tableViewMode": "card",
+    "commandZone": {
+      "top": 210.15625,
+      "bottom": 273,
       "left": 19.875,
       "right": 370.125,
       "width": 350.25,
-      "height": 200
+      "height": 62.84375
+    },
+    "cardsZone": {
+      "top": 273,
+      "bottom": 553.5625,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 280.5625
+    },
+    "actionsZone": {
+      "top": 553.5625,
+      "bottom": 621.015625,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 67.453125
+    },
+    "boxesZone": {
+      "top": 621.015625,
+      "bottom": 729.28125,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 108.265625
+    },
+    "trayZone": {
+      "top": 729.28125,
+      "bottom": 789.109375,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 59.828125
+    },
+    "trayInner": {
+      "top": 729.90625,
+      "bottom": 781.921875,
+      "left": 25.46875,
+      "right": 364.53125,
+      "width": 339.0625,
+      "height": 52.015625
+    },
+    "boxesInner": {
+      "top": 622.28125,
+      "bottom": 723.6875,
+      "left": 31.875,
+      "right": 358.125,
+      "width": 326.25,
+      "height": 101.40625
+    },
+    "shell": {
+      "top": 41.765625,
+      "bottom": 790.375,
+      "left": 13.796875,
+      "right": 376.203125,
+      "width": 362.40625,
+      "height": 748.609375
+    },
+    "trayZoneStyle": {
+      "height": "59.8281px",
+      "minHeight": "55.2px",
+      "maxHeight": "none",
+      "padding": "0.64px 5.6px 7.2px",
+      "display": "block",
+      "gridTemplateRows": "none",
+      "alignSelf": "auto"
+    },
+    "trayInnerStyle": {
+      "height": "52.0156px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "padding": "2.56px 7.2px 1.28px",
+      "display": "grid",
+      "gridTemplateRows": "28px 15.9688px",
+      "alignSelf": "auto"
+    },
+    "boxesInnerStyle": {
+      "height": "101.406px",
+      "minHeight": "auto",
+      "maxHeight": "none",
+      "padding": "0px",
+      "display": "grid",
+      "gridTemplateRows": "101.406px",
+      "alignSelf": "auto"
+    },
+    "shellStyle": {
+      "height": "748.609px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "padding": "1.6px 6.08px 1.28px",
+      "display": "grid",
+      "gridTemplateRows": "[bank-info] 24px [dealer] 142.797px [command] 62.8438px [cards] 280.562px [actions] 67.4531px [boxes] 108.266px [tray] 59.8281px",
+      "alignSelf": "stretch"
     },
     "heroPlayingCards": [
       {
         "i": 0,
         "width": 106.078125,
         "height": 148.5,
-        "top": 385.171875,
-        "bottom": 533.671875
+        "top": 343.96875,
+        "bottom": 492.46875
       },
       {
         "i": 1,
         "width": 106.078125,
         "height": 148.5,
-        "top": 385.171875,
-        "bottom": 533.671875
+        "top": 343.96875,
+        "bottom": 492.46875
       },
       {
         "i": 2,
         "width": 112.45465087890625,
         "height": 152.9857177734375,
-        "top": 382.99969482421875,
-        "bottom": 535.9854125976562
+        "top": 398.90594482421875,
+        "bottom": 551.8916625976562
       }
     ]
   },
   "fourCard": {
     "cardCount": 4,
-    "cardsZone": {
-      "top": 375.28125,
-      "bottom": 575.28125,
+    "tableViewMode": "card",
+    "commandZone": {
+      "top": 210.15625,
+      "bottom": 273,
       "left": 19.875,
       "right": 370.125,
       "width": 350.25,
-      "height": 200
+      "height": 62.84375
+    },
+    "cardsZone": {
+      "top": 273,
+      "bottom": 553.5625,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 280.5625
+    },
+    "actionsZone": {
+      "top": 553.5625,
+      "bottom": 621.015625,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 67.453125
+    },
+    "boxesZone": {
+      "top": 621.015625,
+      "bottom": 729.28125,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 108.265625
+    },
+    "trayZone": {
+      "top": 729.28125,
+      "bottom": 789.109375,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 59.828125
+    },
+    "trayInner": {
+      "top": 729.90625,
+      "bottom": 781.921875,
+      "left": 25.46875,
+      "right": 364.53125,
+      "width": 339.0625,
+      "height": 52.015625
+    },
+    "boxesInner": {
+      "top": 622.28125,
+      "bottom": 723.6875,
+      "left": 31.875,
+      "right": 358.125,
+      "width": 326.25,
+      "height": 101.40625
+    },
+    "shell": {
+      "top": 41.765625,
+      "bottom": 790.375,
+      "left": 13.796875,
+      "right": 376.203125,
+      "width": 362.40625,
+      "height": 748.609375
+    },
+    "trayZoneStyle": {
+      "height": "59.8281px",
+      "minHeight": "55.2px",
+      "maxHeight": "none",
+      "padding": "0.64px 5.6px 7.2px",
+      "display": "block",
+      "gridTemplateRows": "none",
+      "alignSelf": "auto"
+    },
+    "trayInnerStyle": {
+      "height": "52.0156px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "padding": "2.56px 7.2px 1.28px",
+      "display": "grid",
+      "gridTemplateRows": "28px 15.9688px",
+      "alignSelf": "auto"
+    },
+    "boxesInnerStyle": {
+      "height": "101.406px",
+      "minHeight": "auto",
+      "maxHeight": "none",
+      "padding": "0px",
+      "display": "grid",
+      "gridTemplateRows": "101.406px",
+      "alignSelf": "auto"
+    },
+    "shellStyle": {
+      "height": "748.609px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "padding": "1.6px 6.08px 1.28px",
+      "display": "grid",
+      "gridTemplateRows": "[bank-info] 24px [dealer] 142.797px [command] 62.8438px [cards] 280.562px [actions] 67.4531px [boxes] 108.266px [tray] 59.8281px",
+      "alignSelf": "stretch"
     },
     "heroPlayingCards": [
       {
         "i": 0,
         "width": 89.75,
         "height": 125.640625,
-        "top": 385.171875,
-        "bottom": 510.8125
+        "top": 355.40625,
+        "bottom": 481.046875
       },
       {
         "i": 1,
         "width": 89.75,
         "height": 125.640625,
-        "top": 385.171875,
-        "bottom": 510.8125
+        "top": 355.40625,
+        "bottom": 481.046875
       },
       {
         "i": 2,
         "width": 95.14494323730469,
         "height": 129.43585205078125,
-        "top": 383.33404541015625,
-        "bottom": 512.7698974609375
+        "top": 422.09967041015625,
+        "bottom": 551.5355224609375
       },
       {
         "i": 3,
-        "width": 105.38156127929688,
+        "width": 105.38157653808594,
         "height": 136.28048706054688,
-        "top": 375.5557861328125,
-        "bottom": 511.8362731933594
+        "top": 416.5422668457031,
+        "bottom": 552.82275390625
       }
     ]
+  },
+  "fullTable": {
+    "cardCount": 2,
+    "tableViewMode": "full",
+    "commandZone": {
+      "top": 210.15625,
+      "bottom": 273,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 62.84375
+    },
+    "cardsZone": {
+      "top": 273,
+      "bottom": 577.875,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 304.875
+    },
+    "actionsZone": {
+      "top": 577.875,
+      "bottom": 621.328125,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 43.453125
+    },
+    "boxesZone": {
+      "top": 621.328125,
+      "bottom": 729.28125,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 107.953125
+    },
+    "trayZone": {
+      "top": 729.28125,
+      "bottom": 789.109375,
+      "left": 19.875,
+      "right": 370.125,
+      "width": 350.25,
+      "height": 59.828125
+    },
+    "trayInner": {
+      "top": 729.90625,
+      "bottom": 781.921875,
+      "left": 25.46875,
+      "right": 364.53125,
+      "width": 339.0625,
+      "height": 52.015625
+    },
+    "boxesInner": {
+      "top": 622.59375,
+      "bottom": 723.6875,
+      "left": 31.875,
+      "right": 358.125,
+      "width": 326.25,
+      "height": 101.09375
+    },
+    "shell": {
+      "top": 41.765625,
+      "bottom": 790.375,
+      "left": 13.796875,
+      "right": 376.203125,
+      "width": 362.40625,
+      "height": 748.609375
+    },
+    "trayZoneStyle": {
+      "height": "59.8281px",
+      "minHeight": "55.2px",
+      "maxHeight": "none",
+      "padding": "0.64px 5.6px 7.2px",
+      "display": "block",
+      "gridTemplateRows": "none",
+      "alignSelf": "auto"
+    },
+    "trayInnerStyle": {
+      "height": "52.0156px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "padding": "2.56px 7.2px 1.28px",
+      "display": "grid",
+      "gridTemplateRows": "28px 15.9688px",
+      "alignSelf": "auto"
+    },
+    "boxesInnerStyle": {
+      "height": "101.094px",
+      "minHeight": "auto",
+      "maxHeight": "none",
+      "padding": "0px",
+      "display": "grid",
+      "gridTemplateRows": "101.094px",
+      "alignSelf": "auto"
+    },
+    "shellStyle": {
+      "height": "748.609px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "padding": "1.6px 6.08px 1.28px",
+      "display": "grid",
+      "gridTemplateRows": "[bank-info] 24px [dealer] 142.797px [command] 62.8438px [cards] 304.875px [actions] 43.4531px [boxes] 107.953px [tray] 59.8281px",
+      "alignSelf": "stretch"
+    },
+    "heroPlayingCards": []
   }
 }

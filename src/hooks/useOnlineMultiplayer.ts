@@ -5,6 +5,7 @@ import type { GameState } from '../types';
 import { fetchMe, fetchTable, sendTableAction, TableMembershipError, type AuthUser } from '../api/client';
 import { AuthFetchError } from '../auth/authErrors';
 import { applyOnlineTableBootstrap } from '../components/viewerIdentity';
+import { beginBlackjackPerfTrace } from '../components/blackjackPerfDiagnostics';
 
 import { isOnlineModeEnabled } from '../api/config';
 
@@ -130,6 +131,7 @@ export function useOnlineTable(
       return null;
     }
     setActionInFlight(true);
+    const perfTrace = beginBlackjackPerfTrace(type, { serverRoundTrip: true });
     try {
       const result = await sendTableAction(
         tableId,
@@ -138,6 +140,7 @@ export function useOnlineTable(
         versionRef.current ?? undefined,
       );
       applyServerState(result.version, result.state);
+      perfTrace.markStateApplied();
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : '';
@@ -162,6 +165,7 @@ export function useOnlineTable(
       throw err;
     } finally {
       setActionInFlight(false);
+      perfTrace.finish();
     }
   }
 

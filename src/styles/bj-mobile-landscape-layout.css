@@ -1,11 +1,11 @@
 /**
- * Mobile landscape — both Full Table + Card View.
- * Scope: @media (max-width: 900px) and (orientation: landscape) only.
+ * Mobile landscape — Card View only.
+ * Full Table is owned by bj-full-mobile-landscape-layout.css.
+ * Scope: .bj-view-card-mobile at max-width 900px in landscape.
  * Does not alter portrait mobile or desktop rules.
  */
 
 @media (max-width: 900px) and (orientation: landscape) {
-  .bj-view-full-mobile.bj-casino,
   .bj-view-card-mobile.bj-casino {
     --bj-mobile-landscape-header-reserve: 2.35rem;
     --bj-mobile-table-canvas-height: min(
@@ -21,9 +21,6 @@
     --bj-full-table-box-height: 2.25rem;
   }
 
-  .bj-view-full-mobile[data-phase='player'],
-  .bj-view-full-mobile[data-phase='dealer'],
-  .bj-view-full-mobile[data-phase='resolved'],
   .bj-view-card-mobile[data-phase='player'],
   .bj-view-card-mobile[data-phase='dealer'],
   .bj-view-card-mobile[data-phase='resolved'] {
@@ -32,18 +29,14 @@
     --bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height);
   }
 
-  .bj-view-full-mobile .bj-mobile-table-shell,
   .bj-view-card-mobile .bj-mobile-table-shell,
-  .bj-view-full-mobile .bj-casino__rail,
   .bj-view-card-mobile .bj-casino__rail,
-  .bj-view-full-mobile .bj-casino__felt,
   .bj-view-card-mobile .bj-casino__felt {
     min-height: 0;
     max-height: var(--bj-mobile-table-canvas-height, 100dvh);
     overflow: hidden;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell,
   .bj-view-card-mobile .bj-table-layout-shell {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -67,7 +60,6 @@
     align-content: start;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell > .bj-dealer-area,
   .bj-view-card-mobile .bj-table-layout-shell > .bj-dealer-area {
     grid-area: dealer;
     flex: 0 0 auto;
@@ -76,7 +68,6 @@
     overflow: hidden;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--summary,
   .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--summary {
     grid-area: command;
     flex: 0 0 auto;
@@ -85,14 +76,12 @@
     overflow: hidden;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards,
   .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--cards {
     grid-area: cards;
     min-height: 0;
     overflow: hidden;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--actions,
   .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--actions {
     grid-area: actions;
     flex: 0 0 auto;
@@ -103,7 +92,6 @@
     align-items: center;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--boxes,
   .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--boxes {
     grid-area: boxes;
     flex: 0 0 auto;
@@ -114,7 +102,6 @@
     margin-top: 0;
   }
 
-  .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--bottom,
   .bj-view-card-mobile .bj-table-layout-shell > .bj-table-zone--bottom {
     grid-area: tray;
     flex: 0 0 auto;
@@ -125,7 +112,6 @@
     margin-top: var(--bj-zone-boxes-tray-gap);
   }
 
-  .bj-view-full-mobile .bj-table-slot-row.bj-arc--player-boxes,
   .bj-view-card-mobile .bj-table-slot-row.bj-arc--player-boxes {
     width: 100%;
     max-width: 100%;

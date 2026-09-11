@@ -11,6 +11,13 @@ Every significant feature change must update **both**:
 
 before the work is considered complete. This rule is also stated in `.cursorrules`.
 
+## 2026-09-11 — Blackjack mobile vertical contract and responsiveness
+
+- Canonical mobile Full Table/Card View now use the shell-owned command → cards → actions → boxes → tray grid without cross-zone transforms or overlap. HIT/STAY are compact, the command has primary/secondary hierarchy, and the content-sized tray alone owns bottom safe-area padding. Full Table and Card View landscape geometry now have separate owners instead of competing selectors.
+- The mobile browser capture now loads the production CSS cascade and asserts non-overlap for both views. Existing `flowSettings`/`dealPacing` remains the single card cadence source; no gameplay timer or rule changed. Opt-in `VITE_BLACKJACK_PERF=true` diagnostics measure local and online action latency, and online actions expose an immediate busy state.
+
+---
+
 ## 2026-09-11 — Card View complete settlement results (approved freeze exception, punch-list #15b)
 
 - `BlackjackCardView.tsx` and `CardViewDesktopHeroArea.tsx`: Card View settlement panels now render every settled hand result in canonical `orderedHandKeys` box order. Removed the silent `slice(0, 4)` data truncation; no card geometry, CSS, reveal sequencing, or timing changed. Explicit user-approved exception recorded separately in `docs/BLACKJACK_ENGINE_FREEZE.md`.

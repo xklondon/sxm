@@ -1,80 +1,47 @@
-# Change Summary — Audit punch-list execution (items 1–14 + approved #15 exceptions)
-
-## Item #15b — complete Card View settlement results, approved freeze exception (2026-09-11)
-
-- **Files changed:** `src/components/BlackjackCardView.tsx` and `src/components/CardViewDesktopHeroArea.tsx` now derive settlement lines from `orderedHandKeys(session, round)` and render all matching results; the `slice(0, 4)` cap and object-insertion ordering are removed. No CSS, card geometry, reveal sequencing, or timing changed.
-- **Test updated:** `src/components/blackjackVisualResultDisplay.test.tsx` creates six settled boxes with messages inserted in reverse order, then confirms mobile and desktop Card View render all six in canonical box order.
-- **Validation:** targeted Card View suites — 5 files, 48 passed; ownership smoke — 28 passed; `npm run build` green (pre-existing chunk-size warning only). Full `npm test` and `blackjackRenderedLayout.test.tsx` skipped per rules.
-- **Docs:** separate approved-exception line in `docs/BLACKJACK_ENGINE_FREEZE.md`; behavior recorded in `docs/SXM_MASTER_SPEC.md` and `docs/CHANGE_LOG.md`.
-
-## Item #15 (partial) — reveal order, approved freeze exception (2026-09-10)
-
-- **Files changed:** `src/engine/blackjack/dealing/cardRevealDisplay.ts` (`nextGameplayRevealStep` only — player-hand catch-up now precedes dealer/bank-draw catch-up; pure reorder, no new timing/state/config), `docs/BLACKJACK_ENGINE_FREEZE.md` (exception recorded), `docs/CHANGE_LOG.md`.
-- **Tests added/updated:** `src/engine/blackjack/dealing/cardRevealGameplay.test.ts` — new case pinning players-before-dealer during gameplay catch-up (double card + bank draws in one state).
-- **Validation:** targeted engine reveal/pacing suites (`src/engine/blackjack/dealing` + bankTurnPacing, dealPacing, cardTimingEngine, dealerDisplay, doubleAction, blackjackPolish) — 16 files, 121 passed; dependent component suites (blackjackFiveIssueFixes, blackjackPresentationStability, blackjackStabilityContracts, cardViewHeroHand, tableInfoDisplay) — 5 files, 44 passed; `npm run build` green. `blackjackRenderedLayout.test.tsx` / full `npm test` not run per rules.
-- **Not touched by this reveal-order exception:** Card View results rendering was handled later under the separate #15b exception; all other frozen files remained unchanged.
-
----
-
-Date: 2026-09-10. All 14 approved punch-list items implemented, each as its own commit on `main`. Item #15 was **not** touched (frozen — see Deploy readiness).
+# Change Summary — Blackjack mobile layout and responsiveness
 
 ## 1. Files changed
 
-**Server (security/authority):**
-- `server/src/app.ts` — `table:subscribe` membership gate (`getTableForUser`, emits `table:subscribe:denied` on failure); `/api/debug` gated behind `requireAuth` + production root-only (404 for non-root).
-- `server/src/tables/redactState.ts` — **new**: `redactStateForViewer(state, viewerPersonId)` masks hidden blackjack dealer hole card, opponent hold'em holes, and shoe `drawOrder` with decoy real-card ids; mirrors client visibility rules exactly (protocol `showDealerHoleCardDuringPlay`, showdown/resolved, `canPersonControlHoldemSeat`).
-- `server/src/tables/broadcast.ts` — rewritten: per-socket redacted emits via `io.in(room).fetchSockets()` with per-viewer cache (replaces room-level `io.to().emit()`).
-- `server/src/tables/service.ts` — `/api/tables/active` strips `hostEmail` + `players` for non-member viewers; new `getMemberPersonId`; `applyAction` returns `personId`.
-- `server/src/tables/routes.ts`, `server/src/tables/inviteAcceptHttp.ts` — redaction applied to GET/join/action responses; person resolver passed to all broadcast sites.
-- `server/src/tables/authority.ts` — `assignChips` via `assertTableHost` on `personId` (when `ownerOnlyCanAssignChips`); `placeBet` requires finite positive amount.
-- `server/src/iouHandoff/routes.ts` — fail closed: non-`TableNotFoundError` lookup failures → 403.
-- `server/src/debug/emailRoutes.ts` — `/routes` inventory refreshed; `server/src/dev/routes.ts` — `/test-email` uses shared SMTP helpers.
-
-**Client:**
-- `src/hooks/useOnlineMultiplayer.ts` — monotonic version guard across socket/poll/action/refetch ingestion.
-- `src/hooks/onlineSocket.ts` — `tableId` in payload type; one-time re-fetch on reconnect.
-- `src/engine/dice/zilch/zilchTurnAuthority.ts` — display-name fallback removed from server-relevant path (offline `playable.length <= 1` shortcut deliberately kept).
-- `src/components/useZilchTableFlow.ts` — `zilchCompleteRoll` dispatch gated to the acting client.
-- `src/components/useHandTransitionHold.ts` — ordered FIFO hold queue + seeded prev-refs (no spurious holds on rejoin).
-- `src/App.tsx` + `src/components/BlackjackPanel.tsx` — LocalProfileSetup render deduplicated (App copy suppressed on blackjack table screen; panel copy gains `lockedEmail`).
-- `src/engine/blackjack/roundSummaryOverlay.ts` + `src/components/RoundSummaryOverlay.tsx` — entries keyed by `handKey`.
-- `src/games/poker/components/PokerTablePanel.tsx`, `PokerChatDock.tsx`, `PokerPotArea.tsx` — stable list keys.
-- **Deleted (dead code, −625 lines):** `src/components/HoldemPanel.tsx`, `HoldemPanel.css`, `useCardViewBustHold.ts` (+ its test).
-
-**Docs:** `docs/SXM_MASTER_SPEC.md` (assignChips authority, subscribe gate, redaction, version guard, placeBet validation), `docs/CHANGE_LOG.md` (2026-09-10 entry), `RAILWAY_DEPLOY.md` (debug curl examples need root session).
+- **Canonical mobile layout:** `src/styles/bj-blackjack-table-shell.css`, `src/styles/bj-table-shared.css`, `src/styles/bj-full-table-card-area.css`, `src/styles/bj-mobile-landscape-layout.css`, `src/components/ChipStack.css`.
+- **Command/actions:** `src/components/BlackjackPanel.tsx`, `BlackjackActionPanel.tsx`, `DealerBlock.tsx`, `tableCommandDisplay.ts`.
+- **Performance diagnostics:** new `src/components/blackjackPerfDiagnostics.ts`; online RTT wiring in `src/hooks/useOnlineMultiplayer.ts`. Enable with `VITE_BLACKJACK_PERF=true`.
+- **Browser geometry:** `scripts/capture-mobile-card-layout.mts` now loads the production CSS cascade, captures Full Table plus Card View zones, and rejects command/cards/actions/boxes/tray overlap. Updated `reference-ui/captures/Mobile_Card_bounding_boxes*.json`.
+- **Docs:** `docs/SXM_MASTER_SPEC.md`, `docs/BLACKJACK_LAYOUT_CONTRACTS.md`, `docs/CHANGE_LOG.md`.
+- **Tests:** updated the affected mobile layout, command text, frozen-layout guard, placement-contract, commander, action, and zone-dimension tests; added `src/components/blackjackPerfDiagnostics.test.ts`.
 
 ## 2. Tests added / updated
 
-**New:** `server/tests/socketSubscribe.test.ts` (member broadcast + stranger denied), `server/tests/stateRedaction.test.ts` (7 cases: hole hidden/revealed/open-protocol, shoe masking, holdem own/opponent/showdown/null-viewer), `src/hooks/useOnlineMultiplayer.versionGuard.test.tsx` (4 cases), `server/tests/iouHandoffRouteAccess.test.ts`.
-
-**Updated:** `server/tests/joinRequests.test.ts` (PII stripping), `multiplayerOwnership.test.ts` (spoofed-name assignChips, invalid placeBet), `zilchTurnAuthority.test.ts` (same-name guests), `useZilchTableFlow.test.ts` (roll gate), `debugRoutes.test.ts` + `emailDebug.test.ts` + `authRoutes.test.ts` + `emailProvider.test.ts` (root-auth for debug endpoints), `holdemJoinBroadcast.test.ts` (per-socket broadcast contract), `onlineSocket.test.ts` (reconnect re-fetch).
+- Added development-only performance diagnostic contract coverage.
+- Added/updated guards for canonical actions → boxes → tray order, no mobile zone transforms/absolute positioning, shell-owned row geometry, one tray safe-area owner, compact command hierarchy, online busy state, and updated command copy.
+- Extended the Playwright mobile capture to verify actual non-overlapping geometry for Card View (2/3/4 cards) and Full Table.
+- Existing hit/stand/double/next-round, box commander, bank Cards authority, version guard, card timing, and reveal pacing regressions remain green.
 
 ## 3. Validation run
 
-| Tier | Command | Result |
-|------|---------|--------|
-| Server/multiplayer | `npx vitest run server/tests` | **Run — 40 files, 259 passed, 5 skipped, 0 failed** |
-| Ownership | `npm run test:ownership` | **Run — 28 passed** |
-| People/invites | `npm run test:people-invite` | **Run — 35 passed** |
-| Blackjack layout | `npm run test:blackjack:layout` | **Run — 19 files, 261 passed** |
-| Layout target | `npm run test:layout:target` | Skipped — no Full Table layout/CSS contract changes (only React keys + hold-queue logic; covered by blackjack layout tier) |
-| Build | `npm run build` | **Run — green** (only pre-existing chunk-size warning) |
-| Full `npm test` | — | Skipped — forbidden in agent loop per `.cursorrules` |
-
-Per-item targeted tests were also run and recorded at each commit. Note: `npm run build:server` is **pre-existing broken** (tsconfig rootDir errors on clean tree, verified via stash) — canonical gate is `npm run build`.
+- **Ownership:** `npm run test:ownership` — run, 28 passed.
+- **Layout target:** `npm run test:layout:target` — run, 53 passed.
+- **Blackjack layout:** `npm run test:blackjack:layout` — run, 262 passed.
+- **Dedicated mobile browser:** `npm run test:mobile-card-layout:browser` — run, capture assertions passed; 8 Vitest tests passed.
+- **Changed mobile/action/authority regression set:** run, 101 passed.
+- **Portrait/landscape ownership regression set:** run, 69 passed.
+- **Blackjack engine:** `npm run test:blackjack:engine` — run, 344 passed.
+- **Build:** `npm run build` — run, passed; pre-existing bundle-size warning only.
+- **Lint:** `npm run lint` — run, repository baseline remains red (342 errors, 78 warnings across pre-existing files). IDE diagnostics report no errors in changed production files.
+- **Full `npm test` / `blackjackRenderedLayout.test.tsx`:** skipped per `.cursorrules`.
 
 ## 4. Architecture impact
 
-- **New transport-boundary module** `server/src/tables/redactState.ts`: server state now differs per viewer. Broadcast is asynchronous per-socket; any future broadcast callers must pass a personId resolver.
-- Canonical routes unchanged (App → TableScreen → panels). No parallel render paths added; one dead path (HoldemPanel) removed.
-- Authority now consistently personId-based; no display-name matching remains on server-relevant paths.
-- **Confirmed non-issue:** SXM does not support saving an online table and resuming it offline, so the masked shoe `drawOrder` cannot affect a supported session-overlap flow.
+- Production route remains `App → TableScreen → BlackjackPanel → BlackjackTableLayoutShell`; no alternate render path was added.
+- `BlackjackTableLayoutShell` is the mobile vertical geometry owner. Full Table card-area CSS no longer moves command/cards/actions zone wrappers.
+- Full Table landscape remains solely owned by `bj-full-mobile-landscape-layout.css`; the generic landscape file is now Card View-only, and the shared wide-mobile flex/grid reset was removed.
+- Mobile order is bank/dealer → command → cards (`1fr`) → actions → boxes → tray. The shell uses a definite height so the `1fr` cards row receives remaining space.
+- The command still has one source/render path; existing `commandMessage` and `commandLines` now provide primary/secondary hierarchy.
+- Existing `flowSettings.getNextCardDelay()` → `scheduleNextCardReveal()` remains the sole card cadence source. No reveal/dealing timer, game rule, settlement, payout, authority, invite, or auth logic changed.
 
 ## 5. Deploy readiness
 
-- All validation tiers green; each item independently revertable by commit.
-- **Item #15 (blackjack reveal-order in `cardRevealDisplay.ts` + Card View `slice(0,4)` cap) NOT implemented** — inside `docs/BLACKJACK_ENGINE_FREEZE.md`; requires explicit unfreeze approval.
-- Production `/api/debug/*` now requires a root session — `RAILWAY_DEPLOY.md` curl examples updated accordingly.
-- No open test failures.
+- Required build and targeted validation tiers are green.
+- Browser geometry at 390×844 shows exact adjacent cards/actions/boxes/tray boundaries in both mobile views; no cross-zone overlap.
+- Lint is not newly clean and remains a repository-wide pre-existing gate issue; changed production files have no IDE lint diagnostics.
 
 Spec discipline: checked/updated SXM_MASTER_SPEC.md and CHANGE_LOG.md.

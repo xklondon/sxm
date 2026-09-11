@@ -294,7 +294,9 @@ describe('Card View layout guard', () => {
     const sharedCss = SHARED_CSS;
     expect(sharedCss).toContain('--bj-shell-height: min(88vh, 56rem)');
     expect(sharedCss).toMatch(/\.bj-table-desktop-shell[\s\S]*var\(--bj-shell-height\)/);
-    expect(sharedCss).toMatch(/\.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-zone-tray-height\)/);
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-desktop \.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*height:\s*var\(--bj-desktop-zone-tray-height\)/,
+    );
   });
 
   it('boxes row contains player arc without expanding page scroll', () => {

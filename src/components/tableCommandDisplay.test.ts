@@ -77,7 +77,10 @@ describe('buildBlackjackCommandText', () => {
       roundSummaryLines: [],
       controllerName: 'Alice',
     });
-    expect(result.commandMessage).toContain('New Cards');
+    expect(result.commandMessage).toBe('Round complete');
+    expect(result.commandLines).toEqual([
+      'Press New Cards, then place bets for the next hand.',
+    ]);
     expect(result.commandMessage).not.toMatch(/your turn/i);
   });
 
@@ -104,9 +107,8 @@ describe('buildBlackjackCommandText', () => {
       roundSummaryLines: [],
       controllerName: 'Alice',
     });
-    expect(result.commandMessage).toContain('Box 2 — Alice — your turn.');
-    expect(result.commandMessage).toMatch(/Bank has/);
-    expect(result.commandLines).toEqual([]);
+    expect(result.commandMessage).toBe("Box 2 · Alice's turn");
+    expect(result.commandLines[0]).toMatch(/Bank .+ · Your hand 13/);
     expect(result.commandMessage).not.toMatch(/^(Option|Options):/m);
   });
 
@@ -167,9 +169,8 @@ describe('buildBlackjackCommandText', () => {
       allowSplit: false,
       allowDouble: false,
     });
-    expect(result.commandMessage).toContain('Box 3 — Kji — your turn.');
-    expect(result.commandMessage).toMatch(/against your soft 17/);
-    expect(result.commandLines).toEqual([]);
+    expect(result.commandMessage).toBe("Box 3 · Kji's turn");
+    expect(result.commandLines[0]).toMatch(/Bank .+ · Your hand soft 17/);
   });
 
   it('omits bank-against line when no dealer cards are visible', () => {
@@ -181,7 +182,7 @@ describe('buildBlackjackCommandText', () => {
       { gameState: state, displayState: state },
     );
     expect(result.commandLines.some((line) => /Bank has/.test(line))).toBe(false);
-    expect(result.commandMessage).not.toMatch(/Bank has/);
+    expect(result.commandMessage).not.toMatch(/Bank/);
   });
 });
 
@@ -198,6 +199,8 @@ describe('command text routing separation', () => {
     expect(CARD_VIEW_SRC).not.toContain('BlackjackCommandBox');
     expect(COMMAND_BOX_SRC).toContain('TABLE_UX.cardLayoutCommand');
     expect(COMMAND_BOX_SRC).toContain('DealerCommandArea');
+    expect(DEALER_BLOCK_SRC).toContain('dealer-block__status--primary');
+    expect(DEALER_BLOCK_SRC).toContain('dealer-block__status--secondary');
     expect(CARD_VIEW_SRC).not.toContain('buildTableCommandDisplay');
     expect(CARD_VIEW_SRC).not.toContain('buildBlackjackCommandText');
     expect(PANEL_SRC).toMatch(/command=\{\s*<BlackjackCommandBox/);

@@ -525,13 +525,15 @@ describe('stable dealer layout slots across phases', () => {
     expect(playing).toContain('bj-table-actions');
   });
 
-  it('mobile Full Table actions zone has +10px clearance above boxes', () => {
-    expect(SHARED_CSS).toMatch(/--bj-full-mobile-actions-clearance:\s*10px/);
-    expect(PLAY_ZONE_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*margin-bottom:\s*var\(--bj-full-mobile-actions-clearance/,
-    );
+  it('mobile Full Table actions stay in the canonical shell row above boxes', () => {
     expect(PLAY_ZONE_CSS).not.toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*--bj-full-mobile-actions-clearance/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions\s*\{/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions[\s\S]*transform:\s*none/,
+    );
+    expect(SHELL_CSS.indexOf('grid-row: actions')).toBeLessThan(
+      SHELL_CSS.indexOf('grid-row: boxes'),
     );
   });
 });

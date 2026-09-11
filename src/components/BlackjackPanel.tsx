@@ -56,6 +56,7 @@ import { BlackjackDealerArea } from './BlackjackDealerArea';
 import { BlackjackTableLayoutShell } from './BlackjackTableLayoutShell';
 import { isBlackjackLayoutDebugEnabled, logLayoutDebugChipTarget } from './blackjackLayoutDebug';
 import { BlackjackLayoutDebugPanel } from './BlackjackLayoutDebugPanel';
+import { beginBlackjackPerfTrace } from './blackjackPerfDiagnostics';
 import { BlackjackFeltClothLayer } from './BlackjackFeltClothLayer';
 import { Magic8Ball } from './magic8/Magic8Ball';
 import { buildBlackjackPlayerBoxInfo } from './blackjackPlayerBoxInfo';
@@ -797,10 +798,15 @@ export function BlackjackPanel({
       });
       return;
     }
+    const perfTrace = beginBlackjackPerfTrace(online?.type ?? action.name);
     try {
-      onGameStateChange(action(gameStateRef.current));
+      const nextState = action(gameStateRef.current);
+      perfTrace.markStateApplied();
+      onGameStateChange(nextState);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Action failed');
+    } finally {
+      perfTrace.finish();
     }
   }
 
@@ -1474,8 +1480,7 @@ export function BlackjackPanel({
     if (renderInsuranceDecisionOverlay()) {
       return <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />;
     }
-    const alert = renderTableAlert();
-    return alert ?? <div className={TABLE_UX.summaryPlaceholder} aria-hidden="true" />;
+    return renderTableAlert();
   }
 
   function renderActionsContent() {
@@ -1621,6 +1626,7 @@ export function BlackjackPanel({
       <BlackjackActionRow
         scale={isCardViewMobile ? 'card-view' : 'full-table'}
         actionsEnabled={playerDecisionActionsEnabled}
+        busy={Boolean(onlineActionInFlight)}
         canHit={canHit}
         canStand={canStand}
         canDouble={canDouble}

@@ -26,10 +26,10 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
 
   it('defines mobile zone height tokens mapped to canonical zone vars', () => {
     expect(SHARED_CSS).toContain('--bj-mobile-zone-dealer-height: 5.15rem');
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2.25rem');
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-actions-height: 2.45rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 1.85rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-actions-height: 2.65rem');
     expect(SHARED_CSS).toContain('--bj-mobile-zone-boxes-height: 5.75rem');
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 3.85rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-tray-height: 3.45rem');
     expect(SHARED_CSS).toContain('--bj-zone-dealer-height: var(--bj-mobile-zone-dealer-height)');
   });
 
@@ -72,11 +72,11 @@ describe('canonical zone dimensions — Full Table and Card View', () => {
     expect(heroBlock).toContain('flex: 1 1 auto');
     expect(heroBlock).toContain('min-height: var(--bj-zone-cards-min-height)');
     expect(heroBlock).not.toContain('bj-card-row-hero-min');
-    expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*flex:\s*1\s+1\s+auto/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*grid-row:\s*cards/,
     );
-    expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
   });
 

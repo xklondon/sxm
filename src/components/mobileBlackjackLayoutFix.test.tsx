@@ -185,10 +185,10 @@ describe('mobile blackjack layout fix', () => {
 
     it('reserves safe-area padding above browser chrome for mobile tray', () => {
       expect(SHARED_CSS).toMatch(
-        /--bj-zone-tray-padding-bottom:\s*max\(0\.85rem,\s*calc\(env\(safe-area-inset-bottom/,
+        /--bj-zone-tray-padding-bottom:\s*max\(0\.45rem,\s*calc\(env\(safe-area-inset-bottom/,
       );
-      expect(CHIP_CSS).toMatch(
-        /padding-bottom:\s*max\(0\.85rem,\s*calc\(env\(safe-area-inset-bottom/,
+      expect(CHIP_CSS).not.toMatch(
+        /\.bj-view-full-mobile \.bj-value-chips,[\s\S]*padding:[^;]*env\(safe-area-inset-bottom/,
       );
     });
 
@@ -212,9 +212,9 @@ describe('mobile blackjack layout fix', () => {
   });
 
   describe('E — mobile action button integration', () => {
-    it('uses larger touch-friendly hit/stand tokens in mobile actions zone', () => {
+    it('uses compact consistent hit/stand tokens in the owned mobile actions zone', () => {
       expect(SHARED_CSS).toMatch(
-        /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--hit[\s\S]*min-height:\s*2\.75rem/,
+        /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--hit[\s\S]*min-height:\s*2\.4rem/,
       );
       expect(SHARED_CSS).toMatch(
         /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--actions \.ds-btn--stand[\s\S]*border-radius:\s*0\.45rem/,

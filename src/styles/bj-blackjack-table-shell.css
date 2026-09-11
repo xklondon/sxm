@@ -15,6 +15,15 @@
  * No :has(), transforms, negative-margin alignment, margin-top:auto on a zone wrapper, or per-view shell row hacks.
  */
 
+.bj-table-layout-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
 /* ── Desktop shared shell (Full Table + Card View) ─────────────────────────── */
 @media (min-width: 721px) {
   .bj-view-full-desktop,
@@ -656,9 +665,9 @@
       [tray] auto;
     row-gap: 0;
     column-gap: 0;
-    /* Fill the viewport so boxes hug the tray when content is short; scroll when tall. */
-    min-height: 100%;
-    height: auto;
+    /* A definite block size lets the cards 1fr row receive remaining viewport space. */
+    min-height: 0;
+    height: 100%;
     max-height: none;
     overflow-x: hidden;
     overflow-y: visible;
@@ -683,6 +692,14 @@
     grid-row: command;
     grid-column: 1;
     margin: 0;
+    padding: var(--bj-mobile-zone-command-top-gap) 0 0;
+    height: auto;
+    min-height: var(--bj-zone-command-height);
+    max-height: none;
+    overflow: visible;
+    align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table,
@@ -690,10 +707,20 @@
     grid-row: cards;
     grid-column: 1;
     margin: 0;
+    padding: 0;
+    height: auto;
+    max-height: none;
     min-height: var(--bj-zone-cards-min-height, 0);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
     /* Full Table: clip-x only — stacks size/overlap inside the band (no vertical clip). */
     overflow-x: clip;
     overflow-y: visible;
+    position: relative;
+    z-index: 5;
+    box-sizing: border-box;
   }
 
   .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards:not(.bj-cards-area--table),
@@ -710,6 +737,14 @@
     grid-row: actions;
     grid-column: 1;
     margin: 0;
+    padding: var(--bj-mobile-actions-padding-block, 0.12rem) 0;
+    height: auto;
+    min-height: var(--bj-zone-actions-height);
+    max-height: none;
+    overflow: visible;
+    position: relative;
+    transform: none;
+    box-sizing: border-box;
   }
 
   /* Boxes baseline — phase-invariant, identical for mobileFull + mobileCard (no zone movers). */
@@ -718,6 +753,9 @@
     grid-row: boxes;
     grid-column: 1;
     margin: 0;
+    height: auto;
+    min-height: var(--bj-zone-boxes-height);
+    max-height: none;
     overflow: visible;
   }
 
@@ -726,7 +764,11 @@
     grid-row: tray;
     grid-column: 1;
     margin: 0;
+    height: auto;
     min-height: var(--bj-zone-tray-height);
+    max-height: none;
+    padding: 0.04rem 0.35rem var(--bj-zone-tray-padding-bottom);
     overflow: visible;
+    box-sizing: border-box;
   }
 }

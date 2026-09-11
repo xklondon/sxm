@@ -79,8 +79,8 @@ describe('blackjackCardPlacementContract — desktop Full Table', () => {
 
 describe('blackjackCardPlacementContract — mobile Full Table', () => {
   it('bottom-pins box-column stacks just above box value', () => {
-    expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table\s*\{[\s\S]*justify-content:\s*flex-end/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
     expect(CARD_AREA_CSS).toMatch(
       /\.bj-view-full-mobile[\s\S]*\.bj-arc__play-zone[\s\S]*justify-content:\s*flex-end/,

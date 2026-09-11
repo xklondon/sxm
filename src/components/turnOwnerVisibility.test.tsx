@@ -128,7 +128,7 @@ describe('multiplayer turn-owner visibility (UI)', () => {
       controllerName: 'Wrong',
       viewerPersonId: bobId,
     });
-    expect(result.commandMessage).toBe('Box 2 — Bob — your turn.');
+    expect(result.commandMessage).toBe("Box 2 · Bob's turn");
   });
 
   it('Card View uses viewer person id not profile name for controls', () => {

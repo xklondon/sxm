@@ -40,7 +40,7 @@
 |------|------------|
 | Card stack / value band / actions gap / card-column grid | `src/styles/bj-full-table-card-area.css` |
 | Player box row spread + slot grid | `src/styles/bj-player-row-layout.css` |
-| Shell zone grid-row placement + legacy zone flex | `src/styles/bj-table-shared.css` (migrate to owners over time) |
+| Shell zone grid-row placement and mobile band sizing | `src/styles/bj-blackjack-table-shell.css` |
 | Overlay wiring | `src/components/BlackjackPanel.tsx` (classes only, no layout CSS) |
 
 **Browser targets:** action-to-box gap ≈ 0–2px; card stack center aligned to box column (1fr grid); card-column value hidden during play (`bj-arc__slot--card-column--stack-value-in-box`); hand total in box (`bj-phone-view__mini-hand-value`).
@@ -58,6 +58,8 @@
 ### 3. Mobile Portrait Full Table (`bj-view-full-mobile`) — FROZEN
 
 Same zone order as desktop Full Table. Card columns: `bj-full-table-card-area.css` + `bj-player-row-layout.css` (Contract C).
+
+**Approved corrective exception (2026-09-11):** removed the Full Table action-zone `translateY` and duplicate fixed band ownership, made the canonical shell grid own cards/actions/boxes/tray placement, and consolidated bottom safe-area padding into the tray row. Browser geometry now asserts command → cards → actions → boxes → tray without overlap for both mobile views.
 
 ### 4. Mobile Portrait Card View (`bj-view-card-mobile`) — PENDING FREEZE
 
@@ -212,7 +214,9 @@ View root: `bj-view-full-mobile` (portrait orientation within mobile boundary)
 
 ### Rules (same logic as desktop Full Table)
 
-- Canonical zone order: dealer → command → cards → actions → boxes → tray.
+- Canonical zone order: dealer → command → cards → actions → boxes → tray; `bj-blackjack-table-shell.css` owns the definite-height grid and the cards `1fr` row.
+- Actions, boxes, and tray are separate non-overlapping rows; major zone wrappers use no negative margins or translate offsets.
+- The tray is content-sized below boxes and is the sole owner of bottom safe-area padding.
 - Same card column grid as desktop (outcome / stack / value); `bj-full-table-card-area.css` paired with `.bj-view-full-mobile`.
 - **Optional Double/Split** in **command zone** (`renderSummaryContent`) — **not** the desktop cards-zone anchor.
 - **Hit/Stay** only in `bj-table-zone--actions`.

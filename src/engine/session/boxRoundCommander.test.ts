@@ -204,7 +204,7 @@ describe('box round commander — play authority', () => {
       controllerName: 'P2',
       viewerPersonId: p2,
     });
-    expect(guestView.commandMessage).toMatch(/Box 1 — P2 — your turn/i);
+    expect(guestView.commandMessage).toBe("Box 1 · P2's turn");
 
     const ownerView = buildBlackjackCommandText({
       gameState: playing,

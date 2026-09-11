@@ -191,6 +191,30 @@ describe('action row 2x placement and wiring', () => {
     expect(html).toContain('disabled=""');
   });
 
+  it('marks the canonical action row busy during an online action', () => {
+    const html = renderToStaticMarkup(
+      createElement(BlackjackActionPanel, {
+        actionsEnabled: false,
+        busy: true,
+        canHit: true,
+        canStand: true,
+        canDouble: false,
+        canSplit: false,
+        showDouble: false,
+        showSplit: false,
+        showAid: false,
+        onHit: noop,
+        onStand: noop,
+        onDouble: noop,
+        onSplit: noop,
+        onAid: noop,
+      }),
+    );
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain('data-action-busy="true"');
+    expect(PANEL_SRC).toContain('busy={Boolean(onlineActionInFlight)}');
+  });
+
   it('panel dispatches double through run() with type double', () => {
     expect(PANEL_SRC).toContain("type: 'double'");
     expect(PANEL_SRC).toContain('doubleDownBlackjackOnState');

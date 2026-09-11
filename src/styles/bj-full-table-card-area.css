@@ -29,17 +29,6 @@
   --bj-full-table-cards-actions-gap: var(--bj-cards-actions-gap);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   Mobile command shell — desktop: bj-blackjack-table-shell.css
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--summary {
-  flex: 0 0 auto;
-  min-height: 0;
-  margin: 0;
-  z-index: 3;
-}
-
 .bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--summary .bj-card-layout__command {
   flex: 0 0 auto;
   margin: 0 auto;
@@ -48,27 +37,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    C — Card Area (command bottom → actions top; columns bottom-pinned)
    ═══════════════════════════════════════════════════════════════════════════ */
-
-.bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--cards.bj-cards-area--table {
-  flex: 0 0 auto;
-  height: auto;
-  min-height: 0;
-  max-height: none;
-  display: flex;
-  flex-direction: column;
-  /* Bottom-pin box-column arc just above player-box value band. */
-  justify-content: flex-end;
-  align-items: stretch;
-  overflow-x: clip;
-  overflow-y: visible;
-  margin-top: var(--bj-full-table-command-cards-gap);
-  margin-bottom: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 5;
-}
 
 /* Mobile Full Table — compact box-column card scale (placement contract). */
 .bj-view-full-mobile {
@@ -381,28 +349,8 @@
   overflow: visible;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   D — Actions chrome (mobile shell flex) + Hit/Stay presentation (all Full Table)
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.bj-view-full-mobile .bj-table-layout-shell > .bj-table-zone--actions {
-  flex: 0 0 auto;
-  height: var(--bj-zone-actions-height);
-  min-height: var(--bj-zone-actions-height);
-  max-height: var(--bj-zone-actions-height);
-  margin: 0;
-  padding-top: var(--bj-full-table-cards-actions-gap);
-  padding-bottom: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  z-index: 6;
-  position: relative;
-  transform: translateY(calc(-1 * var(--bj-full-mobile-actions-clearance, 0px)));
-  margin-bottom: var(--bj-full-mobile-actions-clearance, 0px);
-}
+/* Mobile action-zone geometry belongs to bj-blackjack-table-shell.css.
+   This file only styles the action contents shared with Full Table desktop. */
 
 .bj-view-full-desktop .bj-table-zone--actions .bj-player-actions,
 .bj-view-card-desktop .bj-table-zone--actions .bj-player-actions,

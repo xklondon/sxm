@@ -9,26 +9,63 @@ const { shared: SHARED_CSS, shell: SHELL_CSS, shellContract: SHELL_CONTRACT_CSS 
 const PLAYER_ROW_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-player-row-layout.css'), 'utf8');
 const FELT_CSS = readFileSync(join(process.cwd(), 'src/styles/bj-felt-skins.css'), 'utf8');
 const CARD_VIEW_CSS = readFileSync(join(process.cwd(), 'src/components/BlackjackCardView.css'), 'utf8');
+const CHIP_CSS = readFileSync(join(process.cwd(), 'src/components/ChipStack.css'), 'utf8');
+const SHELL_TSX = readFileSync(
+  join(process.cwd(), 'src/components/BlackjackTableLayoutShell.tsx'),
+  'utf8',
+);
 
 describe('mobile layout fixes — Full Table action/box clearance', () => {
   const { fullTableCardArea: PLAY_ZONE_CSS } = readBlackjackLayoutCss();
 
-  it('lifts mobile Full Table actions zone by 10px without affecting Card View', () => {
-    expect(SHARED_CSS).toMatch(/--bj-full-mobile-actions-clearance:\s*10px/);
-    expect(PLAY_ZONE_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*transform:\s*translateY\(calc\(-1 \* var\(--bj-full-mobile-actions-clearance/,
-    );
-    expect(PLAY_ZONE_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*margin-bottom:\s*var\(--bj-full-mobile-actions-clearance/,
-    );
+  it('keeps mobile actions in their shell row without zone transforms', () => {
     expect(PLAY_ZONE_CSS).not.toMatch(
-      /\.bj-view-card-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*--bj-full-mobile-actions-clearance/,
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions\s*\{/,
     );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions[\s\S]*transform:\s*none/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*height:\s*auto[\s\S]*max-height:\s*none/,
+    );
+  });
+
+  it('keeps actions, boxes, and tray in canonical DOM and grid-row order', () => {
+    expect(SHELL_TSX.indexOf('<BlackjackActionsZone')).toBeLessThan(
+      SHELL_TSX.indexOf('<BlackjackPlayerBoxesZone'),
+    );
+    expect(SHELL_TSX.indexOf('<BlackjackPlayerBoxesZone')).toBeLessThan(
+      SHELL_TSX.indexOf('TABLE_UX.tableZoneBottom'),
+    );
+    expect(SHELL_CSS.indexOf('grid-row: actions')).toBeLessThan(
+      SHELL_CSS.indexOf('grid-row: boxes'),
+    );
+    expect(SHELL_CSS.indexOf('grid-row: boxes')).toBeLessThan(
+      SHELL_CSS.indexOf('grid-row: tray'),
+    );
+  });
+
+  it('does not use margin-top:auto to park boxes against the tray', () => {
+    expect(SHARED_CSS).not.toMatch(
+      /\.bj-table-layout-shell \.bj-table-zone--boxes[\s\S]{0,220}margin-top:\s*auto/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*margin:\s*0/,
+    );
+  });
+
+  it('keeps major mobile zone wrappers free of absolute positioning', () => {
+    for (const zone of ['summary', 'cards', 'actions', 'boxes', 'bottom']) {
+      const block = SHELL_CSS.match(
+        new RegExp(`\\.bj-view-full-mobile \\.bj-table-layout-shell > \\.bj-table-zone--${zone}[\\s\\S]*?\\}`),
+      )?.[0] ?? '';
+      expect(block).not.toMatch(/position:\s*absolute/);
+    }
   });
 });
 
 describe('mobile layout fixes — portrait bottom safe area', () => {
-  it('pads tray and rail with safe-area-inset-bottom on mobile view roots', () => {
+  it('gives safe-area ownership to the shell tray row only', () => {
     expect(SHARED_CSS).toMatch(
       new RegExp(
         `@media ${MOBILE_LAYOUT_MEDIA.replace(/[()]/g, '\\$&')}[\\s\\S]*--bj-zone-tray-padding-bottom:\\s*max\\([\\s\\S]*env\\(safe-area-inset-bottom`,
@@ -37,11 +74,14 @@ describe('mobile layout fixes — portrait bottom safe area', () => {
     expect(SHARED_CSS).toMatch(
       /@media \(max-width: 720px\)[\s\S]*--bj-zone-tray-padding-bottom:\s*max\([\s\S]*env\(safe-area-inset-bottom/,
     );
-    expect(SHARED_CSS).toMatch(
-      /--bj-mobile-rail-padding:[\s\S]*env\(safe-area-inset-bottom/,
+    expect(SHARED_CSS).not.toMatch(
+      /--bj-mobile-rail-padding:[^;]*env\(safe-area-inset-bottom/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*overflow:\s*visible/,
+    expect(CHIP_CSS).not.toMatch(
+      /\.bj-view-full-mobile \.bj-value-chips,[\s\S]*padding:[^;]*env\(safe-area-inset-bottom/,
+    );
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*padding:[^;]*var\(--bj-zone-tray-padding-bottom\)/,
     );
   });
 
@@ -60,8 +100,8 @@ describe('mobile layout fixes — portrait bottom safe area', () => {
     expect(SHELL_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--bottom[\s\S]*margin:\s*0/,
     );
-    expect(SHARED_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell \.bj-table-zone--bottom[\s\S]*margin-top:\s*var\(--bj-zone-boxes-tray-gap\)/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--boxes[\s\S]*grid-row:\s*boxes[\s\S]*margin:\s*0/,
     );
   });
 });
@@ -111,12 +151,12 @@ describe('mobile layout fixes — Card View classic cloth', () => {
 });
 
 describe('mobile layout fixes — landscape wide phones', () => {
-  it('keeps flex shell when viewport width exceeds 720px on mobile view roots', () => {
-    expect(SHARED_CSS).toMatch(
+  it('keeps the canonical shell grid above the desktop breakpoint', () => {
+    expect(SHARED_CSS).not.toMatch(
       /@media \(min-width: 721px\)[\s\S]*\.bj-view-card-mobile \.bj-table-layout-shell[\s\S]*display:\s*flex/,
     );
-    expect(SHARED_CSS).toMatch(
-      /@media \(min-width: 721px\)[\s\S]*\.bj-view-card-mobile \.bj-table-layout-shell[\s\S]*grid-template-rows:\s*unset/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-card-mobile \.bj-table-layout-shell[\s\S]*display:\s*grid/,
     );
   });
 

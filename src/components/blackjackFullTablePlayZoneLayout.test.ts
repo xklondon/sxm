@@ -203,12 +203,15 @@ describe('Full Table play zone canonical contract', () => {
     expect(PANEL_CSS).toContain('.bj-arc--cards:not(.bj-full-table-card-area) .bj-arc__slot');
   });
 
-  it('styles Full Table desktop and mobile action zone under card area', () => {
+  it('keeps action-zone geometry in the shell and action chrome in card-area CSS', () => {
     expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*height:\s*var\(--bj-desktop-zone-actions-height\)/,
     );
-    expect(PLAY_ZONE_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*height:\s*var\(--bj-zone-actions-height\)/,
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions[\s\S]*grid-row:\s*actions[\s\S]*height:\s*auto/,
+    );
+    expect(PLAY_ZONE_CSS).not.toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--actions\s*\{/,
     );
     expect(PLAY_ZONE_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-zone--actions \.ds-btn--hit/,

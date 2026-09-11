@@ -49,7 +49,7 @@ describe('Full Table card area canonical contract', () => {
     expect(SHELL_CSS).toMatch(
       /\.bj-view-full-desktop \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
-    expect(CARD_AREA_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
     expect(SHELL_CSS).toMatch(

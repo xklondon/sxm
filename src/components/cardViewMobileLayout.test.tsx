@@ -154,11 +154,11 @@ describe('mobile Card View layout contract', () => {
       expect(commandZone).toContain('dealer-block__command');
     }
     expect(betting).toMatch(/Place your bets|shuffle|deal/i);
-    expect(playing).toMatch(/Box \d+ — .+ — your turn\./);
+    expect(playing).toMatch(/Box \d+ · .+&#x27;s turn/);
   });
 
   it('dealer command area carries box/caller turn text', () => {
     const html = renderPanelAt(390, withView(playingState(), 'card'));
-    expect(html).toMatch(/Box \d+ — .+ — your turn\./);
+    expect(html).toMatch(/Box \d+ · .+&#x27;s turn/);
   });
 });

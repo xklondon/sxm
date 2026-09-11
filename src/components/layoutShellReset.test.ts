@@ -86,7 +86,7 @@ describe('layout shell reset — Full Table + Card View', () => {
     expect(SHARED_CSS).toContain(MOBILE_LAYOUT_MEDIA);
     expect(SHARED_CSS).toMatch(/@media \(orientation: landscape\)/);
     expect(SHARED_CSS).toContain('--bj-mobile-zone-dealer-height: 5.15rem');
-    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 2.25rem');
+    expect(SHARED_CSS).toContain('--bj-mobile-zone-command-height: 1.85rem');
 
     const heroBlock =
       SHARED_CSS.match(

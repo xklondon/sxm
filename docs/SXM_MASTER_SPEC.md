@@ -276,6 +276,8 @@ The engine decides **WHAT** happens.
 The timing system decides **WHEN** it is shown.  
 The reveal layer decides **HOW** it is shown.
 
+**Canonical reveal cadence:** `flowSettings.getNextCardDelay()` → `dealPacing.scheduleNextCardReveal()` is the only inter-card timer for Deal Cards, Hit, Double, Split, and bank draws (1/2/3/5 seconds for fast/medium/normal/slow; optional 2–4 second random mode). UI and engine must not add a second deal timer. Development action-latency traces are opt-in with `VITE_BLACKJACK_PERF=true` and log `[blackjack-perf]` handler/state/render/server-round-trip measurements without changing gameplay timing.
+
 No display, timing, animation, or reveal system may:
 
 - alter protocol state
@@ -530,7 +532,7 @@ Fixed 7-row grid in `bj-blackjack-table-shell.css`; **identical slot geometry in
 
 **Desktop Card View dealer cards:** Same compact dealer implementation as Full Table — shared `bj-dealer-area` shell, `--bj-desktop-zone-dealer-height: 6.05rem`, `--bj-dealer-cards-slot-min-height: 3.35rem`, compact playing-cards (`2.05rem × 2.7rem`). No Card View-only tall dealer band.
 
-**Mobile shell parity:** Full Table + Card View share one command slot height via `data-phase` on `.bj-casino` (betting vs player/dealer/resolved). Player boxes spread across felt width (`1fr` grid). Mobile Card View portrait: hero cards ~2.5× scale (`--bj-card-hero-card-scale`); BUST/BlackJack stack badges on hero cards area (`bj-card-view__hero-stack-badge`); hand total under hero cards hidden; player box values remain visible (~2× scale token). Mobile landscape layout (`bj-mobile-landscape-layout.css`, `@media (max-width: 900px) and (orientation: landscape)`) aligns dealer, command, cards, actions, boxes, and tray without altering portrait or desktop rules. Desktop Full Table play/dealing/resolved: felt and box row use overflow containment to avoid internal scrollbars (`bj-blackjack-targeted-fixes.css`).
+**Mobile shell parity:** Full Table + Card View use one definite-height grid owned by `bj-blackjack-table-shell.css`: bank/dealer → command → cards (`1fr`) → actions → boxes → tray. Major zones do not translate or overlap; cards fan only inside the cards row; actions and boxes use separate rows; the content-sized tray follows boxes and solely owns bottom safe-area padding. The compact command uses one canonical source with primary text (for example, “Box 2 · Alex's turn”) and secondary detail (“Bank 9 · Your hand 12”). Player boxes spread across felt width (`1fr` grid). Mobile Card View portrait: hero cards ~2.5× scale (`--bj-card-hero-card-scale`); BUST/BlackJack stack badges on hero cards area (`bj-card-view__hero-stack-badge`); hand total under hero cards hidden; player box values remain visible (~2× scale token). Mobile landscape layout (`bj-mobile-landscape-layout.css`, `@media (max-width: 900px) and (orientation: landscape)`) aligns dealer, command, cards, actions, boxes, and tray without altering portrait or desktop rules. Desktop Full Table play/dealing/resolved: felt and box row use overflow containment to avoid internal scrollbars (`bj-blackjack-targeted-fixes.css`).
 
 1. Bank hand info (`bj-table-info-bar--felt-row`)
 2. Dealer cards + bank hand value (`bj-table-zone--dealer`)

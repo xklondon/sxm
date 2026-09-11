@@ -87,11 +87,11 @@ function countMatches(html: string, needle: string): number {
 }
 
 describe('targeted mobile cleanup — card area + actions', () => {
-  it('pins mobile Full Table cards zone to natural height above actions', () => {
-    expect(CARD_AREA_CSS).toMatch(
-      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*flex:\s*0 0 auto/,
+  it('keeps mobile Full Table cards in the shell stretch row above actions', () => {
+    expect(SHELL_CSS).toMatch(
+      /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*grid-row:\s*cards/,
     );
-    expect(CARD_AREA_CSS).toMatch(
+    expect(SHELL_CSS).toMatch(
       /\.bj-view-full-mobile \.bj-table-layout-shell > \.bj-table-zone--cards\.bj-cards-area--table[\s\S]*justify-content:\s*flex-end/,
     );
     expect(CARD_AREA_CSS).toMatch(

@@ -82,17 +82,17 @@ function formatBankHandPhrase(displayState: GameState): string {
   }
 
   if (cardIds.length === 0) {
-    return 'Bank has no cards.';
+    return 'Bank —';
   }
 
   if (cardIds.length === 1) {
     const card = getCardById(deck, cardIds[0]!);
     const label = card ? formatShortCardLabel(card) : 'a card';
-    return `Bank has ${label}`;
+    return `Bank ${label}`;
   }
 
   const { value } = getBlackjackHandValue(cardsFromIds(deck, cardIds));
-  return `Bank has ${value}`;
+  return `Bank ${value}`;
 }
 
 /** Command zone must not show bank totals before visible dealer cards justify them. */
@@ -182,14 +182,14 @@ export function formatPlayerTurnCommand(
 
   const splitNote =
     options?.handIndex != null && options.handIndex > 0
-      ? ` (hand ${options.handIndex + 1})`
+      ? ` · Hand ${options.handIndex + 1}`
       : '';
   const playerScore = formatHandValuePhrase(handValue.value, handValue.isSoft);
 
   const lines: string[] = [];
   const bankDisplayState = options?.displayState ?? options?.gameState;
   if (bankDisplayState && shouldIncludeBankHandCommandLine(bankDisplayState)) {
-    lines.push(`${formatBankHandPhrase(bankDisplayState)} against your ${playerScore}${splitNote}.`);
+    lines.push(`${formatBankHandPhrase(bankDisplayState)} · Your hand ${playerScore}${splitNote}`);
   }
 
   if (options?.gameState && options.handKey && options.gameState.blackjack) {
@@ -206,13 +206,12 @@ export function formatPlayerTurnCommand(
     lines.push(...resolvePlayerHandCommandLines(handOptions));
   }
 
-  const turnLine = `${boxLabel} — ${playerLabel} — your turn.`;
+  const turnLine = `${boxLabel} · ${playerLabel}'s turn`;
   const detailLines = lines.filter((line) => line.trim().length > 0);
 
   return {
-    commandMessage:
-      detailLines.length > 0 ? `${turnLine}\n${detailLines.join('\n')}` : turnLine,
-    commandLines: [],
+    commandMessage: turnLine,
+    commandLines: detailLines,
   };
 }
 
@@ -226,7 +225,7 @@ export function formatCallerTurnMessage(
   if (handValue) {
     return formatPlayerTurnCommand(slotNum, callerName, handValue, options).commandMessage ?? '';
   }
-  return `Box ${slotNum ?? '?'} — ${callerName?.trim() || 'player'} — your turn.`;
+  return `Box ${slotNum ?? '?'} · ${callerName?.trim() || 'player'}'s turn`;
 }
 
 /** Gold command-area hints (split/double) vs green generic turn lines. */
@@ -376,8 +375,8 @@ export function buildBlackjackCommandText(params: {
 
   if (gameState.tableMeta.awaitingNextRound) {
     return {
-      commandMessage: 'Round complete — press New Cards, then place bets for the next hand.',
-      commandLines: [],
+      commandMessage: 'Round complete',
+      commandLines: ['Press New Cards, then place bets for the next hand.'],
     };
   }
 

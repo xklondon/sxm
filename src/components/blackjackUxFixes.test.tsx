@@ -201,8 +201,9 @@ describe('blackjack UX fixes — command text', () => {
         cardRevealComplete: true,
       },
     );
-    expect(msg.commandMessage).toMatch(/Bank has/);
-    expect(msg.commandMessage).toContain('Double available.');
+    expect(msg.commandMessage).toBe("Box 2 · Alice's turn");
+    expect(msg.commandLines[0]).toMatch(/Bank .+ · Your hand 11/);
+    expect(msg.commandLines).toContain('Double available.');
   });
 
   it('shows Blackjack only for clean natural blackjack status', () => {

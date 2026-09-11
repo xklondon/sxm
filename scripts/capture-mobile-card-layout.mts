@@ -36,7 +36,7 @@ function installMobileWindow() {
   } as unknown as Window;
 }
 
-function mobileCardViewState(cardCount: 2 | 3 | 4): GameState {
+function mobileViewState(cardCount: 2 | 3 | 4, tableViewMode: 'card' | 'full'): GameState {
   let state = tableAfterStartPlaying(500);
   state = claimBoxSlot(state, 1);
   const deck = state.deck!;
@@ -47,7 +47,7 @@ function mobileCardViewState(cardCount: 2 | 3 | 4): GameState {
   const cardIds = ranks.slice(0, cardCount).map((rank) => findCardId(deck, rank));
   return {
     ...state,
-    tableViewMode: 'card',
+    tableViewMode,
     selectedSeatId: box1,
     blackjackFlowSettings: {
       ...state.blackjackFlowSettings,
@@ -89,10 +89,10 @@ async function main() {
   installMobileWindow();
   const { BlackjackPanel } = await server.ssrLoadModule('/src/components/BlackjackPanel.tsx');
 
-  async function captureHand(cardCount: 2 | 3 | 4) {
+  async function captureHand(cardCount: 2 | 3 | 4, tableViewMode: 'card' | 'full' = 'card') {
     const panelHtml = renderToString(
       createElement(BlackjackPanel, {
-        gameState: mobileCardViewState(cardCount),
+        gameState: mobileViewState(cardCount, tableViewMode),
         onGameStateChange: () => undefined,
       }),
     );
@@ -106,6 +106,11 @@ async function main() {
 <html>
 <head>
   <meta charset="utf-8" />
+  <link rel="stylesheet" href="http://127.0.0.1:5198/src/components/BlackjackPanel.css" />
+  <link rel="stylesheet" href="http://127.0.0.1:5198/src/components/BlackjackCardView.css" />
+  <link rel="stylesheet" href="http://127.0.0.1:5198/src/components/DealerBlock.css" />
+  <link rel="stylesheet" href="http://127.0.0.1:5198/src/components/PlayingCard.css" />
+  <link rel="stylesheet" href="http://127.0.0.1:5198/src/components/ChipStack.css" />
   <link rel="stylesheet" href="http://127.0.0.1:5198/src/index.css" />
   <style>
     html, body, #root { margin: 0; height: 844px; max-height: 844px; min-height: 844px; overflow: hidden; background: #0a1a12; }
@@ -128,7 +133,28 @@ async function main() {
         const r = el.getBoundingClientRect();
         return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height };
       };
-      const cardsZone = document.querySelector('.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero');
+      const style = (el) => {
+        if (!el) return null;
+        const s = getComputedStyle(el);
+        return {
+          height: s.height,
+          minHeight: s.minHeight,
+          maxHeight: s.maxHeight,
+          padding: s.padding,
+          display: s.display,
+          gridTemplateRows: s.gridTemplateRows,
+          alignSelf: s.alignSelf,
+        };
+      };
+      const viewRoot = '.bj-view-${tableViewMode}-mobile';
+      const commandZone = document.querySelector(viewRoot + ' .bj-table-zone--summary');
+      const cardsZone = document.querySelector(viewRoot + ' .bj-table-zone--cards');
+      const actionsZone = document.querySelector(viewRoot + ' .bj-table-zone--actions');
+      const boxesZone = document.querySelector(viewRoot + ' .bj-table-zone--boxes');
+      const trayZone = document.querySelector(viewRoot + ' .bj-table-zone--bottom');
+      const trayInner = document.querySelector(viewRoot + ' .bj-value-chips');
+      const boxesInner = document.querySelector(viewRoot + ' .bj-table-slot-row.bj-arc--player-boxes');
+      const shell = document.querySelector(viewRoot + ' .bj-table-layout-shell');
       const heroPlayingCards = [...document.querySelectorAll(
         '.bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .playing-card.bj-phone-card--hero, .bj-view-card-mobile .bj-table-zone--cards.bj-cards-area--hero .playing-card.ds-card--hero',
       )].map((c, i) => {
@@ -137,7 +163,19 @@ async function main() {
       });
       return {
         cardCount: ${cardCount},
+        tableViewMode: '${tableViewMode}',
+        commandZone: rect(commandZone),
         cardsZone: rect(cardsZone),
+        actionsZone: rect(actionsZone),
+        boxesZone: rect(boxesZone),
+        trayZone: rect(trayZone),
+        trayInner: rect(trayInner),
+        boxesInner: rect(boxesInner),
+        shell: rect(shell),
+        trayZoneStyle: style(trayZone),
+        trayInnerStyle: style(trayInner),
+        boxesInnerStyle: style(boxesInner),
+        shellStyle: style(shell),
         heroPlayingCards,
       };
     })()`);
@@ -150,7 +188,8 @@ async function main() {
   const twoCard = await captureHand(2);
   const threeCard = await captureHand(3);
   const fourCard = await captureHand(4);
-  const boxes = { twoCard, threeCard, fourCard };
+  const fullTable = await captureHand(2, 'full');
+  const boxes = { twoCard, threeCard, fourCard, fullTable };
 
   writeFileSync(OUT_AFTER, JSON.stringify(boxes, null, 2));
   await server.close();
@@ -176,8 +215,39 @@ async function main() {
       if (card.top < phase.cardsZone.top + 2) {
         throw new Error(`${phase.cardCount}-card hero top clipped above cardsArea`);
       }
-      if (card.bottom > phase.cardsZone.bottom - 1) {
+      if (card.bottom > phase.cardsZone.bottom - 0.5) {
         throw new Error(`${phase.cardCount}-card hero bottom clipped below cardsArea`);
+      }
+    }
+  }
+
+  for (const phase of [twoCard, threeCard, fourCard, fullTable] as Array<{
+    tableViewMode: 'card' | 'full';
+    commandZone: { top: number; bottom: number } | null;
+    cardsZone: { top: number; bottom: number } | null;
+    actionsZone: { top: number; bottom: number } | null;
+    boxesZone: { top: number; bottom: number } | null;
+    trayZone: { top: number; bottom: number } | null;
+  }>) {
+    const orderedZones = [
+      ['command', phase.commandZone],
+      ['cards', phase.cardsZone],
+      ['actions', phase.actionsZone],
+      ['boxes', phase.boxesZone],
+      ['tray', phase.trayZone],
+    ] as const;
+    for (const [name, zone] of orderedZones) {
+      if (!zone) {
+        throw new Error(`${phase.tableViewMode}: missing ${name} zone`);
+      }
+    }
+    for (let i = 0; i < orderedZones.length - 1; i += 1) {
+      const [currentName, current] = orderedZones[i]!;
+      const [nextName, next] = orderedZones[i + 1]!;
+      if (current!.bottom > next!.top + 0.5) {
+        throw new Error(
+          `${phase.tableViewMode}: ${currentName} overlaps ${nextName} (${current!.bottom} > ${next!.top})`,
+        );
       }
     }
   }

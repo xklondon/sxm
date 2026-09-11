@@ -5,6 +5,7 @@ export interface BlackjackActionPanelProps {
   variant?: 'table' | 'card';
   waitMessage?: string | null;
   actionsEnabled: boolean;
+  busy?: boolean;
   canHit: boolean;
   canStand: boolean;
   canDouble: boolean;
@@ -28,6 +29,7 @@ export function BlackjackActionPanel({
   variant = 'table',
   waitMessage = null,
   actionsEnabled,
+  busy = false,
   canHit,
   canStand,
   canDouble,
@@ -138,7 +140,13 @@ export function BlackjackActionPanel({
   const doubleBtnClass = extraBtnClass(canDouble);
 
   return (
-    <div className={rootClass} aria-label="Player actions" aria-live="polite">
+    <div
+      className={rootClass}
+      aria-label="Player actions"
+      aria-live="polite"
+      aria-busy={busy}
+      data-action-busy={busy ? 'true' : 'false'}
+    >
       <div {...sxmSectionProps(SXM_LAYOUT.primaryActions, primaryRowClass)}>
         <button
           type="button"
