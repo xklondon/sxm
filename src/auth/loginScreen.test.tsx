@@ -12,6 +12,7 @@ import { requestMagicLink } from '../api/client';
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  window.history.replaceState({}, '', '/login');
 });
 
 describe('LoginScreen', () => {
@@ -26,6 +27,24 @@ describe('LoginScreen', () => {
     render(<LoginScreen sessionWarning={null} />);
     expect(screen.queryByText(/Session check failed/i)).toBeNull();
     expect(screen.queryByText(/Could not reach the server/i)).toBeNull();
+  });
+
+  it('forwards invite returnTo into the magic-link request', async () => {
+    vi.mocked(requestMagicLink).mockResolvedValueOnce({});
+    window.history.replaceState(
+      {},
+      '',
+      '/login?invitedEmail=guest%40example.com&returnTo=%2Fjoin-table%3Ftoken%3Dinvite-token',
+    );
+    render(<LoginScreen invitedEmail="guest@example.com" />);
+    fireEvent.click(screen.getByRole('button', { name: /send magic link/i }));
+    await waitFor(() => {
+      expect(requestMagicLink).toHaveBeenCalledWith(
+        'guest@example.com',
+        true,
+        '/join-table?token=invite-token',
+      );
+    });
   });
 
   it('shows invited table context on login when preview available', () => {

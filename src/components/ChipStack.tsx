@@ -150,17 +150,19 @@ export function ChipStack({
   );
 }
 
-export function ChipButton({ value, onClick, disabled, draggable = false, onPointerDragStart }: {
+export function ChipButton({ value, onClick, disabled, draggable = false, selected = false, onPointerDragStart }: {
   value: ChipValue;
   onClick: () => void;
   disabled?: boolean;
+  selected?: boolean;
   draggable?: boolean;
   onPointerDragStart?: (value: ChipValue, e: ReactPointerEvent<HTMLButtonElement>) => void;
 }) {
   return (
     <button
       type="button"
-      className={`chip-token chip-token--${value} chip-token--btn chip-token--plaque`}
+      className={`chip-token chip-token--${value} chip-token--btn chip-token--plaque${selected ? ' chip-token--selected' : ''}`}
+      aria-pressed={selected}
       onClick={onClick}
       disabled={disabled}
       draggable={draggable && !disabled}
@@ -188,6 +190,7 @@ export function ChipTray({
   onChipClick,
   onChipPointerDown,
   disabled,
+  selectedValue = null,
   minimumBet = 1,
   className = '',
   showLabel = true,
@@ -195,6 +198,7 @@ export function ChipTray({
   onChipClick: (value: ChipValue) => void;
   onChipPointerDown?: (value: ChipValue, e: ReactPointerEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
+  selectedValue?: ChipValue | null;
   minimumBet?: number;
   className?: string;
   showLabel?: boolean;
@@ -210,6 +214,7 @@ export function ChipTray({
             value={v}
             disabled={disabled}
             draggable={!disabled}
+            selected={selectedValue === v}
             onPointerDragStart={onChipPointerDown}
             onClick={() => onChipClick(v)}
           />
@@ -225,6 +230,7 @@ export function ValueAndChipsBar({
   onChipClick,
   onChipPointerDown,
   disabled,
+  selectedValue = null,
   minimumBet = 1,
   trayLabel,
 }: {
@@ -233,6 +239,7 @@ export function ValueAndChipsBar({
   onChipClick: (value: ChipValue) => void;
   onChipPointerDown?: (value: ChipValue, e: ReactPointerEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
+  selectedValue?: ChipValue | null;
   minimumBet?: number;
   trayLabel?: string;
 }) {
@@ -274,6 +281,7 @@ export function ValueAndChipsBar({
               onChipClick={onChipClick}
               onChipPointerDown={onChipPointerDown}
               disabled={disabled}
+              selectedValue={selectedValue}
               minimumBet={minimumBet}
               showLabel={false}
               className="chip-tray--inline"

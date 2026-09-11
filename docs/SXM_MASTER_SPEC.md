@@ -83,11 +83,12 @@ SXM Casino (SXMCards) is a casual card-and-dice table app for friends. Players u
 - Persisted: `TableInvite` in Postgres
 - Accept: `GET /api/tables/invites/accept?token=…`
   - **Authenticated** (session email matches invite): accept token, join table/box, redirect `/?table={id}`
-  - **Unauthenticated** (or session email mismatch): store `sxm_pending_invite_token` HttpOnly cookie (15 min, SameSite=Lax, Secure in production), redirect `/login?invitedEmail=…` — **do not consume invite**
-  - **After magic-link verify:** `/api/auth/verify` reads pending invite cookie, accepts token, clears cookie, redirects `/?table={id}`; invalid/expired → `/?inviteError=…`
-- **Invite resolution:** all emails normalized (`trim` + lowercase). Session must match invite email on join. Wrong session on accept clears session and sends invitee to login with pending cookie. `getPersonForUser` prefers email-canonical Person and repairs stale `userId`. Duplicate Person/User rows block invite creation (`INVITE_DUPLICATE_ACCOUNTS`) until admin repair. Disabled persons cannot join (`INVITE_PERSON_DISABLED`).
-- **Diagnostics:** Railway/server logs tag `[SXM][invite-flow]` on create/accept/join/fail with masked fields (search `invite-flow` or `failureCode=`).
-- Client deep link: `/join-table?…` → `JoinTableCurtain`
+  - **Already a matching member** (invite accepted): redirect `/?table={id}` — no second magic-link
+  - **Unauthenticated** (or session email mismatch): store `sxm_pending_invite_token` HttpOnly cookie (15 min, SameSite=Lax, Secure in production) **and** redirect `/login?invitedEmail=…&returnTo=/join-table?token=…` — **do not consume invite**. Invite email checks stay strict.
+  - **After magic-link verify:** `/api/auth/verify` prefers the pending-invite cookie (accept → table). If the cookie is missing, `returnTo=/join-table?token=…` survives the magic-link URL and AppRoot resumes accept once — one auth cycle. Invalid/expired → `/?inviteError=…`
+- **Invite resolution:** all emails normalized (`trim` + lowercase). Session must match invite email on join. Wrong session on accept clears session and sends invitee to login with pending cookie + `returnTo`. `getPersonForUser` prefers email-canonical Person and repairs stale `userId`. Duplicate Person/User rows block invite creation (`INVITE_DUPLICATE_ACCOUNTS`) until admin repair. Disabled persons cannot join (`INVITE_PERSON_DISABLED`).
+- **Diagnostics:** `[SXM][invite-flow]` on create/accept/join/fail; `[SXM][invite-auth]` stages `invite-open` / `auth-required` / `magic-request` / `auth-complete` / `invite-resume` / `join-success` / `redirect-table` with masked ids/emails and callback target.
+- Client deep link: `/join-table?token=…` is the canonical post-auth resume. Unauthenticated clients stay on login and must not auto-hit accept.
 
 ### Table invites (offline)
 

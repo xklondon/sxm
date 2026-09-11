@@ -85,6 +85,11 @@ import {
 } from './blackjackBoxPlacementContract';
 import { InsuranceDecisionOverlay } from './InsuranceDecisionOverlay';
 import { bindTapSelect, createTapSelectHandler } from './tapSelect';
+import {
+  logChipTap,
+  persistArmedChipDenomination,
+  resolveBoxTapChipPlacement,
+} from './chipTapPlacement';
 import { useMobileBoxSwipeNavigation } from '../hooks/useMobileBoxSwipeNavigation';
 import { useMobileCardViewPlaySwipe } from '../hooks/useMobileCardViewPlaySwipe';
 import { toggleSideRailPanel, type SideRailPanel } from './sideRailPanel';
@@ -319,6 +324,7 @@ export function BlackjackPanel({
   >({});
   const pendingOnlineStakesBySlotRef = useRef<Record<number, ChipValue[]>>({});
   const tapSelectRef = useRef(createTapSelectHandler());
+  const [selectedChipDenomination, setSelectedChipDenomination] = useState<ChipValue | null>(null);
   const SHUFFLE_ANIM_DURATION_MS = 3000;
   const [shuffleAnimating, setShuffleAnimating] = useState(false);
   const shuffleAnimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1064,7 +1070,33 @@ export function BlackjackPanel({
     selectLocalTarget(slotNumber);
   }
 
+  function handleBoxTap(slotNumber: number, boxId: string | null) {
+    if (boxId) {
+      selectBox(boxId);
+    } else {
+      handleClaimOrSelectSlot(slotNumber);
+    }
+    const decision = resolveBoxTapChipPlacement({
+      bettingOpen,
+      denomination: selectedChipDenomination,
+      slotNumber,
+      slotOnTable: tableMeta.boxSlots.some((s) => s.slotNumber === slotNumber),
+    });
+    logChipTap({
+      box: slotNumber,
+      denomination: selectedChipDenomination,
+      targetResolved: decision.reason !== 'invalid-slot',
+      placementDispatched: decision.place,
+      placementAccepted: decision.place,
+      reason: decision.reason,
+    });
+    if (decision.place) {
+      placeBetAtTarget(slotNumber, decision.denomination);
+    }
+  }
+
   function handleChipTrayClick(value: ChipValue) {
+    setSelectedChipDenomination((current) => persistArmedChipDenomination(current, value));
     const result = resolveActiveChipTrayTarget();
     if (layoutDebug) {
       logLayoutDebugChipTarget({
@@ -1082,9 +1114,25 @@ export function BlackjackPanel({
         hasUserSelected: local.hasUserSelected || localChipSelection.hasUserSelected,
         visibleBoxCount: effectiveVisibleBoxCount,
       });
+      logChipTap({
+        box: null,
+        denomination: value,
+        targetResolved: false,
+        placementDispatched: false,
+        placementAccepted: false,
+        reason: result.reason,
+      });
       setError('Tap a box to bet');
       return;
     }
+    logChipTap({
+      box: result.slotNumber,
+      denomination: value,
+      targetResolved: true,
+      placementDispatched: true,
+      placementAccepted: true,
+      reason: 'tray-target',
+    });
     placeBetAtTarget(result.slotNumber, value);
   }
 
@@ -1508,6 +1556,7 @@ export function BlackjackPanel({
         showChips
         onChipClick={handleChipTrayClick}
         onChipPointerDown={chipPointerDrag.onChipPointerDown}
+        selectedChip={selectedChipDenomination}
         disabled={!bettingOpen}
         minimumBet={minimumBet}
         trayLabel={trayLabel}
@@ -1982,7 +2031,7 @@ export function BlackjackPanel({
           : arcSlotRotation(slotNumber, effectiveVisibleBoxCount, { mobile: false });
     const isSelected = inBetting && !isSplitCompanion && selectedBettingSlotNumber === slotNumber;
     const isDrop = !isSplitCompanion && (dropTargetId === dropKey || dropTargetId === `slot-${slotNumber}`);
-    const onSelect = () => (boxId ? selectBox(boxId) : handleClaimOrSelectSlot(slotNumber));
+    const onSelect = () => handleBoxTap(slotNumber, boxId ?? null);
     const useHandLevelTurn =
       deviceView === 'desktop' && (isSplitCompanion || handKeys.length > 1);
     const isHandTurn =

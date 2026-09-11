@@ -92,6 +92,15 @@
   cursor: not-allowed;
 }
 
+.chip-token--btn.chip-token--selected {
+  outline: 2px solid var(--ds-color-gold, #f4d35e);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px rgb(0 0 0 / 0.35),
+    0 2px 4px rgb(0 0 0 / 0.38),
+    inset 0 1px 0 rgb(255 255 255 / 0.22);
+}
+
 /* Tray-only horizontal casino plaques — table stake stacks stay round (.chip-token). */
 .chip-token--plaque {
   --chip-plaque-width: 5.5rem;

@@ -8,6 +8,7 @@ import { clientEmailErrorMessage } from '../email/smtp.js';
 import type { Server as SocketServer } from 'socket.io';
 import { respondPeopleAuthError } from '../people/httpErrors.js';
 import { respondInviteOrPeopleError } from './inviteHttpErrors.js';
+import { logInviteAuth } from '../auth/inviteAuthLog.js';
 import {
   completeInviteAcceptRedirect,
   redirectInviteError,
@@ -56,6 +57,13 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       const preview = await tables.previewInviteByToken(token);
       const raw = readSessionToken(req);
       const session = raw ? verifySessionToken(raw) : null;
+      logInviteAuth({
+        stage: 'invite-open',
+        tableId: preview.tableId,
+        inviteEmail: preview.invitedEmail,
+        sessionEmail: session?.email,
+        callbackTarget: `/api/tables/invites/accept`,
+      });
 
       if (!session) {
         redirectUnauthenticatedInviteAccept(res, req, token, preview);
@@ -65,6 +73,13 @@ export function createTableRouter(tables: TableService, io: SocketServer): Route
       const sessionEmail = session.email.trim().toLowerCase();
       const inviteEmail = preview.invitedEmail.trim().toLowerCase();
       if (sessionEmail !== inviteEmail) {
+        logInviteAuth({
+          stage: 'auth-required',
+          tableId: preview.tableId,
+          inviteEmail,
+          sessionEmail,
+          reason: 'email-mismatch',
+        });
         redirectUnauthenticatedInviteAccept(res, req, token, preview, { clearSession: true });
         return;
       }

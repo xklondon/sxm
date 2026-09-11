@@ -7,6 +7,7 @@ export interface BlackjackTrayRowProps {
   onChipClick: (value: ChipValue) => void;
   onChipPointerDown?: (value: ChipValue, event: ReactPointerEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
+  selectedChip?: ChipValue | null;
   minimumBet?: number;
   trayLabel?: string;
   hint?: string | null;
@@ -19,6 +20,7 @@ export function BlackjackTrayRow({
   onChipClick,
   onChipPointerDown,
   disabled,
+  selectedChip = null,
   minimumBet,
   trayLabel,
   hint,
@@ -32,6 +34,7 @@ export function BlackjackTrayRow({
           onChipClick={onChipClick}
           onChipPointerDown={onChipPointerDown}
           disabled={disabled}
+          selectedValue={selectedChip}
           minimumBet={minimumBet}
           trayLabel={trayLabel}
         />

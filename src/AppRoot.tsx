@@ -12,6 +12,11 @@ import { isPublicAuthPath, shouldShowGlobalSessionLoading } from './auth/authBoo
 import { isOnlineModeEnabled, apiPath } from './api/config';
 import { resolveBootTableId } from './onlineTableStorage';
 import { parseJoinTableParams } from './engine/table/invites';
+import {
+  inviteTokenFromSearch as inviteTokenFromQuery,
+  logInviteAuthClient,
+  resolvePostAuthInviteResume,
+} from './auth/inviteAuthResume';
 import { BOOT_STAGES, markBootStage, markBootSucceeded } from './debug/bootDiagnostics';
 import { AuthFetchError, accessDeniedMessage } from './auth/authErrors';
 import { ClientConfigScreen, isClientConfigPath } from './debug/ClientConfigScreen';
@@ -49,8 +54,7 @@ export function consumePendingJoin(): string | null {
 }
 
 function inviteTokenFromSearch(search: string): string | null {
-  const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
-  return params.get('token') ?? parseJoinTableParams(search)?.token ?? null;
+  return inviteTokenFromQuery(search) ?? parseJoinTableParams(search)?.token ?? null;
 }
 
 export function AppRoot() {
@@ -121,7 +125,7 @@ export function AppRoot() {
   }, [onlineMode, pendingSearch]);
 
   useEffect(() => {
-    if (!onlineMode || authLoading) {
+    if (!onlineMode || authLoading || !user) {
       return;
     }
     const token =
@@ -130,17 +134,25 @@ export function AppRoot() {
       return;
     }
     if (isJoinPath || isLoginPath) {
+      logInviteAuthClient('invite-resume', {
+        callbackTarget: `/api/tables/invites/accept`,
+        reason: 'authenticated-accept',
+      });
       window.location.assign(apiPath(`/api/tables/invites/accept?token=${encodeURIComponent(token)}`));
     }
-  }, [onlineMode, authLoading, isJoinPath, isLoginPath, inviteAcceptToken, pendingSearch]);
+  }, [onlineMode, authLoading, user, isJoinPath, isLoginPath, inviteAcceptToken, pendingSearch]);
 
   useEffect(() => {
     if (!onlineMode || authLoading || !user || isJoinPath) {
       return;
     }
-    const pending = getPendingJoin();
-    if (pending) {
-      window.location.assign(`/join-table${pending.startsWith('?') ? pending : `?${pending}`}`);
+    const resume = resolvePostAuthInviteResume({
+      search: window.location.search,
+      pendingJoin: getPendingJoin(),
+    });
+    if (resume) {
+      logInviteAuthClient('invite-resume', { callbackTarget: resume, reason: 'pending-join' });
+      window.location.assign(resume);
     }
   }, [onlineMode, authLoading, user, isJoinPath]);
 
@@ -148,7 +160,13 @@ export function AppRoot() {
     if (!onlineMode || authLoading || !user || !isLoginPath) {
       return;
     }
-    if (getPendingJoin()) {
+    const resume = resolvePostAuthInviteResume({
+      search: window.location.search,
+      pendingJoin: getPendingJoin(),
+    });
+    if (resume) {
+      logInviteAuthClient('invite-resume', { callbackTarget: resume, reason: 'login-returnTo' });
+      window.location.replace(resume);
       return;
     }
     window.location.replace('/');
@@ -183,13 +201,6 @@ export function AppRoot() {
         </main>
       );
     }
-    if (inviteAcceptToken || inviteTokenFromSearch(window.location.search)) {
-      return (
-        <main className="login-screen">
-          <p>Accepting invite…</p>
-        </main>
-      );
-    }
     return (
       <LoginScreen
         error={accessDenied ?? loginError}
@@ -203,7 +214,7 @@ export function AppRoot() {
 
   if (onlineMode && isJoinPath) {
     const joinToken = inviteTokenFromSearch(window.location.search);
-    if (joinToken) {
+    if (joinToken && user) {
       return (
         <main className="login-screen">
           <p>Accepting invite…</p>
@@ -211,7 +222,9 @@ export function AppRoot() {
       );
     }
     if (!user) {
-      savePendingJoin(window.location.search);
+      if (joinToken) {
+        savePendingJoin(window.location.search);
+      }
       return (
         <LoginScreen
           error={accessDenied ?? 'Sign in to join this table.'}

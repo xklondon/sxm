@@ -116,7 +116,7 @@ export const TABLE_UX = {
   /** Full-size tap target for box/slot selection — decorative children use pointer-events: none. */
   boxHitZone: 'bj-box-hit-zone',
   boxHitArea: 'bj-box-hit-area',
-  /** Chip drop / remove controls — pointer-events: auto above the hit area. */
+  /** Stake slot chrome — only the retract control may steal pointer events from the hit area. */
   boxInteractive: 'bj-box-interactive',
   /** Visual-only felt cloth skin modifiers on .bj-casino__felt. */
   feltSkinClean: 'bj-felt-skin--clean',

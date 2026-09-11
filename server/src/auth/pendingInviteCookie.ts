@@ -48,14 +48,35 @@ export function safeReturnTo(origin: string, value: unknown): string | null {
   }
 }
 
-export function buildInviteLoginRedirect(origin: string, preview: {
-  invitedEmail: string;
-  tableName?: string | null;
-}): string {
+export function buildInviteResumePath(token: string): string {
+  return `/join-table?token=${encodeURIComponent(token)}`;
+}
+
+export function isInviteResumePath(value: string | null): boolean {
+  if (!value) {
+    return false;
+  }
+  try {
+    const url = value.startsWith('/') ? new URL(value, 'https://sxm.invalid') : new URL(value);
+    return url.pathname === '/join-table' && Boolean(url.searchParams.get('token'));
+  } catch {
+    return false;
+  }
+}
+
+export function buildInviteLoginRedirect(
+  origin: string,
+  preview: {
+    invitedEmail: string;
+    tableName?: string | null;
+  },
+  token: string,
+): string {
   const params = new URLSearchParams();
   params.set('invitedEmail', preview.invitedEmail);
   if (preview.tableName) {
     params.set('inviteTableName', preview.tableName);
   }
+  params.set('returnTo', buildInviteResumePath(token));
   return `${origin}/login?${params.toString()}`;
 }

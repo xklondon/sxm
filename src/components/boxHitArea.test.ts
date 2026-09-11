@@ -22,7 +22,8 @@ describe('box hit area — single reliable tap target', () => {
     expect(PANEL_SRC).toContain('TABLE_UX.boxHitZone');
     expect(PANEL_SRC).toContain('bindBoxTapSelect');
     expect(PANEL_SRC).toMatch(/function renderArcSlot[\s\S]*bindBoxTapSelect[\s\S]*onSelect/);
-    expect(PANEL_SRC).toMatch(/function renderArcSlot[\s\S]*handleClaimOrSelectSlot/);
+    expect(PANEL_SRC).toMatch(/function renderArcSlot[\s\S]*handleBoxTap/);
+    expect(PANEL_SRC).toContain('handleClaimOrSelectSlot');
   });
 
   it('Card View and Full Table player boxes use shared arc hit areas from Panel', () => {
@@ -45,13 +46,16 @@ describe('box hit area — single reliable tap target', () => {
     expect(SHARED_CSS).toMatch(
       /\.bj-box-hit-zone \.bj-phone-view__mini-hand-card-stack[\s\S]*pointer-events:\s*none/,
     );
-    expect(SHARED_CSS).toMatch(/\.bj-box-interactive,\s*\n\.bj-box-interactive \*,[\s\S]*pointer-events:\s*auto/);
+    expect(SHARED_CSS).toMatch(/\.bj-box-interactive \{\s*[\s\S]*pointer-events:\s*none/);
+    expect(SHARED_CSS).toMatch(/\.bj-box-hit-area[\s\S]*min-height:\s*44px/);
+    expect(SHARED_CSS).toMatch(/\.bj-box-hit-area[\s\S]*touch-action:\s*manipulation/);
   });
 
-  it('chip drop controls stay interactive above the hit area', () => {
-    expect(SHARED_CSS).toMatch(/\.bj-bet-zone,\s*\n\.bj-bet-zone \*,[\s\S]*pointer-events:\s*auto/);
+  it('only retract controls stay interactive above the hit area', () => {
+    expect(SHARED_CSS).toMatch(/\.bj-box-interactive \.stake-chips__remove[\s\S]*pointer-events:\s*auto/);
     expect(SHARED_CSS).toMatch(/\.stake-chips__remove[\s\S]*pointer-events:\s*auto/);
     expect(PANEL_SRC).toContain('TABLE_UX.boxInteractive');
+    expect(PANEL_SRC).toContain('handleBoxTap');
   });
 });
 

@@ -8,8 +8,10 @@ import {
 import {
   buildClearPendingInviteCookieHeader,
   buildInviteLoginRedirect,
+  buildInviteResumePath,
   buildPendingInviteCookieHeader,
 } from '../auth/pendingInviteCookie.js';
+import { logInviteAuth } from '../auth/inviteAuthLog.js';
 import type { TableService } from './service.js';
 import { broadcastTableUpdate } from './broadcast.js';
 
@@ -59,7 +61,18 @@ export async function completeInviteAcceptRedirect(
     buildSessionCookieHeader(result.sessionToken, { req }),
   ]);
   const spectator = result.spectator ? '&spectator=1' : '';
-  res.redirect(`${origin}/?table=${encodeURIComponent(result.tableId)}${spectator}`);
+  const redirectTarget = `${origin}/?table=${encodeURIComponent(result.tableId)}${spectator}`;
+  logInviteAuth({
+    stage: 'join-success',
+    tableId: result.tableId,
+    callbackTarget: redirectTarget,
+  });
+  logInviteAuth({
+    stage: 'redirect-table',
+    tableId: result.tableId,
+    callbackTarget: `/?table=${encodeURIComponent(result.tableId)}`,
+  });
+  res.redirect(redirectTarget);
 }
 
 export function redirectUnauthenticatedInviteAccept(
@@ -75,5 +88,12 @@ export function redirectUnauthenticatedInviteAccept(
   }
   res.setHeader('Set-Cookie', cookies);
   const origin = resolveRequestOrigin(req);
-  res.redirect(buildInviteLoginRedirect(origin, preview));
+  const loginUrl = buildInviteLoginRedirect(origin, preview, token);
+  logInviteAuth({
+    stage: 'auth-required',
+    inviteEmail: preview.invitedEmail,
+    callbackTarget: buildInviteResumePath(token),
+    reason: options?.clearSession ? 'session-email-mismatch' : 'unauthenticated',
+  });
+  res.redirect(loginUrl);
 }

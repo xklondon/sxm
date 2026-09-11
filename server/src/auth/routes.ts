@@ -29,9 +29,11 @@ import { resolveAuthForRequest } from './sessionResolve.js';
 import { verifySessionToken } from './tokens.js';
 import {
   clearPendingInviteCookie,
+  isInviteResumePath,
   readPendingInviteToken,
   safeReturnTo,
 } from './pendingInviteCookie.js';
+import { logInviteAuth } from './inviteAuthLog.js';
 import {
   completeInviteAcceptRedirect,
   redirectInviteError,
@@ -70,6 +72,11 @@ export function createAuthRouter(
     console.log(
       `[SXM][auth] POST /api/auth/request-magic-link recipient=${sanitizeEmail(email)} rememberMe=${rememberMe}`,
     );
+    logInviteAuth({
+      stage: 'magic-request',
+      inviteEmail: email,
+      callbackTarget: returnTo,
+    });
     try {
       const result = await auth.requestMagicLink(email, rememberMe, returnTo ?? undefined);
       // eslint-disable-next-line no-console
@@ -106,15 +113,29 @@ export function createAuthRouter(
       const sessionToken = await auth.verifyMagicLink(token, { persistent });
       setSessionCookie(res, sessionToken, { persistent, req });
 
+      logInviteAuth({
+        stage: 'auth-complete',
+        callbackTarget: String(req.query.returnTo ?? ''),
+      });
       const pendingInvite = readPendingInviteToken(req);
       if (pendingInvite) {
         const payload = verifySessionToken(sessionToken);
         if (!payload) {
           clearPendingInviteCookie(res);
+          logInviteAuth({
+            stage: 'invite-resume',
+            reason: 'invalid-session-after-sign-in',
+            callbackTarget: '/login',
+          });
           res.redirect(`${origin}/login?error=${encodeURIComponent('Invalid session after sign-in')}`);
           return;
         }
         try {
+          logInviteAuth({
+            stage: 'invite-resume',
+            callbackTarget: '/api/tables/invites/accept',
+            reason: 'pending-invite-cookie',
+          });
           await completeInviteAcceptRedirect(
             res,
             req,
@@ -136,6 +157,11 @@ export function createAuthRouter(
         } catch (inviteErr) {
           const message = inviteErr instanceof Error ? inviteErr.message : 'Invite accept failed';
           const tableId = await tables.lookupInviteTableId(pendingInvite);
+          logInviteAuth({
+            stage: 'invite-resume',
+            tableId,
+            reason: message,
+          });
           redirectInviteError(res, origin, message, tableId, { clearPending: true });
           return;
         }
@@ -148,6 +174,13 @@ export function createAuthRouter(
         : returnTo
           ? `${origin}${returnTo.startsWith('/') ? returnTo : `/${returnTo}`}`
           : `${origin}/`;
+      if (isInviteResumePath(returnTo)) {
+        logInviteAuth({
+          stage: 'invite-resume',
+          callbackTarget: returnTo,
+          reason: 'returnTo',
+        });
+      }
       logAuthVerifyDiagnostics(req, {
         redirectUrl,
         cookieName: config.sessionCookieName,

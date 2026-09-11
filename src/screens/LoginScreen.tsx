@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { requestMagicLink } from '../api/client';
+import { logInviteAuthClient, resolveLoginMagicReturnTo } from '../auth/inviteAuthResume';
 import { Magic8Ball } from '../components/magic8/Magic8Ball';
 import './LoginScreen.css';
 
@@ -37,7 +38,14 @@ export function LoginScreen({
     setMessage(null);
     setDevLink(null);
     try {
-      const returnTo = new URLSearchParams(window.location.search).get('returnTo');
+      const returnTo = resolveLoginMagicReturnTo({
+        pathname: window.location.pathname,
+        search: window.location.search,
+      });
+      logInviteAuthClient('magic-request', {
+        callbackTarget: returnTo,
+        reason: invitedEmail ? 'invite-login' : 'login',
+      });
       const result = await requestMagicLink(email, rememberMe, returnTo);
       setSentEmail(email.trim());
       setPhase('sent');

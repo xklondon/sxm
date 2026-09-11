@@ -182,4 +182,98 @@ describe('invite login redirect flow', () => {
     expect(verifyRes.headers.location).toMatch(/\/$/);
     expect(verifyRes.headers.location).not.toContain('table=');
   });
+
+  it('unauthenticated invite login keeps returnTo so one magic cycle can resume', async () => {
+    const setup = await setupApp();
+    const { app } = setup;
+    const { token } = await createGuestInvite(setup);
+
+    const acceptRes = await request(app)
+      .get(`/api/tables/invites/accept?token=${encodeURIComponent(token)}`)
+      .redirects(0);
+
+    expect(acceptRes.status).toBe(302);
+    const loginUrl = new URL(acceptRes.headers.location, 'https://play.example.com');
+    expect(loginUrl.pathname).toBe('/login');
+    expect(loginUrl.searchParams.get('returnTo')).toBe(`/join-table?token=${token}`);
+    expect(loginUrl.searchParams.get('invitedEmail')).toBe('guest@example.com');
+  });
+
+  it('magic verify without pending cookie still returns to invite resume path', async () => {
+    const setup = await setupApp();
+    const { app, auth } = setup;
+    const { token } = await createGuestInvite(setup);
+    await seedPerson(setup.store, { email: 'guest@example.com', role: 'player', status: 'invited' });
+    const { devLink } = await auth.requestMagicLink(
+      'guest@example.com',
+      true,
+      `/join-table?token=${token}`,
+    );
+    const magicUrl = new URL(devLink!, 'https://play.example.com');
+    expect(magicUrl.searchParams.get('returnTo')).toBe(`/join-table?token=${token}`);
+
+    const verifyRes = await request(app)
+      .get(`${magicUrl.pathname}${magicUrl.search}`)
+      .redirects(0);
+
+    expect(verifyRes.status).toBe(302);
+    expect(verifyRes.headers.location).toContain(`/join-table?token=${encodeURIComponent(token)}`);
+    expect(verifyRes.headers.location).not.toMatch(/\/login/);
+  });
+
+  it('authenticated matching user joins without a magic-link hop', async () => {
+    const setup = await setupApp();
+    const { app, store, createSessionToken } = setup;
+    const { table, token } = await createGuestInvite(setup);
+    const guest = await store.createUser('guest@example.com', 'Guest');
+    await seedPerson(store, { email: 'guest@example.com', userId: guest.id, role: 'player' });
+
+    const first = await request(app)
+      .get(`/api/tables/invites/accept?token=${encodeURIComponent(token)}`)
+      .set('Cookie', sessionCookie(createSessionToken, guest.id, 'guest@example.com'))
+      .redirects(0);
+    expect(first.headers.location).toContain(`table=${encodeURIComponent(table.id)}`);
+    expect(first.headers.location).not.toContain('/login');
+
+    const second = await request(app)
+      .get(`/api/tables/invites/accept?token=${encodeURIComponent(token)}`)
+      .set('Cookie', sessionCookie(createSessionToken, guest.id, 'guest@example.com'))
+      .redirects(0);
+    expect(second.status).toBe(302);
+    expect(second.headers.location).toContain(`table=${encodeURIComponent(table.id)}`);
+    expect(second.headers.location).not.toContain('/login');
+  });
+
+  it('authenticated wrong email is blocked and does not join', async () => {
+    const setup = await setupApp();
+    const { app, store, createSessionToken } = setup;
+    const { table, token } = await createGuestInvite(setup);
+    const wrong = await store.createUser('wrong@example.com', 'Wrong');
+    await seedPerson(store, { email: 'wrong@example.com', userId: wrong.id, role: 'player' });
+
+    const res = await request(app)
+      .get(`/api/tables/invites/accept?token=${encodeURIComponent(token)}`)
+      .set('Cookie', sessionCookie(createSessionToken, wrong.id, 'wrong@example.com'))
+      .redirects(0);
+
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toContain('/login');
+    expect(res.headers.location).toContain('invitedEmail=guest%40example.com');
+    expect(new URL(res.headers.location, 'https://play.example.com').searchParams.get('returnTo')).toContain(
+      token,
+    );
+    expect(store.getMember(table.id, wrong.id)).toBeFalsy();
+    expect((await store.getInviteByToken(token))!.status).toBe('pending');
+  });
+
+  it('production-style absolute returnTo keeps the invite token', async () => {
+    const { safeReturnTo, buildInviteResumePath, isInviteResumePath } = await import(
+      '../src/auth/pendingInviteCookie.js'
+    );
+    const origin = 'https://play.sxmcards.example';
+    const token = 'prod-invite-token';
+    const absolute = `${origin}${buildInviteResumePath(token)}`;
+    expect(safeReturnTo(origin, absolute)).toBe(`/join-table?token=${token}`);
+    expect(isInviteResumePath(safeReturnTo(origin, absolute))).toBe(true);
+  });
 });

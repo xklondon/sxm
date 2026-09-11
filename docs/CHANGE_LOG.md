@@ -11,6 +11,13 @@ Every significant feature change must update **both**:
 
 before the work is considered complete. This rule is also stated in `.cursorrules`.
 
+## 2026-09-11 — Mobile chip tap reliability + invite auth resume
+
+- **Chips:** Box taps place the armed tray denomination (selection persists). Hit area covers the full visible box (min 44px, `touch-action: manipulation`); stake/label children no longer steal taps. Tap handler dedupes pointerup+click per gesture so rapid repeats still place once per tap.
+- **Invites:** Unauthenticated accept now keeps `returnTo=/join-table?token=…` through magic-link verify (cookie remains a backup). AppRoot no longer auto-hits accept while logged out. Matching members reopening an accepted invite go to the table. Email match, disabled-person, and duplicate-account checks unchanged.
+
+---
+
 ## 2026-09-11 — Blackjack mobile vertical contract and responsiveness
 
 - Canonical mobile Full Table/Card View now use the shell-owned command → cards → actions → boxes → tray grid without cross-zone transforms or overlap. HIT/STAY are compact, the command has primary/secondary hierarchy, and the content-sized tray alone owns bottom safe-area padding. Full Table and Card View landscape geometry now have separate owners instead of competing selectors.

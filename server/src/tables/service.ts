@@ -235,6 +235,16 @@ export class TableService {
     const inviterUser = await this.store.getUserById(invite.inviterUserId);
     const inviterPerson = inviterUser ? await this.people.getPersonForUser(inviterUser.id) : null;
 
+    const existingMember = this.store.getMember(invite.tableId, userId);
+    if (existingMember && invite.status === 'accepted') {
+      return {
+        tableId: invite.tableId,
+        sessionToken: createSessionToken({ userId, email: normalizedEmail }),
+        boxAssigned: true,
+        spectator: false,
+      };
+    }
+
     try {
       const joined = await this.joinWithInvite({
         userId,
@@ -297,7 +307,7 @@ export class TableService {
     if (!invite) {
       throw new InviteFlowError('INVITE_INVALID', 'Invite expired or invalid.');
     }
-    if (invite.status !== 'pending') {
+    if (invite.status !== 'pending' && invite.status !== 'accepted') {
       throw new InviteFlowError('INVITE_INVALID', 'Invite expired or invalid.');
     }
     if (new Date(invite.expiresAt).getTime() < Date.now()) {
